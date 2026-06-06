@@ -14,15 +14,15 @@ A red line is non-negotiable. It is not a warning. It is not a suggestion that c
 | `DCP-RED-MERGE-SEAM-0001` active | `schemas/dcp/README.md:101-111` | ACTIVE — blocks `queue_drain.py` and `batch_resolve_and_merge.py` |
 | `queue_drain.py execute=True` | `src/dopemux_pr_merge_specialist/queue_drain.py` | HARD-BLOCKED |
 | `scripts/batch_resolve_and_merge.py` | `scripts/batch_resolve_and_merge.py` | HARD-BLOCKED |
-| RTE S7 gate stub always-PASS | `validate_pre_live_gate_v25.py:476-478` | Must be fixed before trusting any RTE readiness verdict |
-| RTE SP contracts missing | `repo_truth_map.json` + SP pipeline | SP pipeline runs ungated — go-live verdicts untrustworthy |
+| RTE S7 truth-split gate — VERIFY behavior | `validate_pre_live_gate_v25.py` (`collect_truth_split` → `all_blockers`) | Implementation present at HEAD `8042f9f9f`; the prior "always-PASS stub" claim is stale. Do NOT trust RTE readiness until the gate is run against injected drift and confirmed to FAIL (verify-and-close) |
+| RTE SP contracts — VERIFY enforcement | `validate_pre_live_gate_v25.py` (`SP_CONTRACT_MISSING` blocker) | `SP_CONTRACT_MISSING` blocker present at HEAD `8042f9f9f`; verify it blocks ungated SP rather than assuming the pipeline is unguarded |
 | Agent authority unresolved | `AGENTS.md:88`, `truth-canonicals.md:248` | Three families, no canonical — agents must not be granted authority |
 | `claudedocs/` is advisory only | File assembly recon | Never use as primary evidence for proof |
 | Compose ≠ runtime proof | Patched census global caveat | `runtime_process_verified: false` on all compose entries |
 | No implementer self-audit | All capsules | Audit must be by external tool or independent model |
 | No secrets | All capsules | Never read, print, or commit `.env`, API keys, tokens, passwords |
 | No scope escape | Capsule `allowed_files` | Edits outside allowed_files = immediate halt |
-| `monitoring-dashboard` at 0.0.0.0:1561 unauthenticated | `services/monitoring-dashboard/server.py` | HIGH security risk — do not invoke, do not expose |
+| `monitoring-dashboard` at 0.0.0.0:8098 unauthenticated | `services/monitoring-dashboard/server.py:1563` | HIGH security risk if started — binds all interfaces, no auth on own endpoints. Latent: NOT running at last verification. (Prior "1561" was a line-number confusion; real port is **8098**.) Do not invoke, do not expose |
 
 ---
 
@@ -71,11 +71,13 @@ A human operator or GPT-5.5 Pro Supervisor must review this trigger before any f
 
 This red line was set because the merge seam between `queue_drain.py` and `batch_resolve_and_merge.py` has no safe guard against unintended live writes. Until `LIVE_WRITE_READY` is defined and the seam is gated, both scripts must remain inert. Any capsule that attempts to call either script with `execute=True` or with live credentials = immediate stop.
 
-### RTE S7 gate stub
+**Enforcement status (verify, do not assume docs-only):** the prior census framed this seam as "defined in `schemas/dcp/README.md` only, not code-enforced." As of HEAD `8042f9f9f` that is partly stale — executable enforcement code exists: `src/dopemux/dcp/red_lane_scanner.py` (`RedLaneScanner`), `red_lane.py`, `red_lane_rules.py`, with tests. **However**, `RedLaneScanner` is referenced only in `src/dopemux/dcp/`, `tests/`, and one packet doc — **not** in `.github/`, `tools/pr_steward/`, `tools/auditor_router/`, or `scripts/`. So the scanner exists but is **not wired into the CI/merge/steward path**. The follow-up (`TP-DMX-DCP-SEAM-ENFORCEMENT-001`) is therefore "wire the existing scanner," not "build enforcement from scratch." The hard-block on `queue_drain.py` / `batch_resolve_and_merge.py` remains in force regardless.
 
-The stub at `validate_pre_live_gate_v25.py:476-478` unconditionally returns `PASS` regardless of actual gate state. Any RTE readiness verdict produced while this stub is in place is untrustworthy. Do not cite RTE readiness verdicts as primary evidence until this is fixed and verified.
+### RTE S7 truth-split gate (verify, do not assume missing)
 
-### `monitoring-dashboard` at 0.0.0.0:1561
+The earlier census claimed `validate_pre_live_gate_v25.py:476-478` unconditionally returns `PASS`. As of HEAD `8042f9f9f` that is **stale**: `collect_truth_split` (≈line 523) builds rows, calls `classify_truth_split_row`, emits `SP_CONTRACT_MISSING` / `TARGET_TRUTH_SPLIT_MISMATCH` blockers, and the live-gate path extends those blockers into `all_blockers` (≈line 1419). The line numbers in the original claim no longer point at a stub — the file was substantially rewritten. **This was a code read, not a gate run.** The red line therefore stands as *verify-and-close*: run the gate against injected drift and confirm a FAIL before trusting any RTE readiness verdict. Do not assume the gate is broken, and do not assume it is correct, until the behavior is exercised (`TP-RTE-S7-DRIFT-FIX-001`, re-scoped to verification).
+
+### `monitoring-dashboard` at 0.0.0.0:8098
 
 This service binds to all interfaces with no authentication layer. Do not invoke it programmatically, do not expose it externally, and do not include its output in any proof bundle as primary evidence. Treat it as a local-only debug surface until auth is added.
 
