@@ -9,7 +9,7 @@
   "head_sha_before": "4fe853a099b283b00e8eaed5c2abff2370b99ce9",
   "head_sha_after": "a14779c9817a37dfab6e900e36548adc4c45e9f7",
   "implementation_commit": "a14779c9817a37dfab6e900e36548adc4c45e9f7",
-  "proof_commit": "",
+  "proof_commit": "ca60dd893ad296e52ed1bce469700768b23390f1",
   "final_proof_commit": "",
   "authority_input": "TP-DMX-PROOF-TRACKING-POLICY-001.md (on-branch task packet) + user decision gate: Option A (factory skill tier, no exemption)",
   "files_modified": [
