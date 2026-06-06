@@ -6,8 +6,16 @@ status: draft
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-06-06'
-prelude: Operator usage guide — how to apply the stage-based model routing policy in Claude Code, Codex, Copilot custom agents, and AGY/Gemini audit flows, with example Task Packet and proof blocks.
-tags: [governance, model-routing, how-to, operators]
+prelude: "Operator usage guide \u2014 how to apply the stage-based model routing policy\
+  \ in Claude Code, Codex, Copilot custom agents, and AGY/Gemini audit flows, with\
+  \ example Task Packet and proof blocks."
+tags:
+- governance
+- model-routing
+- how-to
+- operators
+last_review: '2026-06-06'
+next_review: '2026-09-04'
 ---
 # How to Use the Model Routing Policy
 
