@@ -1169,13 +1169,17 @@ def assert_strict_route_provider_allowed(
 
 
 def _profile_provider_lock(cfg: "RunnerConfig") -> Optional[str]:
-    """Return the single provider a cost profile is locked to, or None.
+    """Return the single provider a cost profile is *declared* locked to, or None.
 
-    A profile is provider-locked when all four resolved cell aliases (honoring
-    --model-alias / env overrides) map to exactly one provider AND the profile
-    does not opt out via ``allow_cross_provider_fallback``. Locked profiles drop
-    cross-provider fallback routes so a single-key operator never preflights or
-    dispatches a provider key they don't have (Codex P2 #3364972852).
+    Computed from the profile's static ``cell_aliases`` (its declared intent),
+    NOT the --model-alias/env-resolved values: a profile is provider-locked when
+    all four declared cells map to exactly one provider AND it does not opt out
+    via ``allow_cross_provider_fallback``. Locked profiles drop cross-provider
+    fallback routes so a single-key operator never preflights or dispatches a
+    provider key they don't have (Codex P2 #3364972852). Because the lock is the
+    declared intent, a --model-alias override pointing a cell at a foreign
+    provider does not silently dissolve the lock — it fails closed in
+    ``_apply_provider_lock``.
     """
     profile_name = str(
         getattr(cfg, "cost_profile", DEFAULT_COST_PROFILE) or DEFAULT_COST_PROFILE
@@ -1183,19 +1187,14 @@ def _profile_provider_lock(cfg: "RunnerConfig") -> Optional[str]:
     _resolved_name, profile = resolve_cost_profile(profile_name)
     if not isinstance(profile, dict) or bool(profile.get("allow_cross_provider_fallback")):
         return None
-    overrides = _model_alias_overrides_dict(
-        getattr(cfg, "model_alias_overrides", ())
-    )
+    cell_aliases = profile.get("cell_aliases")
+    if not isinstance(cell_aliases, dict):
+        return None
     providers = set()
     for cell in COST_PROFILE_CELL_KEYS:
-        value = resolve_cell_alias(
-            "${" + cell + "}",
-            profile_name,
-            cli_overrides=overrides,
-            env=os.environ,
-        )
-        if _is_alias_placeholder(str(value)):
-            return None  # an unresolved cell — do not lock
+        value = cell_aliases.get(cell)
+        if not value or _is_alias_placeholder(str(value)):
+            return None  # missing/unresolved declared cell — do not lock
         provider, _model = _parse_alias_provider_model(str(value))
         providers.add(provider)
     return next(iter(providers)) if len(providers) == 1 else None
@@ -1207,15 +1206,32 @@ def _apply_provider_lock(
 ) -> List[Dict[str, Any]]:
     """Drop cross-provider fallback routes for provider-locked single-key profiles.
 
-    Always keeps the lead route (index 0 — the resolved profile route that runs
-    first), then filters subsequent fallback routes to the locked provider. No-op
-    for multi-provider or opt-out profiles, and never empties a non-empty ladder.
+    Always keeps the lead route (index 0 — the resolved route that runs first),
+    then filters subsequent fallback routes to the locked provider. No-op for
+    multi-provider or opt-out profiles, and never empties a non-empty ladder.
+
+    Fail-closed: if the lead resolved to a provider outside the lock (a
+    --model-alias/env override pointed a cell at a foreign provider on a locked
+    profile), raise before spend rather than dispatch a key the single-key
+    operator does not have.
     """
     if not routes:
         return routes
     lock = _profile_provider_lock(cfg)
     if not lock:
         return routes
+    lead_provider = str(routes[0].get("provider") or "")
+    if lead_provider != lock:
+        profile_name = str(
+            getattr(cfg, "cost_profile", DEFAULT_COST_PROFILE) or DEFAULT_COST_PROFILE
+        )
+        raise RuntimeError(
+            f"Cost profile {profile_name!r} is provider-locked to {lock!r}, but a "
+            f"route resolved its lead to {lead_provider}/{routes[0].get('model_id')} "
+            f"(via --model-alias or an env override). A locked single-key profile "
+            f"cannot dispatch a cross-provider route — remove the override or pick "
+            f"a multi-provider profile."
+        )
     kept = [routes[0]]
     kept.extend(r for r in routes[1:] if str(r.get("provider")) == lock)
     return kept

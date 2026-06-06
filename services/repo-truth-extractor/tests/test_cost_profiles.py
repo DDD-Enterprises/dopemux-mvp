@@ -204,7 +204,7 @@ def test_resolve_cell_alias_returns_placeholder_when_unresolved() -> None:
 
 def test_resolve_effective_step_route_applies_model_alias_before_dispatch() -> None:
     cfg = _make_cfg(
-        cost_profile="quality",
+        cost_profile="value-default",
         model_alias_overrides=(
             ("SYNTH_MODEL", "openrouter/anthropic/claude-opus-4.7"),
         ),
@@ -801,3 +801,37 @@ def test_provider_lock_filters_repair_sidefill_stages() -> None:
         runner._step_contract_for("A", "A2"), _make_cfg(cost_profile="value-default")
     )
     assert "xai" in {r["provider"] for r in rc_default["lane"]["repair_routes"]}
+
+
+def test_provider_lock_fails_closed_on_foreign_override() -> None:
+    """Overriding a locked profile's cell to a foreign provider fails closed
+    before spend (the lock is the profile's declared intent, not silently
+    dissolved by --model-alias)."""
+    import pytest
+
+    foreign = _make_cfg(
+        cost_profile="openrouter-resilient",
+        model_alias_overrides=(("BULK_DOCS_MODEL", "xai/grok-4.3"),),
+    )
+    with pytest.raises(RuntimeError, match="provider-locked"):
+        runner.resolve_effective_step_route(
+            "A", "A2", foreign, step_contract=runner._step_contract_for("A", "A2")
+        )
+    # A same-provider override (openrouter/...) is fine — no raise.
+    same = _make_cfg(
+        cost_profile="openrouter-resilient",
+        model_alias_overrides=(("BULK_DOCS_MODEL", "openrouter/openai/gpt-5.4"),),
+    )
+    route = runner.resolve_effective_step_route(
+        "A", "A2", same, step_contract=runner._step_contract_for("A", "A2")
+    )
+    assert route["provider"] == "openrouter"
+    # An opt-out (value-default) and a multi-provider profile never fail closed.
+    for profile in ("value-default", "gemini-value"):
+        cfg = _make_cfg(
+            cost_profile=profile,
+            model_alias_overrides=(("BULK_DOCS_MODEL", "xai/grok-4.3"),),
+        )
+        runner.resolve_effective_step_route(
+            "A", "A2", cfg, step_contract=runner._step_contract_for("A", "A2")
+        )
