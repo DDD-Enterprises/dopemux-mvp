@@ -12,7 +12,7 @@
   "head_sha": "a4279dcbb",
   "implementation_commit": "aa0c77f67",
   "proof_commit": "a4279dcbb",
-  "final_proof_commit": "a4279dcbb",
+  "final_proof_commit": "849026ef8",
   "commit_sha": "aa0c77f67",
   "authority_input": "TP-RTE-S7-DRIFT-FIX-001 (prev packet) + advisor() gate-check + read-only investigation at HEAD",
   "files_modified": [
