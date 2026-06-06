@@ -4,7 +4,7 @@
   "repo": "dopemux-mvp",
   "branch": "claude/model-routing-next",
   "git_status_before": "## claude/model-routing-next...origin/main",
-  "git_status_after": "## claude/model-routing-next...origin/main\n M AGENTS.md\n M task-packets/INDEX.md\n M task-packets/TEMPLATE_TASK_PACKET.md",
+  "git_status_after": "## claude/model-routing-next...origin/main [ahead 1]\n M proof/TP-DMX-AI-ROUTING-003/PROOF.json",
   "files_changed": [
     "task-packets/INDEX.md",
     "task-packets/TEMPLATE_TASK_PACKET.md",
@@ -66,8 +66,9 @@
     "No automatic detection if policy YAML adds new stages in future"
   ],
   "commit": {
-    "created": false,
-    "sha": null,
+    "created": true,
+    "sha": "212c013c67b2032f4d41052ee2e8c1f1029d8336",
     "message": "Register AI routing packets and align governance references"
-  }
+  },
+  "final_proof_commit": "PENDING_SEAL"
 }
