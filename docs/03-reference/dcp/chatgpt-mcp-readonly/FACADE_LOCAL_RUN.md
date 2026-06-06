@@ -83,7 +83,7 @@ unreachable backend fails closed.
 
 | Tool | Backend route (read-only) | Caps |
 | --- | --- | --- |
-| `search_decisions` | ConPort `GET /api/decisions` (or `GET /api/search/{ws}?type=decisions` when `query` set) | limit ≤ 20 |
+| `search_decisions` | ConPort `GET /api/decisions` (list). **`query` mode deferred** — `/api/search` 500s on the default backend (UUID not serialized); a query returns `PARTIAL` | limit ≤ 20 |
 | `search_progress` | ConPort `GET /api/progress` | limit ≤ 20 |
 | `search_chronicle` | dope-memory `POST /tools/memory_search` (side-effect-free read) | `top_k` ≤ 3 |
 | `replay_chronicle_session` | dope-memory `POST /tools/memory_replay_session` | `top_k` ≤ 3; mode defaults `replay_current` |

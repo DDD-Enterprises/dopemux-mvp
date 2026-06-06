@@ -26,13 +26,16 @@ def test_search_decisions_ok_envelope(make_workspace, build_registry, project_en
     assert ft.last["params"]["workspace_id"] == "ws-test"
 
 
-def test_search_decisions_with_query_uses_search_route(make_workspace, build_registry, project_entry, make_client, conport_dm_profiles):
+def test_search_decisions_query_is_deferred_not_routed_to_broken_search(make_workspace, build_registry, project_entry, make_client, conport_dm_profiles):
+    # Phase 1: query mode must NOT hit the broken ConPort /api/search route.
     ws = make_workspace()["path"]
     reg = _reg(build_registry, project_entry, ws, conport_dm_profiles)
     client, ft = make_client(json_body={"results": {"decisions": []}})
-    tools.search_decisions(reg, "p", query="oauth", client=client)
-    assert ft.last["url"].endswith("/api/search/ws-test")
-    assert ft.last["params"]["q"] == "oauth"
+    env = tools.search_decisions(reg, "p", query="oauth", client=client)
+    assert env["status"] == E.PARTIAL
+    assert env["data"] is None
+    assert any("/api/search" in lim and "deferred" in lim for lim in env["limitations"])
+    assert ft.calls == []  # backend never hit for a query
 
 
 def test_search_chronicle_posts_with_topk_cap(make_workspace, build_registry, project_entry, make_client, conport_dm_profiles):

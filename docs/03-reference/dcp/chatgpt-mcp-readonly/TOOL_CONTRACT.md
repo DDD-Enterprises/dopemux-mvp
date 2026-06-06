@@ -32,10 +32,14 @@ prelude: Phase-1 tool contract, allowed/denied routes, and authority labels for 
 
 | Tool | Backing surface (OBSERVED) | Method | Authority | Wrapper constraints |
 | --- | --- | --- | --- | --- |
-| `search_decisions` | conport `/api/decisions` (GET) and/or `/api/search/{workspace_id}` (GET) | GET | CANONICAL | max-20 pagination; workspace scope; sanitize workspace param |
-| `search_progress` | conport `/api/progress` (GET) | GET | CANONICAL | workspace filter; max page limit |
+| `search_decisions` | conport `/api/decisions` (GET) — list only; `/api/search/{ws}` (GET) **deferred** ⚠️ | GET | CANONICAL | max-20; **`query` mode deferred** (note ‡) |
+| `search_progress` | conport `/api/progress` (GET) | GET | CANONICAL | max page; **fail-closed** unless `progress_readonly_safe` (note †) |
 | `search_chronicle` | dope-memory `/tools/memory_search` (POST) | POST | CANONICAL | POST allowed (side-effect-free read); `top_k=3` |
 | `replay_chronicle_session` | dope-memory `/tools/memory_replay_session` (POST) | POST | CANONICAL | session-bounded; prefer `replay_current` mode |
+
+> † **`search_progress` is fail-closed.** ConPort's default enhanced server auto-forks (writes) progress rows when a workspace has none (`DOPEMUX_AUTO_FORK_PROGRESS=1`), so a read can mutate. `search_progress` is BLOCKED unless the registry conport profile sets `progress_readonly_safe: true` — set only after `DOPEMUX_AUTO_FORK_PROGRESS=0` on the backend.
+>
+> ‡ **`search_decisions` query mode is deferred.** ConPort `GET /api/search/{ws}` returns HTTP 500 in the default enhanced server (it builds the result without serializing the UUID `id` before `json.dumps`). The facade does not expose a broken read: a `query` returns `PARTIAL` with a deferral note; list mode (`GET /api/decisions`, which serializes ids) is unaffected. The `conport.search` adapter is implemented and ready for when the backend is fixed.
 
 ### 1c. dope-context + task-orchestrator read tools — packet 0006
 
