@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from ..config import ConfigManager
 from ..console import console
@@ -34,7 +34,11 @@ class ClaudeConfigurator:
         self.config_manager = config_manager
 
     def setup_project_config(
-        self, project_path: Path, template: str = "python", force: bool = False
+        self,
+        project_path: Path,
+        template: str = "python",
+        force: bool = False,
+        role: Optional[str] = None,
     ) -> None:
         """
         Setup complete project configuration for Dopemux.
@@ -43,13 +47,22 @@ class ClaudeConfigurator:
             project_path: Target project directory
             template: Project template type
             force: Overwrite existing configuration
+            role: Optional role name (e.g. "developer"). When provided, only
+                ensures .claude/ and .dopemux/ directories exist; doctrine
+                files are NOT regenerated to avoid clobbering existing content.
+                Persona injection is a separate later increment (out of scope here).
         """
         claude_dir = project_path / ".claude"
         dopemux_dir = project_path / ".dopemux"
 
-        # Create directories
+        # Create directories (always safe regardless of role)
         claude_dir.mkdir(exist_ok=True)
         dopemux_dir.mkdir(exist_ok=True)
+
+        # When called for role activation (dopemux start --role X), do not
+        # regenerate or overwrite doctrine files — they may already exist.
+        if role is not None:
+            return
 
         # Generate Claude configuration files
         self._create_claude_md(claude_dir, template)
