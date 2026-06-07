@@ -5,9 +5,9 @@
   "branch": "claude/modest-cartwright-340c04",
   "base_pr": 842,
   "head_before": "97271d92ee92dc923b768292797edde8f668e2c5",
-  "head_after": "proof_seal_pending",
+  "head_after": "2db1a0846a593052de3ddc9ef66a1770788f5188",
   "git_status_before": " M .claude/claude_config.json",
-  "git_status_after": "proof_seal_pending",
+  "git_status_after": "(clean after commit)",
   "bug": {
     "id": "GAP-H4-BUG",
     "summary": "config_data UnboundLocalError in dopemux start --altp subscription mode",
@@ -58,9 +58,9 @@
     "exit_code": 0,
     "auditor_verdict": "PASS",
     "auditor_findings": [
-      "config_data = None init before _provider_flags block is correct — guards all downstream reads",
-      "if config_data is not None: guard is inside if _provider_flags > 0: — correct scope, only runs when a provider flag was passed",
-      "Local RoutingConfig import in else: branch bypasses module-level mock — test fix (patch routing_config.RoutingConfig.load_default) is correct and minimal",
+      "config_data = None init before _provider_flags block is correct \u2014 guards all downstream reads",
+      "if config_data is not None: guard is inside if _provider_flags > 0: \u2014 correct scope, only runs when a provider flag was passed",
+      "Local RoutingConfig import in else: branch bypasses module-level mock \u2014 test fix (patch routing_config.RoutingConfig.load_default) is correct and minimal",
       "Wave 1 invariants verified: dangerous-mode prompts intact, 127.0.0.1 bind preserved, post-launch crash guards in place, LiteLLM exception ordering preserved"
     ],
     "fixes_applied_from_audit": [],
@@ -70,11 +70,11 @@
     "skip_reason": null
   },
   "remaining_risks": [
-    "XFAIL tests now pass — if routing.yaml behavior changes (mode changes from subscription to api), test assertions still hold since we fully mock both RoutingConfig paths"
+    "XFAIL tests now pass \u2014 if routing.yaml behavior changes (mode changes from subscription to api), test assertions still hold since we fully mock both RoutingConfig paths"
   ],
   "commit": {
-    "created": false,
-    "sha": null,
+    "created": true,
+    "sha": "2db1a0846a593052de3ddc9ef66a1770788f5188",
     "message": "fix(cli): initialize altp config_data before subscription flow (TP-DMX-START-WAVE2-H4)"
   }
 }
