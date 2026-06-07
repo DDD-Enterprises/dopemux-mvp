@@ -1,0 +1,80 @@
+{
+  "packet_id": "TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/tp-dmx-ai-routing-003-governance-residue",
+  "head_sha_before": "cfc473d35d053a4c0b6ea7cd6b886412bf915766",
+  "head_sha_after": "ca3db024e",
+  "files_modified": [
+    ".pre-commit-config.yaml",
+    "task-packets/INDEX.md",
+    "task-packets/TEMPLATE_TASK_PACKET.md",
+    "tests/audit/test_audit_proof.py"
+  ],
+  "files_created": [
+    "proof/TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001/PROOF.json",
+    "proof/TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001/AUDITOR_REPORT.md"
+  ],
+  "commands_run": [
+    "python3 scripts/audit/validate_audit_proof.py proof/TP-DMX-AI-ROUTING-001/PROOF.json proof/TP-DMX-AI-ROUTING-002/PROOF.json proof/TP-DMX-AI-ROUTING-003/PROOF.json",
+    "python3 -m pytest tests/audit/test_audit_proof.py::TestPR839Regressions -v",
+    "pre-commit run proof-embedded-audit-schema --files proof/TP-DMX-AI-ROUTING-003/PROOF.json proof/TP-DMX-AI-ROUTING-001/PROOF.json",
+    "git diff --stat"
+  ],
+  "exit_codes": {
+    "validate known-good proofs (3/3)": 0,
+    "pytest TestPR839Regressions (3 passed)": 0,
+    "pre-commit hook on known-good proofs": 0
+  },
+  "validation_gates": {
+    "existing_script_confirmed_as_ci_parity": "PASS",
+    "three_negative_fixtures_all_fail": "PASS",
+    "pre-commit_hook_passes_known_good": "PASS",
+    "template_updated_with_local_command": "PASS",
+    "index_registered_active": "PASS",
+    "diff_allowlist_only": "PASS"
+  },
+  "key_finding": "scripts/audit/validate_audit_proof.py already existed as the canonical CI validator. Task reduced to: wire pre-commit hook, add regression tests, document in TEMPLATE. No new script written.",
+  "runtime_code_touched": false,
+  "schemas_changed": false,
+  "configs_changed": true,
+  "configs_changed_detail": ".pre-commit-config.yaml — added proof-embedded-audit-schema hook to local repo block",
+  "red_lines_preserved": true,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "implementer_standard self-audit inside Claude Code after implementation",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "LOW",
+        "title": "tests/fixtures/proof_schema/ intermediate files not committed",
+        "status": "ACCEPTED_RISK",
+        "body": "Three fixture files (bad_report_path, bad_auditor_model, bad_finding_status) were generated locally to verify the validator behavior but were not committed — the equivalent logic is covered by the TestPR839Regressions pytest class using tmp_path, so committed fixtures are not needed."
+      },
+      {
+        "id": "F2",
+        "severity": "INFO",
+        "title": "hook only fires on proof/*/PROOF.json pattern — nested proofs (proof/sub/TP-X/PROOF.json) are not matched",
+        "status": "ACCEPTED_RISK",
+        "body": "Pattern ^proof/[^/]+/PROOF\\.json$ matches only top-level packet dirs. Nested proof structures (e.g. review_bundle/PROOF.json) are excluded. This matches CI validator scope behavior (which uses include_patterns from .validator_scope.json). No expansion needed now."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "R1: pre-commit hook does not run in CI Quality gate unless pre-commit itself passes — if pre-commit install is skipped locally, the hook is bypassed. The CI Audit Proof Validator remains the authoritative gate.",
+      "R2: Nested proof paths (e.g. review_bundle/PROOF.json) are not covered by the hook pattern. Consistent with CI scope."
+    ],
+    "skip_reason": null
+  },
+  "remaining_risks": [
+    "R1: local hook is advisory; CI remains authoritative gate.",
+    "R2: nested proof paths excluded from hook scope (consistent with CI)."
+  ],
+  "next_recommended_packet": "TP-DMX-AI-ROUTING-004 (schema enum drift in embedded_audit.schema.json)"
+}
