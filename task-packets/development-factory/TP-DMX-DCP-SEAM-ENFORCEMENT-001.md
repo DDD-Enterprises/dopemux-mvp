@@ -1,14 +1,18 @@
 ---
 id: TP-DMX-DCP-SEAM-ENFORCEMENT-001
-title: Wire RedLaneScanner as Invokable Gate — Preserve Hard Block
-type: enforcement
+title: "Wire RedLaneScanner as Invokable Gate \u2014 Preserve Hard Block"
+type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-06-06'
 last_review: '2026-06-06'
 next_review: '2026-09-06'
 status: READY_FOR_REVIEW
-prelude: Wire existing RedLaneScanner into an auditable gate path while preserving DCP-RED-MERGE-SEAM-0001 intact. Scanner was fully implemented (288 lines, 16 tests) but had no invokable entrypoint and was absent from all CI workflows. This packet adds the entrypoint and closes two FORBIDDEN_PATH test gaps. CI enforcement wiring is deferred to a follow-up packet.
+prelude: Wire existing RedLaneScanner into an auditable gate path while preserving
+  DCP-RED-MERGE-SEAM-0001 intact. Scanner was fully implemented (288 lines, 16 tests)
+  but had no invokable entrypoint and was absent from all CI workflows. This packet
+  adds the entrypoint and closes two FORBIDDEN_PATH test gaps. CI enforcement wiring
+  is deferred to a follow-up packet.
 ---
 # Task Packet: TP-DMX-DCP-SEAM-ENFORCEMENT-001 · Development Factory · Wire RedLaneScanner
 
