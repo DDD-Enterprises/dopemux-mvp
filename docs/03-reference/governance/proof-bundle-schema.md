@@ -252,6 +252,18 @@ Provenance information.
 }
 ```
 
+## Related Policy
+
+Model-routing evidence is governed separately and is **not** part of this bundle's
+required-field set:
+
+- Machine policy: [`config/ai/model-routing.policy.yaml`](../../../config/ai/model-routing.policy.yaml)
+- Human guide: [`model-routing.md`](model-routing.md)
+- Embedded-audit object schema (canonical): [`schemas/proof/embedded_audit.schema.json`](../../../schemas/proof/embedded_audit.schema.json)
+
+Adding model-routing fields to a bundle is advisory and additive; it does not alter
+the validation rules above.
+
 ## Compliance
 
 All bundles must:
