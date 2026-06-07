@@ -1,3 +1,15 @@
+---
+id: project-workstream-registry
+title: Project Workstream Registry
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Project Workstream Registry (reference) for dopemux documentation and developer
+  workflows.
+---
 # Project & Workstream Registry
 
 > **Note:** Registry JSON schemas are deferred to `TP-DMX-DEVELOPMENT-FACTORY-CONTROLLER-DESIGN-001`.

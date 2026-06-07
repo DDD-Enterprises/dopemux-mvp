@@ -1,3 +1,14 @@
+---
+id: build-series
+title: Build Series
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Build Series (reference) for dopemux documentation and developer workflows.
+---
 # Development Factory Build Series
 
 Ordered packet series. Each packet is a prerequisite for the next where indicated.

@@ -1,3 +1,14 @@
+---
+id: obligation-ledger
+title: Obligation Ledger
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Obligation Ledger (reference) for dopemux documentation and developer workflows.
+---
 # Obligation Ledger
 
 > **Note:** The formal JSON schema is deferred to `TP-DMX-OBLIGATION-LEDGER-001`.

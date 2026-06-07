@@ -1,3 +1,14 @@
+---
+id: execution-capsule
+title: Execution Capsule
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Execution Capsule (reference) for dopemux documentation and developer workflows.
+---
 # Execution Capsule
 
 > **Note:** The formal JSON schema and `EXECUTION_CAPSULE_TEMPLATE.md` are deferred to

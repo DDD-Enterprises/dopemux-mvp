@@ -1,3 +1,14 @@
+---
+id: autonomy-ladder
+title: Autonomy Ladder
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Autonomy Ladder (reference) for dopemux documentation and developer workflows.
+---
 # Autonomy Ladder (L0–L6)
 
 ## Levels

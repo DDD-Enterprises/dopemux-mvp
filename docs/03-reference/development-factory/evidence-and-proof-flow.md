@@ -1,3 +1,15 @@
+---
+id: evidence-and-proof-flow
+title: Evidence And Proof Flow
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Evidence And Proof Flow (reference) for dopemux documentation and developer
+  workflows.
+---
 # Evidence & Proof Flow
 
 How capsule executions establish truth, generate proof bundles, and what makes a proof valid or rejectable.

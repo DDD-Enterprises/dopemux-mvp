@@ -1,3 +1,14 @@
+---
+id: process
+title: Process
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Process (reference) for dopemux documentation and developer workflows.
+---
 # Development Factory — Execution Process
 
 ## Factory Execution Flow

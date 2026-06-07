@@ -1,3 +1,14 @@
+---
+id: learning-loop
+title: Learning Loop
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Learning Loop (reference) for dopemux documentation and developer workflows.
+---
 # Learning Loop
 
 How the factory learns from capsule executions and improves its own policies — with explicit safeguards against silent self-modification.

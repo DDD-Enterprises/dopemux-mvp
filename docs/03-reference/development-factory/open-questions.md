@@ -1,3 +1,14 @@
+---
+id: open-questions
+title: Open Questions
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Open Questions (reference) for dopemux documentation and developer workflows.
+---
 # Open Questions — Verification Gates
 
 12 verification gates from the architecture synthesis. **Status reflects `TP-DMX-EVIDENCE-GATE-VERIFY-001` (read-only, HEAD `8042f9f9f`).** All findings are static-analysis + live `docker ps` only; none involved running the systems under test. "VERIFIED" means the question is answered to that confidence; it does not certify runtime correctness.
