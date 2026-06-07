@@ -75,7 +75,7 @@
     "required": true,
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
-    "auditor_model": "claude-sonnet-4-6",
+    "auditor_model": "claude-sonnet-4.6",
     "invocation": "implementer_standard self-audit inside Claude Code after three slices",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-AI-ROUTING-003/AUDITOR_REPORT.md",
@@ -91,7 +91,7 @@
         "id": "F2",
         "severity": "INFO",
         "title": "TP-DMX-AI-ROUTING-003 closure row not yet self-registered in INDEX.md",
-        "status": "DEFERRED",
+        "status": "ACCEPTED_RISK",
         "body": "Per packet §9 expected outcomes: the -003 closure row may be added in a separate self-closing commit or via a follow-up. This PROOF.json documents the deferral explicitly. The PR Steward or a follow-up operator can add the row after merge."
       }
     ],

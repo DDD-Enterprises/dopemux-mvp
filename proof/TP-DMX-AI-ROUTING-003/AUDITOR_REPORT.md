@@ -9,7 +9,7 @@ date: '2026-06-06'
 # Embedded Audit Report — TP-DMX-AI-ROUTING-003
 
 **Auditor**: claude-code-cli (implementer_standard self-audit)
-**Model**: claude-sonnet-4-6
+**Model**: claude-sonnet-4.6
 **Stage**: self_audit
 **Invocation**: post-slice review inside Claude Code after three commits
 **Exit code**: 0
