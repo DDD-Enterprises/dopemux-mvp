@@ -61,6 +61,10 @@
     "auditor_model": "claude-sonnet-4.6",
     "invocation": "self-audit inside Claude Code — diff reviewed against TP-004A allowlist and acceptance criteria",
     "exit_code": 0,
+    "report_path": "proof/TP-DMX-AI-ROUTING-004A/AUDITOR_REPORT.md",
+    "fixes_applied": [
+      "Added --noconftest flag to routing-consistency pytest step in .github/workflows/ci-complete.yml"
+    ],
     "findings": [],
     "remaining_risks": [
       "R1: CI must rerun on PR #841 to confirm fix works in the GitHub Actions environment (Ubuntu, Python 3.11). Local validation used Python 3.12.13 on macOS.",
