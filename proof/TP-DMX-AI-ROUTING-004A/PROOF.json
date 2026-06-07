@@ -1,0 +1,82 @@
+{
+  "tp_id": "TP-DMX-AI-ROUTING-004A",
+  "status": "IMPLEMENTATION_COMPLETE",
+  "repo": "dopemux-mvp",
+  "branch": "claude/model-routing-next",
+
+  "root_cause": "routing-consistency CI job installed only pytest+pyyaml. tests/conftest.py:82 unconditionally imports dopemux.adhd.attention_monitor which requires rich (not installed). pytest loads conftest.py before running any test file, causing ModuleNotFoundError and exit code 4. No test ran; all routing consistency failures on this branch were collection errors, not policy violations.",
+
+  "fix": {
+    "file": ".github/workflows/ci-complete.yml",
+    "line": 297,
+    "before": "        run: pytest tests/test_model_routing_consistency.py -q --tb=short",
+    "after":  "        run: pytest tests/test_model_routing_consistency.py --noconftest -q --tb=short",
+    "rationale": "--noconftest suppresses automatic conftest.py loading. The routing consistency tests have no conftest dependencies; this flag is sufficient and correct."
+  },
+
+  "files_changed": [
+    ".github/workflows/ci-complete.yml"
+  ],
+
+  "commands": [
+    {
+      "cmd": "rg -n 'test_model_routing_consistency|routing-consistency|pytest' .github/workflows/ci-complete.yml",
+      "exit_code": 0,
+      "purpose": "locate target line",
+      "result": "line 297: pytest tests/test_model_routing_consistency.py -q --tb=short"
+    },
+    {
+      "cmd": "python3 -m pytest tests/test_model_routing_consistency.py --noconftest -q --tb=short",
+      "exit_code": 0,
+      "purpose": "validate --noconftest fix",
+      "result": "7 passed"
+    },
+    {
+      "cmd": "python3 -m pytest tests/test_model_routing_policy.py tests/test_model_routing_consistency.py --noconftest -q --tb=short",
+      "exit_code": 0,
+      "purpose": "validate full routing suite with --noconftest (regression check)",
+      "result": "17 passed (10 policy + 7 consistency)"
+    },
+    {
+      "cmd": "git diff --check && git diff --stat",
+      "exit_code": 0,
+      "purpose": "confirm diff scope",
+      "result": "1 file changed, 1 insertion(+), 1 deletion(-)"
+    }
+  ],
+
+  "validation": {
+    "noconftest_tests_pass": "PASS — 7/7 routing consistency tests pass with --noconftest",
+    "regression_check": "PASS — 17/17 policy + consistency tests pass with --noconftest",
+    "diff_within_allowlist": "PASS — only .github/workflows/ci-complete.yml modified",
+    "runtime_unchanged": "PASS — no src/ files touched",
+    "test_logic_unchanged": "PASS — tests/test_model_routing_consistency.py not modified",
+    "ci_yaml_valid": "NOT_RUN — yaml.safe_load check omitted (single-character flag addition; YAML syntax not in question)"
+  },
+
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "self-audit inside Claude Code — diff reviewed against TP-004A allowlist and acceptance criteria",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AI-ROUTING-004A/AUDITOR_REPORT.md",
+    "fixes_applied": [
+      "Added --noconftest flag to routing-consistency pytest step in .github/workflows/ci-complete.yml"
+    ],
+    "findings": [],
+    "remaining_risks": [
+      "R1: CI must rerun on PR #841 to confirm fix works in the GitHub Actions environment (Ubuntu, Python 3.11). Local validation used Python 3.12.13 on macOS.",
+      "R2: If pytest.ini or pyproject.toml contains addopts that conflict with --noconftest in CI, the job could still fail. Unlikely — --noconftest is a standard flag with no known addopts conflicts.",
+      "R3: routing-consistency is still not a direct required_status_checks entry. Indirect enforcement via CI Pipeline Summary remains the mechanism."
+    ],
+    "skip_reason": null
+  },
+
+  "commit": {
+    "sha": "103df6867",
+    "message": "Fix routing-consistency CI collection (add --noconftest)"
+  },
+  "final_proof_commit": "103df6867"
+}
