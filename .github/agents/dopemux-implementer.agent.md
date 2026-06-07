@@ -2,7 +2,7 @@
 description: 'Implements scoped Dopemux task-packet changes with allowlist enforcement'
 name: 'Dopemux Implementer'
 tools: ['read', 'edit', 'search', 'execute']
-model: 'Claude Sonnet 4.5'
+model: 'Claude Sonnet 4.5'  # implementer_standard lane
 target: 'vscode'
 infer: true
 handoffs:

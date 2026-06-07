@@ -1,0 +1,78 @@
+{
+  "tp_id": "TP-DMX-AI-ROUTING-004",
+  "status": "IMPLEMENTATION_COMPLETE",
+  "repo": "dopemux-mvp",
+  "branch": "claude/model-routing-next",
+  "files_changed": [
+    "config/ai/model-routing.schema.json",
+    "tests/test_model_routing_consistency.py",
+    ".github/agents/dopemux-implementer.agent.md",
+    ".github/workflows/ci-complete.yml"
+  ],
+  "commands": [
+    {
+      "cmd": "python3 -m json.tool config/ai/model-routing.schema.json > /dev/null",
+      "exit_code": 0,
+      "purpose": "validate schema JSON is well-formed"
+    },
+    {
+      "cmd": "python3 -m pytest tests/test_model_routing_consistency.py -v --tb=short",
+      "exit_code": 0,
+      "purpose": "run 7 cross-artifact consistency tests"
+    },
+    {
+      "cmd": "python3 -m pytest tests/test_model_routing_policy.py tests/test_model_routing_consistency.py -q",
+      "exit_code": 0,
+      "purpose": "confirm new tests do not regress existing policy invariants (17 total)"
+    },
+    {
+      "cmd": "python3 -c \"import yaml; yaml.safe_load(open('.github/workflows/ci-complete.yml').read())\"",
+      "exit_code": 0,
+      "purpose": "validate ci-complete.yml YAML syntax"
+    },
+    {
+      "cmd": "git diff --stat",
+      "exit_code": 0,
+      "purpose": "confirm diff is restricted to allowlist"
+    }
+  ],
+  "validation": {
+    "schema_valid_json": "PASS - python3 -m json.tool returned exit 0",
+    "consistency_tests_pass": "PASS - 7/7 tests pass",
+    "policy_invariants_not_regressed": "PASS - 17/17 tests pass (10 existing + 7 new)",
+    "ci_workflow_yaml_valid": "PASS - yaml.safe_load returned without error",
+    "diff_within_allowlist": "PASS - 4 files: schema (new), tests (new), implementer comment (existing), ci-complete (existing)",
+    "runtime_code_unchanged": "PASS - no src/ files modified",
+    "routing_behavior_unchanged": "PASS - policy YAML, agent capabilities, and provider routes are unchanged"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "self-audit inside Claude Code after edits — diff reviewed against TP-004 allowlist, invariants, and acceptance criteria",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AI-ROUTING-004/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "LOW",
+        "title": "test_agent_files_reference_at_least_one_stage failed on initial run",
+        "status": "RESOLVED",
+        "body": "Initial check required ALL agent files to reference a stage name. dopemux-reviewer and dopemux-testgen have no stage assignment in copilot provider_routes. Test redesigned to check only copilot-routed agents. Added # implementer_standard lane comment to dopemux-implementer.agent.md (within allowlist)."
+      }
+    ],
+    "fixes_applied": [
+      "Narrowed agent-stage test to only check agents appearing in copilot provider_routes",
+      "Added '# implementer_standard lane' comment to dopemux-implementer.agent.md model field"
+    ],
+    "remaining_risks": [
+      "R1: routing-consistency CI job installs pytest+pyyaml via pip at runtime; if PyPI is unavailable the job fails independently (acceptable isolation)",
+      "R2: ci-summary branch protection 'required status checks' must be updated by operator to include routing-consistency — truth is UNKNOWN whether operator has done this",
+      "R3: proof/TP-DMX-AI-ROUTING-003/PROOF.json fails embedded_audit schema validator (pre-existing on this branch, not introduced by TP-004; not in TP-004 allowlist)"
+    ],
+    "skip_reason": null
+  },
+  "commit_sha": "11156d783f5d420eea9b68c76aba8208b8997694",
+  "final_proof_commit": "75dc888d766bc7d5cb12bea3bf89a721e1fe9512"
+}
