@@ -187,26 +187,28 @@
     "auditor_model": "claude-sonnet-4.6",
     "invocation": "self-audit inside Claude Code — CI log inspected, branch protection API queried, governance docs grep'd, local tests run with multiple flag combinations",
     "exit_code": 0,
+    "report_path": "proof/TP-DMX-AI-ROUTING-005/AUDITOR_REPORT.md",
+    "fixes_applied": [],
     "findings": [
       {
         "id": "F1",
         "severity": "HIGH",
         "title": "routing-consistency CI job fails at baseline on every PR",
-        "status": "OPEN — requires TP-004 amendment",
+        "status": "OPEN",
         "body": "ci-complete.yml routing-consistency step installs pytest+pyyaml only. tests/conftest.py unconditionally imports from dopemux.adhd (requires rich). Fix: add --noconftest to pytest invocation. Test logic is sound (7/7 pass locally and with --noconftest). Blocked on conftest alone."
       },
       {
         "id": "F2",
         "severity": "LOW",
         "title": "routing-consistency not referenced in governance docs",
-        "status": "OPEN — optional documentation gap",
+        "status": "OPEN",
         "body": "docs/03-reference/governance/model-routing.md documents the policy and anti-patterns but does not mention the CI enforcement gate. Enforcement is operational but undocumented in the governance chain."
       },
       {
         "id": "F3",
         "severity": "INFO",
         "title": "Indirect enforcement chain is functionally sound",
-        "status": "CLOSED",
+        "status": "RESOLVED",
         "body": "routing-consistency → CI Pipeline Summary (via needs:, if: always()) → required_status_checks (📊 CI Pipeline Summary is required). PR #841 confirms: routing-consistency=fail cascades to CI Summary=fail. Merge is blocked. The enforcement chain works as designed."
       }
     ],
