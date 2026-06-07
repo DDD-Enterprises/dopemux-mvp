@@ -272,8 +272,10 @@ class TestAltRoutingBindAddress:
         ]
         for args in litellm_calls:
             assert "0.0.0.0" not in args, (
-                f"litellm subprocess must not bind to 0.0.0.0 (network exposure). "
-                f"Found args: {args}. GAP-C3: fix by changing to '127.0.0.1' at cli.py:1612."
+                f"litellm subprocess must not bind to 0.0.0.0. Found: {args}. GAP-C3."
+            )
+            assert "127.0.0.1" in args, (
+                f"litellm subprocess must bind to 127.0.0.1 (loopback). Found: {args}. GAP-C3."
             )
 
 

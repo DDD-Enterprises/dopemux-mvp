@@ -1609,7 +1609,7 @@ def start(
                         "--port",
                         str(litellm_port),
                         "--host",
-                        "0.0.0.0",
+                        "127.0.0.1",
                     ],
                     stdout=log_file,
                     stderr=subprocess.STDOUT,
@@ -1888,9 +1888,7 @@ def start(
                 bool(os.environ.get("TMUX")),
             )
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.warning("tmux kill-server failed (best-effort): %s", e, exc_info=True)
     # Check if project is initialized
     if not dopemux_exists:
         console.print(
@@ -1918,9 +1916,7 @@ def start(
             )
             check_call([sys.executable, str(wire_script)])
         except Exception as e:
-            pass
-
-            logger.error(f"Error: {e}")
+            logger.warning("wire_conport_project.py failed (best-effort): %s", e, exc_info=True)
     if project_path_real_exists:
         # Worktree Recovery Menu (ADHD-optimized session recovery)
         # Show menu if orphaned worktree sessions exist
@@ -2100,9 +2096,7 @@ def start(
                     f"[text.dim]⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring[/text.dim]"
                 )
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.warning("DOPEMUX_FORCE_INSTANCE_ID override failed (best-effort): %s", e, exc_info=True)
     # Check if we should use OpenRouter via LiteLLM (for tmux --happy mode)
     if os.getenv("DOPEMUX_USE_OPENROUTER") == "1":
         _configure_openrouter_litellm()
@@ -2207,9 +2201,6 @@ def start(
                     "DATABASE_URL",
                 ):
                     os.environ.pop(var, None)
-        except Exception as e:
-            logger.exception("Failed to start LiteLLM proxy: %s", e)
-            raise
 
             if litellm_proxy_info.already_running:
                 console.print(
@@ -2239,6 +2230,9 @@ def start(
         except LiteLLMProxyError as exc:
             console.logger.error(f"[error]❌ LiteLLM proxy failed: {exc}[/error]")
             sys.exit(1)
+        except Exception as e:
+            logger.exception("Failed to start LiteLLM proxy: %s", e)
+            raise
 
     router_info = None
     if use_claude_router and not _direct_provider_routing:
@@ -3854,7 +3848,10 @@ def _activate_dangerous_mode():
     # Check if already in dangerous mode
     if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
         expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
-        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
+        try:
+            expires_timestamp = float(expires_str)
+        except (TypeError, ValueError):
+            expires_timestamp = 0.0
 
         if time.time() < expires_timestamp:
             console.logger.info("[yellow]⚠️  Dangerous mode already active[/yellow]")
@@ -3937,7 +3934,10 @@ def _check_dangerous_mode_expiry():
     """Check if dangerous mode has expired and clean up if needed."""
     if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
         expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
-        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
+        try:
+            expires_timestamp = float(expires_str)
+        except (TypeError, ValueError):
+            expires_timestamp = 0.0
 
         if time.time() >= expires_timestamp:
             console.logger.info("[yellow]⏰ Dangerous mode expired, returning to safe mode[/yellow]")
