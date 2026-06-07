@@ -126,11 +126,11 @@
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
-    "auditor_tool": "advisor()",
-    "auditor_model": "claude-opus",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
     "invocation": "advisor(): Opus-level policy audit \u2014 split verdict: FAIL as completed-packet / PASS_WITH_RISKS as policy design. Three risks surfaced.",
-    "exit_code": null,
-    "report_path": null,
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PROOF-TRACKING-POLICY-001/AUDIT.md",
     "findings": [
       {
         "id": "F001",
