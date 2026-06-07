@@ -45,14 +45,46 @@
     "decision_record_updated": "added 'docs are not source truth' + 'S7/SP/seam are verify-and-close' decisions"
   },
   "validations": [
-    {"name": "monitoring_port_corrected", "status": "PASS", "evidence": "no '1561' remains as a port claim in DDF docs; '8098' present in red-lines + open-questions"},
-    {"name": "s7_reframed_verify_not_fix", "status": "PASS", "evidence": "red-lines/autonomy-ladder/open-questions say verify-and-close, cite implementation present at HEAD"},
-    {"name": "sp_reframed_verify", "status": "PASS", "evidence": "SP framed as verify SP_CONTRACT_MISSING"},
-    {"name": "seam_reframed_wire_existing", "status": "PASS", "evidence": "RedLaneScanner exists/unwired documented; hard-block preserved"},
-    {"name": "wma_main_not_orphan", "status": "PASS", "evidence": "architecture.md + VG-010 corrected"},
-    {"name": "build_series_resequenced", "status": "PASS", "evidence": "verify-and-close-first order; DCP-SEAM-LIFT added last; AGENT-AUTHORITY preserved as LWR prereq"},
-    {"name": "no_forbidden_paths_touched", "status": "PASS", "evidence": "git status --porcelain has no queue_drain/batch_resolve/schemas/development-factory/config/ai/.github/src/services hits"},
-    {"name": "proof_json_valid", "status": "PASS", "evidence": "python -m json.tool exit 0"}
+    {
+      "name": "monitoring_port_corrected",
+      "status": "PASS",
+      "evidence": "no '1561' remains as a port claim in DDF docs; '8098' present in red-lines + open-questions"
+    },
+    {
+      "name": "s7_reframed_verify_not_fix",
+      "status": "PASS",
+      "evidence": "red-lines/autonomy-ladder/open-questions say verify-and-close, cite implementation present at HEAD"
+    },
+    {
+      "name": "sp_reframed_verify",
+      "status": "PASS",
+      "evidence": "SP framed as verify SP_CONTRACT_MISSING"
+    },
+    {
+      "name": "seam_reframed_wire_existing",
+      "status": "PASS",
+      "evidence": "RedLaneScanner exists/unwired documented; hard-block preserved"
+    },
+    {
+      "name": "wma_main_not_orphan",
+      "status": "PASS",
+      "evidence": "architecture.md + VG-010 corrected"
+    },
+    {
+      "name": "build_series_resequenced",
+      "status": "PASS",
+      "evidence": "verify-and-close-first order; DCP-SEAM-LIFT added last; AGENT-AUTHORITY preserved as LWR prereq"
+    },
+    {
+      "name": "no_forbidden_paths_touched",
+      "status": "PASS",
+      "evidence": "git status --porcelain has no queue_drain/batch_resolve/schemas/development-factory/config/ai/.github/src/services hits"
+    },
+    {
+      "name": "proof_json_valid",
+      "status": "PASS",
+      "evidence": "python -m json.tool exit 0"
+    }
   ],
   "pal_codereview_status": "NOT_RUN",
   "precommit_status": "NOT_RUN",
@@ -62,12 +94,27 @@
   "no_merge_automation_touched": true,
   "red_lines_preserved": true,
   "remaining_unknowns": [
-    "S7 gate live behavior not exercised (code read only) — TP-RTE-S7-DRIFT-FIX-001 must run it against injected drift",
+    "S7 gate live behavior not exercised (code read only) \u2014 TP-RTE-S7-DRIFT-FIX-001 must run it against injected drift",
     "RedLaneScanner CI/steward wiring confirmed absent by grep but not exhaustively traced",
     "VG-003 services invocation graph still unresolved",
     "dopetask-canonical-spec.json freshness/canonical-status not asserted (existence + validity only)"
   ],
   "stop_conditions_met": [],
   "cleanup_status": "no_temp_files_created",
-  "next_recommended_packet": "TP-RTE-S7-DRIFT-FIX-001"
+  "next_recommended_packet": "TP-RTE-S7-DRIFT-FIX-001",
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": null,
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "PAL codereview not run \u2014 docs-only corrections cross-validated by targeted rg/grep against runtime code, not an independent model review"
+    ],
+    "skip_reason": "Docs-only correction packet; no runtime code or schemas changed. PAL codereview not run during execution. Evidence-gate findings independently verified by targeted grep cross-checks at HEAD 8042f9f9f."
+  }
 }
