@@ -3828,6 +3828,7 @@ def _start_mcp_servers_with_progress(
         os.environ[env_var] = f"http://127.0.0.1:{port}/mcp" if srv_name != "LiteLLM" else f"http://127.0.0.1:{port}"
 
     gate = DiscoveryGate(project_path, run_id=f"start-{instance_id}-{int(time.time())}")
+    import asyncio  # local import — only needed here for gate.run()
     if not asyncio.run(gate.run()):
         if wizard: wizard.update_boot_step("Booting MCP Services", "FAILURE")
         raise RuntimeError("MCP Discovery Gate failed.")
@@ -3835,53 +3836,6 @@ def _start_mcp_servers_with_progress(
     if wizard:
         wizard.update_boot_step("Booting MCP Services", "SUCCESS")
         wizard.add_log("✅ MCP Servers Online")
-
-
-def _trigger_dope_context_autoindex_startup(
-    workspace_path: Path,
-    *,
-    force: bool = False,
-) -> Optional[dict]:
-    """
-    Trigger dope-context startup autoindex bootstrap for the current workspace.
-    """
-    enabled = os.getenv("DOPEMUX_AUTO_INDEX_ON_STARTUP", "1").lower() not in {"0", "false", "no"}
-    if not enabled:
-        return None
-
-    base_url = os.getenv("DOPE_CONTEXT_URL", "http://localhost:3010").rstrip("/")
-    endpoint = f"{base_url}/autoindex/bootstrap"
-    payload = {
-        "workspace_path": str(workspace_path.resolve()),
-        "force": force,
-        "wait_for_completion": False,
-        "debounce_seconds": float(os.getenv("DOPEMUX_AUTO_INDEX_DEBOUNCE_SECONDS", "5.0")),
-        "periodic_interval": int(os.getenv("DOPEMUX_AUTO_INDEX_PERIODIC_SECONDS", "600")),
-        "trigger": "dopemux_cli_startup",
-    }
-
-    try:
-        import requests
-
-        response = requests.post(endpoint, json=payload, timeout=5)
-        if response.status_code >= 400:
-            console.logger.info(
-                f"[yellow]⚠️  Autoindex bootstrap request failed ({response.status_code})[/yellow]"
-            )
-            return {
-                "status": "http_error",
-                "status_code": response.status_code,
-                "endpoint": endpoint,
-            }
-        result = response.json()
-        return result if isinstance(result, dict) else {"status": "unknown_response"}
-    except Exception as exc:
-        logger.warning("Failed to trigger dope-context autoindex bootstrap: %s", exc)
-        return {
-            "status": "request_failed",
-            "error": str(exc),
-            "endpoint": endpoint,
-        }
 
 
 def _activate_dangerous_mode():
