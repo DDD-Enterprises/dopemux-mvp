@@ -1,0 +1,227 @@
+{
+  "tp_id": "TP-DMX-AI-ROUTING-005",
+  "status": "BLOCKED",
+  "repo": "dopemux-mvp",
+  "branch": "claude/model-routing-next",
+  "pr_number": 841,
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/841",
+
+  "baseline_pass_verified": false,
+  "drift_failure_verified": false,
+  "branch_protection_verified": true,
+  "governance_chain_verified": false,
+
+  "blocker": {
+    "type": "STOP_CONDITION",
+    "reason": "enforcement path differs from expected design",
+    "description": "routing-consistency CI job fails on every PR — not due to routing drift but due to ModuleNotFoundError in conftest.py. The gate currently cannot distinguish drift from baseline failure, making Slice 2 (drift test) unexecutable and Slice 1 (baseline pass) unverifiable in CI.",
+    "ci_run_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27077779813/job/79917982165",
+    "exit_code": 4,
+    "traceback": [
+      "ImportError while loading conftest '/home/runner/work/dopemux-mvp/dopemux-mvp/tests/conftest.py'.",
+      "tests/conftest.py:82: in <module>",
+      "    from dopemux.adhd.attention_monitor import AttentionMonitor",
+      "src/dopemux/adhd/__init__.py:8: in <module>",
+      "    from .attention_monitor import AttentionMonitor",
+      "src/dopemux/adhd/attention_monitor.py:17: in <module>",
+      "    from rich.console import Console",
+      "E   ModuleNotFoundError: No module named 'rich'"
+    ],
+    "root_cause": "routing-consistency CI job installs only pytest+pyyaml. tests/conftest.py:82 unconditionally imports dopemux.adhd.attention_monitor which requires rich (not installed). Job exits with code 4 before any test runs.",
+    "duration_seconds": 13,
+    "referenced_in_tp004": "TP-004 embedded_audit R1 noted this as a risk ('routing-consistency CI job installs pytest+pyyaml via pip at runtime; if PyPI is unavailable the job fails independently'). Actual failure mode differs: conftest dependency failure, not PyPI availability."
+  },
+
+  "slice_1_baseline_validation": {
+    "verdict": "BLOCKED",
+    "ci_result": "FAIL",
+    "ci_job": "routing-consistency",
+    "ci_run": "27077779813",
+    "ci_job_id": "79917982165",
+    "fail_reason": "ModuleNotFoundError: No module named 'rich' in conftest.py during collection phase",
+    "local_evidence": {
+      "command": "python3 -m pytest tests/test_model_routing_consistency.py -v --tb=short",
+      "result": "7 passed in 0.05s",
+      "exit_code": 0,
+      "note": "Tests pass locally with full project deps installed. Test logic is sound."
+    },
+    "local_evidence_noconftest": {
+      "command": "python3 -m pytest tests/test_model_routing_consistency.py --noconftest -v --tb=short",
+      "result": "7 passed in 0.04s",
+      "exit_code": 0,
+      "note": "Tests also pass with --noconftest, confirming the conftest is the only problem."
+    }
+  },
+
+  "slice_2_drift_failure_test": {
+    "verdict": "NOT_RUN",
+    "reason": "Cannot execute drift test while baseline is broken. A routing-consistency=FAIL result from a conftest dependency error is indistinguishable from a routing-consistency=FAIL from actual drift. Running a drift branch under this condition produces noise, not evidence.",
+    "precondition_required": "routing-consistency must pass at baseline before drift failure can be meaningfully observed"
+  },
+
+  "slice_3_branch_protection": {
+    "verdict": "VERIFIED",
+    "enforcement_type": "INDIRECT via CI Pipeline Summary",
+    "direct_requirement": false,
+    "notes": "routing-consistency is NOT listed in required_status_checks directly. Enforcement is via the CI Pipeline Summary job, which is required and which lists routing-consistency in its `needs:` array.",
+    "required_status_checks": [
+      "Security Review",
+      "Documentation Check",
+      "identity-check",
+      "Unit Tests",
+      "Analyze (python)",
+      "Analyze (javascript-typescript)",
+      "Analyze (ruby)",
+      "CI Pipeline Summary"
+    ],
+    "ci_pipeline_summary_needs": [
+      "code-quality", "security", "docs", "tests", "extractor-smoke",
+      "audit-validator", "routing-consistency", "extractor-full",
+      "auditor-router", "installer-smoke", "scoped-coverage", "integration"
+    ],
+    "ci_pipeline_summary_if_condition": "always()",
+    "enforcement_chain": "routing drift → routing-consistency=FAIL → CI Pipeline Summary=FAIL (via needs:) → required_status_checks blocks merge",
+    "observed_on_pr_841": {
+      "routing_consistency": "fail",
+      "ci_pipeline_summary": "fail",
+      "conclusion": "Enforcement chain IS closed. Routing drift (or any routing-consistency failure) blocks merge via CI Pipeline Summary."
+    },
+    "remediation_note": "Operator may optionally add routing-consistency directly to required_status_checks for explicitness. Current indirect enforcement is functionally equivalent."
+  },
+
+  "slice_4_governance_integration": {
+    "verdict": "PARTIAL",
+    "files_checked": [
+      "docs/03-reference/governance/model-routing.md",
+      "docs/03-reference/governance/proof-bundle-schema.md",
+      "docs/03-reference/governance/proof-contract.md",
+      ".github/workflows/pr-steward.yml"
+    ],
+    "findings": {
+      "model_routing_md": "Documents routing policy, agent stage roles, anti-patterns, and enforcement intent. Does NOT mention the routing-consistency CI job by name. Does not reference the CI gate in merge-readiness logic.",
+      "proof_bundle_schema_md": "References config/ai/model-routing.policy.yaml and model-routing.md. No CI gate reference.",
+      "proof_contract_md": "References routing policy. No CI gate reference.",
+      "pr_steward_yml": "No routing-consistency reference found."
+    },
+    "governance_gap": "The routing-consistency CI job is defined in ci-complete.yml (TP-004) but is not referenced in any governance or merge-readiness documentation. The enforcement chain is operational but undocumented.",
+    "remediation_note": "Add a sentence to docs/03-reference/governance/model-routing.md §8 or §9 noting that routing-consistency is enforced as a PR gate via CI Pipeline Summary. This is an optional governance documentation improvement, not a runtime fix."
+  },
+
+  "remediation_required": {
+    "blocker_fix": {
+      "description": "Add --noconftest flag to routing-consistency CI step OR install full project deps",
+      "file": ".github/workflows/ci-complete.yml",
+      "current_step": "pytest tests/test_model_routing_consistency.py -q --tb=short",
+      "proposed_fix": "pytest tests/test_model_routing_consistency.py --noconftest -q --tb=short",
+      "scope": "OUT OF SCOPE for TP-005 (not in allowlist). Assign to TP-DMX-AI-ROUTING-004 amendment or new TP-DMX-AI-ROUTING-005-FIX.",
+      "risk": "LOW — --noconftest is a standard pytest flag; routing consistency tests have no conftest dependencies"
+    },
+    "governance_doc_update": {
+      "description": "Add routing-consistency CI gate reference to model-routing.md",
+      "file": "docs/03-reference/governance/model-routing.md",
+      "scope": "Optional — within TP-005 allowlist but deferred until blocker is resolved"
+    }
+  },
+
+  "commands": [
+    {
+      "cmd": "python3 -m pytest tests/test_model_routing_consistency.py -v --tb=short",
+      "exit_code": 0,
+      "purpose": "baseline local test pass",
+      "result": "7 passed in 0.05s"
+    },
+    {
+      "cmd": "python3 -m pytest tests/test_model_routing_consistency.py --noconftest -v --tb=short",
+      "exit_code": 0,
+      "purpose": "confirm test logic is sound independent of conftest",
+      "result": "7 passed in 0.04s"
+    },
+    {
+      "cmd": "gh pr list --head claude/model-routing-next",
+      "exit_code": 0,
+      "purpose": "confirm PR exists",
+      "result": "PR #841 OPEN"
+    },
+    {
+      "cmd": "gh pr checks 841",
+      "exit_code": 0,
+      "purpose": "observe CI check results",
+      "result": "routing-consistency=fail, CI Pipeline Summary=fail"
+    },
+    {
+      "cmd": "gh run view 27077779813 --log-failed",
+      "exit_code": 0,
+      "purpose": "retrieve root cause of routing-consistency failure",
+      "result": "ModuleNotFoundError: No module named 'rich' at conftest.py:82"
+    },
+    {
+      "cmd": "gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection",
+      "exit_code": 0,
+      "purpose": "inspect branch protection required checks",
+      "result": "8 required checks; routing-consistency not listed directly; CI Pipeline Summary is required"
+    },
+    {
+      "cmd": "grep -n 'needs:' .github/workflows/ci-complete.yml",
+      "exit_code": 0,
+      "purpose": "confirm CI Pipeline Summary needs routing-consistency",
+      "result": "needs: [..., routing-consistency, ...] with if: always()"
+    }
+  ],
+
+  "validation": {
+    "pr_open": "PASS — PR #841 exists for claude/model-routing-next",
+    "ci_job_executes": "PASS — routing-consistency job runs in CI (27077779813)",
+    "baseline_pass_in_ci": "FAIL — job exits code 4 due to conftest ModuleNotFoundError",
+    "baseline_pass_local": "PASS — 7/7 tests pass locally with full deps",
+    "baseline_pass_local_noconftest": "PASS — 7/7 tests pass with --noconftest",
+    "drift_failure_observed": "NOT_RUN — precondition (baseline CI pass) unmet",
+    "branch_protection_documented": "PASS — indirect enforcement via CI Pipeline Summary confirmed",
+    "enforcement_chain_closed": "PASS — routing drift blocks merge via CI Summary needs chain",
+    "governance_docs_reference_gate": "FAIL — model-routing.md does not reference routing-consistency CI job"
+  },
+
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "self-audit inside Claude Code — CI log inspected, branch protection API queried, governance docs grep'd, local tests run with multiple flag combinations",
+    "exit_code": 0,
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "HIGH",
+        "title": "routing-consistency CI job fails at baseline on every PR",
+        "status": "OPEN — requires TP-004 amendment",
+        "body": "ci-complete.yml routing-consistency step installs pytest+pyyaml only. tests/conftest.py unconditionally imports from dopemux.adhd (requires rich). Fix: add --noconftest to pytest invocation. Test logic is sound (7/7 pass locally and with --noconftest). Blocked on conftest alone."
+      },
+      {
+        "id": "F2",
+        "severity": "LOW",
+        "title": "routing-consistency not referenced in governance docs",
+        "status": "OPEN — optional documentation gap",
+        "body": "docs/03-reference/governance/model-routing.md documents the policy and anti-patterns but does not mention the CI enforcement gate. Enforcement is operational but undocumented in the governance chain."
+      },
+      {
+        "id": "F3",
+        "severity": "INFO",
+        "title": "Indirect enforcement chain is functionally sound",
+        "status": "CLOSED",
+        "body": "routing-consistency → CI Pipeline Summary (via needs:, if: always()) → required_status_checks (📊 CI Pipeline Summary is required). PR #841 confirms: routing-consistency=fail cascades to CI Summary=fail. Merge is blocked. The enforcement chain works as designed."
+      }
+    ],
+    "remaining_risks": [
+      "R1 (CRITICAL): routing-consistency CI job is currently broken (conftest dep). No drift signal will be observable until this is fixed. A PR with actual routing drift will be indistinguishable from the current baseline failure.",
+      "R2 (LOW): routing-consistency is not a direct required check. If CI Pipeline Summary ever changes its needs list, routing-consistency enforcement would silently disappear.",
+      "R3 (INFO): governance docs do not document the CI enforcement gate. Operators may not discover this enforcement path via documentation."
+    ],
+    "skip_reason": null
+  },
+
+  "commit": {
+    "sha": "f5840a44cfc653fb19fa162bd67818919afe39c3",
+    "message": "chore(proof): seal TP-DMX-AI-ROUTING-003 final_proof_commit",
+    "note": "No implementation commits made by TP-005 — governance validation only. Proof bundle is the sole deliverable."
+  },
+  "final_proof_commit": ""
+}
