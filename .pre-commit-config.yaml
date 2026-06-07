@@ -232,6 +232,17 @@ repos:
         language: system
         files: .*
         pass_filenames: true
+
+      # Proof bundle embedded_audit schema validation (TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001)
+      # Validates PROOF.json["embedded_audit"] against schemas/proof/embedded_audit.schema.json.
+      # Catches report_path pattern, auditor_model enum, and findings[].status enum violations
+      # before they reach CI (these three fields caused a push-fix-push cycle on PR #839).
+      - id: proof-embedded-audit-schema
+        name: Validate proof bundle embedded_audit schema
+        entry: python3 scripts/audit/validate_audit_proof.py
+        language: system
+        files: ^proof/[^/]+/PROOF\.json$
+        pass_filenames: true
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.41.0
     hooks:
