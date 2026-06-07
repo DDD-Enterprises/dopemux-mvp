@@ -559,22 +559,14 @@ class TestApiRoutingMode:
 class TestAltpSubscriptionNoop:
     """GAP-H4: --altp silently disables itself when routing mode is subscription."""
 
-    @pytest.mark.xfail(
-        strict=False,
-        reason=(
-            "Pre-existing bug: when use_altp is set to False at cli.py:1288 "
-            "(subscription mode), cli.py:1328 still references `config_data` which "
-            "was never assigned → UnboundLocalError. Fix is out of scope for this TP."
-        ),
-    )
     def test_altp_noop_in_subscription_mode_no_proxy_started(
         self, runner, base_mocks
     ):
         """When routing mode is subscription, --altp must not start a proxy.
 
-        XFAIL: pre-existing UnboundLocalError at cli.py:1328 (`config_data` unset
-        when use_altp=False). When that bug is fixed, remove the xfail mark and
-        the test should pass.
+        GAP-H4: fixed in TP-DMX-START-WAVE2-H4 — config_data initialized to None
+        before the provider-routing block; proxy startup guarded by
+        `if config_data is not None:` so the subscription path exits cleanly.
         """
         mock_routing_config = MagicMock()
         mock_routing_config.get_mode.return_value = "subscription"
@@ -584,7 +576,15 @@ class TestAltpSubscriptionNoop:
         mock_routing_cls.load_default.return_value = mock_routing_config
 
         with ExitStack() as stack:
+            # Patch both the module-level alias AND the routing_config module directly:
+            # the else:altp branch does a local `from .routing_config import RoutingConfig`
+            # which bypasses the cli-level mock and reads the real ~/.dopemux/routing.yaml
+            # (mode=api on this machine), causing use_altp to stay True.
             stack.enter_context(patch("dopemux.cli.RoutingConfig", mock_routing_cls))
+            stack.enter_context(
+                patch("dopemux.routing_config.RoutingConfig.load_default",
+                      return_value=mock_routing_config)
+            )
             stack.enter_context(patch("dopemux.cli._LITELLM_IMPORT_ERROR", None))
             mock_proxy = stack.enter_context(
                 patch("dopemux.cli.start_simple_proxy")
@@ -598,19 +598,10 @@ class TestAltpSubscriptionNoop:
             "--altp in subscription mode must not start a proxy. GAP-H4."
         )
 
-    @pytest.mark.xfail(
-        strict=False,
-        reason=(
-            "Pre-existing bug: UnboundLocalError at cli.py:1328 when "
-            "use_altp is set to False mid-execution (subscription mode). "
-            "Fix is out of scope for this TP."
-        ),
-    )
     def test_altp_noop_in_subscription_mode_exit_ok(self, runner, base_mocks):
         """--altp in subscription mode must exit cleanly (no crash, no error).
 
-        XFAIL: pre-existing UnboundLocalError at cli.py:1328. When fixed,
-        remove the xfail mark.
+        GAP-H4: fixed in TP-DMX-START-WAVE2-H4.
         """
         mock_routing_config = MagicMock()
         mock_routing_config.get_mode.return_value = "subscription"
@@ -621,6 +612,10 @@ class TestAltpSubscriptionNoop:
 
         with ExitStack() as stack:
             stack.enter_context(patch("dopemux.cli.RoutingConfig", mock_routing_cls))
+            stack.enter_context(
+                patch("dopemux.routing_config.RoutingConfig.load_default",
+                      return_value=mock_routing_config)
+            )
             stack.enter_context(patch("dopemux.cli._LITELLM_IMPORT_ERROR", None))
             stack.enter_context(patch("dopemux.cli.start_simple_proxy"))
             stack.enter_context(patch("dopemux.cli.AttentionMonitor"))

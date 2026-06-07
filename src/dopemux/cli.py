@@ -1224,6 +1224,7 @@ def start(
 
     # ── Handle --grok / --codex / --altp provider routing ───────────────
     provider_proxy_started = False
+    config_data = None  # set inside the branch that needs a proxy; None = no proxy
     _provider_flags = sum([use_grok, use_codex, use_altp])
     if _provider_flags > 0:
         if _provider_flags > 1:
@@ -1319,51 +1320,50 @@ def start(
                     "Claude Code → CCR → LiteLLM → tier-matched providers"
                 )
 
-        console.logger.info(
-            "[info]🔄 Starting LiteLLM proxy (no DB required)...[/info]"
-        )
-        try:
-            litellm_port, litellm_master_key = start_simple_proxy(
-                project_root=Path.cwd(),
-                config_data=config_data,
+        if config_data is not None:
+            console.logger.info(
+                "[info]🔄 Starting LiteLLM proxy (no DB required)...[/info]"
             )
-            provider_proxy_started = True
-        except LiteLLMProxyError as exc:
-            raise click.ClickException(str(exc))
+            try:
+                litellm_port, litellm_master_key = start_simple_proxy(
+                    project_root=Path.cwd(),
+                    config_data=config_data,
+                )
+                provider_proxy_started = True
+            except LiteLLMProxyError as exc:
+                raise click.ClickException(str(exc))
 
-        console.logger.info(
-            f"[success]✅ LiteLLM proxy ready on port {litellm_port}[/success]"
-        )
+            console.logger.info(
+                f"[success]✅ LiteLLM proxy ready on port {litellm_port}[/success]"
+            )
 
-        # Wire Claude Code to use the proxy
-        os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
-        os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
-        os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
-        os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
-        os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
-        os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
+            # Wire Claude Code to use the proxy
+            os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
+            os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
+            os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
+            os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
+            os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
+            os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
 
-        # Export CCR upstream env vars so Claude Code Router uses the new proxy
-        os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
-        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = (
-            f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
-        )
-        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
+            # Export CCR upstream env vars so Claude Code Router uses the new proxy
+            os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+            os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = (
+                f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
+            )
+            os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
 
-        if use_altp:
-            # For --altp, we map to the tier names defined in generate_multi_target_config
-            # CCR will expose these exact model names to Claude Code
-            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = "altp-opus,altp-sonnet,altp-haiku"
-        elif provider:
-            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
+            if use_altp:
+                os.environ["CLAUDE_CODE_ROUTER_MODELS"] = "altp-opus,altp-sonnet,altp-haiku"
+            elif provider:
+                os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
 
-        use_litellm = True
-        use_alt_routing = False  # Skip the full alt-routing block below
+            use_litellm = True
+            use_alt_routing = False  # Skip the full alt-routing block below
 
-        console.logger.info(
-            f"[text.dim]✓ {_routing_summary} (:{litellm_port})[/text.dim]"
-        )
-        console.logger.info("")
+            console.logger.info(
+                f"[text.dim]✓ {_routing_summary} (:{litellm_port})[/text.dim]"
+            )
+            console.logger.info("")
 
     # Handle --alt-routing flag (automatic LiteLLM setup)
     if use_alt_routing:
