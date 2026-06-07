@@ -44,6 +44,9 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
   expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
+  expect(content).toContain('aria-label={`${member.name}\'s current status: ${statusStyles[member.status].label}`}');
+  expect(content).toContain('aria-label={`${member.name}\'s current energy level: ${member.energy}%`}');
+  expect(content).toContain('aria-label={`${member.name}\'s current attention focus: ${member.attention}%`}');
   expect(content).toContain('<Tooltip title={statusStyles[member.status].label} arrow>');
   expect(content).toMatch(/<Tooltip[^>]*title=\{`Average cognitive load across all team members: \$\{teamAverageLoad\}%`\}[^>]*arrow/);
   expect(content).toContain('<Tooltip title="Current energy level" arrow>');
