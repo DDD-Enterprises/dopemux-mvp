@@ -109,7 +109,7 @@
     "auditor_model": "unknown",
     "invocation": null,
     "exit_code": null,
-    "report_path": null,
+    "report_path": "proof/TP-DMX-DDF-DOCS-CORRECT-001/AUDIT.md",
     "findings": [],
     "fixes_applied": [],
     "remaining_risks": [
