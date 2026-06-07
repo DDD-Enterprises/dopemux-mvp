@@ -223,5 +223,5 @@
     "message": "chore(proof): seal TP-DMX-AI-ROUTING-003 final_proof_commit",
     "note": "No implementation commits made by TP-005 — governance validation only. Proof bundle is the sole deliverable."
   },
-  "final_proof_commit": ""
+  "final_proof_commit": "2221698e2"
 }
