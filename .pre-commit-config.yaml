@@ -239,8 +239,9 @@ repos:
       # before they reach CI (these three fields caused a push-fix-push cycle on PR #839).
       - id: proof-embedded-audit-schema
         name: Validate proof bundle embedded_audit schema
-        entry: python3 scripts/audit/validate_audit_proof.py
-        language: system
+        entry: python scripts/audit/validate_audit_proof.py
+        language: python
+        additional_dependencies: ['jsonschema']
         files: ^proof/[^/]+/PROOF\.json$
         pass_filenames: true
   - repo: https://github.com/igorshubovych/markdownlint-cli
