@@ -1,3 +1,14 @@
+---
+id: decision-record
+title: Decision Record
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Decision Record (reference) for dopemux documentation and developer workflows.
+---
 # Decision Record
 
 Decisions made in the design conversation that produced this packet series.

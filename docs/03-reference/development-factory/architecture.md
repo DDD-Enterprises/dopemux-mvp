@@ -1,3 +1,14 @@
+---
+id: architecture
+title: Architecture
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Architecture (reference) for dopemux documentation and developer workflows.
+---
 # Development Factory — Architecture
 
 > **Note**: All component statuses reflect static analysis only (`runtime_process_verified: false` on all entries). Compose-wiring indicates deployment intent, not confirmed running processes.

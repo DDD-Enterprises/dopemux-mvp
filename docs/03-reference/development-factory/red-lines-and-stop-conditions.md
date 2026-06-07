@@ -1,3 +1,15 @@
+---
+id: red-lines-and-stop-conditions
+title: Red Lines And Stop Conditions
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Red Lines And Stop Conditions (reference) for dopemux documentation and developer
+  workflows.
+---
 # Red Lines & Stop Conditions
 
 Hard stops that apply to ALL capsule executions regardless of supervisor instruction.

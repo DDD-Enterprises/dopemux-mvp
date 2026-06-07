@@ -1,3 +1,15 @@
+---
+id: pr-steward-and-readiness
+title: Pr Steward And Readiness
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Pr Steward And Readiness (reference) for dopemux documentation and developer
+  workflows.
+---
 # PR Steward & Merge Readiness
 
 **PR Steward is advisory only. It is NOT merge authority.**

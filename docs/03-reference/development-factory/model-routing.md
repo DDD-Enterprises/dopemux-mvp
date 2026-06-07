@@ -1,3 +1,14 @@
+---
+id: model-routing
+title: Model Routing
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Model Routing (reference) for dopemux documentation and developer workflows.
+---
 # Model Routing Policy
 
 > **Note:** The formal versioned policy YAML/schema is deferred to `TP-DMX-MODEL-ROUTING-POLICY-001`.

@@ -1,3 +1,14 @@
+---
+id: readme
+title: Readme
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-06'
+last_review: '2026-06-06'
+next_review: '2026-09-04'
+prelude: Readme (reference) for dopemux documentation and developer workflows.
+---
 # Dopemux Development Factory
 
 > ⚠️ **All evidence in this packet series is READY_WITH_RISKS.** Patched census reflects static analysis. No live process was verified. Compose-wiring ≠ runtime truth.

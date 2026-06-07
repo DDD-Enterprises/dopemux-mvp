@@ -159,7 +159,7 @@
     "auditor_model": "gemini",
     "invocation": "mcp__pal__codereview: two-step internal review of red_lane_scanner.py CLI entrypoint + test_dcp_0005_red_lane_scanner.py; external validation step returned 429",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-DCP-SEAM-ENFORCEMENT-001/AUDIT.md",
+    "report_path": "proof/TP-DMX-DCP-SEAM-ENFORCEMENT-001/AUDITOR_REPORT.md",
     "findings": [
       {
         "id": "F001",
