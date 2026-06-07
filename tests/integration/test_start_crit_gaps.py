@@ -17,6 +17,7 @@ RED tests (bugs that currently fail): GAP-C1, GAP-C2, NEW-C4
 Documentation/coverage tests: GAP-C3, GAP-H1–H7
 """
 
+import logging
 import os
 import subprocess
 from pathlib import Path
@@ -452,6 +453,39 @@ class TestWireConportProject:
         assert result.exit_code == 0, (
             "Wire script failure must not abort startup (best-effort). "
             "GAP-H7: exception is caught but not logged — consider a warning."
+        )
+
+    def test_wire_conport_project_failure_emits_warning(
+        self, runner, base_mocks, caplog
+    ):
+        """check_call failure must emit a WARNING via the dopemux.cli logger.
+
+        This asserts that the best-effort catch block actually logs so that
+        operators can diagnose ConPort wiring failures post-launch.
+        Previously the gap: exception swallowed silently (no logger call);
+        fixed in commit 97271d92e (Wave 1).
+        """
+        with caplog.at_level(logging.WARNING, logger="dopemux.cli"):
+            with patch(
+                "subprocess.check_call",
+                side_effect=RuntimeError("wire script missing"),
+            ):
+                with patch("dopemux.cli.AttentionMonitor"):
+                    result = runner.invoke(
+                        cli, ["start", "--no-mcp", "--background"],
+                        catch_exceptions=False,
+                    )
+
+        assert result.exit_code == 0, (
+            "Wire script failure must not abort startup."
+        )
+        warning_records = [
+            r for r in caplog.records
+            if r.levelno >= logging.WARNING and "wire_conport_project" in r.message
+        ]
+        assert len(warning_records) >= 1, (
+            "A WARNING log containing 'wire_conport_project' must be emitted when "
+            "check_call raises. GAP-H7: without this, failures are silently swallowed."
         )
 
 
