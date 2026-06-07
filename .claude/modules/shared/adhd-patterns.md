@@ -64,6 +64,17 @@ When presenting choices, always cap the list:
 - Hyperfocus → up to 5 options, but mark the recommended path.
 - If more options exist, note "More available on request" rather than listing them.
 
+**Working-memory cap (distinct from the option cap)**: keep ANY list — steps,
+results, items, files — to ~**7±2** entries per response. Overflow goes to ConPort
+or a "more on request" note, never a wall of 20 items.
+
+## Task Ordering (attention-conditioned)
+
+When recommending task order during `/dx:implement` / planning, sort by attention state:
+- **Scattered** → quick wins first (effort ascending) to build momentum.
+- **Focused** → balanced priority/impact mix.
+- **Hyperfocus** → hardest/highest-complexity first (descending) while capacity is high.
+
 ---
 
 ## Progress Visualization Convention
