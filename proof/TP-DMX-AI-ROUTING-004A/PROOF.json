@@ -71,8 +71,8 @@
   },
 
   "commit": {
-    "sha": "",
+    "sha": "103df6867",
     "message": "Fix routing-consistency CI collection (add --noconftest)"
   },
-  "final_proof_commit": ""
+  "final_proof_commit": "103df6867"
 }
