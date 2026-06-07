@@ -2469,10 +2469,18 @@ def start(
             wizard_instance.update_boot_step("Starting Activity Monitor", "LOADING")
         
         from .hooks.claude_code_hooks import claude_hooks
-        claude_hooks.start_monitoring(str(project_path))
-        
-        attention_monitor = AttentionMonitor(project_path)
-        attention_monitor.start_monitoring()
+        try:
+            claude_hooks.start_monitoring(str(project_path))
+        except Exception as exc:
+            logger.warning("claude_hooks.start_monitoring failed (best-effort): %s", exc, exc_info=True)
+
+        attention_monitor = None
+        try:
+            attention_monitor = AttentionMonitor(project_path)
+            attention_monitor.start_monitoring()
+        except Exception as exc:
+            attention_monitor = None
+            logger.warning("AttentionMonitor.start_monitoring failed (best-effort): %s", exc, exc_info=True)
 
         if wizard_instance:
             wizard_instance.update_boot_step("Starting Activity Monitor", "SUCCESS")
@@ -2515,14 +2523,17 @@ def start(
             ),
         )
 
-        save_instance_state_sync(
-            state,
-            workspace_id=str(project_path.resolve()),
-            conport_port=3004,  # Always save via instance A's ConPort
-        )
-        console.logger.info(
-            "[text.dim]✅ Instance state saved for crash recovery[/text.dim]"
-        )
+        try:
+            save_instance_state_sync(
+                state,
+                workspace_id=str(project_path.resolve()),
+                conport_port=3004,  # Always save via instance A's ConPort
+            )
+            console.logger.info(
+                "[text.dim]✅ Instance state saved for crash recovery[/text.dim]"
+            )
+        except Exception as exc:
+            logger.warning("Instance state save failed (ConPort may be down): %s", exc, exc_info=True)
 
     if not background:
         console.print(
@@ -2559,7 +2570,8 @@ def start(
                     )
 
             ctx.invoke(cli.commands["save"])
-            attention_monitor.stop_monitoring()
+            if attention_monitor is not None:
+                attention_monitor.stop_monitoring()
 
 
 def _trigger_dope_context_autoindex_startup(
@@ -3899,6 +3911,7 @@ def _activate_dangerous_mode():
             # Expired, clear old settings
             _deactivate_dangerous_mode()
 
+    from rich.panel import Panel  # local import — Panel only needed here
     # Show serious warning
     console.print(Panel(
         "[red bold]⚠️  DANGER: This will disable ALL security restrictions![/red bold]\n\n"
@@ -5909,54 +5922,6 @@ def dashboard_cmd(demo: bool):
 
 # Worktree Diagnostics Command
 # =============================================================================
-
-
-def _activate_dangerous_mode() -> None:
-    """Enable session-scoped dangerous mode environment flags."""
-    expires = time.time() + 3600
-    os.environ["DOPEMUX_DANGEROUS_MODE"] = "true"
-    os.environ["DOPEMUX_DANGEROUS_EXPIRES"] = str(expires)
-    os.environ["HOOKS_ENABLE_ADAPTIVE_SECURITY"] = "0"
-    os.environ["CLAUDE_CODE_SKIP_PERMISSIONS"] = "true"
-    os.environ["METAMCP_ROLE_ENFORCEMENT"] = "false"
-    os.environ["METAMCP_APPROVAL_REQUIRED"] = "false"
-    os.environ["METAMCP_BUDGET_ENFORCEMENT"] = "false"
-    os.environ["CLAUDE_DANGEROUS"] = "1"
-    os.environ["SKIP_PERMISSIONS"] = "1"
-
-
-def _deactivate_dangerous_mode() -> None:
-    """Clear dangerous mode environment flags when they expire."""
-    for key in [
-        "DOPEMUX_DANGEROUS_MODE",
-        "DOPEMUX_DANGEROUS_EXPIRES",
-        "HOOKS_ENABLE_ADAPTIVE_SECURITY",
-        "CLAUDE_CODE_SKIP_PERMISSIONS",
-        "METAMCP_ROLE_ENFORCEMENT",
-        "METAMCP_APPROVAL_REQUIRED",
-        "METAMCP_BUDGET_ENFORCEMENT",
-        "CLAUDE_DANGEROUS",
-        "SKIP_PERMISSIONS",
-    ]:
-        os.environ.pop(key, None)
-
-
-def _check_dangerous_mode_expiry() -> bool:
-    """Deactivate dangerous mode after its session TTL elapses."""
-    if os.getenv("DOPEMUX_DANGEROUS_MODE") != "true":
-        return False
-
-    expires_raw = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
-    try:
-        expires_at = float(expires_raw)
-    except ValueError:
-        expires_at = 0.0
-
-    if time.time() >= expires_at:
-        _deactivate_dangerous_mode()
-        return True
-
-    return False
 
 
 @cli.command("doctor")
