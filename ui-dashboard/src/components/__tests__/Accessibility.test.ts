@@ -28,7 +28,10 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('aria-label="15-Minute Load Prediction Percentage"');
   expect(content).toContain('aria-valuetext');
   expect(content).toContain('Prediction Loading...');
-  expect(content).toMatch(/<Tooltip[^>]*title="Predictive LSTM model running on edge device"[^>]*arrow/);
+  expect(content).toMatch(/<Tooltip[^>]*title="15-minute forecast: AI-driven projection of your cognitive load"[^>]*arrow/);
+  expect(content).toContain('tabIndex={0}');
+  expect(content).toContain('cursor: \'help\'');
+  expect(content).toContain('&:hover, &:focus-visible');
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
@@ -41,6 +44,9 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
   expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
+  expect(content).toContain('aria-label={`${member.name}\'s current status: ${statusStyles[member.status].label}`}');
+  expect(content).toContain('aria-label={`${member.name}\'s current energy level: ${member.energy}%`}');
+  expect(content).toContain('aria-label={`${member.name}\'s current attention focus: ${member.attention}%`}');
   expect(content).toContain('<Tooltip title={statusStyles[member.status].label} arrow>');
   expect(content).toMatch(/<Tooltip[^>]*title=\{`Average cognitive load across all team members: \$\{teamAverageLoad\}%`\}[^>]*arrow/);
   expect(content).toContain('<Tooltip title="Current energy level" arrow>');
