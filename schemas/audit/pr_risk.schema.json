@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dopemux.dev/audit/pr_risk.schema.json",
+  "title": "PR Diff Statistics for Risk Classification",
+  "description": "Input statistics describing a pull-request diff, used by the PR audit router to classify risk level.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "files_changed",
+    "lines_added",
+    "lines_deleted"
+  ],
+  "properties": {
+    "files_changed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of files changed in the PR."
+    },
+    "lines_added": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total lines added across all changed files."
+    },
+    "lines_deleted": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total lines deleted across all changed files."
+    },
+    "touches_schema": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the PR modifies schema files (JSON Schema, OpenAPI, protobuf, SQL DDL, etc.)."
+    },
+    "touches_migration": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the PR contains database or data-format migration files."
+    },
+    "touches_secrets_config": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the PR modifies secrets, credential, or sensitive configuration files."
+    }
+  }
+}
