@@ -1723,12 +1723,12 @@ def start(
     
     wizard_instance = None
     
-    if not requested_role and not dry_run and not background and sys.stdin.isatty():
+    if not requested_role and not dry_run and not background and sys.stdin.isatty() and not os.getenv("DOPEMUX_SKIP_WIZARD"):
         requested_role, wizard_instance = start_wizard()
         if not requested_role:
             console.print("[warning]Launch cancelled by user[/warning]")
             sys.exit(0)
-    elif not dry_run and not background and sys.stdin.isatty():
+    elif not dry_run and not background and sys.stdin.isatty() and not os.getenv("DOPEMUX_SKIP_WIZARD"):
         # Initialize wizard in boot-sequence mode if role was pre-selected
         from .ux.launcher_wizard import LauncherWizard, LauncherState
         try:
@@ -3800,11 +3800,17 @@ def _start_mcp_servers_with_progress(
         wizard.update_boot_step("Booting MCP Services", "LOADING")
     else:
         status_text = Text("🚀 Launching containers...")
-        from rich.live import Live
-        with Live(status_text, console=console, refresh_per_second=4) as live:
+        raw_console = console._console if hasattr(console, "_console") else console
+        is_live = bool(getattr(raw_console, "_live", None) or getattr(raw_console, "_live_stack", None))
+        if is_live:
+            raw_console.print(status_text)
             run_docker_logic()
-            status_text.append("\n✅ Containers launched!", style="success")
-            live.update(status_text)
+        else:
+            from rich.live import Live
+            with Live(status_text, console=raw_console, refresh_per_second=4) as live:
+                run_docker_logic()
+                status_text.append("\n✅ Containers launched!", style="success")
+                live.update(status_text)
 
     # 5. Phase 0 Discovery Gate
     if wizard: wizard.add_log("🛡️ Running Phase 0 Discovery Gate...")
