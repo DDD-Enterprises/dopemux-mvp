@@ -85,6 +85,20 @@ Implementer must return:
 
 ────────────────────────────────────────────────────────────
 
+## Local Proof Validation
+
+Before pushing, validate `embedded_audit` schema conformance locally:
+
+```bash
+python3 scripts/audit/validate_audit_proof.py proof/<PACKET_ID>/PROOF.json
+```
+
+This mirrors the CI `🔍 Audit Proof Validator` exactly (same script, same schema). The pre-commit hook `proof-embedded-audit-schema` also runs this automatically on staged `proof/*/PROOF.json` files.
+
+Common violations to check before push: `report_path` must match `^proof/[^/]+/AUDITOR(_REPAIR(_[0-9]+)?)?_REPORT\.md$`; `auditor_model` must be one of `['sonnet', 'claude-sonnet-4.6', 'opus', 'gemini', 'unknown']`; `findings[].status` must be one of `['OPEN', 'RESOLVED', 'ACCEPTED_RISK']`.
+
+────────────────────────────────────────────────────────────
+
 ## Model Routing
 
 Record the model route actually used for this packet. Source of truth: `config/ai/model-routing.policy.yaml` (human guide: `docs/03-reference/governance/model-routing.md`). Cheap read lanes may gather facts but must not decide architecture, authority, security, CI, workflow legality, or merge readiness.
