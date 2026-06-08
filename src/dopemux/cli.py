@@ -3700,15 +3700,15 @@ def _start_mcp_servers_with_progress(
     """
     if os.getenv("DOPEMUX_SKIP_MCP_START", "0").lower() in {"1", "true", "yes"}:
         if wizard:
-            wizard.add_log("⏭️ Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)")
+            wizard.add_log(f"{Glyphs.SKIPPED} Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)")
         else:
-            console.logger.info("[warning]⏭️ Skipping MCP server startup[/warning]")
+            console.logger.info(f"[warning]{Glyphs.SKIPPED} Skipping MCP server startup[/warning]")
         return
 
     # 1. Provision stack if missing
     mcp_dir = _resolve_mcp_dir(project_path)
     if not mcp_dir:
-        if wizard: wizard.add_log("❌ MCP stack provisioning failed", style="red")
+        if wizard: wizard.add_log(f"{Glyphs.ERROR} MCP stack provisioning failed", style="error")
         raise click.ClickException("MCP stack provisioning failed.")
 
     # 2. Materialize instance overlay
@@ -3809,7 +3809,7 @@ def _start_mcp_servers_with_progress(
         from rich.live import Live
         with Live(status_text, console=console, refresh_per_second=4) as live:
             run_docker_logic()
-            status_text.append("\n✅ Containers launched!", style="success")
+            status_text.append(f"\n{Glyphs.SUCCESS} Containers launched!", style="success")
             live.update(status_text)
 
     # 5. Phase 0 Discovery Gate
@@ -3829,7 +3829,7 @@ def _start_mcp_servers_with_progress(
 
     if wizard:
         wizard.update_boot_step("Booting MCP Services", "SUCCESS")
-        wizard.add_log("✅ MCP Servers Online")
+        wizard.add_log(f"{Glyphs.SUCCESS} MCP Servers Online")
 
 
 def _activate_dangerous_mode():
