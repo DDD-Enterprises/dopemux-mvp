@@ -1,0 +1,21 @@
+{
+  "blocking_available_count": 1,
+  "dry_run": true,
+  "executed": false,
+  "execution_results": [],
+  "git_sha": "7490144954e4ba6bedbba8edd8f1b30a5b5e2bd2",
+  "has_any_available": true,
+  "packet_id": "TP-DMX-PR-AUDIT-ROUTER-001",
+  "requested_route_names": [
+    "claude-audit"
+  ],
+  "resolutions": [
+    {
+      "available": true,
+      "blocking": true,
+      "cli_name": "claude-audit"
+    }
+  ],
+  "risk_class": "LOW",
+  "schema_version": "1.0"
+}
