@@ -429,3 +429,53 @@ class TestUsage:
     def test_no_args_exits_2(self) -> None:
         result = _run([])
         assert result.returncode == 2
+
+
+# ---------------------------------------------------------------------------
+# Regression: exact wounds from PR #839 / PR #840 (TP-DMX-AI-ROUTING-003)
+# These three violations each caused a CI push-fix-push cycle.
+# ---------------------------------------------------------------------------
+
+
+class TestPR839Regressions:
+    """Regression suite for the three schema violations caught by CI on PR #839.
+
+    Each test uses the exact bad value that was submitted and rejected, ensuring
+    the local validator catches these before a push reaches CI.
+    """
+
+    def test_summary_md_report_path_rejected(self, tmp_path: Path) -> None:
+        """SUMMARY.md does not match the AUDITOR_REPORT naming pattern."""
+        ea = {**_VALID_PASS, "report_path": "proof/TP-DMX-AI-ROUTING-003/SUMMARY.md"}
+        p = _write_proof(tmp_path, ea)
+        result = _run([str(p)])
+        assert result.returncode == 1
+        assert "report_path" in result.stdout
+
+    def test_hyphenated_model_id_rejected(self, tmp_path: Path) -> None:
+        """'claude-sonnet-4-6' (hyphen) is not in the auditor_model enum; correct value uses a dot."""
+        ea = {**_VALID_PASS, "auditor_model": "claude-sonnet-4-6"}
+        p = _write_proof(tmp_path, ea)
+        result = _run([str(p)])
+        assert result.returncode == 1
+        assert "auditor_model" in result.stdout
+
+    def test_deferred_finding_status_rejected(self, tmp_path: Path) -> None:
+        """'DEFERRED' is not a valid finding status; use 'ACCEPTED_RISK' for accepted deferrals."""
+        ea = {
+            **_VALID_PASS,
+            "status": "PASS_WITH_RISKS",
+            "findings": [
+                {
+                    "id": "F-001",
+                    "severity": "INFO",
+                    "title": "Self-closure row deferred",
+                    "status": "DEFERRED",
+                    "body": "Will be added post-merge.",
+                }
+            ],
+        }
+        p = _write_proof(tmp_path, ea)
+        result = _run([str(p)])
+        assert result.returncode == 1
+        assert "findings" in result.stdout
