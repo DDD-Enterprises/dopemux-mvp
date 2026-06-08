@@ -28,7 +28,7 @@ def custom_excepthook(exc_type: Type[BaseException], exc_value: BaseException, e
         
         panel = styled_panel(
             tb,
-            title=f"{Glyphs.ERROR} [gremlin.pink bold]CRITICAL RITUAL FAILURE[/gremlin.pink bold]",
+            title=f"{Glyphs.ERROR} [bold error]CRITICAL RITUAL FAILURE[/bold error]",
             border_style="error"
         )
         console.print("\n")
