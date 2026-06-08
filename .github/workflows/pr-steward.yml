@@ -51,7 +51,8 @@ jobs:
             --pr "${{ steps.pr.outputs.number }}" \
             --out pr-steward-artifacts \
             --strict \
-            --format text
+            --format text \
+            --proof-path proof/TP-DMX-PR-AUDIT-ROUTER-001/MULTI_MODEL_PR_AUDIT.json
           status=$?
           printf 'exit_code=%s\n' "$status" >> "$GITHUB_OUTPUT"
           exit 0
