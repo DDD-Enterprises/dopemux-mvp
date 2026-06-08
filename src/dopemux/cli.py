@@ -3854,36 +3854,35 @@ def _activate_dangerous_mode():
             expires_timestamp = 0.0
 
         if time.time() < expires_timestamp:
-            console.logger.info("[yellow]⚠️  Dangerous mode already active[/yellow]")
+            console.logger.info("[warning]⚠️  Dangerous mode already active[/warning]")
             remaining_minutes = int((expires_timestamp - time.time()) / 60)
-            console.logger.info(f"[dim]Expires in {remaining_minutes} minutes[/dim]")
+            console.logger.info(f"[text.dim]Expires in {remaining_minutes} minutes[/text.dim]")
             return
         else:
             # Expired, clear old settings
             _deactivate_dangerous_mode()
 
-    from rich.panel import Panel  # local import — Panel only needed here
     # Show serious warning
-    console.print(Panel(
-        "[red bold]⚠️  DANGER: This will disable ALL security restrictions![/red bold]\n\n"
-        "[yellow]This mode will:[/yellow]\n"
+    console.print(styled_panel(
+        "[error bold]⚠️  DANGER: This will disable ALL security restrictions![/error bold]\n\n"
+        "[warning]This mode will:[/warning]\n"
         "• Skip all permission checks\n"
         "• Disable role enforcement\n"
         "• Bypass budget limits\n"
         "• Allow unrestricted tool access\n\n"
-        "[red]Use ONLY in isolated, trusted environments![/red]\n"
-        "[yellow]Session will expire automatically in 1 hour.[/yellow]",
+        "[error]Use ONLY in isolated, trusted environments![/error]\n"
+        "[warning]Session will expire automatically in 1 hour.[/warning]",
         title="🚨 Security Warning",
-        border_style="red"
+        border_style="error"
     ))
 
     # Require explicit confirmation
     if not click.confirm("\nDo you understand the risks and want to proceed?", default=False):
-        console.logger.info("[green]Dangerous mode cancelled. Staying in safe mode.[/green]")
+        console.logger.info("[success]Dangerous mode cancelled. Staying in safe mode.[/success]")
         return
 
     if not click.confirm("Are you in an isolated, trusted environment?", default=False):
-        console.logger.info("[green]Dangerous mode cancelled for security.[/green]")
+        console.logger.info("[success]Dangerous mode cancelled for security.[/success]")
         return
 
     # Set time-limited dangerous mode (1 hour)
@@ -3906,7 +3905,7 @@ def _activate_dangerous_mode():
 
     # Log for audit trail (but not sensitive info)
     expiry_str = datetime.fromtimestamp(expiry_time).strftime("%H:%M:%S")
-    console.logger.info(f"[red bold]⚠️  DANGEROUS MODE ACTIVE until {expiry_str}[/red bold]")
+    console.logger.info(f"[bold error]⚠️  DANGEROUS MODE ACTIVE until {expiry_str}[/bold error]")
 
 
 def _deactivate_dangerous_mode():
