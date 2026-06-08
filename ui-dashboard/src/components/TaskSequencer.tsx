@@ -3,6 +3,7 @@ import {
   Paper,
   Box,
   Typography,
+  IconButton,
   List,
   ListItem,
   ListItemText,
@@ -17,6 +18,8 @@ import { alpha } from '@mui/material/styles';
 import {
   CheckCircle,
   Circle,
+  Copy,
+  Check,
   Play,
   Pause,
   SkipForward,
@@ -90,6 +93,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const [heartbeat, setHeartbeat] = useState<number>(Date.now());
   const [isResetConfirming, setIsResetConfirming] = useState(false);
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isTaskTitleCopied, setIsTaskTitleCopied] = useState(false);
+  const copyTaskTitleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -119,6 +124,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
       if (resetTimeoutRef.current) {
         clearTimeout(resetTimeoutRef.current);
       }
+      if (copyTaskTitleTimeoutRef.current) {
+        clearTimeout(copyTaskTitleTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -135,6 +143,18 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     }
     return sortedTasks.sort((a, b) => a.complexity - b.complexity);
   }, [tasks, cognitiveState.status]);
+
+  const handleCopyTaskTitle = (title: string) => {
+    if (!navigator.clipboard?.writeText) return;
+    void navigator.clipboard.writeText(title).then(() => {
+      setIsTaskTitleCopied(true);
+      if (copyTaskTitleTimeoutRef.current) clearTimeout(copyTaskTitleTimeoutRef.current);
+      copyTaskTitleTimeoutRef.current = setTimeout(() => {
+        setIsTaskTitleCopied(false);
+        copyTaskTitleTimeoutRef.current = null;
+      }, 2000);
+    });
+  };
 
   const startTask = (taskId: string) => {
     setTasks((prev) =>
@@ -369,6 +389,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             boxShadow: `0 0 16px ${alpha(brandTokens.colors.serumMint, 0.4)}`,
           },
         },
+        '@keyframes copy-success': {
+          '0%': { transform: 'scale(1)' },
+          '50%': {
+            transform: 'scale(1.1)',
+            filter: `drop-shadow(0 0 8px ${alpha(brandTokens.colors.serumMint, 0.6)})`,
+          },
+          '100%': { transform: 'scale(1)' },
+        },
       }}
       className="dopemux-panel"
     >
@@ -457,9 +485,33 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             boxShadow: brandTokens.shadows.goldBloom,
           }}
         >
-          <Typography variant="subtitle2" sx={{ mb: 0.5, letterSpacing: '0.08em' }}>
-            Current Ritual
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+            <Typography variant="subtitle2" sx={{ letterSpacing: '0.08em' }}>
+              Current Ritual
+            </Typography>
+            <Tooltip title={isTaskTitleCopied ? 'Copied!' : 'Copy task title'} arrow>
+              <IconButton
+                size="small"
+                onClick={() => handleCopyTaskTitle(currentTask.title)}
+                aria-label={isTaskTitleCopied ? 'Task title copied' : 'Copy task title to clipboard'}
+                sx={{
+                  color: isTaskTitleCopied ? brandTokens.colors.serumMint : brandTokens.colors.ritualCyan,
+                  transition: 'all 0.2s ease',
+                  ...(isTaskTitleCopied && {
+                    animation: 'copy-success 0.4s ease-out',
+                  }),
+                  '&:hover': {
+                    bgcolor: alpha(
+                      isTaskTitleCopied ? brandTokens.colors.serumMint : brandTokens.colors.ritualCyan,
+                      0.1
+                    ),
+                  },
+                }}
+              >
+                {isTaskTitleCopied ? <Check size={16} /> : <Copy size={16} />}
+              </IconButton>
+            </Tooltip>
+          </Box>
           <Typography variant="h5" sx={{ mb: 0.5 }}>
             {currentTask.title}
           </Typography>
@@ -678,6 +730,10 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                     isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
                     0.1
                   ),
+                },
+                '&:focus-visible': {
+                  outline: 'none',
+                  boxShadow: `0 0 0 2px ${isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint}`,
                 },
               }}
             >
