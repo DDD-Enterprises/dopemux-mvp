@@ -1,12 +1,16 @@
 ---
 id: TP-DMX-START-AUDIT-CRIT-FIX-001
 title: Fix CRIT bugs from dopemux start audit 2026-06-06
-type: bugfix
+type: explanation
 owner: '@hu3mann'
 author: claude-sonnet-4-6
 date: '2026-06-06'
 branch: claude/modest-cartwright-340c04
 status: draft
+last_review: '2026-06-08'
+next_review: '2026-09-06'
+prelude: Fix CRIT bugs from dopemux start audit 2026-06-06 (explanation) for dopemux
+  documentation and developer workflows.
 ---
 # Task Packet: TP-DMX-START-AUDIT-CRIT-FIX-001 · CLI · Start Audit CRIT Bug Fixes
 
