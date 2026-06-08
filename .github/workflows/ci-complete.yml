@@ -189,6 +189,13 @@ jobs:
             tests/test_brand_voice.py \
             -n auto --maxfail=1 --disable-warnings --no-cov
 
+      - name: 🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)
+        run: |
+          PYTHONPATH=src uv run --frozen pytest \
+            tests/dcp/ \
+            --deselect tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified \
+            --maxfail=1 --disable-warnings --no-cov
+
       - name: 🎨 Run brand lint gate
         run: uv run --frozen python scripts/brand_lint.py
 
