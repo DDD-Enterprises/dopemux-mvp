@@ -390,6 +390,8 @@ proof/*
 !proof/TP-DMX-AI-ROUTING-002/**
 !proof/TP-DMX-AI-ROUTING-003/
 !proof/TP-DMX-AI-ROUTING-003/**
+!proof/TP-DMX-PR-AUDIT-ROUTER-001/
+!proof/TP-DMX-PR-AUDIT-ROUTER-001/**
 
 # Extraction and Research artifacts
 _audit_out/
