@@ -1,6 +1,7 @@
 {
   "version": 1,
   "allowed_root_dirs": [
+    "qa",
     "templates",
     "ui-dashboard-backend",
     ".taskx",
