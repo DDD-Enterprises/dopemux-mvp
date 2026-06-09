@@ -12,13 +12,22 @@
 tests/
 ├── unit/              # Fast isolated tests
 ├── integration/       # Component interaction
-├── e2e/               # Full workflows
 ├── dopemux/           # Core package tests
+├── dopemux_cli/       # CLI integration tests
+├── dopemux_init/      # Init workflow tests
 ├── orchestrator/      # Orchestrator tests
 ├── fixtures/          # Shared test data
 ├── resources/         # Test resources
+├── arch/              # Architecture tests
+├── audit/             # Audit tests
+├── ci/                # CI-specific tests
+├── mcp/               # MCP tests
+├── security/          # Security tests
+├── shared/            # Shared test utilities
 └── conftest.py        # Shared fixtures
 ```
+
+Note: `e2e/` directory does **not** exist.
 
 ---
 
@@ -79,7 +88,12 @@ def test_should_create_task_when_valid_input():
 ## Fixtures
 
 Common fixtures in `conftest.py`:
-- `app` - FastAPI test client
-- `db_session` - Test database session
-- `mock_conport` - Mocked ConPort client
-- `adhd_profile` - Test ADHD profile
+- `temp_project_dir` - Temporary project directory
+- `temp_config_dir` - Temporary config directory
+- `sample_config_data` - Sample ADHD config dict
+- `config_manager` - ConfigManager instance
+- `context_manager` - ContextManager instance
+- `attention_monitor` - AttentionMonitor instance
+- `task_decomposer` - TaskDecomposer instance
+
+Note: `app`, `db_session`, `mock_conport`, `adhd_profile` are **not** defined in conftest.py.

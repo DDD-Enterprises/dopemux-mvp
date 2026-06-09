@@ -13,19 +13,27 @@ src/dopemux/
 ├── __init__.py
 ├── cli.py              # CLI entry point — registers groups via cli.add_command()
 ├── commands/           # CLI command groups (one file per group)
+│   ├── audit_commands.py
 │   ├── autoresponder_commands.py
 │   ├── capture_group_commands.py  # also exports _workflow_request()
-│   ├── code_commands.py
+│   ├── cockpit_commands.py
 │   ├── decisions_commands.py
 │   ├── dev_commands.py
 │   ├── extract_commands.py
 │   ├── extractor_commands.py      # exports _run_extractor_runner, _run_repscan_runner
+│   ├── instances_commands.py
+│   ├── kernel_commands.py
+│   ├── mcp_commands.py
 │   ├── memory_commands.py
+│   ├── orchestrator_commands.py
+│   ├── personas_commands.py
 │   ├── profile_commands.py
+│   ├── system_data_commands.py
 │   ├── trigger_group_commands.py
 │   ├── update_commands.py
 │   ├── upgrades_commands.py
-│   └── workflow_group_commands.py
+│   ├── workflow_group_commands.py
+│   └── worktrees_commands.py
 ├── event_bus.py        # Event-driven communication
 ├── mcp/                # MCP tooling
 ├── embeddings/         # Embedding utilities
@@ -82,8 +90,8 @@ except ServiceError as e:
 ## Testing
 
 ```bash
-# Run tests for src
-pytest tests/dopemux/ -v
+# Run all tests (from repo root)
+pytest tests -v
 
 # Check coverage
 pytest tests/ --cov=src/dopemux --cov-report=html

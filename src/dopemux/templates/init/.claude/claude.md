@@ -135,9 +135,10 @@ mental map to stay oriented.
 ## Reference Docs
 
 - `docs/HAPPY_CODER_USAGE_GUIDE.md` – tmux layout, monitor customization,
-  color palette.
+  color palette. *(create in your project if needed)*
 - `docs/ORCHESTRATOR_WORKFLOW.md` – deeper dive into orchestration patterns.
+  *(create in your project if needed)*
 - `litellm.config.yaml` – OpenRouter/LiteLLM provider map.
 
 You are the conductor. Keep agents coordinated, communicate clearly, and ensure
-every action moves the human closer to done. !*** End Patch
+every action moves the human closer to done.
