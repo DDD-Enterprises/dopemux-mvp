@@ -10,13 +10,24 @@
 
 ```
 docker/
-├── mcp-servers/        # MCP server containers
-│   ├── conport/        # Knowledge graph (port 3004)
-│   ├── zen/            # Code analysis
-│   ├── serena/         # ADHD engine
-│   └── README.md       # MCP server docs
-├── services/           # Service Dockerfiles
-└── infrastructure/     # postgres, redis, qdrant
+├── mcp-servers/           # Symlink → mcp-servers-source/
+├── mcp-servers-source/    # Actual MCP server source (editable)
+│   ├── claude-context/    # Claude context server
+│   ├── conport/           # Knowledge graph (port 3004)
+│   ├── conport-bridge/    # ConPort bridge
+│   ├── desktop-commander/ # Desktop automation
+│   ├── dopemux/           # Dopemux MCP
+│   ├── exa/               # Exa search MCP
+│   ├── gpt-researcher/    # GPT Researcher MCP
+│   ├── gptr-mcp/          # GPT-Researcher MCP wrapper
+│   ├── leantime-bridge/   # Leantime PM bridge
+│   ├── litellm/           # LiteLLM proxy
+│   ├── pal/               # PAL multi-model reasoning (formerly zen)
+│   ├── serena/            # Serena LSP code intelligence
+│   ├── services/          # Service Dockerfiles
+│   └── docs/              # MCP server documentation
+├── services/              # Service Dockerfiles
+└── infrastructure/        # postgres, redis, qdrant
 ```
 
 ---
@@ -48,15 +59,20 @@ CMD ["uvicorn", "main:app"]
 
 ## MCP Servers
 
-All MCP servers are in `docker/mcp-servers/`:
+MCP server source is in `docker/mcp-servers-source/` (symlinked from `docker/mcp-servers/`):
 
 | Server | Port | Transport |
 |--------|------|-----------|
 | conport | 3004 | SSE |
-| zen | - | stdio |
+| pal | - | stdio |
 | serena | 8095 | HTTP |
+| desktop-commander | 3012 | stdio |
+| exa | - | stdio |
+| gpt-researcher | 3009 | HTTP |
+| litellm | varies | HTTP |
+| leantime-bridge | - | stdio |
 
-See [`docker/mcp-servers/.claude/claude.md`](file:///Users/hue/code/dopemux-mvp/docker/mcp-servers/.claude/claude.md) for MCP-specific context.
+See `docker/mcp-servers-source/.claude/claude.md` for MCP-specific context.
 
 ---
 

@@ -10,12 +10,22 @@
 
 ```
 config/
-├── profiles/          # ADHD profiles (low/medium/high energy)
-├── mcp/               # MCP server configurations
-├── routing/           # Event routing rules
-├── logging/           # Logging configurations
-└── environments/      # dev/staging/prod settings
+├── profiles/          # ADHD profiles (see below)
+├── env/               # Environment variable definitions
+├── orchestrator/      # Orchestrator policy files
+├── preflight/         # Pre-flight check configs
+├── instructions/      # Instruction templates
+├── mobile/            # Mobile-specific config
+├── pr_merge_specialist/   # PR merge policy config
+├── docs_hygiene/      # Docs hygiene rules
+├── extraction_hygiene/    # Extraction rules
+├── repo_hygiene/      # Repo hygiene rules
+├── dotfiles/          # Dotfile templates
+├── pricing.yaml       # LLM cost/pricing data
+└── runtime_authority_manifest.json  # Runtime authority config
 ```
+
+Note: `.claude.json` lives at the **repo root**, not inside `config/`.
 
 ---
 
@@ -23,10 +33,11 @@ config/
 
 | File | Purpose |
 |------|---------|
-| `.claude.json` | MCP server configuration |
-| `services/registry.yaml` | Service ports/health |
+| `../.claude.json` | MCP server configuration (repo root) |
 | `config/profiles/*.yaml` | ADHD energy profiles |
-| `.env.example` | Environment template |
+| `config/pricing.yaml` | LLM model cost data |
+| `config/runtime_authority_manifest.json` | Runtime authority config |
+| `.env.example` | Environment template (repo root) |
 
 ---
 
@@ -59,9 +70,13 @@ Key variables (see `.env.example`):
 ## ADHD Profiles
 
 Profiles in `config/profiles/`:
-- `low_energy.yaml` - Minimal features, simple tasks
-- `medium_energy.yaml` - Standard operation
-- `high_energy.yaml` - Full features, complex tasks
+- `adhd-default.yaml` - Default ADHD-optimized settings
+- `safe.yaml` - Conservative / low-risk mode
+- `dangerous.yaml` - Full capabilities, elevated risk tolerance
+- `python-ml.yaml` - Python/ML focused environment
+- `web-dev.yaml` - Web development environment
+- `workflow-executor.yaml` - Workflow automation mode
+- `workflow-manager.yaml` - Workflow management mode
 
 ---
 
