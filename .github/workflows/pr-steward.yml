@@ -41,6 +41,14 @@ jobs:
             printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Refresh PR audit proof
+        run: |
+          python -m scripts.audit.pr_audit_router \
+            --dry-run \
+            --packet-id TP-DMX-PR-AUDIT-ROUTER-001 \
+            --git-sha "${{ github.event.pull_request.head.sha || github.sha }}" \
+            --out proof/TP-DMX-PR-AUDIT-ROUTER-001/MULTI_MODEL_PR_AUDIT.json
+
       - name: Run PR Steward
         id: steward
         continue-on-error: true
@@ -51,7 +59,8 @@ jobs:
             --pr "${{ steps.pr.outputs.number }}" \
             --out pr-steward-artifacts \
             --strict \
-            --format text
+            --format text \
+            --proof-path proof/TP-DMX-PR-AUDIT-ROUTER-001/MULTI_MODEL_PR_AUDIT.json
           status=$?
           printf 'exit_code=%s\n' "$status" >> "$GITHUB_OUTPUT"
           exit 0

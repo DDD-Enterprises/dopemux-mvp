@@ -1,0 +1,25 @@
+{
+  "blocking_available_count": 1,
+  "dry_run": true,
+  "embedded_audit": {
+    "report_path": "proof/TP-DMX-PR-AUDIT-ROUTER-001/AUDITOR_REPORT.md",
+    "status": "PASS"
+  },
+  "executed": false,
+  "execution_results": [],
+  "has_any_available": true,
+  "head_sha": "1f10ab75cce7be38a8b4f6312445a2a8fdff6572",
+  "packet_id": "TP-DMX-PR-AUDIT-ROUTER-001",
+  "requested_route_names": [
+    "claude-audit"
+  ],
+  "resolutions": [
+    {
+      "available": true,
+      "blocking": true,
+      "cli_name": "claude-audit"
+    }
+  ],
+  "risk_class": "LOW",
+  "schema_version": "1.0"
+}
