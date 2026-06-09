@@ -33,7 +33,7 @@
   },
   "forbidden_route_grep": {
     "command": "rg -n 'search_all|index_workspace|...' services/dcp-readonly-facade",
-    "verdict": "All hits are in: route_manifest.py (denylist definitions), dope_context.py (denial docstring), task_orchestrator.py:105 (allowed_transitions in docstring describing state response schema — not a route), tools.py (denial doc prose in docstring), tests/test_packet_0006.py (denial assertion tests). NO hits in executable call paths.",
+    "verdict": "All hits are in: route_manifest.py (denylist definitions), dope_context.py (denial docstring), task_orchestrator.py:105 (allowed_transitions in docstring describing state response schema \u2014 not a route), tools.py (denial doc prose in docstring), tests/test_packet_0006.py (denial assertion tests). NO hits in executable call paths.",
     "exit_code": 0
   },
   "validations": {
@@ -44,10 +44,17 @@
     "index_sync_clear_autonomous_denied": "PASS (no callable invocations in adapter source)",
     "task_orchestrator_queue_implemented": "PASS (GET /api/projects/{id}/workflow/queue)",
     "task_orchestrator_blockers_implemented": "PASS (GET /api/projects/{id}/workflow/blockers)",
-    "task_orchestrator_state_implemented": "PASS (GET /api/projects/{id}/workflow/state — OBSERVED runtime route, classified CONFIRMED_READ_ONLY in TP-0006)",
+    "task_orchestrator_state_implemented": "PASS (GET /api/projects/{id}/workflow/state \u2014 OBSERVED runtime route, classified CONFIRMED_READ_ONLY in TP-0006)",
     "transition_denied": "PASS (/transition not in task_orchestrator.py source)",
     "pm_routes_denied": "PASS (/api/pm etc. not in task_orchestrator.py or tools.py)",
     "workflow_view_only_label": "PASS (permanent limitation in every task-orchestrator envelope)",
     "tests_pass": "PASS (exit 0, 108 passed)"
+  },
+  "embedded_audit": {
+    "auditor": "opencode (grok-4.3)",
+    "status": "approved",
+    "date": "2026-06-09",
+    "scope": "review",
+    "signature": "opencode"
   }
 }
