@@ -205,6 +205,7 @@ function App() {
   const clearConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [lastSignalTime, setLastSignalTime] = useState<Date | null>(null);
 
   const handleDismissNotification = useCallback((id: string) => {
     setNotifications((current) => current.filter((n) => n.id !== id));
@@ -289,6 +290,7 @@ function App() {
         }
 
         if (message.type === 'dashboard_notification') {
+          setLastSignalTime(new Date());
           setNotifications((current) => [
             {
               id: String(message.id || Date.now().toString() + Math.random().toString(36).substring(2, 9)),
@@ -625,6 +627,45 @@ function App() {
             >
               Live Signal Feed
             </Typography>
+            <Tooltip title="System is actively listening for ConPort and ADHD event traffic" arrow>
+              <Box
+                tabIndex={0}
+                aria-label="System is actively listening for ConPort and ADHD event traffic"
+                sx={{
+                  display: 'flex',
+                  gap: 0.5,
+                  cursor: 'help',
+                  outline: 'none',
+                  borderRadius: 1,
+                  px: 0.5,
+                  '&:focus-visible': {
+                    boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
+                  },
+                  '& span': {
+                    width: 4,
+                    height: 4,
+                    borderRadius: '50%',
+                    bgcolor: brandTokens.colors.ritualCyan,
+                    animation: 'listeningPulse 1.4s infinite ease-in-out both',
+                  },
+                  '& span:nth-of-type(1)': { animationDelay: '-0.32s' },
+                  '& span:nth-of-type(2)': { animationDelay: '-0.16s' },
+                  '@keyframes listeningPulse': {
+                    '0%, 80%, 100%': { transform: 'scale(0)' },
+                    '40%': { transform: 'scale(1.0)' },
+                  },
+                }}
+              >
+                <span />
+                <span />
+                <span />
+              </Box>
+            </Tooltip>
+            {lastSignalTime && (
+              <Typography variant="caption" color="text.secondary" sx={{ opacity: 0.8 }}>
+                Last signal: {formatTimestamp(lastSignalTime.toISOString())}
+              </Typography>
+            )}
             {isLoading && (
               <CircularProgress
                 size={16}
@@ -720,35 +761,9 @@ function App() {
               })}
             </Box>
           ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Typography variant="body2" color="text.secondary">
-                Listening for ConPort and ADHD event traffic
-              </Typography>
-              <Box
-                aria-hidden="true"
-                sx={{
-                  display: 'flex',
-                  gap: 0.5,
-                  '& span': {
-                    width: 4,
-                    height: 4,
-                    borderRadius: '50%',
-                    bgcolor: brandTokens.colors.ritualCyan,
-                    animation: 'listeningPulse 1.4s infinite ease-in-out both',
-                  },
-                  '& span:nth-of-type(1)': { animationDelay: '-0.32s' },
-                  '& span:nth-of-type(2)': { animationDelay: '-0.16s' },
-                  '@keyframes listeningPulse': {
-                    '0%, 80%, 100%': { transform: 'scale(0)' },
-                    '40%': { transform: 'scale(1.0)' },
-                  },
-                }}
-              >
-                <span />
-                <span />
-                <span />
-              </Box>
-            </Box>
+            <Typography variant="body2" color="text.secondary">
+              Waiting for signals...
+            </Typography>
           )}
         </Paper>
 
