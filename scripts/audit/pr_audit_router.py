@@ -329,7 +329,8 @@ def main(argv: list[str] | None = None) -> int:
             f"available={avail or '(none)'} proof={proof_path}"
         )
 
-    return 0 if plan.has_any_available() else 2
+    # In dry-run mode we only generate the proof; route availability is informational.
+    return 0 if (plan.dry_run or plan.has_any_available()) else 2
 
 
 if __name__ == "__main__":
