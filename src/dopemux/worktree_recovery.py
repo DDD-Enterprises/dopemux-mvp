@@ -24,6 +24,8 @@ from .instance_state import (
     InstanceStateManager,
     resolve_conport_port,
 )
+from .console import console
+from .ui.theme import Glyphs
 
 logger = logging.getLogger(__name__)
 
@@ -134,20 +136,23 @@ class WorktreeRecoveryMenu:
         if not options:
             return
 
-        print("\n" + "=" * 70)
-        print("🔄 Found orphaned worktree sessions - would you like to recover one?")
-        print("=" * 70)
+        console.print()
+        console.rule("[heading]🔄 Found orphaned worktree sessions - would you like to recover one?[/heading]", style="panel.border")
 
         for opt in options:
-            print(opt.format_menu_line())
+            # markup=False: format_menu_line() may contain arbitrary user text
+            console.print(opt.format_menu_line(), markup=False)
 
-        print(f"\n  0. 🏠 Stay in main worktree (default after {self.timeout_seconds}s; press Enter)")
+        console.print(
+            f"\n  0. 🏠 Stay in main worktree (default after {self.timeout_seconds}s; press Enter)",
+            style="text.dim",
+        )
 
         if has_more:
-            print("  a. 📋 Show all recoverable sessions")
+            console.print("  a. 📋 Show all recoverable sessions", style="info")
 
-        print("\n" + "=" * 70)
-        print("💡 Tip: Choose a session to restore context and continue where you left off")
+        console.rule(style="panel.border")
+        console.print("💡 Tip: Choose a session to restore context and continue where you left off", style="mint.soft")
 
     async def get_user_input_async(self, prompt: str, timeout: int) -> Optional[str]:
         """
@@ -203,7 +208,7 @@ class WorktreeRecoveryMenu:
                 await asyncio.sleep(0.1)  # Yield to event loop
 
         except asyncio.TimeoutError:
-            print()  # Newline after timeout
+            console.print()  # Newline after timeout
             return None
         finally:
             selector.unregister(sys.stdin)
@@ -263,11 +268,11 @@ class WorktreeRecoveryMenu:
                     logger.info(f"✅ User selected: {selected.git_branch}")
                     return selected
                 else:
-                    print(f"❌ Invalid choice: {choice_num}. Using default (main).")
+                    console.print(f"{Glyphs.ERROR} Invalid choice: {choice_num}. Using default (main).", style="error")
                     return None
 
             except ValueError:
-                print(f"❌ Invalid input: '{user_input}'. Using default (main).")
+                console.print(f"{Glyphs.ERROR} Invalid input: '{user_input}'. Using default (main).", style="error")
                 return None
 
         except asyncio.TimeoutError:
@@ -422,10 +427,10 @@ class WorktreeRecoveryMenu:
                 if all_options:
                     options = all_options
                     has_more = False  # No more to show
-                    print()  # Blank line before re-display
+                    console.print()  # Blank line before re-display
                     continue
                 else:
-                    print("⚠️ No additional sessions found.")
+                    console.print(f"{Glyphs.WARNING} No additional sessions found.", style="warning")
                     has_more = False
                     continue
 
