@@ -7,13 +7,15 @@ You are continuing the DMX-START Wave 3 program (auditing/fixing/polishing `dope
 
 == ORIENT FIRST (read these, in order) ==
 Worktree (your cwd for everything): /Users/hue/code/dopemux-mvp/.claude/worktrees/modest-cartwright-340c04
-Branch: claude/modest-cartwright-340c04   HEAD should be 8eb801c08 (6 local commits, unpushed)
+Branch: claude/modest-cartwright-340c04   HEAD should be 7d87dfd93 (3C-4 committed; all local, unpushed)
+Orchestrator: root 400344c8; remaining children are queue items. 3C-4 (3738e834) = done/terminal.
 1. claudedocs/DMX-START-WAVE3-HANDOFF.md   <- full state, gotchas, commit log
 2. /Users/hue/.claude/plans/ok-i-need-to-mossy-twilight.md   <- approved + PAL-validated plan (per-track detail)
 3. claudedocs/dopemux-start-audit-2026-06-06.md   <- the PRE-FIX baseline audit (most gaps already fixed; do NOT re-fix)
 
 == HARD RULES ==
 - Model tiering: Opus supervises (decompose/review/gate); Sonnet implements; Haiku mechanical. Delegate bulk work.
+- SUPERVISOR KEEPS THE GIT + ORCHESTRATOR GATE: implementer subagents IMPLEMENT + VERIFY + return a diff ONLY. They must NOT touch git, must NOT commit, and must NOT advance/complete orchestrator items. (On 3C-4 the subagent advanced its item to terminal + wrote a proof note with the WRONG branch before any commit existed — Opus had to re-verify, commit, and repair the note.) Opus reviews the diff, commits (staging ONLY the work file), and writes/repairs the proof-bundle note with the real commit SHA.
 - SUBAGENT PATH DISCIPLINE (non-negotiable): every subagent prompt must `cd` to the absolute worktree path above, use absolute paths, and self-check `wc -l src/dopemux/cli.py` == 6326. If it reports ~6414, it is in the WRONG checkout (the main repo, a different branch) — STOP. The whole original audit was contaminated by this.
 - Failing-test-first for any code change (red -> green; mutation-check by reverting). brand_lint after every UI change: `python scripts/brand_lint.py` must stay 0 errors / 0 warnings (it enforces danger-hue invariant + palette purity).
 - Commit per increment with `(DMX-START Wave 3, <id>)` in the message + the standard Co-Authored-By footer. Stage ONLY your files — NEVER stage `.claude/claude_config.json` (a hook keeps rewriting it).
@@ -22,21 +24,20 @@ Branch: claude/modest-cartwright-340c04   HEAD should be 8eb801c08 (6 local comm
 
 == VERIFY THE BASE (run before starting) ==
 cd /Users/hue/code/dopemux-mvp/.claude/worktrees/modest-cartwright-340c04
-git log --oneline 6632772aa..HEAD   # expect: handoff + 3C-3 3C-2 3C-1 3B-1 3A-1
+wc -l src/dopemux/cli.py            # MUST be 6326 (else wrong checkout — STOP)
+git log --oneline 6632772aa..HEAD   # expect: 3C-4 (7d87dfd93) + handoff + 3C-3 3C-2 3C-1 3B-1 3A-1
 python -m pytest tests/integration/test_start_crit_gaps.py tests/integration/test_start_command.py tests/integration/test_start_wave3.py -q
+python -m pytest tests/ --ignore=tests/e2e -k routing -q   # 3C-4 guard: expect 38 passed
 python scripts/brand_lint.py
 python -c "import sys; sys.path.insert(0,'src'); from dopemux import cli; print('ok')"
 
 == REMAINING WORK (do in this order; one Sonnet increment at a time, commit each) ==
 
-3C-4  routing_cli.py UI theming  [OFFLINE-OK — DO THIS FIRST]
-  Convert ~132 raw `click.echo` in src/dopemux/routing_cli.py to the themed console
-  (`from dopemux.console import console`; `styled_table`/`Glyphs`/theme tokens from dopemux.ui.theme).
-  PRESERVE as plain: `--json` output, data-for-capture lines, `err=True` (stderr) lines. Display-only;
-  behavior/exit codes unchanged. Verify: brand_lint 0/0; `pytest tests/ --ignore=tests/e2e -k routing`;
-  import ok.
+3C-4  routing_cli.py UI theming  [DONE — commit 7d87dfd93, orchestrator 3738e834 terminal]
+  ~106 display `click.echo`→`console.print` (markup=False on interpolated f-strings); preserved 3
+  json.dumps + 21 err=True + 2 docker snippet bodies. brand_lint 0/0; 38 routing tests green. Skip.
 
-3C-5  SEV-3 cleanup  [OFFLINE-OK]
+3C-5  SEV-3 cleanup  [OFFLINE-OK — DO THIS FIRST]
   (a) Route the 8 unthemed `Console()` to the shared themed console: adhd/attention_monitor.py:19,
       adhd/context_manager.py:21, adhd/task_decomposer.py:22, update/health.py:37, update/rollback.py:36,
       update/manager.py:86, claude_tools/session_manager.py:56, startup_hints.py:406 (test-only).
