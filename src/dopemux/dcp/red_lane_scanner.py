@@ -245,7 +245,7 @@ class RedLaneScanner:
                         data = json.load(f)
                     except json.JSONDecodeError:
                         continue
-                    
+
                     if data.get("has_unknown_reviewers") or data.get("has_unknown_bots"):
                         findings.append(Finding(
                             category="UNKNOWN_REVIEWER_OR_BOT",
@@ -255,7 +255,7 @@ class RedLaneScanner:
                             evidence="Merge readiness indicates unknown reviewer or bot",
                             recommended_action="Review access."
                         ))
-                    
+
                     if data.get("has_unresolved_blocking_threads"):
                         findings.append(Finding(
                             category="UNRESOLVED_BLOCKING_THREAD",
@@ -265,7 +265,7 @@ class RedLaneScanner:
                             evidence="Merge readiness indicates unresolved blocking threads",
                             recommended_action="Resolve threads."
                         ))
-                        
+
                     if data.get("failed_checks"):
                          findings.append(Finding(
                             category="CI_OR_WORKFLOW_MUTATION", # Mapping generic failure to blocked.
@@ -275,7 +275,7 @@ class RedLaneScanner:
                             evidence="Failed checks reported",
                             recommended_action="Fix checks."
                         ))
-                    
+
                     if data.get("undocumented_residual_risk"):
                          findings.append(Finding(
                             category="UNCLASSIFIED_RISK",
@@ -285,3 +285,48 @@ class RedLaneScanner:
                             evidence="Undocumented residual risk",
                             recommended_action="Document risks."
                         ))
+
+
+def main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="RedLaneScanner — read-only DCP red-line gate. "
+                    "Emits RedLaneReport JSON and exits non-zero when BLOCKED."
+    )
+    parser.add_argument("--repo-root", default=".", metavar="PATH",
+                        help="Repository root (default: current directory)")
+    parser.add_argument("--files", nargs="*", default=[], metavar="PATH",
+                        help="Changed file paths to scan (relative to repo root)")
+    parser.add_argument("--expected-sha", default=None, metavar="SHA",
+                        help="Expected HEAD commit SHA for stale-proof check")
+    parser.add_argument("--proof-paths", nargs="*", default=[], metavar="PATH",
+                        help="Proof artifact paths (relative to repo root)")
+    parser.add_argument("--audit-paths", nargs="*", default=[], metavar="PATH",
+                        help="Audit artifact paths (relative to repo root)")
+    parser.add_argument("--merge-readiness-paths", nargs="*", default=[], metavar="PATH",
+                        help="Merge readiness artifact paths (relative to repo root)")
+    parser.add_argument("--output", default=None, metavar="FILE",
+                        help="Write JSON report to FILE instead of stdout")
+    args = parser.parse_args()
+
+    scanner = RedLaneScanner(repo_root=args.repo_root)
+    report = scanner.scan(
+        changed_files=args.files,
+        proof_paths=args.proof_paths,
+        audit_paths=args.audit_paths,
+        merge_readiness_paths=args.merge_readiness_paths,
+        expected_head_sha=args.expected_sha,
+    )
+    output_text = json.dumps(report.to_dict(), indent=2)
+    if args.output:
+        with open(args.output, "w") as fh:
+            fh.write(output_text)
+    else:
+        print(output_text)
+
+    return 0 if report.status == Status.PASS else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

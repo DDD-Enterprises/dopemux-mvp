@@ -32,7 +32,32 @@ proof/pr_prep/TP-PRPS-000A/<run_id>/...
 proof/pr_prep/TP-PRPS-008/<run_id>/...
 proof/pr_merge/<domain>/<run_id>/...
 proof/governance/<domain>/<run_id>/...
+proof/TP-DMX-<id>/...    (factory skill tier — see below)
 ```
+
+## Skill Tiers
+
+Recognized `<skill>` values and their path conventions:
+
+| Skill Tier | `<skill>` value | Path Pattern | Notes |
+|------------|----------------|--------------|-------|
+| PR Preparation | `pr_prep` | `proof/pr_prep/<tp_or_domain>/<run_id>/` | Standard TP-PRPS-* packets |
+| PR Merge | `pr_merge` | `proof/pr_merge/<domain>/<run_id>/` | Merge steward capsules |
+| Governance | `governance` | `proof/governance/<bundle_type>/` | Policy/compliance packets |
+| **Development Factory** | `factory` | `proof/<packet_id>/` | Flat layout; `<packet_id>` matches `TP-DMX-*`. The packet ID is unique and self-identifying; no additional `factory/` prefix is required. |
+
+**Development Factory (`factory`) tier**: paths of the form `proof/TP-DMX-<id>/` are canonical for Development Factory capsules. The TP ID itself serves as the combined skill-domain component. This is not an exemption from the `proof/<skill>/...` schema — it is an explicit named tier within it.
+
+## Proof Git-Tracking Tier
+
+All sanitized proof artifacts **must be committed** (forced-added past the `proof/*` gitignore). See `evidence-and-proof-flow.md` for the full TRACK / DO_NOT_TRACK table and the `git add -f` force-add convention.
+
+| TRACK | DO_NOT_TRACK |
+|-------|-------------|
+| `PROOF.json`, `SUMMARY.md`, `AUDIT.md` | Raw stdout/stderr > 50 KB |
+| `MERGE_READINESS.json`, `VALIDATION.md` | Telemetry / metrics logs |
+| `CMD_SUMMARY.md`, `MANIFEST.json` | `.env` / secret-containing output |
+| `MODEL_ROUTING.json` (when referenced) | Raw LLM transcripts |
 
 ## Path Rules
 
@@ -41,6 +66,7 @@ proof/governance/<domain>/<run_id>/...
 **Preferred**:
 - `proof/<skill>/TP-PRPS-<number>/<run_id>/...`
 - `proof/<skill>/<domain>/<run_id>/...`
+- `proof/TP-DMX-<id>/...` (factory tier)
 
 **Tolerated (Deprecated)**:
 - `proof/<skill>/<phase>/<run_id>/...`
