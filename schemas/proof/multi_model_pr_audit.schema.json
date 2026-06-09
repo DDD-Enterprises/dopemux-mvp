@@ -2,13 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.dopemux.dev/proof/multi_model_pr_audit.schema.json",
   "title": "Multi-Model PR Audit Proof Artifact",
-  "description": "Proof artifact produced by the PR audit router.  Records the risk classification, route resolution, and (when not dry-run) execution results.  Chain of custody is preserved via git_sha and packet_id.",
+  "description": "Proof artifact produced by the PR audit router.  Records the risk classification, route resolution, and (when not dry-run) execution results.  Chain of custody is preserved via head_sha and packet_id.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema_version",
     "packet_id",
-    "git_sha",
+    "head_sha",
     "dry_run",
     "risk_class",
     "requested_route_names",
@@ -28,10 +28,18 @@
       "minLength": 1,
       "description": "Task packet identifier for proof chain of custody."
     },
-    "git_sha": {
+    "head_sha": {
       "type": "string",
       "minLength": 1,
       "description": "Git SHA of the HEAD commit at audit time, or 'UNKNOWN' when not available."
+    },
+    "embedded_audit": {
+      "type": "object",
+      "description": "Embedded audit status block consumed by PR Steward to verify proof freshness.",
+      "properties": {
+        "status": {"type": "string"},
+        "report_path": {"type": "string"}
+      }
     },
     "dry_run": {
       "type": "boolean",
