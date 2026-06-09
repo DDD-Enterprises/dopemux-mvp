@@ -7,9 +7,12 @@ reads to the resolved workspace. All ``data`` is redacted before return.
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Callable, Optional
+
+logger = logging.getLogger(__name__)
 
 _MAX_FILTER_LEN = 128
 _MAX_QUERY_LEN = 256
@@ -542,7 +545,14 @@ def get_workflow_status_snapshot(
     # supplies the mapping (task_orchestrator_project_id key). If absent, we use
     # the facade project_id as a sensible default but note this in limitations.
     prof = _bound_profile(res.project, "task_orchestrator") or {}
-    to_project_id: str = prof.get("task_orchestrator_project_id") or res.project.project_id
+    to_project_id: str | None = prof.get("task_orchestrator_project_id")
+    if not to_project_id:
+        logger.warning(
+            "task_orchestrator_project_id not found in profile for project %s; "
+            "falling back to facade project_id",
+            res.project.project_id,
+        )
+        to_project_id = res.project.project_id
 
     data: dict = {"queue": None, "blockers": None, "state": None}
     limitations: list[str] = [_TO_WORKFLOW_VIEW_ONLY]
