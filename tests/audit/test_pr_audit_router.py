@@ -204,7 +204,7 @@ class TestWriteProofArtifact:
         path = write_proof_artifact(plan, out=tmp_path, packet_id="TP-002", git_sha="abc123")
         proof = json.loads(path.read_text())
         assert proof["packet_id"] == "TP-002"
-        assert proof["git_sha"] == "abc123"
+        assert proof["head_sha"] == "abc123"
         assert proof["risk_class"] == "MEDIUM"
         assert proof["dry_run"] is True
         assert proof["executed"] is False
@@ -247,7 +247,7 @@ class TestWriteProofArtifact:
         proof = {
             "schema_version": "1.0",
             "packet_id": "X",
-            "git_sha": "abc",
+            "head_sha": "abc",
             "dry_run": True,
             "risk_class": "EXTREME",  # invalid
             "requested_route_names": [],

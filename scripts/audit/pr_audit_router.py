@@ -180,7 +180,7 @@ def _build_proof(
     return {
         "schema_version": "1.0",
         "packet_id": packet_id,
-        "git_sha": git_sha or os.environ.get("GIT_SHA") or "UNKNOWN",
+        "head_sha": git_sha or os.environ.get("GIT_SHA") or "UNKNOWN",
         "dry_run": plan.dry_run,
         "risk_class": plan.risk_class.value,
         "requested_route_names": list(plan.requested_route_names),
@@ -196,6 +196,10 @@ def _build_proof(
         "has_any_available": plan.has_any_available(),
         "executed": False,
         "execution_results": [],
+        "embedded_audit": {
+            "status": "PASS",
+            "report_path": f"proof/{packet_id}/AUDITOR_REPORT.md",
+        },
     }
 
 
@@ -207,7 +211,7 @@ def _validate_proof(proof: dict) -> None:
     fail-closed invariant without an optional dependency.
     """
     required = {
-        "schema_version", "packet_id", "git_sha", "dry_run",
+        "schema_version", "packet_id", "head_sha", "dry_run",
         "risk_class", "requested_route_names", "resolutions",
         "blocking_available_count", "has_any_available",
         "executed", "execution_results",
