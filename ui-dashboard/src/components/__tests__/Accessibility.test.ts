@@ -108,6 +108,12 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label={`Estimated finish time: ${taskFinishTimes[task.id]}`}');
   expect(content).toContain('cursor: \'help\'');
   expect(content).toContain('&:focus-visible');
+
+  // Verify copy task title button
+  expect(content).toMatch(/aria-label=\{\s*isTaskTitleCopied\s*\?\s*'Task title copied'\s*:\s*'Copy task title to clipboard'\s*\}/);
+  expect(content).toMatch(/animation:\s*'copy-success 0.4s ease-out'/);
+  expect(content).toContain('<IconButton');
+  expect(content).toContain('onClick={() => handleCopyTaskTitle(currentTask.title)}');
 });
 
 test('TaskSequencer.tsx implements overtime visual cues', () => {
