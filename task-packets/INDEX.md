@@ -41,6 +41,7 @@ A packet is superseded by another packet
 | TP-SIA-EXEC-0006 | Workflow Plane | Auditor Runner + Proof Bundle Manifest | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0007 | Workflow Plane | Manual Handoff + Operator Resume Semantics | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0008 | Workflow Plane | Replay Repro Suite + Projection Hardening | Ready | SIA Packet Execution ADR |
+| TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001 | Governance / CI | Local Proof Schema Validation Before Push | Active | N/A |
 | TP-DMX-AIG-001 | Adaptive Ingress Plane | Service Census + Ingress Map + First Safe Slice | Ready | ADR — Adopt a Dopemux Adaptive Ingress Plane with Local Runtime Shims |
 | TP-DMX-REPOHYG-001 | Repo Hygiene | Branch and worktree audit with deterministic cleanup plan | Ready | N/A |
 | TP-DMX-REPOHYG-002 | Repo Hygiene | Execute phase2 safe archive cleanup | Ready | N/A |
@@ -128,6 +129,8 @@ A packet is superseded by another packet
 | TP- PM-ARCH-04B | PM Plane | Canonical pm.* Events + Adapters | 2026-03-22 | Accepted |
 | PACKET_024 | Infra | MCP Health Surface Hardening | 2026-01-26 | Accepted |
 | PACKET_021 | Memory | Deterministic Chronicle Schema | 2026-01-18 | Accepted |
+| TP-DMX-AI-ROUTING-001 | Governance / AI Routing | Stage-based dev-workflow AI model routing policy, reference, how-to, and Copilot agent stage tagging | 2026-06-06 | Accepted (PR #837, commit b987da994) |
+| TP-DMX-AI-ROUTING-002 | Governance / AI Routing | Proof bundle schema and proof contract cross-references to the stage routing policy | 2026-06-06 | Accepted (PR #837, commit b987da994) |
 
 ────────────────────────────────────────────────────────────
 ⚪ Superseded Task Packets

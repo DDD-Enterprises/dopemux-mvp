@@ -543,3 +543,35 @@ def test_run_gate_returns_conditional_go_when_only_conditions_remain(monkeypatch
             "or unverified by current provider credentials, PAL evidence, or online preflight."
         ),
     }
+
+
+def test_collect_truth_split_fails_for_stale_drift_step(tmp_path: Path) -> None:
+    gate = _load_gate_module()
+
+    class FakeRunner:
+        def get_phase_prompts(self, phase):
+            assert phase == "A"
+            return [
+                SimpleNamespace(
+                    step_id="FAKE_STALE_STEP",
+                    output_artifacts=("FAKE.json",),
+                    source="legacy",
+                    contract={"expected_artifacts": ["FAKE.json"]},
+                )
+            ]
+
+    config = gate.GateConfig(
+        repo_root=Path("/tmp/repo"),
+        output_dir=tmp_path,
+        run_id="truth_split_stale_drift",
+        target_policy="cost",
+        target_mode="direct",
+        target_profile="P00_GENERIC",
+        target_phases=("A",),
+        target_step="FAKE_STALE_STEP",
+    )
+    payload, blockers, findings = gate.collect_truth_split(FakeRunner(), config)
+    assert payload["status"] == "FAIL"
+    assert any(b.reason_code == gate.TARGET_TRUTH_SPLIT_MISMATCH for b in blockers)
+    assert payload["rows"][0]["classification"] == "STALE_MODEL_MAP"
+    assert payload["target_phase_mismatch_count"] >= 1

@@ -86,7 +86,13 @@ export default function TeamDashboard() {
               </Avatar>
               <Typography variant="body2">{member.name}</Typography>
               <Tooltip title={statusStyles[member.status].label} arrow>
-                <Chip size="small" label={statusStyles[member.status].label} tabIndex={0} sx={{ cursor: 'help' }} />
+                <Chip
+                  size="small"
+                  label={statusStyles[member.status].label}
+                  aria-label={`${member.name}'s current status: ${statusStyles[member.status].label}`}
+                  tabIndex={0}
+                  sx={{ cursor: 'help' }}
+                />
               </Tooltip>
               <Box aria-hidden="true" sx={{ ml: 'auto', width: 6, height: 6, borderRadius: '50%', bgcolor: statusStyles[member.status].color }} />
             </Box>
@@ -107,10 +113,22 @@ export default function TeamDashboard() {
             />
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               <Tooltip title="Current energy level" arrow>
-                <Chip size="small" tabIndex={0} label={`Energy ${member.energy}%`} sx={{ cursor: 'help' }} />
+                <Chip
+                  size="small"
+                  tabIndex={0}
+                  label={`Energy ${member.energy}%`}
+                  aria-label={`${member.name}'s current energy level: ${member.energy}%`}
+                  sx={{ cursor: 'help' }}
+                />
               </Tooltip>
               <Tooltip title="Current attention focus" arrow>
-                <Chip size="small" tabIndex={0} label={`Attention ${member.attention}%`} sx={{ cursor: 'help' }} />
+                <Chip
+                  size="small"
+                  tabIndex={0}
+                  label={`Attention ${member.attention}%`}
+                  aria-label={`${member.name}'s current attention focus: ${member.attention}%`}
+                  sx={{ cursor: 'help' }}
+                />
               </Tooltip>
             </Box>
           </Box>

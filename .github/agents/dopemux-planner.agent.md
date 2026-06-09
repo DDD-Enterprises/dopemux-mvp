@@ -2,7 +2,7 @@
 description: 'Plans Dopemux task-packet work without editing or executing commands'
 name: 'Dopemux Planner'
 tools: ['read', 'search']
-model: 'Claude Sonnet 4.5'
+model: VERIFY_WITH_VENDOR_DOCS  # planner_strong lane — operator must replace with a supported strong Copilot model
 target: 'vscode'
 infer: true
 handoffs:

@@ -235,6 +235,21 @@ Every proof bundle must include:
 }
 ```
 
+## Model Routing Evidence
+
+Substantive runs should record the **actual** model route used — not just the
+intended one — per the repo model-routing policy:
+
+- Machine policy: [`config/ai/model-routing.policy.yaml`](../../../config/ai/model-routing.policy.yaml)
+- Human guide: [`model-routing.md`](model-routing.md)
+
+The embedded-audit proof object is governed by the existing machine schema
+[`schemas/proof/embedded_audit.schema.json`](../../../schemas/proof/embedded_audit.schema.json)
+(canonical verdict field `status`). This contract references that schema rather than
+restating it. Model-routing fields (`actual_tool`, `actual_model`, `provider`,
+`stage_slot`, `fallback_used`, cost/data policy) are advisory and additive; they do
+not change the required-field set defined above.
+
 ## Compliance
 
 All skills must:

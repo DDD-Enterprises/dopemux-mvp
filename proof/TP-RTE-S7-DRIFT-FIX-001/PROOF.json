@@ -1,0 +1,144 @@
+{
+  "packet_id": "TP-RTE-S7-DRIFT-FIX-001",
+  "title": "Verify S7 Drift Gate \u2014 Confirm FAIL on Injected Stale Step",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "outcome": "VERIFY_AND_CLOSE",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha_before": "c6ed2ea5181f349b34a2e35c4146bb0c565f1b36",
+  "head_sha_after": "a3c15187c",
+  "head_sha": "c6ed2ea5181f349b34a2e35c4146bb0c565f1b36",
+  "commit_sha": "43836516c",
+  "branch": "claude/hungry-lalande-e617d2",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/hungry-lalande-e617d2",
+  "authority_input": "TP-DMX-DDF-DOCS-CORRECT-001 + TP-DMX-EVIDENCE-GATE-VERIFY-001 (read-only verification at HEAD 8042f9f9f)",
+  "files_modified": [
+    "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py"
+  ],
+  "files_not_modified": [
+    "services/repo-truth-extractor/validate_pre_live_gate_v25.py"
+  ],
+  "files_created": [
+    "task-packets/development-factory/TP-RTE-S7-DRIFT-FIX-001.md",
+    "proof/TP-RTE-S7-DRIFT-FIX-001/PROOF.json",
+    "proof/TP-RTE-S7-DRIFT-FIX-001/SUMMARY.md"
+  ],
+  "commands_run": [
+    "python -m pytest -v services/repo-truth-extractor/tests/test_pre_live_gate_v25.py"
+  ],
+  "exit_codes": {
+    "pytest_full_suite": 0
+  },
+  "pytest_result": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "duration_seconds": 0.52,
+    "new_tests_added": [
+      "test_collect_truth_split_fails_for_stale_drift_step"
+    ]
+  },
+  "s7_gate_result": {
+    "injected_drift_used": true,
+    "expected_failure_observed": true,
+    "verdict": "FAIL",
+    "blockers": [
+      "TARGET_TRUTH_SPLIT_MISMATCH"
+    ],
+    "classification": "STALE_MODEL_MAP",
+    "injected_step_id": "FAKE_STALE_STEP",
+    "injected_phase": "A",
+    "step_in_model_map": false
+  },
+  "verify_and_close_evidence": {
+    "injected_step_id": "FAKE_STALE_STEP",
+    "injected_phase": "A",
+    "step_in_model_map": false,
+    "expected_classification": "STALE_MODEL_MAP",
+    "expected_status": "FAIL",
+    "expected_blocker_reason_code": "TARGET_TRUTH_SPLIT_MISMATCH",
+    "all_assertions_passed": true
+  },
+  "gate_implementation_summary": {
+    "entrypoint": "validate_pre_live_gate_v25.py:collect_truth_split (line 523)",
+    "classifier": "validate_pre_live_gate_v25.py:classify_truth_split_row (line 174)",
+    "model_map_reader": "validate_pre_live_gate_v25.py:model_map_declared_step_keys (line 507)",
+    "loop_hardcoded_flags": {
+      "runner_active": true,
+      "prompt_resolution_active": true,
+      "note": "STALE_RUNNER_REGISTRY and STALE_PROMPTSET are dead branches via the main collection loop path; only reachable by calling classify_truth_split_row directly"
+    }
+  },
+  "validations": [
+    {
+      "name": "drift_returns_fail",
+      "status": "PASS",
+      "evidence": "payload[status]==FAIL when step_id not in model_map_declared_step_keys()"
+    },
+    {
+      "name": "blocker_reason_code",
+      "status": "PASS",
+      "evidence": "blockers[0].reason_code == TARGET_TRUTH_SPLIT_MISMATCH"
+    },
+    {
+      "name": "classification_stale_model_map",
+      "status": "PASS",
+      "evidence": "payload[rows][0][classification] == STALE_MODEL_MAP"
+    },
+    {
+      "name": "target_phase_mismatch_count",
+      "status": "PASS",
+      "evidence": "payload[target_phase_mismatch_count] >= 1"
+    },
+    {
+      "name": "no_regression",
+      "status": "PASS",
+      "evidence": "9 pre-existing tests all pass; 0 failures"
+    },
+    {
+      "name": "no_runtime_code_modified",
+      "status": "PASS",
+      "evidence": "validate_pre_live_gate_v25.py not in git diff"
+    },
+    {
+      "name": "no_forbidden_paths_touched",
+      "status": "PASS",
+      "evidence": "queue_drain / batch_resolve / schemas / config / .github / src not in modified files"
+    }
+  ],
+  "runtime_code_changed": false,
+  "tests_added_or_modified": [
+    "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py:test_collect_truth_split_fails_for_stale_drift_step"
+  ],
+  "docs_changed": [],
+  "pal_codereview_status": "PASS_WITH_RISKS",
+  "pal_codereview_notes": "gemini-2.5-pro 429 on external validation step; internal two-step review completed. 1 MEDIUM (test structural coupling to real MODEL_MAP_PATH yaml), 3 LOW (SHA format inconsistency, field redundancy, NOT_RUN statuses). No blocking findings.",
+  "precommit_status": "NOT_RUN",
+  "no_runtime_code_touched": true,
+  "no_schema_created": true,
+  "no_config_created": true,
+  "no_merge_automation_touched": true,
+  "red_lines_preserved": true,
+  "remaining_unknowns": [
+    "STALE_RUNNER_REGISTRY and STALE_PROMPTSET branches in collect_truth_split loop are dead code (hardcoded runner_active=True and prompt_resolution_active=True); not tested, not fixed \u2014 separate concern",
+    "S7 gate not exercised against a real extraction run \u2014 this is static code path verification only"
+  ],
+  "stop_conditions_met": [],
+  "cleanup_status": "no_temp_files_created",
+  "next_recommended_packet": "TP-DMX-DCP-SEAM-ENFORCEMENT-001",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "pal-mcp-clink",
+    "auditor_model": "gemini",
+    "invocation": "mcp__pal__codereview: review of RTE S7 drift gate fix (test injection + VERIFY_AND_CLOSE close-out)",
+    "exit_code": 0,
+    "report_path": "proof/TP-RTE-S7-DRIFT-FIX-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "gemini-2.5-pro 429 on external validation step; internal two-step review completed. 1 MEDIUM (test structural coupling to real MODEL_MAP_PATH yaml), 3 LOW (SHA format inconsistency, field redundancy, NOT_RUN statuses). No blocking findings."
+    ],
+    "skip_reason": null
+  }
+}
