@@ -85,6 +85,36 @@ Implementer must return:
 
 ────────────────────────────────────────────────────────────
 
+## Local Proof Validation
+
+Before pushing, validate `embedded_audit` schema conformance locally:
+
+```bash
+python3 scripts/audit/validate_audit_proof.py proof/<PACKET_ID>/PROOF.json
+```
+
+This mirrors the CI `🔍 Audit Proof Validator` exactly (same script, same schema). The pre-commit hook `proof-embedded-audit-schema` also runs this automatically on staged `proof/*/PROOF.json` files.
+
+Common violations to check before push: `report_path` must match `^proof/[^/]+/AUDITOR(_REPAIR(_[0-9]+)?)?_REPORT\.md$`; `auditor_model` must be one of `['sonnet', 'claude-sonnet-4.6', 'opus', 'gemini', 'unknown']`; `findings[].status` must be one of `['OPEN', 'RESOLVED', 'ACCEPTED_RISK']`.
+
+────────────────────────────────────────────────────────────
+
+## Model Routing
+
+Record the model route actually used for this packet. Source of truth: `config/ai/model-routing.policy.yaml` (human guide: `docs/03-reference/governance/model-routing.md`). Cheap read lanes may gather facts but must not decide architecture, authority, security, CI, workflow legality, or merge readiness.
+
+For each substantive run, record:
+
+* actual tool and actual model (not just the intended route)
+* provider and stage slot (cheap_read / investigation / planner_strong / implementer_standard / judge_strong / self_audit)
+* requested model and whether a fallback was used (with reason)
+* reasoning effort or thinking mode, when available
+* cost policy and data/ZDR policy applied (required for OpenRouter broker routing)
+
+OpenRouter is a broker, not a model family: pin the model, set explicit provider/price/data policy, and record fallback provenance.
+
+────────────────────────────────────────────────────────────
+
 ## Embedded Audit
 
 Required when the packet touches governance, process, schema, prompt, proof, security, authority-boundary, or high-risk runtime surfaces.
@@ -130,6 +160,7 @@ Proof must include:
 * files changed
 * command outputs and exit codes
 * validation results
+* model routing record (actual tool/model/provider/stage slot; fallback + cost/data policy per `config/ai/model-routing.policy.yaml`)
 * embedded audit object when required
 * PR Steward readiness when a PR exists
 * UNKNOWNs, blockers, and NOT_RUN items

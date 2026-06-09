@@ -3,6 +3,7 @@
     "chatgpt-codex-connector",
     "copilot-pull-request-reviewer",
     "github-actions[bot]",
+    "github-actions",
     "dependabot[bot]",
     "hu3mann"
   ],
