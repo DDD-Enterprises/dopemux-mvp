@@ -86,6 +86,15 @@ servers:
     requires_env: ["EXA_API_KEY"]
     description: "Neural web search"
 
+  pal-stdio:
+    scope: singleton
+    transport: stdio
+    command: docker
+    args: ["exec", "-i", "mcp-pal-stdio", "/app/.venv/bin/python", "server.py"]
+    docker_compose_service: pal-stdio
+    requires_env: ["OPENAI_API_KEY", "GEMINI_API_KEY"]
+    description: "PAL via Docker MCP (thinkdeep, planner, consensus, debug, codereview, precommit)"
+
   MCP_DOCKER:
     scope: singleton
     transport: stdio
@@ -100,7 +109,7 @@ servers:
     transport: sse
     # Port var names match compose.yml conventions so `init` writes env that
     # `docker compose up` reads directly.
-    url_template: "http://localhost:${CONPORT_MCP_PORT:-3005}/mcp"
+    url_template: "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"
     port_var: CONPORT_MCP_PORT
     default_port_base: 3005
     extra_port_vars:
@@ -117,7 +126,7 @@ servers:
 
   dope-memory:
     scope: per-worktree
-    transport: sse
+    transport: http
     url_template: "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp"
     port_var: DOPE_MEMORY_PORT
     default_port_base: 3020
