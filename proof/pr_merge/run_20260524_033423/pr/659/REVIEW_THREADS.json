@@ -1,0 +1,46 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw986DQU1o",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md",
+      "line": 10,
+      "original_line": 10,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987C1JAI",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Fix attestation that incorrectly claims no .claude edits**\n\nThis attestation is internally inconsistent with the same commit: `b30a29f0` adds/edits files under `.claude/` (`.claude/claude.md` and `.claude/modules/shared/governance-principles.md`), so asserting no `.claude/` edits makes the proof artifact inaccurate and can mislead any downstream audit/automation that relies on these attestations as factual evidence.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-19T18:37:35Z",
+          "path": "out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md",
+          "line": 10,
+          "original_line": 10
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986DQU1x",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "AGENTS.md",
+      "line": 125,
+      "original_line": 125,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987C1JAT",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Correct companion doc path to the actual tracked filename**\n\nThe new governance text points to `.claude/CLAUDE.md`, but this repository tracks `.claude/claude.md` (lowercase). On case-sensitive filesystems this breaks the documented cross-reference and the “keep these three files in sync” instruction, which can cause future updates to target a non-existent file.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-19T18:37:35Z",
+          "path": "AGENTS.md",
+          "line": 125,
+          "original_line": 125
+        }
+      ]
+    }
+  ]
+}

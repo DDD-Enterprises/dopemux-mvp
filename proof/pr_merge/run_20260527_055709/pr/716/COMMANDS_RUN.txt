@@ -1,0 +1,156 @@
+$ git fetch origin pull/716/head:prmerge/20260527_055709-716
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/716/head -> prmerge/20260527_055709-716
+
+$ git worktree add /tmp/dopemux-pr-merge-716-20260527_055709 prmerge/20260527_055709-716
+exit=0
+--- stdout ---
+HEAD is now at 2aee75e2a plan(orchestrator): seed DMX-ORCH-INTEGRATION-FOLLOWUP review fixes
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260527_055709-716')
+Updating files:  49% (6507/13103)
+Updating files:  50% (6552/13103)
+Updating files:  51% (6683/13103)
+Updating files:  52% (6814/13103)
+Updating files:  53% (6945/13103)
+Updating files:  54% (7076/13103)
+Updating files:  55% (7207/13103)
+Updating files:  56% (7338/13103)
+Updating files:  57% (7469/13103)
+Updating files:  58% (7600/13103)
+Updating files:  59% (7731/13103)
+Updating files:  60% (7862/13103)
+Updating files:  61% (7993/13103)
+Updating files:  62% (8124/13103)
+Updating files:  63% (8255/13103)
+Updating files:  64% (8386/13103)
+Updating files:  65% (8517/13103)
+Updating files:  66% (8648/13103)
+Updating files:  67% (8780/13103)
+Updating files:  68% (8911/13103)
+Updating files:  69% (9042/13103)
+Updating files:  70% (9173/13103)
+Updating files:  71% (9304/13103)
+Updating files:  72% (9435/13103)
+Updating files:  73% (9566/13103)
+Updating files:  74% (9697/13103)
+Updating files:  75% (9828/13103)
+Updating files:  76% (9959/13103)
+Updating files:  77% (10090/13103)
+Updating files:  78% (10221/13103)
+Updating files:  79% (10352/13103)
+Updating files:  80% (10483/13103)
+Updating files:  81% (10614/13103)
+Updating files:  82% (10745/13103)
+Updating files:  83% (10876/13103)
+Updating files:  84% (11007/13103)
+Updating files:  85% (11138/13103)
+Updating files:  86% (11269/13103)
+Updating files:  87% (11400/13103)
+Updating files:  88% (11531/13103)
+Updating files:  89% (11662/13103)
+Updating files:  90% (11793/13103)
+Updating files:  91% (11924/13103)
+Updating files:  92% (12055/13103)
+Updating files:  93% (12186/13103)
+Updating files:  94% (12317/13103)
+Updating files:  95% (12448/13103)
+Updating files:  96% (12579/13103)
+Updating files:  97% (12710/13103)
+Updating files:  98% (12841/13103)
+Updating files:  99% (12972/13103)
+Updating files: 100% (13103/13103)
+Updating files: 100% (13103/13103), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+2aee75e2a36c08a7e9b612900a7e68d7cdfa33b4
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E91vx", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWACR"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E91vy", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWAF7"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E92e7", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWAKu"}}}}
+
+$ gh pr update-branch 716 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin claude/tp-dmx-orch-followup-packets
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                claude/tp-dmx-orch-followup-packets -> FETCH_HEAD
+
+$ git reset --hard origin/claude/tp-dmx-orch-followup-packets
+exit=0
+--- stdout ---
+HEAD is now at 2aee75e2a plan(orchestrator): seed DMX-ORCH-INTEGRATION-FOLLOWUP review fixes
+
+$ git diff --name-only --diff-filter=ACMR 898310bd01cf48b2703a166b429d4b330ec9f84e...HEAD
+exit=0
+--- stdout ---
+proof/dmx-orch-integration/TP-DMX-ORCH-009-LIVE/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-012-LIVE/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-013-LIVE/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-014A-UPSTREAM/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-015-TUI/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-016-DAEMON/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-017-FINAL/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json
+task-packets/generated/TP-DMX-ORCH-009-LIVE.json
+task-packets/generated/TP-DMX-ORCH-012-LIVE.json
+task-packets/generated/TP-DMX-ORCH-013-LIVE.json
+task-packets/generated/TP-DMX-ORCH-014A-UPSTREAM.json
+task-packets/generated/TP-DMX-ORCH-015-TUI.json
+task-packets/generated/TP-DMX-ORCH-016-DAEMON.json
+task-packets/generated/TP-DMX-ORCH-017-FINAL.json
+task-packets/generated/TP-DMX-ORCH-DOCS-001.json
+task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files proof/dmx-orch-integration/TP-DMX-ORCH-009-LIVE/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-012-LIVE/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-013-LIVE/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-014A-UPSTREAM/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-015-TUI/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-016-DAEMON/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-017-FINAL/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-PROOF-PERPACKET-001/PROOF.json task-packets/generated/TP-DMX-ORCH-009-LIVE.json task-packets/generated/TP-DMX-ORCH-012-LIVE.json task-packets/generated/TP-DMX-ORCH-013-LIVE.json task-packets/generated/TP-DMX-ORCH-014A-UPSTREAM.json task-packets/generated/TP-DMX-ORCH-015-TUI.json task-packets/generated/TP-DMX-ORCH-016-DAEMON.json task-packets/generated/TP-DMX-ORCH-017-FINAL.json task-packets/generated/TP-DMX-ORCH-DOCS-001.json task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files......................(no files to check)Skipped
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-716-20260527_055709
+exit=0
+

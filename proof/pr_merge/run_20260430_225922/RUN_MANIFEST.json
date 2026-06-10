@@ -1,0 +1,29 @@
+{
+  "run_id": "20260430_225922",
+  "mode": "preflight",
+  "repo_root": "/Users/hue/code/dopemux-mvp",
+  "repo_slug": "DDD-Enterprises/dopemux-mvp",
+  "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d",
+  "artifact_schema_versions": {
+    "artifact_version": "3.1",
+    "tool_version": "3.1.0",
+    "policy_schema_version": "1"
+  },
+  "completed_phases": [],
+  "resumable_phases": [
+    "queue-scan",
+    "pr-plan",
+    "pr-apply",
+    "pr-merge",
+    "queue-drain"
+  ],
+  "invalidation_conditions": [
+    "policy fingerprint changes",
+    "planned PR head SHA changes",
+    "planned PR base SHA changes",
+    "review state changes"
+  ],
+  "pr_states": {},
+  "artifact_pointers": {},
+  "optional_artifacts": {}
+}

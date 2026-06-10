@@ -1,0 +1,369 @@
+{
+  "run_id": "20260530_172644",
+  "pr_state": {
+    "pr_id": 727,
+    "title": "feat(qa): dopemux-qa automated QA harness + beta-readiness audit report",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "claude/hopeful-shirley-656b07",
+    "ci_status": "SUCCESS",
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "BLOCKED",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-31T00:24:16Z",
+    "is_draft": false,
+    "auto_merge_enabled": false,
+    "additions": 9533,
+    "deletions": 3396,
+    "changed_files": 44,
+    "unresolved_threads": 0,
+    "active_unresolved_threads": 0,
+    "outdated_unresolved_threads": 0,
+    "pr_class": "READY",
+    "risk_score": 13369.0,
+    "check_summary": {
+      "total": 22,
+      "success": 22,
+      "failure": 0,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 0,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "merge_ready",
+    "head_sha": "97da74c9138ed9fceba8dcfffc35cf62b0346552",
+    "base_sha": "755bf38460d1f2f6bba6e072ec9a627e9e218b15"
+  },
+  "lifecycle_state": "merge_ready",
+  "apply_actions": [
+    "rebase claude/hopeful-shirley-656b07 onto main",
+    "resolve review threads",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "rebase_merge",
+    "command": [
+      "gh",
+      "pr",
+      "merge",
+      "727",
+      "--rebase",
+      "--delete-branch"
+    ],
+    "reason": "All gates are green; rebase merge selected by default.",
+    "reason_code": "rebase_merge_ready"
+  },
+  "blockers": [],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "diff_size": 12929
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 13369.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 22,
+        "checks_success": 22,
+        "checks_failure": 0,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)",
+            "ci-summary"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [],
+        "blocker_types": [],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "passed",
+      "details": {
+        "status": "passed",
+        "required_for_merge_ready": true,
+        "passed": true,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run --files .pre-commit-config.yaml claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md.v1.bak claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md.v1.bak claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md.v1.bak claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md.v1.bak claudedocs/beta-readiness-2026-05-29/04-IMPLEMENTER-ASSIGNMENTS.md claudedocs/beta-readiness-2026-05-29/05-DISPATCH-PROMPTS.md config/repo_hygiene/root_hygiene_policy.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json pyproject.toml qa/.env.example qa/README.md qa/SKILL.md qa/backlog-map.yaml qa/baseline/baseline.json qa/baseline/snapshots/.gitkeep qa/lib/qa_common.py qa/lib/qa_common.sh qa/results/.gitkeep qa/runbook.md qa/scenarios/00_env_up.sh qa/scenarios/01_probe_entrypoints.sh qa/scenarios/10_install_gauntlet.sh qa/scenarios/20_cli_sweep.py qa/scenarios/30_mcp_roundtrips.sh qa/scenarios/40_multi_instance_collision.sh qa/scenarios/50_hooks_lifecycle.sh qa/scenarios/60_rte_routing_safety.sh qa/scenarios/61_live_lane.sh qa/scenarios/70_pytest_lanes.sh qa/scenarios/80_docs_drift.py qa/scenarios/90_tui_renders.sh qa/scenarios/99_env_down.sh src/dopemux/orchestrator/ui/data_sources.py uv.lock",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "Validate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-frontmatter-fix",
+            "command": "python scripts/docs_frontmatter_guard.py --fix",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-validator",
+            "command": "python scripts/docs_validator.py",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-hygiene",
+            "command": "python scripts/check_docs_hygiene.py --check",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-filename-hygiene",
+            "command": "python scripts/check_docs_filename_hygiene.py --check",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "root-hygiene",
+            "command": "python scripts/check_root_hygiene.py",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "root-hygiene: no candidate files to check\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "20d1b2091f17abb38f80f46bbba5ad84cf799548afaed90dafbc90a3da6fd955",
+          "valid_for_sha": "97da74c9138ed9fceba8dcfffc35cf62b0346552",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "discovered",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        },
+        "failure_fingerprint": null
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "merge_readiness",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "passed",
+    "required_for_merge_ready": true,
+    "passed": true,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run --files .pre-commit-config.yaml claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md.v1.bak claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md.v1.bak claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md.v1.bak claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md.v1.bak claudedocs/beta-readiness-2026-05-29/04-IMPLEMENTER-ASSIGNMENTS.md claudedocs/beta-readiness-2026-05-29/05-DISPATCH-PROMPTS.md config/repo_hygiene/root_hygiene_policy.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json pyproject.toml qa/.env.example qa/README.md qa/SKILL.md qa/backlog-map.yaml qa/baseline/baseline.json qa/baseline/snapshots/.gitkeep qa/lib/qa_common.py qa/lib/qa_common.sh qa/results/.gitkeep qa/runbook.md qa/scenarios/00_env_up.sh qa/scenarios/01_probe_entrypoints.sh qa/scenarios/10_install_gauntlet.sh qa/scenarios/20_cli_sweep.py qa/scenarios/30_mcp_roundtrips.sh qa/scenarios/40_multi_instance_collision.sh qa/scenarios/50_hooks_lifecycle.sh qa/scenarios/60_rte_routing_safety.sh qa/scenarios/61_live_lane.sh qa/scenarios/70_pytest_lanes.sh qa/scenarios/80_docs_drift.py qa/scenarios/90_tui_renders.sh qa/scenarios/99_env_down.sh src/dopemux/orchestrator/ui/data_sources.py uv.lock",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "Validate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-frontmatter-fix",
+        "command": "python scripts/docs_frontmatter_guard.py --fix",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-validator",
+        "command": "python scripts/docs_validator.py",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-hygiene",
+        "command": "python scripts/check_docs_hygiene.py --check",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-filename-hygiene",
+        "command": "python scripts/check_docs_filename_hygiene.py --check",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "root-hygiene",
+        "command": "python scripts/check_root_hygiene.py",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "root-hygiene: no candidate files to check\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "20d1b2091f17abb38f80f46bbba5ad84cf799548afaed90dafbc90a3da6fd955",
+      "valid_for_sha": "97da74c9138ed9fceba8dcfffc35cf62b0346552",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "failure_fingerprint": null
+  },
+  "thread_dispositions": [],
+  "fingerprint": {
+    "input_fingerprint": "1ea0da13eaddfe794610f073085391b51d163c58c33189a0448ad3ef1e2644b5",
+    "valid_for_sha": "97da74c9138ed9fceba8dcfffc35cf62b0346552",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "explain": "{\"why_blocked\": [], \"evidence\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 12929}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"merge\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 12929}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 13369.0}, \"source\": \"heuristics\", \"override\": null}]}",
+    "operator_state": ""
+  },
+  "blocked_by_global_fix_pr": null
+}

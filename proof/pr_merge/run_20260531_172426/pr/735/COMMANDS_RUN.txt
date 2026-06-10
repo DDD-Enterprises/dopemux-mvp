@@ -1,0 +1,106 @@
+$ git fetch origin pull/735/head:prmerge/20260531_172426-735
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/735/head -> prmerge/20260531_172426-735
+
+$ git worktree add /tmp/dopemux-pr-merge-735-20260531_172426 prmerge/20260531_172426-735
+exit=0
+--- stdout ---
+HEAD is now at 7bc925584 fix(install): apply beta install review cleanup
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260531_172426-735')
+Updating files:  29% (4065/13602)
+Updating files:  30% (4081/13602)
+Updating files:  31% (4217/13602)
+Updating files:  32% (4353/13602)
+Updating files:  33% (4489/13602)
+Updating files:  34% (4625/13602)
+Updating files:  35% (4761/13602)
+Updating files:  36% (4897/13602)
+Updating files:  37% (5033/13602)
+Updating files:  38% (5169/13602)
+Updating files:  39% (5305/13602)
+Updating files:  40% (5441/13602)
+Updating files:  41% (5577/13602)
+Updating files:  42% (5713/13602)
+Updating files:  43% (5849/13602)
+Updating files:  44% (5985/13602)
+Updating files:  45% (6121/13602)
+Updating files:  46% (6257/13602)
+Updating files:  47% (6393/13602)
+Updating files:  48% (6529/13602)
+Updating files:  49% (6665/13602)
+Updating files:  50% (6801/13602)
+Updating files:  51% (6938/13602)
+Updating files:  52% (7074/13602)
+Updating files:  53% (7210/13602)
+Updating files:  54% (7346/13602)
+Updating files:  55% (7482/13602)
+Updating files:  56% (7618/13602)
+Updating files:  57% (7754/13602)
+Updating files:  58% (7890/13602)
+Updating files:  59% (8026/13602)
+Updating files:  60% (8162/13602)
+Updating files:  61% (8298/13602)
+Updating files:  62% (8434/13602)
+Updating files:  63% (8570/13602)
+Updating files:  64% (8706/13602)
+Updating files:  65% (8842/13602)
+Updating files:  66% (8978/13602)
+Updating files:  67% (9114/13602)
+Updating files:  68% (9250/13602)
+Updating files:  69% (9386/13602)
+Updating files:  70% (9522/13602)
+Updating files:  71% (9658/13602)
+Updating files:  72% (9794/13602)
+Updating files:  73% (9930/13602)
+Updating files:  74% (10066/13602)
+Updating files:  75% (10202/13602)
+Updating files:  76% (10338/13602)
+Updating files:  77% (10474/13602)
+Updating files:  77% (10555/13602)
+Updating files:  78% (10610/13602)
+Updating files:  79% (10746/13602)
+Updating files:  80% (10882/13602)
+Updating files:  81% (11018/13602)
+Updating files:  82% (11154/13602)
+Updating files:  83% (11290/13602)
+Updating files:  84% (11426/13602)
+Updating files:  85% (11562/13602)
+Updating files:  86% (11698/13602)
+Updating files:  87% (11834/13602)
+Updating files:  88% (11970/13602)
+Updating files:  89% (12106/13602)
+Updating files:  90% (12242/13602)
+Updating files:  91% (12378/13602)
+Updating files:  92% (12514/13602)
+Updating files:  93% (12650/13602)
+Updating files:  94% (12786/13602)
+Updating files:  95% (12922/13602)
+Updating files:  96% (13058/13602)
+Updating files:  97% (13194/13602)
+Updating files:  98% (13330/13602)
+Updating files:  99% (13466/13602)
+Updating files: 100% (13602/13602)
+Updating files: 100% (13602/13602), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+7bc925584e605147a9674dec4ef5d1f210e7491b
+
+$ gh pr update-branch 735 --rebase
+exit=1
+--- stderr ---
+GraphQL: Something went wrong while executing your query on 2026-06-01T00:25:07Z. Please include `EAA5:38590A:10BCA472:4017CED3:6A1CD162` when reporting this issue.
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-735-20260531_172426
+exit=0
+
+$ gh pr merge 735 --rebase --delete-branch
+exit=1
+--- stderr ---
+! Pull request DDD-Enterprises/dopemux-mvp#735 was already merged
+failed to delete local branch fix/beta-install-02-dopemux-network: failed to run git: error: cannot delete branch 'fix/beta-install-02-dopemux-network' used by worktree at '/Users/hue/code/dopemux-mvp-wt-pr735-claude-review'
+

@@ -1,0 +1,190 @@
+$ git fetch origin pull/543/head:prmerge/20260430_230505-543
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/543/head -> prmerge/20260430_230505-543
+
+$ git worktree add /tmp/dopemux-pr-merge-543-20260430_230505 prmerge/20260430_230505-543
+exit=0
+--- stdout ---
+HEAD is now at 552ce36c8 fix(docs): rename agent workflow doc to kebab-case
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260430_230505-543')
+Updating files:  12% (1469/12148)
+Updating files:  13% (1580/12148)
+Updating files:  14% (1701/12148)
+Updating files:  15% (1823/12148)
+Updating files:  16% (1944/12148)
+Updating files:  17% (2066/12148)
+Updating files:  18% (2187/12148)
+Updating files:  19% (2309/12148)
+Updating files:  20% (2430/12148)
+Updating files:  21% (2552/12148)
+Updating files:  22% (2673/12148)
+Updating files:  23% (2795/12148)
+Updating files:  24% (2916/12148)
+Updating files:  25% (3037/12148)
+Updating files:  26% (3159/12148)
+Updating files:  27% (3280/12148)
+Updating files:  28% (3402/12148)
+Updating files:  29% (3523/12148)
+Updating files:  30% (3645/12148)
+Updating files:  31% (3766/12148)
+Updating files:  32% (3888/12148)
+Updating files:  33% (4009/12148)
+Updating files:  34% (4131/12148)
+Updating files:  35% (4252/12148)
+Updating files:  36% (4374/12148)
+Updating files:  37% (4495/12148)
+Updating files:  38% (4617/12148)
+Updating files:  39% (4738/12148)
+Updating files:  40% (4860/12148)
+Updating files:  41% (4981/12148)
+Updating files:  42% (5103/12148)
+Updating files:  43% (5224/12148)
+Updating files:  43% (5229/12148)
+Updating files:  44% (5346/12148)
+Updating files:  45% (5467/12148)
+Updating files:  46% (5589/12148)
+Updating files:  47% (5710/12148)
+Updating files:  48% (5832/12148)
+Updating files:  49% (5953/12148)
+Updating files:  50% (6074/12148)
+Updating files:  51% (6196/12148)
+Updating files:  52% (6317/12148)
+Updating files:  53% (6439/12148)
+Updating files:  54% (6560/12148)
+Updating files:  55% (6682/12148)
+Updating files:  56% (6803/12148)
+Updating files:  57% (6925/12148)
+Updating files:  58% (7046/12148)
+Updating files:  59% (7168/12148)
+Updating files:  60% (7289/12148)
+Updating files:  61% (7411/12148)
+Updating files:  62% (7532/12148)
+Updating files:  63% (7654/12148)
+Updating files:  64% (7775/12148)
+Updating files:  65% (7897/12148)
+Updating files:  66% (8018/12148)
+Updating files:  67% (8140/12148)
+Updating files:  68% (8261/12148)
+Updating files:  69% (8383/12148)
+Updating files:  70% (8504/12148)
+Updating files:  71% (8626/12148)
+Updating files:  72% (8747/12148)
+Updating files:  72% (8852/12148)
+Updating files:  73% (8869/12148)
+Updating files:  74% (8990/12148)
+Updating files:  75% (9111/12148)
+Updating files:  76% (9233/12148)
+Updating files:  77% (9354/12148)
+Updating files:  78% (9476/12148)
+Updating files:  79% (9597/12148)
+Updating files:  80% (9719/12148)
+Updating files:  81% (9840/12148)
+Updating files:  82% (9962/12148)
+Updating files:  83% (10083/12148)
+Updating files:  84% (10205/12148)
+Updating files:  85% (10326/12148)
+Updating files:  86% (10448/12148)
+Updating files:  87% (10569/12148)
+Updating files:  88% (10691/12148)
+Updating files:  89% (10812/12148)
+Updating files:  90% (10934/12148)
+Updating files:  91% (11055/12148)
+Updating files:  92% (11177/12148)
+Updating files:  93% (11298/12148)
+Updating files:  94% (11420/12148)
+Updating files:  95% (11541/12148)
+Updating files:  96% (11663/12148)
+Updating files:  97% (11784/12148)
+Updating files:  98% (11906/12148)
+Updating files:  99% (12027/12148)
+Updating files: 100% (12148/12148)
+Updating files: 100% (12148/12148), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+552ce36c864001390862865e1f97cad769e770e9
+
+$ gh pr update-branch 543 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin agents/dopemux-copilot-agent-specs
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                agents/dopemux-copilot-agent-specs -> FETCH_HEAD
+
+$ git reset --hard origin/agents/dopemux-copilot-agent-specs
+exit=0
+--- stdout ---
+HEAD is now at 552ce36c8 fix(docs): rename agent workflow doc to kebab-case
+
+$ git diff --name-only --diff-filter=ACMR 3a19442eac0f63cc4f3e239bbf26583415318c78...HEAD
+exit=0
+--- stdout ---
+.github/agents/dopemux-implementer.agent.md
+.github/agents/dopemux-planner.agent.md
+.github/agents/dopemux-reviewer.agent.md
+.github/agents/dopemux-testgen.agent.md
+docs/03-reference/governance/agent-workflow.md
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .github/agents/dopemux-implementer.agent.md .github/agents/dopemux-planner.agent.md .github/agents/dopemux-reviewer.agent.md .github/agents/dopemux-testgen.agent.md docs/03-reference/governance/agent-workflow.md
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/03-reference/governance/agent-workflow.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/03-reference/governance/agent-workflow.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/03-reference/governance/agent-workflow.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/03-reference/governance/agent-workflow.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-543-20260430_230505
+exit=0
+
+$ gh pr merge 543 --auto --rebase
+exit=0
+

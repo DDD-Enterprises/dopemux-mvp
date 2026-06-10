@@ -1,0 +1,550 @@
+{
+  "pr_id": "715",
+  "cycle_id": "142923af-72f3-40c6-bbfe-098a2d934145",
+  "implicit_actions": [
+    {
+      "action": "REFRESH_STATE",
+      "reason": "Starting closed-loop cycle",
+      "timestamp": 1779989653.1404831
+    },
+    {
+      "action": "SELECT_TACTIC",
+      "reason": "Computing next safe tactic",
+      "timestamp": 1779989653.140485
+    },
+    {
+      "action": "RECOMPUTE_SUMMARY",
+      "reason": "Updating posture and blockers after tactic selection",
+      "timestamp": 1779989653.140495
+    }
+  ],
+  "state_before": {
+    "run_id": "20260528_103339",
+    "pr_state": {
+      "pr_id": 715,
+      "title": "\ud83c\udfa8 Palette: Enhanced Notification Scannability & Iconography",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "palette-notification-iconography-9918379728212595040",
+      "ci_status": "SUCCESS",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "BLOCKED",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-05-28T10:30:59Z",
+      "is_draft": false,
+      "auto_merge_enabled": true,
+      "additions": 42,
+      "deletions": 3,
+      "changed_files": 1,
+      "unresolved_threads": 3,
+      "active_unresolved_threads": 2,
+      "outdated_unresolved_threads": 1,
+      "pr_class": "COMMENTS_ONLY",
+      "risk_score": 235.0,
+      "check_summary": {
+        "total": 21,
+        "success": 21,
+        "failure": 0,
+        "pending": 0,
+        "required_pending": 0,
+        "required_failure": 0,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "3fb24e590724333a7534a5a1250d86d57e6e507d",
+      "base_sha": "ef0c30bf43ba01f55f9247b9d755b57bccaa74b5"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase palette-notification-iconography-9918379728212595040 onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "rebase_merge",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "715",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "All gates are green; rebase merge selected by default.",
+      "reason_code": "rebase_merge_ready"
+    },
+    "blockers": [
+      {
+        "type": "active_thread",
+        "source": "github_protection_review",
+        "name": "2 active unresolved review threads remain.",
+        "details": null,
+        "metadata": {
+          "active_threads": 2
+        }
+      },
+      {
+        "type": "validation_not_executed",
+        "source": "local_validation",
+        "name": "Local validation is required before merge readiness can be declared.",
+        "details": null,
+        "metadata": {
+          "validation_status": "not_executed"
+        }
+      }
+    ],
+    "warnings": [],
+    "observations": [],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 21,
+          "checks_success": 21,
+          "checks_failure": 0,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)",
+              "ci-summary"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [],
+          "blocker_types": [],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "not_executed",
+        "details": {
+          "status": "not_executed",
+          "required_for_merge_ready": true,
+          "passed": false,
+          "attempts": 0,
+          "remediation_applied": false,
+          "steps": [],
+          "input_fingerprint": null,
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "not_executed",
+      "required_for_merge_ready": true,
+      "passed": false,
+      "attempts": 0,
+      "remediation_applied": false,
+      "steps": [],
+      "input_fingerprint": null,
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [
+      {
+        "thread_id": "PRRT_kwDOPyIw986E81ZX",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "ui-dashboard/src/App.tsx",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw986E81Zr",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "ui-dashboard/src/App.tsx",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw986E81Zy",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "ui-dashboard/src/App.tsx",
+        "applied": false,
+        "escalation_needed": false
+      }
+    ],
+    "fingerprint": {
+      "input_fingerprint": "11268b8aa4822d74b5103dc7b9bda79f816fd62d058fa94dbbee1820da34018b",
+      "valid_for_sha": "3fb24e590724333a7534a5a1250d86d57e6e507d",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"2 active unresolved review threads remain.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"2 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 2}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_not_executed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"not_executed\"}, \"source\": \"local_validation\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [], \"observations\": []}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "APPLY_FIX"
+    ]
+  },
+  "state_after": {
+    "run_id": "20260528_103339",
+    "pr_state": {
+      "pr_id": 715,
+      "title": "\ud83c\udfa8 Palette: Enhanced Notification Scannability & Iconography",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "palette-notification-iconography-9918379728212595040",
+      "ci_status": "SUCCESS",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "BLOCKED",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-05-28T10:30:59Z",
+      "is_draft": false,
+      "auto_merge_enabled": true,
+      "additions": 42,
+      "deletions": 3,
+      "changed_files": 1,
+      "unresolved_threads": 3,
+      "active_unresolved_threads": 2,
+      "outdated_unresolved_threads": 1,
+      "pr_class": "COMMENTS_ONLY",
+      "risk_score": 235.0,
+      "check_summary": {
+        "total": 21,
+        "success": 21,
+        "failure": 0,
+        "pending": 0,
+        "required_pending": 0,
+        "required_failure": 0,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "3fb24e590724333a7534a5a1250d86d57e6e507d",
+      "base_sha": "ef0c30bf43ba01f55f9247b9d755b57bccaa74b5"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase palette-notification-iconography-9918379728212595040 onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "rebase_merge",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "715",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "All gates are green; rebase merge selected by default.",
+      "reason_code": "rebase_merge_ready"
+    },
+    "blockers": [
+      {
+        "type": "active_thread",
+        "source": "github_protection_review",
+        "name": "2 active unresolved review threads remain.",
+        "details": null,
+        "metadata": {
+          "active_threads": 2
+        }
+      },
+      {
+        "type": "validation_not_executed",
+        "source": "local_validation",
+        "name": "Local validation is required before merge readiness can be declared.",
+        "details": null,
+        "metadata": {
+          "validation_status": "not_executed"
+        }
+      }
+    ],
+    "warnings": [],
+    "observations": [],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 21,
+          "checks_success": 21,
+          "checks_failure": 0,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)",
+              "ci-summary"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [],
+          "blocker_types": [],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "not_executed",
+        "details": {
+          "status": "not_executed",
+          "required_for_merge_ready": true,
+          "passed": false,
+          "attempts": 0,
+          "remediation_applied": false,
+          "steps": [],
+          "input_fingerprint": null,
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "not_executed",
+      "required_for_merge_ready": true,
+      "passed": false,
+      "attempts": 0,
+      "remediation_applied": false,
+      "steps": [],
+      "input_fingerprint": null,
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [
+      {
+        "thread_id": "PRRT_kwDOPyIw986E81ZX",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "ui-dashboard/src/App.tsx",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw986E81Zr",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "ui-dashboard/src/App.tsx",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw986E81Zy",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "ui-dashboard/src/App.tsx",
+        "applied": false,
+        "escalation_needed": false
+      }
+    ],
+    "fingerprint": {
+      "input_fingerprint": "11268b8aa4822d74b5103dc7b9bda79f816fd62d058fa94dbbee1820da34018b",
+      "valid_for_sha": "3fb24e590724333a7534a5a1250d86d57e6e507d",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"2 active unresolved review threads remain.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"2 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 2}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_not_executed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"not_executed\"}, \"source\": \"local_validation\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [], \"observations\": []}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "APPLY_FIX"
+    ],
+    "pr_id": "715",
+    "posture": "HOLD",
+    "refreshed_at": 1779989653.140484,
+    "recomputed_at": 1779989653.140498,
+    "last_event": {
+      "type": "cycle_complete"
+    },
+    "selected_tactic": "APPLY_FIX"
+  },
+  "next_tactic": "APPLY_FIX",
+  "posture": "HOLD",
+  "computed_at": 1779989653.140502,
+  "error": null,
+  "strategy_id": "DIRECT_REBASE_MERGE"
+}

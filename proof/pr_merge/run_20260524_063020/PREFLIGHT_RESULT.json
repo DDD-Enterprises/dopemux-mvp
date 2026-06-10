@@ -1,0 +1,69 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "name": "binary:git",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/git",
+      "remediation": "Install `git` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:gh",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/gh",
+      "remediation": "Install `gh` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:python",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/.local/share/mise/installs/python/3.12.13/bin/python",
+      "remediation": "Install `python` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:pre-commit",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/.local/share/mise/installs/python/3.12.13/bin/pre-commit",
+      "remediation": "Install `pre-commit` and ensure it is on PATH."
+    },
+    {
+      "name": "gh_auth",
+      "status": "passed",
+      "required": true,
+      "details": "github.com\n  ✓ Logged in to github.com account hu3mann (keyring)\n  - Active account: true\n  - Git operations protocol: ssh\n  - Token: gho_************************************\n  - Token scopes: 'admin:public_key', 'gist', 'read:org', 'repo', 'workflow'",
+      "remediation": "Run `gh auth login` for the target repository."
+    },
+    {
+      "name": "git_remote",
+      "status": "passed",
+      "required": true,
+      "details": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "remediation": "Configure the `origin` remote."
+    },
+    {
+      "name": "git_worktree",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp                                                  21b48ee10 [main]\n/private/tmp/dopemux-merge-688-20260524_063001                               667f61057 [codex/rte-costprofile-e4-finish-001]\n/Users/hue/.codex/worktrees/2013/dopemux-mvp                                 f746ca6c8 [codex/dmx-codex-refresh-003-proof-packet-templates]\n/Users/hue/.codex/worktrees/4274/dopemux-mvp                                 ee1e6fa2b [codex/dmx-codex-refresh-001-authority-matrix]\n/Users/hue/.codex/worktrees/4c14/dopemux-mvp                                 64f8103af [docs/frontdoor-positioning-002]\n/Users/hue/.codex/worktrees/f548/dopemux-mvp                                 2e745de63 (detached HEAD)\n/Users/hue/.codex/worktrees/fefd/dopemux-mvp                                 2e745de63 (detached HEAD)\n/Users/hue/.codex/worktrees/pr610-predictive-skip                            f61ea3f78 [palette-predictive-skip-13671302022856716165]\n/Users/hue/.codex/worktrees/pr683-rte-final-audit-secrets                    7eb82fd2e [codex/rte-final-audit-secrets-002]\n/Users/hue/.codex/worktrees/pr687-e3-remediation/dopemux-mvp                 f383fce6c [codex/rte-costprofile-e3-contracts-001]\n/Users/hue/.codex/worktrees/pr690-e7-remediation                             c8b3a67c5 [codex/rte-costprofile-e7-ladders-failover-001]\n/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-001                     dfb3fb662 [codex/rte-costprofile-e9-tests-001]\n/Users/hue/.codex/worktrees/rte-costprofile-foundation-main/dopemux-mvp      f256d30ea [codex/rte-costprofile-foundation-main-001]\n/Users/hue/.codex/worktrees/rte-final-audit-consent-001                      7833e5288 [codex/rte-final-audit-consent-001]\n/Users/hue/.codex/worktrees/rte-final-audit-model-refresh-004                567b42391 [codex/rte-final-audit-model-refresh-004]\n/Users/hue/.codex/worktrees/rte-macro-pkt-remaining-parallel-001/dopemux-mvp 72354075c [codex/rte-macro-pkt-remaining-parallel-001]\n/Users/hue/.codex/worktrees/tp-dmx-pr-queue-blockers-001                     21295870e [codex/tp-dmx-pr-queue-blockers-001]\n/Users/hue/.codex/worktrees/tp-dmx-pr-queue-blockers-001-20260520            ea582a32d [tp/dmx-pr-queue-blockers-001]\n/Users/hue/code/dopemux-mvp-audit-rte-debut                                  dcd162741 [audit/rte-pre-debut-2026-05-22]\n/Users/hue/code/dopemux-mvp-rte-prelive-validator-error-shape                eb8695e9e [codex/rte-prelive-validator-error-shape]\n/Users/hue/code/dopemux-mvp-wt-cockpit-design-system                         c836e3410 [codex/cockpit-design-system]\n/Users/hue/code/dopemux-mvp-wt-cockpit-pm-textual                            c90ed07c0 [test/pm-authority-ports]\n/Users/hue/code/dopemux-mvp/.claude/worktrees/goofy-haibt-fc568e             dfb3fb662 [codex/rte-costprofile-e8-yaml-v3-001]\n/Users/hue/code/dopemux-mvp/.claude/worktrees/inspiring-grothendieck-9c0a71  4b74f7992 [claude/inspiring-grothendieck-9c0a71]\n/Users/hue/code/dopemux-mvp/.worktrees/pr-664                                f9e82cdd0 [palette-ux-accessibility-refinement-10860697428029397597]\n/Users/hue/code/dopemux-worktrees/dopemux-cockpit-design-pickup-001          bafc0d03a [codex/cockpit-design-pickup-001]\n/Users/hue/code/dopemux-worktrees/dopemux-cockpit-main-state-recon-001       aa5e24edb [codex/cockpit-main-state-recon-001]\n/Users/hue/code/dopemux-worktrees/dopemux-cockpit-merge-execute-packet-001   097a22f9d [codex/cockpit-merge-execute-packet-001]\n/Users/hue/code/dopemux-worktrees/dopemux-cockpit-merge-stack-refresh-573    66489e060 [codex/cockpit-merge-stack-consolidate-001]",
+      "remediation": "Use a git version with worktree support."
+    },
+    {
+      "name": "git_ignorecase",
+      "status": "warning",
+      "required": false,
+      "details": "core.ignorecase=true",
+      "remediation": "Git case-insensitivity detected. Some renames might require `git mv` to be detected on this OS."
+    }
+  ],
+  "policy_resolution": {
+    "source": "repo",
+    "path": "/Users/hue/code/dopemux-mvp/config/pr_merge_specialist/policy.yaml",
+    "fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d",
+    "policy_schema_version": 1,
+    "overrides": []
+  },
+  "override_records": []
+}

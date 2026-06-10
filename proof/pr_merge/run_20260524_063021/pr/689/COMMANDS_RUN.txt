@@ -1,0 +1,232 @@
+$ git fetch origin pull/689/head:prmerge/20260524_063021-689
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/689/head -> prmerge/20260524_063021-689
+
+$ git worktree add /tmp/dopemux-pr-merge-689-20260524_063021 prmerge/20260524_063021-689
+exit=0
+--- stdout ---
+HEAD is now at f256d30ea fix(rte): add research docs frontmatter
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260524_063021-689')
+Updating files:  50% (6451/12803)
+Updating files:  51% (6530/12803)
+Updating files:  52% (6658/12803)
+Updating files:  53% (6786/12803)
+Updating files:  54% (6914/12803)
+Updating files:  55% (7042/12803)
+Updating files:  56% (7170/12803)
+Updating files:  57% (7298/12803)
+Updating files:  58% (7426/12803)
+Updating files:  59% (7554/12803)
+Updating files:  60% (7682/12803)
+Updating files:  61% (7810/12803)
+Updating files:  62% (7938/12803)
+Updating files:  63% (8066/12803)
+Updating files:  64% (8194/12803)
+Updating files:  65% (8322/12803)
+Updating files:  66% (8450/12803)
+Updating files:  67% (8579/12803)
+Updating files:  68% (8707/12803)
+Updating files:  69% (8835/12803)
+Updating files:  70% (8963/12803)
+Updating files:  71% (9091/12803)
+Updating files:  72% (9219/12803)
+Updating files:  73% (9347/12803)
+Updating files:  74% (9475/12803)
+Updating files:  75% (9603/12803)
+Updating files:  76% (9731/12803)
+Updating files:  77% (9859/12803)
+Updating files:  78% (9987/12803)
+Updating files:  79% (10115/12803)
+Updating files:  80% (10243/12803)
+Updating files:  81% (10371/12803)
+Updating files:  82% (10499/12803)
+Updating files:  83% (10627/12803)
+Updating files:  84% (10755/12803)
+Updating files:  85% (10883/12803)
+Updating files:  86% (11011/12803)
+Updating files:  87% (11139/12803)
+Updating files:  88% (11267/12803)
+Updating files:  89% (11395/12803)
+Updating files:  90% (11523/12803)
+Updating files:  91% (11651/12803)
+Updating files:  92% (11779/12803)
+Updating files:  93% (11907/12803)
+Updating files:  94% (12035/12803)
+Updating files:  95% (12163/12803)
+Updating files:  96% (12291/12803)
+Updating files:  96% (12403/12803)
+Updating files:  97% (12419/12803)
+Updating files:  98% (12547/12803)
+Updating files:  99% (12675/12803)
+Updating files: 100% (12803/12803)
+Updating files: 100% (12803/12803), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+f256d30ead59c330903a985743fe427fe211d80a
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986EXIVS", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYWyK"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986EXIVT", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYWzU"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986EXLHj", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYW0p"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986EXLHk", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYW17"}}}}
+
+$ gh pr update-branch 689 --rebase
+exit=0
+--- stdout ---
+✓ PR branch updated
+
+$ git fetch origin codex/rte-costprofile-foundation-main-001
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/rte-costprofile-foundation-main-001 -> FETCH_HEAD
+ + f256d30ea...60d808c62 codex/rte-costprofile-foundation-main-001 -> origin/codex/rte-costprofile-foundation-main-001  (forced update)
+
+$ git reset --hard origin/codex/rte-costprofile-foundation-main-001
+exit=0
+--- stdout ---
+HEAD is now at 60d808c62 fix(rte): add research docs frontmatter
+
+$ git diff --name-only --diff-filter=ACMR 2e745de630b919a433d22b85f94254949f1a44e5...HEAD
+exit=0
+--- stdout ---
+.Jules/palette.md
+.claude/claude.md
+.claude/modules/shared/governance-principles.md
+AGENTS.md
+README.md
+config/pricing.yaml
+docker/mcp-servers-source/desktop-commander/requirements.txt
+docker/mcp-servers-source/pal/pal-mcp-server/uv.lock
+docs/02-how-to/extraction/rte-cost-profiles.md
+docs/03-reference/governance/documentation-gap-register.md
+docs/04-explanation/product/elevator-pitches.md
+docs/04-explanation/product/faq.md
+docs/04-explanation/product/features-and-benefits.md
+docs/04-explanation/product/homepage-copy.md
+docs/04-explanation/product/positioning.md
+docs/06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md
+docs/06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md
+docs/06-research/extraction/rte-cost-profile-redesign/step-complexity-analysis-2026-05.md
+docs/06-research/extraction/rte-cost-profile-redesign/verified-model-inventory-2026-05.md
+docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md
+docs/INDEX.md
+docs/docs_index.yaml
+out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json
+out/rte-macro-pkt-remaining-parallel-001/CLOSEOUT.md
+out/rte-macro-pkt-remaining-parallel-001/DEPENDENCY_GRAPH.md
+out/rte-macro-pkt-remaining-parallel-001/MACRO_MANIFEST.json
+out/rte-macro-pkt-remaining-parallel-001/NO_LIVE_PROVIDER_ATTESTATION.md
+out/rte-macro-pkt-remaining-parallel-001/PARALLEL_SAFETY_MATRIX.md
+out/rte-macro-pkt-remaining-parallel-001/SUBPACKET_INDEX.md
+out/rte-macro-pkt-remaining-parallel-001/WAVE_PLAN.md
+out/rte-macro-pkt-remaining-parallel-001/WRITE_SCOPE_COLLISION_MATRIX.md
+out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md
+package-lock.json
+pyproject.toml
+services/conport_kg_ui/package-lock.json
+services/repo-truth-extractor/benchmarking/pricing/normalization.py
+services/repo-truth-extractor/lib/batch_clients.py
+services/repo-truth-extractor/lib/spend_ledger.py
+services/repo-truth-extractor/llm_runtime.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_cost_profiles.py
+services/repo-truth-extractor/tests/test_pricing_catalog.py
+services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py
+task-packets/INDEX.md
+task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json
+task-packets/generated/TP-RTE-COSTPROFILE-E3-CONTRACTS-001.json
+task-packets/generated/TP-RTE-COSTPROFILE-E4-FINISH-001.json
+task-packets/generated/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001.json
+task-packets/generated/TP-RTE-COSTPROFILE-E8-YAML-V3-001.json
+task-packets/generated/TP-RTE-COSTPROFILE-E9-TESTS-001.json
+task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-001.json
+task-packets/generated/TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001.json
+task-packets/generated/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001.json
+ui-dashboard/package-lock.json
+ui-dashboard/src/App.tsx
+ui-dashboard/src/components/TaskSequencer.tsx
+ui-dashboard/src/components/__tests__/Accessibility.test.ts
+uv.lock
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .Jules/palette.md .claude/claude.md .claude/modules/shared/governance-principles.md AGENTS.md README.md config/pricing.yaml docker/mcp-servers-source/desktop-commander/requirements.txt docker/mcp-servers-source/pal/pal-mcp-server/uv.lock docs/02-how-to/extraction/rte-cost-profiles.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/step-complexity-analysis-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/verified-model-inventory-2026-05.md docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md docs/INDEX.md docs/docs_index.yaml out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json out/rte-macro-pkt-remaining-parallel-001/CLOSEOUT.md out/rte-macro-pkt-remaining-parallel-001/DEPENDENCY_GRAPH.md out/rte-macro-pkt-remaining-parallel-001/MACRO_MANIFEST.json out/rte-macro-pkt-remaining-parallel-001/NO_LIVE_PROVIDER_ATTESTATION.md out/rte-macro-pkt-remaining-parallel-001/PARALLEL_SAFETY_MATRIX.md out/rte-macro-pkt-remaining-parallel-001/SUBPACKET_INDEX.md out/rte-macro-pkt-remaining-parallel-001/WAVE_PLAN.md out/rte-macro-pkt-remaining-parallel-001/WRITE_SCOPE_COLLISION_MATRIX.md out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md package-lock.json pyproject.toml services/conport_kg_ui/package-lock.json services/repo-truth-extractor/benchmarking/pricing/normalization.py services/repo-truth-extractor/lib/batch_clients.py services/repo-truth-extractor/lib/spend_ledger.py services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_pricing_catalog.py services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py task-packets/INDEX.md task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json task-packets/generated/TP-RTE-COSTPROFILE-E3-CONTRACTS-001.json task-packets/generated/TP-RTE-COSTPROFILE-E4-FINISH-001.json task-packets/generated/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001.json task-packets/generated/TP-RTE-COSTPROFILE-E8-YAML-V3-001.json task-packets/generated/TP-RTE-COSTPROFILE-E9-TESTS-001.json task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-001.json task-packets/generated/TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001.json task-packets/generated/TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001.json ui-dashboard/package-lock.json ui-dashboard/src/App.tsx ui-dashboard/src/components/TaskSequencer.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts uv.lock
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.................................................................................Passed
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/02-how-to/extraction/rte-cost-profiles.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/step-complexity-analysis-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/verified-model-inventory-2026-05.md docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md docs/INDEX.md task-packets/INDEX.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/02-how-to/extraction/rte-cost-profiles.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/step-complexity-analysis-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/verified-model-inventory-2026-05.md docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md docs/INDEX.md task-packets/INDEX.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/02-how-to/extraction/rte-cost-profiles.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/step-complexity-analysis-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/verified-model-inventory-2026-05.md docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md docs/INDEX.md task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-hygiene: total=14 active=14 quarantine=0 violations=0
+docs-hygiene: checked 14 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/02-how-to/extraction/rte-cost-profiles.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/step-complexity-analysis-2026-05.md docs/06-research/extraction/rte-cost-profile-redesign/verified-model-inventory-2026-05.md docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md docs/INDEX.md task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=14 active=14 quarantine=0 exempt=2 violations=0
+docs-filename-hygiene: checked 14 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986EXIVT", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYW-1"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986EXIVT"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986EXIVT","isResolved":true}}}}
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-689-20260524_063021
+exit=0
+

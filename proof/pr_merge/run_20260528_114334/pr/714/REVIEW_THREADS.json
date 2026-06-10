@@ -1,0 +1,256 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw986E2KHg",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "src/dopemux/orchestrator/operator_workflows.py",
+      "line": 461,
+      "original_line": 460,
+      "original_start_line": 458,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E_oU8",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Enforce transition proof schema version equality**\n\nThe transition proof validator only checks that `schema_version` is non-empty, so an envelope with an unsupported version (for example `\"999\"`) is still reported as `PASS`. In fail-closed workflows this can incorrectly accept incompatible proof formats and allow downstream readiness checks to trust envelopes they should reject; add an explicit supported-version check (as done in other validators) and fail on mismatches.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T15:44:09Z",
+          "path": "src/dopemux/orchestrator/operator_workflows.py",
+          "line": 461,
+          "original_line": 460
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWAnP",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:58:56Z",
+          "path": "src/dopemux/orchestrator/operator_workflows.py",
+          "line": 461,
+          "original_line": 460
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3YAN",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:35:56Z",
+          "path": "src/dopemux/orchestrator/operator_workflows.py",
+          "line": 461,
+          "original_line": 460
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986E2KHp",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "src/dopemux/commands/orchestrator_commands.py",
+      "line": null,
+      "original_line": 181,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E_oVJ",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Reject malformed PR queue entries gracefully**\n\nParsing `--pr` entries casts the first token directly with `int(number)` and does not handle conversion errors, so malformed input (e.g. `--pr abc` or `--pr x:passing:present`) raises an uncaught `ValueError` and aborts the command without a user-facing validation error. This makes the operator workflow brittle; handle parse failures and return a controlled CLI error (`BadParameter`) instead of crashing.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T15:44:09Z",
+          "path": "src/dopemux/commands/orchestrator_commands.py",
+          "line": null,
+          "original_line": 181
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWAqy",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:58:58Z",
+          "path": "src/dopemux/commands/orchestrator_commands.py",
+          "line": null,
+          "original_line": 181
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3YDI",
+          "author": "hu3mann",
+          "body": "Outdated thread candidate for auto-resolution; pending verification.",
+          "created_at": "2026-05-28T17:35:58Z",
+          "path": "src/dopemux/commands/orchestrator_commands.py",
+          "line": null,
+          "original_line": 181
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3YXM",
+          "author": "hu3mann",
+          "body": "✅ Automated verification passed for this auto_resolve_outdated.",
+          "created_at": "2026-05-28T17:36:14Z",
+          "path": "src/dopemux/commands/orchestrator_commands.py",
+          "line": null,
+          "original_line": 181
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986E2MuO",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "src/dopemux/orchestrator/validation/proof.py",
+      "line": 210,
+      "original_line": 210,
+      "original_start_line": 207,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E_rzb",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`supporting_artifacts` validation only checks `isinstance(item, str)` (allows empty strings). With warnings/blockers present, a payload could include `supporting_artifacts: [\"\"]` and bypass the “must be supported by artifacts” rule. Consider requiring non-empty strings (reuse `_non_empty_string` / `_string_list`) and treating empty-string entries as invalid or as missing support.\n",
+          "created_at": "2026-05-26T15:46:21Z",
+          "path": "src/dopemux/orchestrator/validation/proof.py",
+          "line": 210,
+          "original_line": 210
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWAuP",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:59:00Z",
+          "path": "src/dopemux/orchestrator/validation/proof.py",
+          "line": 210,
+          "original_line": 210
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3YFe",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:36:00Z",
+          "path": "src/dopemux/orchestrator/validation/proof.py",
+          "line": 210,
+          "original_line": 210
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986E2MvT",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json",
+      "line": null,
+      "original_line": 37,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E_r1A",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This proof bundle is missing several required governance fields called out in AGENTS.md §9 (e.g., validations with exit codes, codereview/precommit status, commit SHA, and PR URL or an explicit blocker). As-is, it’s hard to audit/reproduce the claimed PASS status and doesn’t meet the repo’s proof-and-finality requirements.",
+          "created_at": "2026-05-26T15:46:22Z",
+          "path": "proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json",
+          "line": null,
+          "original_line": 37
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWAxV",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:59:03Z",
+          "path": "proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json",
+          "line": null,
+          "original_line": 37
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3YHf",
+          "author": "hu3mann",
+          "body": "Outdated thread candidate for auto-resolution; pending verification.",
+          "created_at": "2026-05-28T17:36:01Z",
+          "path": "proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json",
+          "line": null,
+          "original_line": 37
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3YaD",
+          "author": "hu3mann",
+          "body": "✅ Automated verification passed for this auto_resolve_outdated.",
+          "created_at": "2026-05-28T17:36:16Z",
+          "path": "proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json",
+          "line": null,
+          "original_line": 37
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986E82ms",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+      "line": 124,
+      "original_line": 120,
+      "original_start_line": 119,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FIzlf",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Guard wrapper dispatch when policy file is unavailable**\n\nThis new dispatch path forwards all `orchestrator.*` MCP calls into `handle_orchestrator_tool_call`, which immediately classifies capabilities from `config/orchestrator/approval_policy.yaml`; in the `task-orchestrator` container image, that config tree is not copied (and no volume is mounted in `compose.yml`), so classification raises a file-not-found error and every newly added wrapper tool returns an error instead of functioning. Add an explicit fallback for missing policy data (fail-closed decision object) or ensure this dispatch does not depend on an absent on-disk policy file at runtime.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T23:15:56Z",
+          "path": "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+          "line": 124,
+          "original_line": 120
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWA1e",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:59:06Z",
+          "path": "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+          "line": 124,
+          "original_line": 120
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3YJ3",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:36:03Z",
+          "path": "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+          "line": 124,
+          "original_line": 120
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986E82mu",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "src/dopemux/orchestrator/policy.py",
+      "line": 263,
+      "original_line": 259,
+      "original_start_line": 254,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FIzlk",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Block automatic allow for write/destructive modes**\n\nAutomatic allowance is computed without considering capability mode, so a capability marked `decision: allow`, `automatic_allowed: true`, and `tier: T0/T1` is treated as `allowed=True` even if its mode is `write` or `destructive`; this creates a fail-open path if policy metadata is mis-tiered and can silently enable mutation-capable tools. Gate `allowed` on non-write modes (or an explicit read/analysis whitelist) so write/destructive capabilities cannot ever auto-pass.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T23:15:56Z",
+          "path": "src/dopemux/orchestrator/policy.py",
+          "line": 263,
+          "original_line": 259
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWA5M",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:59:08Z",
+          "path": "src/dopemux/orchestrator/policy.py",
+          "line": 263,
+          "original_line": 259
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3YMa",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:36:05Z",
+          "path": "src/dopemux/orchestrator/policy.py",
+          "line": 263,
+          "original_line": 259
+        }
+      ]
+    }
+  ]
+}

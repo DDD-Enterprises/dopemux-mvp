@@ -1,0 +1,872 @@
+{
+  "pr_id": "815",
+  "cycle_id": "b3cc860f-5565-4b9b-a455-68f494e0486d",
+  "state_before": {
+    "run_id": "20260604_160505",
+    "pr_state": {
+      "pr_id": 815,
+      "title": "feat(cockpit): add frame and rule render primitives",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "codex/cockpit-frame-rule-primitives-20260604",
+      "ci_status": "PENDING",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "BLOCKED",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-06-04T23:04:44Z",
+      "is_draft": false,
+      "auto_merge_enabled": false,
+      "additions": 83,
+      "deletions": 9,
+      "changed_files": 4,
+      "unresolved_threads": 1,
+      "active_unresolved_threads": 1,
+      "outdated_unresolved_threads": 0,
+      "pr_class": "COMMENTS_ONLY",
+      "risk_score": 302.0,
+      "check_summary": {
+        "total": 22,
+        "success": 9,
+        "failure": 0,
+        "pending": 13,
+        "required_pending": 13,
+        "required_failure": 0,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "04ac5c13c089e0bdbb9c85e32af4b8f0c30150c5",
+      "base_sha": "d2fe66cac6ecbe275807921289b6018ea72cd36d"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase codex/cockpit-frame-rule-primitives-20260604 onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "auto_merge_fallback",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "815",
+        "--auto",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "Required or optional checks are pending; enabling auto-merge.",
+      "reason_code": "auto_merge_active_checks"
+    },
+    "blockers": [
+      {
+        "type": "active_thread",
+        "source": "github_protection_review",
+        "name": "1 active unresolved review threads remain.",
+        "details": null,
+        "metadata": {
+          "active_threads": 1
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "ci_pending_but_local_passed",
+        "message": "GitHub CI is pending, but local validation passed.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "checks_total": 22,
+          "checks_success": 9,
+          "checks_failure": 0,
+          "checks_pending": 13,
+          "required_checks_pending": 13,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)",
+              "\ud83d\udcca CI Pipeline Summary"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [
+            "Analyze (javascript-typescript)",
+            "Analyze (python)",
+            "Analyze (ruby)",
+            "\ud83e\uddea Unit Tests"
+          ],
+          "blocker_types": [
+            "required_check_pending"
+          ],
+          "warning_types": []
+        },
+        "source": "local_validation",
+        "override": null
+      }
+    ],
+    "observations": [],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "a19ef3f1fc8c56f5df4995c67df3e6f68aed19dc7d09724cc69b95c122090e4e"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 22,
+          "checks_success": 9,
+          "checks_failure": 0,
+          "checks_pending": 13,
+          "required_checks_pending": 13,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)",
+              "\ud83d\udcca CI Pipeline Summary"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [
+            "Analyze (javascript-typescript)",
+            "Analyze (python)",
+            "Analyze (ruby)",
+            "\ud83e\uddea Unit Tests"
+          ],
+          "blocker_types": [
+            "required_check_pending"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "passed",
+        "details": {
+          "status": "passed",
+          "required_for_merge_ready": true,
+          "passed": true,
+          "attempts": 1,
+          "remediation_applied": false,
+          "steps": [
+            {
+              "name": "pre-commit",
+              "command": "pre-commit run --files out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-001/implementation-notes.md services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/ui/cockpit/render.py task-packets/INDEX.md task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json tests/unit/dopemux/ui/cockpit/test_cockpit_render.py",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-frontmatter-fix",
+              "command": "python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "All docs have valid frontmatter.\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-validator",
+              "command": "python scripts/docs_validator.py task-packets/INDEX.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "name": "docs-hygiene",
+              "command": "python scripts/check_docs_hygiene.py --check task-packets/INDEX.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "docs-hygiene: total=1 active=1 quarantine=0 violations=0\ndocs-hygiene: checked 1 files, OK\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-filename-hygiene",
+              "command": "python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0\ndocs-filename-hygiene: checked 1 files, OK\n",
+              "stderr": ""
+            },
+            {
+              "name": "root-hygiene",
+              "command": "python scripts/check_root_hygiene.py",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "root-hygiene: no candidate files to check\n",
+              "stderr": ""
+            }
+          ],
+          "input_fingerprint": {
+            "input_fingerprint": "06d916385f48547c5c39ce2e8064bd8d5d2c86f31264b4643ccccc3f1fc07d76",
+            "valid_for_sha": "4547d56dfb5301e9835d5f70f29b3b095812c9ad",
+            "stale_if": [
+              "PR head SHA changes",
+              "base SHA changes",
+              "effective policy fingerprint changes",
+              "applied tree contents change"
+            ],
+            "created_from_state": "discovered",
+            "review_state_hash": "",
+            "check_state_hash": "",
+            "validation_command_hash": "",
+            "apply_tree_sha": "",
+            "dirty_state": ""
+          },
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "passed",
+      "required_for_merge_ready": true,
+      "passed": true,
+      "attempts": 1,
+      "remediation_applied": false,
+      "steps": [
+        {
+          "name": "pre-commit",
+          "command": "pre-commit run --files out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-001/implementation-notes.md services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/ui/cockpit/render.py task-packets/INDEX.md task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json tests/unit/dopemux/ui/cockpit/test_cockpit_render.py",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-frontmatter-fix",
+          "command": "python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "All docs have valid frontmatter.\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-validator",
+          "command": "python scripts/docs_validator.py task-packets/INDEX.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "name": "docs-hygiene",
+          "command": "python scripts/check_docs_hygiene.py --check task-packets/INDEX.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "docs-hygiene: total=1 active=1 quarantine=0 violations=0\ndocs-hygiene: checked 1 files, OK\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-filename-hygiene",
+          "command": "python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0\ndocs-filename-hygiene: checked 1 files, OK\n",
+          "stderr": ""
+        },
+        {
+          "name": "root-hygiene",
+          "command": "python scripts/check_root_hygiene.py",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "root-hygiene: no candidate files to check\n",
+          "stderr": ""
+        }
+      ],
+      "input_fingerprint": {
+        "input_fingerprint": "06d916385f48547c5c39ce2e8064bd8d5d2c86f31264b4643ccccc3f1fc07d76",
+        "valid_for_sha": "4547d56dfb5301e9835d5f70f29b3b095812c9ad",
+        "stale_if": [
+          "PR head SHA changes",
+          "base SHA changes",
+          "effective policy fingerprint changes",
+          "applied tree contents change"
+        ],
+        "created_from_state": "discovered",
+        "review_state_hash": "",
+        "check_state_hash": "",
+        "validation_command_hash": "",
+        "apply_tree_sha": "",
+        "dirty_state": ""
+      },
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [
+      {
+        "thread_id": "PRRT_kwDOPyIw986HNWiC",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/ui/cockpit/render.py",
+        "applied": false,
+        "escalation_needed": false
+      }
+    ],
+    "fingerprint": {
+      "input_fingerprint": "7599f915e4ad6c2cea3c87256969daf36d763e8dda65ae2537b7bfd9b9493ade",
+      "valid_for_sha": "04ac5c13c089e0bdbb9c85e32af4b8f0c30150c5",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"1 active unresolved review threads remain.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"1 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 1}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"ci_pending_but_local_passed\", \"message\": \"GitHub CI is pending, but local validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 22, \"checks_success\": 9, \"checks_failure\": 0, \"checks_pending\": 13, \"required_checks_pending\": 13, \"required_checks_failed\": 0, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\", \"\\ud83d\\udcca CI Pipeline Summary\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [\"Analyze (javascript-typescript)\", \"Analyze (python)\", \"Analyze (ruby)\", \"\\ud83e\\uddea Unit Tests\"], \"blocker_types\": [\"required_check_pending\"], \"warning_types\": []}, \"source\": \"local_validation\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"ci_pending_but_local_passed\", \"message\": \"GitHub CI is pending, but local validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 22, \"checks_success\": 9, \"checks_failure\": 0, \"checks_pending\": 13, \"required_checks_pending\": 13, \"required_checks_failed\": 0, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\", \"\\ud83d\\udcca CI Pipeline Summary\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [\"Analyze (javascript-typescript)\", \"Analyze (python)\", \"Analyze (ruby)\", \"\\ud83e\\uddea Unit Tests\"], \"blocker_types\": [\"required_check_pending\"], \"warning_types\": []}, \"source\": \"local_validation\", \"override\": null}], \"observations\": []}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "APPLY_FIX"
+    ]
+  },
+  "state_after": {
+    "run_id": "20260604_160505",
+    "pr_state": {
+      "pr_id": 815,
+      "title": "feat(cockpit): add frame and rule render primitives",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "codex/cockpit-frame-rule-primitives-20260604",
+      "ci_status": "PENDING",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "BLOCKED",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-06-04T23:04:44Z",
+      "is_draft": false,
+      "auto_merge_enabled": false,
+      "additions": 83,
+      "deletions": 9,
+      "changed_files": 4,
+      "unresolved_threads": 1,
+      "active_unresolved_threads": 1,
+      "outdated_unresolved_threads": 0,
+      "pr_class": "COMMENTS_ONLY",
+      "risk_score": 302.0,
+      "check_summary": {
+        "total": 22,
+        "success": 9,
+        "failure": 0,
+        "pending": 13,
+        "required_pending": 13,
+        "required_failure": 0,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "04ac5c13c089e0bdbb9c85e32af4b8f0c30150c5",
+      "base_sha": "d2fe66cac6ecbe275807921289b6018ea72cd36d"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase codex/cockpit-frame-rule-primitives-20260604 onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "auto_merge_fallback",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "815",
+        "--auto",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "Required or optional checks are pending; enabling auto-merge.",
+      "reason_code": "auto_merge_active_checks"
+    },
+    "blockers": [
+      {
+        "type": "active_thread",
+        "source": "github_protection_review",
+        "name": "1 active unresolved review threads remain.",
+        "details": null,
+        "metadata": {
+          "active_threads": 1
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "ci_pending_but_local_passed",
+        "message": "GitHub CI is pending, but local validation passed.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "checks_total": 22,
+          "checks_success": 9,
+          "checks_failure": 0,
+          "checks_pending": 13,
+          "required_checks_pending": 13,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)",
+              "\ud83d\udcca CI Pipeline Summary"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [
+            "Analyze (javascript-typescript)",
+            "Analyze (python)",
+            "Analyze (ruby)",
+            "\ud83e\uddea Unit Tests"
+          ],
+          "blocker_types": [
+            "required_check_pending"
+          ],
+          "warning_types": []
+        },
+        "source": "local_validation",
+        "override": null
+      }
+    ],
+    "observations": [],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "a19ef3f1fc8c56f5df4995c67df3e6f68aed19dc7d09724cc69b95c122090e4e"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 22,
+          "checks_success": 9,
+          "checks_failure": 0,
+          "checks_pending": 13,
+          "required_checks_pending": 13,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)",
+              "\ud83d\udcca CI Pipeline Summary"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [
+            "Analyze (javascript-typescript)",
+            "Analyze (python)",
+            "Analyze (ruby)",
+            "\ud83e\uddea Unit Tests"
+          ],
+          "blocker_types": [
+            "required_check_pending"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "passed",
+        "details": {
+          "status": "passed",
+          "required_for_merge_ready": true,
+          "passed": true,
+          "attempts": 1,
+          "remediation_applied": false,
+          "steps": [
+            {
+              "name": "pre-commit",
+              "command": "pre-commit run --files out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-001/implementation-notes.md services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/ui/cockpit/render.py task-packets/INDEX.md task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json tests/unit/dopemux/ui/cockpit/test_cockpit_render.py",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-frontmatter-fix",
+              "command": "python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "All docs have valid frontmatter.\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-validator",
+              "command": "python scripts/docs_validator.py task-packets/INDEX.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "name": "docs-hygiene",
+              "command": "python scripts/check_docs_hygiene.py --check task-packets/INDEX.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "docs-hygiene: total=1 active=1 quarantine=0 violations=0\ndocs-hygiene: checked 1 files, OK\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-filename-hygiene",
+              "command": "python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0\ndocs-filename-hygiene: checked 1 files, OK\n",
+              "stderr": ""
+            },
+            {
+              "name": "root-hygiene",
+              "command": "python scripts/check_root_hygiene.py",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "root-hygiene: no candidate files to check\n",
+              "stderr": ""
+            }
+          ],
+          "input_fingerprint": {
+            "input_fingerprint": "06d916385f48547c5c39ce2e8064bd8d5d2c86f31264b4643ccccc3f1fc07d76",
+            "valid_for_sha": "4547d56dfb5301e9835d5f70f29b3b095812c9ad",
+            "stale_if": [
+              "PR head SHA changes",
+              "base SHA changes",
+              "effective policy fingerprint changes",
+              "applied tree contents change"
+            ],
+            "created_from_state": "discovered",
+            "review_state_hash": "",
+            "check_state_hash": "",
+            "validation_command_hash": "",
+            "apply_tree_sha": "",
+            "dirty_state": ""
+          },
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "passed",
+      "required_for_merge_ready": true,
+      "passed": true,
+      "attempts": 1,
+      "remediation_applied": false,
+      "steps": [
+        {
+          "name": "pre-commit",
+          "command": "pre-commit run --files out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-001/implementation-notes.md services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/ui/cockpit/render.py task-packets/INDEX.md task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json tests/unit/dopemux/ui/cockpit/test_cockpit_render.py",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-frontmatter-fix",
+          "command": "python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "All docs have valid frontmatter.\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-validator",
+          "command": "python scripts/docs_validator.py task-packets/INDEX.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "name": "docs-hygiene",
+          "command": "python scripts/check_docs_hygiene.py --check task-packets/INDEX.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "docs-hygiene: total=1 active=1 quarantine=0 violations=0\ndocs-hygiene: checked 1 files, OK\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-filename-hygiene",
+          "command": "python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0\ndocs-filename-hygiene: checked 1 files, OK\n",
+          "stderr": ""
+        },
+        {
+          "name": "root-hygiene",
+          "command": "python scripts/check_root_hygiene.py",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "root-hygiene: no candidate files to check\n",
+          "stderr": ""
+        }
+      ],
+      "input_fingerprint": {
+        "input_fingerprint": "06d916385f48547c5c39ce2e8064bd8d5d2c86f31264b4643ccccc3f1fc07d76",
+        "valid_for_sha": "4547d56dfb5301e9835d5f70f29b3b095812c9ad",
+        "stale_if": [
+          "PR head SHA changes",
+          "base SHA changes",
+          "effective policy fingerprint changes",
+          "applied tree contents change"
+        ],
+        "created_from_state": "discovered",
+        "review_state_hash": "",
+        "check_state_hash": "",
+        "validation_command_hash": "",
+        "apply_tree_sha": "",
+        "dirty_state": ""
+      },
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [
+      {
+        "thread_id": "PRRT_kwDOPyIw986HNWiC",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/ui/cockpit/render.py",
+        "applied": false,
+        "escalation_needed": false
+      }
+    ],
+    "fingerprint": {
+      "input_fingerprint": "7599f915e4ad6c2cea3c87256969daf36d763e8dda65ae2537b7bfd9b9493ade",
+      "valid_for_sha": "04ac5c13c089e0bdbb9c85e32af4b8f0c30150c5",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"1 active unresolved review threads remain.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"1 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 1}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"ci_pending_but_local_passed\", \"message\": \"GitHub CI is pending, but local validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 22, \"checks_success\": 9, \"checks_failure\": 0, \"checks_pending\": 13, \"required_checks_pending\": 13, \"required_checks_failed\": 0, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\", \"\\ud83d\\udcca CI Pipeline Summary\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [\"Analyze (javascript-typescript)\", \"Analyze (python)\", \"Analyze (ruby)\", \"\\ud83e\\uddea Unit Tests\"], \"blocker_types\": [\"required_check_pending\"], \"warning_types\": []}, \"source\": \"local_validation\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"ci_pending_but_local_passed\", \"message\": \"GitHub CI is pending, but local validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 22, \"checks_success\": 9, \"checks_failure\": 0, \"checks_pending\": 13, \"required_checks_pending\": 13, \"required_checks_failed\": 0, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\", \"\\ud83d\\udcca CI Pipeline Summary\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [\"Analyze (javascript-typescript)\", \"Analyze (python)\", \"Analyze (ruby)\", \"\\ud83e\\uddea Unit Tests\"], \"blocker_types\": [\"required_check_pending\"], \"warning_types\": []}, \"source\": \"local_validation\", \"override\": null}], \"observations\": []}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "APPLY_FIX"
+    ],
+    "pr_id": "815",
+    "posture": "HOLD",
+    "refreshed_at": 1780614324.162594,
+    "recomputed_at": 1780614324.1626089,
+    "last_event": {
+      "type": "cycle_complete"
+    },
+    "selected_tactic": "APPLY_FIX"
+  }
+}

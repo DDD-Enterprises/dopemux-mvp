@@ -1,0 +1,46 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw986D9hNb",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "ui-dashboard/src/App.tsx",
+      "line": 250,
+      "original_line": 250,
+      "original_start_line": 239,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987DzBas",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`handleCopyRecommendation` assumes `navigator.clipboard.writeText` exists and only logs to the console on failure. In environments where the Clipboard API is unavailable/blocked, the click will silently fail for users (no UI feedback) even though the UI is presented as a copy action. Consider feature-detecting `navigator.clipboard?.writeText` (and/or `window.isSecureContext`) and, on failure, surfacing an in-app error via the existing `setErrorMessage` (or a Snackbar) instead of `console.error` so the user gets actionable feedback.",
+          "created_at": "2026-05-21T23:30:28Z",
+          "path": "ui-dashboard/src/App.tsx",
+          "line": 250,
+          "original_line": 250
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986D9hjR",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "ui-dashboard/src/App.tsx",
+      "line": 433,
+      "original_line": 433,
+      "original_start_line": 431,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987DzB3p",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Scope copied state to the copied recommendation text**\n\nThe success state is tracked as a global boolean (`isCopied`), so if websocket updates change `cognitiveState.recommendation` within the 2-second window, the chip will still show \"copied\" for a *new* recommendation that was never copied. In this dashboard, realtime state updates are normal, so users can get false confirmation and copy the wrong guidance. Consider tying the copied indicator to the exact copied string (or clearing `isCopied` when recommendation changes) so feedback only applies to the text that was actually written to the clipboard.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-21T23:31:01Z",
+          "path": "ui-dashboard/src/App.tsx",
+          "line": 433,
+          "original_line": 433
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "name": "binary:git",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/git",
+      "remediation": "Install `git` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:gh",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/gh",
+      "remediation": "Install `gh` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:python",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/.local/share/mise/installs/python/3.12.13/bin/python",
+      "remediation": "Install `python` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:pre-commit",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/.local/share/mise/installs/python/3.12.13/bin/pre-commit",
+      "remediation": "Install `pre-commit` and ensure it is on PATH."
+    },
+    {
+      "name": "gh_auth",
+      "status": "passed",
+      "required": true,
+      "details": "github.com\n  ✓ Logged in to github.com account hu3mann (GH_TOKEN)\n  - Active account: true\n  - Git operations protocol: https\n  - Token: gho_************************************\n  - Token scopes: 'gist', 'read:org', 'repo', 'workflow'\n\n  ✓ Logged in to github.com account hu3mann (keyring)\n  - Active account: false\n  - Git operations protocol: https\n  - Token: gho_************************************\n  - Token scopes: 'gist', 'read:org', 'repo', 'workflow'",
+      "remediation": "Run `gh auth login` for the target repository."
+    },
+    {
+      "name": "git_remote",
+      "status": "passed",
+      "required": true,
+      "details": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "remediation": "Configure the `origin` remote."
+    },
+    {
+      "name": "git_worktree",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp                                                  63918aab1 [feat/autoreview-platform-series]\n/private/tmp/dopemux-auditor-blockers-fix                                    69f17d066 [main] prunable\n/private/tmp/dopemux-pr-merge-713-20260528_103339                            91057f848 [prmerge/20260528_103339-713] prunable\n/private/tmp/dopemux-pr-merge-726-20260530_172644                            5566f0914 [prmerge/20260530_172644-726] prunable\n/private/tmp/dopemux-pr713-fix.C1Aw2z/wt                                     f4e7f997a (detached HEAD) prunable\n/private/tmp/dopemux-pr713-followup                                          fb8f1924a [claude/auditor-router-pal-clink-followup-2026-05-30] prunable\n/private/tmp/pr765-wt                                                        eac0853f5 [pr-765-review]\n/Users/hue/.codex/worktrees/853d/dopemux-mvp                                 79c865620 (detached HEAD)\n/Users/hue/.codex/worktrees/adcd/dopemux-mvp                                 121ea0774 [codex/tp-rte-or-002]\n/Users/hue/.codex/worktrees/b074/dopemux-mvp                                 17d3fe3bf [codex/tp-dmx-pr-steward-002]\n/Users/hue/.codex/worktrees/cockpit-ui-chip-row-renderers-001                f9b2ffb00 [codex/cockpit-ui-chip-row-renderers-001]\n/Users/hue/.codex/worktrees/cockpit-ui-command-palette-001                   66d5ee8f2 [codex/cockpit-ui-command-palette-001]\n/Users/hue/.codex/worktrees/cockpit-ui-evidence-ledger-001                   b86b11804 [claude/hungry-buck-67a0d3]\n/Users/hue/.codex/worktrees/cockpit-ui-frame-primitives-001                  64fbc0582 [codex/cockpit-ui-frame-primitives-001]\n/Users/hue/.codex/worktrees/cockpit-ui-gate-flip-001                         b2f42e80c [codex/cockpit-ui-gate-flip-001]\n/Users/hue/.codex/worktrees/cockpit-ui-inventory-regen-001                   b2921f8f0 [codex/cockpit-ui-inventory-regen-001]\n/Users/hue/.codex/worktrees/cockpit-ui-safe-actions-001                      c2da9a567 [codex/cockpit-ui-safe-actions-001]\n/Users/hue/.codex/worktrees/cockpit-ui-settings-runtime-001                  eefdd9365 [codex/cockpit-ui-settings-runtime-001]\n/Users/hue/.codex/worktrees/cockpit-ui-unknown-drift-001                     e2c12a564 [codex/cockpit-ui-unknown-drift-001]\n/Users/hue/.codex/worktrees/cockpit-ui-validate-rendered-text-001            af590feb0 [codex/cockpit-ui-validate-rendered-text-001]\n/Users/hue/.codex/worktrees/d29e/dopemux-mvp                                 17d3fe3bf [codex/tp-dmx-auditor-router-001]\n/Users/hue/.codex/worktrees/de5b/dopemux-mvp                                 755bf3846 (detached HEAD)\n/Users/hue/.codex/worktrees/fix-task-orchestrator-codex-projects             37dbcbe32 [codex/fix-task-orchestrator-codex-projects]\n/Users/hue/.codex/worktrees/pr-730-e422-audit                                e422eac8f (detached HEAD)\n/Users/hue/.codex/worktrees/pr-merge/dopemux-pr726                           2f0823d61 (detached HEAD)\n/Users/hue/.codex/worktrees/pr-merge/dopemux-pr747                           47952fd05 [codex/rte-strict-output-attestation-wiring]\n/Users/hue/.codex/worktrees/pr-merge/dopemux-pr753                           bc772e229 [review-fixes/rte-747-followup]\n/Users/hue/.codex/worktrees/pr-steward-intake-settle-001                     d38e13873 [codex/pr-steward-intake-settle-001]\n/Users/hue/.codex/worktrees/pr610-predictive-skip                            f61ea3f78 [palette-predictive-skip-13671302022856716165]\n/Users/hue/.codex/worktrees/pr687-e3-remediation/dopemux-mvp                 f383fce6c [codex/rte-costprofile-e3-contracts-001]\n/Users/hue/.codex/worktrees/pr690-e7-remediation                             c8b3a67c5 [codex/rte-costprofile-e7-ladders-failover-001]\n/Users/hue/.codex/worktrees/pr692-e8-runtime-tag-fix                         53398488e [codex/rte-costprofile-e8-runtime-tag-fix-002]\n/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-001                     dfb3fb662 [codex/rte-costprofile-e9-tests-001]\n/Users/hue/.codex/worktrees/rte-costprofile-e9-tests-002                     f1246ad7f [codex/rte-costprofile-f-verify-001]\n/Users/hue/.codex/worktrees/rte-costprofile-foundation-main/dopemux-mvp      6c2bc9e23 [codex/rte-costprofile-foundation-main-001]\n/Users/hue/.codex/worktrees/rte-final-audit-consent-001                      7833e5288 [codex/rte-final-audit-consent-001]\n/Users/hue/.codex/worktrees/rte-final-audit-model-refresh-004                567b42391 [codex/rte-final-audit-model-refresh-004]\n/Users/hue/.codex/worktrees/rte-macro-pkt-remaining-parallel-001/dopemux-mvp 72354075c [codex/rte-macro-pkt-remaining-parallel-001]\n/Users/hue/.codex/worktrees/tp-dmx-pr-queue-blockers-001-20260520            ea582a32d [tp/dmx-pr-queue-blockers-001]\n/Users/hue/code/dopemux-mvp-audit-rte-debut                                  dcd162741 [audit/rte-pre-debut-2026-05-22]\n/Users/hue/code/dopemux-mvp-wt-beta-mcp-02                                   f085bef9c [fix/beta-mcp-02-compose-healthchecks]\n/Users/hue/code/dopemux-mvp-wt-beta-mcp-03                                   b5fea6c90 [fix/beta-mcp-03-adhd-engine-redis-isolation]\n/Users/hue/code/dopemux-mvp-wt-ci-full-test-suite                            6a7f98c55 [fix/ci-full-test-suite]\n/Users/hue/code/dopemux-mvp-wt-cockpit-design-system                         c836e3410 [codex/cockpit-design-system]\n/Users/hue/code/dopemux-mvp-wt-cockpit-pm-textual                            c90ed07c0 [test/pm-authority-ports]\n/Users/hue/code/dopemux-mvp-wt-dependabot-uv-resolver                        d319ba4f5 [codex/dependabot-uv-resolver-20260531]\n/Users/hue/code/dopemux-mvp-wt-docs-first-touch                              4455db438 [fix/docs-first-touch-product-name]\n/Users/hue/code/dopemux-mvp-wt-pr735-claude-review                           7bc925584 [fix/beta-install-02-dopemux-network]\n/Users/hue/code/dopemux-mvp-wt-security-compose                              aa2a3c17c [fix/security-litellm-key-compose]\n/Users/hue/code/dopemux-mvp-wt-security-weak-defaults                        55639b883 [fix/security-weak-default-secrets]\n/Users/hue/code/dopemux-mvp-wt-tp-cs-101-plugin-hooks                        fdb8d2dca [codex/tp-cs-101-plugin-path-b]\n/Users/hue/code/dopemux-mvp-wt-ui-dashboard-build                            f41451ae9 [fix/ui-dashboard-build]\n/Users/hue/code/dopemux-mvp/.claude/worktrees/agent-a16c5fcc97349b17e        755bf3846 [claude/rte-rem-tp2-mcp-internal] locked\n/Users/hue/code/dopemux-mvp/.claude/worktrees/agent-a636b271306ace01b        755bf3846 [claude/rte-rem-tp4-install] locked\n/Users/hue/code/dopemux-mvp/.claude/worktrees/e8-fixup                       f46e7cfa8 [codex/rte-costprofile-e8-review-fixup-001]\n/Users/hue/code/dopemux-mvp/.claude/worktrees/goofy-haibt-fc568e             dfb3fb662 [codex/rte-costprofile-e8-yaml-v3-001]\n/Users/hue/code/dopemux-mvp/.claude/worktrees/inspiring-grothendieck-9c0a71  4b74f7992 [claude/inspiring-grothendieck-9c0a71]\n/Users/hue/code/dopemux-mvp/.claude/worktrees/trusting-shockley-c12535       755bf3846 [claude/trusting-shockley-c12535]\n/Users/hue/code/dopemux-mvp/.worktrees/adhd-activity-loop-001                c98baacbf [codex/adhd-activity-loop-001]\n/Users/hue/code/dopemux-mvp/.worktrees/adhd-event-backbone-001               e10c91043 [codex/adhd-event-backbone-001]\n/Users/hue/code/dopemux-mvp/.worktrees/adhd-native-hooks-events-001          3b3f4d8c9 [codex/adhd-native-hooks-events-001]\n/Users/hue/code/dopemux-mvp/.worktrees/adhd-operator-identity-001            b25ea468d [codex/adhd-operator-identity-001]\n/Users/hue/code/dopemux-mvp/.worktrees/adhd-profile-seed-001                 c98baacbf [codex/adhd-profile-seed-001]\n/Users/hue/code/dopemux-mvp/.worktrees/autoreview-platform-packets-20260531  0ee1a1812 [codex/tp-dmx-autoreview-e2e-105]\n/Users/hue/code/dopemux-mvp/.worktrees/dmx-713-hardening                     849766244 (detached HEAD)\n/Users/hue/code/dopemux-mvp/.worktrees/dmx-714-orch                          ac850d44e (detached HEAD)\n/Users/hue/code/dopemux-mvp/.worktrees/dmx-715-palette                       df0840bb0 (detached HEAD)\n/Users/hue/code/dopemux-mvp/.worktrees/dmx-718-audit                         538bd3e87 (detached HEAD)\n/Users/hue/code/dopemux-mvp/.worktrees/pr-664                                f9e82cdd0 [palette-ux-accessibility-refinement-10860697428029397597]\n/Users/hue/code/dopemux-mvp/.worktrees/restore-palette-clobber               ebc159578 [restore/orchestrator-infra-palette-clobber]\n/Users/hue/code/dopemux-mvp/.worktrees/rte-remediation                       b22260a72 [claude/rte-remediation-2026-05-29]\n/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-gha-reliability-106            21392ef8d [codex/tp-dmx-gha-reliability-106]\n/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-merge-finalization-203         6ad676ce9 [codex/tp-dmx-merge-finalization-203]\n/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-merge-remediation-202          623bcf09d [codex/tp-dmx-merge-remediation-202]\n/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-steward-doctor-303             98010d84d [codex/tp-dmx-steward-doctor-303]\n/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-steward-gate-201               eac0853f5 [codex/tp-dmx-steward-gate-201]\n/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-steward-package-301            7acb4d9ad [codex/tp-dmx-steward-package-301]\n/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-steward-scaffold-302           3f4231d5e [codex/tp-dmx-steward-scaffold-302]\n/Users/hue/code/dopemux-worktrees/dopemux-cockpit-design-pickup-001          bafc0d03a [codex/cockpit-design-pickup-001]\n/Users/hue/code/dopemux-worktrees/dopemux-cockpit-main-state-recon-001       aa5e24edb [codex/cockpit-main-state-recon-001]\n/Users/hue/code/dopemux-worktrees/dopemux-cockpit-merge-execute-packet-001   097a22f9d [codex/cockpit-merge-execute-packet-001]\n/Users/hue/code/dopemux-worktrees/dopemux-cockpit-merge-stack-refresh-573    66489e060 [codex/cockpit-merge-stack-consolidate-001]",
+      "remediation": "Use a git version with worktree support."
+    },
+    {
+      "name": "git_ignorecase",
+      "status": "warning",
+      "required": false,
+      "details": "core.ignorecase=true",
+      "remediation": "Git case-insensitivity detected. Some renames might require `git mv` to be detected on this OS."
+    }
+  ],
+  "policy_resolution": {
+    "source": "repo",
+    "path": "/Users/hue/code/dopemux-mvp/config/pr_merge_specialist/policy.yaml",
+    "fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d",
+    "policy_schema_version": 1,
+    "overrides": []
+  },
+  "override_records": []
+}

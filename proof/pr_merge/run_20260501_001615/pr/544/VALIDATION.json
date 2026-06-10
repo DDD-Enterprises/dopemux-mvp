@@ -1,0 +1,33 @@
+{
+  "status": "failed",
+  "required_for_merge_ready": true,
+  "passed": false,
+  "attempts": 1,
+  "remediation_applied": false,
+  "steps": [
+    {
+      "name": "pre-commit",
+      "command": "pre-commit run",
+      "status": "failed",
+      "returncode": 3,
+      "stdout": "[WARNING] Unstaged files detected.\n[INFO] Stashing unstaged files to /Users/hue/.cache/pre-commit/patch1777619783-4282.\nValidate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude \u2264100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files......................(no files to check)Skipped\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).................(no files to check)Skipped\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n[WARNING] Stashed changes conflicted with hook auto-fixes... Rolling back fixes...\nAn unexpected error has occurred: CalledProcessError: command: ('/opt/homebrew/bin/git', '-c', 'core.autocrlf=false', 'apply', '--whitespace=nowarn', '/Users/hue/.cache/pre-commit/patch1777619783-4282')\nreturn code: 1\nstdout: (none)\nstderr:\n    error: patch failed: docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md:22\n    error: docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md: patch does not apply\n    error: patch failed: docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md:12\n    error: docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md: patch does not apply\nCheck the log at /Users/hue/.cache/pre-commit/pre-commit.log\n",
+      "stderr": ""
+    }
+  ],
+  "input_fingerprint": {
+    "input_fingerprint": "78bf57a3e003c536bf201d80ca51b453c746f465af76d8d9bfc6c3bcab2ed8b4",
+    "valid_for_sha": "910ce7f03b18f8ff2156ac3e63e6e2920432730d",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes",
+      "effective policy fingerprint changes",
+      "applied tree contents change"
+    ],
+    "created_from_state": "applied",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  }
+}

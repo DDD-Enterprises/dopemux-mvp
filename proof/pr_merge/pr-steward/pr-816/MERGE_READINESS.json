@@ -1,0 +1,50 @@
+{
+  "blockers": [],
+  "ci_triage_path": "CI_TRIAGE.json",
+  "embedded_audit": {
+    "report_path": "proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-001/implementation-notes.md",
+    "status": "PASS"
+  },
+  "generated_at": "2026-06-04T22:46:00Z",
+  "mutation_performed": false,
+  "pr": {
+    "base_ref": "main",
+    "changed_files": [
+      "proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-001/implementation-notes.md",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_cost_profiles.py",
+      "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py",
+      "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+      "task-packets/INDEX.md",
+      "task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json"
+    ],
+    "commits": [
+      "adf97ad33b31a0018bba5a6e9b523b92fa70eea4"
+    ],
+    "head_ref": "codex/rte-golive-remediation-001",
+    "head_sha": "adf97ad33b31a0018bba5a6e9b523b92fa70eea4",
+    "number": 816,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/816"
+  },
+  "proof": {
+    "matches_pr_head": true,
+    "proof_freshness": {
+      "matches_pr_head": true,
+      "pr_head_sha": "adf97ad33b31a0018bba5a6e9b523b92fa70eea4",
+      "proof_recorded_sha": "adf97ad33b31a0018bba5a6e9b523b92fa70eea4",
+      "reason": "Human integrator verified.",
+      "self_reference_exception": null,
+      "status": "CURRENT"
+    },
+    "proof_head_sha": "adf97ad33b31a0018bba5a6e9b523b92fa70eea4",
+    "proof_path": "proof/pr_merge/embedded-audit/pr-816/PROOF.json"
+  },
+  "readiness": "READY",
+  "review_item_ledger_path": "REVIEW_ITEM_LEDGER.json",
+  "risk_tier": "LOW",
+  "schema_version": "1.1.0",
+  "thread_dispositions_path": "THREAD_DISPOSITIONS.json",
+  "unknowns": []
+}

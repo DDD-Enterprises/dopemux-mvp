@@ -1,0 +1,38 @@
+{
+  "audit_id": "DMX-RTE-COST-PROFILES-LADDERS-WIZARD-AUDIT-GEMINI-001",
+  "branch": "audit/rte-cost-profiles-ladders-wizard-gemini-001",
+  "status": "bounded_go_with_repo_level_no_go",
+  "launch_surfaces": {
+    "run_extraction_v5.py": "PARTIAL",
+    "dopemux_extract_truth_run": "PARTIAL",
+    "dopemux_upgrades_run": "PARTIAL",
+    "wizard": "BOUNDED_GO"
+  },
+  "wizard_fixes": {
+    "cost_profile_truth_source": "canonical_runner_and_pricing_yaml",
+    "unsupported_flag_forwarding_removed": true,
+    "launch_profile_metadata_added": true,
+    "ui_parity_improved": true
+  },
+  "validation": {
+    "touched_unit_tests": "pass",
+    "truth_run_and_live_guard_tests": "pass",
+    "status_json": "pass",
+    "pre_live_gate_v25": "no_go"
+  },
+  "repo_level_blockers": [
+    {
+      "surface": "services/repo-truth-extractor/tests/test_v5_resume_smoke.py",
+      "reason": "canonicalize_artifacts is undefined in run_extraction_v5.py resume validation path"
+    },
+    {
+      "surface": "services/repo-truth-extractor/tests/test_promptset_v4_lint.py",
+      "reason": "prescan prompt audit reports optimize prompt too short"
+    }
+  ],
+  "pal": {
+    "openai_analyze": "quota_failure",
+    "gemini_analyze": "completed",
+    "challenge": "performed"
+  }
+}
