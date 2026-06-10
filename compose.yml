@@ -298,6 +298,8 @@ services:
       dockerfile: docker/mcp-servers/pal-stdio/Dockerfile
     container_name: mcp-pal-stdio
     restart: unless-stopped
+    # stdio server is PID 1; keep stdin open or it reads EOF and restart-loops
+    stdin_open: true
     networks:
       - dopemux-network
     environment:
