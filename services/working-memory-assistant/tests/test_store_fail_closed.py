@@ -86,3 +86,64 @@ class TestInsertWorkLogEntryFailClosed:
         second = store.insert_work_log_entry(**_entry_kwargs())
         assert first == second
         assert _count_entries(store) == 1
+
+
+class TestCorrectEntryFailClosed:
+    def test_correction_with_invalid_category_raises(self, store):
+        """correct_entry must not return an id for a correction never persisted."""
+        original_id = store.insert_work_log_entry(**_entry_kwargs())
+        with pytest.raises(ValueError, match="category"):
+            store.correct_entry(
+                workspace_id=WORKSPACE_ID,
+                instance_id=INSTANCE_ID,
+                entry_id=original_id,
+                correction_type="category",
+                corrected_category="bogus",
+            )
+        assert _count_entries(store) == 1  # only the original
+
+
+class TestEnumConstantsMatchSchema:
+    """Parse the CHECK constraints out of schema.sql and assert the mirrored
+    frozensets in store.py match exactly, so schema edits fail loudly."""
+
+    def _parse_check_values(self, sql: str, column: str) -> set:
+        import re
+
+        match = re.search(
+            column + r"\s+TEXT[^,]*?CHECK\s*\(\s*" + column + r"\s+IN\s*\(([^)]*)\)",
+            sql,
+            re.DOTALL,
+        )
+        assert match, f"No CHECK constraint found for {column} in schema.sql"
+        return set(re.findall(r"'([^']+)'", match.group(1)))
+
+    @pytest.fixture
+    def schema_sql(self):
+        from chronicle.store import SCHEMA_PATH
+
+        return SCHEMA_PATH.read_text()
+
+    def test_categories_match(self, schema_sql):
+        from chronicle.store import VALID_CATEGORIES
+
+        assert set(VALID_CATEGORIES) == self._parse_check_values(schema_sql, "category")
+
+    def test_entry_types_match(self, schema_sql):
+        from chronicle.store import VALID_ENTRY_TYPES
+
+        assert set(VALID_ENTRY_TYPES) == self._parse_check_values(
+            schema_sql, "entry_type"
+        )
+
+    def test_workflow_phases_match(self, schema_sql):
+        from chronicle.store import VALID_WORKFLOW_PHASES
+
+        assert set(VALID_WORKFLOW_PHASES) == self._parse_check_values(
+            schema_sql, "workflow_phase"
+        )
+
+    def test_outcomes_match(self, schema_sql):
+        from chronicle.store import VALID_OUTCOMES
+
+        assert set(VALID_OUTCOMES) == self._parse_check_values(schema_sql, "outcome")
