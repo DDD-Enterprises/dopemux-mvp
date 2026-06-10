@@ -86,6 +86,15 @@ servers:
     requires_env: ["EXA_API_KEY"]
     description: "Neural web search"
 
+  pal-stdio:
+    scope: singleton
+    transport: stdio
+    command: docker
+    args: ["exec", "-i", "mcp-pal-stdio", "/app/.venv/bin/python", "server.py"]
+    docker_compose_service: pal-stdio
+    requires_env: ["OPENAI_API_KEY", "GEMINI_API_KEY"]
+    description: "PAL via Docker MCP (thinkdeep, planner, consensus, debug, codereview, precommit)"
+
   MCP_DOCKER:
     scope: singleton
     transport: stdio
