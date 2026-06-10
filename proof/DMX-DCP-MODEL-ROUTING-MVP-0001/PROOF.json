@@ -68,12 +68,30 @@
     "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_STAT.md"
   ],
   "commands": [
-    {"step": "preflight", "exit_code": 0},
-    {"step": "schema_validation", "exit_code": 0},
-    {"step": "fixture_validation", "exit_code": 0},
-    {"step": "pytest", "exit_code": 0},
-    {"step": "diff_allowlist", "exit_code": 0},
-    {"step": "staged_diff_capture", "exit_code": 0}
+    {
+      "step": "preflight",
+      "exit_code": 0
+    },
+    {
+      "step": "schema_validation",
+      "exit_code": 0
+    },
+    {
+      "step": "fixture_validation",
+      "exit_code": 0
+    },
+    {
+      "step": "pytest",
+      "exit_code": 0
+    },
+    {
+      "step": "diff_allowlist",
+      "exit_code": 0
+    },
+    {
+      "step": "staged_diff_capture",
+      "exit_code": 0
+    }
   ],
   "validation_state": "PASSED",
   "auditor_verdict": "PASS_WITH_RISKS",
@@ -86,10 +104,18 @@
   },
   "routing_proof_extension": {
     "classification": {
-      "task_type": ["domain_model", "docs", "test", "proof_validation"],
+      "task_type": [
+        "domain_model",
+        "docs",
+        "test",
+        "proof_validation"
+      ],
       "risk_class": "R2_TESTS",
       "safe_automation": "requires_operator",
-      "authority_class": ["repo_write", "proof_write"],
+      "authority_class": [
+        "repo_write",
+        "proof_write"
+      ],
       "evidence_quality": "observed_clean_origin_main",
       "decision_status": "READY_DESIGN_ONLY"
     },
@@ -130,8 +156,14 @@
     },
     "red_lane_flags": [],
     "stop_conditions": [
-      {"condition_type": "litellm_unhealthy", "triggered": true},
-      {"condition_type": "stale_alias_contract", "triggered": true}
+      {
+        "condition_type": "litellm_unhealthy",
+        "triggered": true
+      },
+      {
+        "condition_type": "stale_alias_contract",
+        "triggered": true
+      }
     ]
   },
   "carried_risks": [
@@ -151,5 +183,24 @@
     "reason": "final supervisor review in ChatGPT web"
   },
   "pr_readiness": "DRAFT_PR_READY_AFTER_STAGED_DIFF_PROOF",
-  "merge_readiness": "BLOCKED_NOT_REQUESTED"
+  "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "opencode+grok-4.3",
+    "auditor_model": "grok-4.3",
+    "invocation": "design-only domain model; dual independent audit (Claude Sonnet 4.6 + Gemini 2.5 Pro)",
+    "exit_code": 0,
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDIT_SUMMARY.md",
+    "findings": [],
+    "fixes_applied": [
+      "frontmatter added to domain doc and task packet"
+    ],
+    "remaining_risks": [
+      "PAL partial (deviation accepted)",
+      "N1-N5 non-blocking follow-ups",
+      "pre-commit embedded_audit schema failures are pre-existing debt"
+    ],
+    "skip_reason": null
+  }
 }
