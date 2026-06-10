@@ -2,7 +2,7 @@
   "mcpServers": {
     "conport": {
       "type": "sse",
-      "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/mcp",
+      "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
       "env": {
         "DOPEMUX_WORKSPACE_ID": "${DOPEMUX_WORKSPACE_ID:-}",
         "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
@@ -12,7 +12,7 @@
       "description": "Knowledge graph, decisions, progress (PostgreSQL+AGE; per-worktree state)"
     },
     "dope-memory": {
-      "type": "sse",
+      "type": "http",
       "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
       "env": {
         "DOPE_MEMORY_WORKSPACE_ID": "${DOPE_MEMORY_WORKSPACE_ID:-}",
