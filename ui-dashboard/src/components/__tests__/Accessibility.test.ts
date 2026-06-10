@@ -165,8 +165,9 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toMatch(/aria-label=\{\s*isCopied\s*\?\s*`AI Recommendation: \$\{cognitiveState\.recommendation\} \(Copied\)`\s*:\s*`Copy AI Recommendation: \$\{cognitiveState\.recommendation\}`\s*\}/);
   expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications\' : \'Clear all notifications\'}');
   expect(appContent).toMatch(/<Tooltip title=\{isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\} arrow>/);
-  expect(appContent).toContain('Listening for ConPort and ADHD event traffic');
+  expect(appContent).toContain('System is actively listening for ConPort and ADHD event traffic');
   expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
+  expect(appContent).toContain('Waiting for signals...');
   expect(appContent).toContain('severity="error"');
   expect(themeContent).toContain('MuiChip');
   expect(themeContent).toContain('&:focus-visible');
