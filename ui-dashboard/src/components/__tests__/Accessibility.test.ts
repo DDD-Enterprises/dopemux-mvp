@@ -28,7 +28,10 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('aria-label="15-Minute Load Prediction Percentage"');
   expect(content).toContain('aria-valuetext');
   expect(content).toContain('Prediction Loading...');
-  expect(content).toMatch(/<Tooltip[^>]*title="Predictive LSTM model running on edge device"[^>]*arrow/);
+  expect(content).toMatch(/<Tooltip[^>]*title="15-minute forecast: AI-driven projection of your cognitive load"[^>]*arrow/);
+  expect(content).toContain('tabIndex={0}');
+  expect(content).toContain('cursor: \\'help\'');
+  expect(content).toContain('&:hover, &:focus-visible');
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
@@ -41,6 +44,9 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
   expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
+  expect(content).toContain('aria-label={`${member.name}\'s current status: ${statusStyles[member.status].label}`}');
+  expect(content).toContain('aria-label={`${member.name}\'s current energy level: ${member.energy}%`}');
+  expect(content).toContain('aria-label={`${member.name}\'s current attention focus: ${member.attention}%`}');
   expect(content).toContain('<Tooltip title={statusStyles[member.status].label} arrow>');
   expect(content).toMatch(/<Tooltip[^>]*title=\{`Average cognitive load across all team members: \$\{teamAverageLoad\}%`\}[^>]*arrow/);
   expect(content).toContain('<Tooltip title="Current energy level" arrow>');
@@ -102,6 +108,12 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label={`Estimated finish time: ${taskFinishTimes[task.id]}`}');
   expect(content).toContain('cursor: \'help\'');
   expect(content).toContain('&:focus-visible');
+
+  // Verify copy task title button
+  expect(content).toMatch(/aria-label=\{\s*isTaskTitleCopied\s*\?\s*'Task title copied'\s*:\s*'Copy task title to clipboard'\s*\}/);
+  expect(content).toMatch(/animation:\s*'copy-success 0.4s ease-out'/);
+  expect(content).toContain('<IconButton');
+  expect(content).toContain('onClick={() => handleCopyTaskTitle(currentTask.title)}');
 });
 
 test('TaskSequencer.tsx implements overtime visual cues', () => {
@@ -153,8 +165,9 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toMatch(/aria-label=\{\s*isCopied\s*\?\s*`AI Recommendation: \$\{cognitiveState\.recommendation\} \(Copied\)`\s*:\s*`Copy AI Recommendation: \$\{cognitiveState\.recommendation\}`\s*\}/);
   expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications\' : \'Clear all notifications\'}');
   expect(appContent).toMatch(/<Tooltip title=\{isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\} arrow>/);
-  expect(appContent).toContain('Listening for ConPort and ADHD event traffic');
+  expect(appContent).toContain('System is actively listening for ConPort and ADHD event traffic');
   expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
+  expect(appContent).toContain('Waiting for signals...');
   expect(appContent).toContain('severity="error"');
   expect(themeContent).toContain('MuiChip');
   expect(themeContent).toContain('&:focus-visible');

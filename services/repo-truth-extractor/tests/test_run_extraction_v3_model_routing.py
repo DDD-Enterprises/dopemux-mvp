@@ -20,6 +20,31 @@ def _load_runner_module():
     return module
 
 
+def _load_v5_module():
+    root = Path(__file__).resolve().parents[3]
+    module_path = root / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
+    spec = importlib.util.spec_from_file_location("run_extraction_v5_drift", module_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_v3_default_cell_models_stay_in_sync_with_v5_value_default() -> None:
+    """Plan B drift guard: the legacy v3 runner hardcodes value-default's cell
+    models (it shares model_map.yaml but has no cost-profile mechanism). If v5's
+    value-default cell_aliases change, v3 must change too — fail loudly if not."""
+    v3 = _load_runner_module()
+    v5 = _load_v5_module()
+    v5_cells = v5.COST_PROFILES["value-default"]["cell_aliases"]
+    for cell, alias_value in v5_cells.items():
+        provider, model_id = v5._parse_alias_provider_model(alias_value)
+        v3_entry = v3._VALUE_DEFAULT_CELL_MODELS["${" + cell + "}"]
+        assert (v3_entry[0], v3_entry[1]) == (provider, model_id), (
+            f"v3/v5 drift on {cell}: v3={v3_entry[:2]} vs v5 value-default={(provider, model_id)}"
+        )
+
+
 def _make_cfg(runner):
     return runner.RunnerConfig(
         dry_run=False,
@@ -149,8 +174,13 @@ def test_step_tier_classifier_is_deterministic() -> None:
 
 def test_contract_lane_routes_override_policy_for_json_managed_steps() -> None:
     runner = _load_runner_module()
+    # Plan B: the legacy v3 runner resolves the ${CELL} placeholder leads to the
+    # default (value-default) profile's concrete OpenAI models (strict cells are
+    # OpenAI-only); hardcoded fallbacks remain. The contract lane (not the policy
+    # ladder) still drives json-managed steps. Codex 3361748519: CE primary is the
+    # canonical strict 2-route shape (lead = ${CE_MODEL} -> gpt-5.3-codex under
+    # value-default, fallback = gpt-5.5); the redundant hardcoded middle was dropped.
     expected_d0 = [
-        ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
         ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ]
@@ -159,17 +189,18 @@ def test_contract_lane_routes_override_policy_for_json_managed_steps() -> None:
     assert runner.resolve_step_ladder("quality", "D", "D1") == expected_d0
 
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D2") == [
-        ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+        ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ("xai", "grok-4.3", "XAI_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "C", "C1") == [
-        ("xai", "grok-build-0.1", "XAI_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("xai", "grok-4.3", "XAI_API_KEY"),
     ]
+    # AGG primary keeps two distinct hops: lead ${SYNTH_MODEL} -> gpt-5.5 under
+    # value-default, fallback = a distinct gpt-5.3-codex (Codex 3361748519).
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D4") == [
-        ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
-        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("openai", "gpt-5.5", "OPENAI_API_KEY"),
+        ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
     ]
 
 
@@ -184,8 +215,10 @@ def test_resolve_effective_step_route_marks_strict_required_contract_lane() -> N
     assert route_info["model_id"] == "gpt-5.3-codex"
     attempts = route_info.get("strict_route_attempts")
     assert isinstance(attempts, list) and len(attempts) >= 2
-    # First attempt is Gemini (non-strict, skipped), second is GPT codex (strict)
-    assert attempts[0]["strict_capable"] is False
+    # Codex 3361748519: the CE primary lead is now the strict ${CE_MODEL} OpenAI
+    # route (value-default -> gpt-5.3-codex), so it is strict-capable and selected;
+    # the gpt-5.5 fallback follows and is also strict-capable.
+    assert attempts[0]["strict_capable"] is True
     assert attempts[1]["strict_capable"] is True
 
 

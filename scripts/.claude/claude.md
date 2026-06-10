@@ -10,14 +10,33 @@
 
 ```
 scripts/
-├── deployment/        # Stack management
+├── deploy/            # Stack management (deployment/, setup/, migration/ inside)
 ├── indexing/          # Code/doc indexing
-├── testing/           # Validation scripts
 ├── monitoring/        # Health checks
 ├── docs_audit/        # Documentation auditing
-├── maintenance/       # Cleanup, migrations
-└── README.md          # Full organization guide
+├── audit/             # General audits
+├── dev/               # Developer utilities
+├── mcp/               # MCP server scripts
+├── mcp-wrappers/      # MCP wrapper scripts
+├── orchestrator/      # Orchestrator scripts
+├── routing/           # Routing helpers
+├── skills/            # Skill-related scripts
+├── sql/               # SQL utilities
+├── ui/                # UI scripts
+├── utilities/         # General utilities
+├── webhooks/          # Webhook handlers
+├── memory/            # Memory/context scripts
+├── migration/         # Migration scripts
+├── external-references/ # External reference tooling
+├── git-hooks/         # Git hook scripts
+├── gpt-researcher/    # GPT-Researcher helpers
+├── legacy/            # Legacy scripts
+├── legacy_tmux/       # Legacy tmux scripts
+├── mobile/            # Mobile-specific scripts
+└── env_outputs/       # Environment output artifacts
 ```
+
+Note: `deployment/`, `testing/`, `maintenance/` do **not** exist; use `deploy/deployment/` for stack scripts.
 
 ---
 
@@ -28,7 +47,7 @@ scripts/
 | `docs_validator.py` | Validate doc frontmatter |
 | `docs_frontmatter_guard.py` | Fix frontmatter issues |
 | `docs_normalize.py` | Normalize filenames |
-| `deployment/start_stack.sh` | Launch Docker stack |
+| `deploy/deployment/start_stack.sh` | Launch Docker stack |
 
 ---
 

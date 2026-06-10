@@ -1,0 +1,84 @@
+{
+  "id": "DMX-DCP-MODEL-ROUTING-MVP-0001-TP-REPAIR",
+  "project": "dopemux-mvp",
+  "target": "Clean 0001 domain-model PR from PR #834 swamp cart",
+  "invariants": [
+    "No merge of PR #834 as-is",
+    "0001 domain model content preserved",
+    "Proof artifacts must be trackable via explicit .gitignore rule",
+    "Staged-diff proof must match final committed set",
+    "No stale audit text or poison fields"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "origin/main@2ffcc2d4",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-MODEL-ROUTING-MVP-0001",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "commit": {
+    "base_sha": "2ffcc2d48fef99ce73a0befe388de67463a25e00",
+    "source_sha": "fdefc7cc8093fbf29a2750e1e8f1f11922bd31a2",
+    "worktree": "/Users/hue/code/dopemux-mvp-0001-clean"
+  },
+  "pr": {
+    "number": null,
+    "title": "DMX-DCP-MODEL-ROUTING-MVP-0001 domain model + dual independent audit",
+    "body": "Clean extraction of 0001 domain model from PR #834 swamp cart. See AGENTS.md §9 for proof bundle.",
+    "target_branch": "dcp/model-routing-0001"
+  },
+  "steps": [
+    {
+      "id": "TP-0001-01",
+      "task": "Create dedicated worktree from clean main and cherry-pick 0001 commit",
+      "validation": "git worktree list shows /Users/hue/code/dopemux-mvp-0001-clean on 2ffcc2d4; git log shows fdefc7cc8 cherry-picked; 46 files staged including proof/DMX-DCP-MODEL-ROUTING-MVP-0001/"
+    },
+    {
+      "id": "TP-0001-02",
+      "task": "Add explicit .gitignore rule to allow proof/DMX-DCP-MODEL-ROUTING-MVP-0001/** (or general proof/ tracking policy)",
+      "validation": "grep -E 'proof/DMX-DCP-MODEL-ROUTING-MVP-0001' .gitignore returns match; future proof dirs will be trackable without force-add"
+    },
+    {
+      "id": "TP-0001-03",
+      "task": "Re-stage all files after .gitignore fix and re-capture staged-diff artifacts",
+      "validation": "STAGED_DIFF_NAME_ONLY.md and STAGED_DIFF_STAT.md list all 46 files including proof bundle; no mismatch between PROOF.json files_changed and staged set"
+    },
+    {
+      "id": "TP-0001-04",
+      "task": "Update FINAL_STATUS_PORCELAIN.txt after final staging (post-.gitignore fix)",
+      "validation": "FINAL_STATUS_PORCELAIN.txt shows clean post-commit state with proof/ tracked; no untracked proof/DMX-DCP-MODEL-ROUTING-MVP-0001/"
+    },
+    {
+      "id": "TP-0001-05",
+      "task": "Fix stale AUDITOR_A_REPORT.md text (PASS_VIA_INDEPENDENT_GEMINI_AUDIT reference)",
+      "validation": "AUDITOR_A_REPORT.md contains correct 'PASS_WITH_RISKS' matching PROOF.json auditor_verdict; no stale Gemini reference"
+    },
+    {
+      "id": "TP-0001-06",
+      "task": "Run targeted validation: git diff --check, pytest on domain tests, pre-commit if safe",
+      "validation": "git diff --check passes; tests/dcp/test_dcp_model_routing_0001_domain.py::15 tests pass; no pre-commit blockers"
+    },
+    {
+      "id": "TP-0001-07",
+      "task": "Commit, push branch dcp/model-routing-0001, open draft PR",
+      "validation": "Commit SHA recorded; branch pushed; gh pr create returns draft PR URL or exact blocker"
+    }
+  ],
+  "execution": {
+    "agent": "opencode",
+    "model": "grok-4.3",
+    "authority": "backend_only",
+    "pal_chain": {
+      "enabled": false,
+      "required": false
+    }
+  },
+  "created_at": "2026-06-09T21:15:00Z",
+  "created_by": "opencode"
+}

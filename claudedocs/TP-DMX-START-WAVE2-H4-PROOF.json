@@ -1,0 +1,80 @@
+{
+  "tp_id": "TP-DMX-START-WAVE2-H4",
+  "status": "IMPLEMENTATION_COMPLETE",
+  "repo": "dopemux-mvp",
+  "branch": "claude/modest-cartwright-340c04",
+  "base_pr": 842,
+  "head_before": "97271d92ee92dc923b768292797edde8f668e2c5",
+  "head_after": "2db1a0846a593052de3ddc9ef66a1770788f5188",
+  "git_status_before": " M .claude/claude_config.json",
+  "git_status_after": "(clean after commit)",
+  "bug": {
+    "id": "GAP-H4-BUG",
+    "summary": "config_data UnboundLocalError in dopemux start --altp subscription mode",
+    "root_cause": "In the --altp branch (cli.py else: at line ~1268), when routing_mode is subscription, use_altp is set to False at line 1288. The `if use_altp:` guard at line 1300 is then False, so config_data is never assigned. However, the proxy-startup block at line ~1322 unconditionally called start_simple_proxy(config_data=config_data), raising UnboundLocalError. A secondary issue: the local `from .routing_config import RoutingConfig` inside the else: branch bypasses the module-level mock in tests, reading the real ~/.dopemux/routing.yaml (mode=api on this machine), which kept use_altp=True and triggered a different failure path in tests.",
+    "fix_summary": "1. Initialize config_data = None before the if _provider_flags > 0: block (cli.py:1227). 2. Wrap the proxy-startup block with `if config_data is not None:` (cli.py:1323). 3. In both XFAIL tests, patch dopemux.routing_config.RoutingConfig.load_default in addition to the module-level alias so the local import inside the else: branch also sees subscription mode.",
+    "xfails_unblocked": [
+      "tests/integration/test_start_crit_gaps.py::TestAltpSubscriptionNoop::test_altp_noop_in_subscription_mode_no_proxy_started",
+      "tests/integration/test_start_crit_gaps.py::TestAltpSubscriptionNoop::test_altp_noop_in_subscription_mode_exit_ok"
+    ]
+  },
+  "files_changed": [
+    "src/dopemux/cli.py",
+    "tests/integration/test_start_crit_gaps.py",
+    "proof/TP-DMX-START-WAVE2-H4/PROOF.json",
+    "proof/TP-DMX-START-WAVE2-H4/SUMMARY.md"
+  ],
+  "commands": [
+    {
+      "command": "python -m compileall -q src/dopemux tests/integration",
+      "exit_code": 0,
+      "stdout_summary": "COMPILE: PASS",
+      "stderr_summary": ""
+    },
+    {
+      "command": "python -m pytest tests/integration/test_start_crit_gaps.py::TestAltpSubscriptionNoop --tb=short -v",
+      "exit_code": 0,
+      "stdout_summary": "2 passed in 8.18s",
+      "stderr_summary": ""
+    },
+    {
+      "command": "python -m pytest tests/integration/test_start_crit_gaps.py tests/integration/test_start_command.py -q --tb=short",
+      "exit_code": 0,
+      "stdout_summary": "24 passed in ~200s",
+      "stderr_summary": ""
+    }
+  ],
+  "validation": {
+    "targeted_start_crit_gaps": "PASS",
+    "start_command_regression": "PASS",
+    "compileall": "PASS",
+    "xfails_removed_or_resolved": true,
+    "wave1_regressions_checked": true
+  },
+  "embedded_audit": {
+    "auditor_tool": "claude_code",
+    "auditor_model": "claude-sonnet-4-6",
+    "invocation": "self-audit inside Claude Code after Wave 2 patch",
+    "exit_code": 0,
+    "auditor_verdict": "PASS",
+    "auditor_findings": [
+      "config_data = None init before _provider_flags block is correct \u2014 guards all downstream reads",
+      "if config_data is not None: guard is inside if _provider_flags > 0: \u2014 correct scope, only runs when a provider flag was passed",
+      "Local RoutingConfig import in else: branch bypasses module-level mock \u2014 test fix (patch routing_config.RoutingConfig.load_default) is correct and minimal",
+      "Wave 1 invariants verified: dangerous-mode prompts intact, 127.0.0.1 bind preserved, post-launch crash guards in place, LiteLLM exception ordering preserved"
+    ],
+    "fixes_applied_from_audit": [],
+    "remaining_risks": [
+      "The local `from .routing_config import RoutingConfig` import inside the else: branch is an implicit dependency on the user's actual ~/.dopemux/routing.yaml; this is a test isolation smell but not a production bug"
+    ],
+    "skip_reason": null
+  },
+  "remaining_risks": [
+    "XFAIL tests now pass \u2014 if routing.yaml behavior changes (mode changes from subscription to api), test assertions still hold since we fully mock both RoutingConfig paths"
+  ],
+  "commit": {
+    "created": true,
+    "sha": "2db1a0846a593052de3ddc9ef66a1770788f5188",
+    "message": "fix(cli): initialize altp config_data before subscription flow (TP-DMX-START-WAVE2-H4)"
+  }
+}

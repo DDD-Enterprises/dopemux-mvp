@@ -267,9 +267,17 @@ def test_enforce_pre_live_validator_emits_block_on_structured_no_go(
 def test_enforce_pre_live_validator_fails_closed_on_malformed_stdout(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
     runner = _load_runner_module()
     monkeypatch.setenv("DPMX_LIVE_OK", "1")
+    expected_output_dir = tmp_path / "malformed-prelive-output"
+
+    monkeypatch.setattr(
+        runner,
+        "create_pre_live_validator_output_dir",
+        lambda root: expected_output_dir,
+    )
 
     def _fake_subprocess_run(*args, **kwargs):
         return _FakeCompletedProcess(
@@ -294,8 +302,79 @@ def test_enforce_pre_live_validator_fails_closed_on_malformed_stdout(
         "treating as block (fail-closed)."
     ) in captured.err
     assert "  reason_codes: none reported" in captured.err
-    assert "  output_dir: <unknown>" in captured.err
+    assert f"  output_dir: {expected_output_dir}" in captured.err
     assert "    oops" in captured.err
+    assert "verdict=NO_GO" in str(excinfo.value)
+
+
+def test_enforce_pre_live_validator_fails_closed_on_empty_stdout(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+) -> None:
+    runner = _load_runner_module()
+    monkeypatch.setenv("DPMX_LIVE_OK", "1")
+    expected_output_dir = tmp_path / "prelive-validator-output"
+
+    monkeypatch.setattr(
+        runner,
+        "create_pre_live_validator_output_dir",
+        lambda root: expected_output_dir,
+    )
+
+    def _fake_subprocess_run(*args, **kwargs):
+        return _FakeCompletedProcess(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(runner.subprocess, "run", _fake_subprocess_run)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        runner.enforce_pre_live_validator_for_execution(
+            root=Path("."),
+            args=_make_args(execute=True),
+            phase_sequence=["A"],
+        )
+
+    captured = capsys.readouterr()
+    assert "Pre-live validator blocked live execution." in captured.err
+    assert (
+        "  parse_status: validator stdout did not contain a parsed verdict; "
+        "treating as block (fail-closed)."
+    ) in captured.err
+    assert "  verdict: NO_GO" in captured.err
+    assert f"  output_dir: {expected_output_dir}" in captured.err
+    assert "verdict=NO_GO" in str(excinfo.value)
+
+
+def test_enforce_pre_live_validator_fails_closed_on_non_object_stdout(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    runner = _load_runner_module()
+    monkeypatch.setenv("DPMX_LIVE_OK", "1")
+
+    def _fake_subprocess_run(*args, **kwargs):
+        return _FakeCompletedProcess(
+            returncode=0,
+            stdout=json.dumps(["GO"]),
+            stderr="",
+        )
+
+    monkeypatch.setattr(runner.subprocess, "run", _fake_subprocess_run)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        runner.enforce_pre_live_validator_for_execution(
+            root=Path("."),
+            args=_make_args(execute=True),
+            phase_sequence=["A"],
+        )
+
+    captured = capsys.readouterr()
+    assert "Pre-live validator blocked live execution." in captured.err
+    assert (
+        "  parse_status: validator stdout did not contain a parsed verdict; "
+        "treating as block (fail-closed)."
+    ) in captured.err
+    assert "  verdict: NO_GO" in captured.err
     assert "verdict=NO_GO" in str(excinfo.value)
 
 
@@ -325,6 +404,45 @@ def test_enforce_pre_live_validator_returns_payload_on_go(
     assert "Pre-live validator blocked" not in captured.err
     assert result["verdict"] == "GO"
     assert result["returncode"] == 0
+
+
+def test_enforce_pre_live_validator_passes_isolated_output_dir(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _load_runner_module()
+    monkeypatch.setenv("DPMX_LIVE_OK", "1")
+    expected_output_dir = tmp_path / "prelive-validator"
+    captured = {}
+
+    monkeypatch.setattr(
+        runner,
+        "create_pre_live_validator_output_dir",
+        lambda root: expected_output_dir,
+        raising=False,
+    )
+
+    def _fake_subprocess_run(cmd, *args, **kwargs):
+        captured["cmd"] = list(cmd)
+        return _FakeCompletedProcess(
+            returncode=0,
+            stdout=json.dumps({"verdict": "GO"}),
+            stderr="",
+        )
+
+    monkeypatch.setattr(runner.subprocess, "run", _fake_subprocess_run)
+
+    result = runner.enforce_pre_live_validator_for_execution(
+        root=Path("."),
+        args=_make_args(execute=True),
+        phase_sequence=["A"],
+    )
+
+    assert result["verdict"] == "GO"
+    assert "--output-dir" in captured["cmd"]
+    assert captured["cmd"][captured["cmd"].index("--output-dir") + 1] == str(
+        expected_output_dir
+    )
 
 
 def test_enforce_pre_live_validator_forwards_s_prompts_mode(
@@ -430,6 +548,28 @@ def test_emit_validator_first_preset_block_malformed_stdout(
     assert "  output_dir: <unknown>" in out
     assert "    validator crashed mid-run" in out
     assert "  artifact: /tmp/run_tuv/PRELIVE_VALIDATOR_RESULT.json" in out
+
+
+def test_emit_validator_first_preset_block_non_object_stdout(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    runner = _load_runner_module()
+
+    payload = {
+        "exit_code": 0,
+        "status": "fail",
+        "stdout": json.dumps(["GO"]),
+        "stderr": "",
+    }
+
+    runner._emit_validator_first_preset_block(payload, Path("/tmp/run_non_object"))
+    out = capsys.readouterr().err
+
+    assert "Pre-live validator blocked live execution." in out
+    assert "  verdict: NO_GO" in out
+    assert "  reason_codes: none reported" in out
+    assert "  output_dir: <unknown>" in out
+    assert "  artifact: /tmp/run_non_object/PRELIVE_VALIDATOR_RESULT.json" in out
 
 
 def test_emit_validator_first_preset_block_empty_payload(

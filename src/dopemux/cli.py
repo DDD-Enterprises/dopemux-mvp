@@ -1224,6 +1224,7 @@ def start(
 
     # ── Handle --grok / --codex / --altp provider routing ───────────────
     provider_proxy_started = False
+    config_data = None  # set inside the branch that needs a proxy; None = no proxy
     _provider_flags = sum([use_grok, use_codex, use_altp])
     if _provider_flags > 0:
         if _provider_flags > 1:
@@ -1319,51 +1320,50 @@ def start(
                     "Claude Code → CCR → LiteLLM → tier-matched providers"
                 )
 
-        console.logger.info(
-            "[info]🔄 Starting LiteLLM proxy (no DB required)...[/info]"
-        )
-        try:
-            litellm_port, litellm_master_key = start_simple_proxy(
-                project_root=Path.cwd(),
-                config_data=config_data,
+        if config_data is not None:
+            console.logger.info(
+                "[info]🔄 Starting LiteLLM proxy (no DB required)...[/info]"
             )
-            provider_proxy_started = True
-        except LiteLLMProxyError as exc:
-            raise click.ClickException(str(exc))
+            try:
+                litellm_port, litellm_master_key = start_simple_proxy(
+                    project_root=Path.cwd(),
+                    config_data=config_data,
+                )
+                provider_proxy_started = True
+            except LiteLLMProxyError as exc:
+                raise click.ClickException(str(exc))
 
-        console.logger.info(
-            f"[success]✅ LiteLLM proxy ready on port {litellm_port}[/success]"
-        )
+            console.logger.info(
+                f"[success]✅ LiteLLM proxy ready on port {litellm_port}[/success]"
+            )
 
-        # Wire Claude Code to use the proxy
-        os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
-        os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
-        os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
-        os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
-        os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
-        os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
+            # Wire Claude Code to use the proxy
+            os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
+            os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
+            os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
+            os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
+            os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
+            os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
 
-        # Export CCR upstream env vars so Claude Code Router uses the new proxy
-        os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
-        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = (
-            f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
-        )
-        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
+            # Export CCR upstream env vars so Claude Code Router uses the new proxy
+            os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+            os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = (
+                f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
+            )
+            os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
 
-        if use_altp:
-            # For --altp, we map to the tier names defined in generate_multi_target_config
-            # CCR will expose these exact model names to Claude Code
-            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = "altp-opus,altp-sonnet,altp-haiku"
-        elif provider:
-            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
+            if use_altp:
+                os.environ["CLAUDE_CODE_ROUTER_MODELS"] = "altp-opus,altp-sonnet,altp-haiku"
+            elif provider:
+                os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
 
-        use_litellm = True
-        use_alt_routing = False  # Skip the full alt-routing block below
+            use_litellm = True
+            use_alt_routing = False  # Skip the full alt-routing block below
 
-        console.logger.info(
-            f"[text.dim]✓ {_routing_summary} (:{litellm_port})[/text.dim]"
-        )
-        console.logger.info("")
+            console.logger.info(
+                f"[text.dim]✓ {_routing_summary} (:{litellm_port})[/text.dim]"
+            )
+            console.logger.info("")
 
     # Handle --alt-routing flag (automatic LiteLLM setup)
     if use_alt_routing:
@@ -1609,7 +1609,7 @@ def start(
                         "--port",
                         str(litellm_port),
                         "--host",
-                        "0.0.0.0",
+                        "127.0.0.1",
                     ],
                     stdout=log_file,
                     stderr=subprocess.STDOUT,
@@ -1888,9 +1888,7 @@ def start(
                 bool(os.environ.get("TMUX")),
             )
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.warning("tmux kill-server failed (best-effort): %s", e, exc_info=True)
     # Check if project is initialized
     if not dopemux_exists:
         console.print(
@@ -1918,9 +1916,7 @@ def start(
             )
             check_call([sys.executable, str(wire_script)])
         except Exception as e:
-            pass
-
-            logger.error(f"Error: {e}")
+            logger.warning("wire_conport_project.py failed (best-effort): %s", e, exc_info=True)
     if project_path_real_exists:
         # Worktree Recovery Menu (ADHD-optimized session recovery)
         # Show menu if orphaned worktree sessions exist
@@ -2100,9 +2096,7 @@ def start(
                     f"[text.dim]⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring[/text.dim]"
                 )
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.warning("DOPEMUX_FORCE_INSTANCE_ID override failed (best-effort): %s", e, exc_info=True)
     # Check if we should use OpenRouter via LiteLLM (for tmux --happy mode)
     if os.getenv("DOPEMUX_USE_OPENROUTER") == "1":
         _configure_openrouter_litellm()
@@ -2207,9 +2201,6 @@ def start(
                     "DATABASE_URL",
                 ):
                     os.environ.pop(var, None)
-        except Exception as e:
-            logger.exception("Failed to start LiteLLM proxy: %s", e)
-            raise
 
             if litellm_proxy_info.already_running:
                 console.print(
@@ -2239,6 +2230,9 @@ def start(
         except LiteLLMProxyError as exc:
             console.logger.error(f"[error]❌ LiteLLM proxy failed: {exc}[/error]")
             sys.exit(1)
+        except Exception as e:
+            logger.exception("Failed to start LiteLLM proxy: %s", e)
+            raise
 
     router_info = None
     if use_claude_router and not _direct_provider_routing:
@@ -2469,10 +2463,18 @@ def start(
             wizard_instance.update_boot_step("Starting Activity Monitor", "LOADING")
         
         from .hooks.claude_code_hooks import claude_hooks
-        claude_hooks.start_monitoring(str(project_path))
-        
-        attention_monitor = AttentionMonitor(project_path)
-        attention_monitor.start_monitoring()
+        try:
+            claude_hooks.start_monitoring(str(project_path))
+        except Exception as exc:
+            logger.warning("claude_hooks.start_monitoring failed (best-effort): %s", exc, exc_info=True)
+
+        attention_monitor = None
+        try:
+            attention_monitor = AttentionMonitor(project_path)
+            attention_monitor.start_monitoring()
+        except Exception as exc:
+            attention_monitor = None
+            logger.warning("AttentionMonitor.start_monitoring failed (best-effort): %s", exc, exc_info=True)
 
         if wizard_instance:
             wizard_instance.update_boot_step("Starting Activity Monitor", "SUCCESS")
@@ -2515,14 +2517,17 @@ def start(
             ),
         )
 
-        save_instance_state_sync(
-            state,
-            workspace_id=str(project_path.resolve()),
-            conport_port=3004,  # Always save via instance A's ConPort
-        )
-        console.logger.info(
-            "[text.dim]✅ Instance state saved for crash recovery[/text.dim]"
-        )
+        try:
+            save_instance_state_sync(
+                state,
+                workspace_id=str(project_path.resolve()),
+                conport_port=3004,  # Always save via instance A's ConPort
+            )
+            console.logger.info(
+                "[text.dim]✅ Instance state saved for crash recovery[/text.dim]"
+            )
+        except Exception as exc:
+            logger.warning("Instance state save failed (ConPort may be down): %s", exc, exc_info=True)
 
     if not background:
         console.print(
@@ -2559,7 +2564,8 @@ def start(
                     )
 
             ctx.invoke(cli.commands["save"])
-            attention_monitor.stop_monitoring()
+            if attention_monitor is not None:
+                attention_monitor.stop_monitoring()
 
 
 def _trigger_dope_context_autoindex_startup(
@@ -3694,15 +3700,15 @@ def _start_mcp_servers_with_progress(
     """
     if os.getenv("DOPEMUX_SKIP_MCP_START", "0").lower() in {"1", "true", "yes"}:
         if wizard:
-            wizard.add_log("⏭️ Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)")
+            wizard.add_log(f"{Glyphs.SKIPPED} Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)")
         else:
-            console.logger.info("[warning]⏭️ Skipping MCP server startup[/warning]")
+            console.logger.info(f"[warning]{Glyphs.SKIPPED} Skipping MCP server startup[/warning]")
         return
 
     # 1. Provision stack if missing
     mcp_dir = _resolve_mcp_dir(project_path)
     if not mcp_dir:
-        if wizard: wizard.add_log("❌ MCP stack provisioning failed", style="red")
+        if wizard: wizard.add_log(f"{Glyphs.ERROR} MCP stack provisioning failed", style="error")
         raise click.ClickException("MCP stack provisioning failed.")
 
     # 2. Materialize instance overlay
@@ -3822,60 +3828,14 @@ def _start_mcp_servers_with_progress(
         os.environ[env_var] = f"http://127.0.0.1:{port}/mcp" if srv_name != "LiteLLM" else f"http://127.0.0.1:{port}"
 
     gate = DiscoveryGate(project_path, run_id=f"start-{instance_id}-{int(time.time())}")
+    import asyncio  # local import — only needed here for gate.run()
     if not asyncio.run(gate.run()):
         if wizard: wizard.update_boot_step("Booting MCP Services", "FAILURE")
         raise RuntimeError("MCP Discovery Gate failed.")
 
     if wizard:
         wizard.update_boot_step("Booting MCP Services", "SUCCESS")
-        wizard.add_log("✅ MCP Servers Online")
-
-
-def _trigger_dope_context_autoindex_startup(
-    workspace_path: Path,
-    *,
-    force: bool = False,
-) -> Optional[dict]:
-    """
-    Trigger dope-context startup autoindex bootstrap for the current workspace.
-    """
-    enabled = os.getenv("DOPEMUX_AUTO_INDEX_ON_STARTUP", "1").lower() not in {"0", "false", "no"}
-    if not enabled:
-        return None
-
-    base_url = os.getenv("DOPE_CONTEXT_URL", "http://localhost:3010").rstrip("/")
-    endpoint = f"{base_url}/autoindex/bootstrap"
-    payload = {
-        "workspace_path": str(workspace_path.resolve()),
-        "force": force,
-        "wait_for_completion": False,
-        "debounce_seconds": float(os.getenv("DOPEMUX_AUTO_INDEX_DEBOUNCE_SECONDS", "5.0")),
-        "periodic_interval": int(os.getenv("DOPEMUX_AUTO_INDEX_PERIODIC_SECONDS", "600")),
-        "trigger": "dopemux_cli_startup",
-    }
-
-    try:
-        import requests
-
-        response = requests.post(endpoint, json=payload, timeout=5)
-        if response.status_code >= 400:
-            console.logger.info(
-                f"[yellow]⚠️  Autoindex bootstrap request failed ({response.status_code})[/yellow]"
-            )
-            return {
-                "status": "http_error",
-                "status_code": response.status_code,
-                "endpoint": endpoint,
-            }
-        result = response.json()
-        return result if isinstance(result, dict) else {"status": "unknown_response"}
-    except Exception as exc:
-        logger.warning("Failed to trigger dope-context autoindex bootstrap: %s", exc)
-        return {
-            "status": "request_failed",
-            "error": str(exc),
-            "endpoint": endpoint,
-        }
+        wizard.add_log(f"{Glyphs.SUCCESS} MCP Servers Online")
 
 
 def _activate_dangerous_mode():
@@ -3894,38 +3854,41 @@ def _activate_dangerous_mode():
     # Check if already in dangerous mode
     if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
         expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
-        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
+        try:
+            expires_timestamp = float(expires_str)
+        except (TypeError, ValueError):
+            expires_timestamp = 0.0
 
         if time.time() < expires_timestamp:
-            console.logger.info("[yellow]⚠️  Dangerous mode already active[/yellow]")
+            console.logger.info("[warning]⚠️  Dangerous mode already active[/warning]")
             remaining_minutes = int((expires_timestamp - time.time()) / 60)
-            console.logger.info(f"[dim]Expires in {remaining_minutes} minutes[/dim]")
+            console.logger.info(f"[text.dim]Expires in {remaining_minutes} minutes[/text.dim]")
             return
         else:
             # Expired, clear old settings
             _deactivate_dangerous_mode()
 
     # Show serious warning
-    console.print(Panel(
-        "[red bold]⚠️  DANGER: This will disable ALL security restrictions![/red bold]\n\n"
-        "[yellow]This mode will:[/yellow]\n"
+    console.print(styled_panel(
+        "[error bold]⚠️  DANGER: This will disable ALL security restrictions![/error bold]\n\n"
+        "[warning]This mode will:[/warning]\n"
         "• Skip all permission checks\n"
         "• Disable role enforcement\n"
         "• Bypass budget limits\n"
         "• Allow unrestricted tool access\n\n"
-        "[red]Use ONLY in isolated, trusted environments![/red]\n"
-        "[yellow]Session will expire automatically in 1 hour.[/yellow]",
+        "[error]Use ONLY in isolated, trusted environments![/error]\n"
+        "[warning]Session will expire automatically in 1 hour.[/warning]",
         title="🚨 Security Warning",
-        border_style="red"
+        border_style="error"
     ))
 
     # Require explicit confirmation
     if not click.confirm("\nDo you understand the risks and want to proceed?", default=False):
-        console.logger.info("[green]Dangerous mode cancelled. Staying in safe mode.[/green]")
+        console.logger.info("[success]Dangerous mode cancelled. Staying in safe mode.[/success]")
         return
 
     if not click.confirm("Are you in an isolated, trusted environment?", default=False):
-        console.logger.info("[green]Dangerous mode cancelled for security.[/green]")
+        console.logger.info("[success]Dangerous mode cancelled for security.[/success]")
         return
 
     # Set time-limited dangerous mode (1 hour)
@@ -3948,7 +3911,7 @@ def _activate_dangerous_mode():
 
     # Log for audit trail (but not sensitive info)
     expiry_str = datetime.fromtimestamp(expiry_time).strftime("%H:%M:%S")
-    console.logger.info(f"[red bold]⚠️  DANGEROUS MODE ACTIVE until {expiry_str}[/red bold]")
+    console.logger.info(f"[bold error]⚠️  DANGEROUS MODE ACTIVE until {expiry_str}[/bold error]")
 
 
 def _deactivate_dangerous_mode():
@@ -3976,7 +3939,10 @@ def _check_dangerous_mode_expiry():
     """Check if dangerous mode has expired and clean up if needed."""
     if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
         expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
-        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
+        try:
+            expires_timestamp = float(expires_str)
+        except (TypeError, ValueError):
+            expires_timestamp = 0.0
 
         if time.time() >= expires_timestamp:
             console.logger.info("[yellow]⏰ Dangerous mode expired, returning to safe mode[/yellow]")
@@ -5915,54 +5881,6 @@ def dashboard_cmd(demo: bool):
 
 # Worktree Diagnostics Command
 # =============================================================================
-
-
-def _activate_dangerous_mode() -> None:
-    """Enable session-scoped dangerous mode environment flags."""
-    expires = time.time() + 3600
-    os.environ["DOPEMUX_DANGEROUS_MODE"] = "true"
-    os.environ["DOPEMUX_DANGEROUS_EXPIRES"] = str(expires)
-    os.environ["HOOKS_ENABLE_ADAPTIVE_SECURITY"] = "0"
-    os.environ["CLAUDE_CODE_SKIP_PERMISSIONS"] = "true"
-    os.environ["METAMCP_ROLE_ENFORCEMENT"] = "false"
-    os.environ["METAMCP_APPROVAL_REQUIRED"] = "false"
-    os.environ["METAMCP_BUDGET_ENFORCEMENT"] = "false"
-    os.environ["CLAUDE_DANGEROUS"] = "1"
-    os.environ["SKIP_PERMISSIONS"] = "1"
-
-
-def _deactivate_dangerous_mode() -> None:
-    """Clear dangerous mode environment flags when they expire."""
-    for key in [
-        "DOPEMUX_DANGEROUS_MODE",
-        "DOPEMUX_DANGEROUS_EXPIRES",
-        "HOOKS_ENABLE_ADAPTIVE_SECURITY",
-        "CLAUDE_CODE_SKIP_PERMISSIONS",
-        "METAMCP_ROLE_ENFORCEMENT",
-        "METAMCP_APPROVAL_REQUIRED",
-        "METAMCP_BUDGET_ENFORCEMENT",
-        "CLAUDE_DANGEROUS",
-        "SKIP_PERMISSIONS",
-    ]:
-        os.environ.pop(key, None)
-
-
-def _check_dangerous_mode_expiry() -> bool:
-    """Deactivate dangerous mode after its session TTL elapses."""
-    if os.getenv("DOPEMUX_DANGEROUS_MODE") != "true":
-        return False
-
-    expires_raw = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
-    try:
-        expires_at = float(expires_raw)
-    except ValueError:
-        expires_at = 0.0
-
-    if time.time() >= expires_at:
-        _deactivate_dangerous_mode()
-        return True
-
-    return False
 
 
 @cli.command("doctor")

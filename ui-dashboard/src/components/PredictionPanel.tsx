@@ -12,23 +12,37 @@ export default function PredictionPanel({ prediction }: PredictionPanelProps) {
   const value = hasPrediction ? Math.max(0, Math.min(100, Math.round(prediction * 100))) : 0;
 
   return (
-    <Paper
-      aria-label={hasPrediction ? `Fifteen minute prediction ${value} percent` : 'No prediction available'}
-      sx={{
-        p: 3,
-        minHeight: 300,
-        borderRadius: 3,
-        background: brandTokens.gradients.focusCard,
-      }}
-    >
-      <Typography variant="overline" color="text.secondary">
-        15-minute forecast
-      </Typography>
-      <Typography variant="h3" sx={{ color: brandTokens.colors.giltEdge, my: 1 }}>
-        {hasPrediction ? `${value}%` : 'N/A'}
-      </Typography>
-      <Box aria-hidden="true" sx={{ width: 28, height: 2, bgcolor: brandTokens.colors.giltEdge, mb: 1 }} />
-      <Tooltip title="Predictive LSTM model running on edge device" arrow>
+    <Tooltip title="15-minute forecast: AI-driven projection of your cognitive load" arrow>
+      <Paper
+        tabIndex={0}
+        aria-label={
+          hasPrediction
+            ? `Fifteen minute prediction ${value} percent. AI-driven projection of your cognitive load.`
+            : 'No prediction available'
+        }
+        sx={{
+          p: 3,
+          minHeight: 300,
+          borderRadius: 3,
+          background: brandTokens.gradients.focusCard,
+          border: '1px solid transparent',
+          cursor: 'help',
+          outline: 'none',
+          transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+          '&:hover, &:focus-visible': {
+            transform: 'translateY(-4px)',
+            borderColor: brandTokens.colors.giltEdge,
+            boxShadow: `0 0 20px ${alpha(brandTokens.colors.giltEdge, 0.2)}`,
+          },
+        }}
+      >
+        <Typography variant="overline" color="text.secondary">
+          15-minute forecast
+        </Typography>
+        <Typography variant="h3" sx={{ color: brandTokens.colors.giltEdge, my: 1 }}>
+          {hasPrediction ? `${value}%` : 'N/A'}
+        </Typography>
+        <Box aria-hidden="true" sx={{ width: 28, height: 2, bgcolor: brandTokens.colors.giltEdge, mb: 1 }} />
         <LinearProgress
           aria-label="15-Minute Load Prediction Percentage"
           aria-valuetext={hasPrediction ? `${value}%` : 'Prediction Loading...'}
@@ -43,14 +57,14 @@ export default function PredictionPanel({ prediction }: PredictionPanelProps) {
             },
           }}
         />
-      </Tooltip>
-      <Box sx={{ mt: 3 }}>
-        <Typography variant="body2" color="text.secondary">
-          {hasPrediction
-            ? 'Forecast panel uses the backend projected cognitive load when available.'
-            : 'Prediction Loading...'}
-        </Typography>
-      </Box>
-    </Paper>
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="body2" color="text.secondary">
+            {hasPrediction
+              ? 'Forecast panel uses the backend projected cognitive load when available.'
+              : 'Prediction Loading...'}
+          </Typography>
+        </Box>
+      </Paper>
+    </Tooltip>
   );
 }

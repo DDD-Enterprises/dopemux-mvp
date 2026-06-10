@@ -346,7 +346,7 @@ pbcopy
 vibeOut.txt
 
 # Proof bundles
-proof/
+# (intentionally un-ignored: all proof/ directories are always trackable)
 
 # Router artifacts
 services/router/

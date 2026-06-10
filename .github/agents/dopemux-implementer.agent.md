@@ -2,7 +2,7 @@
 description: 'Implements scoped Dopemux task-packet changes with allowlist enforcement'
 name: 'Dopemux Implementer'
 tools: ['read', 'edit', 'search', 'execute']
-model: 'Claude Sonnet 4.5'
+model: 'Claude Sonnet 4.5'  # implementer_standard lane
 target: 'vscode'
 infer: true
 handoffs:
@@ -13,6 +13,10 @@ handoffs:
   - label: Generate Tests
     agent: dopemux-testgen
     prompt: 'Add or adjust tests only where the task packet allows it, then run the narrowest relevant validation.'
+    send: false
+  - label: Independent Audit
+    agent: dopemux-auditor
+    prompt: 'Independently audit readiness against the task packet, allowlist, proof, and authority boundaries. Return a formal verdict and do not edit files.'
     send: false
 ---
 # Dopemux Implementer

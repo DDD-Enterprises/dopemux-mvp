@@ -162,9 +162,12 @@ def run_pre_live_validator(
     subprocess_run: Callable[..., Any],
     now_iso: Callable[[], str],
     write_json: Callable[[Path, Any], None],
+    output_dir: Optional[Path] = None,
 ) -> Tuple[bool, Dict[str, Any]]:
     validator_path = extractor_service_dir / "validate_pre_live_gate_v25.py"
     args = [python_executable, str(validator_path)]
+    if output_dir is not None:
+        args.extend(["--output-dir", str(output_dir)])
     if target_policy:
         args.extend(["--target-policy", str(target_policy)])
     if target_phases:
@@ -189,6 +192,8 @@ def run_pre_live_validator(
         "stdout": result.stdout[-4000:],
         "stderr": result.stderr[-4000:],
     }
+    if output_dir is not None:
+        payload["output_dir"] = str(output_dir)
     if run_root is not None:
         write_json(run_root / "PRELIVE_VALIDATOR_RESULT.json", payload)
     return result.returncode == 0, payload
@@ -717,6 +722,13 @@ def run_provider_preflight(
         phases=phases,
         routing_policy=cfg.routing_policy,
         selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+        # Probe the routes the active cost profile + --model-alias will actually
+        # execute, not the default profile — otherwise a launch on grok-fast/
+        # gemini-value/etc (or an alias to a different provider) passes by
+        # checking value-default/OpenAI keys instead of the XAI/Gemini routes
+        # that run, and a missing provider key slips through.
+        cost_profile=getattr(cfg, "cost_profile", None),
+        model_alias_overrides=tuple(getattr(cfg, "model_alias_overrides", ()) or ()),
     )
     provider_probes = [
         run_provider_doctor_probe(

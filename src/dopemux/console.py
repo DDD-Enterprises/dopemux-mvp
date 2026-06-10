@@ -45,7 +45,7 @@ class _ConsoleAdapter:
         first = args[0]
         if isinstance(first, str):
             if not any(first.startswith(p) for p in ["[error]", "[BLOCKER]", "❌", "[red", "[bold red"]):
-                args = (f"[gremlin.pink][BLOCKER][/gremlin.pink] {first}",) + args[1:]
+                args = (f"[error][BLOCKER][/error] {first}",) + args[1:]
         
         self._console.print(*args, style="error", **kwargs)
 

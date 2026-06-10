@@ -108,18 +108,22 @@ def test_phase_d_line_numbering_is_zero_padded_and_stable() -> None:
 def test_balanced_grok_openrouter_routes_use_contract_lane_map_for_d_steps() -> None:
     runner = _load_v3_module()
     runner.apply_model_overrides(runner.DEFAULT_GEMINI_MODEL_ID, "balanced_grok_openrouter")
+    # Plan B: the legacy v3 runner resolves ${CELL} placeholder leads to the default
+    # (value-default) profile's concrete OpenAI models; hardcoded fallbacks remain.
+    # The contract lane still overrides the policy ladder for json-managed D steps.
+    # Codex 3361748519: the CE primary ladder is the canonical strict 2-route shape
+    # (lead = ${CE_MODEL} -> gpt-5.3-codex under value-default, fallback = gpt-5.5);
+    # the redundant hardcoded gpt-5.3-codex middle route was dropped.
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D0") == [
-        ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
         ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D1") == [
-        ("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"),
         ("openai", "gpt-5.3-codex", "OPENAI_API_KEY"),
         ("openai", "gpt-5.5", "OPENAI_API_KEY"),
     ]
     assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D2") == [
-        ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+        ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ("xai", "grok-4.3", "XAI_API_KEY"),
     ]
 

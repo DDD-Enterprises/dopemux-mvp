@@ -43,6 +43,10 @@ proof/
 │   │   ├── <bundle_id>.json
 │   │   └── ...
 │   └── ...
+├── TP-DMX-<id>/            ← Development Factory (factory tier)
+│   ├── PROOF.json
+│   ├── SUMMARY.md
+│   └── ...
 └── PROOF_INDEX.json
 ```
 
@@ -50,8 +54,20 @@ proof/
 
 ### Skill Root
 - **Pattern**: `proof/<skill>/`
-- **Values**: `pr_prep`, `pr_merge`, `governance`
+- **Values**: `pr_prep`, `pr_merge`, `governance`, `factory`
 - **Rule**: One root per skill, no exceptions
+- **Factory tier special case**: For Development Factory capsules (`TP-DMX-*` packet IDs), the skill root is implicit in the packet ID. The canonical path is `proof/<packet_id>/` (e.g., `proof/TP-DMX-PROOF-TRACKING-POLICY-001/`), not `proof/factory/<packet_id>/`. This is not an exemption — `factory` is a declared tier whose path omits the redundant `factory/` prefix because the `TP-DMX-` prefix makes the tier machine-identifiable.
+
+### Force-Add Convention (git add -f)
+
+The `proof/*` blanket rule in `.gitignore` is a safety net against accidental staging of raw artifacts. Sanitized proof files **must be explicitly force-added**:
+
+```bash
+git add -f proof/TP-DMX-<id>/PROOF.json
+git add -f proof/TP-DMX-<id>/SUMMARY.md
+```
+
+**Never** remove or weaken the `proof/*` gitignore rule to avoid using `git add -f`. The explicit add is the auditable action — it documents the operator's conscious decision to commit the artifact.
 
 ### Phase/Domain
 - **Pattern**: `proof/<skill>/<phase>/`
