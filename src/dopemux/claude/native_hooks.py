@@ -52,6 +52,11 @@ except ImportError:
     PRE_PLAN_GUIDANCE = ""  # type: ignore[misc]
     POST_PLAN_GUIDANCE = ""  # type: ignore[misc]
 
+try:
+    from proof_tracking_guard import on_proof_write
+except ImportError:
+    def on_proof_write(_root, _fp, _sid=None): return None  # type: ignore[misc]
+
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
 
@@ -433,6 +438,11 @@ class NativeHookAdapter:
             nudge = on_edit_tool(self.project_root, self.session_id)
             if nudge:
                 advisory_parts.append(nudge)
+            fp = str((tool_input or {}).get("file_path") or "")
+            if fp:
+                proof_nudge = on_proof_write(self.project_root, fp, self.session_id)
+                if proof_nudge:
+                    advisory_parts.append(proof_nudge)
         advisory = "\n\n".join(advisory_parts) or None
 
         state = self._active_state()
