@@ -1,3 +1,15 @@
+---
+id: model-routing-domain
+title: Model Routing Domain
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-09'
+last_review: '2026-06-09'
+next_review: '2026-09-07'
+prelude: Model Routing Domain (reference) for dopemux documentation and developer
+  workflows.
+---
 # DCP Routing Domain Model
 
 **Status**: Design/domain-model only. MVP-0001.
