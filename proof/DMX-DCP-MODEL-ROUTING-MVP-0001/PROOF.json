@@ -2,9 +2,13 @@
   "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0001",
   "status": "COMPLETE_ACCEPTED_WITH_RISKS",
   "repo": "DDD-Enterprises/dopemux-mvp",
-  "branch": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat",
+  "branch": "dcp/model-routing-0001-clean-recommended",
+  "source_reconstruction": {
+    "method": "Reconstructed from PR #834 head fdefc7cc plus final GPT-5.5 supervisor review corrections.",
+    "warning": "Do not treat this as a merge-readiness artifact until final capture is regenerated in the target checkout after staging."
+  },
   "head_sha_before": "25de4a74ab37b0777b1231cd12141f500769e65f",
-  "head_sha_after": "25de4a74ab37b0777b1231cd12141f500769e65f",
+  "head_sha_after": "fdefc7cc8093fbf29a2750e1e8f1f11922bd31a2",
   "origin_main_sha": "2ffcc2d48fef99ce73a0befe388de67463a25e00",
   "implementation_runner": {
     "tool": "opencode",
@@ -68,12 +72,30 @@
     "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_STAT.md"
   ],
   "commands": [
-    {"step": "preflight", "exit_code": 0},
-    {"step": "schema_validation", "exit_code": 0},
-    {"step": "fixture_validation", "exit_code": 0},
-    {"step": "pytest", "exit_code": 0},
-    {"step": "diff_allowlist", "exit_code": 0},
-    {"step": "staged_diff_capture", "exit_code": 0}
+    {
+      "step": "preflight",
+      "exit_code": 0
+    },
+    {
+      "step": "schema_validation",
+      "exit_code": 0
+    },
+    {
+      "step": "fixture_validation",
+      "exit_code": 0
+    },
+    {
+      "step": "pytest",
+      "exit_code": 0
+    },
+    {
+      "step": "diff_allowlist",
+      "exit_code": 0
+    },
+    {
+      "step": "staged_diff_capture",
+      "exit_code": 0
+    }
   ],
   "validation_state": "PASSED",
   "auditor_verdict": "PASS_WITH_RISKS",
@@ -86,10 +108,18 @@
   },
   "routing_proof_extension": {
     "classification": {
-      "task_type": ["domain_model", "docs", "test", "proof_validation"],
+      "task_type": [
+        "domain_model",
+        "docs",
+        "test",
+        "proof_validation"
+      ],
       "risk_class": "R2_TESTS",
       "safe_automation": "requires_operator",
-      "authority_class": ["repo_write", "proof_write"],
+      "authority_class": [
+        "repo_write",
+        "proof_write"
+      ],
       "evidence_quality": "observed_clean_origin_main",
       "decision_status": "READY_DESIGN_ONLY"
     },
@@ -130,8 +160,14 @@
     },
     "red_lane_flags": [],
     "stop_conditions": [
-      {"condition_type": "litellm_unhealthy", "triggered": true},
-      {"condition_type": "stale_alias_contract", "triggered": true}
+      {
+        "condition_type": "litellm_unhealthy",
+        "triggered": true
+      },
+      {
+        "condition_type": "stale_alias_contract",
+        "triggered": true
+      }
     ]
   },
   "carried_risks": [
@@ -150,6 +186,6 @@
     "required": true,
     "reason": "final supervisor review in ChatGPT web"
   },
-  "pr_readiness": "DRAFT_PR_READY_AFTER_STAGED_DIFF_PROOF",
+  "pr_readiness": "DRAFT_PR_READY_AFTER_RESTORE_AND_FINAL_CAPTURE",
   "merge_readiness": "BLOCKED_NOT_REQUESTED"
 }
