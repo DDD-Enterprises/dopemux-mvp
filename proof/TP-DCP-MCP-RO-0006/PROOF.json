@@ -1,0 +1,84 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0006",
+  "series": "DCP-MCP-RO",
+  "branch": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat",
+  "base": "main",
+  "head_sha": "257be952829e685e4a9b2da782bb3398197e43d7",
+  "agent": "claude-sonnet-4-6 (subagent)",
+  "timestamp": "2026-06-06T03:50:00Z",
+  "files_changed": {
+    "modified": [
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+      "services/dcp-readonly-facade/src/dcp_facade/envelope.py",
+      "services/dcp-readonly-facade/src/dcp_facade/tools.py"
+    ],
+    "created": [
+      "services/dcp-readonly-facade/src/dcp_facade/dope_context.py",
+      "services/dcp-readonly-facade/src/dcp_facade/task_orchestrator.py",
+      "services/dcp-readonly-facade/tests/test_packet_0006.py",
+      "proof/TP-DCP-MCP-RO-0006/PROOF.json",
+      "proof/TP-DCP-MCP-RO-0006/COMMAND_LOG.md",
+      "proof/TP-DCP-MCP-RO-0006/AUDIT.md"
+    ]
+  },
+  "test_results": {
+    "command": "python -m pytest -q services/dcp-readonly-facade/tests/",
+    "exit_code": 0,
+    "summary": "108 passed, 1 skipped (live tests require DCP_FACADE_LIVE_TESTS=1)"
+  },
+  "compile_check": {
+    "command": "python -m compileall -q services/dcp-readonly-facade",
+    "exit_code": 0
+  },
+  "forbidden_route_grep": {
+    "command": "rg -n 'search_all|index_workspace|...' services/dcp-readonly-facade",
+    "verdict": "All hits are in: route_manifest.py (denylist definitions), dope_context.py (denial docstring), task_orchestrator.py:105 (allowed_transitions in docstring describing state response schema \u2014 not a route), tools.py (denial doc prose in docstring), tests/test_packet_0006.py (denial assertion tests). NO hits in executable call paths.",
+    "exit_code": 0
+  },
+  "validations": {
+    "dope_context_search_code_implemented": "PASS (fail-closed: raises ReadOnlyHttpError with transport explanation)",
+    "dope_context_docs_search_implemented": "PASS (fail-closed: same)",
+    "dope_context_get_index_status_implemented": "PASS (fail-closed: same + inventory note)",
+    "search_all_denied": "PASS (not callable in adapter; search_all( not in source)",
+    "index_sync_clear_autonomous_denied": "PASS (no callable invocations in adapter source)",
+    "task_orchestrator_queue_implemented": "PASS (GET /api/projects/{id}/workflow/queue)",
+    "task_orchestrator_blockers_implemented": "PASS (GET /api/projects/{id}/workflow/blockers)",
+    "task_orchestrator_state_implemented": "PASS (GET /api/projects/{id}/workflow/state \u2014 OBSERVED runtime route, classified CONFIRMED_READ_ONLY in TP-0006)",
+    "transition_denied": "PASS (/transition not in task_orchestrator.py source)",
+    "pm_routes_denied": "PASS (/api/pm etc. not in task_orchestrator.py or tools.py)",
+    "workflow_view_only_label": "PASS (permanent limitation in every task-orchestrator envelope)",
+    "tests_pass": "PASS (exit 0, 108 passed)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "subagent code review of TP-DCP-MCP-RO-0006 adapter surface",
+    "exit_code": 0,
+    "report_path": "proof/TP-DCP-MCP-RO-0006/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-0006-LOW-1",
+        "severity": "LOW",
+        "title": "dope-context tools fail-closed pending MCP JSON-RPC transport",
+        "status": "ACCEPTED_RISK",
+        "body": "Adapter raises ReadOnlyHttpError because dope-context exposes MCP JSON-RPC at /mcp, not REST. Fail-closed posture is intentional for Phase 1."
+      },
+      {
+        "id": "F-0006-LOW-2",
+        "severity": "LOW",
+        "title": "0001 inventory gap for /workflow/state classification",
+        "status": "ACCEPTED_RISK",
+        "body": "Route classified CONFIRMED_READ_ONLY in TP-0006 but 0001 inventory artifact not retroactively modified."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "dope-context MCP JSON-RPC transport not wired in facade Phase 1",
+      "Live facade tests require DCP_FACADE_LIVE_TESTS=1"
+    ],
+    "skip_reason": null
+  }
+}
