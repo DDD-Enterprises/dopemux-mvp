@@ -1,5 +1,3 @@
-# DMX-DCP-MODEL-ROUTING-MVP-0000I — PROOF.json
-
 {
   "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000I",
   "status": "COMPLETE",
@@ -7,5 +5,18 @@
   "fixtures_created": 1,
   "path": "tests/fixtures/dcp/routing_corpus/",
   "readme": "tests/fixtures/dcp/routing_corpus/README.md",
-  "note": "Seed structure created. Full 15+ labeled fixtures (safe_read, docs_only, domain_model, implementation_allowed, red_lane, forbidden, unknown) expected in follow-on packets."
+  "note": "Seed structure created. Full 15+ labeled fixtures (safe_read, docs_only, domain_model, implementation_allowed, red_lane, forbidden, unknown) expected in follow-on packets.",
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Planning/baseline analysis packet; no external audit toolchain invocation required for this series.",
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000I/AUDITOR_REPORT.md"
+  }
 }

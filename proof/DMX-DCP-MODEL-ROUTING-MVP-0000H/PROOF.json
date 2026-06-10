@@ -12,5 +12,18 @@
     "DESIGN_RISK_LEDGER.md",
     "MUST_FIX_BEFORE_0001.md"
   ],
-  "validation_gate": "Any FAIL or NEEDS_SUPERVISOR verdict blocks 0001"
+  "validation_gate": "Any FAIL or NEEDS_SUPERVISOR verdict blocks 0001",
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Planning/baseline analysis packet; no external audit toolchain invocation required for this series.",
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000H/AUDITOR_REPORT.md"
+  }
 }

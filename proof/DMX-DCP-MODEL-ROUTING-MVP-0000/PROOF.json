@@ -1,6 +1,3 @@
-# DMX-DCP-MODEL-ROUTING-MVP-0000 — PROOF.json
-
-```json
 {
   "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000",
   "status": "COMPLETE",
@@ -50,6 +47,18 @@
     "Used uv run dopemux for all CLI invocations",
     "rg output truncated to first 50 matches per pattern",
     "No live service startup or credential validation performed"
-  ]
+  ],
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Planning/baseline analysis packet; no external audit toolchain invocation required for this series.",
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000/AUDITOR_REPORT.md"
+  }
 }
-```

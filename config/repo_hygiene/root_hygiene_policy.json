@@ -179,7 +179,8 @@
     "CHECKLIST.md",
     ".dockerignore",
     ".python-version",
-    "KNOWN_GAPS.md"
+    "KNOWN_GAPS.md",
+    "opencode.jsonc"
   ],
   "legacy_root_files": [
     "ARCHITECTURE.md",
