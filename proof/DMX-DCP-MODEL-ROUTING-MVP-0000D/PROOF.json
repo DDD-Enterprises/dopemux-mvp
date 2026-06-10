@@ -19,5 +19,18 @@
     "Red-lane diff cannot be explained",
     "Secret-looking material found",
     "Operator approval missing for any cleanup"
-  ]
+  ],
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Planning/baseline analysis packet; no external audit toolchain invocation required for this series.",
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000D/AUDITOR_REPORT.md"
+  }
 }
