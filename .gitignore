@@ -346,20 +346,17 @@ pbcopy
 vibeOut.txt
 
 # Proof bundles
-proof/
+# (intentionally un-ignored: all proof/ directories are always trackable)
 
 # Router artifacts
 services/router/
 
-# Generated proof artifacts
-proof/
+# Generated proof artifacts (still ignored)
 .taskx/proof/
 .dopetask/proof/
 extraction/prescan/
 
-# Tracked packet proof ledger
-!proof/
-proof/*
+# Tracked packet proof ledger (specific exceptions removed; proof/ is now fully tracked)
 !proof/rte-seam-extraction-foundation.proof.json
 !proof/rte-main-integration-audit-staging.proof.json
 !proof/rte-certification-overclaim-and-escalation-truth-hardening.proof.json

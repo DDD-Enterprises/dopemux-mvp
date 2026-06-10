@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/DDD-Enterprises/dopemux-mvp/schemas/dcp/dcp_backend_runner.schema.json",
+  "title": "DcpBackendRunner",
+  "description": "Backend runner definition with authority constraints",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["runner_id", "runner_name", "backend_authority", "allowed_lanes"],
+  "properties": {
+    "runner_id": {
+      "type": "string",
+      "pattern": "^DCP-RUN-[0-9A-Z]{6}$",
+      "description": "Unique runner identifier (NOT arbitrary backend_id)"
+    },
+    "runner_name": {
+      "type": "string",
+      "enum": ["opencode_grok", "claude_code", "gemini_cli", "codex_cli", "validation_only", "read_only", "forbidden"],
+      "description": "Runner name from controlled registry"
+    },
+    "backend_authority": {
+      "type": "string",
+      "enum": ["backend_only", "validation_only", "read_only", "adapter", "advisory", "forbidden", "unknown"],
+      "description": "Authority level of this runner"
+    },
+    "allowed_lanes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^DCP-LANE-[0-9A-Z]{6}$"
+      },
+      "minItems": 1,
+      "description": "Lanes this runner may execute"
+    },
+    "open_code_backend_only": {
+      "type": "boolean",
+      "description": "True if this runner must remain backend-only (OpenCode constraint)"
+    }
+  }
+}

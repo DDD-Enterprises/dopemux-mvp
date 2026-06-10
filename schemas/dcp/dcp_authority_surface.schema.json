@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/DDD-Enterprises/dopemux-mvp/schemas/dcp/dcp_authority_surface.schema.json",
+  "title": "DcpAuthoritySurface",
+  "description": "Authority surface definition - what can and cannot be claimed",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["surface_id", "surface_name", "authority_type", "canonical_owner", "unknown_status"],
+  "properties": {
+    "surface_id": {
+      "type": "string",
+      "pattern": "^DCP-AUTH-[0-9A-Z]{6}$",
+      "description": "Unique authority surface identifier"
+    },
+    "surface_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Surface name (e.g., 'dopecon-bridge', 'task-orchestrator')"
+    },
+    "authority_type": {
+      "type": "string",
+      "enum": ["pm", "memory", "retrieval", "workflow", "bridge_proxy", "runtime", "decision", "progress", "chronicle", "unknown"],
+      "description": "Type of authority this surface claims"
+    },
+    "canonical_owner": {
+      "type": "string",
+      "enum": ["conport", "leantime", "task-orchestrator", "dope-memory", "dope-context", "dopemux", "dopetask", "none", "unknown"],
+      "description": "Canonical owner of this authority (or none/unknown)"
+    },
+    "unknown_status": {
+      "type": "boolean",
+      "description": "True if authority ownership is unresolved (UNKNOWN)"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Authority clarification notes"
+    }
+  }
+}

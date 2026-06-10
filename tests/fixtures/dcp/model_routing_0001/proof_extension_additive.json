@@ -1,0 +1,74 @@
+{
+  "extension_id": "DCP-PROOF-000001",
+  "classification": {
+    "classification_id": "DCP-CLS-00000001",
+    "risk_class": "R0_READ",
+    "safe_automation": "safe_read",
+    "evidence_quality": "observed_clean_origin_main",
+    "decision_status": "READY_DESIGN_ONLY"
+  },
+  "routing_decision": {
+    "decision_id": "DCP-DEC-00000001",
+    "classification_id": "DCP-CLS-00000001",
+    "execution_lane": {
+      "lane_id": "DCP-LANE-000001",
+      "lane_name": "design_only",
+      "backend_authority": "backend_only",
+      "allowed_risk_classes": ["R0_READ", "R1_DOCS"]
+    },
+    "stop_conditions": [],
+    "authority_surface": {
+      "surface_id": "DCP-AUTH-000003",
+      "surface_name": "opencode_implementer",
+      "authority_type": "runtime",
+      "canonical_owner": "dopemux",
+      "unknown_status": false
+    },
+    "audit_route": {
+      "route_id": "DCP-AUD-000001",
+      "route_name": "dual_auditor",
+      "pal_chain_enabled": true,
+      "self_certification_blocked": true,
+      "auditor_verdict_distinct": true
+    }
+  },
+  "execution_lane": {
+    "lane_id": "DCP-LANE-000001",
+    "lane_name": "design_only",
+    "backend_authority": "backend_only",
+    "allowed_risk_classes": ["R0_READ", "R1_DOCS"]
+  },
+  "model_slot": {
+    "slot_id": "DCP-SLOT-000001",
+    "model_alias": "grok-4.3",
+    "evidence_quality": "observed_current_branch",
+    "config_only": false,
+    "runtime_healthy": true
+  },
+  "backend": {
+    "runner_id": "DCP-RUN-000001",
+    "runner_name": "opencode_grok",
+    "backend_authority": "backend_only",
+    "allowed_lanes": ["DCP-LANE-000001"],
+    "open_code_backend_only": true
+  },
+  "runner_invocation": {
+    "tool": "opencode",
+    "model": "grok-4.3",
+    "authority": "backend_only"
+  },
+  "audit_route": {
+    "route_id": "DCP-AUD-000001",
+    "route_name": "dual_auditor",
+    "pal_chain_enabled": true,
+    "self_certification_blocked": true,
+    "auditor_verdict_distinct": true
+  },
+  "operator_approval": {
+    "approved": true,
+    "approver": "human_operator",
+    "timestamp": "2026-06-09T00:00:00Z"
+  },
+  "red_lane_flags": [],
+  "stop_conditions": []
+}

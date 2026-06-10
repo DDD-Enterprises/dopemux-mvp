@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/DDD-Enterprises/dopemux-mvp/schemas/dcp/dcp_model_slot.schema.json",
+  "title": "DcpModelSlot",
+  "description": "Model slot definition with evidence quality tracking (NOT runtime health)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slot_id", "model_alias", "evidence_quality", "config_only", "runtime_healthy"],
+  "properties": {
+    "slot_id": {
+      "type": "string",
+      "pattern": "^DCP-SLOT-[0-9A-Z]{6}$",
+      "description": "Unique slot identifier"
+    },
+    "model_alias": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Model alias or registry reference (NOT arbitrary model_id)"
+    },
+    "evidence_quality": {
+      "type": "string",
+      "enum": ["observed_clean_origin_main", "observed_current_branch", "observed_config_only", "observed_runtime_healthy", "observed_runtime_unhealthy", "vendor_only", "claimed_only", "conflicting", "unknown"],
+      "description": "Quality of model slot evidence"
+    },
+    "config_only": {
+      "type": "boolean",
+      "description": "True if evidence is config-only (not runtime verified)"
+    },
+    "runtime_healthy": {
+      "type": "boolean",
+      "description": "Runtime health status - MUST be false if config_only is true"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Evidence notes"
+    }
+  }
+}

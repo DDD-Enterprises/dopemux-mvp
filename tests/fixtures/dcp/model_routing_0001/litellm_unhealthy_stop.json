@@ -1,0 +1,8 @@
+{
+  "condition_id": "DCP-STOP-000001",
+  "condition_type": "litellm_unhealthy",
+  "triggered": true,
+  "evidence": "LiteLLM unhealthy observed on origin/main baseline from 0000E",
+  "resolution_required": "operator",
+  "notes": "Hard stop: LiteLLM unhealthy carried from 0000E"
+}
