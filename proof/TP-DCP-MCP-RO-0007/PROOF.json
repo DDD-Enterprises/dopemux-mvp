@@ -15,7 +15,8 @@
       "docs/03-reference/dcp/chatgpt-mcp-readonly/FAILURE_RUNBOOK.md",
       "proof/TP-DCP-MCP-RO-0007/PROOF.json",
       "proof/TP-DCP-MCP-RO-0007/COMMAND_LOG.md",
-      "proof/TP-DCP-MCP-RO-0007/AUDIT.md"
+      "proof/TP-DCP-MCP-RO-0007/AUDIT.md",
+      "proof/TP-DCP-MCP-RO-0007/AUDITOR_REPORT.md"
     ]
   },
   "test_results": {
@@ -51,10 +52,10 @@
     "required": true,
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
-    "auditor_model": "claude-opus-4-8",
+    "auditor_model": "opus",
     "invocation": "self-audit of TP-DCP-MCP-RO-0007 docs challenging doc safety and secret leakage (S3)",
     "exit_code": 0,
-    "report_path": "proof/TP-DCP-MCP-RO-0007/AUDIT.md",
+    "report_path": "proof/TP-DCP-MCP-RO-0007/AUDITOR_REPORT.md",
     "findings": [
       {
         "id": "F-0007-LOW-1",
