@@ -1,0 +1,561 @@
+{
+  "run_id": "20260423_170204",
+  "pr_state": {
+    "pr_id": 514,
+    "title": "feat(rte): wire intelligence router to dynamic model routing",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "feat/rte-intelligence-wiring",
+    "ci_status": "FAILURE",
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "BLOCKED",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-04-24T00:02:33Z",
+    "is_draft": false,
+    "auto_merge_enabled": false,
+    "additions": 2784,
+    "deletions": 409,
+    "changed_files": 24,
+    "unresolved_threads": 15,
+    "active_unresolved_threads": 7,
+    "outdated_unresolved_threads": 8,
+    "pr_class": "MIXED",
+    "risk_score": 4603.0,
+    "check_summary": {
+      "total": 124,
+      "success": 120,
+      "failure": 4,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 4,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "apply_blocked",
+    "head_sha": "31524517f3bf1c89d3107adad76cb3e14f7a81a1",
+    "base_sha": "2ece87f8bc949a876df1a4601440fe2eddcb12fc"
+  },
+  "lifecycle_state": "apply_blocked",
+  "apply_actions": [
+    "rebase feat/rte-intelligence-wiring onto main",
+    "resolve review threads",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "rebase_merge",
+    "command": [
+      "gh",
+      "pr",
+      "merge",
+      "514",
+      "--rebase",
+      "--delete-branch"
+    ],
+    "reason": "All gates are green; rebase merge selected by default.",
+    "reason_code": "rebase_merge_ready"
+  },
+  "blockers": [
+    {
+      "type": "active_thread",
+      "source": "github_protection_review",
+      "name": "7 active unresolved review threads remain.",
+      "details": null,
+      "metadata": {
+        "active_threads": 7
+      }
+    },
+    {
+      "type": "required_check_failed",
+      "source": "github_protection_review",
+      "name": "Required checks are failing.",
+      "details": null,
+      "metadata": {
+        "checks_total": 124,
+        "checks_success": 120,
+        "checks_failure": 4,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 4,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [
+          "🧪 Unit Tests"
+        ],
+        "failed_required_check_entries": [
+          {
+            "check_name": "🧪 Unit Tests",
+            "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24865034929/job/72799095709",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE"
+          }
+        ],
+        "pending_required_checks": [],
+        "blocker_types": [
+          "required_check_failed"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "type": "validation_failed",
+      "source": "local_validation",
+      "name": "Local validation is required before merge readiness can be declared.",
+      "details": null,
+      "metadata": {
+        "validation_status": "failed"
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "diff_size": 3193
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 4603.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 124,
+        "checks_success": 120,
+        "checks_failure": 4,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 4,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [
+          "🧪 Unit Tests"
+        ],
+        "failed_required_check_entries": [
+          {
+            "check_name": "🧪 Unit Tests",
+            "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24865034929/job/72799095709",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE"
+          }
+        ],
+        "pending_required_checks": [],
+        "blocker_types": [
+          "required_check_failed"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "failed",
+      "details": {
+        "status": "failed",
+        "required_for_merge_ready": true,
+        "passed": false,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run --files docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md llm-plans/RTE_AUDIT_FIXES_PLAN.md llm-plans/RTE_STABILIZATION_AND_INTELLIGENCE_WIRING.md pal_validation.json proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json reports/pal_validation.json services/repo-truth-extractor/README.md services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/partition_brief_generator.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_intelligence_routing_integration.py services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py src/dopemux/commands/extractor_commands.py task-packets/INDEX.md task-packets/TP-DMX-RTEAUDIT-110.json task-packets/TP-DMX-RTECANON-001.json",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-frontmatter-fix",
+            "command": "python scripts/docs_frontmatter_guard.py --fix docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "All docs have valid frontmatter.\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-validator",
+            "command": "python scripts/docs_validator.py docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-hygiene",
+            "command": "python scripts/check_docs_hygiene.py --check docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "docs-hygiene: total=7 active=7 quarantine=0 violations=0\ndocs-hygiene: checked 7 files, OK\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-filename-hygiene",
+            "command": "python scripts/check_docs_filename_hygiene.py --check docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md",
+            "status": "failed",
+            "returncode": 1,
+            "stdout": "docs-filename-hygiene: total=7 active=7 quarantine=0 exempt=2 violations=1\ndocs-filename-hygiene: FAILED\n1. task-packets/INDEX.md\n   target: task-packets/index.md\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "2cb9d41f0195218e3b72bc6f3f2e106d217e19c4a594bcea1e52049b3363b45b",
+          "valid_for_sha": "31524517f3bf1c89d3107adad76cb3e14f7a81a1",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "discovered",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        },
+        "failure_fingerprint": "a71e3bf8c7d5085a3f0444d72393ddd05e0f85e985a7a3dca53705ed82ad9c3e"
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "merge_readiness",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "failed",
+    "required_for_merge_ready": true,
+    "passed": false,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run --files docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md llm-plans/RTE_AUDIT_FIXES_PLAN.md llm-plans/RTE_STABILIZATION_AND_INTELLIGENCE_WIRING.md pal_validation.json proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json reports/pal_validation.json services/repo-truth-extractor/README.md services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/partition_brief_generator.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_intelligence_routing_integration.py services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py src/dopemux/commands/extractor_commands.py task-packets/INDEX.md task-packets/TP-DMX-RTEAUDIT-110.json task-packets/TP-DMX-RTECANON-001.json",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-frontmatter-fix",
+        "command": "python scripts/docs_frontmatter_guard.py --fix docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "All docs have valid frontmatter.\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-validator",
+        "command": "python scripts/docs_validator.py docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-hygiene",
+        "command": "python scripts/check_docs_hygiene.py --check docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "docs-hygiene: total=7 active=7 quarantine=0 violations=0\ndocs-hygiene: checked 7 files, OK\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-filename-hygiene",
+        "command": "python scripts/check_docs_filename_hygiene.py --check docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md",
+        "status": "failed",
+        "returncode": 1,
+        "stdout": "docs-filename-hygiene: total=7 active=7 quarantine=0 exempt=2 violations=1\ndocs-filename-hygiene: FAILED\n1. task-packets/INDEX.md\n   target: task-packets/index.md\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "2cb9d41f0195218e3b72bc6f3f2e106d217e19c4a594bcea1e52049b3363b45b",
+      "valid_for_sha": "31524517f3bf1c89d3107adad76cb3e14f7a81a1",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "failure_fingerprint": "a71e3bf8c7d5085a3f0444d72393ddd05e0f85e985a7a3dca53705ed82ad9c3e"
+  },
+  "thread_dispositions": [
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYGV",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYGz",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYHT",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYHp",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYH9",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYIW",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYIv",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYJH",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/90-adr/adr-220-dopetask-direct-health-endpoint.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYJd",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYJr",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "task-packets/TP-DMX-RTECANON-001.json",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYKA",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/90-adr/adr-220-dopetask-direct-health-endpoint.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYKb",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/tests/test_intelligence_routing_integration.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYKt",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/tests/test_intelligence_routing_integration.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYLC",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859NYLW",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ],
+  "fingerprint": {
+    "input_fingerprint": "15dd20b791e225dce82ac53d3c2c4a36966ca225910db2105e9b90bd57daa1b2",
+    "valid_for_sha": "31524517f3bf1c89d3107adad76cb3e14f7a81a1",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "explain": "{\"why_blocked\": [\"7 active unresolved review threads remain.\", \"Required checks are failing.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"7 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 7}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"required_check_failed\", \"message\": \"Required checks are failing.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 124, \"checks_success\": 120, \"checks_failure\": 4, \"checks_pending\": 0, \"required_checks_pending\": 0, \"required_checks_failed\": 4, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [\"\\ud83e\\uddea Unit Tests\"], \"failed_required_check_entries\": [{\"check_name\": \"\\ud83e\\uddea Unit Tests\", \"details_url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24865034929/job/72799095709\", \"status\": \"COMPLETED\", \"conclusion\": \"FAILURE\"}], \"pending_required_checks\": [], \"blocker_types\": [\"required_check_failed\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_failed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"failed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 3193}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 3193}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 4603.0}, \"source\": \"heuristics\", \"override\": null}]}",
+    "operator_state": ""
+  },
+  "blocked_by_global_fix_pr": null
+}

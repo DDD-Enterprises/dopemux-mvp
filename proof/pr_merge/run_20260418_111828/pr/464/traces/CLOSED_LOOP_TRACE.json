@@ -1,0 +1,1078 @@
+{
+  "pr_id": "464",
+  "cycle_id": "aba45351-9767-4c3a-b9d9-56afdd2c64f0",
+  "implicit_actions": [
+    {
+      "action": "REFRESH_STATE",
+      "reason": "Starting closed-loop cycle",
+      "timestamp": 1776558801.68524
+    },
+    {
+      "action": "SELECT_TACTIC",
+      "reason": "Computing next safe tactic",
+      "timestamp": 1776558801.685245
+    },
+    {
+      "action": "RECOMPUTE_SUMMARY",
+      "reason": "Updating posture and blockers after tactic selection",
+      "timestamp": 1776558801.685259
+    }
+  ],
+  "state_before": {
+    "run_id": "20260418_111828",
+    "pr_state": {
+      "pr_id": 464,
+      "title": "feat(rte): integrate prescan as stage 0 of v5 extraction",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "feat/rte-v5-full-prescan-integration",
+      "ci_status": "FAILURE",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "BLOCKED",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-04-19T00:32:31Z",
+      "is_draft": false,
+      "auto_merge_enabled": true,
+      "additions": 856,
+      "deletions": 66,
+      "changed_files": 12,
+      "unresolved_threads": 10,
+      "active_unresolved_threads": 10,
+      "outdated_unresolved_threads": 0,
+      "pr_class": "MIXED",
+      "risk_score": 2292.0,
+      "check_summary": {
+        "total": 100,
+        "success": 99,
+        "failure": 1,
+        "pending": 0,
+        "required_pending": 0,
+        "required_failure": 1,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "87c28ecc658a68ce26010698e9902895404c311e",
+      "base_sha": "b6147b85346c958423db8a7162ee847a01e282d4"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase feat/rte-v5-full-prescan-integration onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "rebase_merge",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "464",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "All gates are green; rebase merge selected by default.",
+      "reason_code": "rebase_merge_ready"
+    },
+    "blockers": [
+      {
+        "type": "required_check_failed",
+        "source": "github_protection_review",
+        "name": "Required checks are failing.",
+        "details": null,
+        "metadata": {
+          "checks_total": 100,
+          "checks_success": 99,
+          "checks_failure": 1,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 1,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24615864922/job/71977840414",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [],
+          "blocker_types": [
+            "required_check_failed"
+          ],
+          "warning_types": []
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "threads_resolved_locally",
+        "message": "GitHub shows 10 active threads, but they were resolved locally and validation passed.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "active_threads": 10
+        },
+        "source": "local_validation",
+        "override": null
+      }
+    ],
+    "observations": [
+      {
+        "kind": "observation",
+        "finding_type": "high_risk_score",
+        "message": "PR has elevated risk score relative to queue.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "risk_score": 2292.0
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 100,
+          "checks_success": 99,
+          "checks_failure": 1,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 1,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24615864922/job/71977840414",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [],
+          "blocker_types": [
+            "required_check_failed"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "passed",
+        "details": {
+          "status": "passed",
+          "required_for_merge_ready": true,
+          "passed": true,
+          "attempts": 1,
+          "remediation_applied": false,
+          "steps": [
+            {
+              "name": "pre-commit",
+              "command": "pre-commit run --files docs/02-how-to/extraction/run-prescan.md llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md proof/rte_v5_full_prescan_integration.proof.json services/repo-truth-extractor/lib/prescan/batch_planner.py services/repo-truth-extractor/lib/prescan/classifier.py services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/provider_catalog.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_online_gate.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-frontmatter-fix",
+              "command": "python scripts/docs_frontmatter_guard.py --fix docs/02-how-to/extraction/run-prescan.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "All docs have valid frontmatter.\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-validator",
+              "command": "python scripts/docs_validator.py docs/02-how-to/extraction/run-prescan.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "name": "docs-hygiene",
+              "command": "python scripts/check_docs_hygiene.py --check docs/02-how-to/extraction/run-prescan.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "docs-hygiene: total=1 active=1 quarantine=0 violations=0\ndocs-hygiene: checked 1 files, OK\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-filename-hygiene",
+              "command": "python scripts/check_docs_filename_hygiene.py --check docs/02-how-to/extraction/run-prescan.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=0 violations=0\ndocs-filename-hygiene: checked 1 files, OK\n",
+              "stderr": ""
+            },
+            {
+              "name": "root-hygiene",
+              "command": "python scripts/check_root_hygiene.py",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "root-hygiene: no candidate files to check\n",
+              "stderr": ""
+            }
+          ],
+          "input_fingerprint": {
+            "input_fingerprint": "db7fd9b804a39a6c3945a0edccaf7f88c0c1f791909c746b226437df4bc5a9f2",
+            "valid_for_sha": "87c28ecc658a68ce26010698e9902895404c311e",
+            "stale_if": [
+              "PR head SHA changes",
+              "base SHA changes",
+              "effective policy fingerprint changes",
+              "applied tree contents change"
+            ],
+            "created_from_state": "discovered",
+            "review_state_hash": "",
+            "check_state_hash": "",
+            "validation_command_hash": "",
+            "apply_tree_sha": "",
+            "dirty_state": ""
+          },
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "passed",
+      "required_for_merge_ready": true,
+      "passed": true,
+      "attempts": 1,
+      "remediation_applied": false,
+      "steps": [
+        {
+          "name": "pre-commit",
+          "command": "pre-commit run --files docs/02-how-to/extraction/run-prescan.md llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md proof/rte_v5_full_prescan_integration.proof.json services/repo-truth-extractor/lib/prescan/batch_planner.py services/repo-truth-extractor/lib/prescan/classifier.py services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/provider_catalog.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_online_gate.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-frontmatter-fix",
+          "command": "python scripts/docs_frontmatter_guard.py --fix docs/02-how-to/extraction/run-prescan.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "All docs have valid frontmatter.\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-validator",
+          "command": "python scripts/docs_validator.py docs/02-how-to/extraction/run-prescan.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "name": "docs-hygiene",
+          "command": "python scripts/check_docs_hygiene.py --check docs/02-how-to/extraction/run-prescan.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "docs-hygiene: total=1 active=1 quarantine=0 violations=0\ndocs-hygiene: checked 1 files, OK\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-filename-hygiene",
+          "command": "python scripts/check_docs_filename_hygiene.py --check docs/02-how-to/extraction/run-prescan.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=0 violations=0\ndocs-filename-hygiene: checked 1 files, OK\n",
+          "stderr": ""
+        },
+        {
+          "name": "root-hygiene",
+          "command": "python scripts/check_root_hygiene.py",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "root-hygiene: no candidate files to check\n",
+          "stderr": ""
+        }
+      ],
+      "input_fingerprint": {
+        "input_fingerprint": "db7fd9b804a39a6c3945a0edccaf7f88c0c1f791909c746b226437df4bc5a9f2",
+        "valid_for_sha": "87c28ecc658a68ce26010698e9902895404c311e",
+        "stale_if": [
+          "PR head SHA changes",
+          "base SHA changes",
+          "effective policy fingerprint changes",
+          "applied tree contents change"
+        ],
+        "created_from_state": "discovered",
+        "review_state_hash": "",
+        "check_state_hash": "",
+        "validation_command_hash": "",
+        "apply_tree_sha": "",
+        "dirty_state": ""
+      },
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZCE",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/run_extraction_v5.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZCS",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/run_extraction_v5.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZC4",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZDG",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZDW",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZDj",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/run_extraction_v5.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZD2",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "proof/rte_v5_full_prescan_integration.proof.json",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZED",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/run_extraction_v5.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZHe",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857-k9R",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/run_extraction_v5.py",
+        "applied": false,
+        "escalation_needed": false
+      }
+    ],
+    "fingerprint": {
+      "input_fingerprint": "49fe303971e9ccb05a35b27fc16a8ccfa930f217d4ffc03759d4189710c1540d",
+      "valid_for_sha": "87c28ecc658a68ce26010698e9902895404c311e",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"Required checks are failing.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"required_check_failed\", \"message\": \"Required checks are failing.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 100, \"checks_success\": 99, \"checks_failure\": 1, \"checks_pending\": 0, \"required_checks_pending\": 0, \"required_checks_failed\": 1, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [\"\\ud83e\\uddea Unit Tests\"], \"failed_required_check_entries\": [{\"check_name\": \"\\ud83e\\uddea Unit Tests\", \"details_url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24615864922/job/71977840414\", \"status\": \"COMPLETED\", \"conclusion\": \"FAILURE\"}], \"pending_required_checks\": [], \"blocker_types\": [\"required_check_failed\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 10 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 10}, \"source\": \"local_validation\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 10 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 10}, \"source\": \"local_validation\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 2292.0}, \"source\": \"heuristics\", \"override\": null}]}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "APPLY_FIX"
+    ]
+  },
+  "state_after": {
+    "run_id": "20260418_111828",
+    "pr_state": {
+      "pr_id": 464,
+      "title": "feat(rte): integrate prescan as stage 0 of v5 extraction",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "feat/rte-v5-full-prescan-integration",
+      "ci_status": "FAILURE",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "BLOCKED",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-04-19T00:32:31Z",
+      "is_draft": false,
+      "auto_merge_enabled": true,
+      "additions": 856,
+      "deletions": 66,
+      "changed_files": 12,
+      "unresolved_threads": 10,
+      "active_unresolved_threads": 10,
+      "outdated_unresolved_threads": 0,
+      "pr_class": "MIXED",
+      "risk_score": 2292.0,
+      "check_summary": {
+        "total": 100,
+        "success": 99,
+        "failure": 1,
+        "pending": 0,
+        "required_pending": 0,
+        "required_failure": 1,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "87c28ecc658a68ce26010698e9902895404c311e",
+      "base_sha": "b6147b85346c958423db8a7162ee847a01e282d4"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase feat/rte-v5-full-prescan-integration onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "rebase_merge",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "464",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "All gates are green; rebase merge selected by default.",
+      "reason_code": "rebase_merge_ready"
+    },
+    "blockers": [
+      {
+        "type": "required_check_failed",
+        "source": "github_protection_review",
+        "name": "Required checks are failing.",
+        "details": null,
+        "metadata": {
+          "checks_total": 100,
+          "checks_success": 99,
+          "checks_failure": 1,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 1,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24615864922/job/71977840414",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [],
+          "blocker_types": [
+            "required_check_failed"
+          ],
+          "warning_types": []
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "threads_resolved_locally",
+        "message": "GitHub shows 10 active threads, but they were resolved locally and validation passed.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "active_threads": 10
+        },
+        "source": "local_validation",
+        "override": null
+      }
+    ],
+    "observations": [
+      {
+        "kind": "observation",
+        "finding_type": "high_risk_score",
+        "message": "PR has elevated risk score relative to queue.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "risk_score": 2292.0
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 100,
+          "checks_success": 99,
+          "checks_failure": 1,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 1,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24615864922/job/71977840414",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [],
+          "blocker_types": [
+            "required_check_failed"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "passed",
+        "details": {
+          "status": "passed",
+          "required_for_merge_ready": true,
+          "passed": true,
+          "attempts": 1,
+          "remediation_applied": false,
+          "steps": [
+            {
+              "name": "pre-commit",
+              "command": "pre-commit run --files docs/02-how-to/extraction/run-prescan.md llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md proof/rte_v5_full_prescan_integration.proof.json services/repo-truth-extractor/lib/prescan/batch_planner.py services/repo-truth-extractor/lib/prescan/classifier.py services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/provider_catalog.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_online_gate.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-frontmatter-fix",
+              "command": "python scripts/docs_frontmatter_guard.py --fix docs/02-how-to/extraction/run-prescan.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "All docs have valid frontmatter.\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-validator",
+              "command": "python scripts/docs_validator.py docs/02-how-to/extraction/run-prescan.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "name": "docs-hygiene",
+              "command": "python scripts/check_docs_hygiene.py --check docs/02-how-to/extraction/run-prescan.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "docs-hygiene: total=1 active=1 quarantine=0 violations=0\ndocs-hygiene: checked 1 files, OK\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-filename-hygiene",
+              "command": "python scripts/check_docs_filename_hygiene.py --check docs/02-how-to/extraction/run-prescan.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=0 violations=0\ndocs-filename-hygiene: checked 1 files, OK\n",
+              "stderr": ""
+            },
+            {
+              "name": "root-hygiene",
+              "command": "python scripts/check_root_hygiene.py",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "root-hygiene: no candidate files to check\n",
+              "stderr": ""
+            }
+          ],
+          "input_fingerprint": {
+            "input_fingerprint": "db7fd9b804a39a6c3945a0edccaf7f88c0c1f791909c746b226437df4bc5a9f2",
+            "valid_for_sha": "87c28ecc658a68ce26010698e9902895404c311e",
+            "stale_if": [
+              "PR head SHA changes",
+              "base SHA changes",
+              "effective policy fingerprint changes",
+              "applied tree contents change"
+            ],
+            "created_from_state": "discovered",
+            "review_state_hash": "",
+            "check_state_hash": "",
+            "validation_command_hash": "",
+            "apply_tree_sha": "",
+            "dirty_state": ""
+          },
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "passed",
+      "required_for_merge_ready": true,
+      "passed": true,
+      "attempts": 1,
+      "remediation_applied": false,
+      "steps": [
+        {
+          "name": "pre-commit",
+          "command": "pre-commit run --files docs/02-how-to/extraction/run-prescan.md llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md proof/rte_v5_full_prescan_integration.proof.json services/repo-truth-extractor/lib/prescan/batch_planner.py services/repo-truth-extractor/lib/prescan/classifier.py services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/provider_catalog.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_online_gate.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-frontmatter-fix",
+          "command": "python scripts/docs_frontmatter_guard.py --fix docs/02-how-to/extraction/run-prescan.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "All docs have valid frontmatter.\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-validator",
+          "command": "python scripts/docs_validator.py docs/02-how-to/extraction/run-prescan.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "name": "docs-hygiene",
+          "command": "python scripts/check_docs_hygiene.py --check docs/02-how-to/extraction/run-prescan.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "docs-hygiene: total=1 active=1 quarantine=0 violations=0\ndocs-hygiene: checked 1 files, OK\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-filename-hygiene",
+          "command": "python scripts/check_docs_filename_hygiene.py --check docs/02-how-to/extraction/run-prescan.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=0 violations=0\ndocs-filename-hygiene: checked 1 files, OK\n",
+          "stderr": ""
+        },
+        {
+          "name": "root-hygiene",
+          "command": "python scripts/check_root_hygiene.py",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "root-hygiene: no candidate files to check\n",
+          "stderr": ""
+        }
+      ],
+      "input_fingerprint": {
+        "input_fingerprint": "db7fd9b804a39a6c3945a0edccaf7f88c0c1f791909c746b226437df4bc5a9f2",
+        "valid_for_sha": "87c28ecc658a68ce26010698e9902895404c311e",
+        "stale_if": [
+          "PR head SHA changes",
+          "base SHA changes",
+          "effective policy fingerprint changes",
+          "applied tree contents change"
+        ],
+        "created_from_state": "discovered",
+        "review_state_hash": "",
+        "check_state_hash": "",
+        "validation_command_hash": "",
+        "apply_tree_sha": "",
+        "dirty_state": ""
+      },
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZCE",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/run_extraction_v5.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZCS",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/run_extraction_v5.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZC4",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZDG",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZDW",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZDj",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/run_extraction_v5.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZD2",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "proof/rte_v5_full_prescan_integration.proof.json",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZED",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/run_extraction_v5.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857uZHe",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9857-k9R",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/run_extraction_v5.py",
+        "applied": false,
+        "escalation_needed": false
+      }
+    ],
+    "fingerprint": {
+      "input_fingerprint": "49fe303971e9ccb05a35b27fc16a8ccfa930f217d4ffc03759d4189710c1540d",
+      "valid_for_sha": "87c28ecc658a68ce26010698e9902895404c311e",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"Required checks are failing.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"required_check_failed\", \"message\": \"Required checks are failing.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 100, \"checks_success\": 99, \"checks_failure\": 1, \"checks_pending\": 0, \"required_checks_pending\": 0, \"required_checks_failed\": 1, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [\"\\ud83e\\uddea Unit Tests\"], \"failed_required_check_entries\": [{\"check_name\": \"\\ud83e\\uddea Unit Tests\", \"details_url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24615864922/job/71977840414\", \"status\": \"COMPLETED\", \"conclusion\": \"FAILURE\"}], \"pending_required_checks\": [], \"blocker_types\": [\"required_check_failed\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 10 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 10}, \"source\": \"local_validation\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 10 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 10}, \"source\": \"local_validation\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 2292.0}, \"source\": \"heuristics\", \"override\": null}]}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "APPLY_FIX"
+    ],
+    "pr_id": "464",
+    "posture": "HOLD",
+    "refreshed_at": 1776558801.6852438,
+    "recomputed_at": 1776558801.6852639,
+    "last_event": {
+      "type": "cycle_complete"
+    },
+    "selected_tactic": "APPLY_FIX"
+  },
+  "next_tactic": "APPLY_FIX",
+  "posture": "HOLD",
+  "computed_at": 1776558801.685267,
+  "error": null,
+  "strategy_id": "STAGED_SEQUENCE_MERGE"
+}

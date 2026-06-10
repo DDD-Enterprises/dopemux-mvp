@@ -1,0 +1,455 @@
+$ git fetch origin pull/671/head:prmerge/20260524_063021-671
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/671/head -> prmerge/20260524_063021-671
+
+$ git worktree add /tmp/dopemux-pr-merge-671-20260524_063021 prmerge/20260524_063021-671
+exit=0
+--- stdout ---
+HEAD is now at ea582a32d audit: record PR queue blockers for 659 and 664
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260524_063021-671')
+Updating files:  26% (3374/12802)
+Updating files:  27% (3457/12802)
+Updating files:  28% (3585/12802)
+Updating files:  29% (3713/12802)
+Updating files:  30% (3841/12802)
+Updating files:  31% (3969/12802)
+Updating files:  32% (4097/12802)
+Updating files:  33% (4225/12802)
+Updating files:  34% (4353/12802)
+Updating files:  35% (4481/12802)
+Updating files:  36% (4609/12802)
+Updating files:  37% (4737/12802)
+Updating files:  38% (4865/12802)
+Updating files:  39% (4993/12802)
+Updating files:  40% (5121/12802)
+Updating files:  41% (5249/12802)
+Updating files:  42% (5377/12802)
+Updating files:  43% (5505/12802)
+Updating files:  44% (5633/12802)
+Updating files:  45% (5761/12802)
+Updating files:  46% (5889/12802)
+Updating files:  47% (6017/12802)
+Updating files:  48% (6145/12802)
+Updating files:  49% (6273/12802)
+Updating files:  50% (6401/12802)
+Updating files:  51% (6530/12802)
+Updating files:  52% (6658/12802)
+Updating files:  53% (6786/12802)
+Updating files:  54% (6914/12802)
+Updating files:  55% (7042/12802)
+Updating files:  56% (7170/12802)
+Updating files:  57% (7298/12802)
+Updating files:  58% (7426/12802)
+Updating files:  59% (7554/12802)
+Updating files:  60% (7682/12802)
+Updating files:  61% (7810/12802)
+Updating files:  62% (7938/12802)
+Updating files:  63% (8066/12802)
+Updating files:  64% (8194/12802)
+Updating files:  65% (8322/12802)
+Updating files:  66% (8450/12802)
+Updating files:  67% (8578/12802)
+Updating files:  68% (8706/12802)
+Updating files:  69% (8834/12802)
+Updating files:  70% (8962/12802)
+Updating files:  71% (9090/12802)
+Updating files:  72% (9218/12802)
+Updating files:  72% (9268/12802)
+Updating files:  73% (9346/12802)
+Updating files:  74% (9474/12802)
+Updating files:  75% (9602/12802)
+Updating files:  76% (9730/12802)
+Updating files:  77% (9858/12802)
+Updating files:  78% (9986/12802)
+Updating files:  79% (10114/12802)
+Updating files:  80% (10242/12802)
+Updating files:  81% (10370/12802)
+Updating files:  82% (10498/12802)
+Updating files:  83% (10626/12802)
+Updating files:  84% (10754/12802)
+Updating files:  85% (10882/12802)
+Updating files:  86% (11010/12802)
+Updating files:  87% (11138/12802)
+Updating files:  88% (11266/12802)
+Updating files:  89% (11394/12802)
+Updating files:  90% (11522/12802)
+Updating files:  91% (11650/12802)
+Updating files:  92% (11778/12802)
+Updating files:  93% (11906/12802)
+Updating files:  94% (12034/12802)
+Updating files:  95% (12162/12802)
+Updating files:  96% (12290/12802)
+Updating files:  97% (12418/12802)
+Updating files:  98% (12546/12802)
+Updating files:  99% (12674/12802)
+Updating files: 100% (12802/12802)
+Updating files: 100% (12802/12802), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+ea582a32d8e77a3eb7a1ef91e11ec4a0ad126e97
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986DdStg", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYWiF"}}}}
+
+$ gh pr update-branch 671 --rebase
+exit=0
+--- stdout ---
+✓ PR branch updated
+
+$ git fetch origin tp/dmx-pr-queue-blockers-001
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                tp/dmx-pr-queue-blockers-001 -> FETCH_HEAD
+ + ea582a32d...bdbc4d28d tp/dmx-pr-queue-blockers-001 -> origin/tp/dmx-pr-queue-blockers-001  (forced update)
+
+$ git reset --hard origin/tp/dmx-pr-queue-blockers-001
+exit=0
+--- stdout ---
+HEAD is now at bdbc4d28d audit: record PR queue blockers for 659 and 664
+
+$ git diff --name-only --diff-filter=ACMR 8e7a2283f56a49abfb41c2ac791cbf18dd0ae500...HEAD
+exit=0
+--- stdout ---
+.Jules/palette.md
+.claude/claude.md
+.claude/modules/shared/governance-principles.md
+.githooks/pre-commit
+.github/workflows/preflight.yml
+.gitignore
+AGENTS.md
+README.md
+config/preflight/ledger.json
+config/pricing.yaml
+docker/mcp-servers-source/desktop-commander/requirements.txt
+docker/mcp-servers-source/pal/pal-mcp-server/uv.lock
+docs/03-reference/fast-dev-os/evidence-notes.md
+docs/03-reference/fast-dev-os/packet-ledger.md
+docs/03-reference/fast-dev-os/pr-ledger.md
+docs/03-reference/fast-dev-os/project-constitution.md
+docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md
+docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md
+docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md
+docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md
+docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md
+docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md
+docs/03-reference/fast-dev-os/prompts/readme.md
+docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md
+docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md
+docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md
+docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md
+docs/03-reference/fast-dev-os/prompts/template-implementation-report.md
+docs/03-reference/fast-dev-os/proof-ledger.md
+docs/03-reference/fast-dev-os/readme.md
+docs/03-reference/fast-dev-os/runtime-dependency-cones.md
+docs/03-reference/fast-dev-os/task-packet-template.json
+docs/03-reference/fast-dev-os/template-pr-body.md
+docs/03-reference/fast-dev-os/template-task-packet.md
+docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json
+docs/03-reference/fast-dev-os/templates-proof/readme.md
+docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md
+docs/03-reference/fast-dev-os/unknown-conflicting-stale.md
+docs/03-reference/fast-dev-os/validation-command-library.md
+docs/03-reference/governance/documentation-gap-register.md
+docs/04-explanation/product/elevator-pitches.md
+docs/04-explanation/product/faq.md
+docs/04-explanation/product/features-and-benefits.md
+docs/04-explanation/product/homepage-copy.md
+docs/04-explanation/product/positioning.md
+docs/INDEX.md
+docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md
+docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md
+docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md
+docs/docs_index.yaml
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.zip
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/DRIFT_AND_UNKNOWN_REPORT.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/GPT55_INVESTIGATION_INTAKE.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/INTAKE_START_PROMPT.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/OPERATOR_START_HERE.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_INSTRUCTIONS_UNDER_8000.txt
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_SETUP.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROOF.json
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_CURRENT_RECON.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_DIGEST.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/SOURCE_RESOLUTION_REPORT.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREADS_TO_CREATE.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/00-intake-supervisor-ledger.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/01-tp-forge.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/02-implementation-intake.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/03-audit-red-team.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/04-cockpit-dopeui.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/05-dopetask-dopeagent-integration.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/06-research-vendor-tools.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/01_RULES.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/02_PROJECT.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/03_ARCHITECTURE.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/04_SYSTEM_BOUNDARIES.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/05_PM_PLANE.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/06_SERVICE_CATALOG.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/07_TRUTH_SCOPE.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/08_TRUTH_SYSTEMS.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/09_TRUTH_INTERFACES.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/10_TRUTH_DATA_EVENTS.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/11_TRUTH_CANONICALS.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/12_TRUTH_GAPS.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/13_SYSTEM_DOPEMUX.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/14_SYSTEM_DOPETASK.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/15_SYSTEM_TASKORCHESTRATOR.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/16_SYSTEM_CONPORT.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/17_SYSTEM_DOPEMEMORY.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/18_SYSTEM_DOPECONTEXT.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/19_SYSTEM_DOPECONBRIDGE.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/20_SYSTEM_ADHDENGINE.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/21_SYSTEM_REPOTRUTHEXTRACTOR.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/22_AGENTS.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/23_PAL_EXECUTION_RULES.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/24_PAL_CHAINING_DOCTRINE.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/25_DOPETASK_CANONICAL_SPEC.json
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/26_PROOF_CONTRACT.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/27_PROOF_BUNDLE_SCHEMA.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/28_HANDOFF_CONTRACT.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/29_ADAPTER_CONTRACT.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/30_ADAPTER_SCHEMA.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/31_TASK_PACKET_TEMPLATE.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/32_AUTHORITY_MAP.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/33_DOC_TRUST_MAP.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/34_DOCUMENTATION_SOURCE_MAP.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/35_RUNTIME_AUTHORITY_VERIFICATION.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/36_CODEX_AUTHORITY_REFRESH.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/37_CODEX_PROMPT_PACK.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/38_CODEX_REFRESH_GAP_REGISTER.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/39_AGENT_WORKFLOW.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/40_GOVERNANCE_MODEL.md
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.json
+out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.md
+out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage-expanded.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/codereview.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.tsv
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-allowlist-check.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.tsv
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-blocker-comment.md
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-blocker-comment.md
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit-final.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt.stderr
+out/rte-macro-pkt-remaining-parallel-001/CLOSEOUT.md
+out/rte-macro-pkt-remaining-parallel-001/DEPENDENCY_GRAPH.md
+out/rte-macro-pkt-remaining-parallel-001/MACRO_MANIFEST.json
+out/rte-macro-pkt-remaining-parallel-001/NO_LIVE_PROVIDER_ATTESTATION.md
+out/rte-macro-pkt-remaining-parallel-001/PARALLEL_SAFETY_MATRIX.md
+out/rte-macro-pkt-remaining-parallel-001/SUBPACKET_INDEX.md
+out/rte-macro-pkt-remaining-parallel-001/WAVE_PLAN.md
+out/rte-macro-pkt-remaining-parallel-001/WRITE_SCOPE_COLLISION_MATRIX.md
+out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md
+package-lock.json
+proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json
+proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json
+proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json
+proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json
+proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROPOSED_CHANGES.json
+proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_AFTER.json
+proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_BEFORE.json
+proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROOF.json
+proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROPOSED_CHANGES.json
+proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_AFTER.json
+proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_BEFORE.json
+pyproject.toml
+scripts/gpt-researcher/two_phase_runner.py
+scripts/preflight.sh
+services/conport_kg_ui/package-lock.json
+services/repo-truth-extractor/benchmarking/pricing/catalog.py
+services/repo-truth-extractor/lib/batch_clients.py
+services/repo-truth-extractor/lib/phase_contract_map.py
+services/repo-truth-extractor/lib/prescan/models.py
+services/repo-truth-extractor/lib/route_options.py
+services/repo-truth-extractor/lib/spend_ledger.py
+services/repo-truth-extractor/lib/structured_output_contracts.py
+services/repo-truth-extractor/llm_runtime.py
+services/repo-truth-extractor/output_safety.py
+services/repo-truth-extractor/promptsets/v4/model_map.yaml
+services/repo-truth-extractor/rte_phase_wrappers.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/__init__.py
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_2d_high_1_home_scan_consent.py
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_1_secret_assign_regex.py
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_2_walker_env_variants.py
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py
+services/repo-truth-extractor/tests/test_output_safety.py
+services/repo-truth-extractor/tests/test_route_request_options.py
+task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md
+task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md
+task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json
+task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json
+task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json
+task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json
+task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json
+task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json
+task-packets/generated/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005.json
+tests/scripts/test_gpt_researcher_two_phase_runner.py
+ui-dashboard/package-lock.json
+ui-dashboard/src/App.tsx
+ui-dashboard/src/components/TaskSequencer.tsx
+ui-dashboard/src/components/__tests__/Accessibility.test.ts
+uv.lock
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .Jules/palette.md .claude/claude.md .claude/modules/shared/governance-principles.md .githooks/pre-commit .github/workflows/preflight.yml .gitignore AGENTS.md README.md config/preflight/ledger.json config/pricing.yaml docker/mcp-servers-source/desktop-commander/requirements.txt docker/mcp-servers-source/pal/pal-mcp-server/uv.lock docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/task-packet-template.json docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md docs/docs_index.yaml out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.zip out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/DRIFT_AND_UNKNOWN_REPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/GPT55_INVESTIGATION_INTAKE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/INTAKE_START_PROMPT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/OPERATOR_START_HERE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_INSTRUCTIONS_UNDER_8000.txt out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_SETUP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROOF.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_CURRENT_RECON.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_DIGEST.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/SOURCE_RESOLUTION_REPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREADS_TO_CREATE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/00-intake-supervisor-ledger.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/01-tp-forge.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/02-implementation-intake.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/03-audit-red-team.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/04-cockpit-dopeui.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/05-dopetask-dopeagent-integration.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/06-research-vendor-tools.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/01_RULES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/02_PROJECT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/03_ARCHITECTURE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/04_SYSTEM_BOUNDARIES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/05_PM_PLANE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/06_SERVICE_CATALOG.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/07_TRUTH_SCOPE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/08_TRUTH_SYSTEMS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/09_TRUTH_INTERFACES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/10_TRUTH_DATA_EVENTS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/11_TRUTH_CANONICALS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/12_TRUTH_GAPS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/13_SYSTEM_DOPEMUX.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/14_SYSTEM_DOPETASK.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/15_SYSTEM_TASKORCHESTRATOR.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/16_SYSTEM_CONPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/17_SYSTEM_DOPEMEMORY.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/18_SYSTEM_DOPECONTEXT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/19_SYSTEM_DOPECONBRIDGE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/20_SYSTEM_ADHDENGINE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/21_SYSTEM_REPOTRUTHEXTRACTOR.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/22_AGENTS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/23_PAL_EXECUTION_RULES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/24_PAL_CHAINING_DOCTRINE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/25_DOPETASK_CANONICAL_SPEC.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/26_PROOF_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/27_PROOF_BUNDLE_SCHEMA.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/28_HANDOFF_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/29_ADAPTER_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/30_ADAPTER_SCHEMA.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/31_TASK_PACKET_TEMPLATE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/32_AUTHORITY_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/33_DOC_TRUST_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/34_DOCUMENTATION_SOURCE_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/35_RUNTIME_AUTHORITY_VERIFICATION.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/36_CODEX_AUTHORITY_REFRESH.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/37_CODEX_PROMPT_PACK.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/38_CODEX_REFRESH_GAP_REGISTER.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/39_AGENT_WORKFLOW.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/40_GOVERNANCE_MODEL.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.md out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage-expanded.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/codereview.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-allowlist-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt.stderr out/rte-macro-pkt-remaining-parallel-001/CLOSEOUT.md out/rte-macro-pkt-remaining-parallel-001/DEPENDENCY_GRAPH.md out/rte-macro-pkt-remaining-parallel-001/MACRO_MANIFEST.json out/rte-macro-pkt-remaining-parallel-001/NO_LIVE_PROVIDER_ATTESTATION.md out/rte-macro-pkt-remaining-parallel-001/PARALLEL_SAFETY_MATRIX.md out/rte-macro-pkt-remaining-parallel-001/SUBPACKET_INDEX.md out/rte-macro-pkt-remaining-parallel-001/WAVE_PLAN.md out/rte-macro-pkt-remaining-parallel-001/WRITE_SCOPE_COLLISION_MATRIX.md out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md package-lock.json proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROPOSED_CHANGES.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_AFTER.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_BEFORE.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROPOSED_CHANGES.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_AFTER.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_BEFORE.json pyproject.toml scripts/gpt-researcher/two_phase_runner.py scripts/preflight.sh services/conport_kg_ui/package-lock.json services/repo-truth-extractor/benchmarking/pricing/catalog.py services/repo-truth-extractor/lib/batch_clients.py services/repo-truth-extractor/lib/phase_contract_map.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/route_options.py services/repo-truth-extractor/lib/spend_ledger.py services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/promptsets/v4/model_map.yaml services/repo-truth-extractor/rte_phase_wrappers.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/__init__.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_2d_high_1_home_scan_consent.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_1_secret_assign_regex.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_2_walker_env_variants.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py services/repo-truth-extractor/tests/test_output_safety.py services/repo-truth-extractor/tests/test_route_request_options.py task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json task-packets/generated/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005.json tests/scripts/test_gpt_researcher_two_phase_runner.py ui-dashboard/package-lock.json ui-dashboard/src/App.tsx ui-dashboard/src/components/TaskSequencer.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts uv.lock
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.................................................................................Passed
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md
+exit=1
+--- stdout ---
+Updated 3 file(s):
+ - docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md
+ - docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md
+ - docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md
+
+$ python scripts/docs_validator.py docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md
+exit=0
+--- stdout ---
+docs-hygiene: total=37 active=37 quarantine=0 violations=0
+docs-hygiene: checked 37 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md
+exit=1
+--- stdout ---
+docs-filename-hygiene: total=37 active=37 quarantine=0 exempt=4 violations=2
+docs-filename-hygiene: FAILED
+1. task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md
+   target: task-packets/tp-dmx-gptr-two-phase-runner-001.md
+2. task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md
+   target: task-packets/tp-dmx-preflight-governance-adoption-001.md
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-671-20260524_063021
+exit=0
+

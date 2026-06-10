@@ -1,0 +1,1015 @@
+$ git fetch origin pull/464/head:prmerge/20260418_111828-464
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/464/head -> prmerge/20260418_111828-464
+
+$ git worktree add /tmp/dopemux-pr-merge-464-20260418_111828 prmerge/20260418_111828-464
+exit=0
+--- stdout ---
+HEAD is now at 57354faec fix(rte): restore prescan config and planner compatibility
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260418_111828-464')
+Updating files:  37% (4389/11852)
+Updating files:  38% (4504/11852)
+Updating files:  39% (4623/11852)
+Updating files:  40% (4741/11852)
+Updating files:  41% (4860/11852)
+Updating files:  42% (4978/11852)
+Updating files:  43% (5097/11852)
+Updating files:  44% (5215/11852)
+Updating files:  45% (5334/11852)
+Updating files:  46% (5452/11852)
+Updating files:  47% (5571/11852)
+Updating files:  48% (5689/11852)
+Updating files:  49% (5808/11852)
+Updating files:  50% (5926/11852)
+Updating files:  51% (6045/11852)
+Updating files:  52% (6164/11852)
+Updating files:  53% (6282/11852)
+Updating files:  54% (6401/11852)
+Updating files:  55% (6519/11852)
+Updating files:  56% (6638/11852)
+Updating files:  57% (6756/11852)
+Updating files:  58% (6875/11852)
+Updating files:  59% (6993/11852)
+Updating files:  60% (7112/11852)
+Updating files:  61% (7230/11852)
+Updating files:  62% (7349/11852)
+Updating files:  63% (7467/11852)
+Updating files:  64% (7586/11852)
+Updating files:  65% (7704/11852)
+Updating files:  66% (7823/11852)
+Updating files:  67% (7941/11852)
+Updating files:  68% (8060/11852)
+Updating files:  69% (8178/11852)
+Updating files:  70% (8297/11852)
+Updating files:  71% (8415/11852)
+Updating files:  72% (8534/11852)
+Updating files:  73% (8652/11852)
+Updating files:  74% (8771/11852)
+Updating files:  75% (8889/11852)
+Updating files:  76% (9008/11852)
+Updating files:  77% (9127/11852)
+Updating files:  78% (9245/11852)
+Updating files:  78% (9298/11852)
+Updating files:  79% (9364/11852)
+Updating files:  80% (9482/11852)
+Updating files:  81% (9601/11852)
+Updating files:  82% (9719/11852)
+Updating files:  83% (9838/11852)
+Updating files:  84% (9956/11852)
+Updating files:  85% (10075/11852)
+Updating files:  86% (10193/11852)
+Updating files:  87% (10312/11852)
+Updating files:  88% (10430/11852)
+Updating files:  89% (10549/11852)
+Updating files:  90% (10667/11852)
+Updating files:  91% (10786/11852)
+Updating files:  92% (10904/11852)
+Updating files:  93% (11023/11852)
+Updating files:  94% (11141/11852)
+Updating files:  95% (11260/11852)
+Updating files:  96% (11378/11852)
+Updating files:  97% (11497/11852)
+Updating files:  98% (11615/11852)
+Updating files:  99% (11734/11852)
+Updating files: 100% (11852/11852)
+Updating files: 100% (11852/11852), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+57354faec7e659828ba665a912f2fea2f694558a
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uV-c", body: "Automated queue-drain applied a minimal fix and will run verification before resolving this thread."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVop"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uWDk", body: "Automated queue-drain applied a minimal fix and will run verification before resolving this thread."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVo8"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uWJH", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVpG"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZCE", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVpM"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZCS", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVpc"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZCi", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVpu"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZC4", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVp-"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDG", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVqI"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDW", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVqW"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDj", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVqn"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZD2", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVq6"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZED", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVrL"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZHe", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVrZ"}}}}
+
+$ git add -A
+exit=0
+
+$ git commit -m 'review-response: address thread suggestions (pr-merge/20260418_111828/PR-464)'
+exit=0
+--- stdout ---
+[prmerge/20260418_111828-464 87c28ecc6] review-response: address thread suggestions (pr-merge/20260418_111828/PR-464)
+ 1 file changed, 2 insertions(+), 15 deletions(-)
+
+$ git push origin HEAD:feat/rte-v5-full-prescan-integration --force-with-lease
+exit=0
+--- stderr ---
+remote: 
+remote: GitHub found 11 vulnerabilities on DDD-Enterprises/dopemux-mvp's default branch (1 critical, 5 high, 5 moderate). To find out more, visit:        
+remote:      https://github.com/DDD-Enterprises/dopemux-mvp/security/dependabot        
+remote: 
+To https://github.com/DDD-Enterprises/dopemux-mvp.git
+   57354faec..87c28ecc6  HEAD -> feat/rte-v5-full-prescan-integration
+
+$ gh pr update-branch 464 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin feat/rte-v5-full-prescan-integration
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                feat/rte-v5-full-prescan-integration -> FETCH_HEAD
+
+$ git reset --hard origin/feat/rte-v5-full-prescan-integration
+exit=0
+--- stdout ---
+HEAD is now at 87c28ecc6 review-response: address thread suggestions (pr-merge/20260418_111828/PR-464)
+
+$ git diff --name-only --diff-filter=ACMR b6147b85346c958423db8a7162ee847a01e282d4...HEAD
+exit=0
+--- stdout ---
+docs/02-how-to/extraction/run-prescan.md
+llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md
+proof/rte_v5_full_prescan_integration.proof.json
+services/repo-truth-extractor/lib/prescan/batch_planner.py
+services/repo-truth-extractor/lib/prescan/classifier.py
+services/repo-truth-extractor/lib/prescan/grok_passes.py
+services/repo-truth-extractor/lib/prescan/models.py
+services/repo-truth-extractor/lib/prescan/provider_catalog.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_prescan_online_gate.py
+src/dopemux/cli.py
+src/dopemux/commands/extract_commands.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files docs/02-how-to/extraction/run-prescan.md llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md proof/rte_v5_full_prescan_integration.proof.json services/repo-truth-extractor/lib/prescan/batch_planner.py services/repo-truth-extractor/lib/prescan/classifier.py services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/provider_catalog.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_online_gate.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py
+exit=0
+--- stdout ---
+[INFO] Installing environment for https://github.com/pre-commit/pre-commit-hooks.
+[INFO] Once installed this environment will be reused.
+[INFO] This may take a few minutes...
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/02-how-to/extraction/run-prescan.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uV-c", body: "\u2705 Machine-applicable suggestion applied and verified locally. Resolving thread."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVtq"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw9857uV-c"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw9857uV-c","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uWDk", body: "\u2705 Machine-applicable suggestion applied and verified locally. Resolving thread."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVuQ"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw9857uWDk"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw9857uWDk","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uWJH", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVuj"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw9857uWJH"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw9857uWJH","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZCi", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IVvF"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw9857uZCi"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw9857uZCi","isResolved":true}}}}
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-464-20260418_111828
+exit=0
+
+$ git fetch origin pull/464/head:prmerge/20260418_111828-464
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/464/head -> prmerge/20260418_111828-464
+
+$ git worktree add /tmp/dopemux-pr-merge-464-20260418_111828 prmerge/20260418_111828-464
+exit=0
+--- stdout ---
+HEAD is now at 87c28ecc6 review-response: address thread suggestions (pr-merge/20260418_111828/PR-464)
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260418_111828-464')
+Updating files:  27% (3257/11852)
+Updating files:  28% (3319/11852)
+Updating files:  29% (3438/11852)
+Updating files:  30% (3556/11852)
+Updating files:  31% (3675/11852)
+Updating files:  32% (3793/11852)
+Updating files:  33% (3912/11852)
+Updating files:  34% (4030/11852)
+Updating files:  35% (4149/11852)
+Updating files:  36% (4267/11852)
+Updating files:  37% (4386/11852)
+Updating files:  38% (4504/11852)
+Updating files:  39% (4623/11852)
+Updating files:  40% (4741/11852)
+Updating files:  41% (4860/11852)
+Updating files:  42% (4978/11852)
+Updating files:  43% (5097/11852)
+Updating files:  44% (5215/11852)
+Updating files:  45% (5334/11852)
+Updating files:  46% (5452/11852)
+Updating files:  47% (5571/11852)
+Updating files:  48% (5689/11852)
+Updating files:  49% (5808/11852)
+Updating files:  50% (5926/11852)
+Updating files:  51% (6045/11852)
+Updating files:  52% (6164/11852)
+Updating files:  53% (6282/11852)
+Updating files:  54% (6401/11852)
+Updating files:  55% (6519/11852)
+Updating files:  56% (6638/11852)
+Updating files:  57% (6756/11852)
+Updating files:  58% (6875/11852)
+Updating files:  59% (6993/11852)
+Updating files:  60% (7112/11852)
+Updating files:  61% (7230/11852)
+Updating files:  62% (7349/11852)
+Updating files:  63% (7467/11852)
+Updating files:  64% (7586/11852)
+Updating files:  65% (7704/11852)
+Updating files:  66% (7823/11852)
+Updating files:  66% (7856/11852)
+Updating files:  67% (7941/11852)
+Updating files:  68% (8060/11852)
+Updating files:  69% (8178/11852)
+Updating files:  70% (8297/11852)
+Updating files:  71% (8415/11852)
+Updating files:  72% (8534/11852)
+Updating files:  73% (8652/11852)
+Updating files:  74% (8771/11852)
+Updating files:  75% (8889/11852)
+Updating files:  76% (9008/11852)
+Updating files:  77% (9127/11852)
+Updating files:  78% (9245/11852)
+Updating files:  79% (9364/11852)
+Updating files:  80% (9482/11852)
+Updating files:  81% (9601/11852)
+Updating files:  82% (9719/11852)
+Updating files:  83% (9838/11852)
+Updating files:  84% (9956/11852)
+Updating files:  85% (10075/11852)
+Updating files:  86% (10193/11852)
+Updating files:  87% (10312/11852)
+Updating files:  88% (10430/11852)
+Updating files:  89% (10549/11852)
+Updating files:  90% (10667/11852)
+Updating files:  91% (10786/11852)
+Updating files:  92% (10904/11852)
+Updating files:  93% (11023/11852)
+Updating files:  94% (11141/11852)
+Updating files:  95% (11260/11852)
+Updating files:  96% (11378/11852)
+Updating files:  97% (11497/11852)
+Updating files:  98% (11615/11852)
+Updating files:  99% (11734/11852)
+Updating files: 100% (11852/11852)
+Updating files: 100% (11852/11852), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+87c28ecc658a68ce26010698e9902895404c311e
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZCE", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IW6F"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZCS", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IW6g"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZC4", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IW69"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDG", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IW72"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDW", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IW8T"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDj", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IW8_"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZD2", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IW-K"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZED", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IW_g"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZHe", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IXAV"}}}}
+
+$ gh pr update-branch 464 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin feat/rte-v5-full-prescan-integration
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                feat/rte-v5-full-prescan-integration -> FETCH_HEAD
+
+$ git reset --hard origin/feat/rte-v5-full-prescan-integration
+exit=0
+--- stdout ---
+HEAD is now at 87c28ecc6 review-response: address thread suggestions (pr-merge/20260418_111828/PR-464)
+
+$ git diff --name-only --diff-filter=ACMR b6147b85346c958423db8a7162ee847a01e282d4...HEAD
+exit=0
+--- stdout ---
+docs/02-how-to/extraction/run-prescan.md
+llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md
+proof/rte_v5_full_prescan_integration.proof.json
+services/repo-truth-extractor/lib/prescan/batch_planner.py
+services/repo-truth-extractor/lib/prescan/classifier.py
+services/repo-truth-extractor/lib/prescan/grok_passes.py
+services/repo-truth-extractor/lib/prescan/models.py
+services/repo-truth-extractor/lib/prescan/provider_catalog.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_prescan_online_gate.py
+src/dopemux/cli.py
+src/dopemux/commands/extract_commands.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files docs/02-how-to/extraction/run-prescan.md llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md proof/rte_v5_full_prescan_integration.proof.json services/repo-truth-extractor/lib/prescan/batch_planner.py services/repo-truth-extractor/lib/prescan/classifier.py services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/provider_catalog.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_online_gate.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/02-how-to/extraction/run-prescan.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ pytest tests/ --maxfail=1 --disable-warnings --cov=src/dopemux --cov-report=term-missing --cov-report=xml:coverage.xml --cov-report=html:htmlcov
+exit=1
+--- stdout ---
+
+==================================== ERRORS ====================================
+___________ ERROR collecting tests/embeddings/unit/test_pipelines.py ___________
+ImportError while importing test module '/private/tmp/dopemux-pr-merge-464-20260418_111828/tests/embeddings/unit/test_pipelines.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/embeddings/unit/test_pipelines.py:12: in <module>
+    from dopemux.embeddings.pipelines import (
+E   ImportError: cannot import name 'PipelineResult' from 'dopemux.embeddings.pipelines' (/private/tmp/dopemux-pr-merge-464-20260418_111828/src/dopemux/embeddings/pipelines/__init__.py)
+=========================== short test summary info ============================
+ERROR tests/embeddings/unit/test_pipelines.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 error in 5.71s
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-464-20260418_111828
+exit=0
+
+$ git fetch origin pull/464/head:prmerge/20260418_111828-464
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/464/head -> prmerge/20260418_111828-464
+
+$ git worktree add /tmp/dopemux-pr-merge-464-20260418_111828 prmerge/20260418_111828-464
+exit=0
+--- stdout ---
+HEAD is now at 87c28ecc6 review-response: address thread suggestions (pr-merge/20260418_111828/PR-464)
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260418_111828-464')
+Updating files:  28% (3381/11852)
+Updating files:  29% (3438/11852)
+Updating files:  30% (3556/11852)
+Updating files:  31% (3675/11852)
+Updating files:  32% (3793/11852)
+Updating files:  33% (3912/11852)
+Updating files:  34% (4030/11852)
+Updating files:  35% (4149/11852)
+Updating files:  36% (4267/11852)
+Updating files:  37% (4386/11852)
+Updating files:  38% (4504/11852)
+Updating files:  39% (4623/11852)
+Updating files:  40% (4741/11852)
+Updating files:  41% (4860/11852)
+Updating files:  42% (4978/11852)
+Updating files:  43% (5097/11852)
+Updating files:  44% (5215/11852)
+Updating files:  45% (5334/11852)
+Updating files:  46% (5452/11852)
+Updating files:  47% (5571/11852)
+Updating files:  48% (5689/11852)
+Updating files:  49% (5808/11852)
+Updating files:  50% (5926/11852)
+Updating files:  51% (6045/11852)
+Updating files:  52% (6164/11852)
+Updating files:  53% (6282/11852)
+Updating files:  54% (6401/11852)
+Updating files:  55% (6519/11852)
+Updating files:  56% (6638/11852)
+Updating files:  57% (6756/11852)
+Updating files:  58% (6875/11852)
+Updating files:  59% (6993/11852)
+Updating files:  60% (7112/11852)
+Updating files:  61% (7230/11852)
+Updating files:  62% (7349/11852)
+Updating files:  63% (7467/11852)
+Updating files:  64% (7586/11852)
+Updating files:  64% (7616/11852)
+Updating files:  65% (7704/11852)
+Updating files:  66% (7823/11852)
+Updating files:  67% (7941/11852)
+Updating files:  68% (8060/11852)
+Updating files:  69% (8178/11852)
+Updating files:  70% (8297/11852)
+Updating files:  71% (8415/11852)
+Updating files:  72% (8534/11852)
+Updating files:  73% (8652/11852)
+Updating files:  74% (8771/11852)
+Updating files:  75% (8889/11852)
+Updating files:  76% (9008/11852)
+Updating files:  77% (9127/11852)
+Updating files:  78% (9245/11852)
+Updating files:  79% (9364/11852)
+Updating files:  80% (9482/11852)
+Updating files:  81% (9601/11852)
+Updating files:  82% (9719/11852)
+Updating files:  83% (9838/11852)
+Updating files:  84% (9956/11852)
+Updating files:  85% (10075/11852)
+Updating files:  86% (10193/11852)
+Updating files:  87% (10312/11852)
+Updating files:  88% (10430/11852)
+Updating files:  89% (10549/11852)
+Updating files:  90% (10667/11852)
+Updating files:  91% (10786/11852)
+Updating files:  92% (10904/11852)
+Updating files:  93% (11023/11852)
+Updating files:  94% (11141/11852)
+Updating files:  95% (11260/11852)
+Updating files:  96% (11378/11852)
+Updating files:  97% (11497/11852)
+Updating files:  97% (11533/11852)
+Updating files:  98% (11615/11852)
+Updating files:  99% (11734/11852)
+Updating files: 100% (11852/11852)
+Updating files: 100% (11852/11852), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+87c28ecc658a68ce26010698e9902895404c311e
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZCE", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IvcB"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZCS", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IvcW"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZC4", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865Ivcg"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDG", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865Ivcx"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDW", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IvdE"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDj", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IvdY"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZD2", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865Ivdp"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZED", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IveB"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZHe", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IveS"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857-k9R", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865Ive3"}}}}
+
+$ gh pr update-branch 464 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin feat/rte-v5-full-prescan-integration
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                feat/rte-v5-full-prescan-integration -> FETCH_HEAD
+
+$ git reset --hard origin/feat/rte-v5-full-prescan-integration
+exit=0
+--- stdout ---
+HEAD is now at 87c28ecc6 review-response: address thread suggestions (pr-merge/20260418_111828/PR-464)
+
+$ git diff --name-only --diff-filter=ACMR b6147b85346c958423db8a7162ee847a01e282d4...HEAD
+exit=0
+--- stdout ---
+docs/02-how-to/extraction/run-prescan.md
+llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md
+proof/rte_v5_full_prescan_integration.proof.json
+services/repo-truth-extractor/lib/prescan/batch_planner.py
+services/repo-truth-extractor/lib/prescan/classifier.py
+services/repo-truth-extractor/lib/prescan/grok_passes.py
+services/repo-truth-extractor/lib/prescan/models.py
+services/repo-truth-extractor/lib/prescan/provider_catalog.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_prescan_online_gate.py
+src/dopemux/cli.py
+src/dopemux/commands/extract_commands.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files docs/02-how-to/extraction/run-prescan.md llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md proof/rte_v5_full_prescan_integration.proof.json services/repo-truth-extractor/lib/prescan/batch_planner.py services/repo-truth-extractor/lib/prescan/classifier.py services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/provider_catalog.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_online_gate.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/02-how-to/extraction/run-prescan.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ pytest tests/ --maxfail=1 --disable-warnings --cov=src/dopemux --cov-report=term-missing --cov-report=xml:coverage.xml --cov-report=html:htmlcov
+exit=1
+--- stdout ---
+
+==================================== ERRORS ====================================
+___________ ERROR collecting tests/embeddings/unit/test_pipelines.py ___________
+ImportError while importing test module '/private/tmp/dopemux-pr-merge-464-20260418_111828/tests/embeddings/unit/test_pipelines.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/embeddings/unit/test_pipelines.py:12: in <module>
+    from dopemux.embeddings.pipelines import (
+E   ImportError: cannot import name 'PipelineResult' from 'dopemux.embeddings.pipelines' (/private/tmp/dopemux-pr-merge-464-20260418_111828/src/dopemux/embeddings/pipelines/__init__.py)
+=========================== short test summary info ============================
+ERROR tests/embeddings/unit/test_pipelines.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 error in 3.86s
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-464-20260418_111828
+exit=0
+
+$ git fetch origin pull/464/head:prmerge/20260418_111828-464
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/464/head -> prmerge/20260418_111828-464
+
+$ git worktree add /tmp/dopemux-pr-merge-464-20260418_111828 prmerge/20260418_111828-464
+exit=0
+--- stdout ---
+HEAD is now at 87c28ecc6 review-response: address thread suggestions (pr-merge/20260418_111828/PR-464)
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260418_111828-464')
+Updating files:  45% (5441/11852)
+Updating files:  46% (5452/11852)
+Updating files:  47% (5571/11852)
+Updating files:  48% (5689/11852)
+Updating files:  49% (5808/11852)
+Updating files:  50% (5926/11852)
+Updating files:  51% (6045/11852)
+Updating files:  52% (6164/11852)
+Updating files:  53% (6282/11852)
+Updating files:  54% (6401/11852)
+Updating files:  55% (6519/11852)
+Updating files:  56% (6638/11852)
+Updating files:  57% (6756/11852)
+Updating files:  58% (6875/11852)
+Updating files:  59% (6993/11852)
+Updating files:  60% (7112/11852)
+Updating files:  61% (7230/11852)
+Updating files:  62% (7349/11852)
+Updating files:  63% (7467/11852)
+Updating files:  64% (7586/11852)
+Updating files:  65% (7704/11852)
+Updating files:  66% (7823/11852)
+Updating files:  67% (7941/11852)
+Updating files:  68% (8060/11852)
+Updating files:  69% (8178/11852)
+Updating files:  70% (8297/11852)
+Updating files:  71% (8415/11852)
+Updating files:  72% (8534/11852)
+Updating files:  73% (8652/11852)
+Updating files:  74% (8771/11852)
+Updating files:  75% (8889/11852)
+Updating files:  76% (9008/11852)
+Updating files:  77% (9127/11852)
+Updating files:  78% (9245/11852)
+Updating files:  79% (9364/11852)
+Updating files:  80% (9482/11852)
+Updating files:  81% (9601/11852)
+Updating files:  82% (9719/11852)
+Updating files:  83% (9838/11852)
+Updating files:  84% (9956/11852)
+Updating files:  85% (10075/11852)
+Updating files:  86% (10193/11852)
+Updating files:  87% (10312/11852)
+Updating files:  88% (10430/11852)
+Updating files:  89% (10549/11852)
+Updating files:  90% (10667/11852)
+Updating files:  91% (10786/11852)
+Updating files:  92% (10904/11852)
+Updating files:  93% (11023/11852)
+Updating files:  94% (11141/11852)
+Updating files:  95% (11260/11852)
+Updating files:  96% (11378/11852)
+Updating files:  97% (11497/11852)
+Updating files:  98% (11615/11852)
+Updating files:  99% (11734/11852)
+Updating files: 100% (11852/11852)
+Updating files: 100% (11852/11852), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+87c28ecc658a68ce26010698e9902895404c311e
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZCE", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865Ivrg"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZCS", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865Ivr1"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZC4", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IvsE"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDG", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IvsP"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDW", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865Ivsg"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZDj", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865Ivsl"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZD2", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865Ivsp"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZED", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865Ivs0"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857uZHe", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IvtJ"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9857-k9R", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865Ivtb"}}}}
+
+$ gh pr update-branch 464 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin feat/rte-v5-full-prescan-integration
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                feat/rte-v5-full-prescan-integration -> FETCH_HEAD
+
+$ git reset --hard origin/feat/rte-v5-full-prescan-integration
+exit=0
+--- stdout ---
+HEAD is now at 87c28ecc6 review-response: address thread suggestions (pr-merge/20260418_111828/PR-464)
+
+$ git diff --name-only --diff-filter=ACMR b6147b85346c958423db8a7162ee847a01e282d4...HEAD
+exit=0
+--- stdout ---
+docs/02-how-to/extraction/run-prescan.md
+llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md
+proof/rte_v5_full_prescan_integration.proof.json
+services/repo-truth-extractor/lib/prescan/batch_planner.py
+services/repo-truth-extractor/lib/prescan/classifier.py
+services/repo-truth-extractor/lib/prescan/grok_passes.py
+services/repo-truth-extractor/lib/prescan/models.py
+services/repo-truth-extractor/lib/prescan/provider_catalog.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_prescan_online_gate.py
+src/dopemux/cli.py
+src/dopemux/commands/extract_commands.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files docs/02-how-to/extraction/run-prescan.md llm-plans/RTE_V5_FULL_PRESCAN_INTEGRATION_PLAN.md proof/rte_v5_full_prescan_integration.proof.json services/repo-truth-extractor/lib/prescan/batch_planner.py services/repo-truth-extractor/lib/prescan/classifier.py services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/prescan/provider_catalog.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_prescan_online_gate.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/02-how-to/extraction/run-prescan.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/02-how-to/extraction/run-prescan.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ pytest tests/ --maxfail=1 --disable-warnings --cov=src/dopemux --cov-report=term-missing --cov-report=xml:coverage.xml --cov-report=html:htmlcov
+exit=1
+--- stdout ---
+
+==================================== ERRORS ====================================
+___________ ERROR collecting tests/embeddings/unit/test_pipelines.py ___________
+ImportError while importing test module '/private/tmp/dopemux-pr-merge-464-20260418_111828/tests/embeddings/unit/test_pipelines.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/embeddings/unit/test_pipelines.py:12: in <module>
+    from dopemux.embeddings.pipelines import (
+E   ImportError: cannot import name 'PipelineResult' from 'dopemux.embeddings.pipelines' (/private/tmp/dopemux-pr-merge-464-20260418_111828/src/dopemux/embeddings/pipelines/__init__.py)
+=========================== short test summary info ============================
+ERROR tests/embeddings/unit/test_pipelines.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 error in 3.68s
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-464-20260418_111828
+exit=0
+

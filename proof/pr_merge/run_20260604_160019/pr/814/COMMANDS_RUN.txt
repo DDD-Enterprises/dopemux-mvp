@@ -1,0 +1,185 @@
+$ git fetch origin pull/814/head:prmerge/20260604_160019-814
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/814/head -> prmerge/20260604_160019-814
+
+$ git worktree add /tmp/dopemux-pr-merge-814-20260604_160019 prmerge/20260604_160019-814
+exit=0
+--- stdout ---
+HEAD is now at 6004dd53f fix(mcp): restore gpt researcher container entrypoint
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260604_160019-814')
+Updating files:  15% (2137/13940)
+Updating files:  16% (2231/13940)
+Updating files:  17% (2370/13940)
+Updating files:  18% (2510/13940)
+Updating files:  19% (2649/13940)
+Updating files:  20% (2788/13940)
+Updating files:  21% (2928/13940)
+Updating files:  22% (3067/13940)
+Updating files:  23% (3207/13940)
+Updating files:  24% (3346/13940)
+Updating files:  25% (3485/13940)
+Updating files:  26% (3625/13940)
+Updating files:  27% (3764/13940)
+Updating files:  28% (3904/13940)
+Updating files:  29% (4043/13940)
+Updating files:  30% (4182/13940)
+Updating files:  31% (4322/13940)
+Updating files:  32% (4461/13940)
+Updating files:  33% (4601/13940)
+Updating files:  34% (4740/13940)
+Updating files:  35% (4879/13940)
+Updating files:  36% (5019/13940)
+Updating files:  37% (5158/13940)
+Updating files:  38% (5298/13940)
+Updating files:  39% (5437/13940)
+Updating files:  40% (5576/13940)
+Updating files:  41% (5716/13940)
+Updating files:  42% (5855/13940)
+Updating files:  43% (5995/13940)
+Updating files:  44% (6134/13940)
+Updating files:  44% (6204/13940)
+Updating files:  45% (6273/13940)
+Updating files:  46% (6413/13940)
+Updating files:  47% (6552/13940)
+Updating files:  48% (6692/13940)
+Updating files:  49% (6831/13940)
+Updating files:  50% (6970/13940)
+Updating files:  51% (7110/13940)
+Updating files:  52% (7249/13940)
+Updating files:  53% (7389/13940)
+Updating files:  54% (7528/13940)
+Updating files:  55% (7667/13940)
+Updating files:  56% (7807/13940)
+Updating files:  57% (7946/13940)
+Updating files:  58% (8086/13940)
+Updating files:  59% (8225/13940)
+Updating files:  60% (8364/13940)
+Updating files:  61% (8504/13940)
+Updating files:  62% (8643/13940)
+Updating files:  63% (8783/13940)
+Updating files:  64% (8922/13940)
+Updating files:  65% (9061/13940)
+Updating files:  66% (9201/13940)
+Updating files:  66% (9273/13940)
+Updating files:  67% (9340/13940)
+Updating files:  68% (9480/13940)
+Updating files:  69% (9619/13940)
+Updating files:  70% (9758/13940)
+Updating files:  71% (9898/13940)
+Updating files:  72% (10037/13940)
+Updating files:  73% (10177/13940)
+Updating files:  74% (10316/13940)
+Updating files:  75% (10455/13940)
+Updating files:  76% (10595/13940)
+Updating files:  77% (10734/13940)
+Updating files:  78% (10874/13940)
+Updating files:  79% (11013/13940)
+Updating files:  80% (11152/13940)
+Updating files:  81% (11292/13940)
+Updating files:  82% (11431/13940)
+Updating files:  83% (11571/13940)
+Updating files:  84% (11710/13940)
+Updating files:  85% (11849/13940)
+Updating files:  86% (11989/13940)
+Updating files:  87% (12128/13940)
+Updating files:  88% (12268/13940)
+Updating files:  89% (12407/13940)
+Updating files:  90% (12546/13940)
+Updating files:  91% (12686/13940)
+Updating files:  92% (12825/13940)
+Updating files:  93% (12965/13940)
+Updating files:  93% (13091/13940)
+Updating files:  94% (13104/13940)
+Updating files:  95% (13243/13940)
+Updating files:  96% (13383/13940)
+Updating files:  97% (13522/13940)
+Updating files:  98% (13662/13940)
+Updating files:  99% (13801/13940)
+Updating files: 100% (13940/13940)
+Updating files: 100% (13940/13940), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+6004dd53f9c175d0cb761f204e815367be9b40a6
+
+$ gh pr update-branch 814 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/gptr-mcp-container-update-20260604
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/gptr-mcp-container-update-20260604 -> FETCH_HEAD
+
+$ git reset --hard origin/codex/gptr-mcp-container-update-20260604
+exit=0
+--- stdout ---
+HEAD is now at 6004dd53f fix(mcp): restore gpt researcher container entrypoint
+
+$ git diff --name-only --diff-filter=ACMR d2fe66cac6ecbe275807921289b6018ea72cd36d...HEAD
+exit=0
+--- stdout ---
+claudedocs/gptr-mcp-container-update-proof-2026-06-04.md
+docker/mcp-servers-source/gptr-mcp/Dockerfile
+task-packets/INDEX.md
+task-packets/generated/TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001.json
+tests/docker/test_gptr_mcp_dockerfile.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files claudedocs/gptr-mcp-container-update-proof-2026-06-04.md docker/mcp-servers-source/gptr-mcp/Dockerfile task-packets/INDEX.md task-packets/generated/TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001.json tests/docker/test_gptr_mcp_dockerfile.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py task-packets/INDEX.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-814-20260604_160019
+exit=0
+

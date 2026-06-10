@@ -1,0 +1,88 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw986EWvON",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/llm_runtime.py",
+      "line": 704,
+      "original_line": 709,
+      "original_start_line": 708,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987EVSAw",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Keep lifecycle payload compatible with llm_request_event signature**\n\n`call_llm()` now always injects `model_id_requested` and `_resolved_from_alias` into every lifecycle event payload, but the main callback wiring in `run_extraction_v5` still does `ui.llm_request_event(**payload)` and `llm_request_event` has no parameters for these new keys (it also lacks `cache_write_tokens`/`service_tier_requested` for the completed event). In any path where `lifecycle_callback` is enabled, the first `_emit_lifecycle(\"started\", ...)` call raises `TypeError` before the provider request runs, breaking normal extraction execution with UI events enabled.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-24T04:48:49Z",
+          "path": "services/repo-truth-extractor/llm_runtime.py",
+          "line": 704,
+          "original_line": 709
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986EWvYz",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/llm_runtime.py",
+      "line": 704,
+      "original_line": 709,
+      "original_start_line": 705,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987EVSOc",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The lifecycle callback payload now includes `model_id_requested` and `_resolved_from_alias` as top-level keys. In `run_extraction_v5`, the callback is `lambda payload: ui.llm_request_event(**payload)`, and `UI.llm_request_event` does not accept these kwargs today, so this will raise `TypeError` on every started/completed/failed emission. To preserve compatibility, keep lifecycle payload keys constrained to the existing `llm_request_event` parameter set and place additional fields under the existing `extra` dict (or otherwise version/gate the callback contract).",
+          "created_at": "2026-05-24T04:49:52Z",
+          "path": "services/repo-truth-extractor/llm_runtime.py",
+          "line": 704,
+          "original_line": 709
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986EWvY2",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/llm_runtime.py",
+      "line": 869,
+      "original_line": 874,
+      "original_start_line": 873,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987EVSOg",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`_emit_lifecycle(..., cache_write_tokens=..., service_tier_requested=...)` will also break the existing `UI.llm_request_event(**payload)` consumer because `llm_request_event` doesn't accept `cache_write_tokens` or `service_tier_requested` kwargs. Consider moving these (and any other new telemetry fields) into the `extra` payload so UI/events remain backwards compatible, or update the lifecycle consumer contract in the same PR.\n",
+          "created_at": "2026-05-24T04:49:52Z",
+          "path": "services/repo-truth-extractor/llm_runtime.py",
+          "line": 869,
+          "original_line": 874
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986EXHJA",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/llm_runtime.py",
+      "line": 870,
+      "original_line": 870,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987EVwK-",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Drop unknown lifecycle kwarg before dispatching completed event**\n\nThe new `cache_strategy_applied` field is passed in `_emit_lifecycle(\"completed\", ...)`, but `run_extraction_v5` dispatches lifecycle payloads via `ui.llm_request_event(**payload)` and `llm_request_event` does not accept a `cache_strategy_applied` parameter. In any successful LLM call path with lifecycle events enabled, this raises `TypeError` during the completed callback and can abort extraction after the provider call returns. This is a separate compatibility break from the other new lifecycle keys and needs to be filtered or explicitly supported.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-24T07:07:51Z",
+          "path": "services/repo-truth-extractor/llm_runtime.py",
+          "line": 870,
+          "original_line": 870
+        }
+      ]
+    }
+  ]
+}

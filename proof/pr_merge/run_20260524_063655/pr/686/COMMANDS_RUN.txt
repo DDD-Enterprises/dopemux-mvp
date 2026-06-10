@@ -1,0 +1,70 @@
+$ git fetch origin pull/686/head:prmerge/20260524_063655-686
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/686/head -> prmerge/20260524_063655-686
+
+$ git worktree add /tmp/dopemux-pr-merge-686-20260524_063655 prmerge/20260524_063655-686
+exit=0
+--- stdout ---
+HEAD is now at 69f40a376 feat(ui-dashboard): add copy-to-clipboard micro-interaction for AI recommendations
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260524_063655-686')
+Updating files:  53% (6779/12775)
+Updating files:  54% (6899/12775)
+Updating files:  55% (7027/12775)
+Updating files:  56% (7154/12775)
+Updating files:  57% (7282/12775)
+Updating files:  58% (7410/12775)
+Updating files:  59% (7538/12775)
+Updating files:  60% (7665/12775)
+Updating files:  61% (7793/12775)
+Updating files:  62% (7921/12775)
+Updating files:  63% (8049/12775)
+Updating files:  64% (8176/12775)
+Updating files:  65% (8304/12775)
+Updating files:  66% (8432/12775)
+Updating files:  67% (8560/12775)
+Updating files:  68% (8687/12775)
+Updating files:  69% (8815/12775)
+Updating files:  70% (8943/12775)
+Updating files:  71% (9071/12775)
+Updating files:  72% (9198/12775)
+Updating files:  73% (9326/12775)
+Updating files:  74% (9454/12775)
+Updating files:  75% (9582/12775)
+Updating files:  76% (9709/12775)
+Updating files:  77% (9837/12775)
+Updating files:  78% (9965/12775)
+Updating files:  79% (10093/12775)
+Updating files:  80% (10220/12775)
+Updating files:  81% (10348/12775)
+Updating files:  82% (10476/12775)
+Updating files:  83% (10604/12775)
+Updating files:  84% (10731/12775)
+Updating files:  85% (10859/12775)
+Updating files:  86% (10987/12775)
+Updating files:  87% (11115/12775)
+Updating files:  88% (11242/12775)
+Updating files:  89% (11370/12775)
+Updating files:  90% (11498/12775)
+Updating files:  91% (11626/12775)
+Updating files:  92% (11753/12775)
+Updating files:  93% (11881/12775)
+Updating files:  94% (12009/12775)
+Updating files:  95% (12137/12775)
+Updating files:  96% (12264/12775)
+Updating files:  97% (12392/12775)
+Updating files:  98% (12520/12775)
+Updating files:  99% (12648/12775)
+Updating files: 100% (12775/12775)
+Updating files: 100% (12775/12775), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+69f40a37606695ab507cc1c3d64e343a253578b4
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-686-20260524_063655
+exit=0
+

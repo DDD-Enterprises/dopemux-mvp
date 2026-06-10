@@ -1,0 +1,1018 @@
+{
+  "pr_id": "517",
+  "cycle_id": "88479b4d-d209-4a0e-b43c-a966abd87af0",
+  "implicit_actions": [
+    {
+      "action": "REFRESH_STATE",
+      "reason": "Starting closed-loop cycle",
+      "timestamp": 1776990435.192707
+    },
+    {
+      "action": "SELECT_TACTIC",
+      "reason": "Computing next safe tactic",
+      "timestamp": 1776990435.1927109
+    },
+    {
+      "action": "RECOMPUTE_SUMMARY",
+      "reason": "Updating posture and blockers after tactic selection",
+      "timestamp": 1776990435.1927192
+    }
+  ],
+  "state_before": {
+    "run_id": "20260423_172708",
+    "pr_state": {
+      "pr_id": 517,
+      "title": "feat(rte): make dopemux rte the canonical operator entrypoint",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "codex/rte-canonical-operator-entrypoint",
+      "ci_status": "FAILURE",
+      "mergeable": "UNKNOWN",
+      "merge_state_status": "UNKNOWN",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-04-24T00:14:43Z",
+      "is_draft": false,
+      "auto_merge_enabled": false,
+      "additions": 1016,
+      "deletions": 321,
+      "changed_files": 15,
+      "unresolved_threads": 20,
+      "active_unresolved_threads": 19,
+      "outdated_unresolved_threads": 1,
+      "pr_class": "MIXED",
+      "risk_score": 3477.0,
+      "check_summary": {
+        "total": 26,
+        "success": 22,
+        "failure": 4,
+        "pending": 0,
+        "required_pending": 0,
+        "required_failure": 4,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "0c718b4ef79040005960bcb84045d94500990606",
+      "base_sha": "2ece87f8bc949a876df1a4601440fe2eddcb12fc"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase codex/rte-canonical-operator-entrypoint onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "rebase_merge",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "517",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "All gates are green; rebase merge selected by default.",
+      "reason_code": "rebase_merge_ready"
+    },
+    "blockers": [
+      {
+        "type": "active_thread",
+        "source": "github_protection_review",
+        "name": "19 active unresolved review threads remain.",
+        "details": null,
+        "metadata": {
+          "active_threads": 19
+        }
+      },
+      {
+        "type": "required_check_failed",
+        "source": "github_protection_review",
+        "name": "Required checks are failing.",
+        "details": null,
+        "metadata": {
+          "checks_total": 26,
+          "checks_success": 22,
+          "checks_failure": 4,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 4,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "UNKNOWN",
+          "merge_state_status": "UNKNOWN",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [],
+          "blocker_types": [
+            "required_check_failed"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "type": "validation_not_executed",
+        "source": "local_validation",
+        "name": "Local validation is required before merge readiness can be declared.",
+        "details": null,
+        "metadata": {
+          "validation_status": "not_executed"
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "large_diff",
+        "message": "Large diff size may increase merge risk.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "diff_size": 1337
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "observations": [
+      {
+        "kind": "observation",
+        "finding_type": "high_risk_score",
+        "message": "PR has elevated risk score relative to queue.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "risk_score": 3477.0
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 26,
+          "checks_success": 22,
+          "checks_failure": 4,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 4,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "UNKNOWN",
+          "merge_state_status": "UNKNOWN",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [],
+          "blocker_types": [
+            "required_check_failed"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "not_executed",
+        "details": {
+          "status": "not_executed",
+          "required_for_merge_ready": true,
+          "passed": false,
+          "attempts": 0,
+          "remediation_applied": false,
+          "steps": [],
+          "input_fingerprint": null,
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "not_executed",
+      "required_for_merge_ready": true,
+      "passed": false,
+      "attempts": 0,
+      "remediation_applied": false,
+      "steps": [],
+      "input_fingerprint": null,
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [
+      {
+        "thread_id": "PRRT_kwDOPyIw9859QlVV",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859QlWC",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/tests/test_truth_run_cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859QlW0",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs36",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-220-dopetask-direct-health-endpoint.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs4H",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs4K",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs4W",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs4f",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs4u",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs43",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/03-reference/systems/dopemux/tui-unknown-resolution-questionnaire.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs5D",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs5U",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs5e",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs5i",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs5s",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/commands/extractor_commands.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs58",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs6C",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs6M",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-220-dopetask-direct-health-endpoint.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs6V",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/03-reference/systems/dopemux/tui-unknown-resolution-questionnaire.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs6a",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "AGENTS.md",
+        "applied": false,
+        "escalation_needed": false
+      }
+    ],
+    "fingerprint": {
+      "input_fingerprint": "c40644036a895f84fa3f2f9b65bced6ee5a0d693177ae68a0aacde2084f76b6e",
+      "valid_for_sha": "0c718b4ef79040005960bcb84045d94500990606",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"19 active unresolved review threads remain.\", \"Required checks are failing.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"19 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 19}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"required_check_failed\", \"message\": \"Required checks are failing.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 26, \"checks_success\": 22, \"checks_failure\": 4, \"checks_pending\": 0, \"required_checks_pending\": 0, \"required_checks_failed\": 4, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"UNKNOWN\", \"merge_state_status\": \"UNKNOWN\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [\"\\ud83e\\uddea Unit Tests\"], \"failed_required_check_entries\": [{\"check_name\": \"\\ud83e\\uddea Unit Tests\", \"details_url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564\", \"status\": \"COMPLETED\", \"conclusion\": \"FAILURE\"}], \"pending_required_checks\": [], \"blocker_types\": [\"required_check_failed\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_not_executed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"not_executed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1337}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1337}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 3477.0}, \"source\": \"heuristics\", \"override\": null}]}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "APPLY_FIX"
+    ]
+  },
+  "state_after": {
+    "run_id": "20260423_172708",
+    "pr_state": {
+      "pr_id": 517,
+      "title": "feat(rte): make dopemux rte the canonical operator entrypoint",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "codex/rte-canonical-operator-entrypoint",
+      "ci_status": "FAILURE",
+      "mergeable": "UNKNOWN",
+      "merge_state_status": "UNKNOWN",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-04-24T00:14:43Z",
+      "is_draft": false,
+      "auto_merge_enabled": false,
+      "additions": 1016,
+      "deletions": 321,
+      "changed_files": 15,
+      "unresolved_threads": 20,
+      "active_unresolved_threads": 19,
+      "outdated_unresolved_threads": 1,
+      "pr_class": "MIXED",
+      "risk_score": 3477.0,
+      "check_summary": {
+        "total": 26,
+        "success": 22,
+        "failure": 4,
+        "pending": 0,
+        "required_pending": 0,
+        "required_failure": 4,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "0c718b4ef79040005960bcb84045d94500990606",
+      "base_sha": "2ece87f8bc949a876df1a4601440fe2eddcb12fc"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase codex/rte-canonical-operator-entrypoint onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "rebase_merge",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "517",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "All gates are green; rebase merge selected by default.",
+      "reason_code": "rebase_merge_ready"
+    },
+    "blockers": [
+      {
+        "type": "active_thread",
+        "source": "github_protection_review",
+        "name": "19 active unresolved review threads remain.",
+        "details": null,
+        "metadata": {
+          "active_threads": 19
+        }
+      },
+      {
+        "type": "required_check_failed",
+        "source": "github_protection_review",
+        "name": "Required checks are failing.",
+        "details": null,
+        "metadata": {
+          "checks_total": 26,
+          "checks_success": 22,
+          "checks_failure": 4,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 4,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "UNKNOWN",
+          "merge_state_status": "UNKNOWN",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [],
+          "blocker_types": [
+            "required_check_failed"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "type": "validation_not_executed",
+        "source": "local_validation",
+        "name": "Local validation is required before merge readiness can be declared.",
+        "details": null,
+        "metadata": {
+          "validation_status": "not_executed"
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "large_diff",
+        "message": "Large diff size may increase merge risk.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "diff_size": 1337
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "observations": [
+      {
+        "kind": "observation",
+        "finding_type": "high_risk_score",
+        "message": "PR has elevated risk score relative to queue.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "risk_score": 3477.0
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 26,
+          "checks_success": 22,
+          "checks_failure": 4,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 4,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "UNKNOWN",
+          "merge_state_status": "UNKNOWN",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [],
+          "blocker_types": [
+            "required_check_failed"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "not_executed",
+        "details": {
+          "status": "not_executed",
+          "required_for_merge_ready": true,
+          "passed": false,
+          "attempts": 0,
+          "remediation_applied": false,
+          "steps": [],
+          "input_fingerprint": null,
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "not_executed",
+      "required_for_merge_ready": true,
+      "passed": false,
+      "attempts": 0,
+      "remediation_applied": false,
+      "steps": [],
+      "input_fingerprint": null,
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [
+      {
+        "thread_id": "PRRT_kwDOPyIw9859QlVV",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859QlWC",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/tests/test_truth_run_cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859QlW0",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs36",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-220-dopetask-direct-health-endpoint.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs4H",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs4K",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs4W",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs4f",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs4u",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs43",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/03-reference/systems/dopemux/tui-unknown-resolution-questionnaire.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs5D",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs5U",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs5e",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs5i",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs5s",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/commands/extractor_commands.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs58",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs6C",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "src/dopemux/cli.py",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs6M",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/90-adr/adr-220-dopetask-direct-health-endpoint.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs6V",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "docs/03-reference/systems/dopemux/tui-unknown-resolution-questionnaire.md",
+        "applied": false,
+        "escalation_needed": false
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw9859Qs6a",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "AGENTS.md",
+        "applied": false,
+        "escalation_needed": false
+      }
+    ],
+    "fingerprint": {
+      "input_fingerprint": "c40644036a895f84fa3f2f9b65bced6ee5a0d693177ae68a0aacde2084f76b6e",
+      "valid_for_sha": "0c718b4ef79040005960bcb84045d94500990606",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"19 active unresolved review threads remain.\", \"Required checks are failing.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"19 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 19}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"required_check_failed\", \"message\": \"Required checks are failing.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 26, \"checks_success\": 22, \"checks_failure\": 4, \"checks_pending\": 0, \"required_checks_pending\": 0, \"required_checks_failed\": 4, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"UNKNOWN\", \"merge_state_status\": \"UNKNOWN\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [\"\\ud83e\\uddea Unit Tests\"], \"failed_required_check_entries\": [{\"check_name\": \"\\ud83e\\uddea Unit Tests\", \"details_url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564\", \"status\": \"COMPLETED\", \"conclusion\": \"FAILURE\"}], \"pending_required_checks\": [], \"blocker_types\": [\"required_check_failed\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_not_executed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"not_executed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1337}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1337}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 3477.0}, \"source\": \"heuristics\", \"override\": null}]}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "APPLY_FIX"
+    ],
+    "pr_id": "517",
+    "posture": "HOLD",
+    "refreshed_at": 1776990435.19271,
+    "recomputed_at": 1776990435.192723,
+    "last_event": {
+      "type": "cycle_complete"
+    },
+    "selected_tactic": "APPLY_FIX"
+  },
+  "next_tactic": "APPLY_FIX",
+  "posture": "HOLD",
+  "computed_at": 1776990435.192725,
+  "error": null,
+  "strategy_id": "STAGED_SEQUENCE_MERGE"
+}

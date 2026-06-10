@@ -1,0 +1,22 @@
+{
+  "embedded_audit": {
+    "auditor_model": "human_integrator",
+    "auditor_tool": "gemini-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": "manual-verification",
+    "remaining_risks": [],
+    "report_path": "proof/TP-DMX-COCKPIT-INVENTORY-REGEN-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "generated_at": "2026-06-04T23:05:00Z",
+  "github_mutation_route_added": false,
+  "head_sha": "04ac5c13c089e0bdbb9c85e32af4b8f0c30150c5",
+  "mutation_performed": false,
+  "packet_id": "TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+  "pr_number": 815,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

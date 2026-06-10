@@ -1,0 +1,173 @@
+$ git fetch origin pull/726/head:prmerge/20260530_203332-726
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/726/head -> prmerge/20260530_203332-726
+
+$ git worktree add /tmp/dopemux-pr-merge-726-20260530_203332 prmerge/20260530_203332-726
+exit=0
+--- stdout ---
+HEAD is now at 8871c7877 🎨 Palette: UX polish and CI pipeline remediation
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_203332-726')
+Updating files:  15% (2156/13513)
+Updating files:  16% (2163/13513)
+Updating files:  17% (2298/13513)
+Updating files:  18% (2433/13513)
+Updating files:  19% (2568/13513)
+Updating files:  20% (2703/13513)
+Updating files:  21% (2838/13513)
+Updating files:  22% (2973/13513)
+Updating files:  23% (3108/13513)
+Updating files:  24% (3244/13513)
+Updating files:  25% (3379/13513)
+Updating files:  26% (3514/13513)
+Updating files:  27% (3649/13513)
+Updating files:  28% (3784/13513)
+Updating files:  29% (3919/13513)
+Updating files:  30% (4054/13513)
+Updating files:  31% (4190/13513)
+Updating files:  32% (4325/13513)
+Updating files:  33% (4460/13513)
+Updating files:  34% (4595/13513)
+Updating files:  35% (4730/13513)
+Updating files:  35% (4804/13513)
+Updating files:  36% (4865/13513)
+Updating files:  37% (5000/13513)
+Updating files:  38% (5135/13513)
+Updating files:  39% (5271/13513)
+Updating files:  40% (5406/13513)
+Updating files:  41% (5541/13513)
+Updating files:  42% (5676/13513)
+Updating files:  43% (5811/13513)
+Updating files:  44% (5946/13513)
+Updating files:  45% (6081/13513)
+Updating files:  46% (6216/13513)
+Updating files:  47% (6352/13513)
+Updating files:  48% (6487/13513)
+Updating files:  49% (6622/13513)
+Updating files:  50% (6757/13513)
+Updating files:  51% (6892/13513)
+Updating files:  52% (7027/13513)
+Updating files:  53% (7162/13513)
+Updating files:  54% (7298/13513)
+Updating files:  55% (7433/13513)
+Updating files:  56% (7568/13513)
+Updating files:  57% (7703/13513)
+Updating files:  58% (7838/13513)
+Updating files:  59% (7973/13513)
+Updating files:  60% (8108/13513)
+Updating files:  61% (8243/13513)
+Updating files:  62% (8379/13513)
+Updating files:  62% (8404/13513)
+Updating files:  63% (8514/13513)
+Updating files:  64% (8649/13513)
+Updating files:  65% (8784/13513)
+Updating files:  66% (8919/13513)
+Updating files:  67% (9054/13513)
+Updating files:  68% (9189/13513)
+Updating files:  69% (9324/13513)
+Updating files:  70% (9460/13513)
+Updating files:  71% (9595/13513)
+Updating files:  72% (9730/13513)
+Updating files:  73% (9865/13513)
+Updating files:  74% (10000/13513)
+Updating files:  75% (10135/13513)
+Updating files:  76% (10270/13513)
+Updating files:  77% (10406/13513)
+Updating files:  78% (10541/13513)
+Updating files:  79% (10676/13513)
+Updating files:  80% (10811/13513)
+Updating files:  81% (10946/13513)
+Updating files:  82% (11081/13513)
+Updating files:  83% (11216/13513)
+Updating files:  84% (11351/13513)
+Updating files:  85% (11487/13513)
+Updating files:  85% (11549/13513)
+Updating files:  86% (11622/13513)
+Updating files:  87% (11757/13513)
+Updating files:  88% (11892/13513)
+Updating files:  89% (12027/13513)
+Updating files:  90% (12162/13513)
+Updating files:  91% (12297/13513)
+Updating files:  92% (12432/13513)
+Updating files:  93% (12568/13513)
+Updating files:  94% (12703/13513)
+Updating files:  95% (12838/13513)
+Updating files:  96% (12973/13513)
+Updating files:  97% (13108/13513)
+Updating files:  98% (13243/13513)
+Updating files:  99% (13378/13513)
+Updating files: 100% (13513/13513)
+Updating files: 100% (13513/13513), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+8871c78773b89fedc6310e09282dc4e6be46c271
+
+$ gh pr update-branch 726 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin palette-metric-card-polish-2272761420965874201
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                palette-metric-card-polish-2272761420965874201 -> FETCH_HEAD
+
+$ git reset --hard origin/palette-metric-card-polish-2272761420965874201
+exit=0
+--- stdout ---
+HEAD is now at 8871c7877 🎨 Palette: UX polish and CI pipeline remediation
+
+$ git diff --name-only --diff-filter=ACMR d38e138730f2abf20c56207df9887b579765efa9...HEAD
+exit=0
+--- stdout ---
+.Jules/palette.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json
+src/dopemux/orchestrator/ui/data_sources.py
+ui-dashboard/src/App.tsx
+ui-dashboard/src/components/__tests__/Accessibility.test.ts
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .Jules/palette.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json src/dopemux/orchestrator/ui/data_sources.py ui-dashboard/src/App.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-726-20260530_203332
+exit=0
+
+$ gh pr merge 726 --auto --rebase
+exit=0
+

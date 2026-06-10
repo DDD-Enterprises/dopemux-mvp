@@ -1,0 +1,157 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw986E91vx",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json",
+      "line": null,
+      "original_line": 47,
+      "original_start_line": 46,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FKM7O",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Replace non-existent orchestrator CLI verify commands**\n\nThis verify list invokes `python -m dopemux.cli orchestrator ...`, but the current CLI does not expose an `orchestrator` top-level command (running `python -m dopemux.cli --help` shows no such command), so these checks fail immediately with `No such command 'orchestrator'`. Because this packet is a dependency for later DMX-ORCH follow-ups and the same pattern is repeated there, the plan’s required validation path is not executable as written.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-27T00:58:31Z",
+          "path": "task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json",
+          "line": null,
+          "original_line": 47
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWACR",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:58:32Z",
+          "path": "task-packets/generated/TP-DMX-ORCH-PROOF-PERPACKET-001.json",
+          "line": null,
+          "original_line": 47
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986E91vy",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "task-packets/generated/TP-DMX-ORCH-014A-UPSTREAM.json",
+      "line": null,
+      "original_line": 10,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FKM7Q",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Point envelope consumer invariant at an existing packet**\n\nThis invariant ties compatibility to `TP-DMX-ORCH-014B`, but there is no `TP-DMX-ORCH-014B` packet artifact in this repo, while the consumer packet in this follow-up set is `TP-DMX-ORCH-012-LIVE`. Referencing a non-existent packet ID makes the contract ambiguous and leaves reviewers without a concrete, resolvable source when verifying envelope-field compatibility.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-27T00:58:31Z",
+          "path": "task-packets/generated/TP-DMX-ORCH-014A-UPSTREAM.json",
+          "line": null,
+          "original_line": 10
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWAF7",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:58:35Z",
+          "path": "task-packets/generated/TP-DMX-ORCH-014A-UPSTREAM.json",
+          "line": null,
+          "original_line": 10
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986E92e7",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json",
+      "line": 47,
+      "original_line": 46,
+      "original_start_line": 43,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FKN4m",
+          "author": "copilot-pull-request-reviewer",
+          "body": "AGENTS.md requires proof to include a commit SHA and PR URL (or an explicit blocker). These PLAN_ONLY proof bundles currently set commit_sha/pr_url to null without a blocker that explains the missing values, which makes the bundle non-auditable once it’s detached from the PR context (same pattern appears across the other PLAN_ONLY proofs added in this PR).\n",
+          "created_at": "2026-05-27T01:00:07Z",
+          "path": "proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json",
+          "line": 47,
+          "original_line": 46
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWAKu",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:58:38Z",
+          "path": "proof/dmx-orch-integration/TP-DMX-ORCH-DOCS-001/PROOF.json",
+          "line": 47,
+          "original_line": 46
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FZmF8",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "src/dopemux/orchestrator/validation/proof.py",
+      "line": 38,
+      "original_line": 38,
+      "original_start_line": 37,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987Fwpwy",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Require proof artifact lists to be non-empty**\n\nWhen `manifest.generated_artifacts` or `authoritative_artifacts` is `[]`, this helper returns true because `all([])` is true, so the checks that are supposed to enforce generated/authoritative artifacts do not fire. That lets artifact-free proof bundles validate as `PASS`, which weakens the proof gate for READY_FOR_REVIEW/VERIFIED packets.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-28T12:49:15Z",
+          "path": "src/dopemux/orchestrator/validation/proof.py",
+          "line": 38,
+          "original_line": 38
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FZmGA",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "src/dopemux/pm/adapters/conport.py",
+      "line": 137,
+      "original_line": 137,
+      "original_start_line": 136,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987Fwpw5",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Persist progress receipts only after ConPort accepts them**\n\nIf the ConPort HTTP request fails or times out, this local journal write has already appended the progress/decision entry, and the TUI context panel reads this same `progress_log.json` as recorded progress. In that failure scenario the local receipt claims progress that the canonical ConPort write never accepted, so move the journal write after the successful `raise_for_status()` or mark it explicitly as a failed attempt.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-28T12:49:15Z",
+          "path": "src/dopemux/pm/adapters/conport.py",
+          "line": 137,
+          "original_line": 137
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FZmGD",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "src/dopemux/orchestrator/idempotency.py",
+      "line": 99,
+      "original_line": 99,
+      "original_start_line": 97,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987Fwpw7",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Reject reused idempotency keys for different transitions**\n\nWhen the same `idempotency_key` is accidentally reused for a different project/workflow/transition, this lookup only keys on the idempotency key and later returns any completed cached response without comparing the stored `project_id`, `workflow_id`, or `transition_name`. That can silently skip the new transition and return an unrelated prior result; the claim path should fetch and validate those fields before treating the row as the same operation.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-28T12:49:15Z",
+          "path": "src/dopemux/orchestrator/idempotency.py",
+          "line": 99,
+          "original_line": 99
+        }
+      ]
+    }
+  ]
+}

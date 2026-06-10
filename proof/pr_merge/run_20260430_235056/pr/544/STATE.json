@@ -1,0 +1,298 @@
+{
+  "run_id": "20260430_235056",
+  "pr_state": {
+    "pr_id": 544,
+    "title": "docs(cockpit): preserve local design package work",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "codex/main-clean-local-work-pr",
+    "ci_status": "FAILURE",
+    "mergeable": "CONFLICTING",
+    "merge_state_status": "DIRTY",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-01T06:12:03Z",
+    "is_draft": false,
+    "additions": 7302,
+    "deletions": 1113,
+    "changed_files": 73,
+    "unresolved_threads": 24,
+    "active_unresolved_threads": 22,
+    "outdated_unresolved_threads": 2,
+    "pr_class": "MIXED",
+    "risk_score": 11395.0,
+    "check_summary": {
+      "total": 19,
+      "success": 17,
+      "failure": 2,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 2,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "merge_blocked",
+    "head_sha": "910ce7f03b18f8ff2156ac3e63e6e2920432730d",
+    "base_sha": "911ac39d9f4436d69370f4dbdcee21f388347938"
+  },
+  "lifecycle_state": "merge_blocked",
+  "apply_actions": [],
+  "merge_decision": {
+    "action": "blocked",
+    "command": [],
+    "reason": "22 active unresolved review threads remain.; Required checks are failing.; Required approval is missing.; Local validation is required before merge readiness can be declared.; Required checks are failing.",
+    "reason_code": "active_thread"
+  },
+  "blockers": [
+    {
+      "type": "active_thread",
+      "source": "github_protection_review",
+      "name": "22 active unresolved review threads remain.",
+      "details": null,
+      "metadata": {
+        "active_threads": 22
+      }
+    },
+    {
+      "type": "required_check_failed",
+      "source": "github_protection_review",
+      "name": "Required checks are failing.",
+      "details": null,
+      "metadata": {
+        "checks_total": 19,
+        "checks_success": 17,
+        "checks_failure": 2,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 2,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "CONFLICTING",
+        "merge_state_status": "DIRTY",
+        "blocker_types": [
+          "required_check_failed",
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "type": "approval_missing",
+      "source": "github_protection_review",
+      "name": "Required approval is missing.",
+      "details": null,
+      "metadata": {}
+    },
+    {
+      "type": "validation_failed",
+      "source": "local_validation",
+      "name": "Local validation is required before merge readiness can be declared.",
+      "details": null,
+      "metadata": {
+        "validation_status": "failed"
+      }
+    },
+    {
+      "type": "merge_gate",
+      "source": "github_protection_review",
+      "name": "Required checks are failing.",
+      "details": null,
+      "metadata": {}
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "details": {
+        "diff_size": 8415
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "details": {
+        "risk_score": 11395.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "3d8667480a0c19acffff4b3ba69045245feb66e2f297a4bf037b80743348aacc"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 19,
+        "checks_success": 17,
+        "checks_failure": 2,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 2,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "CONFLICTING",
+        "merge_state_status": "DIRTY",
+        "blocker_types": [
+          "required_check_failed",
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "failed",
+      "details": {
+        "status": "failed",
+        "required_for_merge_ready": true,
+        "passed": false,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run",
+            "status": "failed",
+            "returncode": 3,
+            "stdout": "[WARNING] Unstaged files detected.\n[INFO] Stashing unstaged files to /Users/hue/.cache/pre-commit/patch1777618376-85978.\nValidate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files......................(no files to check)Skipped\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).................(no files to check)Skipped\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n[WARNING] Stashed changes conflicted with hook auto-fixes... Rolling back fixes...\nAn unexpected error has occurred: CalledProcessError: command: ('/opt/homebrew/bin/git', '-c', 'core.autocrlf=false', 'apply', '--whitespace=nowarn', '/Users/hue/.cache/pre-commit/patch1777618376-85978')\nreturn code: 1\nstdout: (none)\nstderr:\n    error: patch failed: docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md:22\n    error: docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md: patch does not apply\n    error: patch failed: docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md:12\n    error: docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md: patch does not apply\nCheck the log at /Users/hue/.cache/pre-commit/pre-commit.log\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "78bf57a3e003c536bf201d80ca51b453c746f465af76d8d9bfc6c3bcab2ed8b4",
+          "valid_for_sha": "910ce7f03b18f8ff2156ac3e63e6e2920432730d",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "applied",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        }
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "remote_merge_gate",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "failed",
+    "required_for_merge_ready": true,
+    "passed": false,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run",
+        "status": "failed",
+        "returncode": 3,
+        "stdout": "[WARNING] Unstaged files detected.\n[INFO] Stashing unstaged files to /Users/hue/.cache/pre-commit/patch1777618376-85978.\nValidate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files......................(no files to check)Skipped\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).................(no files to check)Skipped\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n[WARNING] Stashed changes conflicted with hook auto-fixes... Rolling back fixes...\nAn unexpected error has occurred: CalledProcessError: command: ('/opt/homebrew/bin/git', '-c', 'core.autocrlf=false', 'apply', '--whitespace=nowarn', '/Users/hue/.cache/pre-commit/patch1777618376-85978')\nreturn code: 1\nstdout: (none)\nstderr:\n    error: patch failed: docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md:22\n    error: docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md: patch does not apply\n    error: patch failed: docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md:12\n    error: docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md: patch does not apply\nCheck the log at /Users/hue/.cache/pre-commit/pre-commit.log\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "78bf57a3e003c536bf201d80ca51b453c746f465af76d8d9bfc6c3bcab2ed8b4",
+      "valid_for_sha": "910ce7f03b18f8ff2156ac3e63e6e2920432730d",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "applied",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    }
+  },
+  "thread_dispositions": [],
+  "fingerprint": {
+    "input_fingerprint": "6839571ce2a79f38a3c3c81523a531936ff6acdd6fd36aac3b2ba6f3a21e2767",
+    "valid_for_sha": "910ce7f03b18f8ff2156ac3e63e6e2920432730d",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "commands": "proof/pr_merge/run_20260430_235056/pr/544/COMMANDS_RUN.txt"
+  }
+}

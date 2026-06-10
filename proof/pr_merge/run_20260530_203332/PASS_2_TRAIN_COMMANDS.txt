@@ -1,0 +1,255 @@
+$ git fetch origin pull/723/head:prmerge/20260530_203332-723
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/723/head -> prmerge/20260530_203332-723
+
+$ git worktree add /tmp/dopemux-pr-merge-723-20260530_203332 prmerge/20260530_203332-723
+exit=0
+--- stdout ---
+HEAD is now at 7849422b4 🎨 Palette: Refined Metric Feedback, Semantic Iconography, and CI Remediation
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_203332-723')
+Updating files:   9% (1317/13513)
+Updating files:  10% (1352/13513)
+Updating files:  11% (1487/13513)
+Updating files:  12% (1622/13513)
+Updating files:  13% (1757/13513)
+Updating files:  14% (1892/13513)
+Updating files:  15% (2027/13513)
+Updating files:  16% (2163/13513)
+Updating files:  17% (2298/13513)
+Updating files:  18% (2433/13513)
+Updating files:  19% (2568/13513)
+Updating files:  20% (2703/13513)
+Updating files:  21% (2838/13513)
+Updating files:  22% (2973/13513)
+Updating files:  23% (3108/13513)
+Updating files:  24% (3244/13513)
+Updating files:  25% (3379/13513)
+Updating files:  25% (3461/13513)
+Updating files:  26% (3514/13513)
+Updating files:  27% (3649/13513)
+Updating files:  28% (3784/13513)
+Updating files:  29% (3919/13513)
+Updating files:  30% (4054/13513)
+Updating files:  31% (4190/13513)
+Updating files:  32% (4325/13513)
+Updating files:  33% (4460/13513)
+Updating files:  34% (4595/13513)
+Updating files:  35% (4730/13513)
+Updating files:  36% (4865/13513)
+Updating files:  37% (5000/13513)
+Updating files:  38% (5135/13513)
+Updating files:  38% (5230/13513)
+Updating files:  39% (5271/13513)
+Updating files:  40% (5406/13513)
+Updating files:  41% (5541/13513)
+Updating files:  42% (5676/13513)
+Updating files:  43% (5811/13513)
+Updating files:  44% (5946/13513)
+Updating files:  45% (6081/13513)
+Updating files:  46% (6216/13513)
+Updating files:  47% (6352/13513)
+Updating files:  48% (6487/13513)
+Updating files:  49% (6622/13513)
+Updating files:  50% (6757/13513)
+Updating files:  51% (6892/13513)
+Updating files:  52% (7027/13513)
+Updating files:  53% (7162/13513)
+Updating files:  54% (7298/13513)
+Updating files:  55% (7433/13513)
+Updating files:  56% (7568/13513)
+Updating files:  57% (7703/13513)
+Updating files:  57% (7784/13513)
+Updating files:  58% (7838/13513)
+Updating files:  59% (7973/13513)
+Updating files:  60% (8108/13513)
+Updating files:  61% (8243/13513)
+Updating files:  62% (8379/13513)
+Updating files:  63% (8514/13513)
+Updating files:  64% (8649/13513)
+Updating files:  65% (8784/13513)
+Updating files:  66% (8919/13513)
+Updating files:  67% (9054/13513)
+Updating files:  68% (9189/13513)
+Updating files:  69% (9324/13513)
+Updating files:  70% (9460/13513)
+Updating files:  71% (9595/13513)
+Updating files:  72% (9730/13513)
+Updating files:  73% (9865/13513)
+Updating files:  73% (9955/13513)
+Updating files:  74% (10000/13513)
+Updating files:  75% (10135/13513)
+Updating files:  76% (10270/13513)
+Updating files:  77% (10406/13513)
+Updating files:  78% (10541/13513)
+Updating files:  79% (10676/13513)
+Updating files:  80% (10811/13513)
+Updating files:  81% (10946/13513)
+Updating files:  82% (11081/13513)
+Updating files:  83% (11216/13513)
+Updating files:  84% (11351/13513)
+Updating files:  85% (11487/13513)
+Updating files:  86% (11622/13513)
+Updating files:  87% (11757/13513)
+Updating files:  88% (11892/13513)
+Updating files:  89% (12027/13513)
+Updating files:  90% (12162/13513)
+Updating files:  90% (12212/13513)
+Updating files:  91% (12297/13513)
+Updating files:  92% (12432/13513)
+Updating files:  93% (12568/13513)
+Updating files:  94% (12703/13513)
+Updating files:  95% (12838/13513)
+Updating files:  96% (12973/13513)
+Updating files:  97% (13108/13513)
+Updating files:  98% (13243/13513)
+Updating files:  99% (13378/13513)
+Updating files: 100% (13513/13513)
+Updating files: 100% (13513/13513), done.
+
+$ git rebase origin/main
+exit=0
+--- stdout ---
+Current branch prmerge/20260530_203332-723 is up to date.
+
+$ git push origin HEAD:palette-refined-metric-feedback-and-semantic-iconography-3304135537873689056 --force-with-lease
+exit=0
+--- stderr ---
+Everything up-to-date
+
+$ gh pr merge 723 --auto --rebase --delete-branch
+exit=0
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-723-20260530_203332
+exit=0
+
+$ git fetch origin pull/728/head:prmerge/20260530_203332-728
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/728/head -> prmerge/20260530_203332-728
+
+$ git worktree add /tmp/dopemux-pr-merge-728-20260530_203332 prmerge/20260530_203332-728
+exit=0
+--- stdout ---
+HEAD is now at 7521b2986 🎨 Palette: Notification dismissal and CI remediation (v3)
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_203332-728')
+Updating files:  10% (1422/13513)
+Updating files:  11% (1487/13513)
+Updating files:  12% (1622/13513)
+Updating files:  13% (1757/13513)
+Updating files:  14% (1892/13513)
+Updating files:  15% (2027/13513)
+Updating files:  16% (2163/13513)
+Updating files:  17% (2298/13513)
+Updating files:  18% (2433/13513)
+Updating files:  19% (2568/13513)
+Updating files:  20% (2703/13513)
+Updating files:  21% (2838/13513)
+Updating files:  22% (2973/13513)
+Updating files:  22% (2980/13513)
+Updating files:  23% (3108/13513)
+Updating files:  24% (3244/13513)
+Updating files:  25% (3379/13513)
+Updating files:  26% (3514/13513)
+Updating files:  27% (3649/13513)
+Updating files:  28% (3784/13513)
+Updating files:  29% (3919/13513)
+Updating files:  30% (4054/13513)
+Updating files:  30% (4077/13513)
+Updating files:  31% (4190/13513)
+Updating files:  32% (4325/13513)
+Updating files:  33% (4460/13513)
+Updating files:  34% (4595/13513)
+Updating files:  35% (4730/13513)
+Updating files:  36% (4865/13513)
+Updating files:  37% (5000/13513)
+Updating files:  38% (5135/13513)
+Updating files:  39% (5271/13513)
+Updating files:  40% (5406/13513)
+Updating files:  41% (5541/13513)
+Updating files:  42% (5676/13513)
+Updating files:  43% (5811/13513)
+Updating files:  44% (5946/13513)
+Updating files:  45% (6081/13513)
+Updating files:  46% (6216/13513)
+Updating files:  47% (6352/13513)
+Updating files:  48% (6487/13513)
+Updating files:  48% (6609/13513)
+Updating files:  49% (6622/13513)
+Updating files:  50% (6757/13513)
+Updating files:  51% (6892/13513)
+Updating files:  52% (7027/13513)
+Updating files:  53% (7162/13513)
+Updating files:  54% (7298/13513)
+Updating files:  55% (7433/13513)
+Updating files:  56% (7568/13513)
+Updating files:  57% (7703/13513)
+Updating files:  58% (7838/13513)
+Updating files:  59% (7973/13513)
+Updating files:  60% (8108/13513)
+Updating files:  61% (8243/13513)
+Updating files:  62% (8379/13513)
+Updating files:  62% (8448/13513)
+Updating files:  63% (8514/13513)
+Updating files:  64% (8649/13513)
+Updating files:  65% (8784/13513)
+Updating files:  66% (8919/13513)
+Updating files:  66% (8947/13513)
+Updating files:  67% (9054/13513)
+Updating files:  68% (9189/13513)
+Updating files:  69% (9324/13513)
+Updating files:  70% (9460/13513)
+Updating files:  71% (9595/13513)
+Updating files:  72% (9730/13513)
+Updating files:  73% (9865/13513)
+Updating files:  74% (10000/13513)
+Updating files:  75% (10135/13513)
+Updating files:  76% (10270/13513)
+Updating files:  76% (10382/13513)
+Updating files:  77% (10406/13513)
+Updating files:  78% (10541/13513)
+Updating files:  79% (10676/13513)
+Updating files:  80% (10811/13513)
+Updating files:  81% (10946/13513)
+Updating files:  82% (11081/13513)
+Updating files:  83% (11216/13513)
+Updating files:  84% (11351/13513)
+Updating files:  85% (11487/13513)
+Updating files:  86% (11622/13513)
+Updating files:  87% (11757/13513)
+Updating files:  88% (11892/13513)
+Updating files:  89% (12027/13513)
+Updating files:  90% (12162/13513)
+Updating files:  91% (12297/13513)
+Updating files:  92% (12432/13513)
+Updating files:  93% (12568/13513)
+Updating files:  94% (12703/13513)
+Updating files:  94% (12788/13513)
+Updating files:  95% (12838/13513)
+Updating files:  96% (12973/13513)
+Updating files:  97% (13108/13513)
+Updating files:  98% (13243/13513)
+Updating files:  99% (13378/13513)
+Updating files: 100% (13513/13513)
+Updating files: 100% (13513/13513), done.
+
+$ git rebase origin/main
+exit=0
+--- stdout ---
+Current branch prmerge/20260530_203332-728 is up to date.
+
+$ git push origin HEAD:palette/notification-dismissal-fix-450570903104620558 --force-with-lease
+exit=0
+--- stderr ---
+Everything up-to-date
+
+$ gh pr merge 728 --auto --rebase --delete-branch
+exit=0
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-728-20260530_203332
+exit=0
+

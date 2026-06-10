@@ -1,0 +1,319 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw9857uVKB",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "line": null,
+      "original_line": 651,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yRS7",
+          "author": "github-advanced-security",
+          "body": "## CodeQL / Clear-text logging of sensitive information\n\nThis expression logs [sensitive data (password)](1) as clear text.\n\n[Show more details](https://github.com/DDD-Enterprises/dopemux-mvp/security/code-scanning/203)",
+          "created_at": "2026-04-17T12:18:25Z",
+          "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+          "line": null,
+          "original_line": 651
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uVKI",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "line": null,
+      "original_line": 654,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yRTE",
+          "author": "github-advanced-security",
+          "body": "## CodeQL / Clear-text logging of sensitive information\n\nThis expression logs [sensitive data (password)](1) as clear text.\n\n[Show more details](https://github.com/DDD-Enterprises/dopemux-mvp/security/code-scanning/204)",
+          "created_at": "2026-04-17T12:18:25Z",
+          "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+          "line": null,
+          "original_line": 654
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uV-c",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "line": 18265,
+      "original_line": 18265,
+      "original_start_line": 18252,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864ySgq",
+          "author": "github-actions",
+          "body": "🟡 Medium This manual loading of the `IntelligenceRouter` is redundant because `run_integrated_prescan_stage` (Stage 0) already handles importing from `prescan_import_dir` and returning the router. Removing this avoids double-loading and ensures that the router initialization is consistently handled through the integrated Stage 0 flow.\n\n```suggestion\n    router = None\n```\n",
+          "created_at": "2026-04-17T12:19:19Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 18265,
+          "original_line": 18265
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uWDk",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "line": 18786,
+      "original_line": 18786,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864ySns",
+          "author": "github-actions",
+          "body": "🟠 High This condition prevents `run_integrated_prescan_stage` from executing when `--prescan-import-dir` is provided. However, `run_integrated_prescan_stage` is designed to handle imported prescans (Step 1 in that function) and write the necessary `prescan_stage_receipt.json`. By skipping it here, you lose the receipt and the global `_ACTIVE_INTELLIGENCE_ROUTER` update for imported runs.\n\n```suggestion\n    if not cfg.prescan_skip:\n```\n",
+          "created_at": "2026-04-17T12:19:23Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 18786,
+          "original_line": 18786
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uWJH",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "line": null,
+      "original_line": 649,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864ySvM",
+          "author": "github-actions",
+          "body": "🟠 High When using a `routing_plan`, `base_url` is hardcoded to `None`. This will cause failures if the selected provider is `xai` (or any other non-OpenAI provider), as the client will default to the OpenAI base URL. It should respect the configured `xai_base_url` for non-OpenAI providers, consistent with the fallback logic.\n\n```suggestion\n            base_url = None if provider == \"openai\" else self.config.xai_base_url\n```\n",
+          "created_at": "2026-04-17T12:19:28Z",
+          "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+          "line": null,
+          "original_line": 649
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uZCE",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "line": 1359,
+      "original_line": 1359,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yW5K",
+          "author": "copilot-pull-request-reviewer",
+          "body": "RunnerConfig defines `max_cost_usd` twice (one earlier in the dataclass and again here). In a dataclass, the later field overwrites the earlier definition, which is confusing and can break defaults/type expectations. Remove the duplicate and keep a single `max_cost_usd` field in the class.\n",
+          "created_at": "2026-04-17T12:22:08Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 1359,
+          "original_line": 1359
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uZCS",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "line": 6413,
+      "original_line": 6413,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yW5f",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`online_authorized` is being derived from `cfg.prescan_online or cfg.allow_online_llm or cfg.live_ok`. Using `live_ok` as an implicit authorization means simply exporting the live-execution consent env var can silently enable online LLM spend in prescan, even when neither `--prescan-online` nor `--allow-online-llm` is set. Drop `cfg.live_ok` from this decision (or require an explicit flag) so online prescan remains fail-closed.\n",
+          "created_at": "2026-04-17T12:22:08Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 6413,
+          "original_line": 6413
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uZCi",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "line": null,
+      "original_line": 652,
+      "original_start_line": 645,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yW52",
+          "author": "copilot-pull-request-reviewer",
+          "body": "When a routing plan is provided, this code indexes `selected_route[\"provider\"]` / `[\"model_id\"]` / `[\"api_key_env\"]` directly. If the routing plan is missing any of these keys (or has a malformed route entry), this will raise `KeyError` and crash prescan instead of failing closed with a clear error. Validate required keys (e.g., via `.get()` checks) and return `None` with an actionable log message when the plan is invalid.\n",
+          "created_at": "2026-04-17T12:22:09Z",
+          "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+          "line": null,
+          "original_line": 652
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uZC4",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "src/dopemux/cli.py",
+      "line": 4892,
+      "original_line": 4892,
+      "original_start_line": 4881,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yW6W",
+          "author": "copilot-pull-request-reviewer",
+          "body": "These prescan flags are appended to the runner args regardless of `effective_version`. If a user runs pipeline v4 and sets any of these options, `run_extraction_v4.py` will receive unknown CLI flags and fail. Add a guard that either (a) only registers/accepts these options when `--version v5`, or (b) errors early when any prescan-related flag is set for non-v5 runs.",
+          "created_at": "2026-04-17T12:22:09Z",
+          "path": "src/dopemux/cli.py",
+          "line": 4892,
+          "original_line": 4892
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uZDG",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+      "line": 8,
+      "original_line": 8,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yW60",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This test file lives under `services/.../tests`, but repo `pytest.ini` sets `testpaths = tests` and also lists `services` under `norecursedirs`, so it won’t run in the default CI pytest invocation. Move these tests under `tests/` (or adjust the CI collection strategy) so the new online-gate behavior is actually enforced by the main test suite.",
+          "created_at": "2026-04-17T12:22:09Z",
+          "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+          "line": 8,
+          "original_line": 8
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uZDW",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+      "line": 4,
+      "original_line": 4,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yW7c",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`Path` is imported but never used in this test module, which will trip flake8/linters. Remove the unused import.\n",
+          "created_at": "2026-04-17T12:22:09Z",
+          "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+          "line": 4,
+          "original_line": 4
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uZDj",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "line": 18785,
+      "original_line": 18785,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yW75",
+          "author": "copilot-pull-request-reviewer",
+          "body": "Stage 0 prescan is only executed when `prescan_import_dir` is not set, but `run_integrated_prescan_stage()` already contains logic to handle `cfg.prescan_import_dir` and write the stage receipt. As written, imported-prescan runs won’t create `runs/<id>/prescan/` or write `prescan_stage_receipt.json`, which conflicts with the stated receipt contract. Consider calling `run_integrated_prescan_stage()` whenever prescan isn’t skipped and letting it decide between import vs local run (or write the receipt in the import path here).\n",
+          "created_at": "2026-04-17T12:22:10Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 18785,
+          "original_line": 18785
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uZD2",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "proof/rte_v5_full_prescan_integration.proof.json",
+      "line": 46,
+      "original_line": 46,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yW8f",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This proof artifact is being added under `proof/`, but `.gitignore` ignores `proof/` and only allow-lists a few specific `proof/rte-...*.proof.json` ledgers. `proof/rte_v5_full_prescan_integration.proof.json` is not in the allow-list, so committing it deviates from the repo’s proof hygiene rules. Either remove it from the PR or rename/allow-list it explicitly (and update `.gitignore`) if it’s intended to be tracked long-term.\n",
+          "created_at": "2026-04-17T12:22:10Z",
+          "path": "proof/rte_v5_full_prescan_integration.proof.json",
+          "line": 46,
+          "original_line": 46
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uZED",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "line": 6405,
+      "original_line": 6405,
+      "original_start_line": 6400,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yW9A",
+          "author": "copilot-pull-request-reviewer",
+          "body": "On `ImportError`, the integrated prescan stage returns early without writing `prescan_stage_receipt.json`. If the receipt is meant to be present for every v5 run (even when prescan can’t run), consider writing a receipt with a distinct status (e.g., `unavailable`) before returning so operators can reliably audit what happened.",
+          "created_at": "2026-04-17T12:22:10Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 6405,
+          "original_line": 6405
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9857uZHe",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+      "line": 4,
+      "original_line": 4,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9864yXC5",
+          "author": "github-code-quality",
+          "body": "## Unused import\n\nImport of 'Path' is not used.\n\n---\n\nThe correct fix is to remove the unused <code>Path</code> import from <code>services/repo-truth-extractor/tests/test_prescan_online_gate.py</code> without changing any test logic.</p>\n<p>Best single change:</p>\n<ul>\n<li>In the import section at the top of the file, delete:\n<ul>\n<li><code>from pathlib import Path</code></li>\n</ul>\n</li>\n</ul>\n<p>No other code changes are needed, because nothing references <code>Path</code>.",
+          "created_at": "2026-04-17T12:22:13Z",
+          "path": "services/repo-truth-extractor/tests/test_prescan_online_gate.py",
+          "line": 4,
+          "original_line": 4
+        }
+      ]
+    }
+  ]
+}

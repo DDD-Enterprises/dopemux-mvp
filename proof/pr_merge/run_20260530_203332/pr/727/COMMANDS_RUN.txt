@@ -1,0 +1,209 @@
+$ git fetch origin pull/727/head:prmerge/20260530_203332-727
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/727/head -> prmerge/20260530_203332-727
+
+$ git worktree add /tmp/dopemux-pr-merge-727-20260530_203332 prmerge/20260530_203332-727
+exit=0
+--- stdout ---
+HEAD is now at d5611c97f fix(test): mock idempotency_store to isolate parallel tests and align widget failure mock
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_203332-727')
+Updating files:  16% (2234/13546)
+Updating files:  17% (2303/13546)
+Updating files:  18% (2439/13546)
+Updating files:  19% (2574/13546)
+Updating files:  20% (2710/13546)
+Updating files:  21% (2845/13546)
+Updating files:  22% (2981/13546)
+Updating files:  23% (3116/13546)
+Updating files:  24% (3252/13546)
+Updating files:  25% (3387/13546)
+Updating files:  26% (3522/13546)
+Updating files:  27% (3658/13546)
+Updating files:  28% (3793/13546)
+Updating files:  29% (3929/13546)
+Updating files:  30% (4064/13546)
+Updating files:  31% (4200/13546)
+Updating files:  32% (4335/13546)
+Updating files:  33% (4471/13546)
+Updating files:  34% (4606/13546)
+Updating files:  35% (4742/13546)
+Updating files:  36% (4877/13546)
+Updating files:  37% (5013/13546)
+Updating files:  38% (5148/13546)
+Updating files:  39% (5283/13546)
+Updating files:  40% (5419/13546)
+Updating files:  41% (5554/13546)
+Updating files:  42% (5690/13546)
+Updating files:  43% (5825/13546)
+Updating files:  44% (5961/13546)
+Updating files:  45% (6096/13546)
+Updating files:  46% (6232/13546)
+Updating files:  47% (6367/13546)
+Updating files:  47% (6472/13546)
+Updating files:  48% (6503/13546)
+Updating files:  49% (6638/13546)
+Updating files:  50% (6773/13546)
+Updating files:  51% (6909/13546)
+Updating files:  52% (7044/13546)
+Updating files:  53% (7180/13546)
+Updating files:  54% (7315/13546)
+Updating files:  55% (7451/13546)
+Updating files:  56% (7586/13546)
+Updating files:  57% (7722/13546)
+Updating files:  58% (7857/13546)
+Updating files:  59% (7993/13546)
+Updating files:  60% (8128/13546)
+Updating files:  61% (8264/13546)
+Updating files:  62% (8399/13546)
+Updating files:  63% (8534/13546)
+Updating files:  64% (8670/13546)
+Updating files:  65% (8805/13546)
+Updating files:  66% (8941/13546)
+Updating files:  67% (9076/13546)
+Updating files:  68% (9212/13546)
+Updating files:  69% (9347/13546)
+Updating files:  69% (9428/13546)
+Updating files:  70% (9483/13546)
+Updating files:  71% (9618/13546)
+Updating files:  72% (9754/13546)
+Updating files:  73% (9889/13546)
+Updating files:  74% (10025/13546)
+Updating files:  75% (10160/13546)
+Updating files:  76% (10295/13546)
+Updating files:  77% (10431/13546)
+Updating files:  78% (10566/13546)
+Updating files:  79% (10702/13546)
+Updating files:  80% (10837/13546)
+Updating files:  81% (10973/13546)
+Updating files:  82% (11108/13546)
+Updating files:  83% (11244/13546)
+Updating files:  84% (11379/13546)
+Updating files:  85% (11515/13546)
+Updating files:  86% (11650/13546)
+Updating files:  87% (11786/13546)
+Updating files:  88% (11921/13546)
+Updating files:  89% (12056/13546)
+Updating files:  89% (12125/13546)
+Updating files:  90% (12192/13546)
+Updating files:  91% (12327/13546)
+Updating files:  92% (12463/13546)
+Updating files:  93% (12598/13546)
+Updating files:  94% (12734/13546)
+Updating files:  95% (12869/13546)
+Updating files:  96% (13005/13546)
+Updating files:  97% (13140/13546)
+Updating files:  98% (13276/13546)
+Updating files:  99% (13411/13546)
+Updating files: 100% (13546/13546)
+Updating files: 100% (13546/13546), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+d5611c97fb8bf373473a789073614ed1e24fbbee
+
+$ gh pr update-branch 727 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin claude/hopeful-shirley-656b07
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                claude/hopeful-shirley-656b07 -> FETCH_HEAD
+
+$ git reset --hard origin/claude/hopeful-shirley-656b07
+exit=0
+--- stdout ---
+HEAD is now at d5611c97f fix(test): mock idempotency_store to isolate parallel tests and align widget failure mock
+
+$ git diff --name-only --diff-filter=ACMR d38e138730f2abf20c56207df9887b579765efa9...HEAD
+exit=0
+--- stdout ---
+.pre-commit-config.yaml
+claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md
+claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md.v1.bak
+claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md
+claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md.v1.bak
+claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md
+claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md.v1.bak
+claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md
+claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md.v1.bak
+claudedocs/beta-readiness-2026-05-29/04-IMPLEMENTER-ASSIGNMENTS.md
+claudedocs/beta-readiness-2026-05-29/05-DISPATCH-PROMPTS.md
+config/repo_hygiene/root_hygiene_policy.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json
+pyproject.toml
+qa/.env.example
+qa/README.md
+qa/SKILL.md
+qa/backlog-map.yaml
+qa/baseline/baseline.json
+qa/baseline/snapshots/.gitkeep
+qa/lib/qa_common.py
+qa/lib/qa_common.sh
+qa/results/.gitkeep
+qa/runbook.md
+qa/scenarios/00_env_up.sh
+qa/scenarios/01_probe_entrypoints.sh
+qa/scenarios/10_install_gauntlet.sh
+qa/scenarios/20_cli_sweep.py
+qa/scenarios/30_mcp_roundtrips.sh
+qa/scenarios/40_multi_instance_collision.sh
+qa/scenarios/50_hooks_lifecycle.sh
+qa/scenarios/60_rte_routing_safety.sh
+qa/scenarios/61_live_lane.sh
+qa/scenarios/70_pytest_lanes.sh
+qa/scenarios/80_docs_drift.py
+qa/scenarios/90_tui_renders.sh
+qa/scenarios/99_env_down.sh
+src/dopemux/orchestrator/ui/data_sources.py
+src/dopemux/tui/widgets/today.py
+tests/unit/pm/test_pm_route_contracts.py
+tests/unit/tui/test_widgets.py
+uv.lock
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .pre-commit-config.yaml claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md.v1.bak claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md.v1.bak claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md.v1.bak claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md.v1.bak claudedocs/beta-readiness-2026-05-29/04-IMPLEMENTER-ASSIGNMENTS.md claudedocs/beta-readiness-2026-05-29/05-DISPATCH-PROMPTS.md config/repo_hygiene/root_hygiene_policy.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json pyproject.toml qa/.env.example qa/README.md qa/SKILL.md qa/backlog-map.yaml qa/baseline/baseline.json qa/baseline/snapshots/.gitkeep qa/lib/qa_common.py qa/lib/qa_common.sh qa/results/.gitkeep qa/runbook.md qa/scenarios/00_env_up.sh qa/scenarios/01_probe_entrypoints.sh qa/scenarios/10_install_gauntlet.sh qa/scenarios/20_cli_sweep.py qa/scenarios/30_mcp_roundtrips.sh qa/scenarios/40_multi_instance_collision.sh qa/scenarios/50_hooks_lifecycle.sh qa/scenarios/60_rte_routing_safety.sh qa/scenarios/61_live_lane.sh qa/scenarios/70_pytest_lanes.sh qa/scenarios/80_docs_drift.py qa/scenarios/90_tui_renders.sh qa/scenarios/99_env_down.sh src/dopemux/orchestrator/ui/data_sources.py src/dopemux/tui/widgets/today.py tests/unit/pm/test_pm_route_contracts.py tests/unit/tui/test_widgets.py uv.lock
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-727-20260530_203332
+exit=0
+
+$ gh pr merge 727 --auto --rebase
+exit=0
+

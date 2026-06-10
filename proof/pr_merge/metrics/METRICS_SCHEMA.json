@@ -1,0 +1,23 @@
+{
+  "event": {
+    "timestamp": "float",
+    "run_id": "string",
+    "pr_id": "string",
+    "status": "string (merged|merge_ready|blocked|escalated)",
+    "rollout_tier": "string",
+    "mode": "string",
+    "duration_ms": "float",
+    "score": "float",
+    "is_in_queue": "bool",
+    "unresolved_threads": "int",
+    "ci_status": "string",
+    "conflict_class": "string",
+    "blocker_count": "int",
+    "blocker_types": "list[string]",
+    "retry_count": "int",
+    "ci_rerun_count": "int",
+    "incident": "bool",
+    "rollback_event": "bool",
+    "resolved_threads_in_session": "int"
+  }
+}

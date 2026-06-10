@@ -1,0 +1,56 @@
+{
+  "packet": {
+    "name": "DMX-TP-DOPECODE-PHASE9-CODEX-001",
+    "project": "dopemux-mvp",
+    "objective": "Add deterministic multi-step mutation orchestration and resumable execution for bounded dopeCode refactor plans."
+  },
+  "authoritative_surfaces": [
+    "services/serena/dopecode/transform/orchestration.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "services/serena/mcp_server.py",
+    "src/dopemux/execution/dopecode_receipts.py"
+  ],
+  "files_changed": [
+    "services/serena/dopecode/transform/orchestration.py",
+    "services/serena/dopecode/transform/write_layer.py",
+    "services/serena/dopecode/transform/refactor_layer.py",
+    "services/serena/mcp_server.py",
+    "src/dopemux/execution/dopecode_receipts.py",
+    "services/serena/tests/test_dopecode_write_layer.py",
+    "services/serena/tests/test_dopecode_refactor_layer.py",
+    "services/serena/tests/test_dopecode_execution_receipts.py",
+    "proof/dopecode_phase9_contract.md",
+    "proof/dopecode_phase9_implementation.md",
+    "proof/dopecode_phase9.proof.json"
+  ],
+  "implementation_notes": {
+    "plan_model": "Supported bounded plans now use deterministic plan and step IDs with explicit status snapshots.",
+    "resume_rule": "Blocked or partial plans require explicit resume=true and skip already successful steps.",
+    "reader_scope": "dopemux now derives active plan summaries from stored receipt payloads without becoming a writer."
+  },
+  "validation": {
+    "passed": [
+      "pytest -q services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_policy.py services/serena/tests/test_dopecode_execution_receipts.py",
+      "pre-commit run --files services/serena/dopecode/transform/orchestration.py services/serena/dopecode/transform/write_layer.py services/serena/dopecode/transform/refactor_layer.py services/serena/mcp_server.py src/dopemux/execution/dopecode_receipts.py services/serena/tests/test_dopecode_write_layer.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_execution_receipts.py proof/dopecode_phase9_contract.md proof/dopecode_phase9_implementation.md proof/dopecode_phase9.proof.json",
+      "python3 in-memory compile() pass for touched Python sources and tests plus JSON parse of proof/dopecode_phase9.proof.json"
+    ],
+    "not_run": [
+      "codereview (command not installed in this environment)"
+    ]
+  },
+  "constraints_observed": [
+    "Workspace boundary enforcement remains in WriteLayer.",
+    "No subprocess mutation path was introduced.",
+    "Resume state reuses the existing workspace-local execution receipt ledger.",
+    "dopemux remains a reader and presenter for dopeCode execution state."
+  ],
+  "drift_observed": [
+    "The requested Phase 9 branch could not be created in this environment because sandbox restrictions blocked .git ref writes."
+  ],
+  "remaining_limits": [
+    "Unsupported orchestration shapes do not receive a resumable step plan.",
+    "Durable replay reconstructs checkpointed plan state, not a live step-by-step running trace."
+  ],
+  "confidence": "HIGH"
+}
