@@ -57,6 +57,11 @@ try:
 except ImportError:
     def on_proof_write(_root, _fp, _sid=None): return None  # type: ignore[misc]
 
+try:
+    from mcp_health_probe import emit_mcp_health
+except ImportError:
+    def emit_mcp_health(_root): return None  # type: ignore[misc]
+
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
 
@@ -286,14 +291,16 @@ class NativeHookAdapter:
 
     def _on_session_start(self) -> Tuple[int, Dict[str, Any]]:
         reset_edit_counter(self.project_root, self.session_id)
+        mcp_health = emit_mcp_health(self.project_root)
         orch_ctx = emit_session_context(self.project_root)
         state = self._active_state()
         if not state:
-            if orch_ctx:
-                return self._allow(additional_context=orch_ctx, hook_event_name="SessionStart")
+            combined = "\n\n".join(filter(None, [mcp_health, orch_ctx]))
+            if combined:
+                return self._allow(additional_context=combined, hook_event_name="SessionStart")
             return self._allow()
         workflow_ctx = _workflow_context_lines(state, include_gates=True)
-        combined = "\n\n".join(filter(None, [orch_ctx, workflow_ctx]))
+        combined = "\n\n".join(filter(None, [mcp_health, orch_ctx, workflow_ctx]))
         return self._allow(
             system_message=f"Dopemux workflow mode: {state.mode}",
             additional_context=combined or None,
