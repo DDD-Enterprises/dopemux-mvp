@@ -1,0 +1,23 @@
+{
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000D",
+  "status": "READY_FOR_EXECUTION",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat",
+  "head_sha": "8be0675579f501582c74e14a409343ac6384edb3",
+  "dirty_worktree_before": "9 tracked + 24 untracked (known from 0000B)",
+  "commands_planned": 8,
+  "artifacts_planned": [
+    "PROOF.json",
+    "AUDIT.md",
+    "COMMAND_LOG.md",
+    "DIRTY_FILE_DECISION_LEDGER.md",
+    "RED_LANE_RECONCILIATION_PLAN.md",
+    "CLEANUP_PACKET_IF_NEEDED.md"
+  ],
+  "objective": "Classify every dirty/untracked file and produce a precise action ledger for 0001",
+  "stop_conditions": [
+    "Red-lane diff cannot be explained",
+    "Secret-looking material found",
+    "Operator approval missing for any cleanup"
+  ]
+}
