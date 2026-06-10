@@ -1,3 +1,15 @@
+---
+id: DMX-DCP-MODEL-ROUTING-MVP-0000H
+title: Dmx Dcp Model Routing Mvp 0000H
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-10'
+last_review: '2026-06-10'
+next_review: '2026-09-08'
+prelude: Dmx Dcp Model Routing Mvp 0000H (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Task Packet: `DMX-DCP-MODEL-ROUTING-MVP-0000H` · DCP · Adversarial Routing Design Audit
 
 ════════════════════════════════════════════════════════════
