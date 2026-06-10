@@ -17,8 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy dependency manifests first for better caching
 COPY pyproject.toml .
 COPY README.md .
-COPY src/dopemux/__init__.py src/dopemux/__init__.py
-COPY src/conport src/conport
+COPY src src
+COPY tools tools
 
 # Create virtual environment
 RUN python -m venv /opt/venv
