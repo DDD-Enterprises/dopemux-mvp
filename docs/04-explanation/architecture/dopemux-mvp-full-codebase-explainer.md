@@ -139,7 +139,7 @@ Observed responsibilities include:
 - canonical SQLite ledger management
 - work log and reflection storage
 - memory receipt and history surfaces
-- MCP server support in `services/working-memory-assistant/mcp/server.py`
+- MCP server support in `services/working-memory-assistant/wma_mcp/server.py` (formerly `mcp/server.py`; renamed 2026-06-10 to avoid shadowing the pip-installed `mcp` SDK); the active MCP endpoint is served from `dope_memory_main.py` at `/mcp` (streamable HTTP, PR #857 2026-06-10)
 
 Important caveat: naming and directory authority drift here. This repo has both `services/working-memory-assistant/` and `services/dope-memory/`. The runtime and tests show a canonical SQLite chronicle ledger model, but the directory story is not perfectly unified.
 
