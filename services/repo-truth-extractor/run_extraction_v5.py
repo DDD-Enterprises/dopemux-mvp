@@ -20,6 +20,7 @@ import platform
 import subprocess
 import sys
 import threading
+import tempfile
 import time
 import textwrap
 import importlib.util
@@ -3475,6 +3476,7 @@ def build_pre_live_validator_command(
     allow_online_preflight: bool,
     target_step: Optional[str] = None,
     s_prompts_mode: Optional[str] = None,
+    output_dir: Optional[Path] = None,
 ) -> List[str]:
     cmd = [
         sys.executable,
@@ -3482,6 +3484,8 @@ def build_pre_live_validator_command(
         "--target-policy",
         str(target_policy),
     ]
+    if output_dir is not None:
+        cmd.extend(["--output-dir", str(output_dir)])
     if target_step:
         cmd.extend(["--step", str(target_step)])
     normalized_s_prompts_mode = str(s_prompts_mode or "").strip().lower()
@@ -3495,6 +3499,12 @@ def build_pre_live_validator_command(
     if allow_online_preflight:
         cmd.append("--allow-online-preflight")
     return cmd
+
+
+def create_pre_live_validator_output_dir(_root: Path) -> Path:
+    """Create an isolated validator output directory outside the repo tree."""
+
+    return Path(tempfile.mkdtemp(prefix="rte-prelive-validator-")).resolve()
 
 
 def _validator_phase_targets(
@@ -3727,6 +3737,7 @@ def format_pre_live_validator_block(
     output_dir: Optional[str] = None,
     stderr_text: Optional[str] = None,
     parse_error: bool = False,
+    missing_verdict: bool = False,
     artifact_path: Optional[str] = None,
     next_step_hint: Optional[str] = None,
 ) -> str:
@@ -3744,6 +3755,11 @@ def format_pre_live_validator_block(
     if parse_error:
         lines.append(
             "  parse_status: validator stdout was not parseable as JSON; "
+            "treating as block (fail-closed)."
+        )
+    elif missing_verdict:
+        lines.append(
+            "  parse_status: validator stdout did not contain a parsed verdict; "
             "treating as block (fail-closed)."
         )
     if reason_codes:
@@ -3814,7 +3830,9 @@ def _emit_validator_first_preset_block(
     raw_stdout = str(validator_payload.get("stdout") or "").strip()
     if raw_stdout:
         try:
-            parsed_payload = json.loads(raw_stdout)
+            raw_payload = json.loads(raw_stdout)
+            if isinstance(raw_payload, dict):
+                parsed_payload = raw_payload
         except Exception:
             parsed_payload = {}
             parse_error = True
@@ -3822,7 +3840,14 @@ def _emit_validator_first_preset_block(
         str(parsed_payload.get("verdict") or "NO_GO").strip().upper() or "NO_GO"
     )
     reason_codes_list = _normalize_reason_codes(parsed_payload.get("reason_codes"))
-    output_dir_value = str(parsed_payload.get("output_dir") or "").strip() or None
+    output_dir_value = (
+        str(
+            parsed_payload.get("output_dir")
+            or validator_payload.get("output_dir")
+            or ""
+        ).strip()
+        or None
+    )
     raw_stderr = str(validator_payload.get("stderr") or "").strip()
     sanitized_stderr = sanitize_text_for_output(raw_stderr) if raw_stderr else ""
     artifact_path = str(run_root / "PRELIVE_VALIDATOR_RESULT.json")
@@ -3854,12 +3879,14 @@ def enforce_pre_live_validator_for_execution(
             "verdict": "SKIPPED_NO_CONSENT",
             "reason": f"{DPMX_LIVE_OK_ENV}_NOT_SET",
         }
+    validator_output_dir = create_pre_live_validator_output_dir(root)
     cmd = build_pre_live_validator_command(
         target_policy=str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY)),
         target_phases=_validator_phase_targets(args, phase_sequence),
         allow_online_preflight=True,
         target_step=getattr(args, "step", None),
         s_prompts_mode=getattr(args, "s_prompts", None),
+        output_dir=validator_output_dir,
     )
     proc = subprocess.run(
         cmd,
@@ -3874,28 +3901,32 @@ def enforce_pre_live_validator_for_execution(
     parse_error = False
     if stdout:
         try:
-            payload = json.loads(stdout)
+            parsed_payload = json.loads(stdout)
+            if isinstance(parsed_payload, dict):
+                payload = parsed_payload
         except Exception:
             payload = {}
             parse_error = True
     explicit_verdict = str(payload.get("verdict") or "").strip().upper()
-    if explicit_verdict:
-        verdict = explicit_verdict
-    elif proc.returncode == 0 and not parse_error:
-        verdict = "GO"
-    else:
-        verdict = "NO_GO"
-    if proc.returncode != 0 or verdict == "NO_GO" or parse_error:
+    missing_verdict = not explicit_verdict and not parse_error
+    verdict = explicit_verdict or "NO_GO"
+    if proc.returncode != 0 or verdict != "GO" or parse_error or missing_verdict:
         reason_codes_list = _normalize_reason_codes(payload.get("reason_codes"))
-        output_dir_value = str(payload.get("output_dir") or "").strip() or None
+        output_dir_value = (
+            str(payload.get("output_dir") or "").strip()
+            or str(validator_output_dir)
+        )
         sanitized_stderr = sanitize_text_for_output(stderr) if stderr else ""
-        block_verdict = verdict if not parse_error else "NO_GO"
+        block_verdict = (
+            "NO_GO" if parse_error or missing_verdict or proc.returncode != 0 else verdict
+        )
         block_text = format_pre_live_validator_block(
             verdict=block_verdict,
             reason_codes=reason_codes_list,
             output_dir=output_dir_value,
             stderr_text=sanitized_stderr,
             parse_error=parse_error,
+            missing_verdict=missing_verdict,
         )
         _emit_pre_live_validator_block(block_text)
         raise RuntimeError(
@@ -3907,6 +3938,7 @@ def enforce_pre_live_validator_for_execution(
         "returncode": int(proc.returncode),
         "verdict": verdict,
         "payload": payload,
+        "validator_output_dir": str(validator_output_dir),
     }
 
 
@@ -21932,6 +21964,7 @@ def run_pre_live_validator(
     target_policy: Optional[str] = None,
     target_phases: Optional[Sequence[str]] = None,
     allow_online_preflight: bool = False,
+    output_dir: Optional[Path] = None,
 ) -> Tuple[bool, Dict[str, Any]]:
     return _run_pre_live_validator_impl(
         root,
@@ -21941,6 +21974,7 @@ def run_pre_live_validator(
         target_policy=target_policy,
         target_phases=target_phases,
         allow_online_preflight=allow_online_preflight,
+        output_dir=output_dir,
         subprocess_run=subprocess.run,
         now_iso=now_iso,
         write_json=write_json,
@@ -23436,6 +23470,7 @@ def main() -> None:
             target_policy=args.routing_policy,
             target_phases=phase_sequence,
             allow_online_preflight=True,
+            output_dir=create_pre_live_validator_output_dir(root),
         )
         write_confidence_ramp_artifacts(
             dirs["root"],

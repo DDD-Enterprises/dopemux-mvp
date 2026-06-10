@@ -59,6 +59,7 @@ A packet is superseded by another packet
 | TP-RTE-V3-CONSENT-004 | Repo Truth Extractor | Gate legacy v3 execution and fail closed on unknown pipeline versions | Active | N/A |
 | TP-RTE-WALKER-006 | Repo Truth Extractor | Exclude generated artifacts and secret-bearing files from prescan walker input | Active | N/A |
 | TP-RTE-GOLIVE-REMEDIATION-001 | Repo Truth Extractor | Harden go-live preflight truth-split, SP registry contract, and cost-cap gates | Active | N/A |
+| TP-RTE-GOLIVE-REMEDIATION-002 | Repo Truth Extractor | Contain pre-live validator execution and require parsed GO verdicts | Active | N/A |
 | TP-RTE-BATCH-005 | Repo Truth Extractor | Repair batch result extraction and strict batch request payload handling | Merged (PR #614) | N/A |
 | TP-RTE-BATCH-E2E-006 | Repo Truth Extractor | Wire strict batch response_format through v5 request construction | Merged (PR #615) | N/A |
 | TP-RTE-STRICT-ATTESTATION-007 | Repo Truth Extractor | Ground strict passthrough attestations in runtime evidence | Merged (PR #616) | N/A |
