@@ -686,6 +686,90 @@ def test_run_pre_live_validator_records_artifact(monkeypatch, tmp_path: Path) ->
     assert saved["status"] == "pass"
 
 
+def test_run_pre_live_validator_passes_isolated_output_dir(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _load_runner_module()
+    called = {}
+    output_dir = tmp_path / "isolated-prelive-output"
+
+    def _fake_run(*args, **kwargs):
+        called["args"] = list(args[0])
+        return subprocess.CompletedProcess(
+            args=["python", "validate_pre_live_gate_v25.py"],
+            returncode=0,
+            stdout='{"verdict":"GO"}\n',
+            stderr="",
+        )
+
+    monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+
+    ok, payload = runner.run_pre_live_validator(
+        tmp_path,
+        tmp_path,
+        target_policy="cost",
+        target_phases=["A"],
+        allow_online_preflight=True,
+        output_dir=output_dir,
+    )
+
+    assert ok is True
+    assert payload["output_dir"] == str(output_dir)
+    assert "--output-dir" in called["args"]
+    assert called["args"][called["args"].index("--output-dir") + 1] == str(output_dir)
+
+
+def test_first_live_preset_validator_uses_isolated_output_dir(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _load_runner_module()
+    expected_output_dir = tmp_path / "preset-prelive-output"
+    captured = {}
+
+    monkeypatch.setenv("DPMX_LIVE_OK", "1")
+    monkeypatch.setattr(
+        runner,
+        "enforce_pre_live_validator_for_execution",
+        lambda **kwargs: {"verdict": "GO"},
+    )
+    monkeypatch.setattr(
+        runner,
+        "create_pre_live_validator_output_dir",
+        lambda root: expected_output_dir,
+    )
+
+    def _fake_run_pre_live_validator(*args, **kwargs):
+        captured["output_dir"] = kwargs.get("output_dir")
+        raise SystemExit(23)
+
+    monkeypatch.setattr(runner, "run_pre_live_validator", _fake_run_pre_live_validator)
+    monkeypatch.setattr(
+        runner,
+        "write_confidence_ramp_artifacts",
+        lambda *args, **kwargs: None,
+    )
+
+    code, _stdout, _stderr, _output_root = _invoke_runner_main(
+        runner,
+        monkeypatch,
+        tmp_path,
+        [
+            "--preset",
+            "first-live",
+            "--execute",
+            "--skip-prescan",
+            "--run-id",
+            "preset_validator_output_dir_test",
+            "--no-write-latest",
+        ],
+    )
+
+    assert code == 23
+    assert captured["output_dir"] == expected_output_dir
+
+
 def test_run_provider_preflight_records_openrouter_specific_remediation(
     monkeypatch, tmp_path: Path
 ) -> None:
