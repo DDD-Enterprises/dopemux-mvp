@@ -1,3 +1,15 @@
+---
+id: DMX-DCP-MODEL-ROUTING-MVP-0000E
+title: Dmx Dcp Model Routing Mvp 0000E
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-10'
+last_review: '2026-06-10'
+next_review: '2026-09-08'
+prelude: Dmx Dcp Model Routing Mvp 0000E (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Task Packet: `DMX-DCP-MODEL-ROUTING-MVP-0000E` · DCP · Routing Runtime Health + PAL Inventory Probe
 
 ════════════════════════════════════════════════════════════
