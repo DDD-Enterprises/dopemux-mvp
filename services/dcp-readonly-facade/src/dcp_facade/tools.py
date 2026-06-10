@@ -7,17 +7,22 @@ reads to the resolved workspace. All ``data`` is redacted before return.
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Callable, Optional
+
+logger = logging.getLogger(__name__)
 
 _MAX_FILTER_LEN = 128
 _MAX_QUERY_LEN = 256
 
 from . import conport as conport_adapter
+from . import dope_context as dope_context_adapter
 from . import dope_memory as dope_memory_adapter
 from . import envelope as E
 from . import gitstate, proofs
+from . import task_orchestrator as task_orchestrator_adapter
 from .http_client import HttpResponse, ReadOnlyHttpClient, ReadOnlyHttpError
 from .redaction import redact_value
 from .registry import Project, Registry
@@ -172,6 +177,20 @@ def _profile_binding(project: Project, name: str) -> tuple[Optional[str], Option
     if not workspace_id:
         return None, None, f"{name} workspace_id not configured"
     return base_url, workspace_id, None
+
+
+def _profile_binding_url_only(project: Project, name: str) -> tuple[Optional[str], Optional[str]]:
+    """Return (base_url, missing_reason) for a service profile that only needs base_url.
+
+    Used for dope_context and task_orchestrator which don't use workspace_id.
+    """
+    prof = _bound_profile(project, name)
+    if prof is None:
+        return None, f"{name} not configured for this project"
+    base_url = prof.get("base_url")
+    if not base_url:
+        return None, f"{name} base_url not configured"
+    return base_url, None
 
 
 def _norm_query(query: Optional[str]) -> str:
@@ -338,4 +357,263 @@ def replay_chronicle_session(
     )
     return _enveloped_backend_read(
         res.project.project_id, res.workspace, E.SOURCE_DOPE_MEMORY, fetch
+    )
+
+
+# ---------------------------------------------------------------------------
+# Service-backed read tools (packet 0006): dope-context + task-orchestrator.
+#
+# dope-context Phase 1 note: dope-context exposes tools via MCP JSON-RPC (not
+# REST). The facade speaks REST only. search_code_docs and get_index_status are
+# wired but return BLOCKED with explicit limitations (fail-closed, honest).
+# A future Phase 2 bridge will enable live results. The limitation text is
+# present in the envelope so callers know exactly what is missing and why.
+#
+# task-orchestrator: HTTP GET adapter. All three routes (queue, blockers, state)
+# are CONFIRMED_READ_ONLY. get_workflow_status_snapshot fans out all three and
+# merges; a sub-call failure yields PARTIAL (not full BLOCKED) so partial data
+# is still returned. The permanent limitation note ("workflow-view only") appears
+# in every envelope regardless of outcome.
+# ---------------------------------------------------------------------------
+
+# Permanent limitation note for every task-orchestrator envelope.
+_TO_WORKFLOW_VIEW_ONLY = (
+    "task-orchestrator status is workflow-view authority only, not PM-metadata truth"
+)
+
+# Structural limitation for dope-context (transport not yet bridged).
+_DC_TRANSPORT_LIMITATION = (
+    "dope-context exposes tools via MCP JSON-RPC at /mcp; "
+    "facade speaks REST only — bridge pending Phase 2"
+)
+
+
+def search_code_docs(
+    registry: Registry,
+    project_id: object,
+    query: str,
+    top_k: int = dope_context_adapter.MAX_LIMIT,
+    *,
+    kind: str = "code",
+    profile: Optional[str] = None,
+    filter_doc_type: Optional[str] = None,
+    client: Optional[ReadOnlyHttpClient] = None,
+) -> dict:
+    """Search dope-context code or docs indexes.
+
+    Phase 1: BLOCKED — dope-context MCP JSON-RPC transport not yet bridged.
+
+    Args:
+        registry: Project registry.
+        project_id: Caller-supplied project identifier (registry-validated).
+        query: Natural language search query.
+        top_k: Max results (capped at dope_context_adapter.MAX_LIMIT=20).
+        kind: "code" (default) or "docs" — selects which index to search.
+        profile: Optional search profile for code search (implementation,
+            debugging, exploration). Ignored for docs search.
+        filter_doc_type: Optional doc type filter for docs search (e.g. "md",
+            "pdf"). Ignored for code search.
+        client: Optional HTTP client override (for testing).
+
+    Returns:
+        BLOCKED envelope with transport limitation note.
+
+    Denied routes (never reachable):
+        - search-all tool (side-effect risk: triggers dopecon-bridge + Redis)
+        - index control tools (mutating or side-effect)
+        - sync tools (mutating or side-effect)
+        - autonomous indexing control tools
+    """
+    res, reason = resolve(registry, project_id)
+    if res is None:
+        return E.blocked(project_id if isinstance(project_id, str) else None, reason or "blocked")
+    base_url, missing = _profile_binding_url_only(res.project, "dope_context")
+    if missing:
+        return E.blocked(res.project.project_id, missing)
+    # Phase 1: transport not bridged — fail closed with honest limitations.
+    # The adapter raises ReadOnlyHttpError; we capture and emit BLOCKED.
+    c = client or _default_client()
+    try:
+        if kind == "docs":
+            dope_context_adapter.docs_search(c, base_url, query, top_k, filter_doc_type)
+        else:
+            dope_context_adapter.search_code(c, base_url, query, top_k, profile)
+    except ReadOnlyHttpError:
+        pass
+    return E.build_envelope(
+        project_id=res.project.project_id,
+        status=E.BLOCKED,
+        source_system=E.SOURCE_DOPE_CONTEXT,
+        authority_label=E.AUTHORITY_DERIVED,
+        data=None,
+        blocked_reasons=["dope-context MCP transport not yet bridged in facade"],
+        limitations=[_DC_TRANSPORT_LIMITATION],
+    )
+
+
+def get_index_status(
+    registry: Registry,
+    project_id: object,
+    *,
+    client: Optional[ReadOnlyHttpClient] = None,
+) -> dict:
+    """Get dope-context index status (collection info + statistics).
+
+    Phase 1: BLOCKED — dope-context MCP JSON-RPC transport not yet bridged.
+    Additionally, get_index_status is PROPOSED-only (not in discovery inventory);
+    it must be formally inventoried before being wired into the allowlist.
+
+    Args:
+        registry: Project registry.
+        project_id: Caller-supplied project identifier (registry-validated).
+        client: Optional HTTP client override (for testing).
+
+    Returns:
+        BLOCKED envelope with transport and inventory limitations.
+    """
+    res, reason = resolve(registry, project_id)
+    if res is None:
+        return E.blocked(project_id if isinstance(project_id, str) else None, reason or "blocked")
+    base_url, missing = _profile_binding_url_only(res.project, "dope_context")
+    if missing:
+        return E.blocked(res.project.project_id, missing)
+    # Phase 1: transport not bridged + not in inventory — fail closed.
+    c = client or _default_client()
+    try:
+        dope_context_adapter.get_index_status(c, base_url)
+    except ReadOnlyHttpError:
+        pass
+    return E.build_envelope(
+        project_id=res.project.project_id,
+        status=E.BLOCKED,
+        source_system=E.SOURCE_DOPE_CONTEXT,
+        authority_label=E.AUTHORITY_DERIVED,
+        data=None,
+        blocked_reasons=["dope-context MCP transport not yet bridged in facade"],
+        limitations=[
+            _DC_TRANSPORT_LIMITATION,
+            "get_index_status is PROPOSED-only (not in discovery inventory); "
+            "requires formal inventory + classification before allowlist wiring",
+        ],
+    )
+
+
+def get_workflow_status_snapshot(
+    registry: Registry,
+    project_id: object,
+    *,
+    client: Optional[ReadOnlyHttpClient] = None,
+) -> dict:
+    """Get a task-orchestrator workflow status snapshot (queue + blockers + state).
+
+    Fans out three GET reads (queue, blockers, state) and merges results. If a
+    sub-call fails, the envelope is PARTIAL with a per-sub-call limitation note.
+    All three failing yields BLOCKED. The permanent limitation note
+    ("workflow-view only") always appears regardless of outcome.
+
+    The /workflow/state route (project_workflow.py:385) was absent from the
+    TP-DCP-MCP-RO-0001 discovery inventory but is OBSERVED as a first-class GET
+    read endpoint. It is classified CONFIRMED_READ_ONLY here (TP-0006 discovery
+    gap resolved) and included in this snapshot.
+
+    Args:
+        registry: Project registry.
+        project_id: Caller-supplied project identifier (registry-validated).
+        client: Optional HTTP client override (for testing).
+
+    Returns:
+        OK/PARTIAL/BLOCKED envelope with {"queue": [...], "blockers": [...],
+        "state": {...}} payload. Permanent limitation: workflow-view only.
+
+    Denied routes (never reachable):
+        - workflow transition endpoints (MUTATING)
+        - PM write tool endpoints
+        - workflow mutation surfaces (ideas, epics)
+        - bridge/proxy surfaces (kg, ddg, route-pm)
+    """
+    res, reason = resolve(registry, project_id)
+    if res is None:
+        return E.blocked(project_id if isinstance(project_id, str) else None, reason or "blocked")
+    base_url, missing = _profile_binding_url_only(res.project, "task_orchestrator")
+    if missing:
+        return E.blocked(res.project.project_id, missing)
+
+    c = client or _default_client()
+
+    # Determine the task-orchestrator project_id to use. Per the registry contract,
+    # the caller never supplies a backend project_id; the registry-bound profile
+    # supplies the mapping (task_orchestrator_project_id key). If absent, we use
+    # the facade project_id as a sensible default but note this in limitations.
+    prof = _bound_profile(res.project, "task_orchestrator") or {}
+    to_project_id: str | None = prof.get("task_orchestrator_project_id")
+    if not to_project_id:
+        logger.warning(
+            "task_orchestrator_project_id not found in profile for project %s; "
+            "falling back to facade project_id",
+            res.project.project_id,
+        )
+        to_project_id = res.project.project_id
+
+    data: dict = {"queue": None, "blockers": None, "state": None}
+    limitations: list[str] = [_TO_WORKFLOW_VIEW_ONLY]
+    failed_sub: list[str] = []
+
+    # Sub-call: queue
+    try:
+        r_queue = task_orchestrator_adapter.get_workflow_queue(c, base_url, to_project_id)
+        if r_queue.ok and r_queue.json is not None:
+            data["queue"] = r_queue.json
+        else:
+            failed_sub.append(f"queue unavailable (status {r_queue.status})")
+    except ReadOnlyHttpError:
+        failed_sub.append("queue unavailable")
+
+    # Sub-call: blockers
+    try:
+        r_blockers = task_orchestrator_adapter.get_workflow_blockers(c, base_url, to_project_id)
+        if r_blockers.ok and r_blockers.json is not None:
+            data["blockers"] = r_blockers.json
+        else:
+            failed_sub.append(f"blockers unavailable (status {r_blockers.status})")
+    except ReadOnlyHttpError:
+        failed_sub.append("blockers unavailable")
+
+    # Sub-call: state (OBSERVED: project_workflow.py:385 — GET, read-only,
+    # classified CONFIRMED_READ_ONLY in TP-0006 inventory resolution)
+    try:
+        r_state = task_orchestrator_adapter.get_workflow_state(c, base_url, to_project_id)
+        if r_state.ok and r_state.json is not None:
+            data["state"] = r_state.json
+        else:
+            failed_sub.append(f"state unavailable (status {r_state.status})")
+    except ReadOnlyHttpError:
+        failed_sub.append("state unavailable")
+
+    limitations.extend(failed_sub)
+
+    # Determine status: all failed → BLOCKED; some failed → PARTIAL; none → OK.
+    all_none = all(v is None for v in data.values())
+    any_none = any(v is None for v in data.values())
+
+    if all_none:
+        return E.build_envelope(
+            project_id=res.project.project_id,
+            status=E.BLOCKED,
+            source_system=E.SOURCE_TASK_ORCHESTRATOR,
+            authority_label=E.AUTHORITY_CANONICAL,
+            data=None,
+            blocked_reasons=["all task-orchestrator sub-reads failed"],
+            limitations=limitations,
+        )
+
+    clean, red = redact_value(data, _abs_roots(res.workspace))
+    status = E.PARTIAL if any_none else E.OK
+    return E.build_envelope(
+        project_id=res.project.project_id,
+        status=status,
+        source_system=E.SOURCE_TASK_ORCHESTRATOR,
+        authority_label=E.AUTHORITY_CANONICAL,
+        data=clean,
+        limitations=limitations,
+        redactions=red,
     )
