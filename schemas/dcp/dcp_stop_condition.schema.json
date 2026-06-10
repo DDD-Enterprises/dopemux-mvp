@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/DDD-Enterprises/dopemux-mvp/schemas/dcp/dcp_stop_condition.schema.json",
+  "title": "DcpStopCondition",
+  "description": "Stop condition definition with evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["condition_id", "condition_type", "triggered", "evidence", "resolution_required"],
+  "properties": {
+    "condition_id": {
+      "type": "string",
+      "pattern": "^DCP-STOP-[0-9A-Z]{6}$",
+      "description": "Unique stop condition identifier"
+    },
+    "condition_type": {
+      "type": "string",
+      "enum": ["litellm_unhealthy", "stale_alias_contract", "pal_inventory_not_locked", "mcp_surface_unknown", "workflow_red_lane", "opencode_authority_leak", "forbidden_file_touched", "arbitrary_selector_allowed", "auditor_verdict_merged", "proof_family_collapsed", "runtime_routing_attempted", "other"],
+      "description": "Type of stop condition"
+    },
+    "triggered": {
+      "type": "boolean",
+      "description": "Whether this condition is currently triggered"
+    },
+    "evidence": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Evidence supporting the stop condition"
+    },
+    "resolution_required": {
+      "type": "string",
+      "enum": ["operator", "supervisor", "auditor", "none"],
+      "description": "Who must resolve this condition"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Additional notes"
+    }
+  }
+}

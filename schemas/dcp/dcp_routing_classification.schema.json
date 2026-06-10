@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/DDD-Enterprises/dopemux-mvp/schemas/dcp/dcp_routing_classification.schema.json",
+  "title": "DcpRoutingClassification",
+  "description": "Classification of a routing task by risk class and automation safety",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["classification_id", "risk_class", "safe_automation", "evidence_quality", "decision_status"],
+  "properties": {
+    "classification_id": {
+      "type": "string",
+      "pattern": "^DCP-CLS-[0-9A-Z]{8}$",
+      "description": "Unique classification identifier"
+    },
+    "risk_class": {
+      "type": "string",
+      "enum": ["R0_READ", "R1_DOCS", "R2_TESTS", "R3_CODE", "R4_CROSS_BOUNDARY", "R5_SECURITY_AUTH_CI", "R6_LIVE_WRITE", "R7_FORBIDDEN"],
+      "description": "Risk classification level"
+    },
+    "safe_automation": {
+      "type": "string",
+      "enum": ["safe_read", "safe_projection", "requires_operator", "unsafe_until_proven", "forbidden", "unknown"],
+      "description": "Automation safety classification"
+    },
+    "evidence_quality": {
+      "type": "string",
+      "enum": ["observed_clean_origin_main", "observed_current_branch", "observed_config_only", "observed_runtime_healthy", "observed_runtime_unhealthy", "vendor_only", "claimed_only", "conflicting", "unknown"],
+      "description": "Quality of supporting evidence"
+    },
+    "decision_status": {
+      "type": "string",
+      "enum": ["PROPOSED", "READY_DESIGN_ONLY", "READY_DRY_RUN_ONLY", "BLOCKED", "NEEDS_SUPERVISOR", "FORBIDDEN"],
+      "description": "Current decision status"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Optional classification notes"
+    }
+  }
+}
