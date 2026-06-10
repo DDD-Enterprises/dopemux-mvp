@@ -6,7 +6,9 @@ WORKDIR /app
 
 # Copy dependency manifests first for better caching
 COPY pyproject.toml .
+COPY README.md .
 COPY src/dopemux/__init__.py src/dopemux/
+COPY src/conport src/conport
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
