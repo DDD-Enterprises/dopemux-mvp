@@ -187,7 +187,7 @@
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
-    "auditor_tool": "none",
+    "auditor_tool": "claude-code-cli",
     "auditor_model": "unknown",
     "invocation": "design-only domain model; dual independent audit (Claude Sonnet 4.6 + Gemini 2.5 Pro)",
     "exit_code": 0,
