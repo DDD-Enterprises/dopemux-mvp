@@ -10,6 +10,8 @@ from pathlib import Path
 
 import click
 
+from ..console import console
+
 logger = logging.getLogger(__name__)
 
 
@@ -108,9 +110,9 @@ def worktrees_switch_cmd(ctx, branch: str, no_fuzzy: bool):
     click.secho("This is a fundamental POSIX limitation, not a bug.\n", fg="yellow")
 
     click.secho("Why it doesn't work:", fg="cyan")
-    click.echo("  • Python runs in a subprocess")
-    click.echo("  • Subprocesses cannot modify the parent shell's working directory")
-    click.echo("  • This affects ALL programming languages, not just Python\n")
+    console.print("  • Python runs in a subprocess", style="text.dim")
+    console.print("  • Subprocesses cannot modify the parent shell's working directory", style="text.dim")
+    console.print("  • This affects ALL programming languages, not just Python\n", style="text.dim")
 
     click.secho("Solution: Install shell integration", fg="green", bold=True)
 
@@ -119,31 +121,34 @@ def worktrees_switch_cmd(ctx, branch: str, no_fuzzy: bool):
     installer = ShellIntegrationInstaller()
 
     if installer.is_supported() and not installer.is_installed():
-        click.echo("\n[Option 1] Automated installation (recommended):")
-        click.echo("  We can install shell integration automatically right now!")
+        # markup=False: literal square brackets in option labels
+        console.print("\n[Option 1] Automated installation (recommended):", markup=False, style="info")
+        console.print("  We can install shell integration automatically right now!", style="text")
 
         if click.confirm("  Install automatically?", default=True):
             success, message = installer.install(auto_confirm=True)
 
             if success:
                 click.secho(f"\n{message}", fg="green", bold=True)
-                click.echo(f"\nActivate now: source ~/{'.' + installer.shell_name + 'rc'}")
-                click.echo(f"Then try: dwt {branch}\n")
+                console.print(f"\nActivate now: source ~/{'.' + installer.shell_name + 'rc'}", style="success")
+                console.print(f"Then try: dwt {branch}\n", style="mint")
                 ctx.exit(0)
             else:
                 click.secho(f"\n{message}", fg="red")
-                click.echo("Falling back to manual instructions...\n")
+                console.print("Falling back to manual instructions...\n", style="text.dim")
         else:
-            click.echo("\n[Option 2] Manual installation:")
+            # markup=False: literal square brackets in option label
+            console.print("\n[Option 2] Manual installation:", markup=False, style="info")
     else:
-        click.echo("\n[Manual installation]:")
+        # markup=False: literal square brackets in section header
+        console.print("\n[Manual installation]:", markup=False, style="info")
 
-    click.echo("  1. Run: dopemux shell-setup bash >> ~/.bashrc")
-    click.echo("  2. Run: source ~/.bashrc")
-    click.echo(f"  3. Use: dwt {branch}\n")
+    console.print("  1. Run: dopemux shell-setup bash >> ~/.bashrc", style="text")
+    console.print("  2. Run: source ~/.bashrc", style="text")
+    console.print(f"  3. Use: dwt {branch}\n", style="text")
 
     click.secho("Alternative: Use the workaround command", fg="cyan")
-    click.echo(f"  cd $(dopemux worktrees switch-path {branch})\n")
+    console.print(f"  cd $(dopemux worktrees switch-path {branch})\n", style="mint")
 
     ctx.exit(1)
 

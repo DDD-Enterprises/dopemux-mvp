@@ -20,6 +20,7 @@ import platform
 import subprocess
 import sys
 import threading
+import tempfile
 import time
 import textwrap
 import importlib.util
@@ -621,6 +622,31 @@ DEFAULT_COST_PROFILE = "value-default"
 # 1M-context model). See promptsets/v4/model_map.yaml v3 tag_definitions.
 # ---------------------------------------------------------------------------
 
+# Canonical, PROFILE-AGNOSTIC cell-alias keys. Every profile MUST define all
+# four so a single shared promptsets/v4/model_map.yaml can reference ${CELL}
+# placeholders that resolve under any --cost-profile. Keys map 1:1 to
+# model_map lane_class:
+#   BULK_DOCS_MODEL  -> lane_class BULK_DOCS_GENERAL (non-strict)
+#   BULK_CODE_MODEL  -> lane_class BULK_CODE_HEAVY   (non-strict, code-heavy)
+#   CE_MODEL         -> lane_class CE                (STRICT json schema)
+#   SYNTH_MODEL      -> lane_class AGG               (STRICT, synthesis-critical)
+# Values are 'provider/model' strings parsed by _parse_alias_provider_model:
+# direct providers {openai,gemini,xai}; anthropic ONLY via openrouter/...; the
+# resolved provider drives provider + api_key_env (direct-provider-per-profile).
+# STRICT cells (CE_MODEL, SYNTH_MODEL) MUST resolve to a strict-capable provider
+# {openai, openrouter} — enforced fail-closed at dispatch + preflight.
+COST_PROFILE_CELL_KEYS: Tuple[str, ...] = (
+    "BULK_DOCS_MODEL",
+    "BULK_CODE_MODEL",
+    "CE_MODEL",
+    "SYNTH_MODEL",
+)
+COST_PROFILE_STRICT_CELL_KEYS: Tuple[str, ...] = ("CE_MODEL", "SYNTH_MODEL")
+# Providers permitted to serve STRICT cells. Closes the xai/gemini fail-open
+# hole: strict_capability_reason() treats xai as strict-capable, but xai/gemini
+# strict-JSON reliability on RTE cells is unproven (Phase D research).
+STRICT_ALLOWED_PROVIDERS: Tuple[str, ...] = ("openai", "openrouter")
+
 COST_PROFILES: Dict[str, Dict[str, Any]] = {
     "economy": {
         "routing_policy": "cost",
@@ -635,13 +661,13 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
             "Quality degraded on SYNTH-critical cells; review PROOF_PACK before "
             "relying on outputs."
         ),
-        # Cell aliases: ${ALIAS_NAME} references in cell route ladders resolve
+        # Cell aliases: ${CELL} references in model_map route ladders resolve
         # from this dict. Operator overrides via --model-alias K=V or env var.
         "cell_aliases": {
-            "ECONOMY_CE_MEDIUM_MODEL": "openai/gpt-5.1-codex-mini",
-            "ECONOMY_SYNTH_HIGH_MODEL": "anthropic/claude-haiku-4.5",
-            "ECONOMY_SYNTH_CRITICAL_MODEL": "anthropic/claude-sonnet-4.5",
-            "ECONOMY_BULK_EXTRACT_MODEL": "openai/gpt-5.4-mini",
+            "BULK_DOCS_MODEL": "openai/gpt-5.4-mini",
+            "BULK_CODE_MODEL": "openai/gpt-5.4-mini",
+            "CE_MODEL": "openai/gpt-5.1-codex-mini",
+            "SYNTH_MODEL": "openai/gpt-5.4",
         },
     },
     "value-default": {
@@ -655,14 +681,18 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "notes": (
             "Best cost/quality ratio. Flex tier on EXTRACT/AGG bulk lanes; "
             "standard for CE/SYNTH. Cached input on globally. Batch enabled "
-            "for non-CE/SYNTH cells. NEW DEFAULT replacing balanced_openrouter."
+            "for non-CE/SYNTH cells. Default profile. Strict cells (CE/SYNTH) "
+            "are OpenAI (only provider that does strict-JSON passthrough here)."
         ),
+        # Default profile keeps its cross-provider bulk fallbacks (e.g. xai on a
+        # BULK lead failure) for failover resilience in multi-key environments —
+        # opt out of the single-provider lock that single-key profiles use.
+        "allow_cross_provider_fallback": True,
         "cell_aliases": {
-            "VALUE_DEFAULT_CE_MEDIUM_MODEL": "openai/gpt-5.3-codex",
-            "VALUE_DEFAULT_CE_HIGH_MODEL": "openai/gpt-5.4",
-            "VALUE_DEFAULT_SYNTH_HIGH_MODEL": "anthropic/claude-sonnet-4.6",
-            "VALUE_DEFAULT_SYNTH_CRITICAL_MODEL": "anthropic/claude-opus-4.6",
-            "VALUE_DEFAULT_BULK_EXTRACT_MODEL": "openai/gpt-5.4-mini",
+            "BULK_DOCS_MODEL": "openai/gpt-5.4-mini",
+            "BULK_CODE_MODEL": "openai/gpt-5.3-codex",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openai/gpt-5.5",
         },
     },
     "quality": {
@@ -675,17 +705,14 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "cost_cap_mode": "preventive",
         "notes": (
             "Premium models with priority service tier where available. "
-            "Estimated 3-5x cost of value-default. Use for production go/no-go."
+            "Estimated 3-5x cost of value-default. Use for production go/no-go. "
+            "Strict CE/SYNTH on gpt-5.5 (OpenAI is the only strict-JSON provider)."
         ),
-        # Cell aliases per Phase D consensus: opus 4.6 default for SYNTH/critical
-        # (not 4.7 — avoid the ~1.35x tokenization tax). Swap centrally via env
-        # var when 4.7 proves better on canary steps.
         "cell_aliases": {
-            "QUALITY_CE_MEDIUM_MODEL": "openai/gpt-5.5",
-            "QUALITY_CE_HIGH_MODEL": "openai/gpt-5.5",
-            "QUALITY_SYNTH_HIGH_MODEL": "anthropic/claude-opus-4.6",
-            "QUALITY_SYNTH_CRITICAL_MODEL": "anthropic/claude-opus-4.6",
-            "QUALITY_SYNTH_CRITICAL_FALLBACK_MODEL": "openai/gpt-5.5-pro",
+            "BULK_DOCS_MODEL": "openai/gpt-5.4",
+            "BULK_CODE_MODEL": "openai/gpt-5.5",
+            "CE_MODEL": "openai/gpt-5.5",
+            "SYNTH_MODEL": "openai/gpt-5.5",
         },
     },
     "experimental": {
@@ -697,19 +724,159 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "max_cost_usd_default": 25.00,
         "cost_cap_mode": "preventive",
         "notes": (
-            "Bleed-edge frontier models (gpt-5.5-pro, claude-opus-4.7, "
-            "gemini-3.5-flash). May have higher tokenization (opus 4.7 = ~35% "
-            "more tokens for same text). Bypasses some validators; operator "
-            "must inspect PROOF_PACK."
+            "Bleed-edge frontier models (gpt-5.5, gemini-3.5-flash on bulk). "
+            "Bypasses some validators; operator must inspect PROOF_PACK. Strict "
+            "cells stay on OpenAI gpt-5.5."
         ),
         "warning": (
             "Models in this profile may be in preview/beta and exhibit "
             "unexpected behavior. Not for production."
         ),
         "cell_aliases": {
-            "EXPERIMENTAL_CE_MEDIUM_MODEL": "openai/gpt-5.5",
-            "EXPERIMENTAL_SYNTH_HIGH_MODEL": "anthropic/claude-opus-4.7",
-            "EXPERIMENTAL_SYNTH_CRITICAL_MODEL": "anthropic/claude-opus-4.7",
+            "BULK_DOCS_MODEL": "gemini/gemini-3.5-flash",
+            "BULK_CODE_MODEL": "openai/gpt-5.5",
+            "CE_MODEL": "openai/gpt-5.5",
+            "SYNTH_MODEL": "openai/gpt-5.5",
+        },
+    },
+    "gemini-value": {
+        "routing_policy": "balanced_openrouter",
+        "default_service_tier": "flex",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": True,
+        "escalation_max_hops": 2,
+        "max_cost_usd_default": 8.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Cheap Gemini lean on non-code bulk/docs; strict CE/SYNTH stay on "
+            "OpenAI (Gemini is not strict-JSON-passthrough capable here). Never "
+            "routes a strict cell to Gemini."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "gemini/gemini-3-flash-preview",
+            "BULK_CODE_MODEL": "gemini/gemini-3.1-pro-preview",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openai/gpt-5.5",
+        },
+    },
+    "grok-fast": {
+        "routing_policy": "balanced_grok_openrouter",
+        "default_service_tier": "flex",
+        "enable_cached_input": True,
+        # xAI batch support unverified (Phase D consensus) — keep batch off.
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 2,
+        "max_cost_usd_default": 6.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Cheapest code-extract lean using xAI Grok on non-strict bulk/code "
+            "lanes. STRICT CE/SYNTH stay on OpenAI (xAI is not strict-JSON "
+            "capable) — the strict guard rejects xAI on strict cells."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "xai/grok-4-fast",
+            "BULK_CODE_MODEL": "xai/grok-4.3",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openai/gpt-5.4",
+        },
+    },
+    "openrouter-resilient": {
+        "routing_policy": "openrouter",
+        "default_service_tier": "default",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 3,
+        "max_cost_usd_default": 20.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Single-key, multi-upstream resilience: every cell routed through "
+            "OpenRouter (one OPENROUTER_API_KEY). Strict cells use "
+            "openrouter/openai/* (strict-JSON capable). Aggregator latency is "
+            "the tradeoff; failover replaces a per-provider circuit breaker."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "openrouter/openai/gpt-5.4-mini",
+            "BULK_CODE_MODEL": "openrouter/openai/gpt-5.3-codex",
+            "CE_MODEL": "openrouter/openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openrouter/openai/gpt-5.4",
+        },
+    },
+    "openai-heavy": {
+        "routing_policy": "quality",
+        "default_service_tier": "default",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": True,
+        "escalation_max_hops": 2,
+        "max_cost_usd_default": 15.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "OpenAI-direct across all cells (single OPENAI_API_KEY, no aggregator "
+            "latency). SYNTH on gpt-5.5 for an all-OpenAI lane."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "openai/gpt-5.4-mini",
+            "BULK_CODE_MODEL": "openai/gpt-5.3-codex",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openai/gpt-5.5",
+        },
+    },
+    "balanced-mix": {
+        "routing_policy": "balanced_openrouter",
+        "default_service_tier": "default",
+        "enable_cached_input": True,
+        # xAI on BULK_CODE — keep batch off.
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 2,
+        "max_cost_usd_default": 12.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Best-of-each-provider on the non-strict lanes: Gemini on docs bulk, "
+            "xAI on code bulk; strict CE/SYNTH on OpenAI gpt-5.x."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "gemini/gemini-3-flash-preview",
+            "BULK_CODE_MODEL": "xai/grok-4.3",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openai/gpt-5.5",
+        },
+    },
+    "quality-mix": {
+        "routing_policy": "quality",
+        "default_service_tier": "priority",
+        "enable_cached_input": True,
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 3,
+        "max_cost_usd_default": 30.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Premium: OpenAI flagship on bulk/CE/synthesis. Highest cost ceiling "
+            "of the mix profiles. Strict cells OpenAI (gpt-5.5)."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "openai/gpt-5.4",
+            "BULK_CODE_MODEL": "openai/gpt-5.3-codex",
+            "CE_MODEL": "openai/gpt-5.5",
+            "SYNTH_MODEL": "openai/gpt-5.5",
+        },
+    },
+    "budget-mix": {
+        "routing_policy": "cost",
+        "default_service_tier": "flex",
+        "enable_cached_input": True,
+        # xAI on BULK_CODE — keep batch off.
+        "enable_batch_when_supported": False,
+        "escalation_max_hops": 1,
+        "max_cost_usd_default": 6.00,
+        "cost_cap_mode": "preventive",
+        "notes": (
+            "Cheapest multi-provider blend: Gemini docs bulk + xAI code bulk for "
+            "minimum spend, but strict CE/SYNTH still on capable OpenAI models."
+        ),
+        "cell_aliases": {
+            "BULK_DOCS_MODEL": "gemini/gemini-3-flash-preview",
+            "BULK_CODE_MODEL": "xai/grok-4-fast",
+            "CE_MODEL": "openai/gpt-5.3-codex",
+            "SYNTH_MODEL": "openai/gpt-5.4",
         },
     },
 }
@@ -850,6 +1017,225 @@ def _resolve_route_entry_alias(
     model_id = str(resolved.get("model_id") or "")
     resolved["model_id"] = _resolve_route_model_alias(provider, model_id, cfg)
     return resolved
+
+
+_ALIAS_PLACEHOLDER_RE = re.compile(r"^\$\{[A-Z0-9_]+\}$")
+
+
+def _is_alias_placeholder(value: Any) -> bool:
+    """True if value is a bare ``${CELL_KEY}`` placeholder token."""
+    return isinstance(value, str) and bool(_ALIAS_PLACEHOLDER_RE.match(value.strip()))
+
+
+def _parse_alias_provider_model(value: str) -> Tuple[str, str]:
+    """Parse a cell-alias value ``provider/model...`` into (provider, model_id).
+
+    Validates provider against PROVIDER_API_KEY_ENV. Anthropic models are only
+    reachable via OpenRouter, so a bare ``anthropic/...`` value is rejected.
+    The model_id remainder is preserved verbatim (OpenRouter keeps its
+    ``x-ai/`` / ``google/`` / ``anthropic/`` namespace; direct providers keep
+    the local id).
+    """
+    text = str(value or "").strip()
+    if "/" not in text:
+        raise ValueError(
+            f"Cell alias value must be 'provider/model', got {value!r}"
+        )
+    provider, _, remainder = text.partition("/")
+    provider = provider.strip().lower()
+    remainder = remainder.strip()
+    if provider not in PROVIDER_API_KEY_ENV:
+        raise ValueError(
+            f"Unknown provider {provider!r} in cell alias value {value!r}; "
+            f"allowed: {sorted(PROVIDER_API_KEY_ENV)}"
+        )
+    if not remainder:
+        raise ValueError(f"Empty model id in cell alias value {value!r}")
+    if provider != "openrouter" and remainder.split("/", 1)[0] == "anthropic":
+        raise ValueError(
+            f"Direct anthropic routing is unsupported; use "
+            f"'openrouter/anthropic/...' instead of {value!r}"
+        )
+    return provider, remainder
+
+
+def _resolve_route_entry_alias_full(
+    route: Dict[str, Any],
+    cfg: "RunnerConfig",
+) -> Dict[str, Any]:
+    """Resolve a single model_map route entry for direct-provider cost profiles.
+
+    When ``model_id`` is a ``${CELL}`` placeholder, the active profile's
+    cell_aliases (or --model-alias / env override) supplies a ``provider/model``
+    value from which provider, model_id AND api_key_env are all derived,
+    overriding the route's hardcoded provider/api_key_env. Bare-literal routes
+    are returned unchanged, so resolution is idempotent and safe to call on
+    already-resolved or never-templated contracts.
+    """
+    original_model = str(route.get("model_id") or "")
+    if not _is_alias_placeholder(original_model):
+        return dict(route)
+    profile = str(
+        getattr(cfg, "cost_profile", DEFAULT_COST_PROFILE) or DEFAULT_COST_PROFILE
+    )
+    alias_value = resolve_cell_alias(
+        original_model,
+        profile,
+        cli_overrides=_model_alias_overrides_dict(
+            getattr(cfg, "model_alias_overrides", ())
+        ),
+        env=os.environ,
+    )
+    if _is_alias_placeholder(str(alias_value)):
+        raise ValueError(
+            f"Cell alias unresolved for route placeholder {original_model!r} "
+            f"under cost_profile={profile!r}"
+        )
+    provider, model_id = _parse_alias_provider_model(str(alias_value))
+    resolved = dict(route)
+    resolved["provider"] = provider
+    resolved["model_id"] = model_id
+    resolved["api_key_env"] = PROVIDER_API_KEY_ENV[provider]
+    return resolved
+
+
+def _resolve_lane_routes_alias(
+    lane: Dict[str, Any],
+    cfg: "RunnerConfig",
+) -> Dict[str, Any]:
+    resolved_lane = dict(lane)
+    for stage_key in ("primary_routes", "repair_routes", "sidefill_routes"):
+        rows = lane.get(stage_key)
+        if isinstance(rows, list):
+            resolved_rows = [
+                _resolve_route_entry_alias_full(row, cfg)
+                if isinstance(row, dict)
+                else row
+                for row in rows
+            ]
+            # Provider-lock single-key profiles on every stage so repair/sidefill
+            # recovery never falls to a cross-provider key the operator lacks.
+            resolved_lane[stage_key] = _apply_provider_lock(resolved_rows, cfg)
+    return resolved_lane
+
+
+def resolve_contract_routes(
+    contract: Optional[Dict[str, Any]],
+    cfg: "RunnerConfig",
+) -> Optional[Dict[str, Any]]:
+    """Return a deep-copied step contract with all primary/repair/sidefill route
+    placeholders resolved for ``cfg.cost_profile``. cfg-independent raw contracts
+    are never mutated; callers feed the resolved view to route_entries_for_stage /
+    resolve_stage_route / identity-match helpers so comparisons are resolved-vs-
+    resolved. Idempotent on already-resolved or never-templated contracts.
+    """
+    if not isinstance(contract, dict):
+        return contract
+    resolved = dict(contract)
+    lane = contract.get("lane")
+    if isinstance(lane, dict):
+        resolved["lane"] = _resolve_lane_routes_alias(lane, cfg)
+    return resolved
+
+
+def assert_strict_route_provider_allowed(
+    *,
+    phase: str,
+    step_id: str,
+    provider: str,
+    model_id: str,
+) -> None:
+    """Fail closed before any spend if a strict-required step resolved to a
+    provider outside STRICT_ALLOWED_PROVIDERS. strict_capability_reason() treats
+    xAI as strict-capable, but xAI/Gemini strict-JSON reliability on RTE cells is
+    unproven — a profile (or --model-alias override) must not silently route a
+    strict CE/AGG cell there.
+    """
+    normalized = str(provider or "").strip().lower()
+    model = str(model_id or "").strip().lower()
+    # Strict-JSON passthrough is only verified for OpenAI models — direct, or
+    # via OpenRouter's openai/* namespace. openrouter/anthropic, xai and gemini
+    # are NOT strict-capable here (see config/pricing.yaml supports_json_schema_strict
+    # + structured_output_contracts.strict_capability_reason).
+    allowed = normalized == "openai" or (
+        normalized == "openrouter" and model.startswith("openai/")
+    )
+    if not allowed:
+        raise RuntimeError(
+            f"Strict-required step {phase}:{step_id} resolved to "
+            f"{normalized}/{model_id} which is not strict-JSON capable. Strict "
+            f"cells (CE/AGG) must use openai/* or openrouter/openai/* models. "
+            f"Adjust the cost profile's strict cell alias before spend."
+        )
+
+
+def _profile_provider_lock(cfg: "RunnerConfig") -> Optional[str]:
+    """Return the single provider a cost profile is *declared* locked to, or None.
+
+    Computed from the profile's static ``cell_aliases`` (its declared intent),
+    NOT the --model-alias/env-resolved values: a profile is provider-locked when
+    all four declared cells map to exactly one provider AND it does not opt out
+    via ``allow_cross_provider_fallback``. Locked profiles drop cross-provider
+    fallback routes so a single-key operator never preflights or dispatches a
+    provider key they don't have (Codex P2 #3364972852). Because the lock is the
+    declared intent, a --model-alias override pointing a cell at a foreign
+    provider does not silently dissolve the lock — it fails closed in
+    ``_apply_provider_lock``.
+    """
+    profile_name = str(
+        getattr(cfg, "cost_profile", DEFAULT_COST_PROFILE) or DEFAULT_COST_PROFILE
+    )
+    _resolved_name, profile = resolve_cost_profile(profile_name)
+    if not isinstance(profile, dict) or bool(profile.get("allow_cross_provider_fallback")):
+        return None
+    cell_aliases = profile.get("cell_aliases")
+    if not isinstance(cell_aliases, dict):
+        return None
+    providers = set()
+    for cell in COST_PROFILE_CELL_KEYS:
+        value = cell_aliases.get(cell)
+        if not value or _is_alias_placeholder(str(value)):
+            return None  # missing/unresolved declared cell — do not lock
+        provider, _model = _parse_alias_provider_model(str(value))
+        providers.add(provider)
+    return next(iter(providers)) if len(providers) == 1 else None
+
+
+def _apply_provider_lock(
+    routes: List[Dict[str, Any]],
+    cfg: "RunnerConfig",
+) -> List[Dict[str, Any]]:
+    """Drop cross-provider fallback routes for provider-locked single-key profiles.
+
+    Always keeps the lead route (index 0 — the resolved route that runs first),
+    then filters subsequent fallback routes to the locked provider. No-op for
+    multi-provider or opt-out profiles, and never empties a non-empty ladder.
+
+    Fail-closed: if the lead resolved to a provider outside the lock (a
+    --model-alias/env override pointed a cell at a foreign provider on a locked
+    profile), raise before spend rather than dispatch a key the single-key
+    operator does not have.
+    """
+    if not routes:
+        return routes
+    lock = _profile_provider_lock(cfg)
+    if not lock:
+        return routes
+    lead_provider = str(routes[0].get("provider") or "")
+    if lead_provider != lock:
+        profile_name = str(
+            getattr(cfg, "cost_profile", DEFAULT_COST_PROFILE) or DEFAULT_COST_PROFILE
+        )
+        raise RuntimeError(
+            f"Cost profile {profile_name!r} is provider-locked to {lock!r}, but a "
+            f"route resolved its lead to {lead_provider}/{routes[0].get('model_id')} "
+            f"(via --model-alias or an env override). A locked single-key profile "
+            f"cannot dispatch a cross-provider route — remove the override or pick "
+            f"a multi-provider profile."
+        )
+    kept = [routes[0]]
+    kept.extend(r for r in routes[1:] if str(r.get("provider")) == lock)
+    return kept
 
 
 DEFAULT_GEMINI_MODEL_ID = "gemini-3-flash-preview"
@@ -3090,6 +3476,7 @@ def build_pre_live_validator_command(
     allow_online_preflight: bool,
     target_step: Optional[str] = None,
     s_prompts_mode: Optional[str] = None,
+    output_dir: Optional[Path] = None,
 ) -> List[str]:
     cmd = [
         sys.executable,
@@ -3097,6 +3484,8 @@ def build_pre_live_validator_command(
         "--target-policy",
         str(target_policy),
     ]
+    if output_dir is not None:
+        cmd.extend(["--output-dir", str(output_dir)])
     if target_step:
         cmd.extend(["--step", str(target_step)])
     normalized_s_prompts_mode = str(s_prompts_mode or "").strip().lower()
@@ -3110,6 +3499,12 @@ def build_pre_live_validator_command(
     if allow_online_preflight:
         cmd.append("--allow-online-preflight")
     return cmd
+
+
+def create_pre_live_validator_output_dir(_root: Path) -> Path:
+    """Create an isolated validator output directory outside the repo tree."""
+
+    return Path(tempfile.mkdtemp(prefix="rte-prelive-validator-")).resolve()
 
 
 def _validator_phase_targets(
@@ -3342,6 +3737,7 @@ def format_pre_live_validator_block(
     output_dir: Optional[str] = None,
     stderr_text: Optional[str] = None,
     parse_error: bool = False,
+    missing_verdict: bool = False,
     artifact_path: Optional[str] = None,
     next_step_hint: Optional[str] = None,
 ) -> str:
@@ -3359,6 +3755,11 @@ def format_pre_live_validator_block(
     if parse_error:
         lines.append(
             "  parse_status: validator stdout was not parseable as JSON; "
+            "treating as block (fail-closed)."
+        )
+    elif missing_verdict:
+        lines.append(
+            "  parse_status: validator stdout did not contain a parsed verdict; "
             "treating as block (fail-closed)."
         )
     if reason_codes:
@@ -3429,7 +3830,9 @@ def _emit_validator_first_preset_block(
     raw_stdout = str(validator_payload.get("stdout") or "").strip()
     if raw_stdout:
         try:
-            parsed_payload = json.loads(raw_stdout)
+            raw_payload = json.loads(raw_stdout)
+            if isinstance(raw_payload, dict):
+                parsed_payload = raw_payload
         except Exception:
             parsed_payload = {}
             parse_error = True
@@ -3437,7 +3840,14 @@ def _emit_validator_first_preset_block(
         str(parsed_payload.get("verdict") or "NO_GO").strip().upper() or "NO_GO"
     )
     reason_codes_list = _normalize_reason_codes(parsed_payload.get("reason_codes"))
-    output_dir_value = str(parsed_payload.get("output_dir") or "").strip() or None
+    output_dir_value = (
+        str(
+            parsed_payload.get("output_dir")
+            or validator_payload.get("output_dir")
+            or ""
+        ).strip()
+        or None
+    )
     raw_stderr = str(validator_payload.get("stderr") or "").strip()
     sanitized_stderr = sanitize_text_for_output(raw_stderr) if raw_stderr else ""
     artifact_path = str(run_root / "PRELIVE_VALIDATOR_RESULT.json")
@@ -3469,12 +3879,14 @@ def enforce_pre_live_validator_for_execution(
             "verdict": "SKIPPED_NO_CONSENT",
             "reason": f"{DPMX_LIVE_OK_ENV}_NOT_SET",
         }
+    validator_output_dir = create_pre_live_validator_output_dir(root)
     cmd = build_pre_live_validator_command(
         target_policy=str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY)),
         target_phases=_validator_phase_targets(args, phase_sequence),
         allow_online_preflight=True,
         target_step=getattr(args, "step", None),
         s_prompts_mode=getattr(args, "s_prompts", None),
+        output_dir=validator_output_dir,
     )
     proc = subprocess.run(
         cmd,
@@ -3489,28 +3901,32 @@ def enforce_pre_live_validator_for_execution(
     parse_error = False
     if stdout:
         try:
-            payload = json.loads(stdout)
+            parsed_payload = json.loads(stdout)
+            if isinstance(parsed_payload, dict):
+                payload = parsed_payload
         except Exception:
             payload = {}
             parse_error = True
     explicit_verdict = str(payload.get("verdict") or "").strip().upper()
-    if explicit_verdict:
-        verdict = explicit_verdict
-    elif proc.returncode == 0 and not parse_error:
-        verdict = "GO"
-    else:
-        verdict = "NO_GO"
-    if proc.returncode != 0 or verdict == "NO_GO" or parse_error:
+    missing_verdict = not explicit_verdict and not parse_error
+    verdict = explicit_verdict or "NO_GO"
+    if proc.returncode != 0 or verdict != "GO" or parse_error or missing_verdict:
         reason_codes_list = _normalize_reason_codes(payload.get("reason_codes"))
-        output_dir_value = str(payload.get("output_dir") or "").strip() or None
+        output_dir_value = (
+            str(payload.get("output_dir") or "").strip()
+            or str(validator_output_dir)
+        )
         sanitized_stderr = sanitize_text_for_output(stderr) if stderr else ""
-        block_verdict = verdict if not parse_error else "NO_GO"
+        block_verdict = (
+            "NO_GO" if parse_error or missing_verdict or proc.returncode != 0 else verdict
+        )
         block_text = format_pre_live_validator_block(
             verdict=block_verdict,
             reason_codes=reason_codes_list,
             output_dir=output_dir_value,
             stderr_text=sanitized_stderr,
             parse_error=parse_error,
+            missing_verdict=missing_verdict,
         )
         _emit_pre_live_validator_block(block_text)
         raise RuntimeError(
@@ -3522,6 +3938,7 @@ def enforce_pre_live_validator_for_execution(
         "returncode": int(proc.returncode),
         "verdict": verdict,
         "payload": payload,
+        "validator_output_dir": str(validator_output_dir),
     }
 
 
@@ -3962,6 +4379,7 @@ def initialize_spend_tracker(
         phases=phases,
         routing_policy=cfg.routing_policy,
         selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+        cost_profile=cfg.cost_profile,
     )
     missing = sorted(
         _pricing_key(route["provider"], route["model_id"])
@@ -5337,6 +5755,17 @@ def _resolve_explicit_route_override(
     if selected is None:
         return None
     provider, model_id, api_key_env = _resolve_route_tuple_alias(selected, cfg)
+    if strict_required:
+        # Close the explicit-override bypass: strict_capability_reason accepts
+        # xAI over the OpenAI-compatible transport, so an operator-supplied
+        # DPMX_EXPLICIT_STEP_ROUTES=xai/... would otherwise slip past the
+        # OpenAI/OpenRouter-only strict invariant. Enforce it before return.
+        assert_strict_route_provider_allowed(
+            phase=phase,
+            step_id=step_id,
+            provider=str(provider),
+            model_id=str(model_id),
+        )
     contract_route_entry = _contract_route_entry_for_provider_model(
         step_contract,
         provider=str(provider),
@@ -5434,7 +5863,7 @@ def _resolve_benchmark_owned_stage_route(
             payload.get("strict_passthrough_verified", False)
         ),
     }
-    route = _resolve_route_entry_alias(route, cfg)
+    route = _resolve_route_entry_alias_full(route, cfg)
     contract_route_entry = _contract_route_entry_for_provider_model(
         step_contract,
         provider=str(route["provider"]),
@@ -5546,7 +5975,7 @@ def resolve_effective_step_route(
             )
         )
         if benchmark_owned_route is not None:
-            benchmark_owned_route = _resolve_route_entry_alias(
+            benchmark_owned_route = _resolve_route_entry_alias_full(
                 dict(benchmark_owned_route), cfg
             )
             provider = str(benchmark_owned_route["provider"])
@@ -5567,9 +5996,13 @@ def resolve_effective_step_route(
                 "route_ownership": benchmark_meta,
             }
         primary_routes = [
-            _resolve_route_entry_alias(route, cfg)
+            _resolve_route_entry_alias_full(route, cfg)
             for route in route_entries_for_stage(contract, "primary")
         ]
+        # Provider-lock single-key profiles: drop cross-provider fallbacks so the
+        # ladder (and, via this returned ladder, launch preflight) only references
+        # the locked provider's keys. No-op for multi-provider / opt-out profiles.
+        primary_routes = _apply_provider_lock(primary_routes, cfg)
         if not primary_routes:
             raise RuntimeError(
                 f"JSON-managed step {phase}:{step_id} missing primary_routes in model_map.yaml."
@@ -5610,6 +6043,14 @@ def resolve_effective_step_route(
                     f"{phase}:{step_id} attempts={attempt_json}"
                 )
             provider, model_id = strict_ladder[0]
+            # Fail closed before spend if a profile/override routed this strict
+            # cell to a provider outside the strict allowlist (xai/gemini).
+            assert_strict_route_provider_allowed(
+                phase=phase,
+                step_id=step_id,
+                provider=provider,
+                model_id=model_id,
+            )
             logger.info(
                 "STRICT_ROUTE_CHOSEN phase=%s step=%s provider=%s model=%s",
                 phase,
@@ -6295,6 +6736,26 @@ def effective_model_routing_payload(
     payload: Dict[str, Dict[str, Any]] = {}
     for phase in PHASES:
         provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("", "", ""))
+        # Plan B: the representative routing model may be a ${CELL} placeholder.
+        # Resolve it for display under the active (or default) cost profile so
+        # operators see the concrete model, not the placeholder token.
+        if _is_alias_placeholder(model_id):
+            profile = str(
+                getattr(cfg, "cost_profile", None) or DEFAULT_COST_PROFILE
+            )
+            alias_value = resolve_cell_alias(
+                model_id,
+                profile,
+                cli_overrides=_model_alias_overrides_dict(
+                    getattr(cfg, "model_alias_overrides", ())
+                )
+                if cfg is not None
+                else None,
+                env=os.environ,
+            )
+            if not _is_alias_placeholder(str(alias_value)):
+                provider, model_id = _parse_alias_provider_model(str(alias_value))
+                api_key_env = PROVIDER_API_KEY_ENV[provider]
         row: Dict[str, Any] = {
             "provider": provider,
             "model_id": model_id,
@@ -6725,12 +7186,27 @@ def write_run_routing_fingerprint(
                 tier_override=prompt.tier_override,
             )
             step_tier_map[phase][prompt.step_id] = tier
-            ladder = _resolve_step_ladder_compat(
+            raw_ladder = _resolve_step_ladder_compat(
                 cfg.routing_policy,
                 phase,
                 prompt.step_id,
                 tier_override=prompt.tier_override,
             )
+            # Resolve ${CELL} placeholders so the routing fingerprint records the
+            # route that actually runs under the active cost profile / --model-alias,
+            # not the static model_map placeholder (proof/replay must match dispatch).
+            ladder = []
+            for _p, _m, _k in raw_ladder:
+                _resolved = _resolve_route_entry_alias_full(
+                    {"provider": _p, "model_id": _m, "api_key_env": _k}, cfg
+                )
+                ladder.append(
+                    (
+                        str(_resolved["provider"]),
+                        str(_resolved["model_id"]),
+                        str(_resolved["api_key_env"]),
+                    )
+                )
             provider, model_id, api_key_env = (
                 ladder[0] if ladder else ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")
             )
@@ -7060,12 +7536,32 @@ def collect_provider_routes(
     phases: List[str],
     routing_policy: str,
     selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
+    *,
+    cost_profile: Optional[str] = None,
+    model_alias_overrides: Tuple[Tuple[str, str], ...] = (),
 ) -> Dict[str, Dict[str, str]]:
+    # Bind cost_profile + --model-alias overrides so the readiness summary
+    # resolves ${CELL} placeholders the same way dispatch will — preflight must
+    # probe the models that will actually run.
+    def _derive(
+        ph: Sequence[str],
+        rp: str,
+        *,
+        selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
+    ) -> Dict[str, Any]:
+        return derive_route_readiness_summary(
+            ph,
+            rp,
+            selected_step_ids_by_phase=selected_step_ids_by_phase,
+            cost_profile=cost_profile,
+            model_alias_overrides=model_alias_overrides,
+        )
+
     return _collect_provider_routes_impl(
         phases,
         routing_policy,
         selected_step_ids_by_phase=selected_step_ids_by_phase,
-        derive_route_readiness_summary=derive_route_readiness_summary,
+        derive_route_readiness_summary=_derive,
     )
 
 
@@ -7073,9 +7569,19 @@ def derive_route_readiness_summary(
     phases: Sequence[str],
     routing_policy: str,
     selected_step_ids_by_phase: Optional[Dict[str, Sequence[str]]] = None,
+    *,
+    cost_profile: Optional[str] = None,
+    model_alias_overrides: Tuple[Tuple[str, str], ...] = (),
 ) -> Dict[str, Any]:
+    effective_cost_profile = cost_profile or DEFAULT_COST_PROFILE
+
     def _runner_config_factory(selected_policy: str) -> RunnerConfig:
         return RunnerConfig(
+            cost_profile=effective_cost_profile,
+            # Carry --model-alias overrides so preflight resolves ${CELL} the same
+            # way dispatch will (else an override to a different provider probes
+            # the profile default and a missing provider key slips through).
+            model_alias_overrides=tuple(model_alias_overrides),
             dry_run=True,
             max_files_docs=35,
             max_files_code=20,
@@ -7237,6 +7743,7 @@ def run_provider_preflight(
             phases=phases,
             routing_policy=cfg.routing_policy,
             selected_step_ids_by_phase=selected_step_ids_by_phase or None,
+            cost_profile=cfg.cost_profile,
         )
         provider_probes = [
             run_provider_doctor_probe(
@@ -7950,6 +8457,7 @@ def phase_requires_provider_preflight(phase: str, cfg: RunnerConfig) -> bool:
     routes = collect_provider_routes(
         phases=[normalized_phase],
         routing_policy=cfg.routing_policy,
+        cost_profile=cfg.cost_profile,
         selected_step_ids_by_phase={
             normalized_phase: selected_ids
             for phase_name in [normalized_phase]
@@ -8378,6 +8886,7 @@ def run_doctor_full(
     provider_routes = collect_provider_routes(
         phases=phases,
         routing_policy=cfg.routing_policy,
+        cost_profile=cfg.cost_profile,
     )
     provider_probes = [
         run_provider_doctor_probe(
@@ -15057,16 +15566,19 @@ else sdk_auth_present_flags(p_provider, True)
                 cfg=cfg,
                 step_contract=step_contract,
                 stage=stage,
-                strict_required=True,
+                # Lane-aware: strict (CE/AGG) demand a strict-capable route;
+                # non-strict bulk lanes select their (non-strict) profile route
+                # so bulk repair/sidefill recovery actually dispatches.
+                strict_required=strict_contract_required,
             )
             if selected_route is None:
                 selected_route, strict_attempts = resolve_stage_route(
-                    step_contract=step_contract,
+                    step_contract=resolve_contract_routes(step_contract, cfg),
                     stage=stage,
                     transport_for_provider=lambda provider: transport_for_provider(
                         provider, cfg
                     ),
-                    strict_required=True,
+                    strict_required=strict_contract_required,
                 )
                 ownership_meta = None
             if selected_route is None:
@@ -15092,6 +15604,16 @@ else sdk_auth_present_flags(p_provider, True)
             strict_provider = str(selected_route["provider"])
             strict_model_id = str(selected_route["model_id"])
             strict_api_key_env = str(selected_route["api_key_env"])
+            if strict_contract_required:
+                # Fail closed before spend if a strict repair/sidefill route
+                # resolved to a non-OpenAI provider (defense-in-depth: profiles
+                # never map strict cells off OpenAI, but --model-alias/env could).
+                assert_strict_route_provider_allowed(
+                    phase=phase,
+                    step_id=step_id,
+                    provider=strict_provider,
+                    model_id=strict_model_id,
+                )
             response_format, response_meta = build_provider_step_contract_output(
                 route=dict(selected_route),
                 transport=transport_for_provider(strict_provider, cfg),
@@ -17054,16 +17576,19 @@ else sdk_auth_present_flags(p_provider, True)
                 cfg=cfg,
                 step_contract=step_contract,
                 stage="repair",
-                strict_required=True,
+                # Lane-aware: this soft-gate fires only for BULK json-managed
+                # steps (non-strict), so a non-strict route can now be selected
+                # and bulk soft-gate repair recovery actually dispatches.
+                strict_required=strict_contract_required,
             )
             if soft_gate_route is None:
                 soft_gate_route, soft_gate_attempts = resolve_stage_route(
-                    step_contract=step_contract,
+                    step_contract=resolve_contract_routes(step_contract, cfg),
                     stage="repair",
                     transport_for_provider=lambda provider: transport_for_provider(
                         provider, cfg
                     ),
-                    strict_required=True,
+                    strict_required=strict_contract_required,
                 )
             if soft_gate_route is not None:
                 step_soft_gate_triggered = True
@@ -17073,6 +17598,13 @@ else sdk_auth_present_flags(p_provider, True)
                     str(soft_gate_route["model_id"]),
                     str(soft_gate_route["api_key_env"]),
                 )
+                if strict_contract_required:
+                    assert_strict_route_provider_allowed(
+                        phase=phase,
+                        step_id=step_id,
+                        provider=fallback_tuple[0],
+                        model_id=fallback_tuple[1],
+                    )
                 logger.info(
                     "SOFT_GATE_TRIGGER phase=%s step=%s failed=%s route=%s",
                     phase,
@@ -19256,6 +19788,7 @@ def print_config(
     route_readiness_summary = derive_route_readiness_summary(
         phases,
         cfg.routing_policy,
+        cost_profile=cfg.cost_profile,
     )
     config_payload = {
         "run_id": run_id,
@@ -21431,6 +21964,7 @@ def run_pre_live_validator(
     target_policy: Optional[str] = None,
     target_phases: Optional[Sequence[str]] = None,
     allow_online_preflight: bool = False,
+    output_dir: Optional[Path] = None,
 ) -> Tuple[bool, Dict[str, Any]]:
     return _run_pre_live_validator_impl(
         root,
@@ -21440,6 +21974,7 @@ def run_pre_live_validator(
         target_policy=target_policy,
         target_phases=target_phases,
         allow_online_preflight=allow_online_preflight,
+        output_dir=output_dir,
         subprocess_run=subprocess.run,
         now_iso=now_iso,
         write_json=write_json,
@@ -21459,6 +21994,7 @@ def write_confidence_ramp_artifacts(
     route_readiness = derive_route_readiness_summary(
         list(phase_sequence) if phase_sequence else [],
         cfg.routing_policy,
+        cost_profile=cfg.cost_profile,
     )
     batch_pilot = {
         "generated_at": now_iso(),
@@ -21686,9 +22222,10 @@ def main() -> None:
         metavar="ALIAS=MODEL_ID",
         help=(
             "Override a cell-level model alias (e.g., "
-            "--model-alias QUALITY_SYNTH_CRITICAL_MODEL=anthropic/claude-opus-4.7). "
-            "Repeatable. See COST_PROFILES[<profile>].cell_aliases for available "
-            "alias keys per profile."
+            "--model-alias SYNTH_MODEL=openrouter/anthropic/claude-opus-4.7). "
+            "Value is 'provider/model'; anthropic only via openrouter/. "
+            "Repeatable. Canonical cell keys: BULK_DOCS_MODEL, BULK_CODE_MODEL, "
+            "CE_MODEL, SYNTH_MODEL (CE/SYNTH must stay on openai|openrouter)."
         ),
     )
     parser.add_argument(
@@ -22933,6 +23470,7 @@ def main() -> None:
             target_policy=args.routing_policy,
             target_phases=phase_sequence,
             allow_online_preflight=True,
+            output_dir=create_pre_live_validator_output_dir(root),
         )
         write_confidence_ramp_artifacts(
             dirs["root"],

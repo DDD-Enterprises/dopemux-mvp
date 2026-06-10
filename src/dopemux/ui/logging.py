@@ -15,7 +15,7 @@ class DopemuxLogHandler(RichHandler):
     def render_message(self, record: logging.LogRecord, message: str) -> "ConsoleRenderable":
         """Apply brand styling to the log message based on level."""
         if record.levelno >= logging.ERROR:
-            prefix = f"[gremlin.pink][BLOCKER][/gremlin.pink] "
+            prefix = f"[error][BLOCKER][/error] "
         elif record.levelno >= logging.WARNING:
             prefix = f"[gilt.edge][HAZARD][/gilt.edge] "
         elif record.levelno >= logging.INFO:

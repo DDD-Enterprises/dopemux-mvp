@@ -36,8 +36,13 @@ Code shared across multiple services:
 
 ```
 shared/
-├── models/        # Shared Pydantic models
-├── clients/       # Service client libraries
-├── utils/         # Common utilities
-└── __init__.py
+├── config.py              # Shared configuration models
+├── dependency_container.py  # Dependency injection container
+├── monitoring/            # Monitoring utilities (directory)
+├── monitoring.py          # Monitoring helpers
+├── service_discovery.py   # Service discovery client
+├── storage.py             # Shared storage abstractions
+└── README.md
 ```
+
+Note: `models/`, `clients/`, `utils/` subdirectories do **not** exist in the current codebase.

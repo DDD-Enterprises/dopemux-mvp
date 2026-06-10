@@ -48,9 +48,14 @@ class ClaudeConfigurator:
         claude_dir = project_path / ".claude"
         dopemux_dir = project_path / ".dopemux"
 
-        # Create directories
+        # Create directories (always safe regardless of role)
         claude_dir.mkdir(exist_ok=True)
         dopemux_dir.mkdir(exist_ok=True)
+
+        # When called for role activation (dopemux start --role X), do not
+        # regenerate or overwrite doctrine files — they may already exist.
+        if role is not None:
+            return
 
         # Generate Claude configuration files
         self._create_claude_md(claude_dir, template, role=role)

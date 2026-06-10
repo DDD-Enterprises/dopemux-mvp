@@ -203,6 +203,32 @@ def test_secret_redaction(tmp_path):
         assert "ghp_" not in f.match
         assert "***REDACTED***" in f.match
 
+def test_batch_resolve_script_path_returns_blocked(tmp_path):
+    """scripts/batch_resolve_and_merge.py as FORBIDDEN_PATH file-path match (not just text content)."""
+    repo_root = tmp_path / "tp_dcp_0005_batch_path"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    report = scanner.scan(
+        changed_files=["scripts/batch_resolve_and_merge.py"]
+    )
+    assert report.status == Status.BLOCKED
+    assert any(f.category == "FORBIDDEN_PATH" for f in report.findings)
+
+
+def test_queue_drain_bare_path_returns_blocked(tmp_path):
+    """dopemux_pr_merge_specialist/queue_drain.py (without src/ prefix) as FORBIDDEN_PATH file-path match."""
+    repo_root = tmp_path / "tp_dcp_0005_bare_path"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    report = scanner.scan(
+        changed_files=["dopemux_pr_merge_specialist/queue_drain.py"]
+    )
+    assert report.status == Status.BLOCKED
+    assert any(f.category == "FORBIDDEN_PATH" for f in report.findings)
+
+
 def test_report_json_serializes():
     scanner = RedLaneScanner(repo_root="/")
     report = scanner.scan()

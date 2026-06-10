@@ -407,7 +407,7 @@ Convert PRD documents into ConPort task hierarchy with ADHD-optimized metadata (
 ```yaml
 # ~/.claude/commands/dx/prd-parse.yaml
 name: prd-parse
-description: Parse PRD into ConPort task hierarchy with Zen planner and human review
+description: Parse PRD into ConPort task hierarchy with PAL planner and human review
 category: planning
 agent: architect
 
@@ -418,7 +418,7 @@ arguments:
 
 workflow:
   - step: analyze_prd
-    tool: mcp__zen__planner
+    tool: mcp__pal__planner
     params:
       model: "o3-mini"
       step: |
@@ -441,7 +441,7 @@ workflow:
       next_step_required: true
 
   - step: generate_json_hierarchy
-    tool: mcp__zen__planner
+    tool: mcp__pal__planner
     params:
       model: "o3-mini"
       step: |
@@ -540,9 +540,9 @@ workflow:
     params:
       workspace_id: "{workspace_path}"
       summary: "PRD '{prd_file}' parsed and imported to ConPort"
-      rationale: "Zen planner decomposition validated by human review"
+      rationale: "PAL planner decomposition validated by human review"
       implementation_details: "{task_count} tasks, {total_estimated_hours}h estimated"
-      tags: ["prd-parsing", "task-import", "zen-planner"]
+      tags: ["prd-parsing", "task-import", "pal-planner"]
 
   - step: completion_summary
     output_template: |
@@ -571,7 +571,7 @@ workflow:
 
 ---
 
-## 5. `/dx:analyze` - Deep Analysis with Zen Thinkdeep
+## 5. `/dx:analyze` - Deep Analysis with PAL Thinkdeep
 
 **Priority**: 🟡 **IMPORTANT**
 **Frequency**: As needed
@@ -582,7 +582,7 @@ workflow:
 ```yaml
 # ~/.claude/commands/dx/analyze.yaml
 name: analyze
-description: Deep analysis using Zen thinkdeep multi-step investigation
+description: Deep analysis using PAL thinkdeep multi-step investigation
 category: analysis
 agent: analyzer
 
@@ -593,7 +593,7 @@ arguments:
 
 workflow:
   - step: thinkdeep_investigation
-    tool: mcp__zen__thinkdeep
+    tool: mcp__pal__thinkdeep
     params:
       model: "o3"
       step: "{question}"
@@ -609,13 +609,13 @@ workflow:
       workspace_id: "{workspace_path}"
       summary: "Analysis: {question}"
       rationale: "{thinkdeep_findings}"
-      tags: ["analysis", "zen-thinkdeep"]
+      tags: ["analysis", "pal-thinkdeep"]
 ```
 
 ### ADHD Accommodations
 
 - ✅ **Structured thinking** - Multi-step investigation prevents overwhelm
-- ✅ **Expert validation** - Zen uses multiple models for verification
+- ✅ **Expert validation** - PAL uses multiple models for verification
 - ✅ **Decision logging** - Automatic capture in ConPort knowledge graph
 
 ---
@@ -631,7 +631,7 @@ workflow:
 ```yaml
 # ~/.claude/commands/dx/review.yaml
 name: review
-description: Comprehensive code review using Zen codereview
+description: Comprehensive code review using PAL codereview
 category: quality
 agent: qa_engineer
 
@@ -642,7 +642,7 @@ arguments:
 
 workflow:
   - step: code_review
-    tool: mcp__zen__codereview
+    tool: mcp__pal__codereview
     params:
       model: "o3-mini"
       step: "Review {files} for quality, security, performance, ADHD code patterns"
@@ -678,7 +678,7 @@ arguments:
 
 workflow:
   - step: consensus_evaluation
-    tool: mcp__zen__consensus
+    tool: mcp__pal__consensus
     params:
       model: "o3-mini"
       step: "{design_question}"

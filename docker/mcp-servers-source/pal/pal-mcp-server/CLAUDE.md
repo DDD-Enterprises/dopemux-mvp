@@ -1,6 +1,6 @@
-# Claude Development Guide for Zen MCP Server
+# Claude Development Guide for PAL MCP Server
 
-This file contains essential commands and workflows for developing and maintaining the Zen MCP Server when working with Claude. Use these instructions to efficiently run quality checks, manage the server, check logs, and run tests.
+This file contains essential commands and workflows for developing and maintaining the PAL MCP Server (formerly Zen) when working with Claude. Use these instructions to efficiently run quality checks, manage the server, check logs, and run tests.
 
 ## Quick Reference Commands
 
@@ -10,7 +10,7 @@ Before making any changes or submitting PRs, always run the comprehensive qualit
 
 ```bash
 # Activate virtual environment first
-source venv/bin/activate
+source .zen_venv/bin/activate
 
 # Run all quality checks (linting, formatting, tests)
 ./code_quality_checks.sh
@@ -239,7 +239,7 @@ python -m pytest tests/ -v
 #### Before Making Changes
 1. Ensure virtual environment is activated: `source .zen_venv/bin/activate`
 2. Run quality checks: `./code_quality_checks.sh`
-3. Check logs to ensure server is healthy: `tail -n 50 logs/mcp_server.log`
+3. Check logs if present (created at runtime): `tail -n 50 logs/mcp_server.log`
 
 #### After Making Changes
 1. Run quality checks again: `./code_quality_checks.sh`

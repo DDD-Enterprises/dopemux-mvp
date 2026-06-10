@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dopemux.dev/proof/multi_model_pr_audit.schema.json",
+  "title": "Multi-Model PR Audit Proof Artifact",
+  "description": "Proof artifact produced by the PR audit router.  Records the risk classification, route resolution, and (when not dry-run) execution results.  Chain of custody is preserved via head_sha and packet_id.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "packet_id",
+    "head_sha",
+    "dry_run",
+    "risk_class",
+    "requested_route_names",
+    "resolutions",
+    "blocking_available_count",
+    "has_any_available",
+    "executed",
+    "execution_results"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "packet_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Task packet identifier for proof chain of custody."
+    },
+    "head_sha": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Git SHA of the HEAD commit at audit time, or 'UNKNOWN' when not available."
+    },
+    "embedded_audit": {
+      "type": "object",
+      "description": "Embedded audit status block consumed by PR Steward to verify proof freshness.",
+      "properties": {
+        "status": {"type": "string"},
+        "report_path": {"type": "string"}
+      }
+    },
+    "dry_run": {
+      "type": "boolean",
+      "description": "True when no live API calls were made.  Audit plan is captured but not executed."
+    },
+    "risk_class": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH"],
+      "description": "PR risk classification output."
+    },
+    "requested_route_names": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1,
+      "description": "Ordered list of auditor route names selected for this risk tier."
+    },
+    "resolutions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/RouteResolution"},
+      "description": "Per-route availability probe results."
+    },
+    "blocking_available_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of blocking routes that are available on this host."
+    },
+    "has_any_available": {
+      "type": "boolean",
+      "description": "True when at least one route (blocking or non-blocking) is available."
+    },
+    "executed": {
+      "type": "boolean",
+      "description": "True when audit execution was attempted (live mode)."
+    },
+    "execution_results": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/ExecutionResult"},
+      "description": "Per-route execution results.  Empty when dry_run=true or executed=false."
+    }
+  },
+  "$defs": {
+    "RouteResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cli_name", "available", "blocking"],
+      "properties": {
+        "cli_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "True when the route's CLI command was found on PATH."
+        },
+        "blocking": {
+          "type": "boolean",
+          "description": "True when this route gates the audit result (xAI/OpenRouter are non-blocking by default)."
+        }
+      }
+    },
+    "ExecutionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cli_name", "exit_code", "timed_out", "duration_seconds"],
+      "properties": {
+        "cli_name": {"type": "string", "minLength": 1},
+        "exit_code": {"type": ["integer", "null"]},
+        "timed_out": {"type": "boolean"},
+        "duration_seconds": {"type": ["number", "null"], "minimum": 0},
+        "error": {"type": ["string", "null"]}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"dry_run": {"const": false}},
+        "required": ["dry_run"]
+      },
+      "then": {
+        "properties": {
+          "executed": {"const": true}
+        }
+      }
+    }
+  ]
+}

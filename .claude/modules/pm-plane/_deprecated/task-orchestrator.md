@@ -1,4 +1,10 @@
-# Task Management System (ConPort + Python ADHD Engine)
+# ⚠️ DEPRECATED: Task Management System (ConPort + Python ADHD Engine)
+
+**STATUS**: **DEPRECATED** — Decision #132 has been **REVERSED**. This file's "no external orchestrators" stance is no longer current doctrine.
+**CURRENT TRUTH**: **task-orchestrator is canonical** for workflow transitions — see [AGENTS.md §6 Architecture Boundaries](../../../../AGENTS.md). It is actively in use; ConPort remains the knowledge graph / decision store, not the workflow-transition authority.
+**KEPT FOR**: Decision-#132 historical provenance only. Do not treat the "skip jpicklyk / no external orchestrators" assertions below as live guidance.
+
+---
 
 **Architecture Version**: 2.0 (Simplified)
 **Authority**: Task storage, ADHD optimization, progress tracking
@@ -216,4 +222,4 @@ async for notification in conn.notifications():
 **See Also:**
 - `.claude/modules/superclaude-integration.md` - SuperClaude configuration
 - `.claude/modules/custom-commands.md` - `/dx:` command reference
-- `.claude/modules/adhd-patterns.md` - ADHD session management patterns
+- `.claude/modules/shared/adhd-patterns.md` - ADHD session management patterns

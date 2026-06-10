@@ -148,11 +148,12 @@ def test_promptpack_v1_carries_contract_metadata_for_d0_d1(tmp_path: Path) -> No
     assert d1_row["contract_lane"] == "CE"
     assert d1_row["strict_schema_required"] is True
     contract_metadata = d1_row["contract_metadata"]
-    assert contract_metadata["lane"]["provider"] == "gemini"
+    assert contract_metadata["lane"]["provider"] == "openai"
     assert contract_metadata["lane"]["strict_schema_required"] is True
     assert contract_metadata["lane"]["lane_class"] == "CE"
-    # First route is Gemini (non-strict primary), strict routes follow
-    assert contract_metadata["lane"]["primary_routes"][0]["strict_json_schema"] is False
+    # Codex 3361748519: the CE primary lead is now the strict ${CE_MODEL} OpenAI
+    # route; both primary routes are strict-capable.
+    assert contract_metadata["lane"]["primary_routes"][0]["strict_json_schema"] is True
     assert contract_metadata["lane"]["primary_routes"][1]["strict_json_schema"] is True
     assert contract_metadata["lane"]["primary_routes"][1]["strict_passthrough_verified"] is True
     assert "CAP_NOTICES.partX.json" in contract_metadata["expected_artifacts"]
