@@ -188,10 +188,10 @@
     "required": true,
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
-    "auditor_model": "unknown",
+    "auditor_model": "claude-sonnet-4.6",
     "invocation": "design-only domain model; dual independent audit (Claude Sonnet 4.6 + Gemini 2.5 Pro)",
     "exit_code": 0,
-    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/AUDITOR_REPORT.md",
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDITOR_A_REPORT.md",
     "findings": [],
     "fixes_applied": [
       "frontmatter added to domain doc and task packet"
