@@ -11,9 +11,11 @@ WORKDIR /app
 # Keep minimal; remove what you don't need
 RUN apk add --no-cache build-base gcc musl-dev libffi-dev openssl-dev curl
 
-# Copy dependency manifests first for better caching
+# Copy dependency manifests and package sources required by setuptools metadata
+# (pyproject [tool.setuptools] packages spans conport/core/dopemux + tools.*)
 COPY pyproject.toml /app/pyproject.toml
-COPY src/dopemux/__init__.py /app/src/dopemux/__init__.py
+COPY src/ /app/src/
+COPY tools/ /app/tools/
 RUN python -m venv /app/venv && \
     /app/venv/bin/pip install --no-cache-dir /app/.[services]
 
@@ -21,8 +23,6 @@ RUN python -m venv /app/venv && \
 COPY services/adhd_engine /app/services/adhd_engine
 COPY services/adhd_engine/mcp_stdio.py /app/mcp_stdio.py
 COPY services/shared /app/services/shared
-# Note: src/dopemux/__init__.py was already copied above
-COPY src/dopemux /app/src/dopemux
 # Copy repo root shared/ for monitoring module
 COPY shared /app/shared
 

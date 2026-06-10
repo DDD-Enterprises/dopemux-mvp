@@ -4,9 +4,11 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
-# Copy dependency manifests first for better caching
-COPY pyproject.toml .
-COPY src/dopemux/__init__.py src/dopemux/
+# Copy dependency manifests and package sources required by setuptools metadata
+# (pyproject [tool.setuptools] packages spans conport/core/dopemux + tools.*)
+COPY pyproject.toml ./
+COPY src/ src/
+COPY tools/ tools/
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \

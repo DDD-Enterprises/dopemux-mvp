@@ -9,9 +9,11 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy dependency manifests first for better caching
-COPY pyproject.toml .
-COPY src/dopemux/__init__.py src/dopemux/__init__.py
+# Copy dependency manifests and package sources required by setuptools metadata
+# (pyproject [tool.setuptools] packages spans conport/core/dopemux + tools.*)
+COPY pyproject.toml ./
+COPY src/ src/
+COPY tools/ tools/
 
 # Install Python dependencies from centralized manifest
 RUN pip install --no-cache-dir .[services]
