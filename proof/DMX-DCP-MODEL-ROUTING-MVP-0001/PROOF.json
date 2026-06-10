@@ -187,11 +187,11 @@
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
-    "auditor_tool": "opencode+grok-4.3",
-    "auditor_model": "grok-4.3",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
     "invocation": "design-only domain model; dual independent audit (Claude Sonnet 4.6 + Gemini 2.5 Pro)",
     "exit_code": 0,
-    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDIT_SUMMARY.md",
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [
       "frontmatter added to domain doc and task packet"
