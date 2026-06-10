@@ -119,7 +119,7 @@ def _wait_for_event(event_id: str, timeout_sec: int = 10) -> sqlite3.Connection:
 
 def _run_determinism_checks() -> None:
     # Use an isolated ledger for deterministic paging checks.
-    from mcp.server import DopeMemoryMCPServer
+    from wma_mcp.server import DopeMemoryMCPServer
 
     with tempfile.TemporaryDirectory(prefix="dm-smoke-") as tmpdir:
         ledger = Path(tmpdir) / "chronicle.sqlite"

@@ -38,6 +38,7 @@ from pydantic import BaseModel, Field
 # Use absolute imports now that we've fixed the path
 from canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
 from chronicle.store import ChronicleStore
+from mcp_http import FASTMCP_AVAILABLE, build_mcp_http_app, build_mcp_server
 from promotion.redactor import Redactor
 from promotion.promotion import PromotionEngine
 from reflection.reflection import ReflectionGenerator
@@ -731,6 +732,24 @@ class DopeMemoryMCPServer:
 # Global MCP server instance
 mcp_server: Optional[DopeMemoryMCPServer] = None
 
+# MCP streamable-HTTP endpoint (served at /mcp, mounted onto the FastAPI app
+# below). Tools delegate to the same DopeMemoryMCPServer instance as the REST
+# /tools/* endpoints; the lambda defers resolution until lifespan has run.
+mcp_http_app = None
+if FASTMCP_AVAILABLE:
+    mcp_http_app = build_mcp_http_app(
+        build_mcp_server(
+            lambda: mcp_server,
+            default_workspace_id=DEFAULT_WORKSPACE_ID,
+            default_instance_id=DEFAULT_INSTANCE_ID,
+        )
+    )
+else:
+    logger.warning(
+        "fastmcp not installed — /mcp endpoint disabled; REST /tools/* still served. "
+        "MCP clients configured against this service will fail to connect."
+    )
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Request/Response Models
@@ -989,7 +1008,13 @@ async def lifespan(app: FastAPI):
             mirror_sync_task = None
 
     logger.info(f"Dope-Memory HTTP server started on port {PORT}")
-    yield
+    if mcp_http_app is not None:
+        # Run the FastMCP session manager lifespan for the /mcp transport.
+        async with mcp_http_app.lifespan(app):
+            logger.info("MCP streamable-HTTP endpoint live at /mcp")
+            yield
+    else:
+        yield
 
     # Cleanup
     if mirror_sync_task:
@@ -1296,6 +1321,17 @@ async def memory_trajectory(request: MemoryTrajectoryRequest):
     if not result.success:
         raise HTTPException(status_code=400, detail=result.error)
     return result.data
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MCP Streamable-HTTP Mount (/mcp)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Mounted at the root catch-all AFTER all REST routes so /health, /, and
+# /tools/* keep priority; the sub-app serves the MCP endpoint at exactly /mcp
+# (no trailing-slash redirect, which MCP clients do not follow).
+if mcp_http_app is not None:
+    app.mount("", mcp_http_app)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
