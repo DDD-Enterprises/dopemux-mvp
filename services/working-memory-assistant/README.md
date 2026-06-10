@@ -212,6 +212,37 @@ Gentle Re-orientation → Flow State Resumed
 - **Memory Footprint**: <50MB sustained
 - **Cache Hit Rate**: >90% for optimal performance
 
+### Chronicle Store Write Semantics
+
+`insert_work_log_entry` (in `chronicle/store.py`) validates enum fields before the INSERT and raises `ValueError` if any value is outside the allowed set. This mirrors the CHECK constraints in `schema.sql` and prevents the `INSERT OR IGNORE` clause from silently swallowing constraint violations while returning a phantom `entry_id`.
+
+Fields validated at write time:
+
+| Field | Allowed values (mirrors `schema.sql`) |
+|---|---|
+| `category` | `architecture`, `debugging`, `deployment`, `documentation`, `implementation`, `planning`, `research`, `review` |
+| `entry_type` | `blocker`, `decision`, `error`, `manual_note`, `milestone`, `resolution`, `task_event`, `workflow_transition` |
+| `workflow_phase` | `audit`, `deployment`, `implementation`, `maintenance`, `planning`, `review` (or `None`) |
+| `outcome` | `abandoned`, `blocked`, `failed`, `in_progress`, `partial`, `success` |
+| `importance_score` | integer 1–10 |
+
+**Idempotent replay**: if the INSERT is silently ignored (`rowcount == 0`) and the computed `entry_id` already exists in the database, the existing `id` is returned without error. This is the only legitimate case for `OR IGNORE` — a retry of an identical provenance tuple.
+
+**MCP tool effect**: the `memory_store` MCP tool returns `success=false` with the validation error message when any of the above checks fail. Callers should not treat a returned `entry_id` as evidence of a successful write without also checking `success`.
+
+### Promotion-Time Validation for Manual Events
+
+`manual.memory_store` events carry caller-controlled `category`, `entry_type`, `outcome`, and `workflow_phase`. The promotion handler (`promotion/promotion.py:_promote_manual_memory_store`) validates these fields before constructing a `PromotedEntry`:
+
+- **`category`**: must be in `VALID_CATEGORIES` (same set as above).
+- **`entry_type`**: restricted to the manual subset — `manual_note`, `decision`, `blocker`, `resolution`, `milestone`. Machine-generated types (`error`, `workflow_transition`, `task_event`) are not accepted via manual events.
+- **`outcome`**: must be in `VALID_OUTCOMES`. Invalid values cause the handler to return `None`.
+- **`workflow_phase`**: must be in `VALID_WORKFLOW_PHASES` if provided. `None` is accepted.
+
+When the handler returns `None`, the eventbus consumer treats the event as not-promotable and acks it, leaving only a raw event record. This prevents a poison-message loop: if validation were deferred to the store layer, the store's `ValueError` would propagate to the consumer, which never acks on exception, causing indefinite retries.
+
+Regression tests: `tests/test_store_fail_closed.py` (12 tests, including schema-parity assertions that parse `schema.sql` CHECK constraints and compare them to the module-level frozensets) and `tests/test_promotion_allowlist.py::TestManualMemoryStoreFieldValidation` (4 tests).
+
 ## Integration Points
 
 ### ADHD Engine Integration
