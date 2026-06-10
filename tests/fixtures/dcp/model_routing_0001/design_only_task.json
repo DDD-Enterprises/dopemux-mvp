@@ -1,0 +1,8 @@
+{
+  "classification_id": "DCP-CLS-00000002",
+  "risk_class": "R1_DOCS",
+  "safe_automation": "safe_projection",
+  "evidence_quality": "observed_config_only",
+  "decision_status": "READY_DESIGN_ONLY",
+  "notes": "Design-only documentation task"
+}

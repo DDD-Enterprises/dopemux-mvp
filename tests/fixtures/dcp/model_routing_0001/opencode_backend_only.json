@@ -1,0 +1,7 @@
+{
+  "runner_id": "DCP-RUN-000001",
+  "runner_name": "opencode_grok",
+  "backend_authority": "backend_only",
+  "allowed_lanes": ["DCP-LANE-000001"],
+  "open_code_backend_only": true
+}

@@ -1,0 +1,10 @@
+{
+  "authority_surface": {
+    "surface_id": "DCP-AUTH-000002",
+    "surface_name": "agent_runtime",
+    "authority_type": "unknown",
+    "canonical_owner": "unknown",
+    "unknown_status": true,
+    "notes": "Agent runtime authority across services/agents, src/dopemux/agent_orchestrator.py, and services/task-orchestrator remains UNKNOWN per AGENTS.md"
+  }
+}
