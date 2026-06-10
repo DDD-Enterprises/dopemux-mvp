@@ -12,10 +12,11 @@ RUN apt-get update && apt-get install -y \
 # Set up working directory
 WORKDIR /app
 
-# Copy dependency manifests first for better caching
-# We need pyproject.toml and the core package structure for pip install .[services]
-COPY pyproject.toml .
-COPY src/dopemux/__init__.py src/dopemux/__init__.py
+# Copy dependency manifests and package sources required by setuptools metadata
+# (pyproject [tool.setuptools] packages spans conport/core/dopemux + tools.*)
+COPY pyproject.toml ./
+COPY src/ src/
+COPY tools/ tools/
 
 # Install Python dependencies from centralized manifest
 RUN pip install --no-cache-dir .[services]
