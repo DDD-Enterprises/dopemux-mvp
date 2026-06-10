@@ -1,0 +1,8 @@
+{
+  "classification_id": "DCP-CLS-00000003",
+  "risk_class": "R0_READ",
+  "safe_automation": "safe_read",
+  "evidence_quality": "observed_config_only",
+  "decision_status": "READY_DESIGN_ONLY",
+  "notes": "model-routing.policy.yaml is advisory design input only, not runtime authority"
+}
