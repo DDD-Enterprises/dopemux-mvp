@@ -68,6 +68,11 @@ except ImportError:
     def surface_guard_block(_tool, _inp, _root): return None  # type: ignore[misc]
     def surface_guard_warnings(_tool, _inp, _root, _sid=None): return []  # type: ignore[misc]
 
+try:
+    from dcp_denylist_nudge import on_facade_edit
+except ImportError:
+    def on_facade_edit(_root, _fp, _sid=None): return None  # type: ignore[misc]
+
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
 
@@ -464,6 +469,9 @@ class NativeHookAdapter:
                 proof_nudge = on_proof_write(self.project_root, fp, self.session_id)
                 if proof_nudge:
                     advisory_parts.append(proof_nudge)
+                deny_nudge = on_facade_edit(self.project_root, fp, self.session_id)
+                if deny_nudge:
+                    advisory_parts.append(deny_nudge)
         advisory = "\n\n".join(advisory_parts) or None
 
         state = self._active_state()
