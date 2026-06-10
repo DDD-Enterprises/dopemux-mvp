@@ -121,3 +121,26 @@ def test_should_mount_mcp_app_on_fastapi(tmp_path, monkeypatch):
     rest_paths = {getattr(r, "path", None) for r in dope_memory_main.app.routes}
     assert "/health" in rest_paths
     assert "/tools/memory_search" in rest_paths
+
+
+@pytest.mark.asyncio
+async def test_should_unwrap_dict_shaped_backend_results():
+    """wma_mcp/server.py's class returns plain dicts with a success key —
+    _unwrap must handle both that shape and the ToolResponse dataclass."""
+
+    class DictBackend:
+        def memory_trajectory(self, workspace_id, instance_id):
+            return {"success": True, "current_stream": "idle", "boost_factor": 1.0}
+
+        def memory_recap(self, **kwargs):
+            return {"success": False, "error": "dict backend failure"}
+
+    mcp_server = mcp_http.build_mcp_server(
+        lambda: DictBackend(), default_workspace_id="x", default_instance_id="A"
+    )
+    async with Client(mcp_server) as client:
+        ok = await client.call_tool("memory_trajectory", {})
+        assert ok.data["current_stream"] == "idle"
+        assert "success" not in ok.data
+        with pytest.raises(ToolError, match="dict backend failure"):
+            await client.call_tool("memory_recap", {})

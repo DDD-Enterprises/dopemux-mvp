@@ -52,7 +52,16 @@ def build_mcp_server(
         return server
 
     def _unwrap(result: Any) -> dict[str, Any]:
-        """Convert a ToolResponse into MCP output (raise on failure)."""
+        """Convert a backend result into MCP output (raise on failure).
+
+        Supports both backend shapes: the inline DopeMemoryMCPServer in
+        dope_memory_main returns a ToolResponse dataclass; the library class
+        in wma_mcp/server.py returns plain dicts with a "success" key.
+        """
+        if isinstance(result, dict):
+            if not result.get("success", True):
+                raise ToolError(result.get("error") or "tool call failed")
+            return {k: v for k, v in result.items() if k != "success"}
         if not result.success:
             raise ToolError(result.error or "tool call failed")
         return result.data

@@ -96,7 +96,7 @@ services = [
     "tree-sitter-typescript==0.23.0",
     "tree-sitter-go==0.23.0",
     "tree-sitter-rust==0.23.0",
-    "fastmcp",
+    "fastmcp>=2.4.0",  # >=2.4: http_app() returns StarletteWithLifespan (.lifespan needed by dope-memory /mcp mount)
     "httpx>=0.28.1",
     "pydantic-settings>=2.1.0",
     "python-jose[cryptography]>=3.5.0",
