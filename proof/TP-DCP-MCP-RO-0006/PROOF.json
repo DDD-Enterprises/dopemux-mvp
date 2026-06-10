@@ -51,10 +51,34 @@
     "tests_pass": "PASS (exit 0, 108 passed)"
   },
   "embedded_audit": {
-    "auditor": "opencode (grok-4.3)",
-    "status": "approved",
-    "date": "2026-06-09",
-    "scope": "review",
-    "signature": "opencode"
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "subagent code review of TP-DCP-MCP-RO-0006 adapter surface",
+    "exit_code": 0,
+    "report_path": "proof/TP-DCP-MCP-RO-0006/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-0006-LOW-1",
+        "severity": "LOW",
+        "title": "dope-context tools fail-closed pending MCP JSON-RPC transport",
+        "status": "ACCEPTED_RISK",
+        "body": "Adapter raises ReadOnlyHttpError because dope-context exposes MCP JSON-RPC at /mcp, not REST. Fail-closed posture is intentional for Phase 1."
+      },
+      {
+        "id": "F-0006-LOW-2",
+        "severity": "LOW",
+        "title": "0001 inventory gap for /workflow/state classification",
+        "status": "ACCEPTED_RISK",
+        "body": "Route classified CONFIRMED_READ_ONLY in TP-0006 but 0001 inventory artifact not retroactively modified."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "dope-context MCP JSON-RPC transport not wired in facade Phase 1",
+      "Live facade tests require DCP_FACADE_LIVE_TESTS=1"
+    ],
+    "skip_reason": null
   }
 }
