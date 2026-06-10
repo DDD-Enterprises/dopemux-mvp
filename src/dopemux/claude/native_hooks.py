@@ -62,6 +62,12 @@ try:
 except ImportError:
     def emit_mcp_health(_root): return None  # type: ignore[misc]
 
+try:
+    from dcp_surface_guard import surface_guard_block, surface_guard_warnings
+except ImportError:
+    def surface_guard_block(_tool, _inp, _root): return None  # type: ignore[misc]
+    def surface_guard_warnings(_tool, _inp, _root, _sid=None): return []  # type: ignore[misc]
+
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
 
@@ -356,11 +362,19 @@ class NativeHookAdapter:
         if block_reason:
             return self._deny_tool(block_reason)
 
+        # Hard block: DCP red-lane seam guard (DCP-RED-MERGE-SEAM-0001).
+        dcp_block = surface_guard_block(tool_name, tool_input, self.project_root)
+        if dcp_block:
+            return self._deny_tool(dcp_block)
+
         # Advisory context: plan-mode entry guidance + skill-invocation enforcement.
         extra_parts = []
         if tool_name == "EnterPlanMode" and PRE_PLAN_GUIDANCE:
             extra_parts.append(PRE_PLAN_GUIDANCE)
         extra_parts.extend(skill_enforcement_warnings(tool_name, tool_input, config_text))
+        extra_parts.extend(surface_guard_warnings(
+            tool_name, tool_input, self.project_root, self.session_id
+        ))
         extra_context = "\n\n".join(p for p in extra_parts if p) or None
 
         state = self._active_state()
