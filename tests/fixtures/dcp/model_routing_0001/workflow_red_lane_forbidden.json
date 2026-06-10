@@ -1,0 +1,8 @@
+{
+  "condition_id": "DCP-STOP-000004",
+  "condition_type": "workflow_red_lane",
+  "triggered": true,
+  "evidence": "Workflow red-lane forbidden for 0001 - design-only packet",
+  "resolution_required": "supervisor",
+  "notes": "Red-lane workflows explicitly forbidden in this packet"
+}

@@ -1,0 +1,10 @@
+{
+  "authority_surface": {
+    "surface_id": "DCP-AUTH-000001",
+    "surface_name": "dopecode_legacy_serena",
+    "authority_type": "unknown",
+    "canonical_owner": "unknown",
+    "unknown_status": true,
+    "notes": "DopeCode legacy Serena alias authority remains unresolved (UNKNOWN)"
+  }
+}

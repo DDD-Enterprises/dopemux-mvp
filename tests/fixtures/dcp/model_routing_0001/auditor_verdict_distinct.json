@@ -1,0 +1,18 @@
+{
+  "audit_route": {
+    "route_id": "DCP-AUD-000001",
+    "route_name": "dual_auditor",
+    "pal_chain_enabled": true,
+    "self_certification_blocked": true,
+    "auditor_verdict_distinct": true,
+    "stage_artifacts": [
+      "PAL_CHAIN.md",
+      "IMPLEMENTER_NOTES.md",
+      "audit/AUDITOR_A_REPORT.md",
+      "audit/AUDITOR_B_REPORT.md",
+      "audit/AUDIT_SUMMARY.md"
+    ]
+  },
+  "validation_state": "PASSED",
+  "auditor_verdict": "PASS_WITH_RISKS"
+}
