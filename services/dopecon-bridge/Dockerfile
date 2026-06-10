@@ -15,7 +15,9 @@ WORKDIR /app
 # Copy dependency manifests first for better caching
 # We need pyproject.toml and the core package structure for pip install .[services]
 COPY pyproject.toml .
+COPY README.md .
 COPY src/dopemux/__init__.py src/dopemux/__init__.py
+COPY src/conport src/conport
 
 # Install Python dependencies from centralized manifest
 RUN pip install --no-cache-dir .[services]
