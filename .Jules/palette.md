@@ -122,6 +122,10 @@
 **Learning:** For informational dashboard panels (like the Cognitive Load Gauge), making the entire container focusable (`tabIndex={0}`) and adding tactile feedback (hover/focus lift and glow) significantly improves discoverability of high-level context (like tooltips). Consolidating multiple nested tooltips and labels into a single root description reduces cognitive clutter and screen reader noise.
 **Action:** Prefer root-level interactive surfaces for complex metric cards to improve temporal grounding and provide a more delightful, accessible experience.
 
+## 2025-05-27 - [Explicit Borders for Interactive Transitions]
+**Learning:** When using Material UI `Paper` or `Box` components with interactive `borderColor` transitions on `:hover` or `:focus-visible`, the transition will be abrupt or invisible if a `border` is not explicitly defined in the base state. Defining a `border: '1px solid transparent'` (or similar) ensures that only the color changes during interaction, maintaining a stable layout and smooth visual transition.
+**Action:** Always define an explicit base border (even if transparent) when planning interactive border-color transitions to ensure smooth visual feedback.
+
 ## 2025-05-27 - [Tactile Feedback for Task Persistence]
 **Learning:** Extending the "Tactile Confirmation" pattern (icon swap + tooltip update + pulse animation) to the current ritual task allows users to confidently capture and share their focus without breaking ritual flow. Additionally, ensuring "destructive" actions like 'Reset' have high-visibility focus states (using color-coordinated glows) prevents "lost focus" frustration for keyboard users during high-stress ritual management.
 **Action:** Apply the three-tier tactile confirmation loop to task-level actions and use status-coordinated glows for high-priority focus states to support both confidence and orientation.

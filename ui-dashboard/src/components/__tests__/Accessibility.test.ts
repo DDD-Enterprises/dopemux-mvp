@@ -30,7 +30,7 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('Prediction Loading...');
   expect(content).toMatch(/<Tooltip[^>]*title="15-minute forecast: AI-driven projection of your cognitive load"[^>]*arrow/);
   expect(content).toContain('tabIndex={0}');
-  expect(content).toContain('cursor: \'help\'');
+  expect(content).toContain('cursor: \\'help\'');
   expect(content).toContain('&:hover, &:focus-visible');
 });
 

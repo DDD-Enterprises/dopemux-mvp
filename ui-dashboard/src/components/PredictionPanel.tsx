@@ -27,6 +27,7 @@ export default function PredictionPanel({ prediction }: PredictionPanelProps) {
           background: brandTokens.gradients.focusCard,
           border: '1px solid transparent',
           cursor: 'help',
+          outline: 'none',
           transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
           '&:hover, &:focus-visible': {
             transform: 'translateY(-4px)',
