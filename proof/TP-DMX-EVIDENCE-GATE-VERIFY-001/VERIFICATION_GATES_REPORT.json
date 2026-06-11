@@ -1,0 +1,235 @@
+{
+  "schema_version": "1.0",
+  "packet_id": "TP-DMX-EVIDENCE-GATE-VERIFY-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat",
+  "head_sha": "8be0675579f501582c74e14a409343ac6384edb3",
+  "dirty_state": "dirty",
+  "dirty_notes": "M src/dopemux/tmux/cli.py; untracked: claudedocs/forgotten-work-recon.md, dcp_tp_0001_0002_planning_inputs_temp/, docs/plans/, llm-plans/, patch_layout.py, src/proof/",
+  "runtime_process_checks_performed": true,
+  "live_writes_performed": false,
+  "commands": [
+    { "command": "pwd && git rev-parse --show-toplevel && git rev-parse --abbrev-ref HEAD && git rev-parse HEAD && git status --short", "purpose": "Preflight repo identity", "exit_code": 0, "output_summary": "Root=/Users/hue/code/dopemux-mvp; branch=dcp/chatgpt-mcp-ro-0006-...; SHA=8be0675579f501582c74e14a409343ac6384edb3; dirty" },
+    { "command": "find . -iname '*dopetask*c*spec*.json' (excl .git/.venv/node_modules)", "purpose": "VG-001 locate canonical spec", "exit_code": 0, "output_summary": "Found ./docs/03-reference/spec/dopetask/dopetask-canonical-spec.json and worktree copies. Also out/ upload copy." },
+    { "command": "rg -n 'dopetask-canonical-spec.json|dopetask-cannonical-spec.json' AGENTS.md config docs task-packets tests .github scripts", "purpose": "VG-001 check for misspelling and alternate paths", "exit_code": 0, "output_summary": "All authoritative refs point to docs/03-reference/spec/dopetask/dopetask-canonical-spec.json. Misspelling 'dopetask-cannonical-spec.json' only in doc-trust-map.md (advisory) and archive evidence-ledger (confirmed absent-by-design at write time)." },
+    { "command": "sed -n '1,80p' services/task-orchestrator/app/main.py", "purpose": "VG-002 inspect TO entrypoint", "exit_code": 0, "output_summary": "FastAPI+uvicorn at DEFAULT_PORT=8000; imports FastMCP; coordinator with fallback." },
+    { "command": "docker ps --format '{{.Names}}\\t{{.Image}}\\t{{.Ports}}' | rg -i 'task.*orchestrator|8000'", "purpose": "VG-002 live process at 8000", "exit_code": 0, "output_summary": "OBSERVED: task-orchestrator-firestick-control-a3fce4918082f41f-31719 on port 3001/tcp (jpicklyk image). No container on port 8000." },
+    { "command": "curl -fsS http://127.0.0.1:8000/health", "purpose": "VG-002 HTTP health check", "exit_code": 7, "output_summary": "Connection refused. Dopemux FastAPI TO not running." },
+    { "command": "find services -mindepth 1 -maxdepth 1 -type d | sort", "purpose": "VG-003 enumerate services dirs", "exit_code": 0, "output_summary": "43 service directories." },
+    { "command": "python3 YAML compose-vs-dirs comparison", "purpose": "VG-003 compose vs dirs", "exit_code": 0, "output_summary": "compose.yml: 20 services; 36 dirs not in compose; 17 compose names without matching dir (infra: postgres, redis, leantime, etc.)." },
+    { "command": "per-service entrypoint survey (Dockerfile/main.py/server.py/README)", "purpose": "VG-003 per-service classification", "exit_code": 0, "output_summary": "All 43 dirs classified. See gate VG-003 claim for full breakdown." },
+    { "command": "find services/monitoring-dashboard -maxdepth 3 -type f", "purpose": "VG-004 dashboard files", "exit_code": 0, "output_summary": "5 files: Dockerfile, README.md, bridge_adapter.py, server.py, start.sh." },
+    { "command": "rg -n '0.0.0.0|host=|port=|uvicorn|auth|token' services/monitoring-dashboard", "purpose": "VG-004 bind address and auth posture", "exit_code": 0, "output_summary": "server.py:1563 binds 0.0.0.0:8098; no auth middleware on dashboard API; auth_required is for monitored downstream services, not the dashboard itself." },
+    { "command": "docker ps | rg -i 'monitoring-dashboard|1561'", "purpose": "VG-004 live process check", "exit_code": 0, "output_summary": "NO_MONITORING_DASHBOARD_CONTAINER." },
+    { "command": "sed -n '450,520p' services/repo-truth-extractor/validate_pre_live_gate_v25.py", "purpose": "VG-005 gate function body", "exit_code": 0, "output_summary": "Real logic: evaluate_prompt_integrity, promptset_declared_step_keys, model_map_declared_step_keys." },
+    { "command": "sed -n '520,620p' services/repo-truth-extractor/validate_pre_live_gate_v25.py", "purpose": "VG-005 collect_truth_split body", "exit_code": 0, "output_summary": "collect_truth_split() is real: iterates runner.get_phase_prompts(), calls classify_truth_split_row(), emits FAIL blockers on mismatches. NOT always-PASS." },
+    { "command": "rg -n 'def collect_truth_split|classify_truth_split_row|STALE_' services/repo-truth-extractor", "purpose": "VG-005 callgraph and drift categories", "exit_code": 0, "output_summary": "classify_truth_split_row (line 174): STALE_RUNNER_REGISTRY/STALE_PROMPTSET/STALE_MODEL_MAP/STALE_ARTIFACT_MAP. collect_truth_split called at line 1411 in main gate. Tests monkeypatch to PASS = test isolation only." },
+    { "command": "rg -n 'LIVE_WRITE_READY' . (excl .git/.venv/node_modules/.mypy_cache)", "purpose": "VG-006 LIVE_WRITE_READY definition", "exit_code": 0, "output_summary": "Found in DCP schemas as enum VALUE (not assigned). DCP_5_5_SYNTHESIS_INPUT_PACK.md:38 states UNDEFINED in codebase. Consistent across all DCP docs." },
+    { "command": "rg -n 'DCP-RED-MERGE-SEAM|seam_guard|merge_seam|queue_drain|batch_resolve_and_merge' src scripts schemas tests config .github task-packets docs (excl red-line files)", "purpose": "VG-007 merge seam enforcement", "exit_code": 0, "output_summary": "DCP-RED-MERGE-SEAM-0001 in schemas/dcp and task-packets. TP-DCP-0003.md has manual git diff guard. No compiled runtime seam_guard or CI check found. cli.py/engine.py import queue_drain (PR specialist, not DCP Core)." },
+    { "command": "find services/agents -maxdepth 2 -type f", "purpose": "VG-008 agents directory contents", "exit_code": 0, "output_summary": "15 Python files; no Dockerfile/pyproject.toml/compose entry. README.md only metadata." },
+    { "command": "rg -n 'AgentManager|AgentType|TwoPlaneOrchestrator|agent_orchestrator' src services tests scripts", "purpose": "VG-008 agents callers", "exit_code": 0, "output_summary": "tests/test_agent_orchestrator.py imports from dopemux.agent_orchestrator (src/), not services/agents/. No production src/ imports from services/agents/." },
+    { "command": "sed -n '/task-orchestrator/,+40p' .mcp.json", "purpose": "VG-009 MCP transport config", "exit_code": 0, "output_summary": "type=stdio, command=scripts/mcp-wrappers/task-orchestrator-current-stdio.sh. 13-tool MCP Task Orchestrator." },
+    { "command": "sed -n '1,120p' scripts/mcp-wrappers/task-orchestrator-current-stdio.sh", "purpose": "VG-009 stdio wrapper", "exit_code": 0, "output_summary": "IMAGE=ghcr.io/jpicklyk/task-orchestrator@sha256:e47ed00... (v3.8.0). stdio transport. Resolves workspace root and derives SQLite data dir." },
+    { "command": "docker ps | rg -i 'task.*orchestrator|jpicklyk|mcp'", "purpose": "VG-009 container process check", "exit_code": 0, "output_summary": "task-orchestrator-firestick-... on 3001/tcp. Other MCP containers: conport, pal, dope-context, serena, desktop-commander, gptr-mcp, qdrant." },
+    { "command": "ls -la services/working-memory-assistant && find -maxdepth 1 (...Dockerfile*/main.py/dope_memory_main.py/pyproject.toml)", "purpose": "VG-010 WMA entrypoints", "exit_code": 0, "output_summary": "Both Dockerfile, Dockerfile.dope-memory, main.py, and dope_memory_main.py exist." },
+    { "command": "sed -n '1,80p' services/working-memory-assistant/dope_memory_main.py", "purpose": "VG-010 dope_memory_main.py identity", "exit_code": 0, "output_summary": "Docstring: 'Dope-Memory HTTP Server. Port 3020. Canonical entry point per registry.yaml.'" },
+    { "command": "sed -n '1,60p' services/working-memory-assistant/main.py", "purpose": "VG-010 WMA main.py identity", "exit_code": 0, "output_summary": "Docstring: 'Working Memory Assistant - FastAPI Service. ADHD interrupt recovery. Redis+Postgres+JWT auth.'" },
+    { "command": "rg -n 'working-memory-assistant|dope_memory_main|dope-memory' compose.yml .mcp.json config", "purpose": "VG-010 compose/mcp wiring", "exit_code": 0, "output_summary": "compose.yml dope-memory service uses Dockerfile.dope-memory. config/runtime_authority_manifest.json: dope_memory_main.py=canonical; main.py=non-canonical dope-memory (WMA service); mcp_stdio_adapter.py=legacy 8096." },
+    { "command": "find services/conport_kg services/conport_kg_ui -maxdepth 2 -type f", "purpose": "VG-011 conport_kg files", "exit_code": 0, "output_summary": "conport_kg: 9 Python files, no Dockerfile/pyproject. conport_kg_ui: README+package.json. Neither in compose.yml." },
+    { "command": "rg -n 'conport_kg|conport_kg_ui' . (excl own dirs)", "purpose": "VG-011 conport_kg callers", "exit_code": 0, "output_summary": "dopecon-bridge/kg_endpoints.py, mcp-integration-bridge/kg_endpoints.py, dddpg/kg_integration.py: all sys.path.insert to conport_kg. docker/conport-kg/README.md references AGEClient." },
+    { "command": "sed -n '1,220p' src/dopemux/claude/native_hooks.py", "purpose": "VG-012 native_hooks.py content", "exit_code": 0, "output_summary": "NativeHookAdapter imports from orchestrator hooks. No direct ADHD engine calls. Redis activity events." },
+    { "command": "rg -n 'adhd|energy|attention|cognitive' src/dopemux/claude/native_hooks.py services/adhd_engine src/dopemux/adhd", "purpose": "VG-012 ADHD integration in core hooks", "exit_code": 0, "output_summary": "ADHD code in src/dopemux/adhd/ (task_decomposer, attention_monitor, workflow_manager). NOT in native_hooks.py itself." },
+    { "command": "find .claude/hooks -maxdepth 1 -type f", "purpose": "VG-012 hooks directory", "exit_code": 0, "output_summary": "10 hook files: check_energy.sh, log_progress.sh, orchestrator_*.py, prompt_analyzer.py, save_context.sh, session_lifecycle.py, track_file_edit.sh." },
+    { "command": "rg -n 'adhd|energy|attention|curl|localhost|8080' .claude/hooks", "purpose": "VG-012 ADHD engine calls in hooks", "exit_code": 0, "output_summary": "check_energy.sh, save_context.sh, log_progress.sh, prompt_analyzer.py ALL call localhost:8080/api/v1. Real ADHD Engine integration. ADHD Engine container NOT in docker ps." }
+  ],
+  "gates": [
+    {
+      "gate_id": "VG-001",
+      "status": "VERIFIED",
+      "claim": "dopetask-canonical-spec.json exists at docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (correct spelling). A misspelling variant (dopetask-cannonical-spec.json, double-n) appears only in advisory/archive contexts. The canonical tracked file is correctly spelled and located.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": "find . -iname '*dopetask*c*spec*.json'", "summary": "./docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exists plus worktree copies." },
+        { "label": "OBSERVED", "path_or_command": "rg dopetask-canonical-spec docs/task-packets/config", "summary": "All authority refs use correct spelling. Misspelling only in advisory doc-trust-map.md and archive evidence-ledger (absent-by-design)." }
+      ],
+      "blocks": [],
+      "recommended_next_action": "None required. Confirm upload-set does not drift to misspelled variant."
+    },
+    {
+      "gate_id": "VG-002",
+      "status": "VERIFIED",
+      "claim": "Dopemux FastAPI TO (app/main.py port 8000) exists as code but is NOT running live. Live TO is jpicklyk Docker MCP container (port 3001/tcp, stdio). Two surfaces: (1) jpicklyk v3.8.0 = live; (2) Dopemux FastAPI = code-only.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": "services/task-orchestrator/app/main.py", "summary": "FastAPI + uvicorn at DEFAULT_PORT=8000. Code present." },
+        { "label": "OBSERVED", "path_or_command": "docker ps | rg 'task.*orchestrator|8000'", "summary": "jpicklyk container on 3001/tcp. No container on 8000." },
+        { "label": "OBSERVED", "path_or_command": "curl http://127.0.0.1:8000/health → exit 7", "summary": "Connection refused. FastAPI TO not live." }
+      ],
+      "blocks": [],
+      "recommended_next_action": "Document intended fate of app/main.py before factory automation. jpicklyk is authoritative live surface."
+    },
+    {
+      "gate_id": "VG-003",
+      "status": "VERIFIED",
+      "claim": "All 43 services/ directories inventoried. (A) Compose-wired: adhd-engine, dope-context, dope-memory, dopecon-bridge, serena, task-orchestrator. (B) Standalone with entrypoint not in compose: activity-capture, adhd-notifier, adhd_engine(dup), claude_brain, dopemux-gpt-researcher, mcp-client, mcp-integration-bridge, ml-predictions, monitoring-dashboard, webhook_receiver, working-memory-assistant, workspace-watcher. (C) Utility/library: conport_kg, mcp-capture, repo-truth-extractor, session-manager, shared. (D) UI stub: conport_kg_ui. (E) Empty/dead: adhd_notifier, dddpg, dope-query, genetic_agent, intelligence, monitoring, router, session_intelligence, slack-integration, task-router, voice-commands. (F) Meta/README-only: agents, complexity_coordinator, dcp-readonly-facade, adhd-dashboard. Naming duplicates: adhd-engine/adhd_engine, adhd-notifier/adhd_notifier, session-intelligence/session_intelligence.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": "find services -mindepth 1 -maxdepth 1 -type d | sort", "summary": "43 directories." },
+        { "label": "OBSERVED", "path_or_command": "python3 compose-vs-dirs comparison", "summary": "20 compose services; 36 unmatched dirs; 17 compose names without matching dirs (infra)." },
+        { "label": "OBSERVED", "path_or_command": "per-service entrypoint survey", "summary": "Each directory classified by Dockerfile/main.py/server.py/README presence." }
+      ],
+      "blocks": [],
+      "recommended_next_action": "Reconcile naming duplicates. Prune or archive confirmed-dead dirs."
+    },
+    {
+      "gate_id": "VG-004",
+      "status": "STILL_UNKNOWN",
+      "claim": "monitoring-dashboard binds 0.0.0.0:8098 (not 1561 as evidence pack stated). FastAPI app has no auth middleware on its own endpoints. Container is NOT currently running. Risk is conditional: if deployed, unauthenticated exposure at 0.0.0.0:8098.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": "services/monitoring-dashboard/server.py:1563-1564", "summary": "host='0.0.0.0', port=8098. No auth middleware." },
+        { "label": "OBSERVED", "path_or_command": "services/monitoring-dashboard/start.sh:18", "summary": "Default HOST=0.0.0.0." },
+        { "label": "OBSERVED", "path_or_command": "docker ps | rg 'monitoring-dashboard|1561'", "summary": "NO_MONITORING_DASHBOARD_CONTAINER. Not currently live." },
+        { "label": "INFERRED", "path_or_command": "server.py auth_required flags", "summary": "auth_required is for monitored downstream services, not dashboard API itself." }
+      ],
+      "blocks": ["Container not running. Live exposure cannot be confirmed. Code posture: unauthenticated at 0.0.0.0:8098 if deployed."],
+      "recommended_next_action": "Flag as SEC-001 (MEDIUM). Add authentication before any deployment. Confirm whether factory automation intends to run this service."
+    },
+    {
+      "gate_id": "VG-005",
+      "status": "VERIFIED",
+      "claim": "collect_truth_split() (line 523) is a REAL implementation. Always-PASS stubs exist ONLY in tests via monkeypatch (test isolation). Production gate at line 1411 calls real collect_truth_split. S7 drift gate is active enforcement, not always-PASS.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": "validate_pre_live_gate_v25.py lines 523-628", "summary": "Real implementation: runner iteration, classify_truth_split_row calls, blocker emission on mismatches." },
+        { "label": "OBSERVED", "path_or_command": "test_pre_live_gate_v25.py lines 205, 381, 494", "summary": "monkeypatch to PASS = test isolation only. Production not stubbed." },
+        { "label": "OBSERVED", "path_or_command": "validate_pre_live_gate_v25.py line 1411", "summary": "collect_truth_split(runner, config) in main gate flow." }
+      ],
+      "blocks": [],
+      "recommended_next_action": "VG-005 resolved. Prior evidence pack framing of 'always-PASS stub' was incorrect — refers to test stubs. No TP-RTE-S7-DRIFT-FIX-001 prerequisite from this gate."
+    },
+    {
+      "gate_id": "VG-006",
+      "status": "STILL_UNKNOWN",
+      "claim": "LIVE_WRITE_READY is schema-defined as an enum value (future state vocabulary) in DCP schemas but is NOT assigned or activated anywhere in code/config/runtime. All DCP authority docs confirm it is 'UNDEFINED+blocking' (K-46).",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": "schemas/dcp/dcp_control_snapshot.schema.json", "summary": "LIVE_WRITE_READY as enum value in status fields — vocabulary only." },
+        { "label": "OBSERVED", "path_or_command": "DCP_5_5_SYNTHESIS_INPUT_PACK.md:38", "summary": "Explicitly states LIVE_WRITE_READY is UNDEFINED in codebase (rg → zero results)." },
+        { "label": "INFERRED", "path_or_command": "All DCP docs consensus", "summary": "Consistent: LIVE_WRITE_READY is the master gate and remains undefined+blocking." }
+      ],
+      "blocks": ["No code/config defines what proves LIVE_WRITE_READY or who authorizes it. K-46 open item."],
+      "recommended_next_action": "A dedicated packet is needed to define: (1) what evidence closes LIVE_WRITE_READY, (2) who authorizes, (3) where it is set. This is TP-DMX-LIVE-WRITE-READY-SCHEMA-001 scope."
+    },
+    {
+      "gate_id": "VG-007",
+      "status": "STILL_UNKNOWN",
+      "claim": "DCP-RED-MERGE-SEAM-0001 is schema-defined and task-packet-documented. TP-DCP-0003.md includes a manual git diff guard. No compiled runtime enforcement (import guard, pre-commit hook, CI check) found. Enforcement is docs-only/process-only.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": "schemas/dcp/dcp_mutation_class.schema.json, dcp_red_lane_taxonomy.schema.json", "summary": "DCP-RED-MERGE-SEAM-0001 as hard-block class in schema vocabulary." },
+        { "label": "OBSERVED", "path_or_command": "task-packets/TP-DCP-0003.md:131", "summary": "git diff --name-only guard = manual/process enforcement, not runtime." },
+        { "label": "OBSERVED", "path_or_command": "rg 'seam_guard|merge_seam' src scripts tests config .github", "summary": "No seam_guard function, no import guard, no CI check found." }
+      ],
+      "blocks": ["No runtime-compiled enforcement. Violation can only be caught by manual process."],
+      "recommended_next_action": "Add pre-commit hook or CI check that blocks if DCP Core imports queue_drain or batch_resolve_and_merge."
+    },
+    {
+      "gate_id": "VG-008",
+      "status": "STILL_UNKNOWN",
+      "claim": "services/agents/ contains 15 Python prototype files but no compose wiring, no Dockerfile, no src/ import path. tests/test_agent_orchestrator.py imports from dopemux.agent_orchestrator (src/ package), not services/agents/. services/agents/ appears experimental/prototype with no confirmed live code path.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": "find services/agents -maxdepth 2 -type f", "summary": "15 Python files. No Dockerfile, no pyproject.toml, no compose entry." },
+        { "label": "OBSERVED", "path_or_command": "rg 'AgentManager|AgentType|agent_orchestrator' src services tests scripts", "summary": "Tests import from dopemux.agent_orchestrator (src/). No production src/ imports from services/agents/." }
+      ],
+      "blocks": [],
+      "recommended_next_action": "Confirm whether dopemux.agent_orchestrator (src/) re-exports services/agents/ code. If services/agents/ is dead, mark for archival."
+    },
+    {
+      "gate_id": "VG-009",
+      "status": "VERIFIED",
+      "claim": "Task-Orchestrator transport is stdio (MCP via Docker). .mcp.json: type=stdio, command=stdio wrapper script. Wrapper launches jpicklyk v3.8.0. docker ps confirms container live on 3001/tcp. Dopemux FastAPI HTTP singleton (8000) not running. stdio is sole active transport.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": ".mcp.json task-orchestrator entry", "summary": "type=stdio, command=scripts/mcp-wrappers/task-orchestrator-current-stdio.sh." },
+        { "label": "OBSERVED", "path_or_command": "task-orchestrator-current-stdio.sh", "summary": "IMAGE=ghcr.io/jpicklyk/task-orchestrator@sha256:e47ed00... (v3.8.0). stdio wrapper." },
+        { "label": "OBSERVED", "path_or_command": "docker ps | rg 'task.*orchestrator|jpicklyk|mcp'", "summary": "task-orchestrator-firestick-... on 3001/tcp. Stdio confirmed live." },
+        { "label": "OBSERVED", "path_or_command": "curl http://127.0.0.1:8000/health → exit 7", "summary": "HTTP singleton not running." }
+      ],
+      "blocks": [],
+      "recommended_next_action": "VERIFIED. Document that Dopemux FastAPI TO is not deployed to avoid factory automation confusion."
+    },
+    {
+      "gate_id": "VG-010",
+      "status": "VERIFIED",
+      "claim": "Verified that dope_memory_main.py is the canonical entry point, configured via Dockerfile.dope-memory (CMD [\"python\", \"dope_memory_main.py\"]) on port 3020 and run inside the dope-memory container service. main.py is a co-located FastAPI server for WMA, not wired to docker compose, and not run as the canonical chronicle runtime.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": "services/working-memory-assistant/dope_memory_main.py:1-13", "summary": "'Dope-Memory HTTP Server. Port 3020. Canonical entry point per registry.yaml.'" },
+        { "label": "OBSERVED", "path_or_command": "services/working-memory-assistant/main.py:1-10", "summary": "'Working Memory Assistant - FastAPI Service. ADHD interrupt recovery. Redis+Postgres+JWT.'" },
+        { "label": "OBSERVED", "path_or_command": "compose.yml:475-478", "summary": "dope-memory service uses Dockerfile.dope-memory." },
+        { "label": "OBSERVED", "path_or_command": "config/runtime_authority_manifest.json", "summary": "Explicitly: dope_memory_main.py=canonical dope-memory; main.py=WMA (not dope-memory canonical)." },
+        { "label": "OBSERVED", "path_or_command": "services/working-memory-assistant/Dockerfile.dope-memory line 68", "summary": "CMD [\"python\", \"dope_memory_main.py\"] confirmed to execute the canonical entrypoint." }
+      ],
+      "blocks": [],
+      "recommended_next_action": "None. Verification complete. Canonicality of dope_memory_main.py inside the container is confirmed."
+    },
+    {
+      "gate_id": "VG-011",
+      "status": "VERIFIED",
+      "claim": "Verified that conport_kg and conport_kg_ui are inactive/superseded. conport_kg is not imported by any active router in dopecon-bridge, and mcp-integration-bridge is not configured or running in compose.yml. The active runtime uses the ConPort proxy client routers in dopecon_bridge/routes.py, meaning conport_kg is superseded.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": "find services/conport_kg services/conport_kg_ui", "summary": "conport_kg: 9 Python files, no deploy artifacts. conport_kg_ui: README+package.json. Neither in compose.yml." },
+        { "label": "OBSERVED", "path_or_command": "rg 'conport_kg' (external callers)", "summary": "dopecon-bridge/kg_endpoints.py and mcp-integration-bridge/kg_endpoints.py sys.path.insert to conport_kg. dddpg/kg_integration.py imports with CONPORT_KG_AVAILABLE guard." },
+        { "label": "OBSERVED", "path_or_command": "services/dopecon-bridge/dopecon_bridge/routes.py app registration", "summary": "dopecon-bridge routes only load API routes that proxy directly to conport_client (ConPort service), not conport_kg." },
+        { "label": "OBSERVED", "path_or_command": "compose.yml services scan", "summary": "mcp-integration-bridge (which imports kg_endpoints) is not configured in compose.yml." }
+      ],
+      "blocks": [],
+      "recommended_next_action": "None. Both conport_kg and conport_kg_ui are legacy and safely inactive. Recommend pruning services/conport_kg/ and conport_kg_ui/."
+    },
+    {
+      "gate_id": "VG-012",
+      "status": "VERIFIED",
+      "claim": "ADHD Engine integration is REAL in .claude/hooks/: check_energy.sh, save_context.sh, log_progress.sh, prompt_analyzer.py all curl localhost:8080/api/v1. Integration is not stub/default. ADHD Engine container is NOT currently running (not in docker ps). Hooks degrade gracefully. The hook-to-engine wiring is real; engine liveness is unconfirmed.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": ".claude/hooks/check_energy.sh", "summary": "curl localhost:8080/api/v1/state; reads energy_level. Real call." },
+        { "label": "OBSERVED", "path_or_command": ".claude/hooks/save_context.sh, log_progress.sh", "summary": "Both call localhost:8080 endpoints with graceful failure on timeout." },
+        { "label": "OBSERVED", "path_or_command": ".claude/hooks/prompt_analyzer.py:157,215", "summary": "get_adhd_context() + build_context_injection() use real ADHD API response." },
+        { "label": "OBSERVED", "path_or_command": "docker ps output", "summary": "No adhd-engine/port 8080 container in running set. Engine down." },
+        { "label": "INFERRED", "path_or_command": "services/adhd_engine/main.py + compose.yml adhd-engine", "summary": "ADHD Engine is compose-defined and has entrypoint. Not currently running." }
+      ],
+      "blocks": [],
+      "recommended_next_action": "ADHD integration is real and non-stub. Engine not running. Run: docker ps -a | grep adhd to check stopped containers. Start engine if operator ADHD support is required."
+    }
+  ],
+  "security_findings": [
+    {
+      "id": "SEC-001",
+      "severity": "MEDIUM",
+      "summary": "monitoring-dashboard (server.py) binds host=0.0.0.0:8098 with no auth middleware on its own API endpoints. If deployed, exposes unauthenticated service health data to any network-reachable host.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": "services/monitoring-dashboard/server.py:1563-1564", "summary": "host='0.0.0.0', port=8098. No FastAPI auth dependency on dashboard routes." }
+      ],
+      "recommended_action": "Add API key or session token auth to monitoring-dashboard before deployment. Or restrict to 127.0.0.1 for local-only use."
+    },
+    {
+      "id": "SEC-002",
+      "severity": "LOW",
+      "summary": "ADHD Engine hooks call localhost:8080 without authentication. Local spoofing risk if attacker controls port 8080.",
+      "evidence": [
+        { "label": "OBSERVED", "path_or_command": ".claude/hooks/check_energy.sh:18", "summary": "curl -s --connect-timeout 1 localhost:8080/api/v1/state. No token." }
+      ],
+      "recommended_action": "Add API token to ADHD Engine hook calls if localhost:8080 is exposed beyond local machine."
+    }
+  ],
+  "updated_packet_order_recommendation": [
+    "TP-RTE-SP-PHASE-CONTRACT-001 — primary next packet per decision logic (VG-004 not actively exposed; VG-005 resolved; VG-012 integration real but not blocking)",
+    "TP-DMX-MONITORING-DASHBOARD-SECURITY-001 — address unauthenticated 0.0.0.0 bind before factory enables dashboard deployment",
+    "TP-DMX-LIVE-WRITE-READY-SCHEMA-001 — only after VG-005 and VG-007 are scoped (VG-005 done; VG-007 docs-only gap needs pre-commit hardening)"
+  ],
+  "no_write_confirmation": {
+    "files_edited": false,
+    "commits_made": false,
+    "dopetask_execution": false,
+    "task_orchestrator_writes": false,
+    "conport_writes": false,
+    "dope_memory_writes": false,
+    "dope_context_writes": false,
+    "dopecon_bridge_writes": false,
+    "github_mutation": false,
+    "merge_automation": false,
+    "queue_drain_touched_or_invoked": false,
+    "batch_resolve_and_merge_touched_or_invoked": false
+  }
+}
