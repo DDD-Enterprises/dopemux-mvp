@@ -188,6 +188,8 @@
   },
   "pr_readiness": "DRAFT_PR_READY_AFTER_RESTORE_AND_FINAL_CAPTURE",
   "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "manual_independent_audit": "COMPLETE (Claude Sonnet 4.6 PASS_WITH_RISKS + Gemini 2.5 Pro PASS on domain model content; clean carve in #862)",
+  "embedded_workflow_audit": "SKIPPED / not required (planning/baseline series for 0001; see carve TP and fresh capture in #862 for the pure slice)",
   "embedded_audit": {
     "required": false,
     "status": "SKIPPED",
@@ -198,7 +200,14 @@
     "findings": [],
     "fixes_applied": [],
     "remaining_risks": [],
-    "skip_reason": "Planning/baseline analysis packet; no external audit toolchain invocation required for this series.",
+    "skip_reason": "Planning/baseline analysis packet; no external audit toolchain invocation required for this series. (This mixed branch carries additional OpenCode/PAL/Docker B work; merge_readiness stays BLOCKED pending Steward on latest head after runtime proofs and vuln classification.)",
     "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/AUDITOR_REPORT.md"
+  },
+  "b_items_status_on_854": {
+    "pal_stdio_restart_proof": "provided (container test + compose usage note + build success; see commit with .opencode/agents and verify output)",
+    "opencode_pal_wiring_proof": "provided (verify-pal.sh full PASS after adding pal-*.md agents; opencode debug config confirms pal server; start-pal.sh is real launcher)",
+    "docker_scout_classification": "provided (fixed: litellm CVEs via d5e09bf3e pins+apt; inherited/accepted: base openssl in python alpine/slim; all Scout service checks SUCCESS on head; not blocker)",
+    "pr_body_updated": "yes (combined language, references #862 carve, B proofs attached)",
+    "merge_readiness": "kept BLOCKED_NOT_REQUESTED (this file + PR body)"
   }
 }
