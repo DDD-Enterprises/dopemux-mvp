@@ -1,13 +1,13 @@
 {
   "record": {
     "action_id": "A0004",
-    "action_type": "simctl_delete_unavailable",
-    "bytes_reclaimed": 0,
+    "action_type": "docker_prune",
+    "bytes_reclaimed": 32212254720,
     "dry_run": false,
-    "error": "xcrun: error: unable to find utility \"simctl\", not a developer tool or in PATH",
+    "error": null,
     "manifest_path": "proof/TP-OPS-MAC-SCRUBBER-001/A0004-manifest.json",
-    "path": "/Users/hue/Library/Developer/CoreSimulator",
-    "status": "failed"
+    "path": "/Users/hue/Library/Containers/com.docker.docker",
+    "status": "executed"
   },
-  "timestamp_utc": "2026-05-23T13:34:47+00:00"
+  "timestamp_utc": "2026-06-10T04:35:44+00:00"
 }
