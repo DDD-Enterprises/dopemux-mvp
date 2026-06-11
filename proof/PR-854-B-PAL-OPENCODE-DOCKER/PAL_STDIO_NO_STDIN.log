@@ -1,0 +1,5 @@
+## pal-stdio without stdin
+utc=2026-06-11T22:39:58Z
+exit_code=124
+NO_STDIN_RESULT=TIMEOUT_STILL_RUNNING
+note: server.py crashes on startup due to openrouter-audit.json clink config mismatch

@@ -204,10 +204,60 @@
     "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/AUDITOR_REPORT.md"
   },
   "b_items_status_on_854": {
+    "superseded_by": "pr854_b_evidence",
+    "note": "CLAIMED_ONLY claims below replaced by OBSERVED evidence in pr854_b_evidence (packet DMX-DCP-PR854-B-PROOF-STEWARDSHIP-001-CC, 2026-06-11)",
     "pal_stdio_restart_proof": "provided (container test + compose usage note + build success; see commit with .opencode/agents and verify output)",
     "opencode_pal_wiring_proof": "provided (verify-pal.sh full PASS after adding pal-*.md agents; opencode debug config confirms pal server; start-pal.sh is real launcher)",
     "docker_scout_classification": "provided (fixed: litellm CVEs via d5e09bf3e pins+apt; inherited/accepted: base openssl in python alpine/slim; all Scout service checks SUCCESS on head; not blocker)",
     "pr_body_updated": "yes (combined language, references #862 carve, B proofs attached)",
     "merge_readiness": "kept BLOCKED_NOT_REQUESTED (this file + PR body)"
+  },
+  "pr854_b_evidence": {
+    "packet_id": "DMX-DCP-PR854-B-PROOF-STEWARDSHIP-001-CC",
+    "captured_utc": "2026-06-11T22:29:15Z",
+    "head_sha": "15f235b8c60c473c301713f6e2f6251a449d07cf",
+    "executor": "claude-sonnet-4-6",
+    "overall_status": "BLOCKED",
+    "evidence_dir": "proof/PR-854-B-PAL-OPENCODE-DOCKER",
+    "b1_pal_stdio_runtime": {
+      "status": "BLOCKED",
+      "image_builds": "PASS",
+      "with_stdin_alive_5s": "BLOCKED_PAL_STDIO_WITH_STDIN_FAIL",
+      "compose_restart_loop": "BLOCKED_RESTART_LOOP",
+      "restart_count_at_30s": 8,
+      "root_cause": "clink.registry.RegistryLoadError: CLI type 'openrouter' is not supported by clink (supported: gemini, codex, claude)",
+      "trigger_file": "docker/mcp-servers/pal/pal-mcp-server/conf/cli_clients/openrouter-audit.json",
+      "also_at_risk": "xai-grok-audit.json (runner=grok)",
+      "file_on_main": false,
+      "log": "proof/PR-854-B-PAL-OPENCODE-DOCKER/PAL_STDIO_WITH_STDIN.log"
+    },
+    "b2_opencode_pal_wiring": {
+      "status": "PASS_STRUCTURAL_ONLY",
+      "verify_pal_exit_code": 0,
+      "structural_wiring": "VERIFIED",
+      "runtime_wiring": "NOT_VERIFIED_NO_CLI",
+      "log": "proof/PR-854-B-PAL-OPENCODE-DOCKER/VERIFY_PAL.log"
+    },
+    "b3_docker_scout": {
+      "status": "SECURITY_ACCEPTED_WITH_RISKS",
+      "litellm_cve": "FIXED",
+      "ci_scout_all_9_services": "PASS",
+      "base_os_inherited": "INHERITED_ACCEPTED",
+      "operator_acceptance_required": true,
+      "classification": "proof/PR-854-B-PAL-OPENCODE-DOCKER/DOCKER_SCOUT_CLASSIFICATION.md"
+    },
+    "b4_pr854_combined_scope": {
+      "status": "OBSERVED",
+      "pr_854_is_mixed_scope": true,
+      "pr_862_clean_0001_carve": "DRAFT_OPEN",
+      "pr_862_head": "a83f8e252fe99dac2954af4ea005b260b93739ad"
+    },
+    "b5_readiness_posture": {
+      "merge_readiness": "BLOCKED_NOT_REQUESTED",
+      "self_certification": "BLOCKED",
+      "supervisor_required": "GPT-5.5 Pro"
+    },
+    "ci_check_failing": "review / review (orchestrator review job)",
+    "merge_readiness": "BLOCKED_NOT_REQUESTED"
   }
 }
