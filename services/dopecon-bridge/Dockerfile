@@ -3,7 +3,7 @@
 FROM python:3.11-slim
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     curl \
     jq \
     git \
@@ -20,7 +20,7 @@ COPY src src
 COPY tools tools
 
 # Install Python dependencies from centralized manifest
-RUN pip install --no-cache-dir .[services]
+RUN pip install --no-cache-dir "wheel>=0.46.2" && pip install --no-cache-dir .[services]
 
 # Copy application code (relative to root build context)
 COPY services/dopecon-bridge/ .
