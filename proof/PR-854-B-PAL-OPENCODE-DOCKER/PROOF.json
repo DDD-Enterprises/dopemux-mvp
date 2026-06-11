@@ -70,6 +70,52 @@
       "supervisor_required": "GPT-5.5 Pro"
     }
   },
+  "embedded_audit": {
+    "required": true,
+    "status": "NEEDS_SUPERVISOR",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "manual same-tool stewardship verification (PAL MCP unavailable); evidence logs in proof/PR-854-B-PAL-OPENCODE-DOCKER/; non-independent — supervisor decision required",
+    "exit_code": 0,
+    "report_path": "proof/PR-854-B-PAL-OPENCODE-DOCKER/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "EA-854B-1",
+        "severity": "BLOCKING",
+        "title": "pal-stdio crashes on startup (clink openrouter config) causing compose restart loop",
+        "status": "OPEN",
+        "body": "server.py fails with clink.registry.RegistryLoadError: CLI type 'openrouter' is not supported (conf/cli_clients/openrouter-audit.json); restart: unless-stopped looped 8x in 30s. xai-grok-audit.json (runner=grok) would crash next. Fix requires a new packet (edit clink INTERNAL_DEFAULTS or remove unsupported cli_clients configs)."
+      },
+      {
+        "id": "EA-854B-2",
+        "severity": "MEDIUM",
+        "title": "OpenCode runtime wiring unverified (CLI absent)",
+        "status": "OPEN",
+        "body": "Structural wiring VERIFIED (verify_pal.sh exit 0, config + agent files present) but opencode CLI not in PATH, so end-to-end runtime invocation (check 5) was skipped."
+      },
+      {
+        "id": "EA-854B-3",
+        "severity": "MEDIUM",
+        "title": "Docker base-OS inherited CVEs require operator acceptance",
+        "status": "ACCEPTED_RISK",
+        "body": "litellm CVEs fixed and CI Scout passes all 9 services at head 15f235b8c; remaining base-image OS CVEs are inherited and documented for operator acceptance in the PR body."
+      },
+      {
+        "id": "EA-854B-4",
+        "severity": "INFO",
+        "title": "PR #854 is mixed-scope",
+        "status": "OPEN",
+        "body": "Combines 0001 domain model with OpenCode/PAL/Docker/proof stewardship and predecessor packets; clean 0001-only reference exists as draft PR #862."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Audit is same-tool and non-independent (PAL MCP unavailable); supervisor (GPT-5.5 Pro) sign-off required before any merge decision",
+      "pal-stdio startup crash unresolved (BLOCKED_NEEDS_NEW_PACKET)",
+      "No merge authority granted to the proof executor"
+    ],
+    "skip_reason": null
+  },
   "validation_state": "BLOCKED",
   "auditor_verdict": "BLOCKED",
   "merge_readiness": "BLOCKED_NOT_REQUESTED",
