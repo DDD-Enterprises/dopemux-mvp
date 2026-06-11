@@ -61,7 +61,8 @@
     "proof_bundle",
     "llm-docs",
     "dopemux",
-    "dopemux_pr_merge_specialist"
+    "dopemux_pr_merge_specialist",
+    ".opencode"
   ],
   "allowed_root_files": [
     "SPECIMEN_LEDGER_REGEN_BIG.csv",
