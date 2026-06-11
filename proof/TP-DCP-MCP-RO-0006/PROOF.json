@@ -33,7 +33,7 @@
   },
   "forbidden_route_grep": {
     "command": "rg -n 'search_all|index_workspace|...' services/dcp-readonly-facade",
-    "verdict": "All hits are in: route_manifest.py (denylist definitions), dope_context.py (denial docstring), task_orchestrator.py:105 (allowed_transitions in docstring describing state response schema \u2014 not a route), tools.py (denial doc prose in docstring), tests/test_packet_0006.py (denial assertion tests). NO hits in executable call paths.",
+    "verdict": "All hits are in: route_manifest.py (denylist definitions), dope_context.py (denial docstring), task_orchestrator.py:105 (allowed_transitions in docstring describing state response schema — not a route), tools.py (denial doc prose in docstring), tests/test_packet_0006.py (denial assertion tests). NO hits in executable call paths.",
     "exit_code": 0
   },
   "validations": {
@@ -44,7 +44,7 @@
     "index_sync_clear_autonomous_denied": "PASS (no callable invocations in adapter source)",
     "task_orchestrator_queue_implemented": "PASS (GET /api/projects/{id}/workflow/queue)",
     "task_orchestrator_blockers_implemented": "PASS (GET /api/projects/{id}/workflow/blockers)",
-    "task_orchestrator_state_implemented": "PASS (GET /api/projects/{id}/workflow/state \u2014 OBSERVED runtime route, classified CONFIRMED_READ_ONLY in TP-0006)",
+    "task_orchestrator_state_implemented": "PASS (GET /api/projects/{id}/workflow/state — OBSERVED runtime route, classified CONFIRMED_READ_ONLY in TP-0006)",
     "transition_denied": "PASS (/transition not in task_orchestrator.py source)",
     "pm_routes_denied": "PASS (/api/pm etc. not in task_orchestrator.py or tools.py)",
     "workflow_view_only_label": "PASS (permanent limitation in every task-orchestrator envelope)",
@@ -55,29 +55,29 @@
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
     "auditor_model": "claude-sonnet-4.6",
-    "invocation": "subagent code review of TP-DCP-MCP-RO-0006 adapter surface",
+    "invocation": "claude-code subagent audit (proof/TP-DCP-MCP-RO-0006/AUDITOR_REPORT.md)",
     "exit_code": 0,
     "report_path": "proof/TP-DCP-MCP-RO-0006/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "F-0006-LOW-1",
-        "severity": "LOW",
-        "title": "dope-context tools fail-closed pending MCP JSON-RPC transport",
+        "id": "EA-0006-R1",
+        "severity": "MEDIUM",
+        "title": "dope-context tools BLOCKED in Phase 1 (transport gap)",
         "status": "ACCEPTED_RISK",
-        "body": "Adapter raises ReadOnlyHttpError because dope-context exposes MCP JSON-RPC at /mcp, not REST. Fail-closed posture is intentional for Phase 1."
+        "body": "search_code, docs_search, get_index_status always return BLOCKED. Intentional fail-closed pending Phase 2 MCP JSON-RPC bridge."
       },
       {
-        "id": "F-0006-LOW-2",
+        "id": "EA-0006-R2",
         "severity": "LOW",
-        "title": "0001 inventory gap for /workflow/state classification",
+        "title": "task-orchestrator project_id fallback may mismatch operator routing",
         "status": "ACCEPTED_RISK",
-        "body": "Route classified CONFIRMED_READ_ONLY in TP-0006 but 0001 inventory artifact not retroactively modified."
+        "body": "When registry profile omits task_orchestrator_project_id, facade falls back to facade project_id. Operators should set explicitly."
       }
     ],
     "fixes_applied": [],
     "remaining_risks": [
-      "dope-context MCP JSON-RPC transport not wired in facade Phase 1",
-      "Live facade tests require DCP_FACADE_LIVE_TESTS=1"
+      "dope-context BLOCKED until Phase 2 transport bridge",
+      "get_index_status PROPOSED-only (inventory gap not retroactively resolved)"
     ],
     "skip_reason": null
   }
