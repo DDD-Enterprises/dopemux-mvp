@@ -1,0 +1,30 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENTS.md",
+    "config/instructions/pal-opencode-guide.md"
+  ],
+  "mcp": {
+    "pal": {
+      "type": "local",
+      "command": [
+        "sh",
+        "-lc",
+        "docker/mcp-servers-source/pal/pal-mcp-server/start-pal.sh"
+      ],
+      "enabled": true,
+      "timeout": 30000,
+      "environment": {
+        "OPENAI_API_KEY": "{env:OPENAI_API_KEY}",
+        "OPENROUTER_API_KEY": "{env:OPENROUTER_API_KEY}",
+        "GEMINI_API_KEY": "{env:GEMINI_API_KEY}",
+        "XAI_API_KEY": "{env:XAI_API_KEY}",
+        "DEFAULT_MODEL": "auto",
+        "LOG_LEVEL": "INFO"
+      }
+    }
+  },
+  "permission": {
+    "pal_*": "ask"
+  }
+}
