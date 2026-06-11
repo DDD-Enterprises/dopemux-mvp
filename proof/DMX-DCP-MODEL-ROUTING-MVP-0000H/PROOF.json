@@ -1,0 +1,29 @@
+{
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000H",
+  "status": "READY_FOR_EXECUTION",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "objective": "Independent adversarial audit of the 0001 design before any implementation",
+  "auditor_preferred": "Claude Opus or GPT-5.5 Pro",
+  "fallback_auditor": "Gemini CLI broad-context audit",
+  "attack_points": 12,
+  "artifacts_planned": [
+    "AUDIT.md",
+    "AUDIT.json",
+    "DESIGN_RISK_LEDGER.md",
+    "MUST_FIX_BEFORE_0001.md"
+  ],
+  "validation_gate": "Any FAIL or NEEDS_SUPERVISOR verdict blocks 0001",
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Planning/baseline analysis packet; no external audit toolchain invocation required for this series.",
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000H/AUDITOR_REPORT.md"
+  }
+}
