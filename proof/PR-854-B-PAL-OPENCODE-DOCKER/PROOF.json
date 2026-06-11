@@ -1,0 +1,91 @@
+{
+  "packet_id": "DMX-DCP-PR854-B-PROOF-STEWARDSHIP-001-CC",
+  "target_pr": 854,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat",
+  "head_sha": "15f235b8c60c473c301713f6e2f6251a449d07cf",
+  "captured_utc": "2026-06-11T22:29:15Z",
+  "status": "BLOCKED",
+  "executor": {
+    "tool": "claude-code",
+    "model": "claude-sonnet-4-6",
+    "authority": "proof_executor_not_merge_authority"
+  },
+  "evidence": {
+    "verify_pal_log": "proof/PR-854-B-PAL-OPENCODE-DOCKER/VERIFY_PAL.log",
+    "pal_stdio_build_log": "proof/PR-854-B-PAL-OPENCODE-DOCKER/PAL_STDIO_BUILD.log",
+    "pal_stdio_with_stdin_log": "proof/PR-854-B-PAL-OPENCODE-DOCKER/PAL_STDIO_WITH_STDIN.log",
+    "pal_stdio_no_stdin_log": "proof/PR-854-B-PAL-OPENCODE-DOCKER/PAL_STDIO_NO_STDIN.log",
+    "pal_stdio_compose_restart_log": "proof/PR-854-B-PAL-OPENCODE-DOCKER/PAL_STDIO_COMPOSE_RESTART_TEST.log",
+    "docker_scout_classification": "proof/PR-854-B-PAL-OPENCODE-DOCKER/DOCKER_SCOUT_CLASSIFICATION.md",
+    "pr_steward_latest_head": "proof/PR-854-B-PAL-OPENCODE-DOCKER/PR_STEWARD_LATEST_HEAD.md",
+    "pal_chain": "proof/PR-854-B-PAL-OPENCODE-DOCKER/PAL_CHAIN.md",
+    "execution_evidence": "proof/PR-854-B-PAL-OPENCODE-DOCKER/pal/05_execution_evidence.md"
+  },
+  "b_item_results": {
+    "1_pal_stdio_runtime": {
+      "image_builds": "PASS",
+      "with_stdin_alive_5s": "BLOCKED_PAL_STDIO_WITH_STDIN_FAIL",
+      "without_stdin_behavior": "CAPTURED_EXIT_IMMEDIATE_WITH_FRESH_BUILD",
+      "compose_restart_loop": "BLOCKED_RESTART_LOOP",
+      "compose_restart_count_at_30s": 8,
+      "root_cause": "clink.registry.RegistryLoadError: CLI type 'openrouter' is not supported by clink (supported: gemini, codex, claude)",
+      "trigger_file": "docker/mcp-servers/pal/pal-mcp-server/conf/cli_clients/openrouter-audit.json",
+      "trigger_runner_field": "openrouter",
+      "also_at_risk": "xai-grok-audit.json (runner=grok, also not in INTERNAL_DEFAULTS)",
+      "file_on_main": false,
+      "proxy_stub_note": "pal_stdio_proxy.py stub is NOT the active Dockerfile CMD; CMD runs server.py directly"
+    },
+    "2_opencode_pal_wiring": {
+      "opencode_jsonc_exists": "OBSERVED",
+      "start_pal_sh_exists": "OBSERVED",
+      "verify_pal_sh_passes": "PASS_EXIT_0",
+      "pal_planner_md_exists": "OBSERVED",
+      "pal_reviewer_md_exists": "OBSERVED",
+      "raw_verifier_output": "proof/PR-854-B-PAL-OPENCODE-DOCKER/VERIFY_PAL.log",
+      "opencode_cli_present": false,
+      "check_5_status": "SKIPPED_CLI_NOT_IN_PATH",
+      "structural_wiring": "VERIFIED",
+      "runtime_wiring": "NOT_VERIFIED_NO_CLI"
+    },
+    "3_docker_scout": {
+      "status": "SECURITY_ACCEPTED_WITH_RISKS",
+      "litellm_cve": "FIXED",
+      "base_os_inherited": "INHERITED_ACCEPTED",
+      "ci_scout_workflow": "PASS_ALL_9_SERVICES",
+      "ci_head_sha": "15f235b8c60c473c301713f6e2f6251a449d07cf",
+      "local_cve_scan": "NOT_RUN_API_FORBIDDEN",
+      "operator_acceptance_required": true
+    },
+    "4_pr_854_combined_scope": {
+      "pr_854_is_pure_design_only": false,
+      "pr_854_is_mixed_scope": true,
+      "pr_862_clean_0001_reference": "OBSERVED_DRAFT_OPEN",
+      "pr_862_head": "a83f8e252fe99dac2954af4ea005b260b93739ad",
+      "pr_854_scope": "0001_domain_model + OpenCode/PAL/Docker/proof + predecessor_packets"
+    },
+    "5_readiness_posture": {
+      "merge_readiness": "BLOCKED_NOT_REQUESTED",
+      "self_certification": "BLOCKED",
+      "supervisor_required": "GPT-5.5 Pro"
+    }
+  },
+  "validation_state": "BLOCKED",
+  "auditor_verdict": "BLOCKED",
+  "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "operator_acceptance_required": true,
+  "ci_check_failing": "review / review (orchestrator review job)",
+  "carried_risks": [
+    "PR #854 is mixed-scope — clean 0001 is in PR #862",
+    "pal-stdio server.py crashes on startup due to openrouter-audit.json clink config mismatch",
+    "compose restart: unless-stopped causes restart loop (restart_count=8 in 30s)",
+    "Fix required: edit clink/constants.py INTERNAL_DEFAULTS or remove unsupported cli_clients configs — BLOCKED_NEEDS_NEW_PACKET",
+    "xai-grok-audit.json also has unsupported runner=grok (would crash after openrouter fix)",
+    "verify-pal check 5 not confirmed (opencode CLI absent)",
+    "Docker Scout base OS inherited CVEs require operator acceptance (documented in PR body)",
+    "PAL MCP unavailable — all chain stages manual and same-tool (non-independent)",
+    "review / review CI check FAILING at head 15f235b8c",
+    "No merge authority granted to Claude Code executor"
+  ],
+  "dope_memory_branch_usage": "NOT_USED"
+}
