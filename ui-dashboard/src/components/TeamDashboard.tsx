@@ -1,5 +1,6 @@
 import { Avatar, Box, Chip, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { Eye, Zap } from 'lucide-react';
 
 import { brandTokens, statusStyles } from '../theme';
 
@@ -116,18 +117,40 @@ export default function TeamDashboard() {
                 <Chip
                   size="small"
                   tabIndex={0}
+                  icon={<Zap size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />}
                   label={`Energy ${member.energy}%`}
                   aria-label={`${member.name}'s current energy level: ${member.energy}%`}
-                  sx={{ cursor: 'help' }}
+                  sx={{
+                    cursor: 'help',
+                    transition: 'all 0.2s ease',
+                    border: '1px solid transparent',
+                    '&:hover, &:focus-visible': {
+                      bgcolor: alpha(brandTokens.colors.serumMint, 0.12),
+                      borderColor: brandTokens.colors.serumMint,
+                      boxShadow: `0 0 12px ${alpha(brandTokens.colors.serumMint, 0.3)}`,
+                      transform: 'translateY(-1px)',
+                    },
+                  }}
                 />
               </Tooltip>
               <Tooltip title="Current attention focus" arrow>
                 <Chip
                   size="small"
                   tabIndex={0}
+                  icon={<Eye size={14} color={brandTokens.colors.ritualCyan} aria-hidden="true" />}
                   label={`Attention ${member.attention}%`}
                   aria-label={`${member.name}'s current attention focus: ${member.attention}%`}
-                  sx={{ cursor: 'help' }}
+                  sx={{
+                    cursor: 'help',
+                    transition: 'all 0.2s ease',
+                    border: '1px solid transparent',
+                    '&:hover, &:focus-visible': {
+                      bgcolor: alpha(brandTokens.colors.ritualCyan, 0.12),
+                      borderColor: brandTokens.colors.ritualCyan,
+                      boxShadow: `0 0 12px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
+                      transform: 'translateY(-1px)',
+                    },
+                  }}
                 />
               </Tooltip>
             </Box>
