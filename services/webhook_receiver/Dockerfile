@@ -8,9 +8,9 @@ COPY README.md .
 COPY src src
 COPY tools tools
 
-RUN apt-get update && apt-get install -y sqlite3 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y && apt-get install -y sqlite3 && rm -rf /var/lib/apt/lists/*
 # Install Python dependencies from centralized manifest
-RUN pip install --no-cache-dir .[services]
+RUN pip install --no-cache-dir "wheel>=0.46.2" && pip install --no-cache-dir .[services]
 
 COPY services/webhook_receiver /app/services/webhook_receiver
 
