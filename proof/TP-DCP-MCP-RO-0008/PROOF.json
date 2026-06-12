@@ -1,0 +1,108 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0008",
+  "series": "DCP-MCP-RO",
+  "branch": "dcp/chatgpt-mcp-ro-0008-hardening-cross-project-isolatio",
+  "base": "main",
+  "head_sha": "3265548a5e6dada9dbe66993b0fb57a39ecf09d1",
+  "agent": "claude-opus-4-8",
+  "timestamp": "2026-06-10T10:17:03-07:00",
+  "kind": "code+docs (final packet)",
+  "final_packet": true,
+  "files_changed": {
+    "modified": [
+      "services/dcp-readonly-facade/src/dcp_facade/envelope.py",
+      "services/dcp-readonly-facade/src/dcp_facade/tools.py",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/RESPONSE_ENVELOPE_SCHEMA.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md"
+    ],
+    "created": [
+      "services/dcp-readonly-facade/tests/test_packet_0008.py",
+      "proof/TP-DCP-MCP-RO-0008/PROOF.json",
+      "proof/TP-DCP-MCP-RO-0008/COMMAND_LOG.md",
+      "proof/TP-DCP-MCP-RO-0008/AUDIT.md",
+      "proof/TP-DCP-MCP-RO-0008/AUDITOR_REPORT.md",
+      "proof/TP-DCP-MCP-RO-0008/NO_WRITE_REVIEW.md",
+      "proof/TP-DCP-MCP-RO-0008/ROUTE_DENYLIST_TEST_OUTPUT.md",
+      "proof/TP-DCP-MCP-RO-0008/REDACTION_TEST_OUTPUT.md",
+      "proof/TP-DCP-MCP-RO-0008/CROSS_PROJECT_ISOLATION_TEST_OUTPUT.md",
+      "proof/TP-DCP-MCP-RO-0008/PR_READINESS.md"
+    ]
+  },
+  "test_results": {
+    "command": "python -m pytest -q services/dcp-readonly-facade/tests",
+    "exit_code": 0,
+    "summary": "130 passed, 1 skipped (live tests require DCP_FACADE_LIVE_TESTS=1); +22 new in test_packet_0008.py"
+  },
+  "compile_check": {
+    "command": "python -m compileall -q services/dcp-readonly-facade",
+    "exit_code": 0
+  },
+  "no_write_scan": {
+    "command": "rg -n 'write_text|mkdir|unlink|rmtree|os.system|shell=True|.put(|.patch(|.delete(' services/dcp-readonly-facade/src",
+    "verdict": "NO_WRITE_PATHS",
+    "note": "Only hits in executable source are subprocess (read-only git, fixed argv, shell=False), denylist route definitions in route_manifest.py, and denial docstrings. No write/shell/mutating-verb call path. See NO_WRITE_REVIEW.md."
+  },
+  "secret_scan": {
+    "command": "rg -n 'OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|sk-|Bearer |TOKEN=|PASSWORD=|SECRET=' services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly",
+    "exit_code": 0,
+    "verdict": "NO_REAL_SECRETS",
+    "note": "False positives only: 'sk-' substring of 'task-orchestrator'; redaction.py/test_redaction.py/test_packet_0008.py contain pattern literals by design (regexes + denial-assertion test inputs)."
+  },
+  "diff_scope": {
+    "command": "git diff --cached --stat",
+    "summary": "5 source/doc files (419 insertions) + proof bundle; all within commit.allowlist",
+    "outside_allowlist": false,
+    "forbidden_paths_touched": []
+  },
+  "validations": {
+    "untrusted_marking_implemented": "PASS (envelope.untrusted; fail-closed default True; facade-authored=False)",
+    "prompt_injection_wrapping": "PASS (content confined to data, untrusted=True, not acted on)",
+    "cross_project_isolation": "PASS (both directions + symlink escape blocked)",
+    "secret_and_path_redaction": "PASS (sk-/ghp_/AKIA/Bearer/KEY=VALUE/abs-path)",
+    "stale_proof_and_dirty_warnings": "PASS",
+    "no_write_no_shell_no_mutating_verb": "PASS (static gate over full src tree)",
+    "denied_routes_remain_denied": "PASS (denylist regression across src)",
+    "envelope_present_on_all_outputs": "PASS (untrusted added to ENVELOPE_FIELDS)",
+    "full_suite_passes": "PASS (130 passed, exit 0)",
+    "backward_compatible": "PASS (108 pre-existing tests unchanged)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "self-audit of TP-DCP-MCP-RO-0008 hardening against packet invariants and STOP-IFs (S3)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DCP-MCP-RO-0008/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-0008-LOW-1",
+        "severity": "LOW",
+        "title": "untrusted is an advisory marker; client must honor it",
+        "status": "ACCEPTED_RISK",
+        "body": "The untrusted flag signals the client to treat data as inert but cannot force compliance. Defence-in-depth: retrieved content is also structurally confined to data and never merged into facade-authored fields, so marker + structural separation together form the control."
+      },
+      {
+        "id": "F-0008-LOW-2",
+        "severity": "LOW",
+        "title": "dope-context tools remain Phase-1 BLOCKED",
+        "status": "ACCEPTED_RISK",
+        "body": "dope-context MCP JSON-RPC transport is not bridged (Phase 2). Injection/redaction is exercised against ConPort/dope-memory/proof surfaces, which return data; dope-context returns BLOCKED with no data in Phase 1. Carried from TP-0006."
+      },
+      {
+        "id": "F-0008-INFO-1",
+        "severity": "INFO",
+        "title": "Pre-existing pyright str|None narrowing notes unchanged",
+        "status": "ACCEPTED_RISK",
+        "body": "tools.py backend-call args show str|None under pyright because the if-missing guard narrows at runtime, not statically. Not introduced by this packet; out of scope."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "untrusted is advisory + structural; ultimate honoring is client-side.",
+      "Live backend integration NOT_RUN (suite mocks HTTP; opt-in DCP_FACADE_LIVE_TESTS=1).",
+      "dope-context live results pending Phase-2 MCP transport bridge."
+    ],
+    "skip_reason": null
+  }
+}

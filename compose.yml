@@ -291,6 +291,27 @@ services:
       retries: 3
       interval: 30s
 
+  # PAL Stdio - Docker MCP Toolkit variant (runs server.py directly on stdio)
+  pal-stdio:
+    build:
+      context: .
+      dockerfile: docker/mcp-servers/pal-stdio/Dockerfile
+    container_name: mcp-pal-stdio
+    restart: unless-stopped
+    # Keep stdin open so the MCP stdio server.py does not read EOF and exit
+    # immediately under `docker compose up -d` (which, with restart:
+    # unless-stopped, would otherwise become a restart loop). The Docker MCP
+    # Toolkit execs into the persistent container for the actual stdio session.
+    stdin_open: true
+    tty: true
+    networks:
+      - dopemux-network
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    # No ports exposed - Docker MCP Toolkit execs into container for stdio transport
+
   # LiteLLM - Model Router
   litellm:
     build:

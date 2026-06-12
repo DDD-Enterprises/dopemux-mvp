@@ -123,6 +123,12 @@ The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStar
 
 **Orchestrator-coordination hooks** (ported from upstream `claude-plugins/task-orchestrator`, TP-CS-101 / Path B — see [docs/03-reference/orchestrator-integration/plugin-hooks-port.md](../docs/03-reference/orchestrator-integration/plugin-hooks-port.md)): available as `.claude/hooks/orchestrator_session_start.py` (SessionStart context inject), `orchestrator_post_edit_nudge.py` (PostToolUse edit nudge), `orchestrator_subagent_protocol.py` (SubagentStart agent-owned-phase protocol for implementation subagents), and `orchestrator_enforcement.py` (PreToolUse actor-attribution enforcement [dormant until `actor_authentication.enabled`], skill-invocation enforcement, and EnterPlanMode/ExitPlanMode guidance). These route through `native_hooks.py` when invoked and fail open (no-op) when their helpers or config are absent.
 
+**DCP/MCP hooks** (branch `claude/dcp-mcp-skills-hooks-2026-06-10`): four hooks that wire the DCP read-only facade and MCP server health into the normal edit workflow — all fail-open, all with per-session cooldown caches under `.claude/`:
+- **H1** `dcp_surface_guard.py` — PreToolUse hard-deny for DCP-RED-MERGE-SEAM-0001 paths; one-time advisory for contract surfaces (schemas, route_manifest, mcp_catalog, .mcp.json).
+- **H2** `dcp_denylist_nudge.py` — PostToolUse scan of facade adapter edits for denied-route tokens loaded at runtime from `route_manifest.py` (no drift); advisory names token + line.
+- **H3** `mcp_health_probe.py` — SessionStart 15-min-cached MCP server health snapshot; detects leaked task-orchestrator containers (SQLite-contention risk) and unreachable http/sse servers.
+- **H4** `proof_tracking_guard.py` — PostToolUse advisory when a TRACK-tier proof artifact (`PROOF.json`, `SUMMARY.md`, etc.) is gitignored or untracked; prompts `git add -f`.
+
 **Observed runtime support**: Settings dispatch all lifecycle events through `native_hooks.py`; hook scripts provide best-effort context save on Stop, energy warnings before complex tools, and progress/edit event signals.
 
 **Planned/specification behavior**: focus-session timers, periodic save loops, automatic break prompts, and forced hyperfocus pauses are not proven wired in the observed Claude runtime.

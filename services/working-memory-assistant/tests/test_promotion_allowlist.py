@@ -186,3 +186,49 @@ class TestPromotionAllowlist:
             {"decision_id": "dec-1", "title": "Test", "rationale": "Because..."},
         )
         assert entry is not None
+
+
+class TestManualMemoryStoreFieldValidation:
+    """manual.memory_store events carry caller-controlled outcome/workflow_phase.
+
+    Invalid values must be rejected at promotion time (return None) — otherwise
+    the fail-closed store raises ValueError downstream and the eventbus consumer
+    never acks the message, retrying the poison event forever.
+    """
+
+    @pytest.fixture
+    def engine(self):
+        return PromotionEngine()
+
+    def _event(self, **payload_overrides):
+        payload = {
+            "category": "planning",
+            "entry_type": "manual_note",
+            "summary": "User note",
+        }
+        payload.update(payload_overrides)
+        return {
+            "id": "evt-manual-1",
+            "event_type": "manual.memory_store",
+            "source": "mcp-server",
+            "ts_utc": "2026-06-10T00:00:00+00:00",
+            "payload": payload,
+        }
+
+    def test_invalid_outcome_is_not_promoted(self, engine):
+        assert engine.promote(self._event(outcome="finished")) is None
+
+    def test_invalid_workflow_phase_is_not_promoted(self, engine):
+        assert engine.promote(self._event(workflow_phase="testing")) is None
+
+    def test_valid_outcome_and_phase_promote(self, engine):
+        entry = engine.promote(self._event(outcome="success", workflow_phase="review"))
+        assert entry is not None
+        assert entry.outcome == "success"
+        assert entry.workflow_phase == "review"
+
+    def test_omitted_outcome_and_phase_promote_with_defaults(self, engine):
+        entry = engine.promote(self._event())
+        assert entry is not None
+        assert entry.outcome == "in_progress"
+        assert entry.workflow_phase is None

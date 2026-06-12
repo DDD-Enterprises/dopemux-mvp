@@ -5,7 +5,7 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-04-02'
-last_review: '2026-04-02'
+last_review: '2026-06-10'
 next_review: '2026-07-01'
 prelude: Truth Systems (reference) for dopemux documentation and developer workflows.
 ---
@@ -94,7 +94,7 @@ Method:
   - Provides a separate operational service from the canonical dope-memory HTTP surface.
 - Non-responsibilities:
   - No direct evidence that it is the canonical durable dope-memory runtime.
-  - No direct evidence that `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/mcp/server.py` is a runnable MCP server.
+  - `wma_mcp/server.py` (formerly `mcp/server.py`; renamed 2026-06-10) contains WMA-side tool logic; it is not the active dope-memory MCP server. The active MCP endpoint is served from `dope_memory_main.py` at `/mcp` (streamable HTTP, PR #857 2026-06-10).
 - Dependencies:
   - Local application logic under `/Users/hue/code/dopemux-mvp/services/working-memory-assistant`
   - JWT/auth surfaces in the same service tree

@@ -1,0 +1,64 @@
+{
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000",
+  "status": "COMPLETE",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat",
+  "head_sha": "8be0675579f501582c74e14a409343ac6384edb3",
+  "dirty_worktree_before": "9 tracked modifications + 24 untracked files",
+  "dirty_worktree_after": "unchanged (read-only execution)",
+  "commands_run": 87,
+  "artifacts": [
+    "SURFACE_CENSUS.md",
+    "COMMAND_HELP_LEDGER.md",
+    "MCP_INVENTORY.md",
+    "SLASH_COMMAND_INVENTORY.md",
+    "WORKFLOW_INVENTORY.md",
+    "AGENT_SURFACE_INVENTORY.md",
+    "RUNNER_CONFIG_INVENTORY.md",
+    "MODEL_CONFIG_INVENTORY.md",
+    "SERVICE_BOUNDARY_LEDGER.md",
+    "MUTATION_RED_LANE_LEDGER.md",
+    "PROOF_SHAPE_SAMPLE_LEDGER.md",
+    "UNKNOWN_AND_CONFLICT_LEDGER.md",
+    "COMMAND_LOG.md",
+    "PROOF.json",
+    "AUDIT.md"
+  ],
+  "unknowns": [
+    "Task Orchestrator write surface runtime behavior",
+    "PR Steward mutation path execution semantics",
+    "ConPort/dopememory write contract enforcement",
+    "dopecon-bridge event mutation authority",
+    "Agent runtime authority across services/agents and task-orchestrator"
+  ],
+  "conflicts": [
+    "Current worktree has gemini-review.yml modification violating DCP allowlist test (test_16_no_forbidden_files_modified)"
+  ],
+  "red_lanes": [
+    "src/dopemux_pr_merge_specialist/",
+    "scripts/batch_resolve_and_merge.py",
+    ".github/workflows/ (gemini-review.yml currently modified)",
+    "dopemux_pr_merge_specialist/ (forbidden prefix in DCP test)"
+  ],
+  "validation_state": "DCP tests run: 1 failure (allowlist violation in current diff)",
+  "auditor_verdict": "INVENTORY_COMPLETE — red lanes and unknowns preserved",
+  "limitations": [
+    "Direct dopemux binary shim broken (mise self-referential)",
+    "Used uv run dopemux for all CLI invocations",
+    "rg output truncated to first 50 matches per pattern",
+    "No live service startup or credential validation performed"
+  ],
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Planning/baseline analysis packet; no external audit toolchain invocation required for this series.",
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000/AUDITOR_REPORT.md"
+  }
+}
