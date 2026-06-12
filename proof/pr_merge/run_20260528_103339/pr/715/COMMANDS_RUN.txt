@@ -1,0 +1,194 @@
+$ git fetch origin pull/715/head:prmerge/20260528_103339-715
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/715/head -> prmerge/20260528_103339-715
+
+$ git worktree add /tmp/dopemux-pr-merge-715-20260528_103339 prmerge/20260528_103339-715
+exit=0
+--- stdout ---
+HEAD is now at 3fb24e590 Merge branch 'main' into palette-notification-iconography-9918379728212595040
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260528_103339-715')
+Updating files:  32% (4321/13109)
+Updating files:  33% (4326/13109)
+Updating files:  34% (4458/13109)
+Updating files:  35% (4589/13109)
+Updating files:  36% (4720/13109)
+Updating files:  37% (4851/13109)
+Updating files:  38% (4982/13109)
+Updating files:  39% (5113/13109)
+Updating files:  40% (5244/13109)
+Updating files:  41% (5375/13109)
+Updating files:  42% (5506/13109)
+Updating files:  43% (5637/13109)
+Updating files:  44% (5768/13109)
+Updating files:  45% (5900/13109)
+Updating files:  46% (6031/13109)
+Updating files:  47% (6162/13109)
+Updating files:  48% (6293/13109)
+Updating files:  49% (6424/13109)
+Updating files:  50% (6555/13109)
+Updating files:  51% (6686/13109)
+Updating files:  52% (6817/13109)
+Updating files:  53% (6948/13109)
+Updating files:  54% (7079/13109)
+Updating files:  55% (7210/13109)
+Updating files:  56% (7342/13109)
+Updating files:  57% (7473/13109)
+Updating files:  58% (7604/13109)
+Updating files:  59% (7735/13109)
+Updating files:  60% (7866/13109)
+Updating files:  61% (7997/13109)
+Updating files:  62% (8128/13109)
+Updating files:  63% (8259/13109)
+Updating files:  64% (8390/13109)
+Updating files:  65% (8521/13109)
+Updating files:  66% (8652/13109)
+Updating files:  67% (8784/13109)
+Updating files:  68% (8915/13109)
+Updating files:  69% (9046/13109)
+Updating files:  70% (9177/13109)
+Updating files:  71% (9308/13109)
+Updating files:  72% (9439/13109)
+Updating files:  73% (9570/13109)
+Updating files:  74% (9701/13109)
+Updating files:  75% (9832/13109)
+Updating files:  76% (9963/13109)
+Updating files:  77% (10094/13109)
+Updating files:  78% (10226/13109)
+Updating files:  79% (10357/13109)
+Updating files:  80% (10488/13109)
+Updating files:  81% (10619/13109)
+Updating files:  82% (10750/13109)
+Updating files:  83% (10881/13109)
+Updating files:  83% (10988/13109)
+Updating files:  84% (11012/13109)
+Updating files:  85% (11143/13109)
+Updating files:  86% (11274/13109)
+Updating files:  87% (11405/13109)
+Updating files:  88% (11536/13109)
+Updating files:  89% (11668/13109)
+Updating files:  90% (11799/13109)
+Updating files:  91% (11930/13109)
+Updating files:  92% (12061/13109)
+Updating files:  93% (12192/13109)
+Updating files:  94% (12323/13109)
+Updating files:  95% (12454/13109)
+Updating files:  96% (12585/13109)
+Updating files:  97% (12716/13109)
+Updating files:  98% (12847/13109)
+Updating files:  99% (12978/13109)
+Updating files: 100% (13109/13109)
+Updating files: 100% (13109/13109), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+3fb24e590724333a7534a5a1250d86d57e6e507d
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E81ZX", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3WJv"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E81Zr", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3WLp"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E81Zy", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3WNm"}}}}
+
+$ gh pr update-branch 715 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin palette-notification-iconography-9918379728212595040
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                palette-notification-iconography-9918379728212595040 -> FETCH_HEAD
+
+$ git reset --hard origin/palette-notification-iconography-9918379728212595040
+exit=0
+--- stdout ---
+HEAD is now at 3fb24e590 Merge branch 'main' into palette-notification-iconography-9918379728212595040
+
+$ git diff --name-only --diff-filter=ACMR ef0c30bf43ba01f55f9247b9d755b57bccaa74b5...HEAD
+exit=0
+--- stdout ---
+ui-dashboard/src/App.tsx
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files ui-dashboard/src/App.tsx
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files......................(no files to check)Skipped
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E81ZX", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3WT6"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986E81ZX"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986E81ZX","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E81Zr", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3WWp"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986E81Zr"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986E81Zr","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E81Zy", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3WZV"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986E81Zy"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986E81Zy","isResolved":true}}}}
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-715-20260528_103339
+exit=0
+
+$ gh pr merge 715 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#715 is not mergeable: the base branch policy prohibits the merge.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+

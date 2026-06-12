@@ -1,0 +1,163 @@
+$ git fetch origin pull/723/head:prmerge/20260530_172644-723
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/723/head -> prmerge/20260530_172644-723
+
+$ git worktree add /tmp/dopemux-pr-merge-723-20260530_172644 prmerge/20260530_172644-723
+exit=0
+--- stdout ---
+HEAD is now at ff77840d6 🎨 Palette: Refined Metric Feedback, Semantic Iconography, and CI Remediation
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_172644-723')
+Updating files:  26% (3513/13505)
+Updating files:  27% (3647/13505)
+Updating files:  28% (3782/13505)
+Updating files:  29% (3917/13505)
+Updating files:  30% (4052/13505)
+Updating files:  31% (4187/13505)
+Updating files:  32% (4322/13505)
+Updating files:  33% (4457/13505)
+Updating files:  34% (4592/13505)
+Updating files:  35% (4727/13505)
+Updating files:  36% (4862/13505)
+Updating files:  37% (4997/13505)
+Updating files:  38% (5132/13505)
+Updating files:  39% (5267/13505)
+Updating files:  40% (5402/13505)
+Updating files:  41% (5538/13505)
+Updating files:  42% (5673/13505)
+Updating files:  43% (5808/13505)
+Updating files:  44% (5943/13505)
+Updating files:  45% (6078/13505)
+Updating files:  46% (6213/13505)
+Updating files:  47% (6348/13505)
+Updating files:  48% (6483/13505)
+Updating files:  49% (6618/13505)
+Updating files:  50% (6753/13505)
+Updating files:  51% (6888/13505)
+Updating files:  52% (7023/13505)
+Updating files:  53% (7158/13505)
+Updating files:  54% (7293/13505)
+Updating files:  55% (7428/13505)
+Updating files:  56% (7563/13505)
+Updating files:  57% (7698/13505)
+Updating files:  58% (7833/13505)
+Updating files:  59% (7968/13505)
+Updating files:  60% (8103/13505)
+Updating files:  61% (8239/13505)
+Updating files:  62% (8374/13505)
+Updating files:  63% (8509/13505)
+Updating files:  64% (8644/13505)
+Updating files:  65% (8779/13505)
+Updating files:  66% (8914/13505)
+Updating files:  67% (9049/13505)
+Updating files:  67% (9136/13505)
+Updating files:  68% (9184/13505)
+Updating files:  69% (9319/13505)
+Updating files:  70% (9454/13505)
+Updating files:  71% (9589/13505)
+Updating files:  72% (9724/13505)
+Updating files:  73% (9859/13505)
+Updating files:  74% (9994/13505)
+Updating files:  75% (10129/13505)
+Updating files:  76% (10264/13505)
+Updating files:  77% (10399/13505)
+Updating files:  78% (10534/13505)
+Updating files:  79% (10669/13505)
+Updating files:  80% (10804/13505)
+Updating files:  81% (10940/13505)
+Updating files:  82% (11075/13505)
+Updating files:  83% (11210/13505)
+Updating files:  84% (11345/13505)
+Updating files:  85% (11480/13505)
+Updating files:  86% (11615/13505)
+Updating files:  87% (11750/13505)
+Updating files:  88% (11885/13505)
+Updating files:  89% (12020/13505)
+Updating files:  90% (12155/13505)
+Updating files:  91% (12290/13505)
+Updating files:  92% (12425/13505)
+Updating files:  93% (12560/13505)
+Updating files:  94% (12695/13505)
+Updating files:  95% (12830/13505)
+Updating files:  96% (12965/13505)
+Updating files:  97% (13100/13505)
+Updating files:  98% (13235/13505)
+Updating files:  99% (13370/13505)
+Updating files: 100% (13505/13505)
+Updating files: 100% (13505/13505), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+ff77840d6d929717139d27850562a3f3f0a92feb
+
+$ gh pr update-branch 723 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin palette-refined-metric-feedback-and-semantic-iconography-3304135537873689056
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                palette-refined-metric-feedback-and-semantic-iconography-3304135537873689056 -> FETCH_HEAD
+
+$ git reset --hard origin/palette-refined-metric-feedback-and-semantic-iconography-3304135537873689056
+exit=0
+--- stdout ---
+HEAD is now at ff77840d6 🎨 Palette: Refined Metric Feedback, Semantic Iconography, and CI Remediation
+
+$ git diff --name-only --diff-filter=ACMR 755bf38460d1f2f6bba6e072ec9a627e9e218b15...HEAD
+exit=0
+--- stdout ---
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json
+src/dopemux/orchestrator/ui/data_sources.py
+ui-dashboard/src/App.tsx
+ui-dashboard/src/components/__tests__/Accessibility.test.ts
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json src/dopemux/orchestrator/ui/data_sources.py ui-dashboard/src/App.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files......................(no files to check)Skipped
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-723-20260530_172644
+exit=0
+
+$ gh pr merge 723 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#723 is not mergeable: the base branch policy prohibits the merge.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+

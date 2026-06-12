@@ -1,0 +1,251 @@
+$ git fetch origin pull/548/head:prmerge/20260501_000204-548
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/548/head -> prmerge/20260501_000204-548
+
+$ git worktree add /tmp/dopemux-pr-merge-548-20260501_000204 prmerge/20260501_000204-548
+exit=0
+--- stdout ---
+HEAD is now at 14b60d2db Restore deterministic runtime authority verifier
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260501_000204-548')
+Updating files:  25% (3060/12148)
+Updating files:  26% (3159/12148)
+Updating files:  27% (3280/12148)
+Updating files:  28% (3402/12148)
+Updating files:  29% (3523/12148)
+Updating files:  30% (3645/12148)
+Updating files:  31% (3766/12148)
+Updating files:  32% (3888/12148)
+Updating files:  33% (4009/12148)
+Updating files:  34% (4131/12148)
+Updating files:  35% (4252/12148)
+Updating files:  36% (4374/12148)
+Updating files:  37% (4495/12148)
+Updating files:  38% (4617/12148)
+Updating files:  39% (4738/12148)
+Updating files:  40% (4860/12148)
+Updating files:  41% (4981/12148)
+Updating files:  42% (5103/12148)
+Updating files:  43% (5224/12148)
+Updating files:  44% (5346/12148)
+Updating files:  45% (5467/12148)
+Updating files:  46% (5589/12148)
+Updating files:  47% (5710/12148)
+Updating files:  48% (5832/12148)
+Updating files:  49% (5953/12148)
+Updating files:  50% (6074/12148)
+Updating files:  51% (6196/12148)
+Updating files:  52% (6317/12148)
+Updating files:  53% (6439/12148)
+Updating files:  54% (6560/12148)
+Updating files:  55% (6682/12148)
+Updating files:  56% (6803/12148)
+Updating files:  57% (6925/12148)
+Updating files:  58% (7046/12148)
+Updating files:  59% (7168/12148)
+Updating files:  60% (7289/12148)
+Updating files:  61% (7411/12148)
+Updating files:  62% (7532/12148)
+Updating files:  63% (7654/12148)
+Updating files:  64% (7775/12148)
+Updating files:  65% (7897/12148)
+Updating files:  66% (8018/12148)
+Updating files:  67% (8140/12148)
+Updating files:  68% (8261/12148)
+Updating files:  68% (8340/12148)
+Updating files:  69% (8383/12148)
+Updating files:  70% (8504/12148)
+Updating files:  71% (8626/12148)
+Updating files:  72% (8747/12148)
+Updating files:  73% (8869/12148)
+Updating files:  74% (8990/12148)
+Updating files:  75% (9111/12148)
+Updating files:  76% (9233/12148)
+Updating files:  77% (9354/12148)
+Updating files:  78% (9476/12148)
+Updating files:  79% (9597/12148)
+Updating files:  80% (9719/12148)
+Updating files:  81% (9840/12148)
+Updating files:  82% (9962/12148)
+Updating files:  83% (10083/12148)
+Updating files:  84% (10205/12148)
+Updating files:  85% (10326/12148)
+Updating files:  86% (10448/12148)
+Updating files:  87% (10569/12148)
+Updating files:  88% (10691/12148)
+Updating files:  89% (10812/12148)
+Updating files:  90% (10934/12148)
+Updating files:  91% (11055/12148)
+Updating files:  92% (11177/12148)
+Updating files:  93% (11298/12148)
+Updating files:  94% (11420/12148)
+Updating files:  95% (11541/12148)
+Updating files:  96% (11663/12148)
+Updating files:  97% (11784/12148)
+Updating files:  98% (11906/12148)
+Updating files:  99% (12027/12148)
+Updating files: 100% (12148/12148)
+Updating files: 100% (12148/12148), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+14b60d2dba482ba2404467f4ba577cfffb388882
+
+$ gh pr update-branch 548 --rebase
+exit=0
+--- stdout ---
+✓ PR branch updated
+
+$ git fetch origin fix/restore-runtime-authority-verifier
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                fix/restore-runtime-authority-verifier -> FETCH_HEAD
+ + 14b60d2db...f877cc1bd fix/restore-runtime-authority-verifier -> origin/fix/restore-runtime-authority-verifier  (forced update)
+
+$ git reset --hard origin/fix/restore-runtime-authority-verifier
+exit=0
+--- stdout ---
+HEAD is now at f877cc1bd Restore deterministic runtime authority verifier
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-7bfU", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869Fy9G"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw985-7bfU"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw985-7bfU","isResolved":true}}}}
+
+$ git status --porcelain
+exit=0
+
+$ pre-commit run
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files......................(no files to check)Skipped
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).................(no files to check)Skipped
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix
+exit=1
+--- stdout ---
+Updated 7 file(s):
+ - docs/90-adr/adr-221-event-stream-rate-limits.md
+ - docs/90-adr/adr-220-dopetask-direct-health-endpoint.md
+ - docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md
+ - docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md
+ - docs/archive/unclassified-top-level/implementation/pm-writes-phase1-verification.md
+ - docs/archive/unclassified-top-level/implementation/pm-writes-phase1-authority-map.md
+ - docs/03-reference/systems/dopemux/transport-contracts.md
+
+$ python scripts/docs_validator.py
+exit=1
+--- stderr ---
+
+❌ 3 error(s) found:
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Invalid status 'active' for adr. Must be one of: superseded, accepted, rejected, proposed
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Invalid node_type 'adr'. Must be one of: Error, Symbol, Pattern, ADR, Caveat, Decision, File, Milestone, Task, DocPage
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Invalid status 'active' for adr. Must be one of: superseded, accepted, rejected, proposed
+
+⚠️  67 warning(s):
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adrs-updated.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adrs-updated.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adrs-updated.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/template-adr-light.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-skeleton-light.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/global-mcp-configuration.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/global-mcp-configuration.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-index.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-index.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-index.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-202-serena-v2-production-validation.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-202-serena-v2-production-validation.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/candidate-adrs.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/candidate-adrs.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/candidate-adrs.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Context
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Decision
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Consequences
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Problem
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Options
+  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Proposed Direction
+
+$ git fetch origin main
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                main       -> FETCH_HEAD
+
+$ git diff --name-only origin/main...HEAD
+exit=0
+--- stdout ---
+config/runtime_authority_manifest.json
+docs/03-reference/governance/runtime-authority-verification.md
+scripts/verify_runtime_authority.py
+tests/unit/test_runtime_authority_manifest.py
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-548-20260501_000204
+exit=0
+

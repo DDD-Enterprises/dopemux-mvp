@@ -1,0 +1,440 @@
+{
+  "run_id": "20260501_000204",
+  "pr_state": {
+    "pr_id": 544,
+    "title": "docs(cockpit): preserve local design package work",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "codex/main-clean-local-work-pr",
+    "ci_status": "FAILURE",
+    "mergeable": "CONFLICTING",
+    "merge_state_status": "DIRTY",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-01T06:12:03Z",
+    "is_draft": false,
+    "additions": 7302,
+    "deletions": 1113,
+    "changed_files": 73,
+    "unresolved_threads": 24,
+    "active_unresolved_threads": 22,
+    "outdated_unresolved_threads": 2,
+    "pr_class": "MIXED",
+    "risk_score": 11395.0,
+    "check_summary": {
+      "total": 19,
+      "success": 17,
+      "failure": 2,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 2,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "apply_blocked",
+    "head_sha": "910ce7f03b18f8ff2156ac3e63e6e2920432730d",
+    "base_sha": "911ac39d9f4436d69370f4dbdcee21f388347938"
+  },
+  "lifecycle_state": "apply_blocked",
+  "apply_actions": [
+    "rebase codex/main-clean-local-work-pr onto main",
+    "resolve review threads",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "blocked",
+    "command": [],
+    "reason": "22 active unresolved review threads remain.; Required checks are failing.; Required approval is missing.; Local validation is required before merge readiness can be declared.",
+    "reason_code": "active_thread"
+  },
+  "blockers": [
+    {
+      "type": "active_thread",
+      "source": "github_protection_review",
+      "name": "22 active unresolved review threads remain.",
+      "details": null,
+      "metadata": {
+        "active_threads": 22
+      }
+    },
+    {
+      "type": "required_check_failed",
+      "source": "github_protection_review",
+      "name": "Required checks are failing.",
+      "details": null,
+      "metadata": {
+        "checks_total": 19,
+        "checks_success": 17,
+        "checks_failure": 2,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 2,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "CONFLICTING",
+        "merge_state_status": "DIRTY",
+        "blocker_types": [
+          "required_check_failed",
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "type": "approval_missing",
+      "source": "github_protection_review",
+      "name": "Required approval is missing.",
+      "details": null,
+      "metadata": {}
+    },
+    {
+      "type": "validation_not_executed",
+      "source": "local_validation",
+      "name": "Local validation is required before merge readiness can be declared.",
+      "details": null,
+      "metadata": {
+        "validation_status": "not_executed"
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "details": {
+        "diff_size": 8415
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "details": {
+        "risk_score": 11395.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "3d8667480a0c19acffff4b3ba69045245feb66e2f297a4bf037b80743348aacc"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 19,
+        "checks_success": 17,
+        "checks_failure": 2,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 2,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "CONFLICTING",
+        "merge_state_status": "DIRTY",
+        "blocker_types": [
+          "required_check_failed",
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "not_executed",
+      "details": {
+        "status": "not_executed",
+        "required_for_merge_ready": true,
+        "passed": false,
+        "attempts": 0,
+        "remediation_applied": false,
+        "steps": [],
+        "input_fingerprint": null
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "merge_readiness",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "not_executed",
+    "required_for_merge_ready": true,
+    "passed": false,
+    "attempts": 0,
+    "remediation_applied": false,
+    "steps": [],
+    "input_fingerprint": null
+  },
+  "thread_dispositions": [
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiT4",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiUf",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiU0",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiVM",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiVo",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/09-authority-bridge.html",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiV5",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/10-mode-bar.html",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiWf",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "make-zip.sh",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiWy",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiW6",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiXP",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiXf",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiX0",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiYG",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiYW",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiYo",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiZE",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Cockpit.jsx",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiZY",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/README.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiZx",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/assets/readme.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiaM",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uiak",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uia0",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uibD",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uibW",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-uibw",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/11-rails.html",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ],
+  "fingerprint": {
+    "input_fingerprint": "ede1b9d12bd4d2d66913010bb8855c4b1483aeb6c251e3712c98aaa8e0658491",
+    "valid_for_sha": "910ce7f03b18f8ff2156ac3e63e6e2920432730d",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "explain": "{\"why_blocked\": [\"22 active unresolved review threads remain.\", \"Required checks are failing.\", \"Required approval is missing.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"22 active unresolved review threads remain.\", \"details\": {\"active_threads\": 22}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"required_check_failed\", \"message\": \"Required checks are failing.\", \"details\": {\"checks_total\": 19, \"checks_success\": 17, \"checks_failure\": 2, \"checks_pending\": 0, \"required_checks_pending\": 0, \"required_checks_failed\": 2, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"mergeable\": \"CONFLICTING\", \"merge_state_status\": \"DIRTY\", \"blocker_types\": [\"required_check_failed\", \"approval_missing\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"approval_missing\", \"message\": \"Required approval is missing.\", \"details\": {}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_not_executed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"details\": {\"validation_status\": \"not_executed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"details\": {\"diff_size\": 8415}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [\"added blockers: active_thread, validation_not_executed\", \"cleared blockers: merge_gate, stale_validation, validation_failed\"], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"details\": {\"diff_size\": 8415}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"details\": {\"risk_score\": 11395.0}, \"source\": \"heuristics\", \"override\": null}]}"
+  }
+}

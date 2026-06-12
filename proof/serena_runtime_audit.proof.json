@@ -1,0 +1,56 @@
+{
+  "packet_name": "Serena Runtime and Tool-Use Audit",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-wt-serena-audit",
+  "branch_name": "tp/serena-audit-runtime-io-tools",
+  "files_inspected": [
+    "compose.yml",
+    "docker/mcp-servers/serena/Dockerfile",
+    "docker/mcp-servers-source/serena/wrapper.py",
+    "docker/mcp-servers-source/serena/info_server.py",
+    "docker/mcp-servers-source/serena/start_with_info.sh",
+    "services/serena/mcp_server.py",
+    "services/registry.yaml",
+    "mcp-proxy-config.json",
+    "src/dopemux/mcp/registry.yaml",
+    "src/dopemux/claude_config.py"
+  ],
+  "commands_run": [
+    "find . -name \"*serena*\"",
+    "grep -rn \"serena\" compose.yml ...",
+    "cat docker/mcp-servers/serena/Dockerfile",
+    "sed -n '...' services/serena/mcp_server.py"
+  ],
+  "canonicality_verdict": "split",
+  "read_paths": [
+    "Path.read_text() in mcp_server.py",
+    "Path.rglob('*') in mcp_server.py"
+  ],
+  "write_paths": [],
+  "tool_invocation_paths": [
+    "pylsp (subprocess)",
+    "find (subprocess shell)",
+    "mcp-proxy (wrapper command)"
+  ],
+  "alias_map": {
+    "serena": "dopemux-serena",
+    "serena-v2": "dopemux-serena"
+  },
+  "startup_path": "compose.yml -> docker/mcp-servers/serena/Dockerfile -> start_with_info.sh -> wrapper.py -> mcp-proxy -> serena start-mcp-server",
+  "contradictions": [
+    {
+      "issue": "Remote vs Local Source",
+      "severity": "high",
+      "description": "Dockerfile pulls from Git instead of using local services/serena"
+    },
+    {
+      "issue": "Workspace Detection",
+      "severity": "medium",
+      "description": "Relies on .git detection from CWD in container"
+    }
+  ],
+  "residual_unknowns": [
+    "Identicality of https://github.com/oraios/serena.git and local services/serena",
+    "Actual usage of services/serena in non-docker flows"
+  ],
+  "final_confidence": "high"
+}

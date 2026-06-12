@@ -1,0 +1,12 @@
+{
+  "applied": [
+    {
+      "thread_id": "PRRT_kwDOPyIw985-mEyQ",
+      "disposition": "auto_resolve_outdated",
+      "reason": "Thread is safe to resolve after green verification and no newer objection.",
+      "path": "ui-dashboard/src/components/TaskSequencer.tsx",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ]
+}

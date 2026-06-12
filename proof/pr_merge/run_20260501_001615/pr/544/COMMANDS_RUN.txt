@@ -1,0 +1,237 @@
+$ git fetch origin pull/544/head:prmerge/20260501_001615-544
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/544/head -> prmerge/20260501_001615-544
+
+$ git worktree add /tmp/dopemux-pr-merge-544-20260501_001615 prmerge/20260501_001615-544
+exit=0
+--- stdout ---
+HEAD is now at 910ce7f03 review-response: address thread suggestions (pr-merge/20260430_230012/PR-544)
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260501_001615-544')
+Updating files:  19% (2339/12182)
+Updating files:  20% (2437/12182)
+Updating files:  21% (2559/12182)
+Updating files:  22% (2681/12182)
+Updating files:  23% (2802/12182)
+Updating files:  24% (2924/12182)
+Updating files:  25% (3046/12182)
+Updating files:  26% (3168/12182)
+Updating files:  27% (3290/12182)
+Updating files:  28% (3411/12182)
+Updating files:  29% (3533/12182)
+Updating files:  30% (3655/12182)
+Updating files:  31% (3777/12182)
+Updating files:  32% (3899/12182)
+Updating files:  33% (4021/12182)
+Updating files:  34% (4142/12182)
+Updating files:  35% (4264/12182)
+Updating files:  36% (4386/12182)
+Updating files:  37% (4508/12182)
+Updating files:  38% (4630/12182)
+Updating files:  39% (4751/12182)
+Updating files:  40% (4873/12182)
+Updating files:  41% (4995/12182)
+Updating files:  42% (5117/12182)
+Updating files:  43% (5239/12182)
+Updating files:  44% (5361/12182)
+Updating files:  45% (5482/12182)
+Updating files:  46% (5604/12182)
+Updating files:  47% (5726/12182)
+Updating files:  48% (5848/12182)
+Updating files:  49% (5970/12182)
+Updating files:  50% (6091/12182)
+Updating files:  51% (6213/12182)
+Updating files:  52% (6335/12182)
+Updating files:  53% (6457/12182)
+Updating files:  54% (6579/12182)
+Updating files:  55% (6701/12182)
+Updating files:  56% (6822/12182)
+Updating files:  56% (6828/12182)
+Updating files:  57% (6944/12182)
+Updating files:  58% (7066/12182)
+Updating files:  59% (7188/12182)
+Updating files:  60% (7310/12182)
+Updating files:  61% (7432/12182)
+Updating files:  62% (7553/12182)
+Updating files:  63% (7675/12182)
+Updating files:  64% (7797/12182)
+Updating files:  65% (7919/12182)
+Updating files:  66% (8041/12182)
+Updating files:  67% (8162/12182)
+Updating files:  68% (8284/12182)
+Updating files:  69% (8406/12182)
+Updating files:  70% (8528/12182)
+Updating files:  71% (8650/12182)
+Updating files:  72% (8772/12182)
+Updating files:  73% (8893/12182)
+Updating files:  74% (9015/12182)
+Updating files:  75% (9137/12182)
+Updating files:  76% (9259/12182)
+Updating files:  77% (9381/12182)
+Updating files:  78% (9502/12182)
+Updating files:  79% (9624/12182)
+Updating files:  80% (9746/12182)
+Updating files:  81% (9868/12182)
+Updating files:  82% (9990/12182)
+Updating files:  83% (10112/12182)
+Updating files:  84% (10233/12182)
+Updating files:  85% (10355/12182)
+Updating files:  86% (10477/12182)
+Updating files:  87% (10599/12182)
+Updating files:  88% (10721/12182)
+Updating files:  89% (10842/12182)
+Updating files:  90% (10964/12182)
+Updating files:  91% (11086/12182)
+Updating files:  92% (11208/12182)
+Updating files:  92% (11308/12182)
+Updating files:  93% (11330/12182)
+Updating files:  94% (11452/12182)
+Updating files:  95% (11573/12182)
+Updating files:  96% (11695/12182)
+Updating files:  97% (11817/12182)
+Updating files:  98% (11939/12182)
+Updating files:  99% (12061/12182)
+Updating files: 100% (12182/12182)
+Updating files: 100% (12182/12182), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+910ce7f03b18f8ff2156ac3e63e6e2920432730d
+
+$ gh pr update-branch 544 --rebase
+exit=1
+--- stderr ---
+X Cannot update PR branch due to conflicts
+
+$ git fetch origin main
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                main       -> FETCH_HEAD
+   22c24cd1f..1fdf61b45  main       -> origin/main
+
+$ git rebase origin/main
+exit=1
+--- stderr ---
+error: cannot rebase: You have unstaged changes.
+error: Please commit or stash them.
+
+$ pre-commit run
+exit=3
+--- stdout ---
+[WARNING] Unstaged files detected.
+[INFO] Stashing unstaged files to /Users/hue/.cache/pre-commit/patch1777619783-4282.
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files......................(no files to check)Skipped
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).................(no files to check)Skipped
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+[WARNING] Stashed changes conflicted with hook auto-fixes... Rolling back fixes...
+An unexpected error has occurred: CalledProcessError: command: ('/opt/homebrew/bin/git', '-c', 'core.autocrlf=false', 'apply', '--whitespace=nowarn', '/Users/hue/.cache/pre-commit/patch1777619783-4282')
+return code: 1
+stdout: (none)
+stderr:
+    error: patch failed: docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md:22
+    error: docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md: patch does not apply
+    error: patch failed: docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md:12
+    error: docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md: patch does not apply
+Check the log at /Users/hue/.cache/pre-commit/pre-commit.log
+
+$ git fetch origin main
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                main       -> FETCH_HEAD
+
+$ git diff --name-only origin/main...HEAD
+exit=0
+--- stdout ---
+AGENTS.md
+docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md
+docs/03-reference/Dopemux Cockpit TUI Design System/ARCHITECTURE_SAFETY_OVERLAY.md
+docs/03-reference/Dopemux Cockpit TUI Design System/PM_IMPLEMENTER_COCKPIT_REDIRECTION.md
+docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md
+docs/03-reference/Dopemux Cockpit TUI Design System/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md
+docs/03-reference/Dopemux Cockpit TUI Design System/UX_REFERENCE_RECONCILIATION.md
+docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/brand_mark.txt
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/frame_chars.md
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/glyphs.md
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/readme.md
+docs/03-reference/Dopemux Cockpit TUI Design System/colors_and_type.css
+docs/03-reference/Dopemux Cockpit TUI Design System/fonts/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md
+docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/03-status-chips.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/04-type-specimen.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/04b-brand-font.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/06-frame-grid-120.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/08-row-anatomy.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/09-authority-bridge.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/10-mode-bar.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/11-rails.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/12-render-modes.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/14-status-language.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/15-glyphs.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/16-frame-chars.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/17-spacing.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/18-inspector.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/19-voice.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/20-cockpit-composition.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/21-ascii-fallback.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/_shared.css
+docs/03-reference/Dopemux Cockpit TUI Design System/readme.md
+docs/03-reference/Dopemux Cockpit TUI Design System/screenshots/A1-check.png
+docs/03-reference/Dopemux Cockpit TUI Design System/skill.md
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A1-rte-runs-120x40.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A2-rte-runs-100x32.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A3-rte-runs-80x24.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/B-textual-cockpit-direction.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/C-web-dashboard-direction.html
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Cockpit.jsx
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/cockpit.css
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/seed.js
+docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.11.21 PM.png
+docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.11.37 PM.png
+docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.12.47 PM.png
+docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 9.05.48 PM.png
+docs/03-reference/gpt55_pm_implementer_redesign.md
+docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md
+docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md
+docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md
+make-zip.sh
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/INTEGRITY_REPORT.json
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SCOPE_OVERRIDES.json
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SCOPE_RESOLUTION.json
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SYNC_MANIFEST.json
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/artifacts.yaml
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/model_map.yaml
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_A0_CONTROL_INVENTORY.md
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_C0_CODE_INVENTORY.md
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_D0_DOCS_INVENTORY.md
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_E0_EXECUTION_INVENTORY.md
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_G0_GOVERNANCE_INVENTORY.md
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/promptset.yaml
+task-packets/DMX-COCKPIT-ARCHIVE-INTENT-001.json
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-544-20260501_001615
+exit=0
+

@@ -1,0 +1,182 @@
+$ git fetch origin pull/712/head:prmerge/20260527_055709-712
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/712/head -> prmerge/20260527_055709-712
+
+$ git worktree add /tmp/dopemux-pr-merge-712-20260527_055709 prmerge/20260527_055709-712
+exit=0
+--- stdout ---
+HEAD is now at 23d8bec99 test(rte): handle remaining review threads
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260527_055709-712')
+Updating files:  35% (4707/13094)
+Updating files:  36% (4714/13094)
+Updating files:  37% (4845/13094)
+Updating files:  38% (4976/13094)
+Updating files:  39% (5107/13094)
+Updating files:  40% (5238/13094)
+Updating files:  41% (5369/13094)
+Updating files:  42% (5500/13094)
+Updating files:  43% (5631/13094)
+Updating files:  44% (5762/13094)
+Updating files:  45% (5893/13094)
+Updating files:  46% (6024/13094)
+Updating files:  47% (6155/13094)
+Updating files:  48% (6286/13094)
+Updating files:  49% (6417/13094)
+Updating files:  50% (6547/13094)
+Updating files:  51% (6678/13094)
+Updating files:  52% (6809/13094)
+Updating files:  53% (6940/13094)
+Updating files:  54% (7071/13094)
+Updating files:  55% (7202/13094)
+Updating files:  56% (7333/13094)
+Updating files:  57% (7464/13094)
+Updating files:  58% (7595/13094)
+Updating files:  59% (7726/13094)
+Updating files:  60% (7857/13094)
+Updating files:  61% (7988/13094)
+Updating files:  62% (8119/13094)
+Updating files:  63% (8250/13094)
+Updating files:  64% (8381/13094)
+Updating files:  65% (8512/13094)
+Updating files:  66% (8643/13094)
+Updating files:  67% (8773/13094)
+Updating files:  68% (8904/13094)
+Updating files:  69% (9035/13094)
+Updating files:  70% (9166/13094)
+Updating files:  71% (9297/13094)
+Updating files:  72% (9428/13094)
+Updating files:  73% (9559/13094)
+Updating files:  74% (9690/13094)
+Updating files:  75% (9821/13094)
+Updating files:  76% (9952/13094)
+Updating files:  77% (10083/13094)
+Updating files:  78% (10214/13094)
+Updating files:  79% (10345/13094)
+Updating files:  80% (10476/13094)
+Updating files:  81% (10607/13094)
+Updating files:  82% (10738/13094)
+Updating files:  83% (10869/13094)
+Updating files:  84% (10999/13094)
+Updating files:  84% (11126/13094)
+Updating files:  85% (11130/13094)
+Updating files:  86% (11261/13094)
+Updating files:  87% (11392/13094)
+Updating files:  88% (11523/13094)
+Updating files:  89% (11654/13094)
+Updating files:  90% (11785/13094)
+Updating files:  91% (11916/13094)
+Updating files:  92% (12047/13094)
+Updating files:  93% (12178/13094)
+Updating files:  94% (12309/13094)
+Updating files:  95% (12440/13094)
+Updating files:  96% (12571/13094)
+Updating files:  97% (12702/13094)
+Updating files:  98% (12833/13094)
+Updating files:  99% (12964/13094)
+Updating files: 100% (13094/13094)
+Updating files: 100% (13094/13094), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+23d8bec993fa2f1ba4c81d965753eb344d88c841
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E8nnL", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FV-tQ"}}}}
+
+$ gh pr update-branch 712 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/rte-costprofile-f-verify-002
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/rte-costprofile-f-verify-002 -> FETCH_HEAD
+
+$ git reset --hard origin/codex/rte-costprofile-f-verify-002
+exit=0
+--- stdout ---
+HEAD is now at b72f48b0a test(rte): verify CostProfile F repair Gate 3 structured check
+
+$ git diff --name-only --diff-filter=ACMR 898310bd01cf48b2703a166b429d4b330ec9f84e...HEAD
+exit=0
+--- stdout ---
+.gitignore
+proof/rte-cost-profile-redesign/.DS_Store
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/SERIES_VERIFICATION_REPORT.md
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_codereview.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_precommit.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pytest_full_run.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/sha256sums.txt
+task-packets/INDEX.md
+task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .gitignore proof/rte-cost-profile-redesign/.DS_Store proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/SERIES_VERIFICATION_REPORT.md proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_codereview.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_precommit.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pytest_full_run.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/sha256sums.txt task-packets/INDEX.md task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py task-packets/INDEX.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-712-20260527_055709
+exit=0
+
+$ gh pr merge 712 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#712 is not mergeable: the base branch policy prohibits the merge.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+

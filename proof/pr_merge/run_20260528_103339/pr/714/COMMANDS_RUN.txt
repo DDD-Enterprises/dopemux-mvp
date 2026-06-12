@@ -1,0 +1,281 @@
+$ git fetch origin pull/714/head:prmerge/20260528_103339-714
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/714/head -> prmerge/20260528_103339-714
+
+$ git worktree add /tmp/dopemux-pr-merge-714-20260528_103339 prmerge/20260528_103339-714
+exit=0
+--- stdout ---
+HEAD is now at a169e6053 Merge branch 'main' into codex/tp-dmx-orch-007-plugin-hooks
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260528_103339-714')
+Updating files:  33% (4427/13167)
+Updating files:  34% (4477/13167)
+Updating files:  35% (4609/13167)
+Updating files:  36% (4741/13167)
+Updating files:  37% (4872/13167)
+Updating files:  38% (5004/13167)
+Updating files:  39% (5136/13167)
+Updating files:  40% (5267/13167)
+Updating files:  41% (5399/13167)
+Updating files:  42% (5531/13167)
+Updating files:  43% (5662/13167)
+Updating files:  44% (5794/13167)
+Updating files:  45% (5926/13167)
+Updating files:  46% (6057/13167)
+Updating files:  47% (6189/13167)
+Updating files:  48% (6321/13167)
+Updating files:  49% (6452/13167)
+Updating files:  50% (6584/13167)
+Updating files:  51% (6716/13167)
+Updating files:  52% (6847/13167)
+Updating files:  53% (6979/13167)
+Updating files:  54% (7111/13167)
+Updating files:  55% (7242/13167)
+Updating files:  56% (7374/13167)
+Updating files:  57% (7506/13167)
+Updating files:  58% (7637/13167)
+Updating files:  59% (7769/13167)
+Updating files:  60% (7901/13167)
+Updating files:  61% (8032/13167)
+Updating files:  62% (8164/13167)
+Updating files:  63% (8296/13167)
+Updating files:  64% (8427/13167)
+Updating files:  65% (8559/13167)
+Updating files:  66% (8691/13167)
+Updating files:  67% (8822/13167)
+Updating files:  68% (8954/13167)
+Updating files:  69% (9086/13167)
+Updating files:  70% (9217/13167)
+Updating files:  71% (9349/13167)
+Updating files:  72% (9481/13167)
+Updating files:  73% (9612/13167)
+Updating files:  74% (9744/13167)
+Updating files:  75% (9876/13167)
+Updating files:  76% (10007/13167)
+Updating files:  77% (10139/13167)
+Updating files:  78% (10271/13167)
+Updating files:  79% (10402/13167)
+Updating files:  80% (10534/13167)
+Updating files:  80% (10543/13167)
+Updating files:  81% (10666/13167)
+Updating files:  82% (10797/13167)
+Updating files:  83% (10929/13167)
+Updating files:  84% (11061/13167)
+Updating files:  85% (11192/13167)
+Updating files:  86% (11324/13167)
+Updating files:  87% (11456/13167)
+Updating files:  88% (11587/13167)
+Updating files:  89% (11719/13167)
+Updating files:  90% (11851/13167)
+Updating files:  91% (11982/13167)
+Updating files:  92% (12114/13167)
+Updating files:  93% (12246/13167)
+Updating files:  94% (12377/13167)
+Updating files:  95% (12509/13167)
+Updating files:  96% (12641/13167)
+Updating files:  97% (12772/13167)
+Updating files:  98% (12904/13167)
+Updating files:  99% (13036/13167)
+Updating files: 100% (13167/13167)
+Updating files: 100% (13167/13167), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+a169e60532c310d56807a424111d1d25f9ccd175
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E2KHg", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3YAN"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E2KHp", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3YDI"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E2MuO", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3YFe"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E2MvT", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3YHf"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E82ms", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3YJ3"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E82mu", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3YMa"}}}}
+
+$ gh pr update-branch 714 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/tp-dmx-orch-007-plugin-hooks
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/tp-dmx-orch-007-plugin-hooks -> FETCH_HEAD
+
+$ git reset --hard origin/codex/tp-dmx-orch-007-plugin-hooks
+exit=0
+--- stdout ---
+HEAD is now at a169e6053 Merge branch 'main' into codex/tp-dmx-orch-007-plugin-hooks
+
+$ git diff --name-only --diff-filter=ACMR ef0c30bf43ba01f55f9247b9d755b57bccaa74b5...HEAD
+exit=0
+--- stdout ---
+PM_PLANE.md
+config/orchestrator/approval_policy.yaml
+config/orchestrator/plugin_hooks.yaml
+docs/03-reference/systems/task-orchestrator/operator-integration-authority.md
+docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md
+proof/dmx-orch-integration/TP-DMX-ORCH-001/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-003/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-004/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-008/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-009/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-010/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-011/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-012/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-013/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-014A/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-014B/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-015/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-016/PROOF.json
+proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json
+services/task-orchestrator/query_server.py
+services/task-orchestrator/task_orchestrator/mcp/__init__.py
+src/dopemux/cli.py
+src/dopemux/commands/orchestrator_commands.py
+src/dopemux/orchestrator/hooks.py
+src/dopemux/orchestrator/mcp_wrappers.py
+src/dopemux/orchestrator/operator_workflows.py
+src/dopemux/orchestrator/policy.py
+src/dopemux/orchestrator/validation/__init__.py
+src/dopemux/orchestrator/validation/json_io.py
+src/dopemux/orchestrator/validation/packets.py
+src/dopemux/orchestrator/validation/proof.py
+src/dopemux/orchestrator/validation/report.py
+src/dopemux/orchestrator/workflow_dsl.py
+task-packets/generated/TP-DMX-ORCH-001.json
+task-packets/generated/TP-DMX-ORCH-002.json
+task-packets/generated/TP-DMX-ORCH-003.json
+task-packets/generated/TP-DMX-ORCH-004.json
+task-packets/generated/TP-DMX-ORCH-005.json
+task-packets/generated/TP-DMX-ORCH-006.json
+task-packets/generated/TP-DMX-ORCH-007.json
+task-packets/generated/TP-DMX-ORCH-008.json
+task-packets/generated/TP-DMX-ORCH-009.json
+task-packets/generated/TP-DMX-ORCH-010.json
+task-packets/generated/TP-DMX-ORCH-011.json
+task-packets/generated/TP-DMX-ORCH-012.json
+task-packets/generated/TP-DMX-ORCH-013.json
+task-packets/generated/TP-DMX-ORCH-014A.json
+task-packets/generated/TP-DMX-ORCH-014B.json
+task-packets/generated/TP-DMX-ORCH-015.json
+task-packets/generated/TP-DMX-ORCH-016.json
+task-packets/generated/TP-DMX-ORCH-017.json
+tests/unit/orchestrator/test_hooks.py
+tests/unit/orchestrator/test_mcp_wrappers.py
+tests/unit/orchestrator/test_operator_workflows.py
+tests/unit/orchestrator/test_policy.py
+tests/unit/orchestrator/test_validation.py
+tests/unit/orchestrator/test_workflow_dsl.py
+tests/unit/test_cli_orchestrator_commands.py
+tests/unit/test_cli_orchestrator_validation_commands.py
+tests/unit/test_task_orchestrator_mcp_wrappers.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files PM_PLANE.md config/orchestrator/approval_policy.yaml config/orchestrator/plugin_hooks.yaml docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md proof/dmx-orch-integration/TP-DMX-ORCH-001/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-003/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-004/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-008/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-009/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-010/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-011/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-012/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-013/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-014A/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-014B/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-015/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-016/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json services/task-orchestrator/query_server.py services/task-orchestrator/task_orchestrator/mcp/__init__.py src/dopemux/cli.py src/dopemux/commands/orchestrator_commands.py src/dopemux/orchestrator/hooks.py src/dopemux/orchestrator/mcp_wrappers.py src/dopemux/orchestrator/operator_workflows.py src/dopemux/orchestrator/policy.py src/dopemux/orchestrator/validation/__init__.py src/dopemux/orchestrator/validation/json_io.py src/dopemux/orchestrator/validation/packets.py src/dopemux/orchestrator/validation/proof.py src/dopemux/orchestrator/validation/report.py src/dopemux/orchestrator/workflow_dsl.py task-packets/generated/TP-DMX-ORCH-001.json task-packets/generated/TP-DMX-ORCH-002.json task-packets/generated/TP-DMX-ORCH-003.json task-packets/generated/TP-DMX-ORCH-004.json task-packets/generated/TP-DMX-ORCH-005.json task-packets/generated/TP-DMX-ORCH-006.json task-packets/generated/TP-DMX-ORCH-007.json task-packets/generated/TP-DMX-ORCH-008.json task-packets/generated/TP-DMX-ORCH-009.json task-packets/generated/TP-DMX-ORCH-010.json task-packets/generated/TP-DMX-ORCH-011.json task-packets/generated/TP-DMX-ORCH-012.json task-packets/generated/TP-DMX-ORCH-013.json task-packets/generated/TP-DMX-ORCH-014A.json task-packets/generated/TP-DMX-ORCH-014B.json task-packets/generated/TP-DMX-ORCH-015.json task-packets/generated/TP-DMX-ORCH-016.json task-packets/generated/TP-DMX-ORCH-017.json tests/unit/orchestrator/test_hooks.py tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/orchestrator/test_operator_workflows.py tests/unit/orchestrator/test_policy.py tests/unit/orchestrator/test_validation.py tests/unit/orchestrator/test_workflow_dsl.py tests/unit/test_cli_orchestrator_commands.py tests/unit/test_cli_orchestrator_validation_commands.py tests/unit/test_task_orchestrator_mcp_wrappers.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.................................................................................Passed
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md
+exit=0
+--- stdout ---
+docs-hygiene: total=2 active=2 quarantine=0 violations=0
+docs-hygiene: checked 2 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=2 active=2 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 2 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E2KHp", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3YXM"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986E2KHp"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986E2KHp","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E2MvT", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3YaD"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986E2MvT"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986E2MvT","isResolved":true}}}}
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-714-20260528_103339
+exit=0
+
+$ gh pr merge 714 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#714 is not mergeable: the base branch policy prohibits the merge.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+

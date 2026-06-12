@@ -1,0 +1,12 @@
+{
+  "actions": [],
+  "blocked": false,
+  "blocked_reason": null,
+  "run_id": "20260412_191052",
+  "scope": "pr",
+  "target": "PR#435",
+  "top_k": 3,
+  "warnings": [
+    "Stub run: no input bundle provided. Use --input to run extraction."
+  ]
+}

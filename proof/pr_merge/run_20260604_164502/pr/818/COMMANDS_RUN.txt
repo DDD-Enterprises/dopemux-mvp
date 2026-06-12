@@ -1,0 +1,180 @@
+$ git fetch origin pull/818/head:prmerge/20260604_164502-818
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/818/head -> prmerge/20260604_164502-818
+
+$ git worktree add /tmp/dopemux-pr-merge-818-20260604_164502 prmerge/20260604_164502-818
+exit=0
+--- stdout ---
+HEAD is now at 593a31d24 feat(dcp): add local control snapshot generator
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260604_164502-818')
+Updating files:  38% (5396/13965)
+Updating files:  39% (5447/13965)
+Updating files:  40% (5586/13965)
+Updating files:  41% (5726/13965)
+Updating files:  42% (5866/13965)
+Updating files:  43% (6005/13965)
+Updating files:  44% (6145/13965)
+Updating files:  45% (6285/13965)
+Updating files:  46% (6424/13965)
+Updating files:  47% (6564/13965)
+Updating files:  48% (6704/13965)
+Updating files:  49% (6843/13965)
+Updating files:  50% (6983/13965)
+Updating files:  51% (7123/13965)
+Updating files:  52% (7262/13965)
+Updating files:  53% (7402/13965)
+Updating files:  54% (7542/13965)
+Updating files:  55% (7681/13965)
+Updating files:  56% (7821/13965)
+Updating files:  57% (7961/13965)
+Updating files:  58% (8100/13965)
+Updating files:  59% (8240/13965)
+Updating files:  60% (8379/13965)
+Updating files:  61% (8519/13965)
+Updating files:  62% (8659/13965)
+Updating files:  63% (8798/13965)
+Updating files:  64% (8938/13965)
+Updating files:  65% (9078/13965)
+Updating files:  66% (9217/13965)
+Updating files:  67% (9357/13965)
+Updating files:  68% (9497/13965)
+Updating files:  69% (9636/13965)
+Updating files:  70% (9776/13965)
+Updating files:  71% (9916/13965)
+Updating files:  72% (10055/13965)
+Updating files:  73% (10195/13965)
+Updating files:  74% (10335/13965)
+Updating files:  75% (10474/13965)
+Updating files:  76% (10614/13965)
+Updating files:  77% (10754/13965)
+Updating files:  78% (10893/13965)
+Updating files:  79% (11033/13965)
+Updating files:  80% (11172/13965)
+Updating files:  80% (11179/13965)
+Updating files:  81% (11312/13965)
+Updating files:  82% (11452/13965)
+Updating files:  83% (11591/13965)
+Updating files:  84% (11731/13965)
+Updating files:  85% (11871/13965)
+Updating files:  86% (12010/13965)
+Updating files:  87% (12150/13965)
+Updating files:  88% (12290/13965)
+Updating files:  89% (12429/13965)
+Updating files:  90% (12569/13965)
+Updating files:  91% (12709/13965)
+Updating files:  92% (12848/13965)
+Updating files:  93% (12988/13965)
+Updating files:  94% (13128/13965)
+Updating files:  95% (13267/13965)
+Updating files:  96% (13407/13965)
+Updating files:  97% (13547/13965)
+Updating files:  98% (13686/13965)
+Updating files:  99% (13826/13965)
+Updating files: 100% (13965/13965)
+Updating files: 100% (13965/13965), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+593a31d24ec2b7a87bed7a56b1aa581796f9f419
+
+$ gh pr update-branch 818 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin dcp/local-control-snapshot-tp-0004
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                dcp/local-control-snapshot-tp-0004 -> FETCH_HEAD
+
+$ git reset --hard origin/dcp/local-control-snapshot-tp-0004
+exit=0
+--- stdout ---
+HEAD is now at 593a31d24 feat(dcp): add local control snapshot generator
+
+$ git diff --name-only --diff-filter=ACMR 0caf4ea012db36df92b5d2f0cbe21678c762cb7a...HEAD
+exit=0
+--- stdout ---
+proof/TP-DCP-0004/AUDIT.md
+proof/TP-DCP-0004/DCP_CONTROL_SNAPSHOT.json
+proof/TP-DCP-0004/PROOF.json
+schemas/dcp/README.md
+schemas/dcp/dcp_control_snapshot.schema.json
+src/dopemux/dcp/__init__.py
+src/dopemux/dcp/control_snapshot.py
+task-packets/TP-DCP-0004.md
+tests/dcp/fixtures/tp_dcp_0004_conflicting_proof/proof/TP-DCP-0003/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_conflicting_proof/task-packets/TP-DCP-0003.json
+tests/dcp/fixtures/tp_dcp_0004_live_write_detected/proof/TP-DCP-0003/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_live_write_detected/task-packets/TP-DCP-0003.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0003/proof/TP-DCP-0001/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0003/task-packets/TP-DCP-0001.json
+tests/dcp/fixtures/tp_dcp_0004_stale_proof/proof/TP-DCP-0003/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_stale_proof/task-packets/TP-DCP-0003.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0001/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0002/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0003/MERGE_READINESS.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0003/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/README.md
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/dcp_control_snapshot.schema.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0001.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0002.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0003.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0004.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/tests/dcp/test_placeholder.py
+tests/dcp/test_dcp_0004_control_snapshot.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files proof/TP-DCP-0004/AUDIT.md proof/TP-DCP-0004/DCP_CONTROL_SNAPSHOT.json proof/TP-DCP-0004/PROOF.json schemas/dcp/README.md schemas/dcp/dcp_control_snapshot.schema.json src/dopemux/dcp/__init__.py src/dopemux/dcp/control_snapshot.py task-packets/TP-DCP-0004.md tests/dcp/fixtures/tp_dcp_0004_conflicting_proof/proof/TP-DCP-0003/PROOF.json tests/dcp/fixtures/tp_dcp_0004_conflicting_proof/task-packets/TP-DCP-0003.json tests/dcp/fixtures/tp_dcp_0004_live_write_detected/proof/TP-DCP-0003/PROOF.json tests/dcp/fixtures/tp_dcp_0004_live_write_detected/task-packets/TP-DCP-0003.json tests/dcp/fixtures/tp_dcp_0004_missing_tp0003/proof/TP-DCP-0001/PROOF.json tests/dcp/fixtures/tp_dcp_0004_missing_tp0003/task-packets/TP-DCP-0001.json tests/dcp/fixtures/tp_dcp_0004_stale_proof/proof/TP-DCP-0003/PROOF.json tests/dcp/fixtures/tp_dcp_0004_stale_proof/task-packets/TP-DCP-0003.json tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0001/PROOF.json tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0002/PROOF.json tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0003/MERGE_READINESS.json tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0003/PROOF.json tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/README.md tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/dcp_control_snapshot.schema.json tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0001.json tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0002.json tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0003.json tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0004.json tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/tests/dcp/test_placeholder.py tests/dcp/test_dcp_0004_control_snapshot.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix task-packets/TP-DCP-0004.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py task-packets/TP-DCP-0004.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check task-packets/TP-DCP-0004.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check task-packets/TP-DCP-0004.md
+exit=1
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=0 violations=1
+docs-filename-hygiene: FAILED
+1. task-packets/TP-DCP-0004.md
+   target: task-packets/tp-dcp-0004.md
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-818-20260604_164502
+exit=0
+

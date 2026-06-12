@@ -1,0 +1,8 @@
+{
+  "pr_id": "814",
+  "cycle_id": "2f7542a2-f166-41c4-9145-debb9706d298",
+  "next_tactic": "APPLY_FIX",
+  "strategy_id": "PATCH_ISOLATION_PLAN",
+  "posture": "HOLD",
+  "computed_at": 1780614202.059707
+}

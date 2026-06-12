@@ -1,0 +1,940 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw985-uiT4",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md",
+      "line": 3,
+      "original_line": 3,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GYY",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This markdown file is missing required YAML frontmatter (docs_validator expects the file to start with `---` and include at least `id`, `title`, and `type`). As-is, `python scripts/docs_validator.py` will fail on this file.",
+          "created_at": "2026-04-30T12:08:30Z",
+          "path": "docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FRzJ",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:06Z",
+          "path": "docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWfG",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:26Z",
+          "path": "docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md",
+          "line": 3,
+          "original_line": 3
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiUf",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md",
+      "line": 3,
+      "original_line": 3,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GZM",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This markdown file is missing required YAML frontmatter (docs_validator expects the file to start with `---` and include at least `id`, `title`, and `type`). As-is, `python scripts/docs_validator.py` will fail on this file.",
+          "created_at": "2026-04-30T12:08:30Z",
+          "path": "docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FRzp",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:07Z",
+          "path": "docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWf6",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:27Z",
+          "path": "docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md",
+          "line": 3,
+          "original_line": 3
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiU0",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md",
+      "line": 6,
+      "original_line": 6,
+      "original_start_line": 3,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GZu",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`src/dopemux/ui/cockpit/seed.py` is referenced here, but that file does not exist in the repository (the cockpit module currently has `render.py` but no `seed.py`). Please either add the missing file, or update the documentation to reference the actual source of the seed/demo data.",
+          "created_at": "2026-04-30T12:08:30Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md",
+          "line": 6,
+          "original_line": 6
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR0F",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:09Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md",
+          "line": 6,
+          "original_line": 6
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWgq",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:29Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md",
+          "line": 6,
+          "original_line": 6
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiVM",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md",
+      "line": 121,
+      "original_line": 121,
+      "original_start_line": 116,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GaJ",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This file states `UNKNOWN→EDGE` as a mapping, but `ARCHITECTURE_SAFETY_OVERLAY.md` explicitly says UNKNOWN must remain literal text and must not be collapsed into EDGE (and lists `UNKNOWN→EDGE` as a forbidden phrase). Please align the doctrine: either remove the mapping here or adjust the overlay/rules so they are consistent.",
+          "created_at": "2026-04-30T12:08:31Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md",
+          "line": 121,
+          "original_line": 121
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR0l",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:10Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md",
+          "line": 121,
+          "original_line": 121
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWhF",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:30Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md",
+          "line": 121,
+          "original_line": 121
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiVo",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/09-authority-bridge.html",
+      "line": 18,
+      "original_line": 18,
+      "original_start_line": 7,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Gaq",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This preview uses \"Services authority: dopemux\" and \"Bridge actions authority: dopecon-bridge\", both of which are listed as forbidden phrases in `ARCHITECTURE_SAFETY_OVERLAY.md` (they collapse authority boundaries / elevate the bridge). Please update the copy to match the overlay’s allowed phrasing.",
+          "created_at": "2026-04-30T12:08:31Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/09-authority-bridge.html",
+          "line": 18,
+          "original_line": 18
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR1H",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:11Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/09-authority-bridge.html",
+          "line": 18,
+          "original_line": 18
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWhy",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:31Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/09-authority-bridge.html",
+          "line": 18,
+          "original_line": 18
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiV5",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/10-mode-bar.html",
+      "line": null,
+      "original_line": 11,
+      "original_start_line": 7,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GbG",
+          "author": "copilot-pull-request-reviewer",
+          "body": "These mode rows include `SRC=dopemux` even though SRC is defined elsewhere in the package as data provenance only and is explicitly disallowed in chrome/mode bar. This also conflicts with the SRC rules in `ARCHITECTURE_SAFETY_OVERLAY.md`. Please remove SRC from the mode bar/chrome examples.\n```suggestion\n1  PM\n2  Implementer\n3  Overview\n<span class=\"cyan\">4 *Services</span>\n5  Events\n```",
+          "created_at": "2026-04-30T12:08:31Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/10-mode-bar.html",
+          "line": null,
+          "original_line": 11
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR1x",
+          "author": "hu3mann",
+          "body": "Automated queue-drain applied a minimal fix and will run verification before resolving this thread.",
+          "created_at": "2026-05-01T06:02:12Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/10-mode-bar.html",
+          "line": null,
+          "original_line": 11
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWiJ",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:33Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/10-mode-bar.html",
+          "line": null,
+          "original_line": 11
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiWf",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "make-zip.sh",
+      "line": 9,
+      "original_line": 9,
+      "original_start_line": 5,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Gb4",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This script hardcodes developer-specific absolute paths (including a specific worktree name under docs/03-reference/.claude/ and local /tmp output). Please make these inputs configurable (env vars / args) and avoid committing paths that only exist on one machine.",
+          "created_at": "2026-04-30T12:08:32Z",
+          "path": "make-zip.sh",
+          "line": 9,
+          "original_line": 9
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR2k",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:13Z",
+          "path": "make-zip.sh",
+          "line": 9,
+          "original_line": 9
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWi3",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:34Z",
+          "path": "make-zip.sh",
+          "line": 9,
+          "original_line": 9
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiWy",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+      "line": 3,
+      "original_line": 3,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GcO",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This markdown file is missing required YAML frontmatter (docs_validator expects the file to start with `---` and include at least `id`, `title`, and `type`). As-is, `python scripts/docs_validator.py` will fail on this file.",
+          "created_at": "2026-04-30T12:08:32Z",
+          "path": "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR3o",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:14Z",
+          "path": "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWjR",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:35Z",
+          "path": "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+          "line": 3,
+          "original_line": 3
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiW6",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md",
+      "line": 5,
+      "original_line": 5,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Gch",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This markdown file is missing required YAML frontmatter (docs_validator requires docs/*.md to start with a `---` YAML block). Please add frontmatter with at least `id`, `title`, and `type` (and the standard owner/author/date/review fields).",
+          "created_at": "2026-04-30T12:08:32Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md",
+          "line": 5,
+          "original_line": 5
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR4Y",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:16Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md",
+          "line": 5,
+          "original_line": 5
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWkK",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:37Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md",
+          "line": 5,
+          "original_line": 5
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiXP",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md",
+      "line": 6,
+      "original_line": 6,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Gc8",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This doc now has no YAML frontmatter. `scripts/docs_validator.py` requires docs/*.md to begin with `---` frontmatter, so this will fail validation.",
+          "created_at": "2026-04-30T12:08:33Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md",
+          "line": 6,
+          "original_line": 6
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR5F",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:17Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md",
+          "line": 6,
+          "original_line": 6
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWks",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:38Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md",
+          "line": 6,
+          "original_line": 6
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiXf",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md",
+      "line": 6,
+      "original_line": 6,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GdW",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The repository contains both `SKILL.md` and `skill.md` in the same directory. Case-only filename differences break checkouts on case-insensitive filesystems (default macOS) and can also confuse tooling and links. Please pick one canonical filename and remove/rename the other (and update intra-doc links accordingly).",
+          "created_at": "2026-04-30T12:08:33Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md",
+          "line": 6,
+          "original_line": 6
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR5j",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:18Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md",
+          "line": 6,
+          "original_line": 6
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWlO",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:39Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md",
+          "line": 6,
+          "original_line": 6
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiX0",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+      "line": 123,
+      "original_line": 123,
+      "original_start_line": 121,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Gdz",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The bridge header uses the forbidden phrasing \"Bridge actions authority\". The overlay in this same package says to use \"Bridge adapter/proxy: dopecon-bridge\" and explicitly forbids \"Bridge actions authority: dopecon-bridge\" because it implies canonical authority. Please update the label to the allowed phrasing.",
+          "created_at": "2026-04-30T12:08:33Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+          "line": 123,
+          "original_line": 123
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR6J",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:19Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+          "line": 123,
+          "original_line": 123
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWmK",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:41Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+          "line": 123,
+          "original_line": 123
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiYG",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md",
+      "line": 15,
+      "original_line": 15,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GeN",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This hard contract states `UNKNOWN→EDGE`, but `ARCHITECTURE_SAFETY_OVERLAY.md` prohibits collapsing UNKNOWN into EDGE. This is an internal contradiction that will confuse downstream design/implementation work; please make the doctrine consistent.\n```suggestion\n- **Status chips are closed**: `LIVE | BLOCKER | OVERRIDE | LOGGED | AFTERCARE | EDGE`. Never invent new chips. Web variants map: `DEGRADED→OVERRIDE`, `FAILED→BLOCKER`, `BLOCKED→BLOCKER`, `SYNC→AFTERCARE`; `UNKNOWN` remains `UNKNOWN` and must not be collapsed into `EDGE`.\n```",
+          "created_at": "2026-04-30T12:08:33Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md",
+          "line": 15,
+          "original_line": 15
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR6n",
+          "author": "hu3mann",
+          "body": "Automated queue-drain applied a minimal fix and will run verification before resolving this thread.",
+          "created_at": "2026-05-01T06:02:20Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md",
+          "line": 15,
+          "original_line": 15
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWnJ",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:43Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md",
+          "line": 15,
+          "original_line": 15
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiYW",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md",
+      "line": null,
+      "original_line": 25,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Gek",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This section documents `UNKNOWN → EDGE` as an external vocab mapping, but elsewhere in the package (and the overlay) UNKNOWN is treated as literal unresolved text (not a chip). Please resolve the contradiction so UNKNOWN handling is consistent across doctrine/checklists.\n```suggestion\n      `SYNC → AFTERCARE`.\n- [x] `UNKNOWN` remains literal unresolved text and is not mapped to a chip.\n```",
+          "created_at": "2026-04-30T12:08:34Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md",
+          "line": null,
+          "original_line": 25
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR7V",
+          "author": "hu3mann",
+          "body": "Automated queue-drain applied a minimal fix and will run verification before resolving this thread.",
+          "created_at": "2026-05-01T06:02:22Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md",
+          "line": null,
+          "original_line": 25
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWn2",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:44Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md",
+          "line": null,
+          "original_line": 25
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiYo",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+      "line": 177,
+      "original_line": 177,
+      "original_start_line": 170,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GfC",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The default `workspace` value is hardcoded to a developer-specific absolute path. This makes the UI kit non-portable and leaks local filesystem details. Please derive this from `window.SEED.workspace.id` (or similar) and keep any paths repo-relative or clearly placeholder.",
+          "created_at": "2026-04-30T12:08:34Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+          "line": 177,
+          "original_line": 177
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR7p",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:23Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+          "line": 177,
+          "original_line": 177
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWog",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:45Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+          "line": 177,
+          "original_line": 177
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiZE",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Cockpit.jsx",
+      "line": 18,
+      "original_line": 18,
+      "original_start_line": 12,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Gfj",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`workspace` is hardcoded to a developer-specific absolute path instead of using the seed’s workspace fields. This reduces portability and can leak local paths in screenshots/logs. Please use `seed.workspace.id`/`seed.workspace.instance` (or a placeholder like `dopemux-mvp`) rather than a local absolute path.",
+          "created_at": "2026-04-30T12:08:34Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Cockpit.jsx",
+          "line": 18,
+          "original_line": 18
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR77",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:24Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Cockpit.jsx",
+          "line": 18,
+          "original_line": 18
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWpF",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:46Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Cockpit.jsx",
+          "line": 18,
+          "original_line": 18
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiZY",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/README.md",
+      "line": 5,
+      "original_line": 5,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GgA",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This directory contains multiple documents that differ only by filename casing (e.g. `README.md` vs `readme.md`, `PREIMPLEMENTATION.md` vs `preimplementation.md`, `ACCEPTANCE.md` vs `acceptance.md`, and similar in subfolders). This is unsafe on case-insensitive filesystems and will cause checkout/build issues. Please consolidate to one canonical filename per document and update references/links.",
+          "created_at": "2026-04-30T12:08:35Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/README.md",
+          "line": 5,
+          "original_line": 5
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR8n",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:25Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/README.md",
+          "line": 5,
+          "original_line": 5
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWpo",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:48Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/README.md",
+          "line": 5,
+          "original_line": 5
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiZx",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/assets/readme.md",
+      "line": 5,
+      "original_line": 5,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Ggg",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This markdown file is missing required YAML frontmatter (docs_validator requires docs/*.md to start with `---`). Please add frontmatter with at least `id`, `title`, and `type` (and standard owner/author/date/review fields).",
+          "created_at": "2026-04-30T12:08:35Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/assets/readme.md",
+          "line": 5,
+          "original_line": 5
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR9R",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:26Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/assets/readme.md",
+          "line": 5,
+          "original_line": 5
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWqS",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:49Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/assets/readme.md",
+          "line": 5,
+          "original_line": 5
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiaM",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md",
+      "line": 5,
+      "original_line": 5,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Gg_",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This markdown file is missing required YAML frontmatter (docs_validator requires docs/*.md to start with `---`). Please add frontmatter with at least `id`, `title`, and `type` (and standard owner/author/date/review fields).",
+          "created_at": "2026-04-30T12:08:35Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md",
+          "line": 5,
+          "original_line": 5
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR9p",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:27Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md",
+          "line": 5,
+          "original_line": 5
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWq0",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:51Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md",
+          "line": 5,
+          "original_line": 5
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uiak",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+      "line": 141,
+      "original_line": 141,
+      "original_start_line": 135,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Ghc",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`CommandRail` renders \"command authority: dopemux …\" but `ARCHITECTURE_SAFETY_OVERLAY.md` lists the exact phrase \"command authority: dopemux\" as forbidden. Either update the overlay’s forbidden-phrases list, or change this label to the overlay-approved chrome phrasing so the package is self-consistent.",
+          "created_at": "2026-04-30T12:08:35Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+          "line": 141,
+          "original_line": 141
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR-E",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:28Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+          "line": 141,
+          "original_line": 141
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWrN",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:52Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx",
+          "line": 141,
+          "original_line": 141
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uia0",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md",
+      "line": 6,
+      "original_line": 6,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Ghw",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This doc now has no YAML frontmatter. `scripts/docs_validator.py` requires docs/*.md to begin with `---` frontmatter, so this will fail validation.",
+          "created_at": "2026-04-30T12:08:36Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md",
+          "line": 6,
+          "original_line": 6
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR-X",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:29Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md",
+          "line": 6,
+          "original_line": 6
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWrv",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:54Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md",
+          "line": 6,
+          "original_line": 6
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uibD",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md",
+      "line": 5,
+      "original_line": 5,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GiJ",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This markdown file is missing required YAML frontmatter (docs_validator requires docs/*.md to start with `---`). Please add frontmatter with at least `id`, `title`, and `type` (and standard owner/author/date/review fields).",
+          "created_at": "2026-04-30T12:08:36Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md",
+          "line": 5,
+          "original_line": 5
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR_J",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:31Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md",
+          "line": 5,
+          "original_line": 5
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWsl",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:56Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md",
+          "line": 5,
+          "original_line": 5
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uibW",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+      "line": 13,
+      "original_line": 13,
+      "original_start_line": 7,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680Gil",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This audit report embeds developer-specific absolute paths (e.g. `/Users/hue/...`). Since this is committed documentation, prefer repo-relative paths or neutral placeholders to avoid leaking local environment details and to keep the artifact portable.",
+          "created_at": "2026-04-30T12:08:36Z",
+          "path": "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+          "line": 13,
+          "original_line": 13
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FR_n",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:32Z",
+          "path": "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+          "line": 13,
+          "original_line": 13
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWtS",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:57Z",
+          "path": "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+          "line": 13,
+          "original_line": 13
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-uibw",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/11-rails.html",
+      "line": 12,
+      "original_line": 12,
+      "original_start_line": 8,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98680GjD",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This example puts `SRC=dopemux` and command-rail provenance in chrome/rails. That conflicts with the package’s SRC rule (SRC is provenance for data rows only, not chrome) and contradicts the acceptance checklist that explicitly forbids SRC in command rails. Please remove SRC from the rail example and keep chrome provenance-free.",
+          "created_at": "2026-04-30T12:08:36Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/11-rails.html",
+          "line": 12,
+          "original_line": 12
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FSAQ",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:02:33Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/11-rails.html",
+          "line": 12,
+          "original_line": 12
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWuB",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:58Z",
+          "path": "docs/03-reference/Dopemux Cockpit TUI Design System/preview/11-rails.html",
+          "line": 12,
+          "original_line": 12
+        }
+      ]
+    }
+  ]
+}

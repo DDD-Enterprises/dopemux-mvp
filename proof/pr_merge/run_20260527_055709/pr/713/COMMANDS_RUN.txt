@@ -1,0 +1,240 @@
+$ git fetch origin pull/713/head:prmerge/20260527_055709-713
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/713/head -> prmerge/20260527_055709-713
+
+$ git worktree add /tmp/dopemux-pr-merge-713-20260527_055709 prmerge/20260527_055709-713
+exit=0
+--- stdout ---
+HEAD is now at 67fb23963 feat(governance): Auditor Router PAL-clink classification tightening
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260527_055709-713')
+Updating files:  49% (6512/13156)
+Updating files:  50% (6578/13156)
+Updating files:  51% (6710/13156)
+Updating files:  52% (6842/13156)
+Updating files:  53% (6973/13156)
+Updating files:  54% (7105/13156)
+Updating files:  55% (7236/13156)
+Updating files:  56% (7368/13156)
+Updating files:  57% (7499/13156)
+Updating files:  58% (7631/13156)
+Updating files:  59% (7763/13156)
+Updating files:  60% (7894/13156)
+Updating files:  61% (8026/13156)
+Updating files:  62% (8157/13156)
+Updating files:  63% (8289/13156)
+Updating files:  64% (8420/13156)
+Updating files:  65% (8552/13156)
+Updating files:  66% (8683/13156)
+Updating files:  67% (8815/13156)
+Updating files:  68% (8947/13156)
+Updating files:  69% (9078/13156)
+Updating files:  70% (9210/13156)
+Updating files:  71% (9341/13156)
+Updating files:  72% (9473/13156)
+Updating files:  73% (9604/13156)
+Updating files:  74% (9736/13156)
+Updating files:  75% (9867/13156)
+Updating files:  76% (9999/13156)
+Updating files:  77% (10131/13156)
+Updating files:  78% (10262/13156)
+Updating files:  79% (10394/13156)
+Updating files:  80% (10525/13156)
+Updating files:  81% (10657/13156)
+Updating files:  82% (10788/13156)
+Updating files:  83% (10920/13156)
+Updating files:  84% (11052/13156)
+Updating files:  85% (11183/13156)
+Updating files:  86% (11315/13156)
+Updating files:  87% (11446/13156)
+Updating files:  88% (11578/13156)
+Updating files:  89% (11709/13156)
+Updating files:  90% (11841/13156)
+Updating files:  91% (11972/13156)
+Updating files:  92% (12104/13156)
+Updating files:  93% (12236/13156)
+Updating files:  94% (12367/13156)
+Updating files:  95% (12499/13156)
+Updating files:  96% (12630/13156)
+Updating files:  97% (12762/13156)
+Updating files:  98% (12893/13156)
+Updating files:  99% (13025/13156)
+Updating files: 100% (13156/13156)
+Updating files: 100% (13156/13156), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+67fb23963647c629141a01ddafc71d21773e807d
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E8Z_D", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWBSM"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E8Z_H", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWBVz"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E8ol-", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWBZq"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E8ol_", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWBcb"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E87X_", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWBfW"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FGbBm", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWBj1"}}}}
+
+$ gh pr update-branch 713 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/tp-dmx-auditor-router-pal-clink-002
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/tp-dmx-auditor-router-pal-clink-002 -> FETCH_HEAD
+
+$ git reset --hard origin/codex/tp-dmx-auditor-router-pal-clink-002
+exit=0
+--- stdout ---
+HEAD is now at 67fb23963 feat(governance): Auditor Router PAL-clink classification tightening
+
+$ git diff --name-only --diff-filter=ACMR 898310bd01cf48b2703a166b429d4b330ec9f84e...HEAD
+exit=0
+--- stdout ---
+.antigravitycli/8045acdf-ddc1-4770-9e5f-66a542feed87.json
+.antigravitycli/c1be0ae4-af24-4184-9a66-bb7ce6372872.json
+claudedocs/CROSS_REPO_INVENTORY.md
+claudedocs/pr-718-remediation-plan-for-agy.md
+claudedocs/pr-reviews/2026-05-27-pr700-plus-remediation-plan.md
+docs/ops/embedded-audit.md
+docs/ops/health-check-matrix.md
+docs/ops/pr-acceptance.md
+docs/ops/tool-routing-matrix.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/CHANGED_FILES.txt
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/DIFF_STAT.txt
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/GIT_STATE.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PAL_CLINK_AUDIT_INPUT.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PAL_CLINK_AUDIT_OUTPUT.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/VALIDATION_OUTPUT.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/ARTIFACT_INDEX.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/AUDITOR_REPORT.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/CHANGED_FILES.txt
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/DIFF_STAT.txt
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/GIT_STATE.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/MANIFEST.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/SUMMARY.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/VALIDATION_OUTPUT.md
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/AUDITOR_ROUTE.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/PAL_CLINK_AUDIT_OUTPUT.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/ROUTE_PROBE_OUTPUTS.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/CHANGED_FILES.txt
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/DIFF_STAT.txt
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/GIT_STATE.md
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/VALIDATION_OUTPUT.md
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/ARTIFACT_INDEX.md
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/CHANGED_FILES.txt
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/DIFF_STAT.txt
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/GIT_STATE.md
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/MANIFEST.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/SUMMARY.md
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/VALIDATION_OUTPUT.md
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/AUDITOR_ROUTE_WRAPPER_DIRECT.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/AUDITOR_ROUTE_WRAPPER_PAL.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/ROUTE_PROBE_OUTPUTS_WRAPPER_PAL.json
+schemas/proof/auditor_route.schema.json
+schemas/proof/embedded_audit.schema.json
+scripts/auditor-preflight
+task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json
+task-packets/generated/TP-DMX-AUDITOR-ROUTER-WRAPPER-003.json
+tests/auditor_router/test_pal_clink.py
+tests/auditor_router/test_preflight.py
+tests/fixtures/auditor_router/pal_clink_audit_safe_claude_available/clink_configs/claude-audit.json
+tests/fixtures/auditor_router/pal_clink_audit_safe_claude_available/probes.json
+tests/fixtures/auditor_router/pal_clink_audit_safe_gemini_available/clink_configs/gemini-audit.json
+tests/fixtures/auditor_router/pal_clink_audit_safe_gemini_available/probes.json
+tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required/clink_configs/claude-audit.json
+tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required/probes.json
+tests/fixtures/auditor_router/pal_clink_mutation_flag_in_role_args/clink_configs/claude-audit.json
+tests/fixtures/auditor_router/pal_clink_mutation_flag_in_role_args/probes.json
+tests/fixtures/auditor_router/pal_clink_no_configs_found/clink_configs/.gitkeep
+tests/fixtures/auditor_router/pal_clink_no_configs_found/probes.json
+tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/PAL_CLINK_AUDIT_OUTPUT.json
+tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/clink_configs/claude-audit.json
+tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/probes.json
+tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available/clink_configs/claude-audit.json
+tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available/probes.json
+tests/fixtures/auditor_router/pal_clink_only_mutating_configs/clink_configs/claude-audit.json
+tests/fixtures/auditor_router/pal_clink_only_mutating_configs/probes.json
+tests/fixtures/auditor_router/pal_clink_selected_when_all_tier1_not_installed/clink_configs/gemini-audit.json
+tests/fixtures/auditor_router/pal_clink_selected_when_all_tier1_not_installed/probes.json
+tools/auditor_router/fixtures.py
+tools/auditor_router/models.py
+tools/auditor_router/pal_clink.py
+tools/auditor_router/policy.py
+tools/auditor_router/preflight.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .antigravitycli/8045acdf-ddc1-4770-9e5f-66a542feed87.json .antigravitycli/c1be0ae4-af24-4184-9a66-bb7ce6372872.json claudedocs/CROSS_REPO_INVENTORY.md claudedocs/pr-718-remediation-plan-for-agy.md claudedocs/pr-reviews/2026-05-27-pr700-plus-remediation-plan.md docs/ops/embedded-audit.md docs/ops/health-check-matrix.md docs/ops/pr-acceptance.md docs/ops/tool-routing-matrix.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PAL_CLINK_AUDIT_INPUT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PAL_CLINK_AUDIT_OUTPUT.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/ARTIFACT_INDEX.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/AUDITOR_REPORT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/MANIFEST.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/SUMMARY.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/AUDITOR_ROUTE.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/PAL_CLINK_AUDIT_OUTPUT.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/ROUTE_PROBE_OUTPUTS.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/ARTIFACT_INDEX.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/MANIFEST.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/SUMMARY.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/AUDITOR_ROUTE_WRAPPER_DIRECT.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/AUDITOR_ROUTE_WRAPPER_PAL.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/ROUTE_PROBE_OUTPUTS_WRAPPER_PAL.json schemas/proof/auditor_route.schema.json schemas/proof/embedded_audit.schema.json scripts/auditor-preflight task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json task-packets/generated/TP-DMX-AUDITOR-ROUTER-WRAPPER-003.json tests/auditor_router/test_pal_clink.py tests/auditor_router/test_preflight.py tests/fixtures/auditor_router/pal_clink_audit_safe_claude_available/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_audit_safe_claude_available/probes.json tests/fixtures/auditor_router/pal_clink_audit_safe_gemini_available/clink_configs/gemini-audit.json tests/fixtures/auditor_router/pal_clink_audit_safe_gemini_available/probes.json tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required/probes.json tests/fixtures/auditor_router/pal_clink_mutation_flag_in_role_args/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_mutation_flag_in_role_args/probes.json tests/fixtures/auditor_router/pal_clink_no_configs_found/clink_configs/.gitkeep tests/fixtures/auditor_router/pal_clink_no_configs_found/probes.json tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/PAL_CLINK_AUDIT_OUTPUT.json tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/probes.json tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available/probes.json tests/fixtures/auditor_router/pal_clink_only_mutating_configs/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_only_mutating_configs/probes.json tests/fixtures/auditor_router/pal_clink_selected_when_all_tier1_not_installed/clink_configs/gemini-audit.json tests/fixtures/auditor_router/pal_clink_selected_when_all_tier1_not_installed/probes.json tools/auditor_router/fixtures.py tools/auditor_router/models.py tools/auditor_router/pal_clink.py tools/auditor_router/policy.py tools/auditor_router/preflight.py
+exit=1
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Failed
+- hook id: markdown-location-guard
+- exit code: 1
+
+✅ All markdown files in approved locations
+❌ claudedocs/CROSS_REPO_INVENTORY.md
+
+Move misplaced .md files to docs/ or see plan.md for cleanup strategy
+❌ claudedocs/pr-718-remediation-plan-for-agy.md
+
+Move misplaced .md files to docs/ or see plan.md for cleanup strategy
+❌ claudedocs/pr-reviews/2026-05-27-pr700-plus-remediation-plan.md
+
+Move misplaced .md files to docs/ or see plan.md for cleanup strategy
+✅ All markdown files in approved locations
+✅ All markdown files in approved locations
+
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-713-20260527_055709
+exit=0
+
