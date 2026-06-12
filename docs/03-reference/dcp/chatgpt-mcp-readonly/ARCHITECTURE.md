@@ -69,7 +69,7 @@ The registry is the trust boundary. It is an explicit, operator-maintained mappi
 
 ## 7. Response Envelope Structure
 
-Every payload — success, partial, or blocked — is wrapped in the canonical envelope (`project_id`, `branch`, `head_sha`, dirty state, `source_system`, `authority_label`, `freshness`, `limitations`, `warnings`, `redactions`, `blocked_reasons`, `data`). A missing backend capability returns `PARTIAL` or `BLOCKED`, **never guessed data**. See [`RESPONSE_ENVELOPE_SCHEMA.md`](RESPONSE_ENVELOPE_SCHEMA.md).
+Every payload — success, partial, or blocked — is wrapped in the canonical envelope (`project_id`, `branch`, `head_sha`, dirty state, `source_system`, `authority_label`, `untrusted`, `freshness`, `limitations`, `warnings`, `redactions`, `blocked_reasons`, `data`). A missing backend capability returns `PARTIAL` or `BLOCKED`, **never guessed data**. The `untrusted` flag (fail-closed default `true`; `false` only for the facade-authored `list_projects`/`get_project_capabilities`) marks `data` as retrieved content that the client must never interpret as instructions — the prompt-injection control (TP-0008; see [`SECURITY_MODEL.md`](SECURITY_MODEL.md) §5). See [`RESPONSE_ENVELOPE_SCHEMA.md`](RESPONSE_ENVELOPE_SCHEMA.md).
 
 ## 8. Redaction Baseline
 

@@ -415,4 +415,8 @@ LIVE_LOG*.txt
 .antigravitycli/
 .claude/.orchestrator-context-cache.json
 .claude/.orchestrator-edit-nudge.json
+.claude/.proof-tracking-nudge.json
+.claude/.mcp-health-cache.json
+.claude/.surface-guard-warned.json
+.claude/.denylist-nudge-cache.json
 .antigravitycli/

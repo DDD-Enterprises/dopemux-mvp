@@ -36,6 +36,23 @@ except ImportError:
 
 MAX_CHAIN_DEPTH = 10
 
+# Enum values mirror the CHECK constraints in schema.sql (work_log_entries).
+# Keep in sync — schema.sql is the canonical writer.
+VALID_CATEGORIES = frozenset({
+    'planning', 'implementation', 'review', 'debugging',
+    'research', 'deployment', 'architecture', 'documentation',
+})
+VALID_ENTRY_TYPES = frozenset({
+    'decision', 'blocker', 'resolution', 'milestone', 'error',
+    'workflow_transition', 'manual_note', 'task_event',
+})
+VALID_WORKFLOW_PHASES = frozenset({
+    'planning', 'implementation', 'review', 'audit', 'deployment', 'maintenance',
+})
+VALID_OUTCOMES = frozenset({
+    'success', 'partial', 'blocked', 'abandoned', 'in_progress', 'failed',
+})
+
 LOGGER = logging.getLogger(__name__)
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 MIGRATIONS_DIR = Path(__file__).parent / "migrations"
@@ -392,6 +409,34 @@ class ChronicleStore:
                 f"promotion_rule={promotion_rule}"
             )
         
+        # Enum validation (fail-closed): INSERT OR IGNORE would otherwise
+        # silently swallow CHECK constraint violations while we still return
+        # a deterministic entry_id that was never written.
+        if category not in VALID_CATEGORIES:
+            raise ValueError(
+                f"Invalid category '{category}'. "
+                f"Must be one of: {', '.join(sorted(VALID_CATEGORIES))}"
+            )
+        if entry_type not in VALID_ENTRY_TYPES:
+            raise ValueError(
+                f"Invalid entry_type '{entry_type}'. "
+                f"Must be one of: {', '.join(sorted(VALID_ENTRY_TYPES))}"
+            )
+        if workflow_phase is not None and workflow_phase not in VALID_WORKFLOW_PHASES:
+            raise ValueError(
+                f"Invalid workflow_phase '{workflow_phase}'. "
+                f"Must be one of: {', '.join(sorted(VALID_WORKFLOW_PHASES))} (or None)"
+            )
+        if outcome not in VALID_OUTCOMES:
+            raise ValueError(
+                f"Invalid outcome '{outcome}'. "
+                f"Must be one of: {', '.join(sorted(VALID_OUTCOMES))}"
+            )
+        if not isinstance(importance_score, int) or not (1 <= importance_score <= 10):
+            raise ValueError(
+                f"Invalid importance_score {importance_score!r}. Must be an integer between 1 and 10."
+            )
+
         # Supersession chain validation (Packet F §3.2, §3.4)
         if supersedes_entry_id:
             # Verify target entry exists
@@ -476,23 +521,27 @@ class ChronicleStore:
         )
         conn.commit()
 
-        # Loud fail for supersession conflicts (Packet F §3.2 fork prevention)
-        if cursor.rowcount == 0 and supersedes_entry_id:
-            # Check if it was ignored because entry_id matches (OK) 
-            # or because supersedes_entry_id matches a DIFFERENT entry (FAIL)
+        # Fail closed on silently-ignored INSERTs. rowcount == 0 with an
+        # existing entry_id is the legitimate idempotent-replay case; anything
+        # else means a constraint rejected the row and OR IGNORE swallowed it.
+        if cursor.rowcount == 0:
             existing = self.get_entry_by_id(workspace_id, instance_id, entry_id)
             if not existing:
-                # If entry_id doesn't exist but rowcount was 0, 
-                # then it MUST be the supersedes_entry_id UNIQUE constraint.
-                row = conn.execute(
-                    "SELECT id FROM work_log_entries WHERE supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
-                    (supersedes_entry_id, workspace_id, instance_id),
-                ).fetchone()
-                if row:
-                    raise ValueError(
-                        f"Supersession fork attempt rejected. Entry {supersedes_entry_id} "
-                        f"is already superseded by {row[0]}."
-                    )
+                # Loud fail for supersession conflicts (Packet F §3.2 fork prevention)
+                if supersedes_entry_id:
+                    row = conn.execute(
+                        "SELECT id FROM work_log_entries WHERE supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
+                        (supersedes_entry_id, workspace_id, instance_id),
+                    ).fetchone()
+                    if row:
+                        raise ValueError(
+                            f"Supersession fork attempt rejected. Entry {supersedes_entry_id} "
+                            f"is already superseded by {row[0]}."
+                        )
+                raise ValueError(
+                    f"work_log_entries INSERT for entry {entry_id} was rejected by a "
+                    f"database constraint and silently ignored; entry was NOT written."
+                )
 
         return entry_id
     
