@@ -1,0 +1,129 @@
+{
+  "id": "DMX-DCP-TOOLING-110",
+  "project": "dopemux-mvp",
+  "target": "Implement dcp accept command: TTY+typed confirmation approval artifact producer, approval reader in proof_family.py (DCP_APPROVAL_ARTIFACT family), and scanner consumers (AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR builtin detector + B.6 sanctioned-change downgrade). Steward/classifier rewiring is out of scope — deliver adapter contract doc only.",
+  "invariants": [
+    "Never wire or import the merge seam (the queue drain or any live lane-merge path).",
+    "Never compute live SHAs for static fixtures — only allowed for runtime git reads explicitly carved out in design D-E.",
+    "Never self-certify — the auditor identity in the proof bundle must differ from the implementer; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints — no live service calls.",
+    "Never promote external corroboration (DR-015, DR-016) to repo authority — cite provenance tags as EXTERNAL_PROPOSED or REPO_VALIDATED.",
+    "LIVE_WRITE_READY remains undefined and blocking — classifier blocked-posture on any PROVISIONAL class that lacks an approval_policy.yaml entry.",
+    "dcp accept must refuse when non-interactive (no TTY) — agent-driven Bash sessions cannot complete approval.",
+    "requester must not equal approver — enforced at write time, not just schema validation.",
+    "head_sha in APPROVAL.json is a legitimate live runtime git read (audit must-fix D-E carve-out) — not a static fixture SHA.",
+    "Steward/classifier rewiring is explicitly out of scope — deliver adapter contract documentation only, no steward code changes."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-107"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(dcp): dcp accept producer, DCP_APPROVAL_ARTIFACT reader, scanner consumers",
+    "allowlist": [
+      "src/dopemux/dcp/cli_dcp.py",
+      "src/dopemux/dcp/approval.py",
+      "src/dopemux/dcp/proof_family.py",
+      "src/dopemux/dcp/red_lane_scanner.py",
+      "config/approval_policy.yaml",
+      "docs/dcp/adapter-contract-approval-steward.md",
+      "tests/dcp/test_approval.py",
+      "proof/DMX-DCP-TOOLING-110/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): dcp accept + approval reader + scanner consumers (DMX-DCP-TOOLING-110)",
+    "body": "## Summary\n- Implements `dopemux dcp accept --tp <TP-ID> [--decision allow|gated|refuse] --as <identity>`: writes proof/<tp>/APPROVAL.json conforming to dcp_approval_artifact schema.\n- Enforces: TTY required + typed confirmation phrase (refuses when non-interactive per design D-E); requester != approver at write time; --tp sanitized to ^[A-Za-z0-9_-]{1,64}$; requester sourced from PROOF.json implementer identity; approver from --as (asserted, labeled); head_sha populated via live git read (D-E carve-out).\n- Registers dcp.accept as T6 capability in config/approval_policy.yaml.\n- Adds proof_family.py family DCP_APPROVAL_ARTIFACT: classify + expose fields; honor expiry_window.\n- Adds scanner consumers: (1) AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR builtin detector — merge-readiness artifact present without valid fresh APPROVAL.json → BLOCKER; (2) B.6 sanctioned-change downgrade — PROOF-CONTRACT-SCHEMA-MUTATION finding downgrades to WARNING when valid APPROVAL.json is present and covers flagged paths.\n- Delivers docs/dcp/adapter-contract-approval-steward.md documenting the adapter contract for future steward/classifier rewiring (out of scope here).\n\n## Validation\n- write → classify → scan integration test.\n- requester == approver rejected.\n- Non-TTY refusal verified.\n- Path traversal attempts rejected.\n- Expired approval treated as invalid.\n- AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR BLOCKER fires without approval.\n- Sanctioned-change downgrade demonstrated with valid approval.\n\n## NOT_RUN\n- Steward/classifier rewiring (out of scope, adapter contract doc only).\n- Cryptographic identity (V2).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: inspect dcp_approval_artifact schema, current approval_policy.yaml, proof_family.py, and red_lane_scanner.py AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR builtin status.",
+      "commands": [
+        "python -m json.tool schemas/dcp/dcp_approval_artifact.schema.json 2>/dev/null || find schemas -name '*approval*' | head -5",
+        "grep -n 'T6\\|dcp.accept\\|approval' config/approval_policy.yaml | head -20 || true",
+        "grep -n 'proof_family\\|DCP_APPROVAL' src/dopemux/dcp/proof_family.py | head -20 || true",
+        "grep -n 'AGENT-APPROVED-MERGE\\|merge_readiness\\|approval' src/dopemux/dcp/red_lane_scanner.py | head -20 || true"
+      ],
+      "validation": [
+        "dcp_approval_artifact schema located and parsed.",
+        "Current approval_policy.yaml T6 entries inspected.",
+        "Existing proof_family.py families inventoried.",
+        "Scanner builtin detector status for AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR confirmed."
+      ],
+      "context_files": [
+        "schemas/dcp/dcp_approval_artifact.schema.json",
+        "config/approval_policy.yaml",
+        "src/dopemux/dcp/proof_family.py",
+        "src/dopemux/dcp/red_lane_scanner.py",
+        "claudedocs/dcp-tooling-system/30-design.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement src/dopemux/dcp/approval.py with write_approval_artifact(tp_id, decision, approver, proof_path) function and supporting logic. Enforce: (1) check sys.stdin.isatty() — refuse with non-zero exit and clear message when not TTY; (2) prompt for typed confirmation phrase before writing; (3) source requester from proof_path/PROOF.json implementer field; (4) assert requester != approver before write; (5) populate head_sha via live git read (subprocess git rev-parse HEAD); (6) populate mutation_class and red_lanes_present from C1/C3 context; (7) validate --tp against ^[A-Za-z0-9_-]{1,64}$ before any path construction; (8) write schema-valid proof/<tp>/APPROVAL.json.",
+      "validation": [
+        "python -m pytest tests/dcp/test_approval.py::test_non_interactive_refused -xvs exits 0.",
+        "python -m pytest tests/dcp/test_approval.py::test_requester_equals_approver_rejected -xvs exits 0.",
+        "python -m pytest tests/dcp/test_approval.py::test_tp_sanitizer_blocks_traversal -xvs exits 0.",
+        "python -m pytest tests/dcp/test_approval.py::test_writes_valid_approval_artifact -xvs exits 0.",
+        "python -m pytest tests/dcp/test_approval.py::test_head_sha_populated -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add DCP_APPROVAL_ARTIFACT family to src/dopemux/dcp/proof_family.py: classify proof artifacts, expose decision/requester/approver/head_sha/expiry_window fields, enforce expiry (stale approval → invalid). Register dcp.accept as T6 capability in config/approval_policy.yaml.",
+      "validation": [
+        "python -m pytest tests/dcp/test_approval.py::test_proof_family_classifies_approval_artifact -xvs exits 0.",
+        "python -m pytest tests/dcp/test_approval.py::test_expired_approval_treated_as_invalid -xvs exits 0.",
+        "grep 'dcp.accept\\|T6' config/approval_policy.yaml confirms registration."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Implement scanner consumers in red_lane_scanner.py: (1) AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR builtin — when merge-readiness artifact is present in the diff without a valid non-expired APPROVAL.json covering the paths → emit BLOCKER finding; (2) B.6 sanctioned-change downgrade — when PROOF-CONTRACT-SCHEMA-MUTATION BLOCKER fires and a valid in-scope APPROVAL.json exists → downgrade to WARNING with approval artifact referenced in finding. Both consumers use the DCP_APPROVAL_ARTIFACT reader.",
+      "validation": [
+        "python -m pytest tests/dcp/test_approval.py::test_agent_approved_merge_blocker_without_approval -xvs exits 0.",
+        "python -m pytest tests/dcp/test_approval.py::test_sanctioned_change_downgrade_with_valid_approval -xvs exits 0.",
+        "python -m pytest tests/dcp/test_approval.py::test_write_classify_scan_integration -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Write docs/dcp/adapter-contract-approval-steward.md documenting the adapter contract for future steward/classifier rewiring: how steward_gate.py should read APPROVAL.json via DCP_APPROVAL_ARTIFACT family, what fields it should use, expiry handling, and what behavior changes when a valid approval is present. This document is out-of-scope implementation guidance only — no steward code is changed in this TP.",
+      "expected_files": [
+        "docs/dcp/adapter-contract-approval-steward.md"
+      ],
+      "validation": [
+        "File exists and documents reader API, expiry handling, and behavior delta.",
+        "No steward_gate.py or classifier.py changes in the diff."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run full approval test suite, write PROOF.json with PASS/FAIL/NOT_RUN buckets, confirm diff scope inside allowlist.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-110/PROOF.json"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_approval.py -q exits 0.",
+        "python -m json.tool proof/DMX-DCP-TOOLING-110/PROOF.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --name-only HEAD confirms only allowlist files changed.",
+        "Auditor identity differs from implementer in PROOF.json."
+      ]
+    }
+  ]
+}

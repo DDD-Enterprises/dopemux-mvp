@@ -1,0 +1,131 @@
+{
+  "id": "DMX-DCP-TOOLING-112",
+  "project": "dopemux-mvp",
+  "target": "Promote C1 and C5 contracts to L3: .v0->.v1 schema version bump and semver bump together, validation_state lifts (C5 split: paths CROSS_CHECKED, endpoint bindings stay PROVISIONAL), manifest level updates. The promotion diff itself is processed under B.6 with its own APPROVAL.json. Independent non-author audit mandatory. Redlane packet.",
+  "invariants": [
+    "Never wire or import the merge seam (the queue drain or any live lane-merge path).",
+    "Never compute live SHAs for static fixtures — only allowed for runtime git reads explicitly carved out in design D-E.",
+    "Never self-certify — the auditor identity in the proof bundle must differ from the implementer; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints — no live service calls.",
+    "Never promote external corroboration (DR-015, DR-016) to repo authority — cite provenance tags as EXTERNAL_PROPOSED or REPO_VALIDATED.",
+    "LIVE_WRITE_READY remains undefined and blocking — classifier blocked-posture on any PROVISIONAL class that lacks an approval_policy.yaml entry.",
+    "schema_version (.v0->.v1) and contract_version semver MUST bump together at L3 — bumping one without the other is a spec violation (amendment A2).",
+    "C5 endpoint_bindings MUST remain PROVISIONAL at L3 — the split-state (paths CROSS_CHECKED, endpoint bindings PROVISIONAL) is the only sanctioned L3 variant (amendment A15).",
+    "Independent audit is MANDATORY — the auditor identity in the proof bundle must be verifiably different from the implementer; operator verifies before orchestrator advance. This is non-waivable for the formal lock.",
+    "Redlane packet: a hand-authored proof/DMX-DCP-TOOLING-112/APPROVAL.json (schema-valid, requester != approver, scoped to schemas/dcp/** and config/dcp/**) must be present in the proof bundle before this packet may be marked complete, per design B.6."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-104",
+    "DMX-DCP-TOOLING-105",
+    "DMX-DCP-TOOLING-111"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(dcp): promote C1+C5 to L3, .v0->.v1 schema version, validation_state lift",
+    "allowlist": [
+      "schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+      "schemas/dcp/manifest.json",
+      "config/dcp/red_lane_taxonomy.json",
+      "config/dcp/project_resource_map.json",
+      "schemas/dcp/README.md",
+      "tests/dcp/test_c1_promotion.py",
+      "tests/dcp/test_c5_promotion.py",
+      "proof/DMX-DCP-TOOLING-112/PROOF.json",
+      "proof/DMX-DCP-TOOLING-112/APPROVAL.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): promote C1+C5 to L3 — .v0->.v1 lock (DMX-DCP-TOOLING-112)",
+    "body": "## Summary\n- Promotes C1 (dcp_red_lane_taxonomy) and C5 (project_resource_map) to L3 (LOCKED) per design Wave 4.\n- schema_version const bumped from dcp-red-lane-taxonomy.v0 to dcp-red-lane-taxonomy.v1 (amendment A2: authority marker).\n- contract_version semver bumped from 0.1.0 to 1.0.0 together with schema_version (A2: both bump at L3).\n- validation_state lifts: C1 → LOCKED; C5 split per amendment A15 — path sections → REPO_CROSS_CHECKED (generated from taxonomy), endpoint_bindings → PROVISIONAL.\n- Manifest level fields updated: C1.level='L3', C5.level='L3' with split-state documented.\n- README.md updated with L3 authority marker and version precedence rule.\n- The promotion diff touches schemas/dcp/** — processed under B.6 with its own APPROVAL.json.\n- Independent non-author audit mandatory (non-waivable for formal lock).\n\n## Validation\n- Full dcp test suite passes.\n- Both CI gates (dcp-red-lane-gate, dcp-contracts-consistency) green.\n- Manifest cross-file consistency check passes.\n- .v1 consumers treat contract as locked; .v0 consumers treat as provisional.\n- C5 endpoint_bindings confirmed PROVISIONAL in manifest.\n\n## NOT_RUN\n- Plugin packaging (TP-114 depends on this lock).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight gate-check: confirm all L3 prerequisites are met. TP-104 (CI gate) merged → scanner invoked as direct CI step. TP-105 (surface_guard) merged → fallback equality test passing. TP-111 (resource-map builder) merged → drift gate in CI. Run the dcp contracts-consistency CI test to confirm current state.",
+      "commands": [
+        "python -m pytest tests/dcp/ -k 'consistency or ci_gate or surface_guard or resource_map' -q",
+        "grep -n 'dcp-red-lane-gate\\|dcp-contracts-consistency\\|resource-map' .github/workflows/ci-complete.yml | head -20",
+        "python -m json.tool schemas/dcp/manifest.json | grep -A5 'level\\|validation_state\\|contract_version\\|schema_version'"
+      ],
+      "validation": [
+        "All three dependency TPs (104, 105, 111) confirmed merged — their CI gates and tests passing.",
+        "Current manifest level and validation_state for C1 and C5 documented.",
+        "L3 gate preconditions (non-empty producers/consumers, CI gate listed) verified structurally."
+      ],
+      "context_files": [
+        "schemas/dcp/manifest.json",
+        "schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+        "config/dcp/project_resource_map.json",
+        "claudedocs/dcp-tooling-system/30-design.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Bump schema_version const in dcp_red_lane_taxonomy.schema.json from dcp-red-lane-taxonomy.v0 to dcp-red-lane-taxonomy.v1. Update any consumers that hardcode the .v0 string to tolerate .v1. Update the const in the taxonomy instance file (config/dcp/red_lane_taxonomy.json) to match. Confirm the version precedence rule (A2): a consumer seeing .v0 treats the contract as provisional; .v1 = locked.",
+      "validation": [
+        "grep 'v1' schemas/dcp/dcp_red_lane_taxonomy.schema.json confirms new version const.",
+        "grep 'v1' config/dcp/red_lane_taxonomy.json confirms instance updated.",
+        "python -m jsonschema -i config/dcp/red_lane_taxonomy.json schemas/dcp/dcp_red_lane_taxonomy.schema.json exits 0.",
+        "python -m pytest tests/dcp/test_c1_promotion.py::test_v1_schema_version_present -xvs exits 0.",
+        "python -m pytest tests/dcp/test_c1_promotion.py::test_v0_consumer_treats_as_provisional -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Update schemas/dcp/manifest.json: C1 entry — level='L3', contract_version='1.0.0', schema_version='dcp-red-lane-taxonomy.v1', validation_state='LOCKED', ci_gates confirmed non-empty and naming real CI job steps. C5 entry — level='L3', contract_version='1.0.0', validation_state split: 'REPO_CROSS_CHECKED' for path sections, 'PROVISIONAL' for endpoint_bindings, documented in manifest as the sanctioned L3(split) variant per amendment A15. Update README.md with L3 authority marker and version precedence rule.",
+      "validation": [
+        "python -m json.tool schemas/dcp/manifest.json exits 0.",
+        "python -m pytest tests/dcp/test_c1_promotion.py::test_manifest_c1_at_l3 -xvs exits 0.",
+        "python -m pytest tests/dcp/test_c5_promotion.py::test_manifest_c5_split_state -xvs exits 0.",
+        "python -m pytest tests/dcp/test_c5_promotion.py::test_endpoint_bindings_remain_provisional -xvs exits 0.",
+        "dcp-contracts-consistency CI test passes against updated manifest."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Write proof/DMX-DCP-TOOLING-112/APPROVAL.json (hand-authored, redlane requirement per design B.6). The artifact must: be schema-valid against dcp_approval_artifact schema; have requester != approver; decision 'allow'; scope covering schemas/dcp/** and config/dcp/** paths touched in this packet. This is the gate proving itself — the promotion diff is a contract mutation and must flow through B.6.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-112/APPROVAL.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/DMX-DCP-TOOLING-112/APPROVAL.json exits 0.",
+        "python -c \"import json; a=json.load(open('proof/DMX-DCP-TOOLING-112/APPROVAL.json')); assert a['requester'] != a['approver']\" exits 0.",
+        "python -c \"import json; a=json.load(open('proof/DMX-DCP-TOOLING-112/APPROVAL.json')); assert a.get('decision') in ('allow','gated')\" exits 0.",
+        "Approval scope covers schemas/dcp/** confirmed in artifact."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run the full dcp test suite and both CI gates. All tests must pass. Confirm diff scope is inside allowlist. Write PROOF.json recording: command outputs, exit codes, git state, validation_state before and after, PASS/FAIL/NOT_RUN buckets. Record auditor identity (must differ from implementer — operator verifies).",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-112/PROOF.json"
+      ],
+      "commands": [
+        "python -m pytest tests/dcp/ -q",
+        "PYTHONPATH=src uv run --frozen python -m dopemux.dcp.red_lane_scanner --files schemas/dcp/dcp_red_lane_taxonomy.schema.json --packet-id DMX-DCP-TOOLING-112",
+        "PYTHONPATH=src uv run --frozen dopemux dcp resource-map sync --check"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/ -q exits 0 — zero failures.",
+        "Both CI gate commands exit 0.",
+        "python -m json.tool proof/DMX-DCP-TOOLING-112/PROOF.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --name-only HEAD confirms only allowlist files changed.",
+        "Auditor identity in PROOF.json is verifiably different from implementer — operator has verified before advance.",
+        "BUILD_AFTER_CORE_CONTRACTS gate declared OPEN in proof."
+      ]
+    }
+  ]
+}

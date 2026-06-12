@@ -1,0 +1,116 @@
+{
+  "id": "DMX-DCP-TOOLING-107",
+  "project": "dopemux-mvp",
+  "target": "Implement the dopemux dcp CLI group v1: preflight, status, red-lines, verify-proof, and receipts subcommands. Lazy/guarded import registration in cli.py, shared --tp sanitizer, --json flag, receipt emitted per run, startup-time-unchanged validation.",
+  "invariants": [
+    "Never wire or import the merge seam (the queue drain or any live lane-merge path).",
+    "Never compute live SHAs for static fixtures — only allowed for runtime git reads explicitly carved out in design D-E.",
+    "Never self-certify — the auditor identity in the proof bundle must differ from the implementer; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints — no live service calls.",
+    "Never promote external corroboration (DR-015, DR-016) to repo authority — cite provenance tags as EXTERNAL_PROPOSED or REPO_VALIDATED.",
+    "LIVE_WRITE_READY remains undefined and blocking — classifier blocked-posture on any PROVISIONAL class that lacks an approval_policy.yaml entry.",
+    "dcp CLI commands must never impersonate approvals, call live writers, auto-merge, auto-approve, or collapse helper into governor.",
+    "The dcp group registration in cli.py must use lazy/guarded import so a DCP import failure cannot break unrelated dopemux commands."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-103",
+    "DMX-DCP-TOOLING-106"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(dcp): dopemux dcp CLI group v1 (preflight/status/red-lines/verify-proof/receipts)",
+    "allowlist": [
+      "src/dopemux/cli.py",
+      "src/dopemux/dcp/cli_dcp.py",
+      "tests/dcp/test_cli_dcp.py",
+      "proof/DMX-DCP-TOOLING-107/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): dopemux dcp CLI group v1 (DMX-DCP-TOOLING-107)",
+    "body": "## Summary\n- Adds `dopemux dcp` click group with subcommands per design D-G: preflight, status, red-lines, verify-proof, receipts (list/show/verify).\n- All commands support `--json` for machine-readable output and `--tp` with sanitizer regex `^[A-Za-z0-9_-]{1,64}$` before any path construction (no traversal).\n- Every invocation emits a helper receipt via the TP-106 emitter.\n- `red-lines` exits non-zero when BLOCKED findings are present.\n- CLI group registered in cli.py via lazy/guarded import per amendment A9 — DCP import failures cannot brick unrelated commands; name-conflict precheck on registration.\n- `dopemux --help` startup time is validated as unchanged.\n\n## Validation\n- CLI integration tests covering all subcommands.\n- Receipt emitted per invocation verified.\n- red-lines non-zero exit on BLOCKED confirmed.\n- `dopemux --help` timing regression check.\n\n## NOT_RUN\n- evidence-pack subcommand (TP-108).\n- accept subcommand (TP-110).\n- resource-map subcommand (TP-111).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: inspect cli.py structure and import pattern, confirm TP-103 loader and TP-106 receipts emitter are present, check for any existing 'dcp' group name conflict.",
+      "commands": [
+        "wc -l src/dopemux/cli.py",
+        "grep -n 'dcp\\|lazy\\|deferred\\|import_module' src/dopemux/cli.py | head -30 || true",
+        "grep -n 'def main\\|add_command\\|group' src/dopemux/cli.py | head -20",
+        "python -c \"import dopemux.dcp.receipts\" && echo 'receipts ok' || echo 'receipts missing'",
+        "python -c \"from dopemux.dcp.red_lane_rules import load_taxonomy\" && echo 'loader ok' || echo 'loader missing'"
+      ],
+      "validation": [
+        "cli.py line count and import style documented.",
+        "No existing 'dcp' group name collision.",
+        "TP-103 load_taxonomy and TP-106 receipts emitter importable."
+      ],
+      "context_files": [
+        "src/dopemux/cli.py",
+        "src/dopemux/dcp/receipts.py",
+        "src/dopemux/dcp/red_lane_rules.py",
+        "claudedocs/dcp-tooling-system/30-design.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create src/dopemux/dcp/cli_dcp.py with the dcp click group and all v1 subcommands. Implement: (1) dcp preflight — git posture, policy/taxonomy version check, instance-file validity, SnapshotBlocked check; (2) dcp status — generate_control_snapshot() summary; (3) dcp red-lines [--files FILE...] [--diff] [--tp TP_ID] — wraps RedLaneScanner.scan(), exits non-zero on BLOCKED; (4) dcp verify-proof <tp_or_path> — runs proof.validate_proof_file + scripts/audit/validate_audit_proof.py + receipt chain verify; (5) dcp receipts list|show|verify — receipt store reader. All subcommands: --json flag, --tp sanitized to ^[A-Za-z0-9_-]{1,64}$ before any path construction, emit receipt per invocation.",
+      "validation": [
+        "python -m pytest tests/dcp/test_cli_dcp.py::test_preflight_runs -xvs exits 0.",
+        "python -m pytest tests/dcp/test_cli_dcp.py::test_status_runs -xvs exits 0.",
+        "python -m pytest tests/dcp/test_cli_dcp.py::test_red_lines_nonzero_on_blocked -xvs exits 0.",
+        "python -m pytest tests/dcp/test_cli_dcp.py::test_tp_sanitizer_rejects_traversal -xvs exits 0.",
+        "python -m pytest tests/dcp/test_cli_dcp.py::test_json_output_flag -xvs exits 0.",
+        "python -m pytest tests/dcp/test_cli_dcp.py::test_receipt_emitted_per_run -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Register the dcp group in src/dopemux/cli.py using lazy/guarded import. The registration must: (1) attempt import inside a try/except so ImportError cannot propagate to the main CLI; (2) log a warning if DCP group unavailable; (3) check for name collision before add_command; (4) not add any eager import at module top level.",
+      "validation": [
+        "python -c \"import dopemux.cli\" exits 0 even with dopemux.dcp.cli_dcp temporarily moved.",
+        "grep -n 'try.*import\\|except.*Import' src/dopemux/cli.py confirms guarded pattern.",
+        "python -m pytest tests/dcp/test_cli_dcp.py::test_lazy_import_isolates_failure -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Validate startup time: run `time dopemux --help` before and after the dcp group registration. The delta must be under 100ms. If cli.py uses lazy import correctly, the delta should be near-zero since DCP module is not loaded on --help.",
+      "commands": [
+        "time dopemux --help > /dev/null",
+        "python -m pytest tests/dcp/test_cli_dcp.py::test_startup_time_unchanged -xvs"
+      ],
+      "validation": [
+        "`dopemux --help` startup time delta is under 100ms or within 10% of baseline.",
+        "Startup time test passes."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run full CLI test suite, write PROOF.json recording outputs, exit codes, git state, and PASS/FAIL/NOT_RUN buckets. Confirm diff scope inside allowlist.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-107/PROOF.json"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_cli_dcp.py -q exits 0.",
+        "python -m json.tool proof/DMX-DCP-TOOLING-107/PROOF.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --name-only HEAD confirms only allowlist files changed.",
+        "Auditor identity differs from implementer in PROOF.json."
+      ]
+    }
+  ]
+}
