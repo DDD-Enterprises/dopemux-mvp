@@ -3,7 +3,7 @@
 FROM python:3.11-slim
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     curl \
     jq \
     git \
@@ -15,10 +15,12 @@ WORKDIR /app
 # Copy dependency manifests first for better caching
 # We need pyproject.toml and the core package structure for pip install .[services]
 COPY pyproject.toml .
-COPY src/dopemux/__init__.py src/dopemux/__init__.py
+COPY README.md .
+COPY src src
+COPY tools tools
 
 # Install Python dependencies from centralized manifest
-RUN pip install --no-cache-dir .[services]
+RUN pip install --no-cache-dir "wheel>=0.46.2" && pip install --no-cache-dir .[services]
 
 # Copy application code (relative to root build context)
 COPY services/dopecon-bridge/ .
