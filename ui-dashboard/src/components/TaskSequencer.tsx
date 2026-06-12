@@ -245,6 +245,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return (taskTimer / 60) > currentTask.estimatedMinutes;
   }, [currentTask, taskTimer]);
 
+  const progressPercent = useMemo(() => {
+    if (!currentTask) return 0;
+    return Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100));
+  }, [currentTask, taskTimer]);
+
+
   const overtimeMinutes = isOvertime
     ? Math.floor(taskTimer / 60 - currentTask!.estimatedMinutes)
     : 0;
@@ -287,6 +293,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
       isComplete: total > 0 && completed === total,
     };
   }, [tasks]);
+
+  const finishTime = useMemo(() => {
+    if (!currentTask || isComplete) return null;
+    const date = new Date(Date.now() + (currentTask.estimatedMinutes - taskTimer / 60) * 60000);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }, [currentTask, taskTimer, isComplete]);
 
   const finishTimeLabel = useMemo(() => {
     if (totalRemainingMinutes === 0) return '';
@@ -350,19 +362,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
     return result;
   }, [tasks, optimizedTasks, currentTaskId, taskTimer, heartbeat]);
-
-  const isRitualActive = useMemo(() => {
-    return completedCount > 0 || taskTimer > 0 || isTimerRunning;
-  }, [completedCount, taskTimer, isTimerRunning]);
-
-  const progressPercent = useMemo(() => {
-    if (!currentTask) return 0;
-    return Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100));
-  }, [currentTask, taskTimer]);
-
-  const isNearOvertime = useMemo(() => {
-    return progressPercent > 80 && !isOvertime;
-  }, [progressPercent, isOvertime]);
 
   return (
     <Paper
@@ -525,9 +524,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               </IconButton>
             </Tooltip>
           </Box>
-          <Typography variant="h5" sx={{ mb: 0.5 }}>
-            {currentTask.title}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', mb: 0.5 }}>
+            <Typography variant="h5">{currentTask.title}</Typography>
+            {finishTime && (
+              <Typography variant="caption" sx={{ color: brandTokens.text.secondary }}>
+                Ends at {finishTime}
+              </Typography>
+            )}
+          </Box>
           <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5 }}>
             <Typography
               variant="h3"
@@ -544,23 +548,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             >
               {formatTime(taskTimer)}
             </Typography>
-            {taskFinishTimes[currentTask.id] && (
-              <Typography
-                variant="caption"
-                sx={{
-                  color: brandTokens.text.secondary,
-                  letterSpacing: '0.05em',
-                  bgcolor: alpha(brandTokens.colors.voidNavy, 0.4),
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 1,
-                  border: `1px solid ${alpha(brandTokens.text.secondary, 0.2)}`,
-                  mb: 1,
-                }}
-              >
-                Ends at {taskFinishTimes[currentTask.id]}
-              </Typography>
-            )}
             {isOvertime && (
               <Typography
                 variant="caption"
@@ -594,40 +581,22 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             >
               <LinearProgress
                 variant="determinate"
-                value={Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)}
+                value={progressPercent}
                 sx={{
                   height: 6,
                   borderRadius: 3,
                   bgcolor: alpha(
-                    isOvertime
-                      ? brandTokens.colors.gremlinPink
-                      : isNearOvertime
-                        ? brandTokens.colors.giltEdge
-                        : brandTokens.colors.saintGold,
+                    isOvertime ? brandTokens.colors.gremlinPink : progressPercent > 80 ? brandTokens.colors.giltEdge : brandTokens.colors.saintGold,
                     0.1
                   ),
                   '& .MuiLinearProgress-bar': {
-                    bgcolor: isOvertime
-                      ? brandTokens.colors.gremlinPink
-                      : isNearOvertime
-                        ? brandTokens.colors.giltEdge
-                        : brandTokens.colors.saintGold,
+                    bgcolor: isOvertime ? brandTokens.colors.gremlinPink : progressPercent > 80 ? brandTokens.colors.giltEdge : brandTokens.colors.saintGold,
                     borderRadius: 3,
-                    boxShadow: isOvertime
-                      ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.6)}`
-                      : brandTokens.shadows.goldBloom,
+                    boxShadow: isOvertime ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.6)}` : brandTokens.shadows.goldBloom,
                   },
                 }}
                 aria-label={`Progress for task: ${currentTask.title}`}
-                aria-valuetext={
-                  isOvertime
-                    ? `Overtime: ${Math.floor(taskTimer / 60 - currentTask.estimatedMinutes)} ${
-                        Math.floor(taskTimer / 60 - currentTask.estimatedMinutes) === 1
-                          ? 'minute'
-                          : 'minutes'
-                      } past estimate`
-                    : `${progressPercent}% of estimated time`
-                }
+                aria-valuetext={isOvertime ? 'Overtime' : `${progressPercent}% of estimated time`}
               />
             </Box>
           </Tooltip>
@@ -1031,54 +1000,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography className="dopemux-aftercare" sx={{ mt: 0.5 }}>
           [AFTERCARE] Logged. Hydrate. Ask for mercy with details.
         </Typography>
-        {isRitualActive && currentTask && (
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-            <Tooltip
-              title={isResetConfirming ? 'Confirm to clear all progress' : 'Restart the task sequence'}
-              arrow
-            >
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={
-                  isResetConfirming ? (
-                    <AlertTriangle size={16} aria-hidden="true" />
-                  ) : (
-                    <RotateCcw size={16} aria-hidden="true" />
-                  )
-                }
-                onClick={resetTasks}
-                sx={{
-                  borderColor: isResetConfirming
-                    ? brandTokens.colors.saintGold
-                    : brandTokens.colors.serumMint,
-                  color: isResetConfirming
-                    ? brandTokens.colors.saintGold
-                    : brandTokens.colors.serumMint,
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  ...(isResetConfirming && {
-                    animation: 'reset-pulse 1.5s infinite',
-                  }),
-                  '&:hover': {
-                    borderColor: isResetConfirming
-                      ? brandTokens.colors.saintGold
-                      : brandTokens.colors.serumMint,
-                    background: alpha(
-                      isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
-                      0.1
-                    ),
-                  },
-                  '&:focus-visible': {
-                    outline: 'none',
-                    boxShadow: `0 0 0 2px ${isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint}`,
-                  },
-                }}
-              >
-                {isResetConfirming ? 'Confirm Reset?' : 'Reset Ritual'}
-              </Button>
-            </Tooltip>
-          </Box>
-        )}
       </Box>
     </Paper>
   );
