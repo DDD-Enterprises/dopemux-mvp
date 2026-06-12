@@ -1,0 +1,160 @@
+{
+  "id": "DMX-DCP-TOOLING-105",
+  "project": "dopemux-mvp",
+  "target": "Rebase dcp_surface_guard.py onto the taxonomy-driven rules loader, regenerate _FALLBACK_FORBIDDEN from hard_block lanes, upgrade the sync test from subset to equality, and add the PreToolUse deny matcher for 'dcp accept' invocations from model sessions. Hard external dependency: PR #858 must be merged. Wave 1 C1 hook coupling.",
+  "invariants": [
+    "Never wire or import the merge seam (DCP-RED-MERGE-SEAM-0001) in any file this TP touches.",
+    "Never compute live SHAs for static fixtures.",
+    "Never self-certify — auditor identity in the proof bundle must differ from the implementer identity; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints in any new or edited file.",
+    "Never promote external corroboration to repo authority.",
+    "LIVE_WRITE_READY remains undefined and blocking.",
+    "HARD EXTERNAL DEPENDENCY: PR #858 must be merged before this TP executes — dcp_surface_guard.py does not exist on main today. STOP condition: if dcp_surface_guard.py is absent from HEAD, halt and re-scope per plan note: 'if #858 stalls, this TP re-scopes to introduce the guard itself'. Record the outcome in PROOF.json.",
+    "Sync test must be upgraded from subset-check (<=) to equality on the hard_block subset — not just that fallback is a subset of the taxonomy, but that it covers 100% of hard_block-lane detectors.",
+    "The PreToolUse deny matcher for 'dcp accept' is acknowledged bypassable by obfuscation — document this explicitly; the TTY-refusal in TP-110 is the real barrier. Do not overstate the hook's security guarantee.",
+    "P6 degradation risk must be noted in the proof bundle: multi-worktree hook reliability is degraded until the DX-overhaul MCP cutover lands. See plan A14."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-103"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-dcp-tooling-105",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): TP-105 surface_guard taxonomy alignment + fallback regen + dcp-accept deny",
+    "allowlist": [
+      "src/dopemux/dcp/dcp_surface_guard.py",
+      "tests/dcp/test_surface_guard_alignment.py",
+      "task-packets/generated/DMX-DCP-TOOLING-105.json",
+      "proof/DMX-DCP-TOOLING-105/PROOF.json",
+      "proof/DMX-DCP-TOOLING-105/AUDITOR_REPORT.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-105.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool proof/DMX-DCP-TOOLING-105/PROOF.json",
+      "test -f src/dopemux/dcp/dcp_surface_guard.py",
+      "PYTHONPATH=src python -m pytest tests/dcp/test_surface_guard_alignment.py -v",
+      "git diff --check",
+      "git status --short"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): TP-105 surface_guard taxonomy alignment + fallback equality + dcp-accept deny",
+    "body": "## Summary\n- Rebases `dcp_surface_guard.py` onto `load_taxonomy()` from TP-103: when `USE_TAXONOMY_LOADER=True`, surface guard derives denied paths from the taxonomy instance rather than a separate hardcoded list.\n- Regenerates `_FALLBACK_FORBIDDEN` from hard_block lanes — same regeneration logic as FROZEN_FALLBACK_RULES in TP-103, keeping the two in sync.\n- Upgrades sync test from subset-check to equality on the hard_block subset (every hard_block-lane path detector is present in the fallback, and the fallback contains no extra entries not in the taxonomy).\n- Adds PreToolUse deny matcher for `dcp accept` invocations from model sessions (string-matchable, defense-in-depth — bypassable by obfuscation; TTY-refusal in TP-110 is the real barrier; documented explicitly).\n- Risk note A14: multi-worktree hook reliability degraded until DX-overhaul P6 MCP cutover.\n\n## STOP condition\nIf `dcp_surface_guard.py` is absent from HEAD (PR #858 not yet merged), halt and record NOT_RUN in PROOF.json. Re-scope to introduce the guard if #858 stalls.\n\n## Depends on\nDMX-DCP-TOOLING-103 (load_taxonomy() required), PR #858 merged (hard external dependency).\n\n## Scope\ndcp_surface_guard.py + alignment tests. No CI workflow edits.\n\n## NOT_RUN\nFull hook integration test in live session, P6 worktree reliability.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "tracer",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch, dirty state. STOP CHECK: test -f src/dopemux/dcp/dcp_surface_guard.py — if absent, record STOP in PROOF.json and halt (PR #858 not merged; re-scope to introduce the guard per plan). If present: read dcp_surface_guard.py in full to establish baseline _FALLBACK_FORBIDDEN shape, existing sync test, and how the guard currently imports from red_lane_rules. Verify DMX-DCP-TOOLING-103 merged (load_taxonomy present).",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git log --oneline -10",
+        "test -f src/dopemux/dcp/dcp_surface_guard.py && echo 'GUARD_PRESENT' || echo 'GUARD_ABSENT_STOP'",
+        "cat src/dopemux/dcp/dcp_surface_guard.py 2>/dev/null || true",
+        "grep -n 'load_taxonomy\\|_FALLBACK\\|sync_test\\|equality\\|subset' src/dopemux/dcp/dcp_surface_guard.py 2>/dev/null || true",
+        "grep -n 'load_taxonomy' src/dopemux/dcp/red_lane_rules.py | head -5"
+      ],
+      "validation": [
+        "Remote identifies DDD-Enterprises/dopemux-mvp.",
+        "If dcp_surface_guard.py absent: STOP recorded in PROOF.json as NOT_RUN with 'PR #858 not merged' reason. TP halts.",
+        "If present: _FALLBACK_FORBIDDEN current shape and sync test baseline recorded.",
+        "DMX-DCP-TOOLING-103 commit present in git log (load_taxonomy available).",
+        "PR #858 guard tests referenced for the existing test baseline to verify no regression."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/dcp-tooling-system/30-design.md",
+        "claudedocs/dcp-tooling-system/40-plan.md",
+        "src/dopemux/dcp/dcp_surface_guard.py",
+        "src/dopemux/dcp/red_lane_rules.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Rebase dcp_surface_guard.py onto the loader: when USE_TAXONOMY_LOADER=True (the same flag from red_lane_rules.py), surface guard calls load_taxonomy() to derive denied path patterns from hard_block lanes' path_pattern detectors, instead of (or in addition to) _FALLBACK_FORBIDDEN. _FALLBACK_FORBIDDEN is regenerated from the taxonomy's hard_block-lane path detectors (same regeneration as FROZEN_FALLBACK_RULES — use identical logic to keep them in sync). Guard deny behavior (exit-2 permissionDecision: deny) is unchanged. Per design B.3 and B.5.",
+      "expected_files": [
+        "src/dopemux/dcp/dcp_surface_guard.py"
+      ],
+      "validation": [
+        "Guard imports load_taxonomy from red_lane_rules when USE_TAXONOMY_LOADER=True.",
+        "_FALLBACK_FORBIDDEN is regenerated to match hard_block-lane path detectors.",
+        "Deny behavior (exit-2 output) is unchanged from PR #858 baseline.",
+        "Guard still falls back to _FALLBACK_FORBIDDEN if taxonomy load fails (fail-closed).",
+        "PR #858 existing guard tests still pass."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add PreToolUse deny matcher for 'dcp accept' invocations from model sessions in dcp_surface_guard.py. String-match on the tool invocation: if a Bash tool call contains 'dcp accept' (or 'dopemux dcp accept'), raise a deny with advisory message. Add explicit code comment: 'BYPASSABLE_BY_OBFUSCATION: this matcher is defense-in-depth only; the TTY-refusal in TP-110 is the real barrier. Do not rely on this alone.' Per design D-E.1 anti-self-approval hardening.",
+      "expected_files": [
+        "src/dopemux/dcp/dcp_surface_guard.py"
+      ],
+      "validation": [
+        "PreToolUse handler now includes a deny path for 'dcp accept' invocations.",
+        "Code comment explicitly marks this as bypassable and advisory.",
+        "Deny message references the TTY-refusal in TP-110 as the real barrier.",
+        "Existing deny paths for other patterns are unchanged."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Create tests/dcp/test_surface_guard_alignment.py: (1) equality test — _FALLBACK_FORBIDDEN covers exactly the set of path patterns from hard_block-lane path_pattern detectors in the taxonomy (equality, not just subset); (2) fallback test — with USE_TAXONOMY_LOADER=True and a corrupted taxonomy, guard falls back to _FALLBACK_FORBIDDEN and denies hard_block paths; (3) dcp-accept deny test — guard's PreToolUse handler denies a 'dopemux dcp accept' invocation; (4) PR #858 guard tests still pass (run the existing guard test suite and confirm no regression). Per design B.3 and plan DET-1.",
+      "expected_files": [
+        "tests/dcp/test_surface_guard_alignment.py"
+      ],
+      "validation": [
+        "PYTHONPATH=src python -m pytest tests/dcp/test_surface_guard_alignment.py -v exits 0.",
+        "Equality test fails if _FALLBACK_FORBIDDEN has extra entries not in the taxonomy's hard_block paths.",
+        "Equality test fails if _FALLBACK_FORBIDDEN is missing any hard_block-lane path.",
+        "dcp-accept deny test passes.",
+        "PR #858 guard tests pass (no regression)."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run full validation, produce proof/DMX-DCP-TOOLING-105/PROOF.json and AUDITOR_REPORT.md, record P6 degradation risk note (design A14: multi-worktree hook reliability degraded until DX-overhaul MCP cutover), verify diff is within allowlist, commit.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-105/PROOF.json",
+        "proof/DMX-DCP-TOOLING-105/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "PYTHONPATH=src python -m pytest tests/dcp/test_surface_guard_alignment.py -v exits 0.",
+        "PYTHONPATH=src python -m pytest tests/dcp/ -v exits 0 (full DCP suite, no regressions).",
+        "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-105.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --stat shows only files in allowlist.",
+        "PROOF.json records: all outputs and exit codes; PASS/FAIL/NOT_RUN for each validation; P6 multi-worktree degradation risk (A14); dcp-accept deny matcher bypassability note; auditor identity distinct from implementer; PR #858 dependency status; any UNKNOWNs.",
+        "Auditor identity in AUDITOR_REPORT.md differs from implementer identity."
+      ]
+    }
+  ]
+}

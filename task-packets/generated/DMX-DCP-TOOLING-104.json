@@ -1,0 +1,179 @@
+{
+  "id": "DMX-DCP-TOOLING-104",
+  "project": "dopemux-mvp",
+  "target": "Wire the red-lane scanner as a direct CI gate step in ci-complete.yml (reusing the existing CHANGED_FILES bash fragment, warn-only first), add a pre-commit staged-files entry, resolve test_16 (convert to packet-context-only or delete with rationale), and ship the hand-authored APPROVAL.json for the workflow edit. Wave 1 C1 gate.",
+  "invariants": [
+    "Never wire or import the merge seam (DCP-RED-MERGE-SEAM-0001) in any file this TP touches.",
+    "Never compute live SHAs for static fixtures.",
+    "Never self-certify — auditor identity in the proof bundle must differ from the implementer identity; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints in any new or edited file.",
+    "Never promote external corroboration to repo authority.",
+    "LIVE_WRITE_READY remains undefined and blocking.",
+    "diff touches .github/workflows/ci-complete.yml (a hard-block path) — ship hand-authored proof/DMX-DCP-TOOLING-104/APPROVAL.json per design B.6.",
+    "The CI step MUST reuse the existing CHANGED_FILES bash fragment from the root-hygiene step — do not write a second bash fragment to build the changed-files list. Inspect ci-complete.yml in S1 and cite the exact line range of the existing fragment.",
+    "The CI gate ships WARN-ONLY in this TP — do not set it to hard-blocking/enforcing. The enforcing flip happens in a follow-up commit after one green week.",
+    "test_16 resolution: the deselect must be removed or converted to a skip-unless-anchor-matches guard. Rationale for the chosen approach must be recorded in a code comment and in PROOF.json."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-103"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-dcp-tooling-104",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): TP-104 scanner as direct CI gate (warn-only) + pre-commit entry + test_16 fix",
+    "allowlist": [
+      ".github/workflows/ci-complete.yml",
+      ".pre-commit-config.yaml",
+      "tests/dcp/test_red_lane_scanner.py",
+      "task-packets/generated/DMX-DCP-TOOLING-104.json",
+      "proof/DMX-DCP-TOOLING-104/APPROVAL.json",
+      "proof/DMX-DCP-TOOLING-104/PROOF.json",
+      "proof/DMX-DCP-TOOLING-104/AUDITOR_REPORT.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-104.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool proof/DMX-DCP-TOOLING-104/APPROVAL.json",
+      "python -m json.tool proof/DMX-DCP-TOOLING-104/PROOF.json",
+      "PYTHONPATH=src python -m pytest tests/dcp/ -v",
+      "git diff --check",
+      "git status --short"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): TP-104 scanner as direct CI gate (warn-only) + pre-commit + test_16 resolution",
+    "body": "## Summary\n- Adds a direct scanner invocation step to `.github/workflows/ci-complete.yml`: reuses the existing `CHANGED_FILES` bash fragment from the root-hygiene step (no second fragment written); invocation `PYTHONPATH=src uv run --frozen python -m dopemux.dcp.red_lane_scanner --files $CHANGED_FILES --packet-id ci`; ships **warn-only** (exit 0 on findings, findings logged).\n- Ships hand-authored `proof/DMX-DCP-TOOLING-104/APPROVAL.json` per design B.6 (workflow file edit).\n- Resolves `test_16`: deselect removed; test converted to packet-context-only (skip-unless-anchor-matches guard) OR deleted with rationale recorded — implementer documents chosen approach in PROOF.json.\n- Adds pre-commit staged-files entry running the scanner on staged files (advisory tier).\n\n## Depends on\nDMX-DCP-TOOLING-103 (--packet-id argparse required).\n\n## Scope\nCI workflow (warn-only), pre-commit (advisory), test_16 resolution. Scanner source not modified.\n\n## NOT_RUN\nEnforcing gate flip (follow-up after one green week). Live CI run on deliberate-violation branch.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch, dirty state. Verify DMX-DCP-TOOLING-103 has merged (load_taxonomy(), --packet-id present in red_lane_scanner.py). Read ci-complete.yml in full — identify and record: (1) exact line range of the existing CHANGED_FILES bash fragment in the root-hygiene step, (2) existing dcp-related steps, (3) insertion point for the new scanner step. Read .pre-commit-config.yaml if present. Read tests/dcp/test_red_lane_scanner.py to find test_16 and understand its deselect rationale.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git log --oneline -10",
+        "grep -n 'CHANGED_FILES\\|changed.files\\|changed_files' .github/workflows/ci-complete.yml | head -20",
+        "grep -n 'test_16\\|deselect\\|packet.*base.*SHA\\|anchor' tests/dcp/test_red_lane_scanner.py || true",
+        "python -c 'from dopemux.dcp.red_lane_scanner import main; import inspect; sig=inspect.signature(main); print(sig)' 2>/dev/null || PYTHONPATH=src python -c 'from dopemux.dcp.red_lane_scanner import main; import inspect; print(inspect.signature(main))' || true",
+        "test -f .pre-commit-config.yaml && cat .pre-commit-config.yaml || echo 'no pre-commit-config'"
+      ],
+      "validation": [
+        "Remote identifies DDD-Enterprises/dopemux-mvp.",
+        "Branch is codex/dmx-dcp-tooling-104.",
+        "DMX-DCP-TOOLING-103 commit present in git log — STOP if absent, re-queue after 103.",
+        "--packet-id confirmed present in red_lane_scanner.py main() argparse.",
+        "CHANGED_FILES fragment line range recorded in PROOF.json (will be cited, not duplicated).",
+        "test_16 deselect location and root cause (PR-context-sensitive, diffs against TP-DCP-0002 packet base SHA) recorded."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/dcp-tooling-system/30-design.md",
+        "claudedocs/dcp-tooling-system/40-plan.md",
+        ".github/workflows/ci-complete.yml",
+        "src/dopemux/dcp/red_lane_scanner.py",
+        "tests/dcp/test_red_lane_scanner.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Edit .github/workflows/ci-complete.yml: add a dcp-red-lane-scan step that (1) reuses the CHANGED_FILES variable already set by the existing root-hygiene step (reference by variable name, do not re-implement the bash fragment), (2) runs: PYTHONPATH=src uv run --frozen python -m dopemux.dcp.red_lane_scanner --files $CHANGED_FILES --packet-id ci, (3) ships WARN-ONLY: use `continue-on-error: true` or equivalent so non-zero exit does not block the PR until the enforcing flip. Step name: dcp-red-lane-scan. Per design B.5.",
+      "expected_files": [
+        ".github/workflows/ci-complete.yml"
+      ],
+      "validation": [
+        "ci-complete.yml is valid YAML after edit.",
+        "New step name is dcp-red-lane-scan.",
+        "Step uses existing CHANGED_FILES variable — no second bash fragment computing the file list.",
+        "Step has continue-on-error: true (or equivalent warn-only mechanism).",
+        "Invocation form is exactly: PYTHONPATH=src uv run --frozen python -m dopemux.dcp.red_lane_scanner --files $CHANGED_FILES --packet-id ci (or functionally equivalent with the repo's uv invocation pattern).",
+        "No other CI steps are modified."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Resolve test_16 in tests/dcp/test_red_lane_scanner.py. Root cause: test diffs against TP-DCP-0002's packet base SHA — PR-context-sensitive, false-positives on workflow edits. Decision: either (a) convert to skip-unless-anchor-matches (add a pytest.mark.skipif checking for the anchor SHA in the environment — test only runs when the specific context is present) or (b) delete with a comment recording the rationale and the assertion that the direct CI scanner gate now provides the correct coverage. Record chosen approach in a code comment. Whichever approach: the -k 'not test_16' deselect in pyproject.toml or pytest.ini or the CI invocation must be removed. Per plan FEAS-10/SEC-5.",
+      "expected_files": [
+        "tests/dcp/test_red_lane_scanner.py"
+      ],
+      "validation": [
+        "PYTHONPATH=src python -m pytest tests/dcp/ -v exits 0 without any -k 'not test_16' deselect.",
+        "No -k not test_16 remains in CI invocation or pytest config for this test.",
+        "If deleted: code comment documents the rationale and the replacement coverage.",
+        "If converted to skip: skipif condition is documented and test does not false-positive in standard CI context."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add a pre-commit staged-files entry to .pre-commit-config.yaml: a new hook running the scanner against staged files using `git diff --cached --name-only`. Mark as advisory tier (warn-only exit behavior or `pass_filenames: true` with the scanner's warn exit). Per design B.5 advisory pre-commit tier. If .pre-commit-config.yaml does not exist, create it with this hook only.",
+      "expected_files": [
+        ".pre-commit-config.yaml"
+      ],
+      "validation": [
+        ".pre-commit-config.yaml is valid YAML after edit.",
+        "New hook entry references the scanner with staged-files invocation.",
+        "Hook is advisory (does not block commit on scanner findings — continue-on-error or non-zero-exit passes).",
+        "Existing hooks in .pre-commit-config.yaml are unchanged."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Author proof/DMX-DCP-TOOLING-104/APPROVAL.json (hand-authored, per design B.6): this TP edits .github/workflows/ci-complete.yml — a hard-block path. Fields: tp_id=DMX-DCP-TOOLING-104, decision=allow, requester (implementer, distinct from approver), approver (operator identity), scope=[.github/workflows/ci-complete.yml], head_sha (PENDING until commit, update before final), expiry_window, rationale (record that the gate ships warn-only, not enforcing — approval is for adding the gate step only). requester must not equal approver.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-104/APPROVAL.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/DMX-DCP-TOOLING-104/APPROVAL.json exits 0.",
+        "requester != approver.",
+        "decision is allow.",
+        "scope covers .github/workflows/ci-complete.yml.",
+        "tp_id is DMX-DCP-TOOLING-104.",
+        "Rationale notes warn-only posture."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run full validation, produce proof/DMX-DCP-TOOLING-104/PROOF.json and AUDITOR_REPORT.md, verify diff is within allowlist, commit.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-104/PROOF.json",
+        "proof/DMX-DCP-TOOLING-104/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "PYTHONPATH=src python -m pytest tests/dcp/ -v exits 0 (test_16 resolved — no deselect).",
+        "ci-complete.yml is valid YAML.",
+        ".pre-commit-config.yaml is valid YAML.",
+        "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-104.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --stat shows only files in allowlist.",
+        "PROOF.json records all outputs, exit codes, validation states (PASS/FAIL/NOT_RUN), CHANGED_FILES fragment cite (not duplicated), test_16 resolution approach + rationale, warn-only gate note, auditor identity (distinct from implementer), APPROVAL.json reference, and any UNKNOWNs.",
+        "Auditor identity in AUDITOR_REPORT.md differs from implementer identity."
+      ]
+    }
+  ]
+}

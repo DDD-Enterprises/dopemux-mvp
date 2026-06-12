@@ -1,0 +1,181 @@
+{
+  "id": "DMX-DCP-TOOLING-102",
+  "project": "dopemux-mvp",
+  "target": "Evolve the dcp_red_lane_taxonomy schema to add detectors[] and enforcement fields (REPO_VALIDATED provenance, citing red_lane_rules.py), create the runtime taxonomy instance config/dcp/red_lane_taxonomy.json with 11 existing lanes + 4 new repo-derived lanes, add CI invariant tests, and ship the hand-authored APPROVAL.json. First exercise of the sanctioned-change protocol B.6.",
+  "invariants": [
+    "Never wire or import the merge seam (DCP-RED-MERGE-SEAM-0001) in any file this TP touches.",
+    "Never compute live SHAs for static fixtures — all SHA values must be static strings or omitted.",
+    "Never self-certify — auditor identity in the proof bundle must differ from the implementer identity; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints in any new or edited file.",
+    "Never promote external corroboration to repo authority — all detector patterns must be provenance-tagged REPO_VALIDATED with citation to red_lane_rules.py or MANUAL with justification.",
+    "LIVE_WRITE_READY remains undefined and blocking — do not resolve it; LIVE-WRITE-CREEP lane must reference this posture.",
+    "diff touches contract/workflow surfaces (schemas/dcp/**, config/dcp/**) — ship hand-authored proof/DMX-DCP-TOOLING-102/APPROVAL.json per design B.6.",
+    "PROOF-CONTRACT-SCHEMA-MUTATION lane MUST remain gate=hard_block — this was a pre-existing fixture invariant; do not weaken it to project_gate or any softer gate.",
+    "The gh api text pattern tightening (A7c) is a deliberate change — document it as exempt from TP-103's behavioral equivalence corpus in a comment in the taxonomy instance file."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-dcp-tooling-102",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): TP-102 red-lane taxonomy instance + detector schema evolution + APPROVAL",
+    "allowlist": [
+      "schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+      "config/dcp/red_lane_taxonomy.json",
+      "tests/dcp/test_taxonomy_invariants.py",
+      "task-packets/generated/DMX-DCP-TOOLING-102.json",
+      "proof/DMX-DCP-TOOLING-102/APPROVAL.json",
+      "proof/DMX-DCP-TOOLING-102/PROOF.json",
+      "proof/DMX-DCP-TOOLING-102/AUDITOR_REPORT.md"
+    ],
+    "verify": [
+      "python -m json.tool schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+      "python -m json.tool config/dcp/red_lane_taxonomy.json",
+      "python -m jsonschema -i config/dcp/red_lane_taxonomy.json schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+      "python -m json.tool proof/DMX-DCP-TOOLING-102/APPROVAL.json",
+      "python -m json.tool proof/DMX-DCP-TOOLING-102/PROOF.json",
+      "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-102.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/dcp/test_taxonomy_invariants.py -v",
+      "git diff --check",
+      "git status --short"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): TP-102 red-lane taxonomy instance + detector schema evolution",
+    "body": "## Summary\n- Evolves `schemas/dcp/dcp_red_lane_taxonomy.schema.json`: lane items gain optional `detectors[]` array (type enum: path_pattern|text_pattern|builtin|manual) and `enforcement` field. Schema minor version bump, REPO_VALIDATED provenance citing red_lane_rules.py.\n- Creates `config/dcp/red_lane_taxonomy.json`: 11 existing lanes + 4 new repo-derived lanes (DOPETASK-EXECUTION, FORBIDDEN-NETWORK-CALL, LIVE-WRITE-CREEP, STALE-PROOF) with detectors per design B.2/B.4. PROOF-CONTRACT-SCHEMA-MUTATION stays hard_block covering schemas/dcp/** and config/dcp/**.\n- Tightens gh api pattern scope to executable contexts only (A7c) — documented as deliberate, exempt from TP-103 equivalence corpus.\n- Adds `tests/dcp/test_taxonomy_invariants.py`: every hard_block lane has a non-manual detector or manual justification; every Rule has a lane_id after TP-103 coupling (structural invariant pre-wired).\n- Ships hand-authored `proof/DMX-DCP-TOOLING-102/APPROVAL.json` per design B.6.\n\n## Scope\nSchema evolution (minor bump), new runtime instance, CI invariant tests, proof. No scanner behavior change — loader not wired until TP-103.\n\n## NOT_RUN\nScanner behavioral tests (loader not wired yet), live enforcement, full DCP suite against new lanes.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch, marker, dirty state. Read the current dcp_red_lane_taxonomy.schema.json and the test fixture (tests/dcp/fixtures/ or similar) to establish baseline lane count, field shapes, and the PROOF-CONTRACT-SCHEMA-MUTATION gate value. Read red_lane_rules.py to identify REPO_VALIDATED detector patterns for each lane.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "test -f .dopetaskroot",
+        "python -m json.tool schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+        "find tests/dcp -name '*.json' -o -name '*.py' | head -20",
+        "cat src/dopemux/dcp/red_lane_rules.py | head -200 || true",
+        "grep -n 'PROOF-CONTRACT\\|PROOF_CONTRACT\\|hard_block' schemas/dcp/dcp_red_lane_taxonomy.schema.json || true",
+        "grep -rn 'PROOF-CONTRACT\\|hard_block' tests/dcp/ || true"
+      ],
+      "validation": [
+        "Remote identifies DDD-Enterprises/dopemux-mvp.",
+        "Branch is codex/dmx-dcp-tooling-102.",
+        ".dopetaskroot exists.",
+        "Baseline lane count and PROOF-CONTRACT-SCHEMA-MUTATION gate value recorded in PROOF.json.",
+        "red_lane_rules.py patterns that will back REPO_VALIDATED provenance are identified and cited."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/dcp-tooling-system/30-design.md",
+        "claudedocs/dcp-tooling-system/40-plan.md",
+        "schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+        "src/dopemux/dcp/red_lane_rules.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Evolve schemas/dcp/dcp_red_lane_taxonomy.schema.json (minor bump): add optional detectors[] array to lane item shape. Each detector object: type (enum: path_pattern|text_pattern|builtin|manual, required), patterns (array of strings, present for path_pattern/text_pattern), path_scope (optional string regex for text_pattern), name (string, present for builtin). Add optional enforcement field to lane items (enum: deterministic|llm_advisory|human). All additions are optional (additive, backward-compatible). Schema remains additionalProperties:false at lane item level. Per design B.2.",
+      "expected_files": [
+        "schemas/dcp/dcp_red_lane_taxonomy.schema.json"
+      ],
+      "validation": [
+        "python -m json.tool schemas/dcp/dcp_red_lane_taxonomy.schema.json exits 0.",
+        "Existing taxonomy test fixtures still validate against the evolved schema (additive change preserves backward compat).",
+        "detector type enum is exactly: path_pattern, text_pattern, builtin, manual.",
+        "enforcement enum is exactly: deterministic, llm_advisory, human.",
+        "Schema changes are additive only — no required fields removed or changed."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Create config/dcp/red_lane_taxonomy.json: the runtime taxonomy instance. Include all 11 existing lanes (verified from red_lane_rules.py baseline) plus 4 new repo-derived lanes: DOPETASK-EXECUTION, FORBIDDEN-NETWORK-CALL, LIVE-WRITE-CREEP, STALE-PROOF. For each lane add detectors per design B.2/B.4: BRANCH-PROTECTION-MUTATION (text: gh api branch/rulesets patterns, text: gh ruleset); CODEOWNERS-MUTATION (path: CODEOWNERS$); PULL-REQUEST-TARGET-UNTRUSTED-CHECKOUT (text: pull_request_target, path_scope workflows); PROOF-CONTRACT-SCHEMA-MUTATION (path: ^schemas/dcp/, ^config/dcp/ — gate MUST be hard_block); SECRETS-IN-ARGV-CACHE-LOGS (text: token-shaped regex); AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR (builtin: merge_seam_without_approval); WORKFLOW-PERMISSION-ESCALATION (path: workflow block + text: permissions elevation, marked partial — documented); AI-AGENT-AUTHORITY-COLLAPSE (manual — advisory only). gh api text pattern scoped to executable path_scope (py/sh/yml/yaml extensions) per A7c — add comment: DELIBERATE_CHANGE_EXEMPT_FROM_TP103_EQUIVALENCE_CORPUS. Provenance: REPO_VALIDATED citing red_lane_rules.py for derived patterns; MANUAL with justification for manual-only lanes.",
+      "expected_files": [
+        "config/dcp/red_lane_taxonomy.json"
+      ],
+      "validation": [
+        "python -m json.tool config/dcp/red_lane_taxonomy.json exits 0.",
+        "python -m jsonschema -i config/dcp/red_lane_taxonomy.json schemas/dcp/dcp_red_lane_taxonomy.schema.json exits 0.",
+        "PROOF-CONTRACT-SCHEMA-MUTATION lane has gate=hard_block — verified programmatically.",
+        "All 15 lanes (11 existing + 4 new) are present.",
+        "AI-AGENT-AUTHORITY-COLLAPSE has type=manual detector.",
+        "gh api pattern has path_scope restricting to executable file extensions.",
+        "LIVE-WRITE-CREEP lane references LIVE_WRITE_READY undefined/blocking posture."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Create tests/dcp/test_taxonomy_invariants.py: (1) load config/dcp/red_lane_taxonomy.json and validate against schema, (2) assert every lane with gate=hard_block has at least one detector with type != manual OR has a documented manual justification field, (3) assert PROOF-CONTRACT-SCHEMA-MUTATION has gate=hard_block, (4) assert the 4 new lanes are present (DOPETASK-EXECUTION, FORBIDDEN-NETWORK-CALL, LIVE-WRITE-CREEP, STALE-PROOF), (5) assert no scanner behavior change has occurred yet (load_taxonomy does not exist yet — assert ImportError or absence gracefully).",
+      "expected_files": [
+        "tests/dcp/test_taxonomy_invariants.py"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_taxonomy_invariants.py -v exits 0.",
+        "Test for hard_block lanes having non-manual detectors or manual justification passes.",
+        "PROOF-CONTRACT-SCHEMA-MUTATION hard_block assertion passes.",
+        "4 new lane presence assertions pass."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Author proof/DMX-DCP-TOOLING-102/APPROVAL.json (hand-authored, per design B.6): this TP edits schemas/dcp/dcp_red_lane_taxonomy.schema.json (^schemas/dcp/**) and creates config/dcp/red_lane_taxonomy.json (^config/dcp/**) — both are hard-block-covered paths. Fields: tp_id=DMX-DCP-TOOLING-102, decision=allow, requester (implementer, distinct from approver), approver (operator identity), scope=[schemas/dcp/dcp_red_lane_taxonomy.schema.json, config/dcp/red_lane_taxonomy.json], head_sha (PENDING until commit, update before final), expiry_window, rationale. requester must not equal approver.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-102/APPROVAL.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/DMX-DCP-TOOLING-102/APPROVAL.json exits 0.",
+        "requester != approver.",
+        "decision is allow.",
+        "scope covers both schemas/dcp/dcp_red_lane_taxonomy.schema.json and config/dcp/red_lane_taxonomy.json.",
+        "tp_id is DMX-DCP-TOOLING-102."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run full validation, produce proof/DMX-DCP-TOOLING-102/PROOF.json and AUDITOR_REPORT.md, verify diff is within allowlist, commit.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-102/PROOF.json",
+        "proof/DMX-DCP-TOOLING-102/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "python -m json.tool schemas/dcp/dcp_red_lane_taxonomy.schema.json exits 0.",
+        "python -m json.tool config/dcp/red_lane_taxonomy.json exits 0.",
+        "python -m jsonschema -i config/dcp/red_lane_taxonomy.json schemas/dcp/dcp_red_lane_taxonomy.schema.json exits 0.",
+        "python -m pytest tests/dcp/test_taxonomy_invariants.py -v exits 0.",
+        "Existing DCP suite tests still pass (additive schema change, no behavior regression).",
+        "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-102.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --stat shows only files in allowlist.",
+        "PROOF.json records all outputs, exit codes, validation states (PASS/FAIL/NOT_RUN), auditor identity (distinct from implementer), APPROVAL.json reference, PROOF-CONTRACT-SCHEMA-MUTATION gate=hard_block verification, and any UNKNOWNs.",
+        "Auditor identity in AUDITOR_REPORT.md differs from implementer identity."
+      ]
+    }
+  ]
+}
