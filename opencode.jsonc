@@ -10,7 +10,7 @@
       "command": [
         "sh",
         "-lc",
-        "docker/mcp-servers-source/pal/pal-mcp-server/start-pal.sh"
+        "exec bash \"$(git rev-parse --show-toplevel)/docker/mcp-servers-source/pal/pal-mcp-server/start-pal.sh\""
       ],
       "enabled": true,
       "timeout": 30000,
