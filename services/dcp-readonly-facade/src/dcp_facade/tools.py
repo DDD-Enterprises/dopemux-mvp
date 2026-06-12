@@ -52,6 +52,8 @@ def list_projects(registry: Registry) -> dict:
         source_system=E.SOURCE_FACADE,
         authority_label=E.AUTHORITY_FACADE,
         data=clean,
+        # Facade-authored from the operator-owned registry — not retrieved content.
+        untrusted=False,
         redactions=red,
     )
 
@@ -68,6 +70,8 @@ def get_project_capabilities(registry: Registry, project_id: object) -> dict:
         source_system=E.SOURCE_FACADE,
         authority_label=E.AUTHORITY_FACADE,
         data=clean,
+        # Facade-authored from the operator-owned registry — not retrieved content.
+        untrusted=False,
         redactions=red,
     )
 

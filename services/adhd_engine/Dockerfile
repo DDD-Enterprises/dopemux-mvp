@@ -13,7 +13,9 @@ RUN apk add --no-cache build-base gcc musl-dev libffi-dev openssl-dev curl
 
 # Copy dependency manifests first for better caching
 COPY pyproject.toml /app/pyproject.toml
-COPY src/dopemux/__init__.py /app/src/dopemux/__init__.py
+COPY README.md /app/README.md
+COPY src /app/src
+COPY tools /app/tools
 RUN python -m venv /app/venv && \
     /app/venv/bin/pip install --no-cache-dir /app/.[services]
 

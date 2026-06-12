@@ -20,7 +20,7 @@ ENV LOG_LEVEL=INFO
 ENV ENVIRONMENT=production
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     curl \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
@@ -31,11 +31,12 @@ WORKDIR /app
 # Copy dependency manifests plus the package trees pyproject declares
 # (setuptools needs every listed package dir present to build the wheel)
 COPY pyproject.toml .
-COPY src/ src/
-COPY tools/ tools/
+COPY README.md .
+COPY src src
+COPY tools tools
 
 # Install Python dependencies from centralized manifest
-RUN pip install --no-cache-dir .[services]
+RUN pip install --no-cache-dir "wheel>=0.46.2" && pip install --no-cache-dir .[services]
 
 # Copy application code (relative to root build context)
 COPY services/working-memory-assistant/chronicle/ ./chronicle/
