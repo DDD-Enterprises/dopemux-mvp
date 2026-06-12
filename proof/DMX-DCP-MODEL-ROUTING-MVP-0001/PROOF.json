@@ -176,7 +176,7 @@
     "fixes_applied": [],
     "remaining_risks": [],
     "skip_reason": "Planning/baseline analysis packet (0001 domain model); no external/embedded audit toolchain invocation required for this series.",
-    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDIT_SUMMARY.md"
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/AUDITOR_REPORT.md"
   },
   "manual_independent_audit": {
     "status": "COMPLETE",
