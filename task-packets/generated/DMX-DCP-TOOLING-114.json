@@ -1,0 +1,129 @@
+{
+  "id": "DMX-DCP-TOOLING-114",
+  "project": "dopemux-mvp",
+  "target": "Build the DCP plugin package: packaging/dcp-plugin/ source compiled to .claude-plugin shape, defaultEnabled:false, automated never-list lint (CI schema-check failing on monitors/channels/default-agent/commands), skills reference contracts via data/CLI only per amendments A11/A12.",
+  "invariants": [
+    "Never wire or import the merge seam (the queue drain or any live lane-merge path).",
+    "Never compute live SHAs for static fixtures — only allowed for runtime git reads explicitly carved out in design D-E.",
+    "Never self-certify — the auditor identity in the proof bundle must differ from the implementer; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints — no live service calls.",
+    "Never promote external corroboration (DR-015, DR-016) to repo authority — cite provenance tags as EXTERNAL_PROPOSED or REPO_VALIDATED.",
+    "LIVE_WRITE_READY remains undefined and blocking — classifier blocked-posture on any PROVISIONAL class that lacks an approval_policy.yaml entry.",
+    "Plugin must have defaultEnabled:false — installing it must require explicit opt-in.",
+    "Skills must reference policy exclusively via contract instance files or dcp CLI calls — no lane lists, tier tables, or path-deny prose in skill text (amendment A11).",
+    "The automated never-list lint is deterministic and CI-enforced — it must fail on monitors, channels, default-agent override, and commands/ in the compiled plugin.json (amendment A12/SEC-8).",
+    "BUILD_AFTER_CORE_CONTRACTS gate must be OPEN (C1+C5 at L3 from TP-112) before this packet is executed."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-112"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "commit": {
+    "message": "feat(dcp): plugin package build, never-list lint, defaultEnabled:false",
+    "allowlist": [
+      "packaging/dcp-plugin/skills/dcp-preflight.md",
+      "packaging/dcp-plugin/skills/dcp-status.md",
+      "packaging/dcp-plugin/skills/dcp-red-lines.md",
+      "packaging/dcp-plugin/hooks/hooks.json",
+      "packaging/dcp-plugin/mcp/.mcp.json",
+      "packaging/dcp-plugin/build.py",
+      ".claude-plugin/plugin.json",
+      ".claude-plugin/hooks/hooks.json",
+      "tests/dcp/test_plugin_build.py",
+      ".github/workflows/ci-complete.yml",
+      "proof/DMX-DCP-TOOLING-114/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): DCP plugin packaging build + never-list lint (DMX-DCP-TOOLING-114)",
+    "body": "## Summary\n- Creates packaging/dcp-plugin/ source layout: skills/ hooks/ mcp/ directories with source files.\n- Skills: dcp-preflight, dcp-status, dcp-red-lines — all reference policy exclusively via contract instance files or `dopemux dcp` CLI calls; no lane lists, tier tables, or path-deny prose in skill text (amendment A11).\n- build.py compiles packaging/dcp-plugin/ into the official .claude-plugin/plugin.json + hooks/hooks.json + .mcp.json shape.\n- Compiled plugin.json: defaultEnabled=false; no monitors, no channels, no default-agent override, no commands/; side-effectful skills have disable-model-invocation:true; stingy allowed-tools.\n- Automated never-list lint (amendment A12/SEC-8): CI schema-check of compiled .claude-plugin/plugin.json fails deterministically on monitors, channels, default-agent override, or commands/ presence.\n- Cross-project value: dcp-core profile + dcp-profile-dopemux; profiles add denies, never weaken core.\n\n## Validation\n- scratch-project install check (defaultEnabled:false).\n- Never-list lint red/green demonstrated.\n- Skills contain no policy prose.\n- BUILD_AFTER_CORE_CONTRACTS gate OPEN confirmed (C1+C5 at L3).\n\n## NOT_RUN\n- dcp-profile-dnh-crm (future cross-project profile).\n- V2 monitors-as-telemetry (deferred).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: confirm BUILD_AFTER_CORE_CONTRACTS gate is OPEN (TP-112 merged, C1+C5 at L3 in manifest). Inspect existing .claude/ plugin shape conventions. Read DR-015 §4 mapping as referenced in design D-J.",
+      "commands": [
+        "python -c \"import json; m=json.load(open('schemas/dcp/manifest.json')); c1=[c for c in m['contracts'] if c['contract_id']=='dcp_red_lane_taxonomy'][0]; c5=[c for c in m['contracts'] if c['contract_id']=='dcp_resource_map'][0]; print('C1 level:', c1['level']); print('C5 level:', c5['level'])\"",
+        "ls .claude-plugin/ 2>/dev/null || echo '.claude-plugin absent'",
+        "cat .claude/settings.json | python -m json.tool | head -30 || true"
+      ],
+      "validation": [
+        "C1 level=L3 confirmed from manifest.",
+        "C5 level=L3 confirmed from manifest.",
+        "BUILD_AFTER_CORE_CONTRACTS gate OPEN recorded in proof."
+      ],
+      "context_files": [
+        "schemas/dcp/manifest.json",
+        "claudedocs/dcp-tooling-system/30-design.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create packaging/dcp-plugin/ source layout and skill files. Skills must: (1) reference dcp preflight/status/red-lines via CLI invocation only; (2) contain no lane lists, tier tables, or path-deny prose; (3) use disable-model-invocation:true for any side-effectful skill; (4) declare stingy allowed-tools (only the specific Bash calls needed to invoke dopemux dcp subcommands). Write packaging/dcp-plugin/hooks/hooks.json with the PostToolUse/PreToolUse hooks that consume the taxonomy-derived rules via the dcp CLI, not by importing red_lane_rules directly.",
+      "validation": [
+        "grep -r 'hard_block\\|FORBIDDEN_PATH\\|red_lane_path' packaging/dcp-plugin/skills/ returns nothing — no policy prose in skill files.",
+        "All skill files invoke dopemux dcp subcommands exclusively.",
+        "python -m pytest tests/dcp/test_plugin_build.py::test_skills_contain_no_policy_prose -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement packaging/dcp-plugin/build.py that compiles the source tree into .claude-plugin/plugin.json per the canonical DR-015 §4 plugin.json shape. Compiled manifest must: defaultEnabled=false; no monitors field; no channels field; no default-agent override; no commands/ entries (skills only); side-effectful skills have disable-model-invocation:true; allowed-tools is explicit and minimal.",
+      "validation": [
+        "python packaging/dcp-plugin/build.py exits 0.",
+        "python -m json.tool .claude-plugin/plugin.json exits 0.",
+        "python -c \"import json; p=json.load(open('.claude-plugin/plugin.json')); assert p.get('defaultEnabled')==False\" exits 0.",
+        "python -c \"import json; p=json.load(open('.claude-plugin/plugin.json')); assert 'monitors' not in p, 'monitors forbidden'; assert 'channels' not in p, 'channels forbidden'; assert 'commands' not in p, 'commands forbidden'\" exits 0."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Implement automated never-list lint: a deterministic CI check of the compiled .claude-plugin/plugin.json that fails with a clear error on presence of: monitors field, channels field, default-agent override, or commands/ directory entries. Add this as a CI step in .github/workflows/ci-complete.yml. Demonstrate both red (lint fails when violation injected) and green (clean plugin passes) scenarios.",
+      "validation": [
+        "python -m pytest tests/dcp/test_plugin_build.py::test_never_list_lint_fails_on_monitors -xvs exits 0.",
+        "python -m pytest tests/dcp/test_plugin_build.py::test_never_list_lint_fails_on_channels -xvs exits 0.",
+        "python -m pytest tests/dcp/test_plugin_build.py::test_never_list_lint_fails_on_commands -xvs exits 0.",
+        "python -m pytest tests/dcp/test_plugin_build.py::test_never_list_lint_passes_on_clean_plugin -xvs exits 0.",
+        "Never-list lint CI step present in ci-complete.yml."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Validate scratch-project install: copy .claude-plugin/ to a temp directory and confirm the plugin does not auto-enable (defaultEnabled:false means the user must explicitly enable). Run the full plugin test suite.",
+      "commands": [
+        "python -m pytest tests/dcp/test_plugin_build.py -q"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_plugin_build.py -q exits 0.",
+        "Scratch install confirms defaultEnabled:false — plugin does not activate automatically."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run full plugin build test suite, write PROOF.json with PASS/FAIL/NOT_RUN buckets, confirm diff scope inside allowlist. Record BUILD_AFTER_CORE_CONTRACTS gate status as OPEN.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-114/PROOF.json"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_plugin_build.py -q exits 0.",
+        "python -m json.tool proof/DMX-DCP-TOOLING-114/PROOF.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --name-only HEAD confirms only allowlist files changed.",
+        "Auditor identity differs from implementer in PROOF.json.",
+        "PROOF.json records BUILD_AFTER_CORE_CONTRACTS: OPEN."
+      ]
+    }
+  ]
+}

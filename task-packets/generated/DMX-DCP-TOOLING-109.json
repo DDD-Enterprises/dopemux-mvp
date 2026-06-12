@@ -1,0 +1,124 @@
+{
+  "id": "DMX-DCP-TOOLING-109",
+  "project": "dopemux-mvp",
+  "target": "Implement mutation-class instance file (config/dcp/mutation_classes.json from TP-DCP-0002 fixture as shape authority), classify_mutation() function, fail-safe advisory PreToolUse annotation with hard_block classes routing to surface guard deny, and template-constrained additionalContext with maxLength. PROVISIONAL-class resolution gate before L2. Redlane packet requiring APPROVAL.json per design B.6.",
+  "invariants": [
+    "Never wire or import the merge seam (the queue drain or any live lane-merge path).",
+    "Never compute live SHAs for static fixtures — only allowed for runtime git reads explicitly carved out in design D-E.",
+    "Never self-certify — the auditor identity in the proof bundle must differ from the implementer; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints — no live service calls.",
+    "Never promote external corroboration (DR-015, DR-016) to repo authority — cite provenance tags as EXTERNAL_PROPOSED or REPO_VALIDATED.",
+    "LIVE_WRITE_READY remains undefined and blocking — classifier blocked-posture on any PROVISIONAL class that lacks an approval_policy.yaml entry.",
+    "TP-DCP-0002 fixture is the shape authority for mutation_classes.json — do not re-derive classes; build on that packet's derivation per amendment A16.",
+    "The additionalContext injection template must be constrained to structured fields only (class_id, approval_tier) with schema maxLength — free text from data files must never reach additionalContext per amendment A11/SEC-6.",
+    "Redlane packet: a hand-authored proof/DMX-DCP-TOOLING-109/APPROVAL.json (schema-valid, requester != approver, scoped to config/dcp/**) must be present in the proof bundle before this packet may be marked complete, per design B.6."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-101"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(dcp): mutation-class instance, classifier, advisory hook annotation",
+    "allowlist": [
+      "config/dcp/mutation_classes.json",
+      "src/dopemux/dcp/mutation_classes.py",
+      "src/dopemux/claude/native_hooks.py",
+      "tests/dcp/test_mutation_classes.py",
+      "proof/DMX-DCP-TOOLING-109/PROOF.json",
+      "proof/DMX-DCP-TOOLING-109/APPROVAL.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): mutation-class instance + classifier + hook annotation (DMX-DCP-TOOLING-109)",
+    "body": "## Summary\n- Creates config/dcp/mutation_classes.json from the TP-DCP-0002 fixture as shape authority (amendment A16); classes include PROVISIONAL entries with documented resolution paths.\n- Implements classify_mutation(tool_name, tool_input) -> MutationClassDecision in src/dopemux/dcp/mutation_classes.py: path/command pattern matching per class; no match → MC-UNCLASSIFIED (tier TU, posture refuse/advisory).\n- v1 posture is fail-safe advisory per design D-D: hard_block classes route to surface-guard exit-2 deny; non-hard-block classes inject structured additionalContext only.\n- additionalContext injection template constrained to structured fields (class_id, approval_tier) with schema maxLength — no free text from data files per amendment A11/SEC-6.\n- PROVISIONAL-class resolution gate: before L2, each PROVISIONAL class has either a matching approval_policy.yaml entry or a documented concrete resolution path; unresolved = PROVISIONAL with LIVE_WRITE_READY-blocked posture.\n- Ships hand-authored proof/DMX-DCP-TOOLING-109/APPROVAL.json per design B.6 (redlane packet touches config/dcp/**).\n\n## Validation\n- Classification table exercised including MC-UNCLASSIFIED for unmatched input.\n- Injection template test: free text from data file never reaches additionalContext.\n- PROVISIONAL-class gate: unresolved PROVISIONAL classes confirmed LIVE_WRITE_READY-blocked.\n- Hook annotation produces structured output only.\n\n## NOT_RUN\n- Hard_block deny path via surface_guard requires TP-105.\n- Receipt field population requires TP-106.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: locate TP-DCP-0002 fixture and extract the authoritative mutation class shapes. Inspect current approval_policy.yaml to identify existing entries. Confirm TP-101 manifest is present.",
+      "commands": [
+        "find . -path '*/TP-DCP-0002*' -o -name 'mutation_classes*' | sort",
+        "find tests -name '*mutation*' | sort",
+        "python -m json.tool config/dcp/mutation_classes.json 2>/dev/null || echo 'NOT YET CREATED'",
+        "python -m json.tool config/approval_policy.yaml 2>/dev/null || python -c \"import yaml; yaml.safe_load(open('config/approval_policy.yaml'))\" 2>/dev/null || find . -name 'approval_policy.yaml' | head -3",
+        "test -f schemas/dcp/manifest.json && echo 'manifest ok'"
+      ],
+      "validation": [
+        "TP-DCP-0002 fixture located and its mutation class schema shapes are documented.",
+        "approval_policy.yaml entries inspected; PROVISIONAL class entries identified.",
+        "TP-101 manifest confirmed present."
+      ],
+      "context_files": [
+        "claudedocs/dcp-tooling-system/30-design.md",
+        "schemas/dcp/manifest.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create config/dcp/mutation_classes.json using TP-DCP-0002 fixture as the shape authority. Include all classes from that fixture. For each PROVISIONAL class: document either its matching approval_policy.yaml capability entry ID or a concrete resolution path; those without resolution path are marked posture: 'blocked', reason: 'LIVE_WRITE_READY undefined'. Do not re-derive class shapes — copy from the TP-DCP-0002 derivation.",
+      "validation": [
+        "python -m json.tool config/dcp/mutation_classes.json exits 0.",
+        "python -c \"import json; mc=json.load(open('config/dcp/mutation_classes.json')); provisional=[c for c in mc['classes'] if c.get('tier')=='PROVISIONAL']; assert all('resolution_path' in c or 'approval_policy_entry' in c or c.get('posture')=='blocked' for c in provisional), 'Each PROVISIONAL class needs resolution or blocked posture'\" exits 0.",
+        "Instance validates against mutation_classes schema from TP-DCP-0002."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement src/dopemux/dcp/mutation_classes.py with classify_mutation(tool_name: str, tool_input: dict) -> MutationClassDecision. Rules: (1) path/command pattern matching per class using the config instance; (2) no match → MC-UNCLASSIFIED, tier TU, posture refuse, advisory; (3) PROVISIONAL classes with LIVE_WRITE_READY-blocked posture return blocked=True, reason='LIVE_WRITE_READY undefined'; (4) the function is pure — no side effects, no live calls. Include load_mutation_classes(path) with fallback to a frozen FROZEN_FALLBACK_CLASSES covering all hard_block classes.",
+      "validation": [
+        "python -m pytest tests/dcp/test_mutation_classes.py::test_classify_known_class -xvs exits 0.",
+        "python -m pytest tests/dcp/test_mutation_classes.py::test_classify_unmatched_returns_mc_unclassified -xvs exits 0.",
+        "python -m pytest tests/dcp/test_mutation_classes.py::test_provisional_class_live_write_ready_blocked -xvs exits 0.",
+        "python -m pytest tests/dcp/test_mutation_classes.py::test_frozen_fallback_covers_hard_block_classes -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add mutation-class PreToolUse annotation to native_hooks.py. For non-hard-block classes: inject structured additionalContext with template fields {class_id: str (maxLength 64), approval_tier: str (maxLength 32)} only — no other fields from the data file reach the context string. For hard_block classes: route to surface-guard deny path (exit-2). Validate that free text from description or other data-file fields cannot reach additionalContext.",
+      "validation": [
+        "python -m pytest tests/dcp/test_mutation_classes.py::test_hook_annotation_structured_only -xvs exits 0.",
+        "python -m pytest tests/dcp/test_mutation_classes.py::test_hook_annotation_no_free_text_injection -xvs exits 0.",
+        "python -m pytest tests/dcp/test_mutation_classes.py::test_hard_block_class_routes_to_deny -xvs exits 0.",
+        "grep -n 'class_id\\|approval_tier' src/dopemux/claude/native_hooks.py confirms template fields only."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Write proof/DMX-DCP-TOOLING-109/APPROVAL.json (hand-authored, redlane requirement per design B.6). The artifact must be schema-valid against dcp_approval_artifact schema, have requester != approver, decision 'allow', and scope covering config/dcp/** paths touched in this packet.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-109/APPROVAL.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/DMX-DCP-TOOLING-109/APPROVAL.json exits 0.",
+        "python -c \"import json; a=json.load(open('proof/DMX-DCP-TOOLING-109/APPROVAL.json')); assert a['requester'] != a['approver']\" exits 0.",
+        "python -c \"import json; a=json.load(open('proof/DMX-DCP-TOOLING-109/APPROVAL.json')); assert a.get('decision') in ('allow','gated')\" exits 0."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run full mutation-class test suite, write PROOF.json with PASS/FAIL/NOT_RUN buckets, confirm diff scope inside allowlist.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-109/PROOF.json"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_mutation_classes.py -q exits 0.",
+        "python -m json.tool proof/DMX-DCP-TOOLING-109/PROOF.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --name-only HEAD confirms only allowlist files changed.",
+        "Auditor identity differs from implementer in PROOF.json."
+      ]
+    }
+  ]
+}

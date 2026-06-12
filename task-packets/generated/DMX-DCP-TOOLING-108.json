@@ -1,0 +1,120 @@
+{
+  "id": "DMX-DCP-TOOLING-108",
+  "project": "dopemux-mvp",
+  "target": "Implement dcp evidence-pack subcommand and receipt hash-locking: PROOF.json gains receipt_refs[{path,sha256}], verify-proof validates those hashes, tamper detection demonstrated, old proof bundles verified backward-compatible against both proof.py and scripts/audit/validate_audit_proof.py.",
+  "invariants": [
+    "Never wire or import the merge seam (the queue drain or any live lane-merge path).",
+    "Never compute live SHAs for static fixtures — only allowed for runtime git reads explicitly carved out in design D-E.",
+    "Never self-certify — the auditor identity in the proof bundle must differ from the implementer; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints — no live service calls.",
+    "Never promote external corroboration (DR-015, DR-016) to repo authority — cite provenance tags as EXTERNAL_PROPOSED or REPO_VALIDATED.",
+    "LIVE_WRITE_READY remains undefined and blocking — classifier blocked-posture on any PROVISIONAL class that lacks an approval_policy.yaml entry.",
+    "Backward compatibility with all 30+ existing committed proof bundles is a hard requirement — breaking old bundles is a FAIL on both validator paths."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-107"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(dcp): evidence-pack subcommand, receipt hash-locking in PROOF.json",
+    "allowlist": [
+      "src/dopemux/dcp/cli_dcp.py",
+      "src/dopemux/dcp/evidence_pack.py",
+      "schemas/proof/proof_schema.json",
+      "tests/dcp/test_evidence_pack.py",
+      "proof/DMX-DCP-TOOLING-108/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): evidence-pack + receipt hash-locking (DMX-DCP-TOOLING-108)",
+    "body": "## Summary\n- Adds `dopemux dcp evidence-pack <tp>` subcommand: assembles proof/<tp>/, collects receipts from .dcp/ store into proof/<tp>/receipts/, emits a DCP snapshot, and produces a red-lane report.\n- PROOF.json schema gains additive optional `receipt_refs[]` field — array of `{path, sha256}` anchoring each collected receipt into the committed proof bundle.\n- `dcp verify-proof` updated to validate receipt hashes from `receipt_refs` when present.\n- Tamper test: modifying a collected receipt after hash-lock causes verify-proof to report TAMPERED.\n- Backward compatibility: existing 30+ committed proof bundles verified against both proof.py and scripts/audit/validate_audit_proof.py — all must pass.\n\n## Validation\n- Pack → verify round-trip passes.\n- Tamper test confirms modified receipt is detected.\n- Old bundles green on both validator paths.\n\n## NOT_RUN\n- L3 completeness gate requiring receipts in evidence (Wave 4).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: enumerate existing committed proof bundles under proof/, verify both validator paths are importable, confirm PROOF.json schema does not currently have receipt_refs, and read scripts/audit/validate_audit_proof.py to understand its validation contract.",
+      "commands": [
+        "find proof -name 'PROOF.json' | sort",
+        "python -c \"import dopemux.dcp.proof\" && echo 'proof.py ok' || echo 'MISSING'",
+        "python -m py_compile scripts/audit/validate_audit_proof.py && echo 'validate_audit_proof ok' || echo 'MISSING'",
+        "python -m json.tool schemas/proof/proof_schema.json | grep -c 'receipt_refs' || echo '0 - field absent as expected'"
+      ],
+      "validation": [
+        "List of existing proof bundles recorded.",
+        "Both validator paths importable.",
+        "receipt_refs confirmed absent from current schema (additive change)."
+      ],
+      "context_files": [
+        "schemas/proof/proof_schema.json",
+        "src/dopemux/dcp/proof.py",
+        "scripts/audit/validate_audit_proof.py",
+        "claudedocs/dcp-tooling-system/30-design.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Extend PROOF.json schema (schemas/proof/proof_schema.json) with an additive optional receipt_refs field: array of objects {path: string, sha256: string}. The field is optional so all existing bundles without it remain valid. Update proof.py to populate and validate this field when present.",
+      "validation": [
+        "python -m json.tool schemas/proof/proof_schema.json exits 0.",
+        "python -m jsonschema --check-metaschema schemas/proof/proof_schema.json exits 0.",
+        "Existing PROOF.json bundles without receipt_refs still validate against the updated schema."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement src/dopemux/dcp/evidence_pack.py: (1) discover .dcp/receipts/<session>/ files relevant to a TP run; (2) copy them to proof/<tp>/receipts/; (3) compute sha256 of each collected receipt file; (4) write receipt_refs[{path, sha256}] into PROOF.json; (5) emit a DCP control snapshot and red-lane report into proof/<tp>/. Add dcp evidence-pack <tp> subcommand to cli_dcp.py.",
+      "validation": [
+        "python -m pytest tests/dcp/test_evidence_pack.py::test_pack_collect_receipts -xvs exits 0.",
+        "python -m pytest tests/dcp/test_evidence_pack.py::test_proof_receipt_refs_written -xvs exits 0.",
+        "python -m pytest tests/dcp/test_evidence_pack.py::test_verify_proof_validates_hashes -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Implement tamper detection: after evidence-pack produces a PROOF.json with receipt_refs, modify one collected receipt file on disk and run dcp verify-proof — confirm it exits non-zero and reports TAMPERED for the modified receipt.",
+      "validation": [
+        "python -m pytest tests/dcp/test_evidence_pack.py::test_tamper_detection_modified_receipt -xvs exits 0.",
+        "dcp verify-proof output contains 'TAMPERED' or 'hash mismatch' string when receipt is modified."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Backward-compatibility sweep: run both validators against all existing committed proof bundles. Use both proof.py validate_proof_file() and scripts/audit/validate_audit_proof.py — all 30+ bundles must pass both paths with the updated schema.",
+      "commands": [
+        "find proof -name 'PROOF.json' -exec python -c \"import sys; from dopemux.dcp.proof import validate_proof_file; validate_proof_file(sys.argv[1]); print('PASS', sys.argv[1])\" {} \\;",
+        "find proof -name 'PROOF.json' -exec python scripts/audit/validate_audit_proof.py {} \\;"
+      ],
+      "validation": [
+        "All existing PROOF.json bundles PASS proof.py validate_proof_file().",
+        "All existing PROOF.json bundles PASS scripts/audit/validate_audit_proof.py.",
+        "Zero regressions on old bundles."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run full evidence-pack test suite, write proof/DMX-DCP-TOOLING-108/PROOF.json with PASS/FAIL/NOT_RUN buckets, confirm diff scope inside allowlist.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-108/PROOF.json"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_evidence_pack.py -q exits 0.",
+        "python -m json.tool proof/DMX-DCP-TOOLING-108/PROOF.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --name-only HEAD confirms only allowlist files changed.",
+        "Auditor identity differs from implementer in PROOF.json."
+      ]
+    }
+  ]
+}

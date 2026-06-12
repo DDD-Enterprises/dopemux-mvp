@@ -1,0 +1,147 @@
+{
+  "id": "DMX-DCP-TOOLING-106",
+  "project": "dopemux-mvp",
+  "target": "Implement helper-receipt v1 schema evolution and emitter: full DR-015 §8 field set, in-schema provenance tags, real multi-pattern redactor replacing the placeholder stub, receipts.py with .git-file parsing preference, .dcp/ gitignore entry, and provenance-completeness gate before schema lock. Redlane packet requiring hand-authored proof/DMX-DCP-TOOLING-106/APPROVAL.json per design B.6.",
+  "invariants": [
+    "Never wire or import the merge seam (the queue drain or any live lane-merge path).",
+    "Never compute live SHAs for static fixtures — only allowed for runtime git reads explicitly carved out in design D-E.",
+    "Never self-certify — the auditor identity in the proof bundle must differ from the implementer; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints — no live service calls.",
+    "Never promote external corroboration (DR-015, DR-016) to repo authority — cite provenance tags as EXTERNAL_PROPOSED or REPO_VALIDATED.",
+    "LIVE_WRITE_READY remains undefined and blocking — classifier blocked-posture on any PROVISIONAL class that lacks an approval_policy.yaml entry.",
+    "Redlane packet: a hand-authored proof/DMX-DCP-TOOLING-106/APPROVAL.json (schema-valid, requester != approver, scoped to schemas/dcp/** and config/dcp/**) must be present in the proof bundle before this packet may be marked complete, per design B.6."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-101"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(dcp): helper-receipt v1 schema, emitter, redactor, and gitignore entry",
+    "allowlist": [
+      "schemas/dcp/dcp_helper_receipt.schema.json",
+      "src/dopemux/dcp/receipts.py",
+      ".gitignore",
+      "tests/dcp/test_receipts.py",
+      "proof/DMX-DCP-TOOLING-106/PROOF.json",
+      "proof/DMX-DCP-TOOLING-106/APPROVAL.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): helper-receipt v1 + emitter + redactor (DMX-DCP-TOOLING-106)",
+    "body": "## Summary\n- Evolves `dcp_helper_receipt` schema to the full DR-015 §8 field set per design C.1 and amendments A3/A4/A5/A6/A8.\n- All fields provenance-tagged in-schema as EXTERNAL_PROPOSED or REPO_VALIDATED with named reconciliation targets.\n- Replaces the `redact_secret_like` placeholder stub with a real multi-pattern redactor covering: known token prefixes (ghp_, ghs_, github_pat_, sk-, sk-ant-, AKIA-family), KEY=VALUE env capture where KEY matches (KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL), URL userinfo (://user:pass@), PEM blocks, and Authorization header values.\n- Introduces `src/dopemux/dcp/receipts.py` emitter; prefers direct .git/HEAD and refs file parsing for branch and head sha; falls back to subprocess git only when unavoidable and adds receipts.py to the text-rule exemption list per amendment A8.\n- Adds `.dcp/` entry to `.gitignore` (currently missing, amendment A6).\n- Provenance-completeness gate: all schema fields must have a provenance tag and a reconciliation target before schema is locked.\n- Ships hand-authored proof/DMX-DCP-TOOLING-106/APPROVAL.json per design B.6 (redlane packet touches schemas/dcp/**).\n\n## Validation\n- Schema round-trip parse.\n- Property tests: no secrets in receipts including short tokens, URL-auth strings, PEM blocks; hash chain verifies.\n- Provenance-tag completeness gate passes.\n- Redactor covers all declared pattern classes.\n\n## NOT_RUN\n- CLI integration (TP-107).\n- Evidence-pack hash-locking (TP-108).\n- Live hook receipt writes (requires TP-105).\n\n## Residual Risks\n- `.git/` parsing is a local read; worktree edge cases are explicitly tested.\n- Provenance for `receipt_id`/`packet_id`/`parent_receipt_id` remains EXTERNAL_PROPOSED until first-producer reconciliation in TP-108.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify DMX-DCP-TOOLING-101 is merged (manifest.json present), inspect current dcp_helper_receipt schema, confirm .dcp/ is absent from .gitignore, and confirm redact_secret_like is a stub.",
+      "commands": [
+        "test -f schemas/dcp/manifest.json",
+        "python -m json.tool schemas/dcp/dcp_helper_receipt.schema.json",
+        "grep -n 'redact_secret_like' src/dopemux/dcp/red_lane_rules.py || true",
+        "grep -n '\\.dcp' .gitignore || true",
+        "git status --short"
+      ],
+      "validation": [
+        "schemas/dcp/manifest.json exists (TP-101 delivered).",
+        "Current dcp_helper_receipt schema is inspected; gap from full DR-015 §8 set is documented.",
+        "redact_secret_like confirmed as a placeholder stub.",
+        ".dcp/ confirmed absent from .gitignore."
+      ],
+      "context_files": [
+        "schemas/dcp/dcp_helper_receipt.schema.json",
+        "src/dopemux/dcp/red_lane_rules.py",
+        ".gitignore",
+        "claudedocs/dcp-tooling-system/30-design.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Evolve schemas/dcp/dcp_helper_receipt.schema.json to the full DR-015 §8 field set per design C.1 and amendments A3/A4. Add fields: helper_name, helper_version, policy_version, started_at, ended_at, duration_ms, model, mutations[] (with attempted+performed+blocked structure), sensitivity.redacted. Tag every field with its provenance (EXTERNAL_PROPOSED or REPO_VALIDATED) and named reconciliation target in the schema description or x-provenance extension. Ensure no silent drops: any removed or renamed field from the previous schema version is recorded in a schema changelog comment.",
+      "validation": [
+        "python -m json.tool schemas/dcp/dcp_helper_receipt.schema.json exits 0.",
+        "python -m jsonschema --check-metaschema schemas/dcp/dcp_helper_receipt.schema.json exits 0.",
+        "Every top-level field has a provenance tag (EXTERNAL_PROPOSED or REPO_VALIDATED) in its description or x-provenance field.",
+        "fields helper_name, helper_version, policy_version, started_at, ended_at, duration_ms, model, mutations, sensitivity are all present.",
+        "Previous fields from prior schema version are either present or their removal is documented."
+      ],
+      "context_files": [
+        "schemas/dcp/dcp_helper_receipt.schema.json",
+        "claudedocs/dcp-tooling-system/30-design.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement the real multi-pattern redactor in src/dopemux/dcp/receipts.py (or as redact_secret_like in a shared module imported by receipts.py and red_lane_rules.py). Pattern classes to implement: (1) known token prefixes — ghp_, ghs_, github_pat_, sk-, sk-ant-, AKIA followed by 16+ uppercase alphanum; (2) KEY=VALUE env capture where KEY case-insensitively matches (KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API_KEY|AUTH); (3) URL userinfo component (://user:pass@); (4) PEM blocks (-----BEGIN [A-Z ]+-----); (5) Authorization header values (Authorization: (Bearer|Basic|Token) <value>). Apply per-field to invocation/args/env captures — not blanket over forensic match evidence. The same redactor is importable by the SECRETS-IN-ARGV lane detector.",
+      "validation": [
+        "python -m pytest tests/dcp/test_receipts.py::test_redactor_covers_token_prefixes -xvs exits 0.",
+        "python -m pytest tests/dcp/test_receipts.py::test_redactor_covers_key_value_env -xvs exits 0.",
+        "python -m pytest tests/dcp/test_receipts.py::test_redactor_covers_url_userinfo -xvs exits 0.",
+        "python -m pytest tests/dcp/test_receipts.py::test_redactor_covers_pem_blocks -xvs exits 0.",
+        "python -m pytest tests/dcp/test_receipts.py::test_redactor_covers_authorization_header -xvs exits 0.",
+        "python -m pytest tests/dcp/test_receipts.py::test_redactor_short_token_not_leaked -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Implement src/dopemux/dcp/receipts.py emitter. The emitter must: (1) prefer direct .git/HEAD and .git/refs parsing for branch and head_sha; (2) fall back to subprocess git only when direct parsing is impossible and record this in a structured emitter log; (3) emit receipts to .dcp/receipts/<session-or-run>/rcpt_<ulid>.json; (4) support JSONL append mode for hooks (hooks-<session>.jsonl); (5) apply the redactor to all invocation/args/env fields before write; (6) compute integrity.sha256 over the canonical receipt body; (7) support parent_receipt_id chaining. Add receipts.py to the scanner text-rule exemption list per amendment A8.",
+      "validation": [
+        "python -m pytest tests/dcp/test_receipts.py::test_emit_receipt_no_secrets -xvs exits 0.",
+        "python -m pytest tests/dcp/test_receipts.py::test_hash_chain_verifies -xvs exits 0.",
+        "python -m pytest tests/dcp/test_receipts.py::test_git_file_parsing_preferred -xvs exits 0.",
+        "python -m pytest tests/dcp/test_receipts.py::test_worktree_git_parsing -xvs exits 0.",
+        "grep -n 'receipts.py' src/dopemux/dcp/red_lane_rules.py confirms exemption entry present."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Add .dcp/ to .gitignore. Update schemas/dcp/manifest.json to include the evolved dcp_helper_receipt contract entry at L1 with contract_version 0.1.0 and REPO_VALIDATED provenance. Run provenance-completeness gate: assert all schema fields have provenance tags.",
+      "commands": [
+        "grep -c 'x-provenance\\|REPO_VALIDATED\\|EXTERNAL_PROPOSED' schemas/dcp/dcp_helper_receipt.schema.json",
+        "python -m json.tool schemas/dcp/manifest.json"
+      ],
+      "validation": [
+        "grep '\\.dcp' .gitignore exits with a match.",
+        "manifest.json parses and includes dcp_helper_receipt entry.",
+        "Provenance-completeness check: count of provenance-tagged fields equals count of schema properties."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Write proof/DMX-DCP-TOOLING-106/APPROVAL.json (hand-authored, redlane requirement per design B.6). The artifact must be schema-valid against dcp_approval_artifact schema, have requester != approver, decision 'allow', and scope covering schemas/dcp/** paths touched in this packet.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-106/APPROVAL.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/DMX-DCP-TOOLING-106/APPROVAL.json exits 0.",
+        "python -c \"import json; a=json.load(open('proof/DMX-DCP-TOOLING-106/APPROVAL.json')); assert a['requester'] != a['approver'], 'requester must != approver'\" exits 0.",
+        "python -c \"import json; a=json.load(open('proof/DMX-DCP-TOOLING-106/APPROVAL.json')); assert a.get('decision') in ('allow','gated'), 'decision must be allow or gated'\" exits 0."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Run full test suite for receipt module, write proof/DMX-DCP-TOOLING-106/PROOF.json recording command outputs, exit codes, git state, validation state, PASS/FAIL/NOT_RUN buckets, and residual risks. Confirm diff scope stays within allowlist.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-106/PROOF.json"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_receipts.py -q exits 0.",
+        "python -m json.tool proof/DMX-DCP-TOOLING-106/PROOF.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --name-only HEAD confirms only allowlist files changed.",
+        "Auditor identity in PROOF.json differs from implementer identity."
+      ]
+    }
+  ]
+}

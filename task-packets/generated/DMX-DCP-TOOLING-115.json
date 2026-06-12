@@ -1,0 +1,114 @@
+{
+  "id": "DMX-DCP-TOOLING-115",
+  "project": "dopemux-mvp",
+  "target": "Add governance-metadata manifest for .claude/commands/ and skills: every command/skill entry carries name, surface, enforcement_side, mutation_class, and owner; CI rejects unlabeled additions. Delete-list execution is explicitly DX-overhaul's scope — out of scope here.",
+  "invariants": [
+    "Never wire or import the merge seam (the queue drain or any live lane-merge path).",
+    "Never compute live SHAs for static fixtures — only allowed for runtime git reads explicitly carved out in design D-E.",
+    "Never self-certify — the auditor identity in the proof bundle must differ from the implementer; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints — no live service calls.",
+    "Never promote external corroboration (DR-015, DR-016) to repo authority — cite provenance tags as EXTERNAL_PROPOSED or REPO_VALIDATED.",
+    "LIVE_WRITE_READY remains undefined and blocking — classifier blocked-posture on any PROVISIONAL class that lacks an approval_policy.yaml entry.",
+    "Delete-list execution (removing dead/deprecated commands) is explicitly DX-overhaul scope — this TP only adds the metadata substrate; do not delete any commands or skills.",
+    "The CI gate must reject additions of unlabeled commands/skills — enforcement_side must be present and non-empty; owner must be present.",
+    "Harness auto-discovery of .claude/commands/ is preserved — this manifest is governance metadata only, not a replacement for discovery."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-101"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(dcp): governance-metadata manifest for commands/skills, CI unlabeled-addition gate",
+    "allowlist": [
+      "schemas/dcp/commands_registry.schema.json",
+      "config/dcp/commands_registry.json",
+      "tests/dcp/test_commands_registry.py",
+      ".github/workflows/ci-complete.yml",
+      "proof/DMX-DCP-TOOLING-115/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): commands/skills governance-metadata manifest + CI gate (DMX-DCP-TOOLING-115)",
+    "body": "## Summary\n- Adds schemas/dcp/commands_registry.schema.json: validates entries with required fields name, surface, enforcement_side (deterministic|llm_advisory|human), mutation_class, owner.\n- Creates config/dcp/commands_registry.json: initial governance-metadata entries for .claude/commands/ and skills. Entries for all existing commands are seeded with enforcement_side=llm_advisory where applicable per the ADR (A.3).\n- CI gate: validates every .claude/commands/*.md file has a corresponding entry in commands_registry.json with all required fields; unlabeled additions fail CI.\n- Harness auto-discovery of .claude/commands/ is preserved — the manifest is additive governance metadata, not a discovery replacement.\n- Delete-list execution remains explicitly DX-overhaul scope — no commands or skills are deleted.\n\n## Validation\n- Schema validates instance.\n- CI gate rejects a missing entry.\n- CI gate rejects an entry with enforcement_side absent.\n- All existing commands have registry entries.\n\n## NOT_RUN\n- Delete-list execution (DX-overhaul scope, out of scope here).\n- Runtime enforcement of enforcement_side declarations (V2).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: enumerate .claude/commands/ to count existing commands and identify surface types. Confirm TP-101 manifest is present (the registry extends the manifest pattern). Inspect whether any commands_registry already exists.",
+      "commands": [
+        "ls .claude/commands/ | wc -l",
+        "ls .claude/commands/ | head -20",
+        "find config/dcp -name '*registry*' -o -name '*commands*' | sort",
+        "test -f schemas/dcp/manifest.json && echo 'manifest ok'"
+      ],
+      "validation": [
+        "Count of existing .claude/commands/ entries documented.",
+        "No existing commands_registry file (would be a conflict to resolve).",
+        "TP-101 manifest confirmed present."
+      ],
+      "context_files": [
+        "schemas/dcp/manifest.json",
+        "claudedocs/dcp-tooling-system/30-design.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create schemas/dcp/commands_registry.schema.json. Required entry fields: name (string), surface (string, e.g. 'commands/skill/agent/hook'), enforcement_side (enum: deterministic|llm_advisory|human), mutation_class (string, e.g. 'MC-READ-ONLY' or 'MC-UNCLASSIFIED'), owner (string). Optional: description, deprecated (bool), superseded_by (string). The schema allows additionalProperties:false on entries to prevent unlabeled field drift.",
+      "validation": [
+        "python -m json.tool schemas/dcp/commands_registry.schema.json exits 0.",
+        "python -m jsonschema --check-metaschema schemas/dcp/commands_registry.schema.json exits 0.",
+        "A minimal valid entry validates against the schema.",
+        "An entry missing enforcement_side fails schema validation."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Create config/dcp/commands_registry.json seeding governance-metadata entries for all existing .claude/commands/ files. For each command: set enforcement_side=llm_advisory (default for .claude/commands/ per ADR A.3), mutation_class=MC-READ-ONLY or MC-UNCLASSIFIED based on whether the command is read-only, owner='dcp-governance'. DCP-specific commands from TP-107 onward: enforcement_side=deterministic (they invoke the dcp CLI which is deterministic). Do not delete or rename any commands.",
+      "commands": [
+        "python -m json.tool config/dcp/commands_registry.json | head -30"
+      ],
+      "validation": [
+        "python -m json.tool config/dcp/commands_registry.json exits 0.",
+        "python -m jsonschema -i config/dcp/commands_registry.json schemas/dcp/commands_registry.schema.json exits 0.",
+        "Count of registry entries matches count of .claude/commands/*.md files."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add CI gate to .github/workflows/ci-complete.yml: a step that (1) lists all .claude/commands/*.md files; (2) checks each has a corresponding entry in commands_registry.json with enforcement_side non-empty and owner non-empty; (3) fails with a clear error listing unlabeled files if any are missing. Demonstrate: add a dummy unlabeled command → gate fails; remove it → gate passes.",
+      "validation": [
+        "CI gate step present in ci-complete.yml.",
+        "python -m pytest tests/dcp/test_commands_registry.py::test_ci_gate_rejects_unlabeled_command -xvs exits 0.",
+        "python -m pytest tests/dcp/test_commands_registry.py::test_ci_gate_rejects_missing_enforcement_side -xvs exits 0.",
+        "python -m pytest tests/dcp/test_commands_registry.py::test_ci_gate_passes_on_fully_labeled -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Update schemas/dcp/manifest.json to include the commands_registry contract entry at L1 with enforcement_side=deterministic (the CI lint is deterministic). Run full commands registry test suite and confirm diff scope inside allowlist. Write PROOF.json.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-115/PROOF.json"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_commands_registry.py -q exits 0.",
+        "python -m json.tool proof/DMX-DCP-TOOLING-115/PROOF.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --name-only HEAD confirms only allowlist files changed.",
+        "Auditor identity differs from implementer in PROOF.json.",
+        "commands_registry entry present in manifest.json."
+      ]
+    }
+  ]
+}

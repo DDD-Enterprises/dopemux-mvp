@@ -1,0 +1,128 @@
+{
+  "id": "DMX-DCP-TOOLING-111",
+  "project": "dopemux-mvp",
+  "target": "Implement resource-map builder and drift CI: dcp resource-map sync [--check], generation from canonical sources (taxonomy path detectors, approval_policy canonical_writers, root_hygiene_policy), CI drift gate, and fold-and-retire scripts/verify_runtime_authority.py.",
+  "invariants": [
+    "Never wire or import the merge seam (the queue drain or any live lane-merge path).",
+    "Never compute live SHAs for static fixtures — only allowed for runtime git reads explicitly carved out in design D-E.",
+    "Never self-certify — the auditor identity in the proof bundle must differ from the implementer; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints — no live service calls.",
+    "Never promote external corroboration (DR-015, DR-016) to repo authority — cite provenance tags as EXTERNAL_PROPOSED or REPO_VALIDATED.",
+    "LIVE_WRITE_READY remains undefined and blocking — classifier blocked-posture on any PROVISIONAL class that lacks an approval_policy.yaml entry.",
+    "The resource map must be generated from canonical sources — no hand-maintained sections for paths or canonical_writers; endpoint_bindings remain PROVISIONAL and are not generated.",
+    "scripts/verify_runtime_authority.py must be retired (deleted or explicitly replaced) — two validator sources for the same data is a violation of the single-source rule.",
+    "The CI drift gate must fail (non-zero) when resource map content diverges from canonical sources — no silent pass on drift."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-102"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(dcp): resource-map builder, drift CI gate, retire verify_runtime_authority.py",
+    "allowlist": [
+      "src/dopemux/dcp/resource_map.py",
+      "src/dopemux/dcp/cli_dcp.py",
+      "config/dcp/project_resource_map.json",
+      ".github/workflows/ci-complete.yml",
+      "tests/dcp/test_resource_map.py",
+      "proof/DMX-DCP-TOOLING-111/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): resource-map builder + drift CI + retire verify_runtime_authority.py (DMX-DCP-TOOLING-111)",
+    "body": "## Summary\n- Implements `dopemux dcp resource-map sync [--check]` subcommand per design D-F.\n- Builder derives config/dcp/project_resource_map.json sections from canonical sources: forbidden_paths/red_line_paths from C1 taxonomy path detectors; canonical_writers_map from approval_policy.yaml canonical_writer fields; root hygiene / placement from config/repo_hygiene/root_hygiene_policy.json. endpoint_bindings section left unchanged as PROVISIONAL.\n- `--check` mode: regenerate in memory, diff against committed instance, exit non-zero if drift detected (CI mode).\n- Adds drift gate CI step in .github/workflows/ci-complete.yml using --check mode.\n- Folds useful checks from scripts/verify_runtime_authority.py into the CI consistency test and retires (deletes) the dead script — one validator, not two.\n\n## Validation\n- Regenerate → diff → clean passes.\n- Source-mutation fixture → drift detected (CI gate fails).\n- scripts/verify_runtime_authority.py absent from repo after TP.\n\n## NOT_RUN\n- Endpoint bindings section automation (PROVISIONAL, out of scope).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: inspect current project_resource_map.json (if it exists), scripts/verify_runtime_authority.py to identify its useful checks, red_lane_taxonomy.json path detector structure (from TP-102), approval_policy.yaml canonical_writer fields, and root_hygiene_policy.json structure.",
+      "commands": [
+        "python -m json.tool config/dcp/project_resource_map.json 2>/dev/null | head -60 || echo 'NOT YET CREATED'",
+        "wc -l scripts/verify_runtime_authority.py 2>/dev/null || echo 'script absent'",
+        "grep -n 'canonical_writer\\|canonical_writers' config/approval_policy.yaml | head -20 || true",
+        "python -m json.tool config/dcp/red_lane_taxonomy.json | grep -A3 'path_pattern' | head -40 || true",
+        "python -m json.tool config/repo_hygiene/root_hygiene_policy.json | head -40 || true"
+      ],
+      "validation": [
+        "Current resource_map.json state documented (existing or absent).",
+        "verify_runtime_authority.py useful checks cataloged.",
+        "Canonical source structures for all generated sections confirmed readable."
+      ],
+      "context_files": [
+        "config/dcp/project_resource_map.json",
+        "scripts/verify_runtime_authority.py",
+        "config/approval_policy.yaml",
+        "config/dcp/red_lane_taxonomy.json",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "claudedocs/dcp-tooling-system/30-design.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement src/dopemux/dcp/resource_map.py with build_resource_map() function. Sections derived from canonical sources: (1) forbidden_paths/red_line_paths: extract path_pattern detectors from each hard_block lane in the taxonomy instance; (2) canonical_writers_map: extract capability entries with canonical_writer fields from approval_policy.yaml; (3) root_hygiene sections: from root_hygiene_policy.json; (4) roots section: from repo layout existence checks. endpoint_bindings: copy as-is from existing instance (PROVISIONAL, not generated). The function is pure — reads source files, returns derived map, no writes.",
+      "validation": [
+        "python -m pytest tests/dcp/test_resource_map.py::test_build_derives_forbidden_paths_from_taxonomy -xvs exits 0.",
+        "python -m pytest tests/dcp/test_resource_map.py::test_build_derives_canonical_writers_from_policy -xvs exits 0.",
+        "python -m pytest tests/dcp/test_resource_map.py::test_endpoint_bindings_preserved -xvs exits 0.",
+        "python -m pytest tests/dcp/test_resource_map.py::test_source_mutation_detected_as_drift -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Generate config/dcp/project_resource_map.json by running build_resource_map() against the current canonical sources. Add dcp resource-map sync [--check] to cli_dcp.py: sync writes the generated map to config/dcp/project_resource_map.json; --check regenerates in memory and diffs — exits non-zero if any drift is detected.",
+      "validation": [
+        "python -m json.tool config/dcp/project_resource_map.json exits 0.",
+        "dopemux dcp resource-map sync --check exits 0 (no drift immediately after generation).",
+        "python -m pytest tests/dcp/test_resource_map.py::test_check_mode_exits_zero_on_clean -xvs exits 0.",
+        "python -m pytest tests/dcp/test_resource_map.py::test_check_mode_exits_nonzero_on_drift -xvs exits 0."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Fold the useful validation checks from scripts/verify_runtime_authority.py into tests/dcp/test_resource_map.py and the CI consistency test. Then delete scripts/verify_runtime_authority.py. Record the retirement decision in the commit message. Confirm no other file imports or calls verify_runtime_authority.py.",
+      "commands": [
+        "grep -rn 'verify_runtime_authority' . --include='*.py' --include='*.yml' --include='*.yaml' --include='*.sh' | grep -v '.json' || true"
+      ],
+      "validation": [
+        "scripts/verify_runtime_authority.py absent from repo after this step.",
+        "No remaining imports or references to verify_runtime_authority in the codebase.",
+        "Useful checks from the retired script are covered by test_resource_map.py or the CI gate."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Add CI drift gate step to .github/workflows/ci-complete.yml: run `PYTHONPATH=src uv run --frozen dopemux dcp resource-map sync --check` as a job step. The step fails the job on drift. Note: this TP touches .github/workflows/ which is a hard_block path — hand-authored APPROVAL.json is required if this is a sanctioned change per design B.6. Confirm an APPROVAL.json is included or document why this TP does not yet require it (gate not yet enforcing in warn-only phase).",
+      "validation": [
+        "CI drift gate step present in ci-complete.yml.",
+        "python -m json.tool .github/workflows/ci-complete.yml 2>/dev/null || python -c \"import yaml; yaml.safe_load(open('.github/workflows/ci-complete.yml'))\" exits 0.",
+        "B.6 APPROVAL.json present if required, or warn-only phase documented in proof."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run full resource-map test suite, write PROOF.json with PASS/FAIL/NOT_RUN buckets, confirm diff scope inside allowlist.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-111/PROOF.json"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_resource_map.py -q exits 0.",
+        "python -m json.tool proof/DMX-DCP-TOOLING-111/PROOF.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --name-only HEAD confirms only allowlist files changed.",
+        "Auditor identity differs from implementer in PROOF.json."
+      ]
+    }
+  ]
+}
