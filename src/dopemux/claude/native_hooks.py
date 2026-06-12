@@ -52,6 +52,27 @@ except ImportError:
     PRE_PLAN_GUIDANCE = ""  # type: ignore[misc]
     POST_PLAN_GUIDANCE = ""  # type: ignore[misc]
 
+try:
+    from proof_tracking_guard import on_proof_write
+except ImportError:
+    def on_proof_write(_root, _fp, _sid=None): return None  # type: ignore[misc]
+
+try:
+    from mcp_health_probe import emit_mcp_health
+except ImportError:
+    def emit_mcp_health(_root): return None  # type: ignore[misc]
+
+try:
+    from dcp_surface_guard import surface_guard_block, surface_guard_warnings
+except ImportError:
+    def surface_guard_block(_tool, _inp, _root): return None  # type: ignore[misc]
+    def surface_guard_warnings(_tool, _inp, _root, _sid=None): return []  # type: ignore[misc]
+
+try:
+    from dcp_denylist_nudge import on_facade_edit
+except ImportError:
+    def on_facade_edit(_root, _fp, _sid=None): return None  # type: ignore[misc]
+
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
 
@@ -281,14 +302,16 @@ class NativeHookAdapter:
 
     def _on_session_start(self) -> Tuple[int, Dict[str, Any]]:
         reset_edit_counter(self.project_root, self.session_id)
+        mcp_health = emit_mcp_health(self.project_root)
         orch_ctx = emit_session_context(self.project_root)
         state = self._active_state()
         if not state:
-            if orch_ctx:
-                return self._allow(additional_context=orch_ctx, hook_event_name="SessionStart")
+            combined = "\n\n".join(filter(None, [mcp_health, orch_ctx]))
+            if combined:
+                return self._allow(additional_context=combined, hook_event_name="SessionStart")
             return self._allow()
         workflow_ctx = _workflow_context_lines(state, include_gates=True)
-        combined = "\n\n".join(filter(None, [orch_ctx, workflow_ctx]))
+        combined = "\n\n".join(filter(None, [mcp_health, orch_ctx, workflow_ctx]))
         return self._allow(
             system_message=f"Dopemux workflow mode: {state.mode}",
             additional_context=combined or None,
@@ -344,11 +367,19 @@ class NativeHookAdapter:
         if block_reason:
             return self._deny_tool(block_reason)
 
+        # Hard block: DCP red-lane seam guard (DCP-RED-MERGE-SEAM-0001).
+        dcp_block = surface_guard_block(tool_name, tool_input, self.project_root)
+        if dcp_block:
+            return self._deny_tool(dcp_block)
+
         # Advisory context: plan-mode entry guidance + skill-invocation enforcement.
         extra_parts = []
         if tool_name == "EnterPlanMode" and PRE_PLAN_GUIDANCE:
             extra_parts.append(PRE_PLAN_GUIDANCE)
         extra_parts.extend(skill_enforcement_warnings(tool_name, tool_input, config_text))
+        extra_parts.extend(surface_guard_warnings(
+            tool_name, tool_input, self.project_root, self.session_id
+        ))
         extra_context = "\n\n".join(p for p in extra_parts if p) or None
 
         state = self._active_state()
@@ -433,6 +464,14 @@ class NativeHookAdapter:
             nudge = on_edit_tool(self.project_root, self.session_id)
             if nudge:
                 advisory_parts.append(nudge)
+            fp = str((tool_input or {}).get("file_path") or "")
+            if fp:
+                proof_nudge = on_proof_write(self.project_root, fp, self.session_id)
+                if proof_nudge:
+                    advisory_parts.append(proof_nudge)
+                deny_nudge = on_facade_edit(self.project_root, fp, self.session_id)
+                if deny_nudge:
+                    advisory_parts.append(deny_nudge)
         advisory = "\n\n".join(advisory_parts) or None
 
         state = self._active_state()
