@@ -500,3 +500,168 @@ class TestClaudeConfigurator:
             assert (
                 js_found
             ), f"{filename} should contain JavaScript-specific content. Content preview: {content[:200]}..."
+
+
+class TestPersonaInjection:
+    """Tests for role/persona injection during `dopemux start --role X`.
+
+    Persona activation calls ``setup_project_config(project_path, role=role)``.
+    It must inject the role's assembled guidelines WITHOUT clobbering existing
+    doctrine files (claude.md / session.md / etc.).
+    """
+
+    PERSONA_SENTINEL = "DEVELOPER_PERSONA_SENTINEL guidelines body"
+
+    def _write_persona(self, project_dir, role="developer"):
+        """Create a resolvable persona file for the given role."""
+        personas_dir = project_dir / ".claude" / "personas"
+        personas_dir.mkdir(parents=True, exist_ok=True)
+        (personas_dir / f"{role}.agent.md").write_text(
+            f"# {role} persona\n\n{self.PERSONA_SENTINEL}\n"
+        )
+
+    def test_role_injects_persona_into_active_persona_file(
+        self, config_manager, temp_project_dir
+    ):
+        """`--role developer` writes the assembled guidelines to active-persona.md."""
+        self._write_persona(temp_project_dir, "developer")
+        configurator = ClaudeConfigurator(config_manager)
+
+        configurator.setup_project_config(temp_project_dir, role="developer")
+
+        active = temp_project_dir / ".claude" / "active-persona.md"
+        assert active.exists(), "active-persona.md should be created on role activation"
+        content = active.read_text()
+        assert self.PERSONA_SENTINEL in content
+        assert "developer" in content.lower()
+
+    def test_role_does_not_regenerate_doctrine_files(
+        self, config_manager, temp_project_dir
+    ):
+        """Role activation must NOT regenerate doctrine files (early-return contract)."""
+        self._write_persona(temp_project_dir, "developer")
+        configurator = ClaudeConfigurator(config_manager)
+
+        configurator.setup_project_config(temp_project_dir, role="developer")
+
+        claude_dir = temp_project_dir / ".claude"
+        # Doctrine files are only written in the no-role generation path.
+        assert not (claude_dir / "session.md").exists()
+        assert not (claude_dir / "context.md").exists()
+        assert not (claude_dir / "llms.md").exists()
+
+    def test_role_does_not_clobber_existing_claude_md(
+        self, config_manager, temp_project_dir
+    ):
+        """Existing claude.md doctrine content is preserved; a reference is added."""
+        claude_dir = temp_project_dir / ".claude"
+        claude_dir.mkdir(parents=True, exist_ok=True)
+        (claude_dir / "claude.md").write_text(
+            "# Project Doctrine\n\nEXISTING_DOCTRINE_SENTINEL must survive.\n"
+        )
+        self._write_persona(temp_project_dir, "developer")
+        configurator = ClaudeConfigurator(config_manager)
+
+        configurator.setup_project_config(temp_project_dir, role="developer")
+
+        claude_md = (claude_dir / "claude.md").read_text()
+        assert "EXISTING_DOCTRINE_SENTINEL must survive." in claude_md
+        assert "active-persona.md" in claude_md
+
+    def test_role_injection_is_idempotent(self, config_manager, temp_project_dir):
+        """Re-activating the same role does not duplicate the reference block."""
+        claude_dir = temp_project_dir / ".claude"
+        claude_dir.mkdir(parents=True, exist_ok=True)
+        (claude_dir / "claude.md").write_text("# Doctrine\n\nbody\n")
+        self._write_persona(temp_project_dir, "developer")
+        configurator = ClaudeConfigurator(config_manager)
+
+        configurator.setup_project_config(temp_project_dir, role="developer")
+        configurator.setup_project_config(temp_project_dir, role="developer")
+
+        claude_md = (claude_dir / "claude.md").read_text()
+        assert claude_md.count("DOPEMUX:ACTIVE-PERSONA:START") == 1
+        assert claude_md.count("DOPEMUX:ACTIVE-PERSONA:END") == 1
+
+    def test_unresolvable_role_fails_closed(self, config_manager, temp_project_dir):
+        """A role with no guidelines writes no active-persona.md (no false success)."""
+        configurator = ClaudeConfigurator(config_manager)
+
+        configurator.setup_project_config(temp_project_dir, role="no-such-role")
+
+        active = temp_project_dir / ".claude" / "active-persona.md"
+        assert not active.exists()
+
+    def test_returns_true_on_injection_false_on_failclosed(
+        self, config_manager, temp_project_dir
+    ):
+        """Return value reports injection status for a truthful CLI message."""
+        configurator = ClaudeConfigurator(config_manager)
+
+        assert (
+            configurator.setup_project_config(temp_project_dir, role="no-such-role")
+            is False
+        )
+
+        self._write_persona(temp_project_dir, "developer")
+        assert (
+            configurator.setup_project_config(temp_project_dir, role="developer")
+            is True
+        )
+
+    def test_unresolvable_role_fails_closed_even_with_global_instructions(
+        self, config_manager, temp_project_dir
+    ):
+        """Global instructions must not mask an unresolvable persona.
+
+        ``assemble_instructions`` appends role-independent global guidelines, so
+        fail-closed must gate on the persona resolving — not on combined output.
+        """
+        instr_dir = temp_project_dir / "config" / "instructions"
+        instr_dir.mkdir(parents=True, exist_ok=True)
+        (instr_dir / "house.instructions.md").write_text("GLOBAL_RULE always.\n")
+        configurator = ClaudeConfigurator(config_manager)
+
+        configurator.setup_project_config(temp_project_dir, role="no-such-role")
+
+        active = temp_project_dir / ".claude" / "active-persona.md"
+        assert not active.exists()
+
+    def test_orphaned_end_marker_does_not_duplicate(
+        self, config_manager, temp_project_dir
+    ):
+        """A pre-existing orphaned END marker must not cause unbounded duplication."""
+        claude_dir = temp_project_dir / ".claude"
+        claude_dir.mkdir(parents=True, exist_ok=True)
+        # Malformed prior state: an END marker with no matching START.
+        (claude_dir / "claude.md").write_text(
+            "# Doctrine\n\nKEEP_ME line.\n\n"
+            "<!-- DOPEMUX:ACTIVE-PERSONA:END -->\n"
+        )
+        self._write_persona(temp_project_dir, "developer")
+        configurator = ClaudeConfigurator(config_manager)
+
+        configurator.setup_project_config(temp_project_dir, role="developer")
+        configurator.setup_project_config(temp_project_dir, role="developer")
+
+        claude_md = (claude_dir / "claude.md").read_text()
+        assert "KEEP_ME line." in claude_md
+        assert claude_md.count("DOPEMUX:ACTIVE-PERSONA:START") == 1
+        assert claude_md.count("DOPEMUX:ACTIVE-PERSONA:END") == 1
+
+    def test_switching_roles_replaces_block(self, config_manager, temp_project_dir):
+        """Activating role B after role A replaces the block (no stale role A)."""
+        claude_dir = temp_project_dir / ".claude"
+        claude_dir.mkdir(parents=True, exist_ok=True)
+        (claude_dir / "claude.md").write_text("# Doctrine\n\nbody\n")
+        self._write_persona(temp_project_dir, "developer")
+        self._write_persona(temp_project_dir, "reviewer")
+        configurator = ClaudeConfigurator(config_manager)
+
+        configurator.setup_project_config(temp_project_dir, role="developer")
+        configurator.setup_project_config(temp_project_dir, role="reviewer")
+
+        claude_md = (claude_dir / "claude.md").read_text()
+        assert claude_md.count("DOPEMUX:ACTIVE-PERSONA:START") == 1
+        assert "Role **reviewer** is active" in claude_md
+        assert "Role **developer** is active" not in claude_md

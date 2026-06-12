@@ -2445,7 +2445,14 @@ def start(
             progress.update(task, description=f"Activating {role} persona...")
             configurator = ClaudeConfigurator(config_manager)
             # project_path is the base directory for .claude/
-            configurator.setup_project_config(project_path, role=role)
+            injected = configurator.setup_project_config(project_path, role=role)
+            if injected:
+                progress.update(task, description=f"Activated {role} persona")
+            else:
+                progress.update(
+                    task,
+                    description=f"No guidelines for role '{role}' — persona skipped",
+                )
 
         # Launch Claude Code
         progress.update(task, description="Launching Claude Code...")
