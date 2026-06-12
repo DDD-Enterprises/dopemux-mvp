@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from chronicle.store import ChronicleStore
-from mcp import DopeMemoryMCPServer
+from wma_mcp import DopeMemoryMCPServer
 
 
 def _insert_raw_worklog_row(

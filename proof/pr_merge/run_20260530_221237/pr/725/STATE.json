@@ -1,0 +1,364 @@
+{
+  "run_id": "20260530_221237",
+  "pr_state": {
+    "pr_id": 725,
+    "title": "fix(rte,mcp,install): remediate distributed audit findings (TP-1/1b/2/3/4/5)",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "claude/rte-remediation-2026-05-29",
+    "ci_status": "FAILURE",
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "BLOCKED",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-31T05:13:09Z",
+    "is_draft": false,
+    "auto_merge_enabled": true,
+    "additions": 1050,
+    "deletions": 69,
+    "changed_files": 31,
+    "unresolved_threads": 0,
+    "active_unresolved_threads": 0,
+    "outdated_unresolved_threads": 0,
+    "pr_class": "CI_ONLY",
+    "risk_score": 1679.0,
+    "check_summary": {
+      "total": 39,
+      "success": 13,
+      "failure": 1,
+      "pending": 25,
+      "required_pending": 25,
+      "required_failure": 1,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "apply_blocked",
+    "head_sha": "a0b8119e66606ca42434243cd8931ca0733738ef",
+    "base_sha": "508bcc0df74db4ee5d1384d8a2da73acdccd8c2e"
+  },
+  "lifecycle_state": "apply_blocked",
+  "apply_actions": [
+    "rebase claude/rte-remediation-2026-05-29 onto main",
+    "resolve review threads",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "auto_merge_fallback",
+    "command": [
+      "gh",
+      "pr",
+      "merge",
+      "725",
+      "--auto",
+      "--rebase",
+      "--delete-branch"
+    ],
+    "reason": "Required or optional checks are pending; enabling auto-merge.",
+    "reason_code": "auto_merge_active_checks"
+  },
+  "blockers": [
+    {
+      "type": "required_check_failed",
+      "source": "github_protection_review",
+      "name": "Required checks are failing.",
+      "details": null,
+      "metadata": {
+        "checks_total": 39,
+        "checks_success": 13,
+        "checks_failure": 1,
+        "checks_pending": 25,
+        "required_checks_pending": 25,
+        "required_checks_failed": 1,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)",
+            "ci-summary"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [
+          "Analyze (javascript-typescript)",
+          "Analyze (python)",
+          "Analyze (ruby)",
+          "🧪 Unit Tests"
+        ],
+        "blocker_types": [
+          "required_check_failed",
+          "required_check_pending"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "type": "validation_failed",
+      "source": "local_validation",
+      "name": "Local validation is required before merge readiness can be declared.",
+      "details": null,
+      "metadata": {
+        "validation_status": "failed"
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "diff_size": 1119
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 1679.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 39,
+        "checks_success": 13,
+        "checks_failure": 1,
+        "checks_pending": 25,
+        "required_checks_pending": 25,
+        "required_checks_failed": 1,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)",
+            "ci-summary"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [
+          "Analyze (javascript-typescript)",
+          "Analyze (python)",
+          "Analyze (ruby)",
+          "🧪 Unit Tests"
+        ],
+        "blocker_types": [
+          "required_check_failed",
+          "required_check_pending"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "failed",
+      "details": {
+        "status": "failed",
+        "required_for_merge_ready": true,
+        "passed": false,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run --files .Jules/palette.md .pre-commit-config.yaml INSTALL.md KNOWN_GAPS.md claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md.v1.bak claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md.v1.bak claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md.v1.bak claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md.v1.bak claudedocs/beta-readiness-2026-05-29/04-IMPLEMENTER-ASSIGNMENTS.md claudedocs/beta-readiness-2026-05-29/05-DISPATCH-PROMPTS.md claudedocs/pr725-proof-bundle-2026-05-30.md config/repo_hygiene/root_hygiene_policy.json docs/02-how-to/install.md docs/02-how-to/manage-mcp-servers.md docs/02-how-to/universal-extractor-usage.md install.sh proof/.validator_scope.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json pyproject.toml qa/.env.example qa/README.md qa/SKILL.md qa/backlog-map.yaml qa/baseline/baseline.json qa/baseline/snapshots/.gitkeep qa/lib/qa_common.py qa/lib/qa_common.sh qa/results/.gitkeep qa/runbook.md qa/scenarios/00_env_up.sh qa/scenarios/01_probe_entrypoints.sh qa/scenarios/10_install_gauntlet.sh qa/scenarios/20_cli_sweep.py qa/scenarios/30_mcp_roundtrips.sh qa/scenarios/40_multi_instance_collision.sh qa/scenarios/50_hooks_lifecycle.sh qa/scenarios/60_rte_routing_safety.sh qa/scenarios/61_live_lane.sh qa/scenarios/70_pytest_lanes.sh qa/scenarios/80_docs_drift.py qa/scenarios/90_tui_renders.sh qa/scenarios/99_env_down.sh scripts/deploy/deployment/stack_up_all.sh scripts/install-docker-mcp-servers.sh scripts/setup.sh services/dope-context/Dockerfile services/mcp-capture/server.py services/mcp-integration-bridge/kg_authority.py services/mcp-integration-bridge/main.py services/repo-truth-extractor/benchmarking/registry/openrouter_discovery.py services/repo-truth-extractor/extraction_hygiene.py services/repo-truth-extractor/lib/intelligence_router.py services/repo-truth-extractor/lib/prescan/engine.py services/repo-truth-extractor/phases.py services/repo-truth-extractor/reporting.py services/repo-truth-extractor/rte_constants.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/run_extraction_v4.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/fixtures/openrouter_models_sample.json services/repo-truth-extractor/tests/test_openrouter_discovery.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/cli.py src/dopemux/mcp/broker.py src/dopemux/mcp/gate.py src/dopemux/mcp/server_manager.py src/dopemux/mcp/session_manager.py src/dopemux/orchestrator/ui/data_sources.py src/dopemux/tui/widgets/today.py tests/mcp/test_discovery_gate_strict.py tests/mcp/test_mcp_internal_lockdown.py tests/unit/orchestrator/test_data_sources.py tests/unit/pm/test_pm_route_contracts.py tests/unit/tui/test_widgets.py ui-dashboard/src/App.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts uv.lock",
+            "status": "failed",
+            "returncode": 1,
+            "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Failed\n- hook id: root-hygiene\n- exit code: 1\n\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: FAILED\nPolicy: /private/tmp/dopemux-pr-merge-725-20260530_221237/config/repo_hygiene/root_hygiene_policy.json\n1. KNOWN_GAPS.md\n   reason: root files must be explicitly allowlisted\n   suggested destination: docs/ (project documentation)\nMove files to the suggested destination, or explicitly update config/repo_hygiene/root_hygiene_policy.json when the new root entry is intentional.\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (3 paths checked)\n\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "3e2917364c6d3f4678344b2f1144fb94224ad006f460d79636a38d4177db3001",
+          "valid_for_sha": "b22260a7274b038c5d6fff284c5feddac728c970",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "discovered",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        },
+        "failure_fingerprint": "9ba378ade9ccb031453739acab90dc8ca4ea81fc85addbd4b6ad353171b6e166"
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "merge_readiness",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "failed",
+    "required_for_merge_ready": true,
+    "passed": false,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run --files .Jules/palette.md .pre-commit-config.yaml INSTALL.md KNOWN_GAPS.md claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md.v1.bak claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md.v1.bak claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md.v1.bak claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md.v1.bak claudedocs/beta-readiness-2026-05-29/04-IMPLEMENTER-ASSIGNMENTS.md claudedocs/beta-readiness-2026-05-29/05-DISPATCH-PROMPTS.md claudedocs/pr725-proof-bundle-2026-05-30.md config/repo_hygiene/root_hygiene_policy.json docs/02-how-to/install.md docs/02-how-to/manage-mcp-servers.md docs/02-how-to/universal-extractor-usage.md install.sh proof/.validator_scope.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json pyproject.toml qa/.env.example qa/README.md qa/SKILL.md qa/backlog-map.yaml qa/baseline/baseline.json qa/baseline/snapshots/.gitkeep qa/lib/qa_common.py qa/lib/qa_common.sh qa/results/.gitkeep qa/runbook.md qa/scenarios/00_env_up.sh qa/scenarios/01_probe_entrypoints.sh qa/scenarios/10_install_gauntlet.sh qa/scenarios/20_cli_sweep.py qa/scenarios/30_mcp_roundtrips.sh qa/scenarios/40_multi_instance_collision.sh qa/scenarios/50_hooks_lifecycle.sh qa/scenarios/60_rte_routing_safety.sh qa/scenarios/61_live_lane.sh qa/scenarios/70_pytest_lanes.sh qa/scenarios/80_docs_drift.py qa/scenarios/90_tui_renders.sh qa/scenarios/99_env_down.sh scripts/deploy/deployment/stack_up_all.sh scripts/install-docker-mcp-servers.sh scripts/setup.sh services/dope-context/Dockerfile services/mcp-capture/server.py services/mcp-integration-bridge/kg_authority.py services/mcp-integration-bridge/main.py services/repo-truth-extractor/benchmarking/registry/openrouter_discovery.py services/repo-truth-extractor/extraction_hygiene.py services/repo-truth-extractor/lib/intelligence_router.py services/repo-truth-extractor/lib/prescan/engine.py services/repo-truth-extractor/phases.py services/repo-truth-extractor/reporting.py services/repo-truth-extractor/rte_constants.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/run_extraction_v4.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/fixtures/openrouter_models_sample.json services/repo-truth-extractor/tests/test_openrouter_discovery.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/cli.py src/dopemux/mcp/broker.py src/dopemux/mcp/gate.py src/dopemux/mcp/server_manager.py src/dopemux/mcp/session_manager.py src/dopemux/orchestrator/ui/data_sources.py src/dopemux/tui/widgets/today.py tests/mcp/test_discovery_gate_strict.py tests/mcp/test_mcp_internal_lockdown.py tests/unit/orchestrator/test_data_sources.py tests/unit/pm/test_pm_route_contracts.py tests/unit/tui/test_widgets.py ui-dashboard/src/App.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts uv.lock",
+        "status": "failed",
+        "returncode": 1,
+        "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Failed\n- hook id: root-hygiene\n- exit code: 1\n\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: FAILED\nPolicy: /private/tmp/dopemux-pr-merge-725-20260530_221237/config/repo_hygiene/root_hygiene_policy.json\n1. KNOWN_GAPS.md\n   reason: root files must be explicitly allowlisted\n   suggested destination: docs/ (project documentation)\nMove files to the suggested destination, or explicitly update config/repo_hygiene/root_hygiene_policy.json when the new root entry is intentional.\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (7 paths checked)\nroot-hygiene: OK (3 paths checked)\n\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "3e2917364c6d3f4678344b2f1144fb94224ad006f460d79636a38d4177db3001",
+      "valid_for_sha": "b22260a7274b038c5d6fff284c5feddac728c970",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "failure_fingerprint": "9ba378ade9ccb031453739acab90dc8ca4ea81fc85addbd4b6ad353171b6e166"
+  },
+  "thread_dispositions": [],
+  "fingerprint": {
+    "input_fingerprint": "c2aeb17e2717ac8de85c4a1a24640b56dcba40465190c54d021fdd7a27583189",
+    "valid_for_sha": "a0b8119e66606ca42434243cd8931ca0733738ef",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "explain": "{\"why_blocked\": [\"Required checks are failing.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"required_check_failed\", \"message\": \"Required checks are failing.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 39, \"checks_success\": 13, \"checks_failure\": 1, \"checks_pending\": 25, \"required_checks_pending\": 25, \"required_checks_failed\": 1, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\", \"ci-summary\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [\"Analyze (javascript-typescript)\", \"Analyze (python)\", \"Analyze (ruby)\", \"\\ud83e\\uddea Unit Tests\"], \"blocker_types\": [\"required_check_failed\", \"required_check_pending\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_failed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"failed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1119}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1119}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 1679.0}, \"source\": \"heuristics\", \"override\": null}]}",
+    "operator_state": ""
+  },
+  "blocked_by_global_fix_pr": null
+}

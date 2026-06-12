@@ -1,0 +1,167 @@
+$ git fetch origin pull/722/head:prmerge/20260528_103339-722
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/722/head -> prmerge/20260528_103339-722
+
+$ git worktree add /tmp/dopemux-pr-merge-722-20260528_103339 prmerge/20260528_103339-722
+exit=0
+--- stdout ---
+HEAD is now at f34f253a3 feat(hooks): add orchestrator SessionStart injection + post-edit nudge (TP-CS-060/061/110)
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260528_103339-722')
+Updating files:  38% (5041/13112)
+Updating files:  39% (5114/13112)
+Updating files:  40% (5245/13112)
+Updating files:  41% (5376/13112)
+Updating files:  42% (5508/13112)
+Updating files:  43% (5639/13112)
+Updating files:  44% (5770/13112)
+Updating files:  45% (5901/13112)
+Updating files:  46% (6032/13112)
+Updating files:  47% (6163/13112)
+Updating files:  48% (6294/13112)
+Updating files:  49% (6425/13112)
+Updating files:  50% (6556/13112)
+Updating files:  51% (6688/13112)
+Updating files:  52% (6819/13112)
+Updating files:  53% (6950/13112)
+Updating files:  54% (7081/13112)
+Updating files:  55% (7212/13112)
+Updating files:  56% (7343/13112)
+Updating files:  57% (7474/13112)
+Updating files:  58% (7605/13112)
+Updating files:  59% (7737/13112)
+Updating files:  60% (7868/13112)
+Updating files:  61% (7999/13112)
+Updating files:  62% (8130/13112)
+Updating files:  63% (8261/13112)
+Updating files:  64% (8392/13112)
+Updating files:  65% (8523/13112)
+Updating files:  66% (8654/13112)
+Updating files:  67% (8786/13112)
+Updating files:  68% (8917/13112)
+Updating files:  69% (9048/13112)
+Updating files:  70% (9179/13112)
+Updating files:  71% (9310/13112)
+Updating files:  72% (9441/13112)
+Updating files:  73% (9572/13112)
+Updating files:  74% (9703/13112)
+Updating files:  75% (9834/13112)
+Updating files:  76% (9966/13112)
+Updating files:  77% (10097/13112)
+Updating files:  78% (10228/13112)
+Updating files:  79% (10359/13112)
+Updating files:  80% (10490/13112)
+Updating files:  81% (10621/13112)
+Updating files:  82% (10752/13112)
+Updating files:  83% (10883/13112)
+Updating files:  84% (11015/13112)
+Updating files:  85% (11146/13112)
+Updating files:  86% (11277/13112)
+Updating files:  87% (11408/13112)
+Updating files:  87% (11447/13112)
+Updating files:  88% (11539/13112)
+Updating files:  89% (11670/13112)
+Updating files:  90% (11801/13112)
+Updating files:  91% (11932/13112)
+Updating files:  92% (12064/13112)
+Updating files:  93% (12195/13112)
+Updating files:  94% (12326/13112)
+Updating files:  95% (12457/13112)
+Updating files:  96% (12588/13112)
+Updating files:  97% (12719/13112)
+Updating files:  98% (12850/13112)
+Updating files:  99% (12981/13112)
+Updating files: 100% (13112/13112)
+Updating files: 100% (13112/13112), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+f34f253a3d46f1dfca0704f871a1d0904c9a3896
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FXTk_", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3WnP"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FXWKQ", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3WpM"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FXWK_", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3WrQ"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FXWLk", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3Ws9"}}}}
+
+$ gh pr update-branch 722 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin phase4-remainder-hooks-output-style
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                phase4-remainder-hooks-output-style -> FETCH_HEAD
+
+$ git reset --hard origin/phase4-remainder-hooks-output-style
+exit=0
+--- stdout ---
+HEAD is now at f34f253a3 feat(hooks): add orchestrator SessionStart injection + post-edit nudge (TP-CS-060/061/110)
+
+$ git diff --name-only --diff-filter=ACMR ef0c30bf43ba01f55f9247b9d755b57bccaa74b5...HEAD
+exit=0
+--- stdout ---
+.claude/hooks/orchestrator_post_edit_nudge.py
+.claude/hooks/orchestrator_session_start.py
+.claude/output-styles/orchestrator.md
+.gitignore
+src/dopemux/claude/native_hooks.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .claude/hooks/orchestrator_post_edit_nudge.py .claude/hooks/orchestrator_session_start.py .claude/output-styles/orchestrator.md .gitignore src/dopemux/claude/native_hooks.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-722-20260528_103339
+exit=0
+
+$ gh pr merge 722 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#722 is not mergeable: the base branch policy prohibits the merge.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+

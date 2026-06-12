@@ -1,0 +1,15 @@
+{
+  "run_id": "20260524_063001",
+  "pr_id": "688",
+  "status": "merge_ready",
+  "status_reason": "Worktree initialized. Ready for specialist intervention.",
+  "initial_state": {
+    "title": "...",
+    "author": "...",
+    "ci_status": "FAILURE",
+    "mergeable": true,
+    "diffstat": ""
+  },
+  "blockers": [],
+  "planned_actions": []
+}

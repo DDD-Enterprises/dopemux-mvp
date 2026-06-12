@@ -1,0 +1,190 @@
+$ git fetch origin pull/732/head:prmerge/20260530_221722-732
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/732/head -> prmerge/20260530_221722-732
+
+$ git worktree add /tmp/dopemux-pr-merge-732-20260530_221722 prmerge/20260530_221722-732
+exit=0
+--- stdout ---
+HEAD is now at 868530bfb fix(cockpit): enforce safe action typed gates
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_221722-732')
+Updating files:  26% (3621/13558)
+Updating files:  27% (3661/13558)
+Updating files:  28% (3797/13558)
+Updating files:  29% (3932/13558)
+Updating files:  30% (4068/13558)
+Updating files:  31% (4203/13558)
+Updating files:  32% (4339/13558)
+Updating files:  33% (4475/13558)
+Updating files:  34% (4610/13558)
+Updating files:  35% (4746/13558)
+Updating files:  36% (4881/13558)
+Updating files:  37% (5017/13558)
+Updating files:  38% (5153/13558)
+Updating files:  39% (5288/13558)
+Updating files:  40% (5424/13558)
+Updating files:  41% (5559/13558)
+Updating files:  42% (5695/13558)
+Updating files:  43% (5830/13558)
+Updating files:  44% (5966/13558)
+Updating files:  45% (6102/13558)
+Updating files:  46% (6237/13558)
+Updating files:  47% (6373/13558)
+Updating files:  48% (6508/13558)
+Updating files:  49% (6644/13558)
+Updating files:  50% (6779/13558)
+Updating files:  51% (6915/13558)
+Updating files:  52% (7051/13558)
+Updating files:  53% (7186/13558)
+Updating files:  54% (7322/13558)
+Updating files:  55% (7457/13558)
+Updating files:  56% (7593/13558)
+Updating files:  57% (7729/13558)
+Updating files:  58% (7864/13558)
+Updating files:  59% (8000/13558)
+Updating files:  60% (8135/13558)
+Updating files:  61% (8271/13558)
+Updating files:  62% (8406/13558)
+Updating files:  63% (8542/13558)
+Updating files:  64% (8678/13558)
+Updating files:  65% (8813/13558)
+Updating files:  66% (8949/13558)
+Updating files:  67% (9084/13558)
+Updating files:  68% (9220/13558)
+Updating files:  69% (9356/13558)
+Updating files:  70% (9491/13558)
+Updating files:  71% (9627/13558)
+Updating files:  71% (9679/13558)
+Updating files:  72% (9762/13558)
+Updating files:  73% (9898/13558)
+Updating files:  74% (10033/13558)
+Updating files:  75% (10169/13558)
+Updating files:  76% (10305/13558)
+Updating files:  77% (10440/13558)
+Updating files:  78% (10576/13558)
+Updating files:  79% (10711/13558)
+Updating files:  80% (10847/13558)
+Updating files:  81% (10982/13558)
+Updating files:  82% (11118/13558)
+Updating files:  83% (11254/13558)
+Updating files:  84% (11389/13558)
+Updating files:  85% (11525/13558)
+Updating files:  86% (11660/13558)
+Updating files:  87% (11796/13558)
+Updating files:  88% (11932/13558)
+Updating files:  89% (12067/13558)
+Updating files:  90% (12203/13558)
+Updating files:  91% (12338/13558)
+Updating files:  92% (12474/13558)
+Updating files:  93% (12609/13558)
+Updating files:  94% (12745/13558)
+Updating files:  95% (12881/13558)
+Updating files:  96% (13016/13558)
+Updating files:  97% (13152/13558)
+Updating files:  98% (13287/13558)
+Updating files:  99% (13423/13558)
+Updating files: 100% (13558/13558)
+Updating files: 100% (13558/13558), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+868530bfb63dafb8d8d58682772d6e32e29c3afc
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986F6s8h", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987Gd-2v"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986F6tH9", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987Gd-29"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986F6tH_", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987Gd-3Q"}}}}
+
+$ gh pr update-branch 732 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/cockpit-ui-safe-actions-001
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/cockpit-ui-safe-actions-001 -> FETCH_HEAD
+
+$ git reset --hard origin/codex/cockpit-ui-safe-actions-001
+exit=0
+--- stdout ---
+HEAD is now at 868530bfb fix(cockpit): enforce safe action typed gates
+
+$ git diff --name-only --diff-filter=ACMR 93a779c97a2f84202cfaf16abe18ab3b061c6e88...HEAD
+exit=0
+--- stdout ---
+out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json
+out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json
+out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt
+proof/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json
+src/dopemux/ui/cockpit/runtime_contract.py
+task-packets/INDEX.md
+task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json
+tests/unit/dopemux/ui/cockpit/test_runtime_contract.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/PROOF.json out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt proof/cockpit-safe-actions/TP-DMX-COCKPIT-SAFE-ACTIONS-001/PROOF.json src/dopemux/ui/cockpit/runtime_contract.py task-packets/INDEX.md task-packets/generated/TP-DMX-COCKPIT-SAFE-ACTIONS-001.json tests/unit/dopemux/ui/cockpit/test_runtime_contract.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py task-packets/INDEX.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-732-20260530_221722
+exit=0
+

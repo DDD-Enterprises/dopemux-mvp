@@ -1,0 +1,338 @@
+{
+  "run_id": "20260501_000204",
+  "pr_state": {
+    "pr_id": 548,
+    "title": "Restore deterministic runtime authority verifier",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "fix/restore-runtime-authority-verifier",
+    "ci_status": "FAILURE",
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "BEHIND",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-01T06:40:07Z",
+    "is_draft": false,
+    "additions": 1594,
+    "deletions": 0,
+    "changed_files": 4,
+    "unresolved_threads": 1,
+    "active_unresolved_threads": 1,
+    "outdated_unresolved_threads": 0,
+    "pr_class": "MIXED",
+    "risk_score": 2184.0,
+    "check_summary": {
+      "total": 26,
+      "success": 25,
+      "failure": 1,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 1,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "apply_blocked",
+    "head_sha": "14b60d2dba482ba2404467f4ba577cfffb388882",
+    "base_sha": "a00a0a6b1f9e3ccc586161a06b030eaa45e4bd05"
+  },
+  "lifecycle_state": "apply_blocked",
+  "apply_actions": [
+    "prepare worktree",
+    "rebase branch",
+    "apply review thread fixes",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "blocked",
+    "command": [],
+    "reason": "1 active unresolved review threads remain.; Required checks are failing.; Required approval is missing.; Local validation is required before merge readiness can be declared.",
+    "reason_code": "active_thread"
+  },
+  "blockers": [
+    {
+      "type": "active_thread",
+      "source": "github_protection_review",
+      "name": "1 active unresolved review threads remain.",
+      "details": null,
+      "metadata": {
+        "active_threads": 1
+      }
+    },
+    {
+      "type": "required_check_failed",
+      "source": "github_protection_review",
+      "name": "Required checks are failing.",
+      "details": null,
+      "metadata": {
+        "checks_total": 26,
+        "checks_success": 25,
+        "checks_failure": 1,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 1,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BEHIND",
+        "blocker_types": [
+          "required_check_failed",
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "type": "approval_missing",
+      "source": "github_protection_review",
+      "name": "Required approval is missing.",
+      "details": null,
+      "metadata": {}
+    },
+    {
+      "type": "validation_failed",
+      "source": "local_validation",
+      "name": "Local validation is required before merge readiness can be declared.",
+      "details": null,
+      "metadata": {
+        "validation_status": "failed"
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "details": {
+        "diff_size": 1594
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "details": {
+        "risk_score": 2184.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "3d8667480a0c19acffff4b3ba69045245feb66e2f297a4bf037b80743348aacc"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 26,
+        "checks_success": 25,
+        "checks_failure": 1,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 1,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BEHIND",
+        "blocker_types": [
+          "required_check_failed",
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "failed",
+      "details": {
+        "status": "failed",
+        "required_for_merge_ready": true,
+        "passed": false,
+        "attempts": 1,
+        "remediation_applied": true,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "Validate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files......................(no files to check)Skipped\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).................(no files to check)Skipped\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-frontmatter-fix",
+            "command": "python scripts/docs_frontmatter_guard.py --fix",
+            "status": "failed",
+            "returncode": 1,
+            "stdout": "Updated 7 file(s):\n - docs/90-adr/adr-221-event-stream-rate-limits.md\n - docs/90-adr/adr-220-dopetask-direct-health-endpoint.md\n - docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md\n - docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md\n - docs/archive/unclassified-top-level/implementation/pm-writes-phase1-verification.md\n - docs/archive/unclassified-top-level/implementation/pm-writes-phase1-authority-map.md\n - docs/03-reference/systems/dopemux/transport-contracts.md\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-validator",
+            "command": "python scripts/docs_validator.py",
+            "status": "failed",
+            "returncode": 1,
+            "stdout": "",
+            "stderr": "\n❌ 3 error(s) found:\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Invalid status 'active' for adr. Must be one of: superseded, accepted, rejected, proposed\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Invalid node_type 'adr'. Must be one of: Error, Symbol, Pattern, ADR, Caveat, Decision, File, Milestone, Task, DocPage\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Invalid status 'active' for adr. Must be one of: superseded, accepted, rejected, proposed\n\n⚠️  67 warning(s):\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adrs-updated.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adrs-updated.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adrs-updated.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/template-adr-light.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-skeleton-light.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/global-mcp-configuration.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/global-mcp-configuration.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-index.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-index.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-index.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-202-serena-v2-production-validation.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-202-serena-v2-production-validation.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/candidate-adrs.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/candidate-adrs.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/candidate-adrs.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Problem\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Options\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Proposed Direction\n"
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "c3e653bf70d2e9bd1b9bc39c05d9b046091b35af1670c69dd13b4fc8b7b992bb",
+          "valid_for_sha": "14b60d2dba482ba2404467f4ba577cfffb388882",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "applied",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        }
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "passed",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state"
+    ],
+    "winning_reason": "apply_phase_gates",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "failed",
+    "required_for_merge_ready": true,
+    "passed": false,
+    "attempts": 1,
+    "remediation_applied": true,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "Validate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files......................(no files to check)Skipped\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).................(no files to check)Skipped\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-frontmatter-fix",
+        "command": "python scripts/docs_frontmatter_guard.py --fix",
+        "status": "failed",
+        "returncode": 1,
+        "stdout": "Updated 7 file(s):\n - docs/90-adr/adr-221-event-stream-rate-limits.md\n - docs/90-adr/adr-220-dopetask-direct-health-endpoint.md\n - docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md\n - docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md\n - docs/archive/unclassified-top-level/implementation/pm-writes-phase1-verification.md\n - docs/archive/unclassified-top-level/implementation/pm-writes-phase1-authority-map.md\n - docs/03-reference/systems/dopemux/transport-contracts.md\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-validator",
+        "command": "python scripts/docs_validator.py",
+        "status": "failed",
+        "returncode": 1,
+        "stdout": "",
+        "stderr": "\n❌ 3 error(s) found:\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Invalid status 'active' for adr. Must be one of: superseded, accepted, rejected, proposed\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Invalid node_type 'adr'. Must be one of: Error, Symbol, Pattern, ADR, Caveat, Decision, File, Milestone, Task, DocPage\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Invalid status 'active' for adr. Must be one of: superseded, accepted, rejected, proposed\n\n⚠️  67 warning(s):\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adrs-updated.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adrs-updated.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adrs-updated.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/template-adr-light.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-skeleton-light.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-221-event-stream-rate-limits.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/global-mcp-configuration.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/global-mcp-configuration.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-index.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-index.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-index.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-202-serena-v2-production-validation.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-202-serena-v2-production-validation.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/candidate-adrs.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/candidate-adrs.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/candidate-adrs.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Problem\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Options\n  /private/tmp/dopemux-pr-merge-548-20260501_000204/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Proposed Direction\n"
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "c3e653bf70d2e9bd1b9bc39c05d9b046091b35af1670c69dd13b4fc8b7b992bb",
+      "valid_for_sha": "14b60d2dba482ba2404467f4ba577cfffb388882",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "applied",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    }
+  },
+  "thread_dispositions": [
+    {
+      "thread_id": "PRRT_kwDOPyIw985-7bfU",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/governance/runtime-authority-verification.md",
+      "applied": true,
+      "escalation_needed": false
+    }
+  ],
+  "fingerprint": {
+    "input_fingerprint": "dce9d548019ac437de82e6ee0f81a985b78ca0b1bc09756dc5353686334e4c18",
+    "valid_for_sha": "14b60d2dba482ba2404467f4ba577cfffb388882",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "commands": "proof/pr_merge/run_20260501_000204/pr/548/COMMANDS_RUN.txt"
+  }
+}

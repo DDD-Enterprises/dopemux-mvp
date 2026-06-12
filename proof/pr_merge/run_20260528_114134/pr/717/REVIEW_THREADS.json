@@ -1,0 +1,178 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw986E92Rh",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "tools/pr_steward/classifier.py",
+      "line": null,
+      "original_line": 660,
+      "original_start_line": 659,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FKNmS",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Validate CURRENT proof status against PR head SHA**\n\nIn `_proof_is_current`, the `CURRENT` branch trusts `proof_freshness.matches_pr_head` and never verifies that `proof_head_sha` actually equals the current `pr_head_sha`. Because `proof_freshness` comes from proof payload data, a stale proof can be marked `CURRENT` (with `matches_pr_head: true`) and pass readiness even when `proof.matches_pr_head` is false, which drops the `PROOF_STALE_OR_MISSING` blocker and can incorrectly return `READY`.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-27T00:59:36Z",
+          "path": "tools/pr_steward/classifier.py",
+          "line": null,
+          "original_line": 660
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FV_EC",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:57:48Z",
+          "path": "tools/pr_steward/classifier.py",
+          "line": null,
+          "original_line": 660
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3XdC",
+          "author": "hu3mann",
+          "body": "Outdated thread candidate for auto-resolution; pending verification.",
+          "created_at": "2026-05-28T17:35:27Z",
+          "path": "tools/pr_steward/classifier.py",
+          "line": null,
+          "original_line": 660
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3XsW",
+          "author": "hu3mann",
+          "body": "✅ Automated verification passed for this auto_resolve_outdated.",
+          "created_at": "2026-05-28T17:35:39Z",
+          "path": "tools/pr_steward/classifier.py",
+          "line": null,
+          "original_line": 660
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986E92cq",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "tools/pr_steward/classifier.py",
+      "line": null,
+      "original_line": 660,
+      "original_start_line": 659,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FKN1Y",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The `CURRENT` branch trusts the embedded `proof_freshness.matches_pr_head` value without re-checking `proof_head_sha` against the live PR head. A stale proof file can set `proof_freshness.status` to `CURRENT` and `matches_pr_head` to true, causing `_proof_is_current` to return true even when the collector's top-level `matches_pr_head` is false. Recompute the equality against `pr_head_sha` in this branch instead of trusting the proof-provided freshness flag.",
+          "created_at": "2026-05-27T01:00:01Z",
+          "path": "tools/pr_steward/classifier.py",
+          "line": null,
+          "original_line": 660
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FV_If",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:57:50Z",
+          "path": "tools/pr_steward/classifier.py",
+          "line": null,
+          "original_line": 660
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3Xfj",
+          "author": "hu3mann",
+          "body": "Outdated thread candidate for auto-resolution; pending verification.",
+          "created_at": "2026-05-28T17:35:29Z",
+          "path": "tools/pr_steward/classifier.py",
+          "line": null,
+          "original_line": 660
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3Xu5",
+          "author": "hu3mann",
+          "body": "✅ Automated verification passed for this auto_resolve_outdated.",
+          "created_at": "2026-05-28T17:35:42Z",
+          "path": "tools/pr_steward/classifier.py",
+          "line": null,
+          "original_line": 660
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986E92c0",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "schemas/pr_steward/merge_readiness.schema.json",
+      "line": null,
+      "original_line": 253,
+      "original_start_line": 248,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FKN1m",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The READY schema permits a self-reference exception solely from `proof_freshness.status`, so an artifact with `matches_pr_head: false`, `status: CURRENT_WITH_SELF_REFERENCE_EXCEPTION`, and a missing/null `self_reference_exception` still validates. The runtime requires supervisor acceptance plus proof-only changed-file evidence, so the schema should require and constrain those fields for this READY path to match the documented fail-closed semantics.\n",
+          "created_at": "2026-05-27T01:00:01Z",
+          "path": "schemas/pr_steward/merge_readiness.schema.json",
+          "line": null,
+          "original_line": 253
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FV_Lx",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:57:53Z",
+          "path": "schemas/pr_steward/merge_readiness.schema.json",
+          "line": null,
+          "original_line": 253
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3XiG",
+          "author": "hu3mann",
+          "body": "Outdated thread candidate for auto-resolution; pending verification.",
+          "created_at": "2026-05-28T17:35:31Z",
+          "path": "schemas/pr_steward/merge_readiness.schema.json",
+          "line": null,
+          "original_line": 253
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3Xyq",
+          "author": "hu3mann",
+          "body": "✅ Automated verification passed for this auto_resolve_outdated.",
+          "created_at": "2026-05-28T17:35:44Z",
+          "path": "schemas/pr_steward/merge_readiness.schema.json",
+          "line": null,
+          "original_line": 253
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FXowU",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "tools/pr_steward/classifier.py",
+      "line": 294,
+      "original_line": 294,
+      "original_start_line": 291,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987Ft8aX",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Honor outdated thread state in the thread classifier**\n\nWhen GitHub returns a review thread with `isOutdated=true` but `isResolved=false`, this new branch marks the raw review comment as nonblocking, but `_classify_threads` still checks `not is_resolved` before `is_outdated` and adds `UNRESOLVED_REVIEW_THREAD`, so the PR remains `NEEDS_IMPLEMENTER`. That contradicts the newly documented acceptance rule that resolved or outdated threads must not remain active blockers, and makes the added outdated-comment handling ineffective for that common stale-thread state.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-28T10:36:07Z",
+          "path": "tools/pr_steward/classifier.py",
+          "line": 294,
+          "original_line": 294
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3XkB",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:35:32Z",
+          "path": "tools/pr_steward/classifier.py",
+          "line": 294,
+          "original_line": 294
+        }
+      ]
+    }
+  ]
+}

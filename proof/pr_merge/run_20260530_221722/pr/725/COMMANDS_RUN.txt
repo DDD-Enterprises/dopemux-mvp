@@ -1,0 +1,193 @@
+$ git fetch origin pull/725/head:prmerge/20260530_221722-725
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/725/head -> prmerge/20260530_221722-725
+
+$ git worktree add /tmp/dopemux-pr-merge-725-20260530_221722 prmerge/20260530_221722-725
+exit=0
+--- stdout ---
+HEAD is now at a0b8119e6 docs: known-gaps registry + PR #725 proof bundle
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_221722-725')
+Updating files:  23% (3240/13546)
+Updating files:  24% (3252/13546)
+Updating files:  25% (3387/13546)
+Updating files:  26% (3522/13546)
+Updating files:  27% (3658/13546)
+Updating files:  28% (3793/13546)
+Updating files:  29% (3929/13546)
+Updating files:  30% (4064/13546)
+Updating files:  31% (4200/13546)
+Updating files:  32% (4335/13546)
+Updating files:  33% (4471/13546)
+Updating files:  34% (4606/13546)
+Updating files:  35% (4742/13546)
+Updating files:  36% (4877/13546)
+Updating files:  37% (5013/13546)
+Updating files:  38% (5148/13546)
+Updating files:  39% (5283/13546)
+Updating files:  40% (5419/13546)
+Updating files:  41% (5554/13546)
+Updating files:  42% (5690/13546)
+Updating files:  43% (5825/13546)
+Updating files:  44% (5961/13546)
+Updating files:  45% (6096/13546)
+Updating files:  46% (6232/13546)
+Updating files:  47% (6367/13546)
+Updating files:  48% (6503/13546)
+Updating files:  49% (6638/13546)
+Updating files:  50% (6773/13546)
+Updating files:  51% (6909/13546)
+Updating files:  52% (7044/13546)
+Updating files:  53% (7180/13546)
+Updating files:  54% (7315/13546)
+Updating files:  55% (7451/13546)
+Updating files:  56% (7586/13546)
+Updating files:  57% (7722/13546)
+Updating files:  58% (7857/13546)
+Updating files:  59% (7993/13546)
+Updating files:  60% (8128/13546)
+Updating files:  61% (8264/13546)
+Updating files:  62% (8399/13546)
+Updating files:  63% (8534/13546)
+Updating files:  64% (8670/13546)
+Updating files:  65% (8805/13546)
+Updating files:  66% (8941/13546)
+Updating files:  67% (9076/13546)
+Updating files:  68% (9212/13546)
+Updating files:  69% (9347/13546)
+Updating files:  70% (9483/13546)
+Updating files:  71% (9618/13546)
+Updating files:  72% (9754/13546)
+Updating files:  73% (9889/13546)
+Updating files:  73% (9957/13546)
+Updating files:  74% (10025/13546)
+Updating files:  75% (10160/13546)
+Updating files:  76% (10295/13546)
+Updating files:  77% (10431/13546)
+Updating files:  78% (10566/13546)
+Updating files:  79% (10702/13546)
+Updating files:  80% (10837/13546)
+Updating files:  81% (10973/13546)
+Updating files:  82% (11108/13546)
+Updating files:  83% (11244/13546)
+Updating files:  84% (11379/13546)
+Updating files:  85% (11515/13546)
+Updating files:  86% (11650/13546)
+Updating files:  87% (11786/13546)
+Updating files:  88% (11921/13546)
+Updating files:  89% (12056/13546)
+Updating files:  90% (12192/13546)
+Updating files:  91% (12327/13546)
+Updating files:  92% (12463/13546)
+Updating files:  93% (12598/13546)
+Updating files:  94% (12734/13546)
+Updating files:  95% (12869/13546)
+Updating files:  96% (13005/13546)
+Updating files:  97% (13140/13546)
+Updating files:  98% (13276/13546)
+Updating files:  99% (13411/13546)
+Updating files: 100% (13546/13546)
+Updating files: 100% (13546/13546), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+a0b8119e66606ca42434243cd8931ca0733738ef
+
+$ gh pr update-branch 725 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin claude/rte-remediation-2026-05-29
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                claude/rte-remediation-2026-05-29 -> FETCH_HEAD
+
+$ git reset --hard origin/claude/rte-remediation-2026-05-29
+exit=0
+--- stdout ---
+HEAD is now at a0b8119e6 docs: known-gaps registry + PR #725 proof bundle
+
+$ git diff --name-only --diff-filter=ACMR 508bcc0df74db4ee5d1384d8a2da73acdccd8c2e...HEAD
+exit=0
+--- stdout ---
+INSTALL.md
+KNOWN_GAPS.md
+claudedocs/pr725-proof-bundle-2026-05-30.md
+docs/02-how-to/install.md
+docs/02-how-to/universal-extractor-usage.md
+install.sh
+scripts/deploy/deployment/stack_up_all.sh
+scripts/install-docker-mcp-servers.sh
+scripts/setup.sh
+services/dope-context/Dockerfile
+services/mcp-capture/server.py
+services/mcp-integration-bridge/kg_authority.py
+services/mcp-integration-bridge/main.py
+services/repo-truth-extractor/extraction_hygiene.py
+services/repo-truth-extractor/lib/intelligence_router.py
+services/repo-truth-extractor/lib/prescan/engine.py
+services/repo-truth-extractor/phases.py
+services/repo-truth-extractor/reporting.py
+services/repo-truth-extractor/rte_constants.py
+services/repo-truth-extractor/rte_promptset.py
+services/repo-truth-extractor/run_extraction_v4.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_pre_live_gate_v25.py
+services/repo-truth-extractor/validate_pre_live_gate_v25.py
+src/dopemux/cli.py
+src/dopemux/mcp/broker.py
+src/dopemux/mcp/gate.py
+src/dopemux/mcp/server_manager.py
+src/dopemux/mcp/session_manager.py
+tests/mcp/test_discovery_gate_strict.py
+tests/mcp/test_mcp_internal_lockdown.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files INSTALL.md KNOWN_GAPS.md claudedocs/pr725-proof-bundle-2026-05-30.md docs/02-how-to/install.md docs/02-how-to/universal-extractor-usage.md install.sh scripts/deploy/deployment/stack_up_all.sh scripts/install-docker-mcp-servers.sh scripts/setup.sh services/dope-context/Dockerfile services/mcp-capture/server.py services/mcp-integration-bridge/kg_authority.py services/mcp-integration-bridge/main.py services/repo-truth-extractor/extraction_hygiene.py services/repo-truth-extractor/lib/intelligence_router.py services/repo-truth-extractor/lib/prescan/engine.py services/repo-truth-extractor/phases.py services/repo-truth-extractor/reporting.py services/repo-truth-extractor/rte_constants.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/run_extraction_v4.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/cli.py src/dopemux/mcp/broker.py src/dopemux/mcp/gate.py src/dopemux/mcp/server_manager.py src/dopemux/mcp/session_manager.py tests/mcp/test_discovery_gate_strict.py tests/mcp/test_mcp_internal_lockdown.py
+exit=1
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Failed
+- hook id: root-hygiene
+- exit code: 1
+
+root-hygiene: OK (4 paths checked)
+root-hygiene: OK (4 paths checked)
+root-hygiene: OK (4 paths checked)
+root-hygiene: FAILED
+Policy: /private/tmp/dopemux-pr-merge-725-20260530_221722/config/repo_hygiene/root_hygiene_policy.json
+1. KNOWN_GAPS.md
+   reason: root files must be explicitly allowlisted
+   suggested destination: docs/ (project documentation)
+Move files to the suggested destination, or explicitly update config/repo_hygiene/root_hygiene_policy.json when the new root entry is intentional.
+root-hygiene: OK (4 paths checked)
+root-hygiene: OK (4 paths checked)
+root-hygiene: OK (4 paths checked)
+root-hygiene: OK (3 paths checked)
+
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-725-20260530_221722
+exit=0
+

@@ -1,0 +1,376 @@
+{
+  "run_id": "20260423_024348",
+  "pr_state": {
+    "pr_id": 501,
+    "title": "docs(repo-hygiene): audit branches and worktrees, add cleanup plan",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "codex/repo-hygiene-audit-phase1",
+    "ci_status": "FAILURE",
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "BLOCKED",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-04-23T09:44:10Z",
+    "is_draft": false,
+    "auto_merge_enabled": false,
+    "additions": 711,
+    "deletions": 0,
+    "changed_files": 4,
+    "unresolved_threads": 4,
+    "active_unresolved_threads": 2,
+    "outdated_unresolved_threads": 2,
+    "pr_class": "MIXED",
+    "risk_score": 1401.0,
+    "check_summary": {
+      "total": 19,
+      "success": 17,
+      "failure": 2,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 2,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "apply_blocked",
+    "head_sha": "3d5a34234443b53739159fe0b2f5bf6a900bf6b5",
+    "base_sha": "2004d99ff8f829f844aab2213dd78558912e2ac7"
+  },
+  "lifecycle_state": "apply_blocked",
+  "apply_actions": [
+    "rebase codex/repo-hygiene-audit-phase1 onto main",
+    "resolve review threads",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "rebase_merge",
+    "command": [
+      "gh",
+      "pr",
+      "merge",
+      "501",
+      "--rebase",
+      "--delete-branch"
+    ],
+    "reason": "All gates are green; rebase merge selected by default.",
+    "reason_code": "rebase_merge_ready"
+  },
+  "blockers": [
+    {
+      "type": "active_thread",
+      "source": "github_protection_review",
+      "name": "2 active unresolved review threads remain.",
+      "details": null,
+      "metadata": {
+        "active_threads": 2
+      }
+    },
+    {
+      "type": "required_check_failed",
+      "source": "github_protection_review",
+      "name": "Required checks are failing.",
+      "details": null,
+      "metadata": {
+        "checks_total": 19,
+        "checks_success": 17,
+        "checks_failure": 2,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 2,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [],
+        "blocker_types": [
+          "required_check_failed"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "type": "validation_failed",
+      "source": "local_validation",
+      "name": "Local validation is required before merge readiness can be declared.",
+      "details": null,
+      "metadata": {
+        "validation_status": "failed"
+      }
+    }
+  ],
+  "warnings": [],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 1401.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 19,
+        "checks_success": 17,
+        "checks_failure": 2,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 2,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [],
+        "blocker_types": [
+          "required_check_failed"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "failed",
+      "details": {
+        "status": "failed",
+        "required_for_merge_ready": true,
+        "passed": false,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run --files docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md proof/repo-branch-worktree-audit-2026-04-23.proof.json task-packets/INDEX.md task-packets/TP-DMX-REPOHYG-001.json",
+            "status": "failed",
+            "returncode": 1,
+            "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Failed\n- hook id: trailing-whitespace\n- exit code: 1\n- files were modified by this hook\n\nFixing docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md\n\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "9fc83655c7625e41fdd116e745e6e978b820bebbda7234f8a2f4ef1d827b4e1e",
+          "valid_for_sha": "d505ee5ec0dfcead90493124cee436636684088d",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "discovered",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        },
+        "failure_fingerprint": "05b3b336300ada7d688e8b9fa0bb60729386121fb9ab86c0ae6ab46b6acec8e1"
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "merge_readiness",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "failed",
+    "required_for_merge_ready": true,
+    "passed": false,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run --files docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md proof/repo-branch-worktree-audit-2026-04-23.proof.json task-packets/INDEX.md task-packets/TP-DMX-REPOHYG-001.json",
+        "status": "failed",
+        "returncode": 1,
+        "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Failed\n- hook id: trailing-whitespace\n- exit code: 1\n- files were modified by this hook\n\nFixing docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md\n\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "9fc83655c7625e41fdd116e745e6e978b820bebbda7234f8a2f4ef1d827b4e1e",
+      "valid_for_sha": "d505ee5ec0dfcead90493124cee436636684088d",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "failure_fingerprint": "05b3b336300ada7d688e8b9fa0bb60729386121fb9ab86c0ae6ab46b6acec8e1"
+  },
+  "thread_dispositions": [
+    {
+      "thread_id": "PRRT_kwDOPyIw9859BJXF",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "task-packets/TP-DMX-REPOHYG-001.json",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859BJXq",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "task-packets/TP-DMX-REPOHYG-001.json",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859BK_b",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "proof/repo-branch-worktree-audit-2026-04-23.proof.json",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859BLBT",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "task-packets/INDEX.md",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ],
+  "fingerprint": {
+    "input_fingerprint": "d6a662f16fd6a64423c88ff93429dec672fd960be4e91743d3dc427dcc7fcfa2",
+    "valid_for_sha": "3d5a34234443b53739159fe0b2f5bf6a900bf6b5",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "explain": "{\"why_blocked\": [\"2 active unresolved review threads remain.\", \"Required checks are failing.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"2 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 2}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"required_check_failed\", \"message\": \"Required checks are failing.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 19, \"checks_success\": 17, \"checks_failure\": 2, \"checks_pending\": 0, \"required_checks_pending\": 0, \"required_checks_failed\": 2, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [], \"blocker_types\": [\"required_check_failed\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_failed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"failed\"}, \"source\": \"local_validation\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 1401.0}, \"source\": \"heuristics\", \"override\": null}]}",
+    "operator_state": ""
+  },
+  "blocked_by_global_fix_pr": null
+}

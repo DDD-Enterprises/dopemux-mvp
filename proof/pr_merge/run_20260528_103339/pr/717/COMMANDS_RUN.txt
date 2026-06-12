@@ -1,0 +1,253 @@
+$ git fetch origin pull/717/head:prmerge/20260528_103339-717
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/717/head -> prmerge/20260528_103339-717
+
+$ git worktree add /tmp/dopemux-pr-merge-717-20260528_103339 prmerge/20260528_103339-717
+exit=0
+--- stdout ---
+HEAD is now at 0fe5fbcfa proof(governance): update head/base SHA after rebase
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260528_103339-717')
+Updating files:  38% (5067/13142)
+Updating files:  39% (5126/13142)
+Updating files:  40% (5257/13142)
+Updating files:  41% (5389/13142)
+Updating files:  42% (5520/13142)
+Updating files:  43% (5652/13142)
+Updating files:  44% (5783/13142)
+Updating files:  45% (5914/13142)
+Updating files:  46% (6046/13142)
+Updating files:  47% (6177/13142)
+Updating files:  48% (6309/13142)
+Updating files:  49% (6440/13142)
+Updating files:  50% (6571/13142)
+Updating files:  51% (6703/13142)
+Updating files:  52% (6834/13142)
+Updating files:  53% (6966/13142)
+Updating files:  54% (7097/13142)
+Updating files:  55% (7229/13142)
+Updating files:  56% (7360/13142)
+Updating files:  57% (7491/13142)
+Updating files:  58% (7623/13142)
+Updating files:  59% (7754/13142)
+Updating files:  60% (7886/13142)
+Updating files:  61% (8017/13142)
+Updating files:  62% (8149/13142)
+Updating files:  63% (8280/13142)
+Updating files:  64% (8411/13142)
+Updating files:  65% (8543/13142)
+Updating files:  66% (8674/13142)
+Updating files:  67% (8806/13142)
+Updating files:  68% (8937/13142)
+Updating files:  69% (9068/13142)
+Updating files:  70% (9200/13142)
+Updating files:  71% (9331/13142)
+Updating files:  72% (9463/13142)
+Updating files:  73% (9594/13142)
+Updating files:  74% (9726/13142)
+Updating files:  75% (9857/13142)
+Updating files:  76% (9988/13142)
+Updating files:  77% (10120/13142)
+Updating files:  78% (10251/13142)
+Updating files:  79% (10383/13142)
+Updating files:  80% (10514/13142)
+Updating files:  81% (10646/13142)
+Updating files:  82% (10777/13142)
+Updating files:  83% (10908/13142)
+Updating files:  84% (11040/13142)
+Updating files:  85% (11171/13142)
+Updating files:  86% (11303/13142)
+Updating files:  87% (11434/13142)
+Updating files:  88% (11565/13142)
+Updating files:  89% (11697/13142)
+Updating files:  90% (11828/13142)
+Updating files:  91% (11960/13142)
+Updating files:  92% (12091/13142)
+Updating files:  92% (12201/13142)
+Updating files:  93% (12223/13142)
+Updating files:  94% (12354/13142)
+Updating files:  95% (12485/13142)
+Updating files:  96% (12617/13142)
+Updating files:  97% (12748/13142)
+Updating files:  98% (12880/13142)
+Updating files:  99% (13011/13142)
+Updating files: 100% (13142/13142)
+Updating files: 100% (13142/13142), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+0fe5fbcfa90def23c9c3177b067052f4d8f51096
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E92Rh", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3XdC"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E92cq", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3Xfj"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E92c0", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3XiG"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FXowU", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3XkB"}}}}
+
+$ gh pr update-branch 717 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/pr-steward-resolved-thread-proof-semantics-001
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/pr-steward-resolved-thread-proof-semantics-001 -> FETCH_HEAD
+
+$ git reset --hard origin/codex/pr-steward-resolved-thread-proof-semantics-001
+exit=0
+--- stdout ---
+HEAD is now at 0fe5fbcfa proof(governance): update head/base SHA after rebase
+
+$ git diff --name-only --diff-filter=ACMR ef0c30bf43ba01f55f9247b9d755b57bccaa74b5...HEAD
+exit=0
+--- stdout ---
+docs/ops/embedded-audit.md
+docs/ops/pr-acceptance.md
+docs/ops/pr-steward.md
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_OUTPUT.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_REPORT.md
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/CHANGED_FILES.txt
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/DIFF_STAT.txt
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/GIT_STATE.md
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/VALIDATION_OUTPUT.md
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/ARTIFACT_INDEX.md
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/AUDITOR_REPORT.md
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/CHANGED_FILES.txt
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/DIFF_STAT.txt
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/GIT_STATE.md
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/MANIFEST.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/SUMMARY.md
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/VALIDATION_OUTPUT.md
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/AUDITOR_OUTPUT.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/CI_TRIAGE.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/MERGE_READINESS.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/PR_STATE_SNAPSHOT.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/PR_STEWARD_SUMMARY.md
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/REVIEW_ITEM_LEDGER.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/THREAD_DISPOSITIONS.json
+schemas/pr_steward/merge_readiness.schema.json
+schemas/pr_steward/pr_state_snapshot.schema.json
+task-packets/generated/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001.json
+tests/fixtures/pr_steward/embedded_audit_pass_with_risks_nonblocking/harvest.json
+tests/fixtures/pr_steward/outdated_resolved_thread_nonblocking/harvest.json
+tests/fixtures/pr_steward/pr713_like_resolved_threads_with_pass_with_risks_audit/harvest.json
+tests/fixtures/pr_steward/proof_current_exact_head_ready/harvest.json
+tests/fixtures/pr_steward/proof_self_reference_exception_ready_or_needs_supervisor/harvest.json
+tests/fixtures/pr_steward/proof_self_reference_exception_rejects_runtime_changes/harvest.json
+tests/fixtures/pr_steward/raw_review_comment_without_thread_still_blocks/harvest.json
+tests/fixtures/pr_steward/resolved_thread_clears_review_item/harvest.json
+tests/fixtures/pr_steward/unresolved_thread_still_blocks/harvest.json
+tests/pr_steward/test_intake.py
+tools/pr_steward/classifier.py
+tools/pr_steward/collector.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files docs/ops/embedded-audit.md docs/ops/pr-acceptance.md docs/ops/pr-steward.md proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_OUTPUT.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/AUDITOR_REPORT.md proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/CHANGED_FILES.txt proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/DIFF_STAT.txt proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/GIT_STATE.md proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/VALIDATION_OUTPUT.md proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/ARTIFACT_INDEX.md proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/AUDITOR_REPORT.md proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/CHANGED_FILES.txt proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/DIFF_STAT.txt proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/GIT_STATE.md proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/MANIFEST.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/SUMMARY.md proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/VALIDATION_OUTPUT.md proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/AUDITOR_OUTPUT.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/CI_TRIAGE.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/MERGE_READINESS.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/PR_STATE_SNAPSHOT.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/PR_STEWARD_SUMMARY.md proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/REVIEW_ITEM_LEDGER.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/artifacts/THREAD_DISPOSITIONS.json schemas/pr_steward/merge_readiness.schema.json schemas/pr_steward/pr_state_snapshot.schema.json task-packets/generated/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001.json tests/fixtures/pr_steward/embedded_audit_pass_with_risks_nonblocking/harvest.json tests/fixtures/pr_steward/outdated_resolved_thread_nonblocking/harvest.json tests/fixtures/pr_steward/pr713_like_resolved_threads_with_pass_with_risks_audit/harvest.json tests/fixtures/pr_steward/proof_current_exact_head_ready/harvest.json tests/fixtures/pr_steward/proof_self_reference_exception_ready_or_needs_supervisor/harvest.json tests/fixtures/pr_steward/proof_self_reference_exception_rejects_runtime_changes/harvest.json tests/fixtures/pr_steward/raw_review_comment_without_thread_still_blocks/harvest.json tests/fixtures/pr_steward/resolved_thread_clears_review_item/harvest.json tests/fixtures/pr_steward/unresolved_thread_still_blocks/harvest.json tests/pr_steward/test_intake.py tools/pr_steward/classifier.py tools/pr_steward/collector.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/ops/embedded-audit.md docs/ops/pr-acceptance.md docs/ops/pr-steward.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/ops/embedded-audit.md docs/ops/pr-acceptance.md docs/ops/pr-steward.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/ops/embedded-audit.md docs/ops/pr-acceptance.md docs/ops/pr-steward.md
+exit=0
+--- stdout ---
+docs-hygiene: total=3 active=3 quarantine=0 violations=0
+docs-hygiene: checked 3 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/ops/embedded-audit.md docs/ops/pr-acceptance.md docs/ops/pr-steward.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=3 active=3 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 3 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E92Rh", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3XsW"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986E92Rh"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986E92Rh","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E92cq", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3Xu5"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986E92cq"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986E92cq","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E92c0", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3Xyq"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986E92c0"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986E92c0","isResolved":true}}}}
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-717-20260528_103339
+exit=0
+
+$ gh pr merge 717 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#717 is not mergeable: the base branch policy prohibits the merge.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+
