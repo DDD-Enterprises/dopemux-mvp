@@ -113,6 +113,8 @@ mcp-proxy-config.*
 # Keep pyproject.toml and MANIFEST.in for build
 !pyproject.toml
 !MANIFEST.in
+# README.md is required by pyproject.toml (readme = "README.md") for pip install
+!README.md
 
 # Scripts and tools (not needed in container)
 scripts/test*.sh

@@ -106,7 +106,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label={`Estimated duration: ${task.estimatedMinutes} minutes`}');
   expect(content).toContain('aria-label={`Energy requirement: ${task.energyRequired}`}');
   expect(content).toContain('aria-label={`Estimated finish time: ${taskFinishTimes[task.id]}`}');
-  expect(content).toContain('cursor: \'help\'');
+  expect(content).toContain("cursor: 'help'");
   expect(content).toContain('&:focus-visible');
 
   // Verify copy task title button
