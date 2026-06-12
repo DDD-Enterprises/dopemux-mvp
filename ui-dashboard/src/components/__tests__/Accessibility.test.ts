@@ -121,7 +121,7 @@ test('TaskSequencer.tsx implements overtime visual cues', () => {
   expect(content).toContain('const isOvertime = useMemo(() =>');
   expect(content).toContain('color: isOvertime ? brandTokens.colors.gremlinPink : \'inherit\'');
   expect(content).toContain('OVERTIME +{overtimeMinutes}M');
-  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*isNearOvertime\s*\?\s*brandTokens\.colors\.giltEdge\s*:\s*brandTokens\.colors\.saintGold,\s*0\.1\s*\)/);
+  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*progressPercent\s*>\s*80\s*\?\s*brandTokens\.colors\.giltEdge\s*:\s*brandTokens\.colors\.saintGold,\s*0\.1\s*\)/);
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
