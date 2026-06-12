@@ -1,5 +1,6 @@
 import { Avatar, Box, Chip, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { Eye, Zap } from 'lucide-react';
 
 import { brandTokens, statusStyles } from '../theme';
 
@@ -38,9 +39,12 @@ export default function TeamDashboard() {
         background: brandTokens.gradients.focusCard,
       }}
     >
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Team Signal Board
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+        <Zap size={20} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
+        <Typography variant="h6">
+          Team Signal Board
+        </Typography>
+      </Box>
       <Tooltip title={`Average cognitive load across all team members: ${teamAverageLoad}%`} arrow>
         <LinearProgress
           aria-label="Team Average Cognitive Load Percentage"
@@ -116,18 +120,36 @@ export default function TeamDashboard() {
                 <Chip
                   size="small"
                   tabIndex={0}
+                  icon={<Zap size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />}
                   label={`Energy ${member.energy}%`}
                   aria-label={`${member.name}'s current energy level: ${member.energy}%`}
-                  sx={{ cursor: 'help' }}
+                  sx={{
+                    cursor: 'help',
+                    transition: 'all 0.2s ease',
+                    '&:hover, &:focus-visible': {
+                      borderColor: brandTokens.colors.serumMint,
+                      boxShadow: `0 0 8px ${alpha(brandTokens.colors.serumMint, 0.3)}`,
+                      transform: 'translateY(-1px)',
+                    }
+                  }}
                 />
               </Tooltip>
               <Tooltip title="Current attention focus" arrow>
                 <Chip
                   size="small"
                   tabIndex={0}
+                  icon={<Eye size={14} color={brandTokens.colors.ritualCyan} aria-hidden="true" />}
                   label={`Attention ${member.attention}%`}
                   aria-label={`${member.name}'s current attention focus: ${member.attention}%`}
-                  sx={{ cursor: 'help' }}
+                  sx={{
+                    cursor: 'help',
+                    transition: 'all 0.2s ease',
+                    '&:hover, &:focus-visible': {
+                      borderColor: brandTokens.colors.ritualCyan,
+                      boxShadow: `0 0 8px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
+                      transform: 'translateY(-1px)',
+                    }
+                  }}
                 />
               </Tooltip>
             </Box>
