@@ -1,5 +1,6 @@
 import { Box, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { TrendingUp } from 'lucide-react';
 
 import { brandTokens } from '../theme';
 
@@ -36,9 +37,12 @@ export default function PredictionPanel({ prediction }: PredictionPanelProps) {
           },
         }}
       >
-        <Typography variant="overline" color="text.secondary">
-          15-minute forecast
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 0.5 }}>
+          <TrendingUp size={18} color={brandTokens.colors.giltEdge} aria-hidden="true" />
+          <Typography variant="overline" color="text.secondary">
+            15-minute forecast
+          </Typography>
+        </Box>
         <Typography variant="h3" sx={{ color: brandTokens.colors.giltEdge, my: 1 }}>
           {hasPrediction ? `${value}%` : 'N/A'}
         </Typography>
