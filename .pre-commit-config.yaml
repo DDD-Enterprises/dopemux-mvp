@@ -129,6 +129,7 @@ repos:
               if [[ "$normalized" =~ /\.taskx/ ]]; then continue; fi
               if [[ "$normalized" =~ /\.vibe/ ]]; then continue; fi
               if [[ "$normalized" =~ /\.Jules/ ]]; then continue; fi
+              if [[ "$normalized" =~ /\.opencode/ ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.conport/|conport_export/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.github/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(examples/) ]]; then continue; fi
