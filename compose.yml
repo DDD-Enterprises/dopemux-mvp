@@ -298,8 +298,12 @@ services:
       dockerfile: docker/mcp-servers/pal-stdio/Dockerfile
     container_name: mcp-pal-stdio
     restart: unless-stopped
-    # stdio server is PID 1; keep stdin open or it reads EOF and restart-loops
+    # Keep stdin open so the MCP stdio server.py does not read EOF and exit
+    # immediately under `docker compose up -d` (which, with restart:
+    # unless-stopped, would otherwise become a restart loop). The Docker MCP
+    # Toolkit execs into the persistent container for the actual stdio session.
     stdin_open: true
+    tty: true
     networks:
       - dopemux-network
     environment:
