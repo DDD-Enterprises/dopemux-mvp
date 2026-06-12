@@ -5,7 +5,7 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-04-02'
-last_review: '2026-04-02'
+last_review: '2026-06-10'
 next_review: '2026-07-01'
 prelude: Truth Interfaces (reference) for dopemux documentation and developer workflows.
 ---
@@ -132,10 +132,10 @@ Method:
 ### `working-memory-assistant` MCP logic
 
 - Authority:
-  - `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/mcp/server.py`
+  - `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/wma_mcp/server.py` (formerly `mcp/server.py`; renamed to avoid shadowing the pip-installed `mcp` SDK)
 - Observed state:
   - tool logic exists
-  - runnable MCP transport/bootstrap not confirmed in this pass
+  - runnable MCP transport/bootstrap not confirmed in this pass (note: dope_memory_main.py now serves `/mcp` streamable HTTP as of PR #857 2026-06-10)
 
 ## HTTP APIs
 

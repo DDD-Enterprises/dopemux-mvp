@@ -38,6 +38,7 @@ ENVELOPE_FIELDS = (
     "dirty",
     "source_system",
     "authority_label",
+    "untrusted",
     "status",
     "freshness",
     "limitations",
@@ -59,12 +60,22 @@ def build_envelope(
     head_sha: Optional[str] = None,
     dirty: Optional[bool] = None,
     freshness: Optional[str] = None,
+    untrusted: bool = True,
     limitations: Optional[Iterable[str]] = None,
     warnings: Optional[Iterable[str]] = None,
     redactions: Optional[Iterable[str]] = None,
     blocked_reasons: Optional[Iterable[str]] = None,
 ) -> dict:
-    """Return a canonical envelope dict with every field always present."""
+    """Return a canonical envelope dict with every field always present.
+
+    ``untrusted`` marks whether ``data`` carries content retrieved from outside
+    the facade's own trust boundary (a backend service, the filesystem, or git).
+    It defaults to ``True`` (fail-closed): every payload is treated as untrusted
+    unless a tool explicitly asserts it is facade-authored. The client must never
+    interpret ``untrusted`` content as instructions (prompt-injection control;
+    see SECURITY_MODEL.md §5). Content is additionally confined to ``data`` and
+    never merged into facade-authored fields (limitations/warnings/blocked).
+    """
     if status not in (OK, PARTIAL, BLOCKED):
         raise ValueError(f"invalid status: {status!r}")
     return {
@@ -74,6 +85,7 @@ def build_envelope(
         "dirty": dirty,
         "source_system": source_system,
         "authority_label": authority_label,
+        "untrusted": bool(untrusted),
         "status": status,
         "freshness": freshness,
         "limitations": list(limitations or []),
