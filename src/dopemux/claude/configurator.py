@@ -34,7 +34,11 @@ class ClaudeConfigurator:
         self.config_manager = config_manager
 
     def setup_project_config(
-        self, project_path: Path, template: str = "python", force: bool = False, role: Optional[str] = None
+        self,
+        project_path: Path,
+        template: str = "python",
+        force: bool = False,
+        role: Optional[str] = None,
     ) -> None:
         """
         Setup complete project configuration for Dopemux.
@@ -43,7 +47,10 @@ class ClaudeConfigurator:
             project_path: Target project directory
             template: Project template type
             force: Overwrite existing configuration
-            role: Optional active role/persona
+            role: Optional role name (e.g. "developer"). When provided, only
+                ensures .claude/ and .dopemux/ directories exist; doctrine
+                files are NOT regenerated to avoid clobbering existing content.
+                Persona injection is a separate later increment (out of scope here).
         """
         claude_dir = project_path / ".claude"
         dopemux_dir = project_path / ".dopemux"
@@ -58,7 +65,7 @@ class ClaudeConfigurator:
             return
 
         # Generate Claude configuration files
-        self._create_claude_md(claude_dir, template, role=role)
+        self._create_claude_md(claude_dir, template)
         self._create_session_md(claude_dir, template)
         self._create_context_md(claude_dir, template)
         self._create_llms_md(claude_dir, template)
@@ -73,7 +80,7 @@ class ClaudeConfigurator:
             f"[success]✓ Claude configuration setup complete for {template} project[/success]"
         )
 
-    def _create_claude_md(self, claude_dir: Path, template: str, role: Optional[str] = None) -> None:
+    def _create_claude_md(self, claude_dir: Path, template: str) -> None:
         """Create project-specific claude.md file."""
         config = self.config_manager.load_config()
         config.project_templates.get(template, {})
@@ -143,14 +150,6 @@ You are working on a **{template} project** with Dopemux ADHD optimizations enab
 **Goal**: Maintain productivity while respecting neurodivergent needs
 **Style**: Supportive, clear, action-oriented
 """
-
-        if role:
-            from .instruction_manager import InstructionManager
-            project_root = claude_dir.parent
-            manager = InstructionManager(project_root)
-            role_instructions = manager.assemble_instructions(role=role, project_type=template)
-            if role_instructions:
-                content += f"\n\n## Active Persona & Guidelines\n{role_instructions}\n"
 
         (claude_dir / "claude.md").write_text(content)
 
