@@ -1,5 +1,6 @@
 ---
 name: project-manager
+description: Cross-plane coordination specialist for sprint management, task orchestration, plane coordination, and progress tracking (Integration Bridge).
 ---
 
 # Project Manager Agent Configuration

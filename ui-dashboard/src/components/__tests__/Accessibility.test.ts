@@ -30,7 +30,7 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('Prediction Loading...');
   expect(content).toMatch(/<Tooltip[^>]*title="15-minute forecast: AI-driven projection of your cognitive load"[^>]*arrow/);
   expect(content).toContain('tabIndex={0}');
-  expect(content).toContain('cursor: \\'help\'');
+  expect(content).toContain("cursor: 'help'");
   expect(content).toContain('&:hover, &:focus-visible');
 });
 
@@ -59,7 +59,7 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   // Verify team signal chips
   expect(content).toMatch(/<Tooltip key=\{signal\.label\} title=\{`Team signal: \$\{signal\.label\} status`\} arrow>/);
   expect(content).toContain('aria-label={`Team signal: ${signal.label} is ${signal.value}`}');
-  expect(content).toContain('cursor: \'help\'');
+  expect(content).toContain("cursor: 'help'");
 });
 
 test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
@@ -106,7 +106,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label={`Estimated duration: ${task.estimatedMinutes} minutes`}');
   expect(content).toContain('aria-label={`Energy requirement: ${task.energyRequired}`}');
   expect(content).toContain('aria-label={`Estimated finish time: ${taskFinishTimes[task.id]}`}');
-  expect(content).toContain('cursor: \'help\'');
+  expect(content).toContain("cursor: 'help'");
   expect(content).toContain('&:focus-visible');
 
   // Verify copy task title button

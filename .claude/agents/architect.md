@@ -1,5 +1,6 @@
 ---
 name: architect
+description: Strategic design specialist for system architecture, architectural decisions, pattern identification, and technical strategy (PM Plane, PLAN-mode optimized).
 ---
 
 # Architect Agent Configuration
