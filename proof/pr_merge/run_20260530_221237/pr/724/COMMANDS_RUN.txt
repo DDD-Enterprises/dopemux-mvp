@@ -1,0 +1,137 @@
+$ git fetch origin pull/724/head:prmerge/20260530_221237-724
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/724/head -> prmerge/20260530_221237-724
+
+$ git worktree add /tmp/dopemux-pr-merge-724-20260530_221237 prmerge/20260530_221237-724
+exit=0
+--- stdout ---
+HEAD is now at 9d9fb9e84 Merge remote-tracking branch 'origin/main' into codex/tp-cs-101-plugin-path-b
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_221237-724')
+Updating files:  17% (2425/13517)
+Updating files:  18% (2434/13517)
+Updating files:  19% (2569/13517)
+Updating files:  20% (2704/13517)
+Updating files:  21% (2839/13517)
+Updating files:  22% (2974/13517)
+Updating files:  23% (3109/13517)
+Updating files:  24% (3245/13517)
+Updating files:  25% (3380/13517)
+Updating files:  26% (3515/13517)
+Updating files:  27% (3650/13517)
+Updating files:  28% (3785/13517)
+Updating files:  29% (3920/13517)
+Updating files:  30% (4056/13517)
+Updating files:  31% (4191/13517)
+Updating files:  32% (4326/13517)
+Updating files:  33% (4461/13517)
+Updating files:  34% (4596/13517)
+Updating files:  35% (4731/13517)
+Updating files:  36% (4867/13517)
+Updating files:  37% (5002/13517)
+Updating files:  38% (5137/13517)
+Updating files:  39% (5272/13517)
+Updating files:  40% (5407/13517)
+Updating files:  41% (5542/13517)
+Updating files:  42% (5678/13517)
+Updating files:  43% (5813/13517)
+Updating files:  44% (5948/13517)
+Updating files:  45% (6083/13517)
+Updating files:  46% (6218/13517)
+Updating files:  47% (6353/13517)
+Updating files:  48% (6489/13517)
+Updating files:  49% (6624/13517)
+Updating files:  50% (6759/13517)
+Updating files:  51% (6894/13517)
+Updating files:  52% (7029/13517)
+Updating files:  53% (7165/13517)
+Updating files:  54% (7300/13517)
+Updating files:  55% (7435/13517)
+Updating files:  56% (7570/13517)
+Updating files:  57% (7705/13517)
+Updating files:  58% (7840/13517)
+Updating files:  59% (7976/13517)
+Updating files:  60% (8111/13517)
+Updating files:  61% (8246/13517)
+Updating files:  62% (8381/13517)
+Updating files:  63% (8516/13517)
+Updating files:  63% (8617/13517)
+Updating files:  64% (8651/13517)
+Updating files:  65% (8787/13517)
+Updating files:  66% (8922/13517)
+Updating files:  67% (9057/13517)
+Updating files:  68% (9192/13517)
+Updating files:  69% (9327/13517)
+Updating files:  70% (9462/13517)
+Updating files:  71% (9598/13517)
+Updating files:  72% (9733/13517)
+Updating files:  73% (9868/13517)
+Updating files:  74% (10003/13517)
+Updating files:  75% (10138/13517)
+Updating files:  76% (10273/13517)
+Updating files:  77% (10409/13517)
+Updating files:  78% (10544/13517)
+Updating files:  79% (10679/13517)
+Updating files:  80% (10814/13517)
+Updating files:  81% (10949/13517)
+Updating files:  82% (11084/13517)
+Updating files:  83% (11220/13517)
+Updating files:  84% (11355/13517)
+Updating files:  85% (11490/13517)
+Updating files:  86% (11625/13517)
+Updating files:  87% (11760/13517)
+Updating files:  88% (11895/13517)
+Updating files:  89% (12031/13517)
+Updating files:  90% (12166/13517)
+Updating files:  91% (12301/13517)
+Updating files:  92% (12436/13517)
+Updating files:  93% (12571/13517)
+Updating files:  94% (12706/13517)
+Updating files:  95% (12842/13517)
+Updating files:  96% (12977/13517)
+Updating files:  97% (13112/13517)
+Updating files:  98% (13247/13517)
+Updating files:  99% (13382/13517)
+Updating files: 100% (13517/13517)
+Updating files: 100% (13517/13517), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+9d9fb9e8415405d55e2c0953f41dde6d185a6872
+
+$ gh pr update-branch 724 --rebase
+exit=1
+--- stderr ---
+GraphQL: rebase conflict between base and head (updatePullRequestBranch)
+
+$ git fetch origin main
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                main       -> FETCH_HEAD
+
+$ git rebase origin/main
+exit=1
+--- stdout ---
+Auto-merging src/dopemux/orchestrator/ui/data_sources.py
+CONFLICT (content): Merge conflict in src/dopemux/orchestrator/ui/data_sources.py
+--- stderr ---
+Rebasing (1/14)
+Rebasing (2/14)
+Rebasing (3/14)
+Rebasing (4/14)
+error: could not apply 33b60785e... fix(orchestrator): implement get_panel_data and get_all_panels to resolve TUI data source test failures
+hint: Resolve all conflicts manually, mark them as resolved with
+hint: "git add/rm <conflicted_files>", then run "git rebase --continue".
+hint: You can instead skip this commit: run "git rebase --skip".
+hint: To abort and get back to the state before "git rebase", run "git rebase --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Recorded preimage for 'src/dopemux/orchestrator/ui/data_sources.py'
+Could not apply 33b60785e... # fix(orchestrator): implement get_panel_data and get_all_panels to resolve TUI data source test failures
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-724-20260530_221237
+exit=0
+

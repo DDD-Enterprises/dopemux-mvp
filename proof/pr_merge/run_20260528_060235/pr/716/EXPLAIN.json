@@ -1,0 +1,140 @@
+{
+  "why_blocked": [
+    "4 active unresolved review threads remain.",
+    "Required checks are failing.",
+    "Local validation is required before merge readiness can be declared."
+  ],
+  "evidence": [
+    {
+      "kind": "blocker",
+      "finding_type": "active_thread",
+      "message": "4 active unresolved review threads remain.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "active_threads": 4
+      },
+      "source": "github_protection_review",
+      "override": null
+    },
+    {
+      "kind": "blocker",
+      "finding_type": "required_check_failed",
+      "message": "Required checks are failing.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "checks_total": 21,
+        "checks_success": 19,
+        "checks_failure": 2,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 2,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)",
+            "ci-summary"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [],
+        "blocker_types": [
+          "required_check_failed"
+        ],
+        "warning_types": []
+      },
+      "source": "github_protection_review",
+      "override": null
+    },
+    {
+      "kind": "blocker",
+      "finding_type": "validation_not_executed",
+      "message": "Local validation is required before merge readiness can be declared.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "validation_status": "not_executed"
+      },
+      "source": "local_validation",
+      "override": null
+    },
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "diff_size": 20261
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "next_action": "clear blockers",
+  "changed_since_prior_scan": [],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "diff_size": 20261
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 22931.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ]
+}

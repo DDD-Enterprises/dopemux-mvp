@@ -1,0 +1,111 @@
+$ git fetch origin pull/726/head:prmerge/20260530_172644-726
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/726/head -> prmerge/20260530_172644-726
+
+$ git worktree add /tmp/dopemux-pr-merge-726-20260530_172644 prmerge/20260530_172644-726
+exit=0
+--- stdout ---
+HEAD is now at 5566f0914 🎨 Palette: UX polish and CI pipeline remediation
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_172644-726')
+Updating files:  25% (3440/13505)
+Updating files:  26% (3512/13505)
+Updating files:  27% (3647/13505)
+Updating files:  28% (3782/13505)
+Updating files:  29% (3917/13505)
+Updating files:  30% (4052/13505)
+Updating files:  31% (4187/13505)
+Updating files:  32% (4322/13505)
+Updating files:  33% (4457/13505)
+Updating files:  34% (4592/13505)
+Updating files:  35% (4727/13505)
+Updating files:  36% (4862/13505)
+Updating files:  37% (4997/13505)
+Updating files:  38% (5132/13505)
+Updating files:  39% (5267/13505)
+Updating files:  40% (5402/13505)
+Updating files:  41% (5538/13505)
+Updating files:  42% (5673/13505)
+Updating files:  43% (5808/13505)
+Updating files:  44% (5943/13505)
+Updating files:  45% (6078/13505)
+Updating files:  46% (6213/13505)
+Updating files:  47% (6348/13505)
+Updating files:  48% (6483/13505)
+Updating files:  49% (6618/13505)
+Updating files:  50% (6753/13505)
+Updating files:  51% (6888/13505)
+Updating files:  52% (7023/13505)
+Updating files:  53% (7158/13505)
+Updating files:  54% (7293/13505)
+Updating files:  55% (7428/13505)
+Updating files:  56% (7563/13505)
+Updating files:  57% (7698/13505)
+Updating files:  58% (7833/13505)
+Updating files:  59% (7968/13505)
+Updating files:  60% (8103/13505)
+Updating files:  61% (8239/13505)
+Updating files:  62% (8374/13505)
+Updating files:  63% (8509/13505)
+Updating files:  64% (8644/13505)
+Updating files:  65% (8779/13505)
+Updating files:  66% (8914/13505)
+Updating files:  67% (9049/13505)
+Updating files:  68% (9184/13505)
+Updating files:  68% (9301/13505)
+Updating files:  69% (9319/13505)
+Updating files:  70% (9454/13505)
+Updating files:  71% (9589/13505)
+Updating files:  72% (9724/13505)
+Updating files:  73% (9859/13505)
+Updating files:  74% (9994/13505)
+Updating files:  75% (10129/13505)
+Updating files:  76% (10264/13505)
+Updating files:  77% (10399/13505)
+Updating files:  78% (10534/13505)
+Updating files:  79% (10669/13505)
+Updating files:  80% (10804/13505)
+Updating files:  81% (10940/13505)
+Updating files:  82% (11075/13505)
+Updating files:  83% (11210/13505)
+Updating files:  84% (11345/13505)
+Updating files:  85% (11480/13505)
+Updating files:  86% (11615/13505)
+Updating files:  87% (11750/13505)
+Updating files:  88% (11885/13505)
+Updating files:  89% (12020/13505)
+Updating files:  90% (12155/13505)
+Updating files:  91% (12290/13505)
+Updating files:  92% (12425/13505)
+Updating files:  93% (12560/13505)
+Updating files:  94% (12695/13505)
+Updating files:  95% (12830/13505)
+Updating files:  96% (12965/13505)
+Updating files:  97% (13100/13505)
+Updating files:  98% (13235/13505)
+Updating files:  99% (13370/13505)
+Updating files: 100% (13505/13505)
+Updating files: 100% (13505/13505), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+5566f09143e0908ce6eb9ffb47f67030e990ab8e
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986F0AGm", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987GdF73"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986F0Ak_", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987GdF8I"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986F0ftx", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987GdF8U"}}}}
+

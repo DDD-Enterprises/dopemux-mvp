@@ -1,0 +1,195 @@
+$ git fetch origin pull/712/head:prmerge/20260528_103339-712
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/712/head -> prmerge/20260528_103339-712
+
+$ git worktree add /tmp/dopemux-pr-merge-712-20260528_103339 prmerge/20260528_103339-712
+exit=0
+--- stdout ---
+HEAD is now at 2fead589b proof(rte): update head/base SHA after rebase
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260528_103339-712')
+Updating files:  37% (4913/13119)
+Updating files:  38% (4986/13119)
+Updating files:  39% (5117/13119)
+Updating files:  40% (5248/13119)
+Updating files:  41% (5379/13119)
+Updating files:  42% (5510/13119)
+Updating files:  43% (5642/13119)
+Updating files:  44% (5773/13119)
+Updating files:  45% (5904/13119)
+Updating files:  46% (6035/13119)
+Updating files:  47% (6166/13119)
+Updating files:  48% (6298/13119)
+Updating files:  49% (6429/13119)
+Updating files:  50% (6560/13119)
+Updating files:  51% (6691/13119)
+Updating files:  52% (6822/13119)
+Updating files:  53% (6954/13119)
+Updating files:  54% (7085/13119)
+Updating files:  55% (7216/13119)
+Updating files:  56% (7347/13119)
+Updating files:  57% (7478/13119)
+Updating files:  58% (7610/13119)
+Updating files:  59% (7741/13119)
+Updating files:  60% (7872/13119)
+Updating files:  61% (8003/13119)
+Updating files:  62% (8134/13119)
+Updating files:  63% (8265/13119)
+Updating files:  64% (8397/13119)
+Updating files:  65% (8528/13119)
+Updating files:  66% (8659/13119)
+Updating files:  67% (8790/13119)
+Updating files:  68% (8921/13119)
+Updating files:  69% (9053/13119)
+Updating files:  70% (9184/13119)
+Updating files:  71% (9315/13119)
+Updating files:  72% (9446/13119)
+Updating files:  73% (9577/13119)
+Updating files:  74% (9709/13119)
+Updating files:  75% (9840/13119)
+Updating files:  76% (9971/13119)
+Updating files:  77% (10102/13119)
+Updating files:  78% (10233/13119)
+Updating files:  79% (10365/13119)
+Updating files:  80% (10496/13119)
+Updating files:  81% (10627/13119)
+Updating files:  82% (10758/13119)
+Updating files:  83% (10889/13119)
+Updating files:  84% (11020/13119)
+Updating files:  85% (11152/13119)
+Updating files:  86% (11283/13119)
+Updating files:  87% (11414/13119)
+Updating files:  88% (11545/13119)
+Updating files:  88% (11562/13119)
+Updating files:  89% (11676/13119)
+Updating files:  90% (11808/13119)
+Updating files:  91% (11939/13119)
+Updating files:  92% (12070/13119)
+Updating files:  93% (12201/13119)
+Updating files:  94% (12332/13119)
+Updating files:  95% (12464/13119)
+Updating files:  96% (12595/13119)
+Updating files:  97% (12726/13119)
+Updating files:  98% (12857/13119)
+Updating files:  99% (12988/13119)
+Updating files: 100% (13119/13119)
+Updating files: 100% (13119/13119), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+2fead589bfb10d4dc04c843b9d66f4aa9557e0e0
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E8nnL", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3XCG"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FXm8e", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3XEk"}}}}
+
+$ gh pr update-branch 712 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/rte-costprofile-f-verify-002
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/rte-costprofile-f-verify-002 -> FETCH_HEAD
+
+$ git reset --hard origin/codex/rte-costprofile-f-verify-002
+exit=0
+--- stdout ---
+HEAD is now at 2fead589b proof(rte): update head/base SHA after rebase
+
+$ git diff --name-only --diff-filter=ACMR ef0c30bf43ba01f55f9247b9d755b57bccaa74b5...HEAD
+exit=0
+--- stdout ---
+.gitignore
+proof/rte-cost-profile-redesign/.DS_Store
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/SERIES_VERIFICATION_REPORT.md
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_codereview.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_precommit.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pytest_full_run.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/sha256sums.txt
+task-packets/INDEX.md
+task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .gitignore proof/rte-cost-profile-redesign/.DS_Store proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/SERIES_VERIFICATION_REPORT.md proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/bounded_lane_print_config.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_codereview.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pal_precommit.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/pytest_full_run.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/route_readiness_probe.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/sha256sums.txt task-packets/INDEX.md task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py task-packets/INDEX.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E8nnL", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3XNN"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986E8nnL"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986E8nnL","isResolved":true}}}}
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-712-20260528_103339
+exit=0
+
+$ gh pr merge 712 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#712 is not mergeable: the base branch policy prohibits the merge.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+

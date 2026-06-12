@@ -1,0 +1,516 @@
+{
+  "pr_id": "698",
+  "cycle_id": "863fdd95-c64b-4faa-beed-2724cf314e46",
+  "state_before": {
+    "run_id": "20260527_055709",
+    "pr_state": {
+      "pr_id": 698,
+      "title": "verify(rte): cost-profile redesign series final verification (F)",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "claude/goofy-haibt-fc568e",
+      "head_ref": "codex/rte-costprofile-f-verify-001",
+      "ci_status": "SUCCESS",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "CLEAN",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-05-25T15:59:20Z",
+      "is_draft": true,
+      "auto_merge_enabled": false,
+      "additions": 2194,
+      "deletions": 22,
+      "changed_files": 10,
+      "unresolved_threads": 0,
+      "active_unresolved_threads": 0,
+      "outdated_unresolved_threads": 0,
+      "pr_class": "BLOCKED",
+      "risk_score": 2816.0,
+      "check_summary": {
+        "total": 16,
+        "success": 16,
+        "failure": 0,
+        "pending": 0,
+        "required_pending": 0,
+        "required_failure": 0,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "f1246ad7fe880014822f385d5c6295b9d40619c3",
+      "base_sha": "6ecb72de3c089867bcd64dd8302fb68ba8d10980"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase codex/rte-costprofile-f-verify-001 onto claude/goofy-haibt-fc568e",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "rebase_merge",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "698",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "All gates are green; rebase merge selected by default.",
+      "reason_code": "rebase_merge_ready"
+    },
+    "blockers": [
+      {
+        "type": "draft_pr",
+        "source": "github_protection_review",
+        "name": "Draft pull requests are blocked from merge.",
+        "details": null,
+        "metadata": {}
+      },
+      {
+        "type": "validation_not_executed",
+        "source": "local_validation",
+        "name": "Local validation is required before merge readiness can be declared.",
+        "details": null,
+        "metadata": {
+          "validation_status": "not_executed"
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "large_diff",
+        "message": "Large diff size may increase merge risk.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "diff_size": 2216
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "observations": [
+      {
+        "kind": "observation",
+        "finding_type": "high_risk_score",
+        "message": "PR has elevated risk score relative to queue.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "risk_score": 2816.0
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 16,
+          "checks_success": 16,
+          "checks_failure": 0,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "CLEAN",
+          "protection": {
+            "available": true,
+            "protected": false,
+            "branch": "claude/goofy-haibt-fc568e",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": false,
+            "required_status_checks": [],
+            "strict_status_checks": false,
+            "enforce_admins": false,
+            "required_linear_history": false
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [],
+          "blocker_types": [],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "not_executed",
+        "details": {
+          "status": "not_executed",
+          "required_for_merge_ready": true,
+          "passed": false,
+          "attempts": 0,
+          "remediation_applied": false,
+          "steps": [],
+          "input_fingerprint": null,
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "not_executed",
+      "required_for_merge_ready": true,
+      "passed": false,
+      "attempts": 0,
+      "remediation_applied": false,
+      "steps": [],
+      "input_fingerprint": null,
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [],
+    "fingerprint": {
+      "input_fingerprint": "26603cb277a53b8d1b5d5e166f279aafa8b7a55fd1104ffd31255091ff03d1d7",
+      "valid_for_sha": "f1246ad7fe880014822f385d5c6295b9d40619c3",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"Draft pull requests are blocked from merge.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"draft_pr\", \"message\": \"Draft pull requests are blocked from merge.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_not_executed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"not_executed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 2216}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 2216}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 2816.0}, \"source\": \"heuristics\", \"override\": null}]}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "READY"
+    ]
+  },
+  "state_after": {
+    "run_id": "20260527_055709",
+    "pr_state": {
+      "pr_id": 698,
+      "title": "verify(rte): cost-profile redesign series final verification (F)",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "claude/goofy-haibt-fc568e",
+      "head_ref": "codex/rte-costprofile-f-verify-001",
+      "ci_status": "SUCCESS",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "CLEAN",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-05-25T15:59:20Z",
+      "is_draft": true,
+      "auto_merge_enabled": false,
+      "additions": 2194,
+      "deletions": 22,
+      "changed_files": 10,
+      "unresolved_threads": 0,
+      "active_unresolved_threads": 0,
+      "outdated_unresolved_threads": 0,
+      "pr_class": "BLOCKED",
+      "risk_score": 2816.0,
+      "check_summary": {
+        "total": 16,
+        "success": 16,
+        "failure": 0,
+        "pending": 0,
+        "required_pending": 0,
+        "required_failure": 0,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "f1246ad7fe880014822f385d5c6295b9d40619c3",
+      "base_sha": "6ecb72de3c089867bcd64dd8302fb68ba8d10980"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase codex/rte-costprofile-f-verify-001 onto claude/goofy-haibt-fc568e",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "rebase_merge",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "698",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "All gates are green; rebase merge selected by default.",
+      "reason_code": "rebase_merge_ready"
+    },
+    "blockers": [
+      {
+        "type": "draft_pr",
+        "source": "github_protection_review",
+        "name": "Draft pull requests are blocked from merge.",
+        "details": null,
+        "metadata": {}
+      },
+      {
+        "type": "validation_not_executed",
+        "source": "local_validation",
+        "name": "Local validation is required before merge readiness can be declared.",
+        "details": null,
+        "metadata": {
+          "validation_status": "not_executed"
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "large_diff",
+        "message": "Large diff size may increase merge risk.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "diff_size": 2216
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "observations": [
+      {
+        "kind": "observation",
+        "finding_type": "high_risk_score",
+        "message": "PR has elevated risk score relative to queue.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "risk_score": 2816.0
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 16,
+          "checks_success": 16,
+          "checks_failure": 0,
+          "checks_pending": 0,
+          "required_checks_pending": 0,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "CLEAN",
+          "protection": {
+            "available": true,
+            "protected": false,
+            "branch": "claude/goofy-haibt-fc568e",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": false,
+            "required_status_checks": [],
+            "strict_status_checks": false,
+            "enforce_admins": false,
+            "required_linear_history": false
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [],
+          "blocker_types": [],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "not_executed",
+        "details": {
+          "status": "not_executed",
+          "required_for_merge_ready": true,
+          "passed": false,
+          "attempts": 0,
+          "remediation_applied": false,
+          "steps": [],
+          "input_fingerprint": null,
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "not_executed",
+      "required_for_merge_ready": true,
+      "passed": false,
+      "attempts": 0,
+      "remediation_applied": false,
+      "steps": [],
+      "input_fingerprint": null,
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [],
+    "fingerprint": {
+      "input_fingerprint": "26603cb277a53b8d1b5d5e166f279aafa8b7a55fd1104ffd31255091ff03d1d7",
+      "valid_for_sha": "f1246ad7fe880014822f385d5c6295b9d40619c3",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"Draft pull requests are blocked from merge.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"draft_pr\", \"message\": \"Draft pull requests are blocked from merge.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_not_executed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"not_executed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 2216}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 2216}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 2816.0}, \"source\": \"heuristics\", \"override\": null}]}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "READY"
+    ],
+    "pr_id": "698",
+    "posture": "HOLD",
+    "refreshed_at": 1779887402.296267,
+    "recomputed_at": 1779887402.296288,
+    "last_event": {
+      "type": "cycle_complete"
+    },
+    "selected_tactic": "READY"
+  }
+}

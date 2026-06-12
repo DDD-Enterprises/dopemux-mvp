@@ -1,0 +1,423 @@
+{
+  "run_id": "20260524_063021",
+  "pr_state": {
+    "pr_id": 691,
+    "title": "feat(rte): model_map.yaml v3 (lane_defaults + tag_definitions + impact_class + 6 overrides) (E8)",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "codex/rte-costprofile-e4-finish-001",
+    "head_ref": "codex/rte-costprofile-e8-yaml-v3-001",
+    "ci_status": "SUCCESS",
+    "mergeable": "UNKNOWN",
+    "merge_state_status": "UNKNOWN",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-24T13:32:02Z",
+    "is_draft": false,
+    "auto_merge_enabled": false,
+    "additions": 13189,
+    "deletions": 1970,
+    "changed_files": 17,
+    "unresolved_threads": 6,
+    "active_unresolved_threads": 6,
+    "outdated_unresolved_threads": 0,
+    "pr_class": "COMMENTS_ONLY",
+    "risk_score": 15809.0,
+    "check_summary": {
+      "total": 0,
+      "success": 0,
+      "failure": 0,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 0,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "merge_ready",
+    "head_sha": "aa9630e22d56a57db5cce82386816f3744e395fe",
+    "base_sha": "b65d3da9888203bb7b25bc5437546703ed060eb5"
+  },
+  "lifecycle_state": "merge_ready",
+  "apply_actions": [
+    "rebase codex/rte-costprofile-e8-yaml-v3-001 onto codex/rte-costprofile-e4-finish-001",
+    "resolve review threads",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "rebase_merge",
+    "command": [
+      "gh",
+      "pr",
+      "merge",
+      "691",
+      "--rebase",
+      "--delete-branch"
+    ],
+    "reason": "All gates are green; rebase merge selected by default.",
+    "reason_code": "rebase_merge_ready"
+  },
+  "blockers": [],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "threads_resolved_locally",
+      "message": "GitHub shows 6 active threads, but they were resolved locally and validation passed.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "active_threads": 6
+      },
+      "source": "local_validation",
+      "override": null
+    },
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "diff_size": 15159
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 15809.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 0,
+        "checks_success": 0,
+        "checks_failure": 0,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "UNKNOWN",
+        "merge_state_status": "UNKNOWN",
+        "protection": {
+          "available": true,
+          "protected": false,
+          "branch": "codex/rte-costprofile-e4-finish-001",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": false,
+          "required_status_checks": [],
+          "strict_status_checks": false,
+          "enforce_admins": false,
+          "required_linear_history": false
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [],
+        "blocker_types": [],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "passed",
+      "details": {
+        "status": "passed",
+        "required_for_merge_ready": true,
+        "passed": true,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run --files proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/PROOF.json proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/sha256sums.txt services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/promptsets/v4/model_map.v2.yaml.bak services/repo-truth-extractor/promptsets/v4/model_map.yaml services/repo-truth-extractor/promptsets/v4/scripts/README.md services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py services/repo-truth-extractor/tests/test_model_map_v3_impact_class_enforcement.py services/repo-truth-extractor/tests/test_model_map_v3_loader.py services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py services/repo-truth-extractor/tests/test_phase_d_contract_map.py services/repo-truth-extractor/tests/test_phase_interaction.py task-packets/INDEX.md task-packets/generated/TP-RTE-COSTPROFILE-E8-YAML-V3-001.json",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-frontmatter-fix",
+            "command": "python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "All docs have valid frontmatter.\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-validator",
+            "command": "python scripts/docs_validator.py task-packets/INDEX.md",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-hygiene",
+            "command": "python scripts/check_docs_hygiene.py --check task-packets/INDEX.md",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "docs-hygiene: total=1 active=1 quarantine=0 violations=0\ndocs-hygiene: checked 1 files, OK\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-filename-hygiene",
+            "command": "python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0\ndocs-filename-hygiene: checked 1 files, OK\n",
+            "stderr": ""
+          },
+          {
+            "name": "root-hygiene",
+            "command": "python scripts/check_root_hygiene.py",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "root-hygiene: no candidate files to check\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "e632bc2095923f9792a765db11ae773ed4c4ff9e18170be4f352c17ffb0ed91d",
+          "valid_for_sha": "dfb3fb662981e67f1035fdf6e39380a129c43960",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "discovered",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        },
+        "failure_fingerprint": null
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "merge_readiness",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "passed",
+    "required_for_merge_ready": true,
+    "passed": true,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run --files proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/PROOF.json proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/sha256sums.txt services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/promptsets/v4/model_map.v2.yaml.bak services/repo-truth-extractor/promptsets/v4/model_map.yaml services/repo-truth-extractor/promptsets/v4/scripts/README.md services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py services/repo-truth-extractor/tests/test_model_map_v3_impact_class_enforcement.py services/repo-truth-extractor/tests/test_model_map_v3_loader.py services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py services/repo-truth-extractor/tests/test_phase_d_contract_map.py services/repo-truth-extractor/tests/test_phase_interaction.py task-packets/INDEX.md task-packets/generated/TP-RTE-COSTPROFILE-E8-YAML-V3-001.json",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-frontmatter-fix",
+        "command": "python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "All docs have valid frontmatter.\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-validator",
+        "command": "python scripts/docs_validator.py task-packets/INDEX.md",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-hygiene",
+        "command": "python scripts/check_docs_hygiene.py --check task-packets/INDEX.md",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "docs-hygiene: total=1 active=1 quarantine=0 violations=0\ndocs-hygiene: checked 1 files, OK\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-filename-hygiene",
+        "command": "python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0\ndocs-filename-hygiene: checked 1 files, OK\n",
+        "stderr": ""
+      },
+      {
+        "name": "root-hygiene",
+        "command": "python scripts/check_root_hygiene.py",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "root-hygiene: no candidate files to check\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "e632bc2095923f9792a765db11ae773ed4c4ff9e18170be4f352c17ffb0ed91d",
+      "valid_for_sha": "dfb3fb662981e67f1035fdf6e39380a129c43960",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "failure_fingerprint": null
+  },
+  "thread_dispositions": [
+    {
+      "thread_id": "PRRT_kwDOPyIw986EXvKc",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986EXvKe",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986EXvKi",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986EXvKv",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/PROOF.json",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986EXvdW",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986EXvdX",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ],
+  "fingerprint": {
+    "input_fingerprint": "8982cfa6810a3bed8d1a2a75d6155eb39e19c56e4a287ecb324ecaf3fdcb6bcb",
+    "valid_for_sha": "aa9630e22d56a57db5cce82386816f3744e395fe",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "explain": "{\"why_blocked\": [], \"evidence\": [{\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 6 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 6}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 15159}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"merge\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 6 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 6}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 15159}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 15809.0}, \"source\": \"heuristics\", \"override\": null}]}",
+    "operator_state": "dirty_auto_recovered"
+  },
+  "blocked_by_global_fix_pr": null
+}

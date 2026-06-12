@@ -1,0 +1,97 @@
+{
+  "decision": {
+    "action": "blocked",
+    "command": [],
+    "reason": "Required checks are failing.; Required approval is missing.; Local validation is required before merge readiness can be declared.; Prior validation artifact is stale for the current PR head SHA.; Required checks are failing.",
+    "reason_code": "required_check_failed"
+  },
+  "checks": {
+    "checks_total": 18,
+    "checks_success": 12,
+    "checks_failure": 2,
+    "checks_pending": 4,
+    "required_checks_pending": 4,
+    "required_checks_failed": 2,
+    "optional_checks_pending": 0,
+    "optional_checks_failed": 0,
+    "review_decision": "",
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "BLOCKED",
+    "blocker_types": [
+      "required_check_failed",
+      "required_check_pending",
+      "approval_missing"
+    ],
+    "warning_types": []
+  },
+  "check_wait": {
+    "wait_used": true,
+    "wait_reason": "healthy_required_pending",
+    "iterations": 3,
+    "final_status": "required_failed",
+    "timed_out": true,
+    "history": [
+      {
+        "attempt": 1,
+        "green": false,
+        "checks_total": 16,
+        "checks_success": 3,
+        "checks_failure": 0,
+        "checks_pending": 13,
+        "required_checks_pending": 13,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "blocker_types": [
+          "required_check_pending",
+          "approval_missing"
+        ],
+        "warning_types": []
+      },
+      {
+        "attempt": 2,
+        "green": false,
+        "checks_total": 17,
+        "checks_success": 9,
+        "checks_failure": 0,
+        "checks_pending": 8,
+        "required_checks_pending": 8,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "blocker_types": [
+          "required_check_pending",
+          "approval_missing"
+        ],
+        "warning_types": []
+      },
+      {
+        "attempt": 3,
+        "green": false,
+        "checks_total": 18,
+        "checks_success": 12,
+        "checks_failure": 2,
+        "checks_pending": 4,
+        "required_checks_pending": 4,
+        "required_checks_failed": 2,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "blocker_types": [
+          "required_check_failed",
+          "required_check_pending",
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    ]
+  }
+}

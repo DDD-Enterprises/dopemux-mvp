@@ -1,0 +1,148 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw985-D1vg",
+      "is_resolved": true,
+      "is_outdated": false,
+      "viewer_can_resolve": false,
+      "path": "docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md",
+      "line": 3,
+      "original_line": 3,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98675-ba",
+          "author": "copilot-pull-request-reviewer",
+          "body": "All markdown files under `docs/` are validated by `scripts/docs_validator.py` and must start with YAML frontmatter (it errors on missing frontmatter). This new DR pack lacks frontmatter, so `python scripts/docs_validator.py` / pre-commit will fail. Add the required frontmatter block (or run `python scripts/docs_frontmatter_guard.py --fix`) for this file and the other new files in `docs/research/mcp-customization/`.",
+          "created_at": "2026-04-28T08:18:19Z",
+          "path": "docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FRf6",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:01:32Z",
+          "path": "docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWUt",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:07Z",
+          "path": "docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FrzK",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:51:33Z",
+          "path": "docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md",
+          "line": 3,
+          "original_line": 3
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-D1wR",
+      "is_resolved": true,
+      "is_outdated": false,
+      "viewer_can_resolve": false,
+      "path": "docs/research/mcp-customization/README_UPLOAD_ORDER.md",
+      "line": 3,
+      "original_line": 3,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98675-cU",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`scripts/docs_validator.py` treats filenames matching `README*.md` as prohibited (`PROHIBITED_PATTERNS` includes `README`). `docs/research/mcp-customization/README_UPLOAD_ORDER.md` will therefore fail docs validation even if frontmatter is added. Please rename this file to a non-README name (and update any references + `MANIFEST.sha256` accordingly).",
+          "created_at": "2026-04-28T08:18:19Z",
+          "path": "docs/research/mcp-customization/README_UPLOAD_ORDER.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FRgf",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:01:33Z",
+          "path": "docs/research/mcp-customization/README_UPLOAD_ORDER.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWVq",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:09Z",
+          "path": "docs/research/mcp-customization/README_UPLOAD_ORDER.md",
+          "line": 3,
+          "original_line": 3
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869Fr0N",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:51:35Z",
+          "path": "docs/research/mcp-customization/README_UPLOAD_ORDER.md",
+          "line": 3,
+          "original_line": 3
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw985-D1w4",
+      "is_resolved": true,
+      "is_outdated": false,
+      "viewer_can_resolve": false,
+      "path": "task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json",
+      "line": 139,
+      "original_line": 139,
+      "original_start_line": 132,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98675-dD",
+          "author": "copilot-pull-request-reviewer",
+          "body": "In step `S3.expected_files`, the listed DR pack paths (`00-foundation.md` … `07-synthesis.md`) don't match the files added in this PR (e.g., `dr-upload/00-dopemux-context-boundaries.md` and `dr-upload/07-cross-system-synthesis.md`). If anything consumes `expected_files` to verify outputs, this mismatch will cause false failures; update either the filenames or the task packet list to align.\n",
+          "created_at": "2026-04-28T08:18:20Z",
+          "path": "task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json",
+          "line": 139,
+          "original_line": 139
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FRhQ",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:01:34Z",
+          "path": "task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json",
+          "line": 139,
+          "original_line": 139
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FWWP",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:11:10Z",
+          "path": "task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json",
+          "line": 139,
+          "original_line": 139
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869Fr0-",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:51:37Z",
+          "path": "task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json",
+          "line": 139,
+          "original_line": 139
+        }
+      ]
+    }
+  ]
+}

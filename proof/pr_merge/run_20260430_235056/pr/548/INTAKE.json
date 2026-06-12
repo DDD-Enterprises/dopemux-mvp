@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "artifact_version": "3.1",
+    "tool_version": "3.1.0",
+    "policy_schema_version": 1,
+    "generated_at": "2026-05-01T06:51:15Z",
+    "run_id": "20260430_235056",
+    "repo_root": "/Users/hue/code/dopemux-mvp",
+    "git_remote_origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "git_repo_name": "DDD-Enterprises/dopemux-mvp",
+    "current_branch": "main",
+    "default_branch": "main",
+    "pr_head_sha": "14b60d2dba482ba2404467f4ba577cfffb388882",
+    "base_sha": "a00a0a6b1f9e3ccc586161a06b030eaa45e4bd05",
+    "applied_tree_sha": ""
+  },
+  "pr": {
+    "pr_id": 548,
+    "title": "Restore deterministic runtime authority verifier",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "fix/restore-runtime-authority-verifier",
+    "ci_status": "FAILURE",
+    "mergeable": "CONFLICTING",
+    "merge_state_status": "DIRTY",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-01T06:40:07Z",
+    "is_draft": false,
+    "additions": 1594,
+    "deletions": 0,
+    "changed_files": 4,
+    "unresolved_threads": 1,
+    "active_unresolved_threads": 1,
+    "outdated_unresolved_threads": 0,
+    "pr_class": "MIXED",
+    "risk_score": 2164.0,
+    "check_summary": {
+      "total": 26,
+      "success": 25,
+      "failure": 1,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 1,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "discovered",
+    "head_sha": "14b60d2dba482ba2404467f4ba577cfffb388882",
+    "base_sha": "a00a0a6b1f9e3ccc586161a06b030eaa45e4bd05"
+  }
+}

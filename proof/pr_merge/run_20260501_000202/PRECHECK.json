@@ -1,0 +1,135 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "name": "binary:git",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/git",
+      "remediation": "Install `git` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:gh",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/gh",
+      "remediation": "Install `gh` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:python",
+      "status": "passed",
+      "required": true,
+      "details": "/tmp/dmx-bin/python",
+      "remediation": "Install `python` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:pre-commit",
+      "status": "passed",
+      "required": true,
+      "details": "/tmp/dmx-bin/pre-commit",
+      "remediation": "Install `pre-commit` and ensure it is on PATH."
+    },
+    {
+      "name": "gh_auth",
+      "status": "passed",
+      "required": true,
+      "details": "github.com\n  ✓ Logged in to github.com account hu3mann (keyring)\n  - Active account: true\n  - Git operations protocol: ssh\n  - Token: gho_************************************\n  - Token scopes: 'admin:public_key', 'gist', 'read:org', 'repo', 'workflow'",
+      "remediation": "Run `gh auth login` for the target repository."
+    },
+    {
+      "name": "git_remote",
+      "status": "passed",
+      "required": true,
+      "details": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "remediation": "Configure the `origin` remote."
+    },
+    {
+      "name": "git_worktree",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp                                                           fa92c5d70 [main]\n/private/tmp/dopemux-mvp-phase1-serena-audit                                          b6147b853 (detached HEAD)\n/private/tmp/dopemux-pr-538                                                           e8b0e483e (detached HEAD)\n/private/tmp/dopemux-pr-539                                                           c5ec2f48c (detached HEAD)\n/private/tmp/dopemux-pr-540-mergefix                                                  735ce5e18 (detached HEAD)\n/private/tmp/dopemux-pr-541-mergefix                                                  b33262d71 (detached HEAD)\n/private/tmp/dopemux-pr-542-fix                                                       4db7f16b5 (detached HEAD)\n/private/tmp/dopemux-pr-545                                                           e75fe023c (detached HEAD)\n/private/tmp/dopemux-pr-merge-514-20260423_170024                                     f6a4e8e91 [prmerge/20260423_170024-514] prunable\n/private/tmp/dopemux-pr519                                                            c43667bdf (detached HEAD) prunable\n/private/tmp/resolve-517                                                              060c93db8 [codex/rte-canonical-operator-entrypoint] prunable\n/Users/hue/code/ARCH-5.5-PRO                                                          5f216582c (detached HEAD)\n/Users/hue/code/dopemux-mvp-wt-agents-copilot-specs                                   225477ce1 [agents/dopemux-copilot-agent-specs]\n/Users/hue/code/dopemux-mvp-wt-agents-copilot-specs-fresh                             552ce36c8 (detached HEAD)\n/Users/hue/code/dopemux-mvp-wt-cockpit-design-system                                  c836e3410 [codex/cockpit-design-system]\n/Users/hue/code/dopemux-mvp-wt-cockpit-pm-textual                                     c90ed07c0 [test/pm-authority-ports]\n/Users/hue/code/dopemux-mvp-wt-dopecode-ast                                           40edc271c [codex/dopecode-ast-navigation-20260417]\n/Users/hue/code/dopemux-mvp-wt-mcp-audit-hardening                                    087f99329 [codex/mcp-audit-hardening]\n/Users/hue/code/dopemux-mvp-wt-mcp-customization-dr-data                              cba686305 [research/dmx-mcp-customization-dr-data]\n/Users/hue/code/dopemux-mvp-wt-pm-writes-phase1                                       94c508605 [codex/pm-writes-phase1]\n/Users/hue/code/dopemux-mvp-wt-runtime-authority-20260430-195535                      5f216582c [audit/runtime-authority-verifier-20260430-195535]\n/Users/hue/code/dopemux-mvp-wt-runtime-authority-20260430-201805                      5f216582c [audit/runtime-authority-verifier-20260430-201805]\n/Users/hue/code/dopemux-mvp-wt-tui-hardening                                          f23c3294c [codex/tui-runtime-unknown-hardening]\n/Users/hue/code/dopemux-mvp/.claude/worktrees/admiring-jepsen-0715aa                  a1ca9131f [claude/admiring-jepsen-0715aa]\n/Users/hue/code/dopemux-mvp/.claude/worktrees/optimistic-torvalds-3158d6              b33cfc69f [claude/optimistic-torvalds-3158d6]\n/Users/hue/code/dopemux-mvp/docs/03-reference/.claude/worktrees/jovial-hellman-c3848d a1ca9131f [claude/jovial-hellman-c3848d] prunable\n/Users/hue/code/project-docs-improvement                                              00cb80dd9 [audit/runtime-authority-verifier-project-docs-improvement]\n/Users/hue/code/restore-runtime-authority-verifier                                    14b60d2db [fix/restore-runtime-authority-verifier]",
+      "remediation": "Use a git version with worktree support."
+    },
+    {
+      "name": "clean_worktree",
+      "status": "warning",
+      "required": true,
+      "details": "?? out/DMX-AUTHORITY-SERIES-EXECUTION-PLAN.md\n?? out/DMX-AUTHORITY-SERIES-MASTER.md",
+      "remediation": "Clean the repo root or keep using `--allow-dirty` deliberately."
+    },
+    {
+      "name": "script:scripts/docs_frontmatter_guard.py",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp/scripts/docs_frontmatter_guard.py",
+      "remediation": "Restore or update `scripts/docs_frontmatter_guard.py` in policy."
+    },
+    {
+      "name": "script:scripts/docs_validator.py",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp/scripts/docs_validator.py",
+      "remediation": "Restore or update `scripts/docs_validator.py` in policy."
+    },
+    {
+      "name": "script:scripts/check_docs_hygiene.py",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp/scripts/check_docs_hygiene.py",
+      "remediation": "Restore or update `scripts/check_docs_hygiene.py` in policy."
+    },
+    {
+      "name": "script:scripts/check_docs_filename_hygiene.py",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp/scripts/check_docs_filename_hygiene.py",
+      "remediation": "Restore or update `scripts/check_docs_filename_hygiene.py` in policy."
+    },
+    {
+      "name": "script:scripts/check_root_hygiene.py",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp/scripts/check_root_hygiene.py",
+      "remediation": "Restore or update `scripts/check_root_hygiene.py` in policy."
+    }
+  ],
+  "policy_resolution": {
+    "source": "repo",
+    "path": "/Users/hue/code/dopemux-mvp/config/pr_merge_specialist/policy.yaml",
+    "fingerprint": "3d8667480a0c19acffff4b3ba69045245feb66e2f297a4bf037b80743348aacc",
+    "policy_schema_version": 1,
+    "overrides": [
+      {
+        "override_type": "allow_dirty",
+        "actor": "cli",
+        "reason": "User explicitly allowed dirty worktree execution.",
+        "scope": "preflight.clean_worktree",
+        "source": "--allow-dirty"
+      }
+    ]
+  },
+  "override_records": [
+    {
+      "override_type": "allow_dirty",
+      "actor": "cli",
+      "reason": "User explicitly allowed dirty worktree execution.",
+      "scope": "preflight.clean_worktree",
+      "source": "--allow-dirty"
+    }
+  ],
+  "meta": {
+    "artifact_version": "3.1",
+    "tool_version": "3.1.0",
+    "policy_schema_version": 1,
+    "generated_at": "2026-05-01T07:02:04Z",
+    "run_id": "20260501_000202",
+    "repo_root": "/Users/hue/code/dopemux-mvp",
+    "git_remote_origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "git_repo_name": "DDD-Enterprises/dopemux-mvp",
+    "current_branch": "main",
+    "default_branch": "main",
+    "pr_head_sha": "",
+    "base_sha": "",
+    "applied_tree_sha": ""
+  }
+}

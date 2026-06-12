@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "artifact_version": "3.1",
+    "tool_version": "3.1.0",
+    "policy_schema_version": 1,
+    "generated_at": "2026-05-01T06:09:39Z",
+    "run_id": "20260430_230929",
+    "repo_root": "/Users/hue/code/dopemux-mvp",
+    "git_remote_origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "git_repo_name": "DDD-Enterprises/dopemux-mvp",
+    "current_branch": "main",
+    "default_branch": "main",
+    "pr_head_sha": "",
+    "base_sha": "",
+    "applied_tree_sha": ""
+  },
+  "strategy": "hybrid",
+  "cycle_detected": false,
+  "layers": [
+    {
+      "layer": 0,
+      "pr_ids": [
+        545,
+        540,
+        541,
+        542,
+        537,
+        544,
+        539,
+        538
+      ]
+    }
+  ],
+  "edges": {},
+  "ordered_pr_ids": [
+    545,
+    540,
+    541,
+    542,
+    537,
+    544,
+    539,
+    538
+  ]
+}

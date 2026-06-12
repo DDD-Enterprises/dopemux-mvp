@@ -1,0 +1,600 @@
+$ git fetch origin pull/544/head:prmerge/20260430_230955-544
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/544/head -> prmerge/20260430_230955-544
+
+$ git worktree add /tmp/dopemux-pr-merge-544-20260430_230955 prmerge/20260430_230955-544
+exit=0
+--- stdout ---
+HEAD is now at 8ed7b3497 review-response: address thread suggestions (pr-merge/20260430_230012/PR-544)
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260430_230955-544')
+Updating files:  17% (2087/12177)
+Updating files:  18% (2192/12177)
+Updating files:  19% (2314/12177)
+Updating files:  20% (2436/12177)
+Updating files:  21% (2558/12177)
+Updating files:  22% (2679/12177)
+Updating files:  23% (2801/12177)
+Updating files:  24% (2923/12177)
+Updating files:  25% (3045/12177)
+Updating files:  26% (3167/12177)
+Updating files:  27% (3288/12177)
+Updating files:  28% (3410/12177)
+Updating files:  29% (3532/12177)
+Updating files:  30% (3654/12177)
+Updating files:  31% (3775/12177)
+Updating files:  32% (3897/12177)
+Updating files:  33% (4019/12177)
+Updating files:  34% (4141/12177)
+Updating files:  35% (4262/12177)
+Updating files:  36% (4384/12177)
+Updating files:  37% (4506/12177)
+Updating files:  38% (4628/12177)
+Updating files:  39% (4750/12177)
+Updating files:  40% (4871/12177)
+Updating files:  41% (4993/12177)
+Updating files:  42% (5115/12177)
+Updating files:  43% (5237/12177)
+Updating files:  44% (5358/12177)
+Updating files:  45% (5480/12177)
+Updating files:  46% (5602/12177)
+Updating files:  47% (5724/12177)
+Updating files:  48% (5845/12177)
+Updating files:  49% (5967/12177)
+Updating files:  50% (6089/12177)
+Updating files:  51% (6211/12177)
+Updating files:  52% (6333/12177)
+Updating files:  53% (6454/12177)
+Updating files:  54% (6576/12177)
+Updating files:  55% (6698/12177)
+Updating files:  56% (6820/12177)
+Updating files:  56% (6823/12177)
+Updating files:  57% (6941/12177)
+Updating files:  58% (7063/12177)
+Updating files:  59% (7185/12177)
+Updating files:  60% (7307/12177)
+Updating files:  61% (7428/12177)
+Updating files:  62% (7550/12177)
+Updating files:  63% (7672/12177)
+Updating files:  64% (7794/12177)
+Updating files:  65% (7916/12177)
+Updating files:  66% (8037/12177)
+Updating files:  67% (8159/12177)
+Updating files:  68% (8281/12177)
+Updating files:  69% (8403/12177)
+Updating files:  70% (8524/12177)
+Updating files:  71% (8646/12177)
+Updating files:  72% (8768/12177)
+Updating files:  73% (8890/12177)
+Updating files:  74% (9011/12177)
+Updating files:  75% (9133/12177)
+Updating files:  76% (9255/12177)
+Updating files:  77% (9377/12177)
+Updating files:  78% (9499/12177)
+Updating files:  79% (9620/12177)
+Updating files:  80% (9742/12177)
+Updating files:  81% (9864/12177)
+Updating files:  82% (9986/12177)
+Updating files:  83% (10107/12177)
+Updating files:  84% (10229/12177)
+Updating files:  85% (10351/12177)
+Updating files:  86% (10473/12177)
+Updating files:  87% (10594/12177)
+Updating files:  88% (10716/12177)
+Updating files:  89% (10838/12177)
+Updating files:  90% (10960/12177)
+Updating files:  91% (11082/12177)
+Updating files:  92% (11203/12177)
+Updating files:  93% (11325/12177)
+Updating files:  93% (11394/12177)
+Updating files:  94% (11447/12177)
+Updating files:  95% (11569/12177)
+Updating files:  96% (11690/12177)
+Updating files:  97% (11812/12177)
+Updating files:  98% (11934/12177)
+Updating files:  99% (12056/12177)
+Updating files: 100% (12177/12177)
+Updating files: 100% (12177/12177), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+8ed7b34979210be21dda9d86868631c9aa73f4f3
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiT4", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWfG"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiUf", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWf6"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiU0", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWgq"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiVM", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWhF"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiVo", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWhy"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiV5", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWiJ"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiWf", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWi3"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiWy", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWjR"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiW6", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWkK"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiXP", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWks"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiXf", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWlO"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiX0", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWmK"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiYG", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWnJ"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiYW", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWn2"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiYo", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWog"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiZE", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWpF"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiZY", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWpo"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiZx", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWqS"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiaM", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWq0"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiak", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWrN"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uia0", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWrv"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uibD", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWsl"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uibW", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWtS"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uibw", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWuB"}}}}
+
+$ gh pr update-branch 544 --rebase
+exit=0
+--- stdout ---
+✓ PR branch updated
+
+$ git fetch origin codex/main-clean-local-work-pr
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/main-clean-local-work-pr -> FETCH_HEAD
+ + 8ed7b3497...910ce7f03 codex/main-clean-local-work-pr -> origin/codex/main-clean-local-work-pr  (forced update)
+
+$ git reset --hard origin/codex/main-clean-local-work-pr
+exit=0
+--- stdout ---
+HEAD is now at 910ce7f03 review-response: address thread suggestions (pr-merge/20260430_230012/PR-544)
+
+$ git diff --name-only --diff-filter=ACMR 5f216582cf3443777cbbf8eedf8b50f68f0d511d...HEAD
+exit=0
+--- stdout ---
+.Jules/palette.md
+.github/agents/dopemux-implementer.agent.md
+.github/agents/dopemux-planner.agent.md
+.github/agents/dopemux-reviewer.agent.md
+.github/agents/dopemux-testgen.agent.md
+AGENTS.md
+docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md
+docs/03-reference/Dopemux Cockpit TUI Design System/ARCHITECTURE_SAFETY_OVERLAY.md
+docs/03-reference/Dopemux Cockpit TUI Design System/PM_IMPLEMENTER_COCKPIT_REDIRECTION.md
+docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md
+docs/03-reference/Dopemux Cockpit TUI Design System/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md
+docs/03-reference/Dopemux Cockpit TUI Design System/UX_REFERENCE_RECONCILIATION.md
+docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/brand_mark.txt
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/frame_chars.md
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/glyphs.md
+docs/03-reference/Dopemux Cockpit TUI Design System/assets/readme.md
+docs/03-reference/Dopemux Cockpit TUI Design System/colors_and_type.css
+docs/03-reference/Dopemux Cockpit TUI Design System/fonts/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md
+docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/03-status-chips.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/04-type-specimen.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/04b-brand-font.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/06-frame-grid-120.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/08-row-anatomy.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/09-authority-bridge.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/10-mode-bar.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/11-rails.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/12-render-modes.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/14-status-language.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/15-glyphs.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/16-frame-chars.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/17-spacing.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/18-inspector.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/19-voice.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/20-cockpit-composition.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/21-ascii-fallback.html
+docs/03-reference/Dopemux Cockpit TUI Design System/preview/_shared.css
+docs/03-reference/Dopemux Cockpit TUI Design System/readme.md
+docs/03-reference/Dopemux Cockpit TUI Design System/screenshots/A1-check.png
+docs/03-reference/Dopemux Cockpit TUI Design System/skill.md
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A1-rte-runs-120x40.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A2-rte-runs-100x32.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A3-rte-runs-80x24.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/B-textual-cockpit-direction.html
+docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/C-web-dashboard-direction.html
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Cockpit.jsx
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/cockpit.css
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md
+docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/seed.js
+docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.11.21 PM.png
+docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.11.37 PM.png
+docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.12.47 PM.png
+docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 9.05.48 PM.png
+docs/03-reference/governance/agent-workflow.md
+docs/03-reference/gpt55_pm_implementer_redesign.md
+docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md
+docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md
+docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md
+make-zip.sh
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/INTEGRITY_REPORT.json
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SCOPE_OVERRIDES.json
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SCOPE_RESOLUTION.json
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SYNC_MANIFEST.json
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/artifacts.yaml
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/model_map.yaml
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_A0_CONTROL_INVENTORY.md
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_C0_CODE_INVENTORY.md
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_D0_DOCS_INVENTORY.md
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_E0_EXECUTION_INVENTORY.md
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_G0_GOVERNANCE_INVENTORY.md
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/promptset.yaml
+task-packets/DMX-COCKPIT-ARCHIVE-INTENT-001.json
+ui-dashboard/src/App.tsx
+ui-dashboard/src/components/TaskSequencer.tsx
+ui-dashboard/src/components/__tests__/Accessibility.test.ts
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+--- stdout ---
+docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md
+docs/03-reference/Dopemux Cockpit TUI Design System/skill.md
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .Jules/palette.md .github/agents/dopemux-implementer.agent.md .github/agents/dopemux-planner.agent.md .github/agents/dopemux-reviewer.agent.md .github/agents/dopemux-testgen.agent.md AGENTS.md 'docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/ARCHITECTURE_SAFETY_OVERLAY.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/PM_IMPLEMENTER_COCKPIT_REDIRECTION.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/README.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/UX_REFERENCE_RECONCILIATION.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/assets/README.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/assets/brand_mark.txt' 'docs/03-reference/Dopemux Cockpit TUI Design System/assets/frame_chars.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/assets/glyphs.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/assets/readme.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/colors_and_type.css' 'docs/03-reference/Dopemux Cockpit TUI Design System/fonts/README.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/03-status-chips.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/04-type-specimen.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/04b-brand-font.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/06-frame-grid-120.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/08-row-anatomy.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/09-authority-bridge.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/10-mode-bar.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/11-rails.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/12-render-modes.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/14-status-language.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/15-glyphs.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/16-frame-chars.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/17-spacing.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/18-inspector.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/19-voice.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/20-cockpit-composition.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/21-ascii-fallback.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/preview/_shared.css' 'docs/03-reference/Dopemux Cockpit TUI Design System/readme.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/screenshots/A1-check.png' 'docs/03-reference/Dopemux Cockpit TUI Design System/skill.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A1-rte-runs-120x40.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A2-rte-runs-100x32.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/A3-rte-runs-80x24.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/B-textual-cockpit-direction.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/surfaces/C-web-dashboard-direction.html' 'docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Cockpit.jsx' 'docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/Primitives.jsx' 'docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/cockpit.css' 'docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md' 'docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/seed.js' 'docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.11.21 PM.png' 'docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.11.37 PM.png' 'docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.12.47 PM.png' 'docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 9.05.48 PM.png' docs/03-reference/governance/agent-workflow.md docs/03-reference/gpt55_pm_implementer_redesign.md docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md make-zip.sh services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/INTEGRITY_REPORT.json services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SCOPE_OVERRIDES.json services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SCOPE_RESOLUTION.json services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/SYNC_MANIFEST.json services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/artifacts.yaml services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/model_map.yaml services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_A0_CONTROL_INVENTORY.md services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_C0_CODE_INVENTORY.md services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_D0_DOCS_INVENTORY.md services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_E0_EXECUTION_INVENTORY.md services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/prompts/PROMPT_G0_GOVERNANCE_INVENTORY.md services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/promptset.yaml task-packets/DMX-COCKPIT-ARCHIVE-INTENT-001.json ui-dashboard/src/App.tsx ui-dashboard/src/components/TaskSequencer.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts
+exit=1
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Failed
+- hook id: docs-frontmatter-guard
+- exit code: 1
+- files were modified by this hook
+
+Updated 3 file(s):
+ - docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md
+ - docs/03-reference/Dopemux Cockpit TUI Design System/assets/frame_chars.md
+ - docs/03-reference/Dopemux Cockpit TUI Design System/assets/README.md
+Updated 2 file(s):
+ - docs/03-reference/Dopemux Cockpit TUI Design System/skill.md
+ - docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md
+Updated 1 file(s):
+ - docs/03-reference/Dopemux Cockpit TUI Design System/fonts/README.md
+Updated 2 file(s):
+ - docs/03-reference/gpt55_pm_implementer_redesign.md
+ - docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md
+Updated 4 file(s):
+ - docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md
+ - docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md
+ - docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md
+ - docs/03-reference/Dopemux Cockpit TUI Design System/assets/glyphs.md
+Updated 1 file(s):
+ - docs/03-reference/Dopemux Cockpit TUI Design System/readme.md
+
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Failed
+- hook id: docs-filename-hygiene
+- exit code: 1
+
+docs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=4
+docs-filename-hygiene: FAILED
+1. docs/03-reference/Dopemux Cockpit TUI Design System/SKILL.md
+   target: docs/03-reference/Dopemux Cockpit TUI Design System/skill.md
+2. docs/03-reference/Dopemux Cockpit TUI Design System/assets/README.md
+   target: docs/03-reference/Dopemux Cockpit TUI Design System/assets/readme.md
+3. docs/03-reference/Dopemux Cockpit TUI Design System/assets/frame_chars.md
+   target: docs/03-reference/Dopemux Cockpit TUI Design System/assets/frame-chars.md
+4. docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md
+   target: docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md
+docs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=3
+docs-filename-hygiene: FAILED
+1. docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md
+   target: docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md
+2. docs/03-reference/Dopemux Cockpit TUI Design System/PM_IMPLEMENTER_COCKPIT_REDIRECTION.md
+   target: docs/03-reference/Dopemux Cockpit TUI Design System/pm-implementer-cockpit-redirection.md
+3. docs/03-reference/Dopemux Cockpit TUI Design System/PREIMPLEMENTATION.md
+   target: docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md
+docs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=2
+docs-filename-hygiene: FAILED
+1. docs/03-reference/Dopemux Cockpit TUI Design System/ARCHITECTURE_SAFETY_OVERLAY.md
+   target: docs/03-reference/Dopemux Cockpit TUI Design System/architecture-safety-overlay.md
+2. docs/03-reference/Dopemux Cockpit TUI Design System/fonts/README.md
+   target: docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md
+docs-filename-hygiene: total=4 active=4 quarantine=0 exempt=1 violations=2
+docs-filename-hygiene: FAILED
+1. docs/03-reference/Dopemux Cockpit TUI Design System/README.md
+   target: docs/03-reference/Dopemux Cockpit TUI Design System/readme.md
+2. docs/03-reference/gpt55_pm_implementer_redesign.md
+   target: docs/03-reference/gpt55-pm-implementer-redesign.md
+docs-filename-hygiene: total=4 active=4 quarantine=0 exempt=2 violations=0
+docs-filename-hygiene: checked 4 files, OK
+docs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=1
+docs-filename-hygiene: FAILED
+1. docs/03-reference/Dopemux Cockpit TUI Design System/UX_REFERENCE_RECONCILIATION.md
+   target: docs/03-reference/Dopemux Cockpit TUI Design System/ux-reference-reconciliation.md
+
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Failed
+- hook id: root-hygiene
+- exit code: 1
+
+root-hygiene: OK (6 paths checked)
+root-hygiene: OK (6 paths checked)
+root-hygiene: OK (6 paths checked)
+root-hygiene: OK (6 paths checked)
+root-hygiene: OK (6 paths checked)
+root-hygiene: OK (6 paths checked)
+root-hygiene: OK (6 paths checked)
+root-hygiene: OK (6 paths checked)
+root-hygiene: OK (6 paths checked)
+root-hygiene: FAILED
+Policy: /private/tmp/dopemux-pr-merge-544-20260430_230955/config/repo_hygiene/root_hygiene_policy.json
+1. make-zip.sh
+   reason: root files must be explicitly allowlisted
+   suggested destination: scripts/ (reusable automation scripts)
+Move files to the suggested destination, or explicitly update config/repo_hygiene/root_hygiene_policy.json when the new root entry is intentional.
+root-hygiene: OK (6 paths checked)
+root-hygiene: OK (6 paths checked)
+root-hygiene: OK (6 paths checked)
+root-hygiene: OK (4 paths checked)
+
+markdownlint...............................................................................Failed
+- hook id: markdownlint
+- exit code: 1
+
+docs/03-reference/gpt55_pm_implementer_redesign.md:47:52 MD010/no-hard-tabs Hard tabs [Column: 52]
+docs/03-reference/gpt55_pm_implementer_redesign.md:47:64 MD010/no-hard-tabs Hard tabs [Column: 64]
+docs/03-reference/gpt55_pm_implementer_redesign.md:61:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:61:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:65:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:65:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:69:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:69:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:75:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:75:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:77:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:77:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:87:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:87:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:91:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:91:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:392:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:392:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:398:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:398:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:400:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:400:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:407:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:407:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:409:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:409:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:413:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:413:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:417:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:417:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:424:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:424:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:426:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:426:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:430:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:430:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:437:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:437:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:439:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:439:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:446:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:446:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:448:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:448:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:452:51 MD010/no-hard-tabs Hard tabs [Column: 51]
+docs/03-reference/gpt55_pm_implementer_redesign.md:452:63 MD010/no-hard-tabs Hard tabs [Column: 63]
+docs/03-reference/gpt55_pm_implementer_redesign.md:458:52 MD010/no-hard-tabs Hard tabs [Column: 52]
+docs/03-reference/gpt55_pm_implementer_redesign.md:458:64 MD010/no-hard-tabs Hard tabs [Column: 64]
+docs/03-reference/gpt55_pm_implementer_redesign.md:468:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:468:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:470:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:470:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:474:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:474:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:481:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:481:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:483:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:483:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:485:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:485:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:487:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:487:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:494:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:494:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:498:52 MD010/no-hard-tabs Hard tabs [Column: 52]
+docs/03-reference/gpt55_pm_implementer_redesign.md:498:64 MD010/no-hard-tabs Hard tabs [Column: 64]
+docs/03-reference/gpt55_pm_implementer_redesign.md:500:47 MD010/no-hard-tabs Hard tabs [Column: 47]
+docs/03-reference/gpt55_pm_implementer_redesign.md:500:59 MD010/no-hard-tabs Hard tabs [Column: 59]
+docs/03-reference/gpt55_pm_implementer_redesign.md:507:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:507:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:509:48 MD010/no-hard-tabs Hard tabs [Column: 48]
+docs/03-reference/gpt55_pm_implementer_redesign.md:509:60 MD010/no-hard-tabs Hard tabs [Column: 60]
+docs/03-reference/gpt55_pm_implementer_redesign.md:516:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:516:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:518:48 MD010/no-hard-tabs Hard tabs [Column: 48]
+docs/03-reference/gpt55_pm_implementer_redesign.md:518:60 MD010/no-hard-tabs Hard tabs [Column: 60]
+docs/03-reference/gpt55_pm_implementer_redesign.md:520:48 MD010/no-hard-tabs Hard tabs [Column: 48]
+docs/03-reference/gpt55_pm_implementer_redesign.md:520:60 MD010/no-hard-tabs Hard tabs [Column: 60]
+docs/03-reference/gpt55_pm_implementer_redesign.md:522:48 MD010/no-hard-tabs Hard tabs [Column: 48]
+docs/03-reference/gpt55_pm_implementer_redesign.md:522:60 MD010/no-hard-tabs Hard tabs [Column: 60]
+docs/03-reference/gpt55_pm_implementer_redesign.md:540:48 MD010/no-hard-tabs Hard tabs [Column: 48]
+docs/03-reference/gpt55_pm_implementer_redesign.md:540:60 MD010/no-hard-tabs Hard tabs [Column: 60]
+docs/03-reference/gpt55_pm_implementer_redesign.md:560:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:560:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:568:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:568:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:574:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:574:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:580:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:580:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:588:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:588:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:634:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:634:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:638:46 MD010/no-hard-tabs Hard tabs [Column: 46]
+docs/03-reference/gpt55_pm_implementer_redesign.md:638:58 MD010/no-hard-tabs Hard tabs [Column: 58]
+docs/03-reference/gpt55_pm_implementer_redesign.md:642:46 MD010/no-hard-tabs Hard tabs [Column: 46]
+docs/03-reference/gpt55_pm_implementer_redesign.md:642:58 MD010/no-hard-tabs Hard tabs [Column: 58]
+docs/03-reference/gpt55_pm_implementer_redesign.md:646:46 MD010/no-hard-tabs Hard tabs [Column: 46]
+docs/03-reference/gpt55_pm_implementer_redesign.md:646:58 MD010/no-hard-tabs Hard tabs [Column: 58]
+docs/03-reference/gpt55_pm_implementer_redesign.md:650:46 MD010/no-hard-tabs Hard tabs [Column: 46]
+docs/03-reference/gpt55_pm_implementer_redesign.md:650:58 MD010/no-hard-tabs Hard tabs [Column: 58]
+docs/03-reference/gpt55_pm_implementer_redesign.md:679:48 MD010/no-hard-tabs Hard tabs [Column: 48]
+docs/03-reference/gpt55_pm_implementer_redesign.md:679:60 MD010/no-hard-tabs Hard tabs [Column: 60]
+docs/03-reference/gpt55_pm_implementer_redesign.md:685:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:685:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:691:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:691:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:701:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:701:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:707:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:707:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:715:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:715:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:759:54 MD010/no-hard-tabs Hard tabs [Column: 54]
+docs/03-reference/gpt55_pm_implementer_redesign.md:759:66 MD010/no-hard-tabs Hard tabs [Column: 66]
+docs/03-reference/gpt55_pm_implementer_redesign.md:763:46 MD010/no-hard-tabs Hard tabs [Column: 46]
+docs/03-reference/gpt55_pm_implementer_redesign.md:763:58 MD010/no-hard-tabs Hard tabs [Column: 58]
+docs/03-reference/gpt55_pm_implementer_redesign.md:767:46 MD010/no-hard-tabs Hard tabs [Column: 46]
+docs/03-reference/gpt55_pm_implementer_redesign.md:767:58 MD010/no-hard-tabs Hard tabs [Column: 58]
+docs/03-reference/gpt55_pm_implementer_redesign.md:771:46 MD010/no-hard-tabs Hard tabs [Column: 46]
+docs/03-reference/gpt55_pm_implementer_redesign.md:771:58 MD010/no-hard-tabs Hard tabs [Column: 58]
+docs/03-reference/gpt55_pm_implementer_redesign.md:775:46 MD010/no-hard-tabs Hard tabs [Column: 46]
+docs/03-reference/gpt55_pm_implementer_redesign.md:775:58 MD010/no-hard-tabs Hard tabs [Column: 58]
+docs/03-reference/gpt55_pm_implementer_redesign.md:803:48 MD010/no-hard-tabs Hard tabs [Column: 48]
+docs/03-reference/gpt55_pm_implementer_redesign.md:803:60 MD010/no-hard-tabs Hard tabs [Column: 60]
+docs/03-reference/gpt55_pm_implementer_redesign.md:815:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:815:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:823:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:823:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:827:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:827:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1016:48 MD010/no-hard-tabs Hard tabs [Column: 48]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1016:60 MD010/no-hard-tabs Hard tabs [Column: 60]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1020:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1020:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1024:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1024:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1030:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1030:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1042:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1042:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1054:43 MD010/no-hard-tabs Hard tabs [Column: 43]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1054:55 MD010/no-hard-tabs Hard tabs [Column: 55]
+docs/03-reference/gpt55_pm_implementer_redesign.md:1196:1 MD047/single-trailing-newline Files should end with a single newline character
+
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Failed
+- hook id: end-of-file-fixer
+- exit code: 1
+- files were modified by this hook
+
+Fixing docs/03-reference/gpt55_pm_implementer_redesign.md
+
+check yaml.............................................................(no files to check)Skipped
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-544-20260430_230955
+exit=0
+

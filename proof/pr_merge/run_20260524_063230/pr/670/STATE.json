@@ -1,0 +1,385 @@
+{
+  "run_id": "20260524_063230",
+  "pr_state": {
+    "pr_id": 670,
+    "title": "docs(governance): refresh PR queue blocker proof",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "codex/tp-dmx-pr-queue-blockers-001",
+    "ci_status": "SUCCESS",
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "BLOCKED",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-24T13:33:11Z",
+    "is_draft": false,
+    "auto_merge_enabled": false,
+    "additions": 670,
+    "deletions": 0,
+    "changed_files": 37,
+    "unresolved_threads": 2,
+    "active_unresolved_threads": 2,
+    "outdated_unresolved_threads": 0,
+    "pr_class": "COMMENTS_ONLY",
+    "risk_score": 1200.0,
+    "check_summary": {
+      "total": 20,
+      "success": 20,
+      "failure": 0,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 0,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "merge_ready",
+    "head_sha": "b9703c7eff878e12c6e51eb3436812fdcdb3599f",
+    "base_sha": "1fb5601152537b35d0660be7e754de78d63f9148"
+  },
+  "lifecycle_state": "merge_ready",
+  "apply_actions": [
+    "rebase codex/tp-dmx-pr-queue-blockers-001 onto main",
+    "resolve review threads",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "rebase_merge",
+    "command": [
+      "gh",
+      "pr",
+      "merge",
+      "670",
+      "--rebase",
+      "--delete-branch"
+    ],
+    "reason": "All gates are green; rebase merge selected by default.",
+    "reason_code": "rebase_merge_ready"
+  },
+  "blockers": [],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "threads_resolved_locally",
+      "message": "GitHub shows 2 active threads, but they were resolved locally and validation passed.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "active_threads": 2
+      },
+      "source": "local_validation",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 1200.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 20,
+        "checks_success": 20,
+        "checks_failure": 0,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [],
+        "blocker_types": [],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "passed",
+      "details": {
+        "status": "passed",
+        "required_for_merge_ready": true,
+        "passed": true,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run --files out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/classification-summary.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/codereview.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/final-git-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-cached-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/json-validation-all.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-blocker-comments-env.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-comments.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/pre-commit.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/proof-json-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/raw-json-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/repo-identity.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/runtime-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/task-packet-schema-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-659-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-664-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-659-posted-comment.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-664-posted-comment.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-checks.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-files.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-threads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-reviews.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-checks.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-files.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-threads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-reviews.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664.json task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "Validate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-frontmatter-fix",
+            "command": "python scripts/docs_frontmatter_guard.py --fix",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-validator",
+            "command": "python scripts/docs_validator.py",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-hygiene",
+            "command": "python scripts/check_docs_hygiene.py --check",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-filename-hygiene",
+            "command": "python scripts/check_docs_filename_hygiene.py --check",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "root-hygiene",
+            "command": "python scripts/check_root_hygiene.py",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "root-hygiene: no candidate files to check\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "18d5c7c41853bacfd28a8281b839f6efea59cc60e90c6fed38c9f09d2fcecf9d",
+          "valid_for_sha": "b9703c7eff878e12c6e51eb3436812fdcdb3599f",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "discovered",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        },
+        "failure_fingerprint": null
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "merge_readiness",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "passed",
+    "required_for_merge_ready": true,
+    "passed": true,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run --files out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/classification-summary.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/codereview.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/final-git-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-cached-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/json-validation-all.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-blocker-comments-env.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-comments.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/pre-commit.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/proof-json-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/raw-json-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/repo-identity.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/runtime-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/task-packet-schema-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-659-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-664-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-659-posted-comment.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-664-posted-comment.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-checks.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-files.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-threads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-reviews.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-checks.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-files.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-threads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-reviews.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664.json task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "Validate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-frontmatter-fix",
+        "command": "python scripts/docs_frontmatter_guard.py --fix",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-validator",
+        "command": "python scripts/docs_validator.py",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-hygiene",
+        "command": "python scripts/check_docs_hygiene.py --check",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-filename-hygiene",
+        "command": "python scripts/check_docs_filename_hygiene.py --check",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "root-hygiene",
+        "command": "python scripts/check_root_hygiene.py",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "root-hygiene: no candidate files to check\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "18d5c7c41853bacfd28a8281b839f6efea59cc60e90c6fed38c9f09d2fcecf9d",
+      "valid_for_sha": "b9703c7eff878e12c6e51eb3436812fdcdb3599f",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "failure_fingerprint": null
+  },
+  "thread_dispositions": [
+    {
+      "thread_id": "PRRT_kwDOPyIw986DabFW",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986DakNO",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ],
+  "fingerprint": {
+    "input_fingerprint": "11d2df0072d87804e2d97a43fe6139c407dd4263d6d4ac7cfd32ba05f29907cc",
+    "valid_for_sha": "b9703c7eff878e12c6e51eb3436812fdcdb3599f",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "explain": "{\"why_blocked\": [], \"evidence\": [{\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 2 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 2}, \"source\": \"local_validation\", \"override\": null}], \"next_action\": \"merge\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 2 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 2}, \"source\": \"local_validation\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 1200.0}, \"source\": \"heuristics\", \"override\": null}]}",
+    "operator_state": ""
+  },
+  "blocked_by_global_fix_pr": null
+}

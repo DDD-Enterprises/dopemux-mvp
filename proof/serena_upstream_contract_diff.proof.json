@@ -1,0 +1,27 @@
+{
+  "upstream_clone_location": "/Users/hue/code/serena-upstream",
+  "upstream_commit_sha": "37d40d6659fabc3b1a297ba21f28cd373e9502c1",
+  "decision_driving_families": {
+    "Editing": {
+      "status": "DIVERGENT",
+      "verdict": "Local is read-only (Hardened)",
+      "impact": "MAX"
+    },
+    "ProjectState": {
+      "status": "DIVERGENT",
+      "verdict": "Local is stateless/rooted",
+      "impact": "HIGH"
+    },
+    "ADHD": {
+      "status": "UNIQUE_LOCAL",
+      "verdict": "20+ local-only tools",
+      "impact": "MAX"
+    }
+  },
+  "fork_decision": "OWN THE FORK",
+  "rationale": "Dopemux Serena specializes in read-only intelligence and ADHD preservation; upstream focuses on read-write refactoring agents. The contracts are fundamentally incompatible.",
+  "residual_unknowns": [
+    "Potential for partial backport of upstream LSP performance improvements."
+  ],
+  "final_confidence": "high"
+}

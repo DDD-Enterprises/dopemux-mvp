@@ -1,0 +1,69 @@
+{
+  "ok": false,
+  "checks": [
+    {
+      "name": "binary:git",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/git",
+      "remediation": "Install `git` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:gh",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/gh",
+      "remediation": "Install `gh` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:python",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp/.venv/bin/python",
+      "remediation": "Install `python` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:pre-commit",
+      "status": "failed",
+      "required": true,
+      "details": "",
+      "remediation": "Install `pre-commit` and ensure it is on PATH."
+    },
+    {
+      "name": "gh_auth",
+      "status": "passed",
+      "required": true,
+      "details": "github.com\n  ✓ Logged in to github.com account hu3mann (keyring)\n  - Active account: true\n  - Git operations protocol: ssh\n  - Token: gho_************************************\n  - Token scopes: 'admin:public_key', 'gist', 'read:org', 'repo', 'workflow'",
+      "remediation": "Run `gh auth login` for the target repository."
+    },
+    {
+      "name": "git_remote",
+      "status": "passed",
+      "required": true,
+      "details": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "remediation": "Configure the `origin` remote."
+    },
+    {
+      "name": "git_worktree",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp                                        8247097de [tp/dopecode-phase8-events-replay]\n/private/tmp/dopemux-pr467                                         c50af8a57 [pr/467]\n/private/tmp/dopemux-pr480                                         8ff407fab [pr/480]\n/Users/hue/code/dopemux-extractor-gtm                              99816c74b [codex/prompts-prefix-mirror]\n/Users/hue/code/dopemux-mvp-rte-main-integration-audit-staging     3af380e42 [tp/rte-full-run-hygiene-and-launch-readiness]\n/Users/hue/code/dopemux-mvp-rte-seams                              62c8b6de5 [codex/rte-seam-extraction-foundation]\n/Users/hue/code/dopemux-mvp-rte-seams-v2                           182e4e3b2 [codex/rte-seam-extraction-foundation-v2]\n/Users/hue/code/dopemux-mvp-worktrees/v1-runtime-proof-linkage     665a41806 [codex/v1-runtime-proof-linkage]\n/Users/hue/code/dopemux-mvp-wt-dopecode-ast                        40edc271c [codex/dopecode-ast-navigation-20260417]\n/Users/hue/code/dopemux-mvp-wt-rte-benchmark-r1                    6683ef825 [codex/rte-benchmark-r1-first-campaign]\n/Users/hue/code/dopemux-mvp-wt-rte-v5-prescan-contract-unification bf3a9244d [feat/rte-v5-prescan-contract-unification]\n/Users/hue/code/dopemux-mvp-wt-serena-audit                        76dfeb6e2 [tp/serena-audit-runtime-io-tools]\n/Users/hue/code/dopemux-mvp-wt-serena-fix                          76dfeb6e2 [tp/serena-runtime-fix]\n/Users/hue/code/dopemux-mvp-wt-serena-upstream-diff                bf3a9244d [tp/serena-upstream-contract-diff]\n/Users/hue/code/dopemux-mvp/.claude/worktrees/cli-refactor         567a79e6f [feat/cli-refactor]\n/Users/hue/code/dopemux-mvp/.worktrees/tp-gh-review-thread-agent   82486613b [tp/gh-review-thread-agent]",
+      "remediation": "Use a git version with worktree support."
+    },
+    {
+      "name": "git_ignorecase",
+      "status": "warning",
+      "required": false,
+      "details": "core.ignorecase=true",
+      "remediation": "Git case-insensitivity detected. Some renames might require `git mv` to be detected on this OS."
+    }
+  ],
+  "policy_resolution": {
+    "source": "repo",
+    "path": "/Users/hue/code/dopemux-mvp/config/pr_merge_specialist/policy.yaml",
+    "fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d",
+    "policy_schema_version": 1,
+    "overrides": []
+  },
+  "override_records": []
+}

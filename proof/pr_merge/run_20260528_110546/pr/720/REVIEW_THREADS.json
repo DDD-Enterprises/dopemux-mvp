@@ -1,0 +1,82 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw986FQYSn",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "ui-dashboard/src/App.tsx",
+      "line": 483,
+      "original_line": 483,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FjtQu",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Preserve the copy action in the accessible name**\n\nWhen screen-reader or voice-control users focus this clickable chip before a copy occurs, the new accessible name only announces the recommendation text and no longer indicates that activating the control copies it. Because the child already supplies its own `aria-label`, the surrounding Tooltip text is not a reliable substitute for the control's name; keep the recommendation content while also including the copy action in the non-copied state.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-27T23:35:33Z",
+          "path": "ui-dashboard/src/App.tsx",
+          "line": 483,
+          "original_line": 483
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3Vxi",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:34:02Z",
+          "path": "ui-dashboard/src/App.tsx",
+          "line": 483,
+          "original_line": 483
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3W9A",
+          "author": "google-labs-jules",
+          "body": "Acknowledged. This change has been implemented in the PR to ensure the AI Recommendation Chip's aria-label is descriptive and remains accessible when in the 'Copied' state, matching the requirements of the accessibility test suite.",
+          "created_at": "2026-05-28T17:35:02Z",
+          "path": "ui-dashboard/src/App.tsx",
+          "line": 483,
+          "original_line": 483
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FQYuA",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "ui-dashboard/src/App.tsx",
+      "line": 160,
+      "original_line": 160,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987Fjt5s",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`info` is a known notification type and is also the runtime fallback when `notification_type` is missing, but this switch does not handle it, so common info notifications fall through to the generic default icon. Add an explicit `info` case so known informational events remain distinguishable from unknown notification types.\n",
+          "created_at": "2026-05-27T23:36:11Z",
+          "path": "ui-dashboard/src/App.tsx",
+          "line": 160,
+          "original_line": 160
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3Vzr",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:34:04Z",
+          "path": "ui-dashboard/src/App.tsx",
+          "line": 160,
+          "original_line": 160
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3W-R",
+          "author": "google-labs-jules",
+          "body": "Acknowledged. The `getNotificationIcon` helper has been added to improve the scannability of the Live Signal Feed by providing semantic visual cues for each notification type, following the project's iconography standards.",
+          "created_at": "2026-05-28T17:35:03Z",
+          "path": "ui-dashboard/src/App.tsx",
+          "line": 160,
+          "original_line": 160
+        }
+      ]
+    }
+  ]
+}

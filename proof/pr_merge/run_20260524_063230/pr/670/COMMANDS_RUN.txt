@@ -1,0 +1,199 @@
+$ git fetch origin pull/670/head:prmerge/20260524_063230-670
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/670/head -> prmerge/20260524_063230-670
+
+$ git worktree add /tmp/dopemux-pr-merge-670-20260524_063230 prmerge/20260524_063230-670
+exit=0
+--- stdout ---
+HEAD is now at b9703c7ef docs(governance): record posted PR blocker comments
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260524_063230-670')
+Updating files:  28% (3696/12835)
+Updating files:  29% (3723/12835)
+Updating files:  30% (3851/12835)
+Updating files:  31% (3979/12835)
+Updating files:  32% (4108/12835)
+Updating files:  33% (4236/12835)
+Updating files:  34% (4364/12835)
+Updating files:  35% (4493/12835)
+Updating files:  36% (4621/12835)
+Updating files:  37% (4749/12835)
+Updating files:  38% (4878/12835)
+Updating files:  39% (5006/12835)
+Updating files:  40% (5134/12835)
+Updating files:  41% (5263/12835)
+Updating files:  42% (5391/12835)
+Updating files:  43% (5520/12835)
+Updating files:  44% (5648/12835)
+Updating files:  45% (5776/12835)
+Updating files:  46% (5905/12835)
+Updating files:  47% (6033/12835)
+Updating files:  48% (6161/12835)
+Updating files:  49% (6290/12835)
+Updating files:  50% (6418/12835)
+Updating files:  51% (6546/12835)
+Updating files:  52% (6675/12835)
+Updating files:  53% (6803/12835)
+Updating files:  54% (6931/12835)
+Updating files:  55% (7060/12835)
+Updating files:  56% (7188/12835)
+Updating files:  57% (7316/12835)
+Updating files:  58% (7445/12835)
+Updating files:  59% (7573/12835)
+Updating files:  60% (7701/12835)
+Updating files:  61% (7830/12835)
+Updating files:  62% (7958/12835)
+Updating files:  63% (8087/12835)
+Updating files:  64% (8215/12835)
+Updating files:  65% (8343/12835)
+Updating files:  66% (8472/12835)
+Updating files:  67% (8600/12835)
+Updating files:  68% (8728/12835)
+Updating files:  69% (8857/12835)
+Updating files:  70% (8985/12835)
+Updating files:  71% (9113/12835)
+Updating files:  72% (9242/12835)
+Updating files:  73% (9370/12835)
+Updating files:  73% (9459/12835)
+Updating files:  74% (9498/12835)
+Updating files:  75% (9627/12835)
+Updating files:  76% (9755/12835)
+Updating files:  77% (9883/12835)
+Updating files:  78% (10012/12835)
+Updating files:  79% (10140/12835)
+Updating files:  80% (10268/12835)
+Updating files:  81% (10397/12835)
+Updating files:  82% (10525/12835)
+Updating files:  83% (10654/12835)
+Updating files:  84% (10782/12835)
+Updating files:  85% (10910/12835)
+Updating files:  86% (11039/12835)
+Updating files:  87% (11167/12835)
+Updating files:  88% (11295/12835)
+Updating files:  89% (11424/12835)
+Updating files:  90% (11552/12835)
+Updating files:  91% (11680/12835)
+Updating files:  92% (11809/12835)
+Updating files:  93% (11937/12835)
+Updating files:  94% (12065/12835)
+Updating files:  95% (12194/12835)
+Updating files:  96% (12322/12835)
+Updating files:  97% (12450/12835)
+Updating files:  98% (12579/12835)
+Updating files:  99% (12707/12835)
+Updating files: 100% (12835/12835)
+Updating files: 100% (12835/12835), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+b9703c7eff878e12c6e51eb3436812fdcdb3599f
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986DabFW", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYYyC"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986DakNO", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYYzz"}}}}
+
+$ gh pr update-branch 670 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/tp-dmx-pr-queue-blockers-001
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/tp-dmx-pr-queue-blockers-001 -> FETCH_HEAD
+
+$ git reset --hard origin/codex/tp-dmx-pr-queue-blockers-001
+exit=0
+--- stdout ---
+HEAD is now at b9703c7ef docs(governance): record posted PR blocker comments
+
+$ git diff --name-only --diff-filter=ACMR 1fb5601152537b35d0660be7e754de78d63f9148...HEAD
+exit=0
+--- stdout ---
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/classification-summary.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/codereview.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/final-git-status.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-cached-check.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-check.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/json-validation-all.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-blocker-comments-env.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-comments.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/pre-commit.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/proof-json-validation.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/raw-json-validation.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/repo-identity.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/runtime-validation.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/task-packet-schema-validation.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-659-blocker-comment.md
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-664-blocker-comment.md
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-659-posted-comment.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-664-posted-comment.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw-files.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-checks.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-comments.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-files.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-comments.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-threads.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-reviews.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-checks.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-comments.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-files.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-comments.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-threads.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-reviews.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664.json
+task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/classification-summary.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/codereview.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/final-git-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-cached-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/git-diff-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/json-validation-all.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-blocker-comments-env.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/post-comments.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/pre-commit.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/proof-json-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/raw-json-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/repo-identity.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/runtime-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/commands/task-packet-schema-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-659-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/draft-comments/pr-664-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-659-posted-comment.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/posted-comments/pr-664-posted-comment.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-checks.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-files.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-review-threads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659-reviews.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-659.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-checks.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-files.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-comments.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-review-threads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664-reviews.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/raw/pr-664.json task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-670-20260524_063230
+exit=0
+
+$ gh pr merge 670 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#670 is not mergeable: the base branch policy prohibits the merge.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+
