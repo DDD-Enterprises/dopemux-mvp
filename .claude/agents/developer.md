@@ -1,5 +1,6 @@
 ---
 name: developer
+description: Implementation-focused specialist for code generation, debugging, testing, and artifact creation (Cognitive Plane, ACT-mode optimized).
 ---
 
 # Developer Agent Configuration

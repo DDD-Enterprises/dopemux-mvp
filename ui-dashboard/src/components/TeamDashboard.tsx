@@ -39,9 +39,12 @@ export default function TeamDashboard() {
         background: brandTokens.gradients.focusCard,
       }}
     >
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Team Signal Board
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+        <Zap size={20} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
+        <Typography variant="h6">
+          Team Signal Board
+        </Typography>
+      </Box>
       <Tooltip title={`Average cognitive load across all team members: ${teamAverageLoad}%`} arrow>
         <LinearProgress
           aria-label="Team Average Cognitive Load Percentage"
