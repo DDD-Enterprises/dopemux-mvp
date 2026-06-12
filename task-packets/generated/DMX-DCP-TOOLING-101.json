@@ -1,0 +1,193 @@
+{
+  "id": "DMX-DCP-TOOLING-101",
+  "project": "dopemux-mvp",
+  "target": "Ship the DCP contracts manifest (schemas/dcp/manifest.json + manifest schema), a dcp-contracts-consistency CI test with cross-file ci_gates validation, a det-vs-LLM boundary ADR, and the README L0-L3 ladder + version-precedence rule. Wave 0 foundation — no runtime behavior change.",
+  "invariants": [
+    "Never wire or import the merge seam (DCP-RED-MERGE-SEAM-0001) in any file this TP touches.",
+    "Never compute live SHAs for static fixtures — all SHA values in new fixture or manifest files must be static strings or omitted.",
+    "Never self-certify — the auditor identity in the proof bundle must differ from the implementer identity; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints in any new or edited file.",
+    "Never promote external corroboration (GPT-5.5 synthesis, DR-016 EXTERNAL_PROPOSED fields) to repo authority — all manifest entries must cite REPO_VALIDATED or EXTERNAL_PROPOSED provenance tags.",
+    "LIVE_WRITE_READY remains undefined and blocking — do not resolve or reference it as defined.",
+    "diff touches contract/workflow surfaces — ship hand-authored proof/DMX-DCP-TOOLING-101/APPROVAL.json per design B.6.",
+    "The consistency test must enumerate every schema currently present in schemas/dcp/ — no unlisted contracts (authoring precondition per plan FEAS-4): dcp_approval_artifact, dcp_audit_route, dcp_authority_surface, dcp_backend_runner, dcp_chronicle_receipt, dcp_control_snapshot, dcp_evidence_hit, dcp_execution_lane, dcp_helper_receipt, dcp_model_slot, dcp_mutation_class, dcp_project_resource_map, dcp_proof_pointer, dcp_red_lane_report, dcp_red_lane_taxonomy, dcp_routing_classification, dcp_routing_decision, dcp_routing_proof_extension, dcp_stop_condition (19 schemas total; plus the 6 routing schemas from PR #862 if that PR has merged by execution time — enumerate HEAD state at implementation time).",
+    "manifest.json is a new contract-surface file — every edit must go through the B.6 sanctioned-change protocol after this TP establishes it."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-dcp-tooling-101",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): TP-101 contracts manifest + promotion ladder + det-vs-LLM ADR",
+    "allowlist": [
+      "schemas/dcp/manifest.json",
+      "schemas/dcp/dcp_contracts_manifest.schema.json",
+      "schemas/dcp/README.md",
+      "docs/90-adr/adr-dcp-deterministic-vs-llm-boundary.md",
+      "tests/dcp/test_contracts_consistency.py",
+      "task-packets/generated/DMX-DCP-TOOLING-101.json",
+      "proof/DMX-DCP-TOOLING-101/APPROVAL.json",
+      "proof/DMX-DCP-TOOLING-101/PROOF.json",
+      "proof/DMX-DCP-TOOLING-101/AUDITOR_REPORT.md"
+    ],
+    "verify": [
+      "python -m json.tool schemas/dcp/manifest.json",
+      "python -m json.tool schemas/dcp/dcp_contracts_manifest.schema.json",
+      "python -m jsonschema -i schemas/dcp/manifest.json schemas/dcp/dcp_contracts_manifest.schema.json",
+      "python -m json.tool proof/DMX-DCP-TOOLING-101/APPROVAL.json",
+      "python -m json.tool proof/DMX-DCP-TOOLING-101/PROOF.json",
+      "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-101.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/dcp/test_contracts_consistency.py -v",
+      "git diff --check",
+      "git status --short"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): TP-101 contracts manifest + promotion ladder + det-vs-LLM ADR",
+    "body": "## Summary\n- Adds `schemas/dcp/manifest.json` (new contract registry, one entry per DCP schema) and its JSON Schema (`dcp_contracts_manifest.schema.json`).\n- Adds `tests/dcp/test_contracts_consistency.py`: cross-file consistency CI test validating `ci_gates` entries against actual job names in `ci-complete.yml`, and `level` structural checks (L2 requires non-empty producers/consumers).\n- Adds `docs/90-adr/adr-dcp-deterministic-vs-llm-boundary.md`: L0-L3 ladder, version-precedence rule, and the det-vs-LLM boundary table (per design A.3).\n- Updates `schemas/dcp/README.md` with the L0-L3 ladder and `schema_version`/`contract_version` precedence rule (per design A.2).\n- Ships hand-authored `proof/DMX-DCP-TOOLING-101/APPROVAL.json` per sanctioned-change protocol B.6 (manifest.json is a new contract surface).\n\n## Scope\nSchema/manifest/docs/test/proof only. No runtime code changes, no CI workflow file edits.\n\n## NOT_RUN\nFull DCP suite, live scanner invocation, PR #862 routing schema enumeration if branch not yet merged.\n\n## Residual Risks\nIf PR #862 has merged by execution time, its 6 routing schemas must be added to the manifest before this TP commits — implementer must check HEAD state.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch, marker file, dirty state, schemas/dcp/ contents, and ci-complete.yml job/step names that manifest ci_gates entries will reference.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "test -f .dopetaskroot",
+        "ls schemas/dcp/",
+        "python -m json.tool schemas/dcp/dcp_red_lane_taxonomy.schema.json | head -40",
+        "grep -n 'name:' .github/workflows/ci-complete.yml | head -60 || true",
+        "test -f docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ],
+      "validation": [
+        "Remote identifies DDD-Enterprises/dopemux-mvp.",
+        "Branch is codex/dmx-dcp-tooling-101.",
+        ".dopetaskroot exists.",
+        "All 19 schemas (or more if PR #862 merged) are enumerated — list is recorded in PROOF.json.",
+        "ci-complete.yml job names that ci_gates entries will reference are recorded — no invented names."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        ".claude/CLAUDE.md",
+        "claudedocs/dcp-tooling-system/30-design.md",
+        "claudedocs/dcp-tooling-system/40-plan.md",
+        "schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+        ".github/workflows/ci-complete.yml"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Author schemas/dcp/dcp_contracts_manifest.schema.json (JSON Schema draft-07) with fields: manifest_version (string), contracts (array of contract entries). Each contract entry: contract_id, schema_file, schema_version, contract_version (semver), validation_state (enum: DESIGN_ONLY|REPO_CROSS_CHECKED|REPO_VALIDATED|LOCKED), level (enum: L0|L1|L2|L3), instance_files (array), runtime_producers (array), runtime_consumers (array), ci_gates (array of strings), enforcement_side (enum: deterministic|llm_advisory|human). All arrays allow empty. additionalProperties: false at entry level. Per design A.2.",
+      "expected_files": [
+        "schemas/dcp/dcp_contracts_manifest.schema.json"
+      ],
+      "validation": [
+        "python -m json.tool schemas/dcp/dcp_contracts_manifest.schema.json exits 0.",
+        "Schema is draft-07, additionalProperties false at contract entry level.",
+        "enforcement_side enum includes exactly: deterministic, llm_advisory, human.",
+        "validation_state enum includes DESIGN_ONLY, REPO_CROSS_CHECKED, REPO_VALIDATED, LOCKED."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Author schemas/dcp/manifest.json: one contract entry per schema currently in schemas/dcp/ (enumerate HEAD state — do not invent entries for schemas not present). Set contract_version=0.1.0 for all, level=L0 unless the plan/design specifies higher, validation_state per evidence. enforcement_side=deterministic for red-lane enforcement schemas, llm_advisory or human as documented. ci_gates entries must name jobs/steps that actually exist in ci-complete.yml — record UNKNOWN for any gate name that cannot be confirmed from S1. Per design A.2.",
+      "expected_files": [
+        "schemas/dcp/manifest.json"
+      ],
+      "validation": [
+        "python -m json.tool schemas/dcp/manifest.json exits 0.",
+        "python -m jsonschema -i schemas/dcp/manifest.json schemas/dcp/dcp_contracts_manifest.schema.json exits 0.",
+        "Every schema file currently in schemas/dcp/ has exactly one entry in manifest.json — no unlisted, no extra.",
+        "No ci_gates entry names a job/step that does not exist in ci-complete.yml (UNKNOWN entries must be explicitly labeled in a comment or noted in PROOF.json, not silently included as if real).",
+        "L2 entries have non-empty runtime_producers and runtime_consumers."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Author tests/dcp/test_contracts_consistency.py: (1) parse manifest.json, (2) assert every schema_file entry exists on disk, (3) for each entry with ci_gates non-empty, assert each gate name appears as a job or step name in .github/workflows/ci-complete.yml — a fake gate name must cause the test to fail (demonstrate with a fixture or parametrize), (4) assert every L2 entry has non-empty runtime_producers and runtime_consumers. Per design A.1.",
+      "expected_files": [
+        "tests/dcp/test_contracts_consistency.py"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_contracts_consistency.py -v exits 0 against the authored manifest.",
+        "Test fails (exit non-zero) when a ci_gates entry names a job that does not exist in ci-complete.yml — demonstrate with a parametrized fake name or inline assertion fixture.",
+        "Test fails when an L2 entry has empty runtime_producers or runtime_consumers."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Author docs/90-adr/adr-dcp-deterministic-vs-llm-boundary.md: include the L0-L3 ladder definition, the version-precedence rule (schema_version is the authority marker; contract_version semver is operational), and the det-vs-LLM boundary table mapping each surface (native_hooks.py PreToolUse, pre-commit, CI gates, dopemux dcp CLI, .claude/commands skills, personas/agents, PostToolUse/Stop hooks) to its side and hard-block capability. Per design A.3 and A.2. Update schemas/dcp/README.md with the L0-L3 ladder and version-precedence rule (additive only — do not remove existing content).",
+      "expected_files": [
+        "docs/90-adr/adr-dcp-deterministic-vs-llm-boundary.md",
+        "schemas/dcp/README.md"
+      ],
+      "validation": [
+        "ADR file exists and contains the L0-L3 ladder, version-precedence rule, and the 7-row det-vs-LLM surface table.",
+        "ADR states: 'a probabilistic guard is a vibe plane, not a red-lane gate' (verbatim from design A.3 constraints).",
+        "README.md is additive — original content preserved, ladder and precedence rule appended or integrated.",
+        "Both files parse as UTF-8 text with no trailing whitespace issues (git diff --check passes)."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Author proof/DMX-DCP-TOOLING-101/APPROVAL.json (hand-authored, per design B.6): manifest.json is a new contract-surface file — this TP is the one introducing it, so the sanctioned-change protocol applies. Fields: tp_id, decision (allow), requester (implementer identity), approver (distinct operator identity — must differ from requester), scope (paths this approval covers: [schemas/dcp/manifest.json, schemas/dcp/dcp_contracts_manifest.schema.json]), head_sha (the commit SHA at signing — record PENDING if not yet committed, update before final commit), expiry_window, rationale. Approver must not equal requester.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-101/APPROVAL.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/DMX-DCP-TOOLING-101/APPROVAL.json exits 0.",
+        "requester != approver (distinct identities).",
+        "decision is 'allow'.",
+        "scope array covers schemas/dcp/manifest.json and schemas/dcp/dcp_contracts_manifest.schema.json.",
+        "tp_id matches DMX-DCP-TOOLING-101."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Run full validation suite, produce proof/DMX-DCP-TOOLING-101/PROOF.json and AUDITOR_REPORT.md, verify diff is within allowlist, then commit.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-101/PROOF.json",
+        "proof/DMX-DCP-TOOLING-101/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "python -m json.tool schemas/dcp/manifest.json exits 0.",
+        "python -m json.tool schemas/dcp/dcp_contracts_manifest.schema.json exits 0.",
+        "python -m jsonschema -i schemas/dcp/manifest.json schemas/dcp/dcp_contracts_manifest.schema.json exits 0.",
+        "python -m pytest tests/dcp/test_contracts_consistency.py -v exits 0.",
+        "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-101.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "python -m json.tool proof/DMX-DCP-TOOLING-101/APPROVAL.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --stat output shows only files in allowlist.",
+        "PROOF.json records all command outputs, exit codes, validation states (PASS/FAIL/NOT_RUN), schema enumeration from S1, auditor identity (distinct from implementer), APPROVAL.json reference, and any UNKNOWNs.",
+        "Auditor identity in AUDITOR_REPORT.md differs from implementer identity."
+      ]
+    }
+  ]
+}

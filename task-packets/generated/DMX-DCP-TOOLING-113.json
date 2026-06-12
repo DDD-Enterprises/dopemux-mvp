@@ -1,0 +1,173 @@
+{
+  "id": "DMX-DCP-TOOLING-113",
+  "project": "dopemux-mvp",
+  "target": "Add JSON-Schema lint for mcp_catalog.yaml (+ deprecated field tracking) and a CI step in ci-complete.yml. Closes TOOLING-0001 resolution #3. Serialized after TP-102 because both TPs edit ci-complete.yml.",
+  "invariants": [
+    "Never wire or import the merge seam (DCP-RED-MERGE-SEAM-0001) in any file this TP touches.",
+    "Never compute live SHAs for static fixtures.",
+    "Never self-certify — auditor identity in the proof bundle must differ from the implementer identity; operator verifies before orchestrator advance.",
+    "Never bind ConPort, dope-memory, or task-orchestrator endpoints in any new or edited file.",
+    "Never promote external corroboration to repo authority.",
+    "LIVE_WRITE_READY remains undefined and blocking.",
+    "diff touches .github/workflows/ci-complete.yml (a hard-block path) — ship hand-authored proof/DMX-DCP-TOOLING-113/APPROVAL.json per design B.6.",
+    "This TP must execute AFTER DMX-DCP-TOOLING-102 has merged — verify via git log before editing ci-complete.yml to prevent double-edit merge conflicts."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-102"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-dcp-tooling-113",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): TP-113 MCP catalog schema lint + CI step + deprecated field",
+    "allowlist": [
+      "schemas/dcp/mcp_catalog.schema.json",
+      "tests/dcp/fixtures/mcp_catalog_invalid_deprecated.yaml",
+      "tests/dcp/test_mcp_catalog_lint.py",
+      ".github/workflows/ci-complete.yml",
+      "task-packets/generated/DMX-DCP-TOOLING-113.json",
+      "proof/DMX-DCP-TOOLING-113/APPROVAL.json",
+      "proof/DMX-DCP-TOOLING-113/PROOF.json",
+      "proof/DMX-DCP-TOOLING-113/AUDITOR_REPORT.md"
+    ],
+    "verify": [
+      "python -m json.tool schemas/dcp/mcp_catalog.schema.json",
+      "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-113.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool proof/DMX-DCP-TOOLING-113/APPROVAL.json",
+      "python -m json.tool proof/DMX-DCP-TOOLING-113/PROOF.json",
+      "python -m pytest tests/dcp/test_mcp_catalog_lint.py -v",
+      "git diff --check",
+      "git status --short"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): TP-113 MCP catalog schema lint + CI step",
+    "body": "## Summary\n- Adds `schemas/dcp/mcp_catalog.schema.json`: JSON Schema for `mcp_catalog.yaml`, including a `deprecated: {by, replacement, since}` field per design D-I.3.\n- Adds `tests/dcp/test_mcp_catalog_lint.py`: validates live `mcp_catalog.yaml` against schema; asserts a fixture with a known drift class (referencing a removed server name) fails validation.\n- Adds a CI step in `.github/workflows/ci-complete.yml` running the mcp-catalog-lint test.\n- Ships hand-authored `proof/DMX-DCP-TOOLING-113/APPROVAL.json` per design B.6 (ci-complete.yml edit).\n\n## Depends on\nDMX-DCP-TOOLING-102 must be merged before this TP executes (ci-complete.yml serialization constraint).\n\n## Scope\nSchema + CI lint only. No runtime MCP wrapper changes.\n\n## NOT_RUN\nFull CI run, live MCP startup.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, branch, dirty state. Verify DMX-DCP-TOOLING-102 has merged (git log shows the TP-102 commit). Inspect mcp_catalog.yaml to understand its current shape and identify a known drift class (e.g., a removed server name like mas-sequential-thinking referenced in config). Inspect ci-complete.yml to find the correct insertion point for the new lint step and verify no ci-complete.yml conflicts from TP-102.",
+      "commands": [
+        "git remote -v",
+        "git branch --show-current",
+        "git status --short",
+        "git log --oneline -10",
+        "grep -n 'dmx-dcp-tooling-102\\|TP-102\\|red-lane taxonomy' git log 2>/dev/null || git log --oneline | grep -i '102\\|taxonomy' || true",
+        "test -f .dopetaskroot",
+        "find . -name 'mcp_catalog.yaml' | head -5",
+        "head -60 config/mcp_catalog.yaml 2>/dev/null || find . -name 'mcp_catalog.yaml' -exec head -60 {} \\; || true",
+        "grep -n 'job\\|step\\|name:' .github/workflows/ci-complete.yml | head -60"
+      ],
+      "validation": [
+        "Remote identifies DDD-Enterprises/dopemux-mvp.",
+        "git log confirms DMX-DCP-TOOLING-102 commit is present — STOP if not merged, re-queue after 102.",
+        "mcp_catalog.yaml location and current shape are recorded.",
+        "A known drift class (removed server reference) is identified for the fixture.",
+        "ci-complete.yml insertion point for new step is identified without conflicts."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/dcp-tooling-system/30-design.md",
+        "claudedocs/dcp-tooling-system/40-plan.md",
+        ".github/workflows/ci-complete.yml"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Author schemas/dcp/mcp_catalog.schema.json: JSON Schema (draft-07) for mcp_catalog.yaml. Include a servers map or array shape matching the real file. Add a deprecated field to each server entry: object with required properties by (string: replacement server name), replacement (string), since (string: ISO date). additionalProperties: false where appropriate. Per design D-I.3 (TOOLING-0001 #3).",
+      "expected_files": [
+        "schemas/dcp/mcp_catalog.schema.json"
+      ],
+      "validation": [
+        "python -m json.tool schemas/dcp/mcp_catalog.schema.json exits 0.",
+        "Schema is draft-07.",
+        "deprecated field shape includes by, replacement, since as required properties.",
+        "Live mcp_catalog.yaml validates against the schema (any missing required fields in the live file are recorded as NOT_RUN with explanation — do not break the live catalog)."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Author tests/dcp/test_mcp_catalog_lint.py: (1) validate live mcp_catalog.yaml against mcp_catalog.schema.json, (2) create or reference tests/dcp/fixtures/mcp_catalog_invalid_deprecated.yaml with a server entry using a removed server name (e.g., mas-sequential-thinking) in a deprecated.by field that doesn't match any current server — assert this fixture causes a known drift detection (either schema validation failure or a custom check). The test must demonstrate that the lint catches the known drift class.",
+      "expected_files": [
+        "tests/dcp/test_mcp_catalog_lint.py",
+        "tests/dcp/fixtures/mcp_catalog_invalid_deprecated.yaml"
+      ],
+      "validation": [
+        "python -m pytest tests/dcp/test_mcp_catalog_lint.py -v exits 0.",
+        "Test against the drift fixture fails validation (demonstrates lint catches the known drift class).",
+        "Test against live mcp_catalog.yaml passes (or any failure is a real schema violation to be fixed, not a false positive)."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Edit .github/workflows/ci-complete.yml to add a mcp-catalog-lint step running the new test. Reuse the existing Python/pytest invocation pattern in the file. Add the step in a logical location (after the dcp-contracts-consistency step from TP-101 if present, otherwise after existing dcp test steps). Per design D-I.3.",
+      "expected_files": [
+        ".github/workflows/ci-complete.yml"
+      ],
+      "validation": [
+        "ci-complete.yml parses as valid YAML after edit.",
+        "New step runs: python -m pytest tests/dcp/test_mcp_catalog_lint.py -v (or equivalent uv invocation matching repo convention).",
+        "No other steps in ci-complete.yml are modified.",
+        "Step name is 'mcp-catalog-lint' or similar (matches the pattern the consistency test in TP-101 would look for)."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Author proof/DMX-DCP-TOOLING-113/APPROVAL.json (hand-authored, per design B.6): this TP edits .github/workflows/ci-complete.yml — a hard-block path. Fields: tp_id=DMX-DCP-TOOLING-113, decision=allow, requester (implementer, distinct from approver), approver (operator identity), scope=[.github/workflows/ci-complete.yml], head_sha (PENDING until commit, update before final), expiry_window, rationale. requester must not equal approver.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-113/APPROVAL.json"
+      ],
+      "validation": [
+        "python -m json.tool proof/DMX-DCP-TOOLING-113/APPROVAL.json exits 0.",
+        "requester != approver.",
+        "decision is allow.",
+        "scope covers .github/workflows/ci-complete.yml.",
+        "tp_id is DMX-DCP-TOOLING-113."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run full validation, produce proof/DMX-DCP-TOOLING-113/PROOF.json and AUDITOR_REPORT.md, verify diff is within allowlist, commit.",
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-113/PROOF.json",
+        "proof/DMX-DCP-TOOLING-113/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "python -m json.tool schemas/dcp/mcp_catalog.schema.json exits 0.",
+        "python -m pytest tests/dcp/test_mcp_catalog_lint.py -v exits 0.",
+        "ci-complete.yml is valid YAML after edit.",
+        "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-113.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "git diff --check exits 0.",
+        "git diff --stat shows only files in allowlist.",
+        "PROOF.json records all outputs, exit codes, validation states (PASS/FAIL/NOT_RUN), auditor identity (distinct from implementer), APPROVAL.json reference, and any UNKNOWNs.",
+        "Auditor identity in AUDITOR_REPORT.md differs from implementer identity."
+      ]
+    }
+  ]
+}
