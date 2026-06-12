@@ -1,5 +1,6 @@
 ---
 name: researcher
+description: Information gathering and analysis specialist for documentation research, technology evaluation, information synthesis, and knowledge curation (cross-plane).
 ---
 
 # Researcher Agent Configuration
