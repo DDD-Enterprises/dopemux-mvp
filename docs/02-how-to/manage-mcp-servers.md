@@ -5,8 +5,8 @@ type: how-to
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-05-06'
-last_review: '2026-05-06'
-next_review: '2026-08-06'
+last_review: '2026-06-10'
+next_review: '2026-09-10'
 prelude: How to declare MCP servers once globally, scaffold worktree configs in seconds via `dopemux mcp init`, and keep global and local MCP launch surfaces in sync with the catalog.
 ---
 
@@ -105,14 +105,18 @@ Servers that appear in both global and local are flagged as duplicates. Servers 
 Per-worktree ports are deterministic:
 
 ```
-port = default_port_base + (sha1(worktree_abspath)[:4]_hex % 100)
+instance_id = sha1(resolved_worktree_abspath)[:4]
+offset      = int(instance_id, 16) % 100
+port        = default_port_base + offset
 ```
 
-So the same worktree always gets the same port across reboots, and two different worktrees get different offsets within a 100-port window per service. `init` checks ports against `lsof` and reports `(free)` or `(in use)`.
+For example, the main worktree at `/Users/hue/code/dopemux-mvp` produces offset `34` → `dope-memory` on `3054`; a worktree under `.claude/worktrees/` may produce offset `98` → `dope-memory` on `3118`. The same worktree always gets the same port across reboots. `init` checks ports against `lsof` and reports `(free)` or `(in use)`.
+
+The computed ports are written to the worktree's `.envrc` (or `.envrc.dopemux-mcp`). Claude Code expands `${DOPE_MEMORY_PORT:-3020}` from the environment at session start, so the dope-memory `.mcp.json` entry automatically points at the per-worktree container.
 
 `task-orchestrator` is different: it is stdio and does not allocate a port. Its durable SQLite state key is derived from the local git repository common directory, so linked worktrees for one repository share one Task Orchestrator DB.
 
-If you ever hit a real collision (vanishingly rare in practice), bump `default_port_base` for the conflicting service in `mcp_catalog.yaml` by 100 and re-run `dopemux mcp init --force`.
+**Cross-worktree port collision caveat**: port bases for different per-worktree services are spaced less than the `% 100` offset window apart (e.g. `conport` base `3005`, `dope-memory` base `3020`). This means worktree A's `dope-memory` port (`3020 + offset_A`) could collide with worktree B's `conport` port (`3005 + offset_B`) if the offsets align. `_allocate_ports` detects and rejects intra-worktree collisions, but cross-worktree cross-service collisions are not auto-detected. If you observe unexpected connection failures or a port claimed by the wrong service, inspect `lsof -i :<port>` and bump the affected service's `default_port_base` in `mcp_catalog.yaml` by 100, then re-run `dopemux mcp init --force` in each affected worktree.
 
 ## Compose-side requirement
 
@@ -149,6 +153,51 @@ If `compose.yml` still has hardcoded port mappings, only one worktree can run th
 
 2. If singleton: `dopemux mcp sync-globals --apply`.
 3. If per-worktree: `dopemux mcp add my-mcp` in each worktree that needs it (or add to `defaults.per_worktree` so future `init` calls pick it up automatically).
+
+## dope-memory transport
+
+`dope-memory` is a per-worktree MCP server backed by the `dope-memory` compose service (entrypoint `services/working-memory-assistant/dope_memory_main.py`, container port `3020`). As of PR #857 it serves a real MCP **streamable-HTTP** endpoint at `/mcp`. Before this change the `.mcp.json` entry existed but never connected — the service was REST-only.
+
+### Transport contract
+
+- `mcp_catalog.yaml` entry: `transport: http`
+- `.mcp.json` entry: `"type": "http"`, URL `http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp`
+
+These two files are generator-coupled: `_build_local_mcp_json` in `src/dopemux/commands/mcp_commands.py` generates `.mcp.json` from `mcp_catalog.yaml` defaults, and the invariant test `tests/unit/test_mcp_commands_catalog.py::test_committed_mcp_json_matches_root_catalog_defaults` enforces they stay in sync.
+
+### Tools exposed
+
+The MCP endpoint exposes 10 tools (identical to the REST `/tools/*` surface — both hit the same `DopeMemoryMCPServer` backend instance and the same canonical `chronicle.sqlite` ledger):
+
+`memory_search`, `memory_store`, `memory_recap`, `memory_mark_issue`, `memory_link_resolution`, `memory_replay_session`, `memory_correct`, `memory_generate_reflection`, `memory_reflections`, `memory_trajectory`
+
+### Verifying the endpoint
+
+```bash
+# Option A — via Claude Code MCP list (shows transport type and connection status)
+claude mcp list
+# Expected: dope-memory: ... (HTTP) - ✔ Connected
+
+# Option B — raw probe (substitute the actual per-worktree port if different from 3020)
+curl -s -X POST http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"0"}}}'
+# Expected: HTTP 200, body contains serverInfo.name == "dope-memory", mcp-session-id response header present
+```
+
+### Rebuild after changes
+
+```bash
+docker compose build dope-memory
+docker compose up -d --no-deps dope-memory
+```
+
+Run these from the repo root; compose volume paths resolve relative to the compose working directory.
+
+### Package naming caveat
+
+The service-local Python package was renamed from `mcp/` to `wma_mcp/` because when copied to `/app/mcp` in the container it shadowed the pip-installed `mcp` SDK that fastmcp depends on. Never name a service-local package `mcp/` in any service that uses the `mcp` SDK.
 
 ## Troubleshooting
 
