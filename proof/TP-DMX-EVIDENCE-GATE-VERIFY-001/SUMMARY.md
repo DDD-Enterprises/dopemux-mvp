@@ -34,7 +34,7 @@ All 12 gates have statuses. No stop conditions triggered. No secrets printed. No
 | VG-011 | ✅ VERIFIED | `conport_kg` and `conport_kg_ui` are inactive/superseded. `dopecon-bridge` routes only load API proxy routes to `conport_client`, not `conport_kg`. `mcp-integration-bridge` is not configured or running in `compose.yml`. | None. Recommend pruning legacy services/conport_kg/ and conport_kg_ui/. |
 | VG-012 | ✅ VERIFIED | .claude/hooks/ ADHD Engine integration is REAL: check_energy.sh, save_context.sh, log_progress.sh, prompt_analyzer.py all curl localhost:8080. NOT a stub. ADHD Engine container NOT currently running — hooks degrade gracefully. | Start ADHD Engine if operator support depends on it. Run docker ps -a | grep adhd to check stopped state. |
 
-**Summary:** 7 VERIFIED · 3 STILL_UNKNOWN · 0 CONFLICTING · 0 BLOCKED
+**Summary:** 8 VERIFIED · 4 STILL_UNKNOWN · 0 CONFLICTING · 0 BLOCKED (12 gates total)
 
 ---
 
