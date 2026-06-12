@@ -143,6 +143,8 @@ Surfaces: skills/PAL (judgment) + CLI receipts + red-lane scope rule. **Build**:
 
 **Build**: failure-class classifier + fix lane; `evidence-pack --pr`; verdict artifact schema (P1 contract 4) + `dcp accept --verdict`; merge webhook bookkeeping. **Never**: auto-approve/auto-merge (DR Never-list = existing invariants).
 
+**Concurrency requirement (observed 2026-06-12)**: the fix lane MUST claim a per-PR/per-failure-class lock before acting. Live precedent: two sessions raced the same `.opencode` hygiene failure on PRs #854/#855 with conflicting strategies (allowlist vs. remove) — one fix had to be discarded mid-flight. Claim artifact = a receipt (P8) that other agents check before starting; stale claims expire by TTL.
+
 ## W9. DevOps / stack operations
 
 **As-is**: compose stack + `dopemux health` + smoke scripts; MCP fleet drift diagnosed by hand; Scout CVE waves fixed reactively.
