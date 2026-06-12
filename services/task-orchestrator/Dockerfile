@@ -4,13 +4,15 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
   curl \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy dependency manifests first for better caching
 COPY pyproject.toml .
-COPY src/dopemux/__init__.py src/dopemux/__init__.py
+COPY README.md .
+COPY src src
+COPY tools tools
 
 # Install Python dependencies from centralized manifest
 RUN uv pip install --system --no-cache .[services]

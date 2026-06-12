@@ -1,5 +1,6 @@
 import { Box, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { Brain } from 'lucide-react';
 
 import { brandTokens, statusStyles } from '../theme';
 
@@ -38,9 +39,12 @@ export default function CognitiveLoadGauge({
           },
         }}
       >
-        <Typography variant="overline" color="text.secondary">
-          Cognitive Load
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 0.5 }}>
+          <Brain size={18} color={brandTokens.colors.saintGold} aria-hidden="true" />
+          <Typography variant="overline" color="text.secondary">
+            Cognitive Load
+          </Typography>
+        </Box>
         <Typography variant="h2" sx={{ color: statusMeta.color, my: 1 }}>
           {normalizedLoad}%
         </Typography>
