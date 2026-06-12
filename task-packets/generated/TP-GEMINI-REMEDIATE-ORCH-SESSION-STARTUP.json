@@ -1,0 +1,64 @@
+{
+  "id": "TP-GEMINI-REMEDIATE-ORCH-SESSION-STARTUP",
+  "project": "dopemux-mvp",
+  "target": "Remediate various bugs in compose.yml, cli.py, catalog.py, and configurator.py that cause startup hangs and crashes when launching a wizard-less orchestrator role session.",
+  "invariants": [
+    "Preserve dopemux split authority boundaries per AGENTS.md §6.",
+    "Do not print or persist provider secret values."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "GEMINI-REMEDIATE",
+    "base_branch": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "gemini/remediate-orch-session-startup",
+    "base_branch": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat"
+  },
+  "commit": {
+    "message": "fix(cli): resolve wizard-less orchestrator startup hangs and configurator crash",
+    "allowlist": [
+      "compose.yml",
+      "src/dopemux/claude/configurator.py",
+      "src/dopemux/cli.py",
+      "src/dopemux/roles/catalog.py",
+      "task-packets/generated/TP-GEMINI-REMEDIATE-ORCH-SESSION-STARTUP.json",
+      "proof/gemini-remediate/TP-GEMINI-REMEDIATE-ORCH-SESSION-STARTUP/PROOF.json"
+    ],
+    "verify": [
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(cli): resolve wizard-less orchestrator startup hangs and configurator crash",
+    "body": "## Summary\n- Comments out the redis-ui service from compose.yml to bypass registry hangs.\n- Fixes Live display collision in cli.py.\n- Resolves unexpected keyword argument 'role' in configurator.py.\n- Modifies Zen MCP server from required to optional in catalog.py.",
+    "base": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Remediate startup bugs",
+      "validation": [
+        "No errors when launching dopemux start --role orchestrator"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "tp_id": "TP-GEMINI-REMEDIATE-ORCH-SESSION-STARTUP",
+  "tp_path": "task-packets/generated/TP-GEMINI-REMEDIATE-ORCH-SESSION-STARTUP.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/gemini-remediate-orch-session-startup",
+  "branch": "gemini/remediate-orch-session-startup",
+  "repo_identity": "DDD-Enterprises/dopemux-mvp",
+  "slices_completed": [
+    "remediate-all"
+  ],
+  "files_changed": [
+    "compose.yml",
+    "src/dopemux/claude/configurator.py",
+    "src/dopemux/cli.py",
+    "src/dopemux/roles/catalog.py"
+  ],
+  "validations": [
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "codereview_status": "PASSED",
+  "precommit_status": "PASSED",
+  "commit_sha": "1895934df32c0e10146647137ec36f6ad8620f77",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/838",
+  "residual_risks": [],
+  "unknowns": [],
+  "cleanup_status": "DELETED"
+}
