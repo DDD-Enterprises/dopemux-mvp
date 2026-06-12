@@ -351,6 +351,19 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return result;
   }, [tasks, optimizedTasks, currentTaskId, taskTimer, heartbeat]);
 
+  const isRitualActive = useMemo(() => {
+    return completedCount > 0 || taskTimer > 0 || isTimerRunning;
+  }, [completedCount, taskTimer, isTimerRunning]);
+
+  const progressPercent = useMemo(() => {
+    if (!currentTask) return 0;
+    return Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100));
+  }, [currentTask, taskTimer]);
+
+  const isNearOvertime = useMemo(() => {
+    return progressPercent > 80 && !isOvertime;
+  }, [progressPercent, isOvertime]);
+
   return (
     <Paper
       sx={{
@@ -531,6 +544,23 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             >
               {formatTime(taskTimer)}
             </Typography>
+            {taskFinishTimes[currentTask.id] && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: brandTokens.text.secondary,
+                  letterSpacing: '0.05em',
+                  bgcolor: alpha(brandTokens.colors.voidNavy, 0.4),
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: 1,
+                  border: `1px solid ${alpha(brandTokens.text.secondary, 0.2)}`,
+                  mb: 1,
+                }}
+              >
+                Ends at {taskFinishTimes[currentTask.id]}
+              </Typography>
+            )}
             {isOvertime && (
               <Typography
                 variant="caption"
@@ -569,11 +599,19 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   height: 6,
                   borderRadius: 3,
                   bgcolor: alpha(
-                    isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
+                    isOvertime
+                      ? brandTokens.colors.gremlinPink
+                      : isNearOvertime
+                        ? brandTokens.colors.giltEdge
+                        : brandTokens.colors.saintGold,
                     0.1
                   ),
                   '& .MuiLinearProgress-bar': {
-                    bgcolor: isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
+                    bgcolor: isOvertime
+                      ? brandTokens.colors.gremlinPink
+                      : isNearOvertime
+                        ? brandTokens.colors.giltEdge
+                        : brandTokens.colors.saintGold,
                     borderRadius: 3,
                     boxShadow: isOvertime
                       ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.6)}`
@@ -588,9 +626,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                           ? 'minute'
                           : 'minutes'
                       } past estimate`
-                    : `${Math.round(
-                        Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)
-                      )}% of estimated time`
+                    : `${progressPercent}% of estimated time`
                 }
               />
             </Box>
@@ -995,6 +1031,54 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography className="dopemux-aftercare" sx={{ mt: 0.5 }}>
           [AFTERCARE] Logged. Hydrate. Ask for mercy with details.
         </Typography>
+        {isRitualActive && currentTask && (
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+            <Tooltip
+              title={isResetConfirming ? 'Confirm to clear all progress' : 'Restart the task sequence'}
+              arrow
+            >
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={
+                  isResetConfirming ? (
+                    <AlertTriangle size={16} aria-hidden="true" />
+                  ) : (
+                    <RotateCcw size={16} aria-hidden="true" />
+                  )
+                }
+                onClick={resetTasks}
+                sx={{
+                  borderColor: isResetConfirming
+                    ? brandTokens.colors.saintGold
+                    : brandTokens.colors.serumMint,
+                  color: isResetConfirming
+                    ? brandTokens.colors.saintGold
+                    : brandTokens.colors.serumMint,
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  ...(isResetConfirming && {
+                    animation: 'reset-pulse 1.5s infinite',
+                  }),
+                  '&:hover': {
+                    borderColor: isResetConfirming
+                      ? brandTokens.colors.saintGold
+                      : brandTokens.colors.serumMint,
+                    background: alpha(
+                      isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
+                      0.1
+                    ),
+                  },
+                  '&:focus-visible': {
+                    outline: 'none',
+                    boxShadow: `0 0 0 2px ${isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint}`,
+                  },
+                }}
+              >
+                {isResetConfirming ? 'Confirm Reset?' : 'Reset Ritual'}
+              </Button>
+            </Tooltip>
+          </Box>
+        )}
       </Box>
     </Paper>
   );

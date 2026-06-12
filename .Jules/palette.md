@@ -129,3 +129,7 @@
 ## 2025-05-27 - [Tactile Feedback for Task Persistence]
 **Learning:** Extending the "Tactile Confirmation" pattern (icon swap + tooltip update + pulse animation) to the current ritual task allows users to confidently capture and share their focus without breaking ritual flow. Additionally, ensuring "destructive" actions like 'Reset' have high-visibility focus states (using color-coordinated glows) prevents "lost focus" frustration for keyboard users during high-stress ritual management.
 **Action:** Apply the three-tier tactile confirmation loop to task-level actions and use status-coordinated glows for high-priority focus states to support both confidence and orientation.
+
+## 2025-05-28 - [Contextual Reset Visibility]
+**Learning:** Providing a "Reset" button at all times can be a distraction. By only showing the Reset Ritual action once a ritual has actually started (tasks completed or timer running), we maintain a cleaner interface while still providing a recovery path exactly when it becomes relevant.
+**Action:** Conditionally render secondary ritual management actions based on the active state of the workflow.
