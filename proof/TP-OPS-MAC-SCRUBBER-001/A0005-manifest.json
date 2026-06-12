@@ -1,13 +1,13 @@
 {
   "record": {
     "action_id": "A0005",
-    "action_type": "homebrew_cleanup",
-    "bytes_reclaimed": 62595072,
+    "action_type": "review_required",
+    "bytes_reclaimed": 0,
     "dry_run": false,
-    "error": null,
+    "error": "operator review required",
     "manifest_path": "proof/TP-OPS-MAC-SCRUBBER-001/A0005-manifest.json",
-    "path": "/Users/hue/Library/Caches/Homebrew",
-    "status": "executed"
+    "path": "/Users/hue/Downloads",
+    "status": "skipped"
   },
-  "timestamp_utc": "2026-06-10T04:35:53+00:00"
+  "timestamp_utc": "2026-05-23T13:34:47+00:00"
 }
