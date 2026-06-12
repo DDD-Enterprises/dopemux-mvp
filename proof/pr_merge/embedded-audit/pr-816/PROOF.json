@@ -1,0 +1,22 @@
+{
+  "embedded_audit": {
+    "auditor_model": "human_integrator",
+    "auditor_tool": "gemini-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": "manual-verification",
+    "remaining_risks": [],
+    "report_path": "proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-001/implementation-notes.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "generated_at": "2026-06-04T22:46:00Z",
+  "github_mutation_route_added": false,
+  "head_sha": "adf97ad33b31a0018bba5a6e9b523b92fa70eea4",
+  "mutation_performed": false,
+  "packet_id": "TP-RTE-GOLIVE-REMEDIATION-001",
+  "pr_number": 816,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

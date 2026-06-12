@@ -1,0 +1,165 @@
+$ git fetch origin pull/501/head:prmerge/20260423_024348-501
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/501/head -> prmerge/20260423_024348-501
+
+$ git worktree add /tmp/dopemux-pr-merge-501-20260423_024348 prmerge/20260423_024348-501
+exit=0
+--- stdout ---
+HEAD is now at d505ee5ec docs(repo-hygiene): add branch and worktree audit with cleanup plan
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260423_024348-501')
+Updating files:  51% (6209/12014)
+Updating files:  52% (6248/12014)
+Updating files:  53% (6368/12014)
+Updating files:  54% (6488/12014)
+Updating files:  55% (6608/12014)
+Updating files:  56% (6728/12014)
+Updating files:  57% (6848/12014)
+Updating files:  58% (6969/12014)
+Updating files:  59% (7089/12014)
+Updating files:  60% (7209/12014)
+Updating files:  61% (7329/12014)
+Updating files:  62% (7449/12014)
+Updating files:  63% (7569/12014)
+Updating files:  64% (7689/12014)
+Updating files:  65% (7810/12014)
+Updating files:  66% (7930/12014)
+Updating files:  67% (8050/12014)
+Updating files:  68% (8170/12014)
+Updating files:  69% (8290/12014)
+Updating files:  70% (8410/12014)
+Updating files:  71% (8530/12014)
+Updating files:  72% (8651/12014)
+Updating files:  73% (8771/12014)
+Updating files:  74% (8891/12014)
+Updating files:  75% (9011/12014)
+Updating files:  76% (9131/12014)
+Updating files:  77% (9251/12014)
+Updating files:  78% (9371/12014)
+Updating files:  79% (9492/12014)
+Updating files:  80% (9612/12014)
+Updating files:  81% (9732/12014)
+Updating files:  82% (9852/12014)
+Updating files:  83% (9972/12014)
+Updating files:  84% (10092/12014)
+Updating files:  85% (10212/12014)
+Updating files:  86% (10333/12014)
+Updating files:  87% (10453/12014)
+Updating files:  88% (10573/12014)
+Updating files:  89% (10693/12014)
+Updating files:  90% (10813/12014)
+Updating files:  91% (10933/12014)
+Updating files:  92% (11053/12014)
+Updating files:  93% (11174/12014)
+Updating files:  94% (11294/12014)
+Updating files:  95% (11414/12014)
+Updating files:  96% (11534/12014)
+Updating files:  97% (11654/12014)
+Updating files:  98% (11774/12014)
+Updating files:  99% (11894/12014)
+Updating files: 100% (12014/12014)
+Updating files: 100% (12014/12014), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+d505ee5ec0dfcead90493124cee436636684088d
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859BJXF", body: "Automated queue-drain applied a minimal fix and will run verification before resolving this thread."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9866jZyv"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859BJXq", body: "Automated queue-drain applied a minimal fix and will run verification before resolving this thread."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9866jZ00"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859BK_b", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9866jZ2y"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859BLBT", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9866jZ5u"}}}}
+
+$ git add -A
+exit=0
+
+$ git commit -m 'review-response: address thread suggestions (pr-merge/20260423_024348/PR-501)'
+exit=0
+--- stdout ---
+[prmerge/20260423_024348-501 3d5a34234] review-response: address thread suggestions (pr-merge/20260423_024348/PR-501)
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+$ git push origin HEAD:codex/repo-hygiene-audit-phase1 --force-with-lease
+exit=0
+--- stderr ---
+remote: 
+remote: GitHub found 11 vulnerabilities on DDD-Enterprises/dopemux-mvp's default branch (1 critical, 5 high, 5 moderate). To find out more, visit:        
+remote:      https://github.com/DDD-Enterprises/dopemux-mvp/security/dependabot        
+remote: 
+To https://github.com/DDD-Enterprises/dopemux-mvp.git
+   d505ee5ec..3d5a34234  HEAD -> codex/repo-hygiene-audit-phase1
+
+$ gh pr update-branch 501 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/repo-hygiene-audit-phase1
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/repo-hygiene-audit-phase1 -> FETCH_HEAD
+
+$ git reset --hard origin/codex/repo-hygiene-audit-phase1
+exit=0
+--- stdout ---
+HEAD is now at 3d5a34234 review-response: address thread suggestions (pr-merge/20260423_024348/PR-501)
+
+$ git diff --name-only --diff-filter=ACMR 2004d99ff8f829f844aab2213dd78558912e2ac7...HEAD
+exit=0
+--- stdout ---
+docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md
+proof/repo-branch-worktree-audit-2026-04-23.proof.json
+task-packets/INDEX.md
+task-packets/TP-DMX-REPOHYG-001.json
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md proof/repo-branch-worktree-audit-2026-04-23.proof.json task-packets/INDEX.md task-packets/TP-DMX-REPOHYG-001.json
+exit=1
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Failed
+- hook id: trailing-whitespace
+- exit code: 1
+- files were modified by this hook
+
+Fixing docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md
+
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-501-20260423_024348
+exit=0
+

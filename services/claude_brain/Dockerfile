@@ -5,16 +5,18 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy dependency manifests first for better caching
 COPY pyproject.toml .
-COPY src/dopemux/__init__.py src/dopemux/__init__.py
+COPY README.md .
+COPY src src
+COPY tools tools
 
 # Install Python dependencies from centralized manifest
-RUN pip install --no-cache-dir .[services]
+RUN pip install --no-cache-dir "wheel>=0.46.2" && pip install --no-cache-dir .[services]
 
 # Copy application code (relative to root build context)
 COPY services/claude_brain/ .

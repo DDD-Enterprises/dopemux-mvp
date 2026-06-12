@@ -1,0 +1,37 @@
+{
+  "packet_name": "Serena-v2 Runtime Truth and Decommission-or-Canon Decision",
+  "worktree_path": "/Users/hue/code/dopemux-mvp",
+  "branch_name": "tp/serena-v2-truth",
+  "files_inspected": [
+    "services/serena/mcp_server.py",
+    "services/serena/v2/__init__.py",
+    "src/dopemux/claude_config.py",
+    "docker/mcp-servers-source/serena/info_server.py",
+    "src/dopemux/cli.py",
+    ".claude/WORKTREE_MCP_SETUP.md"
+  ],
+  "commands_run": [
+    "grep -r \"serena-v2\" .",
+    "diff services/serena/adhd_features.py services/serena/v2/adhd_features.py",
+    "ls -F services/serena/v2/"
+  ],
+  "serena_v2_reference_inventory": "33 tool names in mcp_server.py, 1 alias in claude_config.py, 1 service name in info_server.py, multiple stale path references.",
+  "runtime_resolution_path": "serena-v2 -> dopemux-serena -> port 3006 -> docker serena -> mcp_server.py",
+  "deployment_resolution_path": "compose.yml defines 'serena' service using docker/mcp-servers/serena build context.",
+  "distinct_runtime": false,
+  "decision": "CANONICAL RENAMING (serena is boss, serena-v2 is legacy)",
+  "slices_completed": [
+    "Slice 1: Fix Stale Cleanup Pattern in cli.py",
+    "Slice 2: Fix Stale Setup Documentation in WORKTREE_MCP_SETUP.md",
+    "Slice 3: Decommission Stale v2/ Directory",
+    "Slice 4: Re-anchor Naming Hierarchy (serena as canon)",
+    "Slice 5: Inject Runtime Guards in mcp_server.py"
+  ],
+  "verification_results": "Successfully demoted legacy names and locked runtime authority with hard guards. EMPIRICAL EVIDENCE: 1. Runtime guard successfully blocked execution from temporary services/serena/v2/ path (Return code 1, FATAL error logged). 2. Root execution bypasses guard and proceeds to import logic. 3. Alias hierarchy verified in claude_config.py.",
+  "residual_risks": "None identified in-repo.",
+  "codereview_status": "complete",
+  "precommit_status": "VERIFIED (syntax check + guard test pass)",
+  "final_confidence": "high",
+  "pr_url": "tp/serena-v2-truth",
+  "merge_readiness": "ready"
+}

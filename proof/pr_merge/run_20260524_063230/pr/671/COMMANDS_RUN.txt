@@ -1,0 +1,262 @@
+$ git fetch origin pull/671/head:prmerge/20260524_063230-671
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/671/head -> prmerge/20260524_063230-671
+
+$ git worktree add /tmp/dopemux-pr-merge-671-20260524_063230 prmerge/20260524_063230-671
+exit=0
+--- stdout ---
+HEAD is now at bdbc4d28d audit: record PR queue blockers for 659 and 664
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260524_063230-671')
+Updating files:  30% (3996/12905)
+Updating files:  31% (4001/12905)
+Updating files:  32% (4130/12905)
+Updating files:  33% (4259/12905)
+Updating files:  34% (4388/12905)
+Updating files:  35% (4517/12905)
+Updating files:  36% (4646/12905)
+Updating files:  37% (4775/12905)
+Updating files:  38% (4904/12905)
+Updating files:  39% (5033/12905)
+Updating files:  40% (5162/12905)
+Updating files:  41% (5292/12905)
+Updating files:  42% (5421/12905)
+Updating files:  43% (5550/12905)
+Updating files:  44% (5679/12905)
+Updating files:  45% (5808/12905)
+Updating files:  46% (5937/12905)
+Updating files:  47% (6066/12905)
+Updating files:  48% (6195/12905)
+Updating files:  49% (6324/12905)
+Updating files:  50% (6453/12905)
+Updating files:  51% (6582/12905)
+Updating files:  52% (6711/12905)
+Updating files:  53% (6840/12905)
+Updating files:  54% (6969/12905)
+Updating files:  55% (7098/12905)
+Updating files:  56% (7227/12905)
+Updating files:  57% (7356/12905)
+Updating files:  58% (7485/12905)
+Updating files:  59% (7614/12905)
+Updating files:  60% (7743/12905)
+Updating files:  61% (7873/12905)
+Updating files:  62% (8002/12905)
+Updating files:  63% (8131/12905)
+Updating files:  64% (8260/12905)
+Updating files:  65% (8389/12905)
+Updating files:  66% (8518/12905)
+Updating files:  67% (8647/12905)
+Updating files:  68% (8776/12905)
+Updating files:  69% (8905/12905)
+Updating files:  70% (9034/12905)
+Updating files:  71% (9163/12905)
+Updating files:  72% (9292/12905)
+Updating files:  73% (9421/12905)
+Updating files:  74% (9550/12905)
+Updating files:  75% (9679/12905)
+Updating files:  76% (9808/12905)
+Updating files:  77% (9937/12905)
+Updating files:  78% (10066/12905)
+Updating files:  79% (10195/12905)
+Updating files:  80% (10324/12905)
+Updating files:  80% (10334/12905)
+Updating files:  81% (10454/12905)
+Updating files:  82% (10583/12905)
+Updating files:  83% (10712/12905)
+Updating files:  84% (10841/12905)
+Updating files:  85% (10970/12905)
+Updating files:  86% (11099/12905)
+Updating files:  87% (11228/12905)
+Updating files:  88% (11357/12905)
+Updating files:  89% (11486/12905)
+Updating files:  90% (11615/12905)
+Updating files:  91% (11744/12905)
+Updating files:  92% (11873/12905)
+Updating files:  93% (12002/12905)
+Updating files:  94% (12131/12905)
+Updating files:  95% (12260/12905)
+Updating files:  96% (12389/12905)
+Updating files:  97% (12518/12905)
+Updating files:  98% (12647/12905)
+Updating files:  99% (12776/12905)
+Updating files: 100% (12905/12905)
+Updating files: 100% (12905/12905), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+bdbc4d28d87987dd531411496ae8f447be280635
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986DdStg", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYZDk"}}}}
+
+$ gh pr update-branch 671 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin tp/dmx-pr-queue-blockers-001
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                tp/dmx-pr-queue-blockers-001 -> FETCH_HEAD
+
+$ git reset --hard origin/tp/dmx-pr-queue-blockers-001
+exit=0
+--- stdout ---
+HEAD is now at bdbc4d28d audit: record PR queue blockers for 659 and 664
+
+$ git diff --name-only --diff-filter=ACMR 1fb5601152537b35d0660be7e754de78d63f9148...HEAD
+exit=0
+--- stdout ---
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage-expanded.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/codereview.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.tsv
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-allowlist-check.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.tsv
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-blocker-comment.md
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-blocker-comment.md
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit-final.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt.stderr
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt
+out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt.stderr
+task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage-expanded.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/codereview.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-allowlist-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt.stderr task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-671-20260524_063230
+exit=0
+
+$ gh pr merge 671 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#671 is not mergeable: the base branch policy prohibits the merge.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+

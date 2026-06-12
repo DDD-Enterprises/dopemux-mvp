@@ -1,0 +1,15 @@
+{
+  "wait_used": false,
+  "wait_reason": "no_wait_needed",
+  "iterations": 1,
+  "final_status": "stable",
+  "passes": [
+    {
+      "pass_index": 1,
+      "queue_size": 3,
+      "processed": 3,
+      "merged": 0,
+      "healthy_pending_pr_ids": []
+    }
+  ]
+}

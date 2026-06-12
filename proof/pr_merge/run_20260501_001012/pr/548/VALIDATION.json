@@ -1,0 +1,73 @@
+{
+  "status": "passed",
+  "required_for_merge_ready": true,
+  "passed": true,
+  "attempts": 1,
+  "remediation_applied": false,
+  "steps": [
+    {
+      "name": "pre-commit",
+      "command": "pre-commit run",
+      "status": "passed",
+      "returncode": 0,
+      "stdout": "Validate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude \u2264100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files......................(no files to check)Skipped\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).................(no files to check)Skipped\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n",
+      "stderr": ""
+    },
+    {
+      "name": "docs-frontmatter-fix",
+      "command": "python scripts/docs_frontmatter_guard.py --fix",
+      "status": "passed",
+      "returncode": 0,
+      "stdout": "All docs have valid frontmatter.\n",
+      "stderr": ""
+    },
+    {
+      "name": "docs-validator",
+      "command": "python scripts/docs_validator.py",
+      "status": "passed",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "\n\u26a0\ufe0f  67 warning(s):\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-phase-1-implementation-plan-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-phase-1-implementation-plan-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-201-conport-kg-security-hardening.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-phase-1-implementation-plan.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-leantime-api-research-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adrs-updated.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adrs-updated.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adrs-updated.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-session-summary.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-leantime-api-research-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/template-adr-light.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-leantime-api-research.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-session-summary-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-skeleton-light.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-task-orchestrator-capabilities-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-task-orchestrator-capabilities-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-221-event-stream-rate-limits.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-221-event-stream-rate-limits.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-task-orchestrator-capabilities.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-207-session-summary-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/global-mcp-configuration.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/global-mcp-configuration.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-201-conport-kg-security-hardening-3.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-index.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-index.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-index.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-202-serena-v2-production-validation.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-202-serena-v2-production-validation.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/candidate-adrs.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/candidate-adrs.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/candidate-adrs.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Context\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Decision\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/90-adr/adr-201-conport-kg-security-hardening-2.md: Missing recommended section: Consequences\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Problem\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Options\n  /private/tmp/dopemux-pr-merge-548-20260501_001012/docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md: Missing recommended section: Proposed Direction\n"
+    },
+    {
+      "name": "docs-hygiene",
+      "command": "python scripts/check_docs_hygiene.py --check",
+      "status": "passed",
+      "returncode": 0,
+      "stdout": "docs-hygiene: total=4851 active=3483 quarantine=1368 violations=0\ndocs-hygiene: OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "docs-filename-hygiene",
+      "command": "python scripts/check_docs_filename_hygiene.py --check",
+      "status": "passed",
+      "returncode": 0,
+      "stdout": "docs-filename-hygiene: total=4851 active=3483 quarantine=1368 exempt=2156 violations=0\ndocs-filename-hygiene: OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "root-hygiene",
+      "command": "python scripts/check_root_hygiene.py",
+      "status": "passed",
+      "returncode": 0,
+      "stdout": "root-hygiene: no candidate files to check\n",
+      "stderr": ""
+    }
+  ],
+  "input_fingerprint": {
+    "input_fingerprint": "18c1a0dff192451ead47cc7621e429f088310816a05b1cc1d83dacf844a20c56",
+    "valid_for_sha": "f877cc1bda4fd3c28cb40a5c084b56d29c71dd2e",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes",
+      "effective policy fingerprint changes",
+      "applied tree contents change"
+    ],
+    "created_from_state": "applied",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  }
+}

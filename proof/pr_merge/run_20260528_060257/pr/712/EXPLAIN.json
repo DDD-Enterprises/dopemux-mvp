@@ -1,0 +1,84 @@
+{
+  "why_blocked": [
+    "1 active unresolved review threads remain.",
+    "Local validation is required before merge readiness can be declared."
+  ],
+  "evidence": [
+    {
+      "kind": "blocker",
+      "finding_type": "active_thread",
+      "message": "1 active unresolved review threads remain.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "active_threads": 1
+      },
+      "source": "github_protection_review",
+      "override": null
+    },
+    {
+      "kind": "blocker",
+      "finding_type": "validation_not_executed",
+      "message": "Local validation is required before merge readiness can be declared.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "validation_status": "not_executed"
+      },
+      "source": "local_validation",
+      "override": null
+    },
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "diff_size": 2315
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "next_action": "clear blockers",
+  "changed_since_prior_scan": [],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "diff_size": 2315
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 2535.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ]
+}
