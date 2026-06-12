@@ -158,3 +158,23 @@ When updating doctrine, keep these three files in sync:
 - `AGENTS.md` (this file) — Codex authority, Task Packet rules, PAL chains, proof bundle requirements
 - `.claude/claude.md` — Claude-Code-facing summary + non-negotiables checklist
 - `.claude/modules/shared/governance-principles.md` — full canonical doctrine, referenced by both
+
+## 11. OpenCode Auto-Load Behavior (2026-06)
+
+OpenCode does **not** behave like Claude Code regarding instruction files.
+
+**What OpenCode automatically reads:**
+- `AGENTS.md` in the project root
+- `~/.config/opencode/AGENTS.md` (global)
+- Files listed in the `"instructions"` array inside `opencode.json` or `opencode.jsonc`
+
+**What OpenCode does NOT automatically read:**
+- `CLAUDE.md` (unless explicitly listed in `"instructions"`)
+- Arbitrary files under `~/.claude/` (e.g. `~/.claude/PAL_OPENCODE_GUIDE.md`)
+- `CLAUDE.local.md` or similar Claude-specific files
+
+**Rule for this repo:**
+- All OpenCode-specific guidance (including PAL tool usage rules) must be placed in one of:
+  - `AGENTS.md`
+  - A file referenced via `"instructions"` in `opencode.jsonc`
+- Never rely on `~/.claude/*.md` files being loaded by OpenCode.

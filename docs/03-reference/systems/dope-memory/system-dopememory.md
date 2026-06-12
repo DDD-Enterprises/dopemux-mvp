@@ -5,7 +5,7 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-04-02'
-last_review: '2026-04-02'
+last_review: '2026-06-10'
 next_review: '2026-07-01'
 prelude: System Dopememory (reference) for dopemux documentation and developer workflows.
 ---
@@ -55,6 +55,7 @@ dope-memory is the active chronicle service in this repository: it accepts manua
 - HTTP `/tools/*` surface. `dope_memory_main.py` exposes `POST /tools/memory_search`, `memory_store`, `memory_recap`, `memory_mark_issue`, `memory_link_resolution`, `memory_replay_session`, `memory_correct`, `memory_generate_reflection`, `memory_reflections`, and `memory_trajectory`. This is transport, not a separate store.
 - Redis stream consumption and publication. `eventbus_consumer.py` consumes `activity.events.v1` and emits `memory.derived.v1`. This is transport and operational ingestion, not storage authority.
 - Postgres mirror sync. `postgres_mirror_sync.py` replicates SQLite chronicle data into Postgres mirror tables. This is a mirror, not source truth.
+- MCP streamable-HTTP endpoint. `dope_memory_main.py` serves a real MCP endpoint at `/mcp` (PR #857 2026-06-10). URL: `http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp`. This exposes the same 10 tools as the `/tools/*` REST surface via the same `DopeMemoryMCPServer` backend and `chronicle.sqlite` ledger.
 - Adapter and proxy surfaces. `services/dope-memory/mcp_stdio_adapter.py` is a thin adapter surface, and `src/dopemux/pm/adapters/dope_memory.py` is a client adapter to the HTTP tool surface. These are adapters, not authorities.
 - Cache. No repo-proven durable cache owns dope-memory truth. Redis is used here as transport; any broader cache role for memory ownership is not established by the dope-memory runtime evidence.
 
@@ -65,7 +66,7 @@ dope-memory is the active chronicle service in this repository: it accepts manua
 - ConPort. dope-memory can record chronicle events about decisions or work, but it does not control ConPort's structured memory or relationship graph. The repo does not prove an active canonical write path from dope-memory into ConPort for authority transfer.
 - dope-context. dope-memory may have aspirational or optional downstream indexing hooks, but the repo evidence does not show dope-memory controlling dope-context indexing authority. dope-memory emits chronicle-derived material at most; it does not own retrieval indexing outcomes.
 - Upstream event streams. dope-memory receives raw activity envelopes from Redis streams and promotes eligible events into chronicle entries. It emits derived events on `memory.derived.v1`. It does not control upstream producers, event semantics before ingestion, or upstream source-of-truth state.
-- Adapters and MCP surfaces. HTTP `/tools/*` is the active served tool surface. The stdio adapter is only an adapter layer and currently mismatches the active runtime target. Repo evidence does not prove a native `/mcp` transport in dope-memory, so operators should not treat transport assumptions as authority.
+- Adapters and MCP surfaces. Both HTTP `/tools/*` and the MCP streamable-HTTP `/mcp` endpoint (PR #857 2026-06-10) are active served surfaces backed by the same `DopeMemoryMCPServer` instance. The stdio adapter (`services/dope-memory/mcp_stdio_adapter.py`) remains an adapter layer and still mismatches the active runtime target port (`8096` vs `3020`). Transport contract is `http` in `mcp_catalog.yaml` and `.mcp.json`.
 
 ### 6. Authority Model
 
@@ -76,16 +77,15 @@ dope-memory is the active chronicle service in this repository: it accepts manua
 - Operational: Redis stream ingestion from `activity.events.v1` and publication to `memory.derived.v1`.
 - Operational: the `/tools/*` HTTP transport surface used to invoke chronicle operations.
 - Unknown: full top-level ownership of the broader "memory domain" beyond the chronicle slice. The repo proves overlap with WMA surfaces but does not prove a unified memory authority.
-- Unknown: any claimed native MCP `/mcp` transport for dope-memory. The configuration exists, but the active runtime evidence does not show that endpoint.
+- Confirmed: the MCP `/mcp` streamable-HTTP endpoint is now live in `dope_memory_main.py` as of PR #857 (2026-06-10). The `mcp_catalog.yaml` `transport: http` and `.mcp.json` `"type": "http"` entries correctly reflect this.
 - Rule: dope-memory is canonical for chronicle storage, not canonical for the full memory domain. Derived surfaces remain derived, and transport surfaces do not define authority.
 
 ### 7. Known Drift / Issues
 
 - Runtime identity lives under the `working-memory-assistant` tree. The active dope-memory runtime is `services/working-memory-assistant/dope_memory_main.py`, while the same tree also contains the legacy WMA service in `main.py`. This creates naming and operator-boundary confusion. Evidence: `repo-truth-pack/dope-memory/DISCOVERY_NOTES.md`, `services/working-memory-assistant/dope_memory_main.py`, `services/working-memory-assistant/main.py`.
-- Duplicate `DopeMemoryMCPServer` implementations exist. `dope_memory_main.py` defines the runtime class with 10 tools, while `services/working-memory-assistant/mcp/server.py` exports a separate 7-tool class that is not the active server implementation. Evidence: `repo-truth-pack/dope-memory/DRIFT_REPORT.md`, `services/working-memory-assistant/dope_memory_main.py`, `services/working-memory-assistant/mcp/server.py`.
-- Adapter target mismatch: `8096` vs `3020`. `services/dope-memory/mcp_stdio_adapter.py` proxies to `http://localhost:8096/tools`, but the active dope-memory runtime is on `3020`. Evidence: `services/dope-memory/mcp_stdio_adapter.py`, `repo-truth-pack/dope-memory/TRANSPORT_AND_RUNBOOK.md`.
-- Route and tool count mismatch. The active runtime exposes 10 `/tools/*` routes, but the root `GET /` listing and the shadow MCP module still describe only 7 tools. Evidence: `services/working-memory-assistant/dope_memory_main.py`, `services/working-memory-assistant/mcp/server.py`, `repo-truth-pack/dope-memory/DRIFT_REPORT.md`.
-- Missing `/mcp` runtime despite transport assumptions. Repo config points some clients at `http://localhost:3020/mcp`, but `dope_memory_main.py` only exposes `/`, `/health`, and `/tools/*`. Evidence: `.claude.json`, `services/working-memory-assistant/dope_memory_main.py`, `repo-truth-pack/dope-memory/TRANSPORT_AND_RUNBOOK.md`.
+- Service-local MCP package renamed. The package formerly at `services/working-memory-assistant/mcp/server.py` was renamed to `services/working-memory-assistant/wma_mcp/server.py` to prevent it from shadowing the pip-installed `mcp` SDK that fastmcp depends on when the container copies it to `/app/mcp`. References to the old path are stale. Updated 2026-06-10.
+- Adapter target mismatch: `8096` vs `3020`. `services/dope-memory/mcp_stdio_adapter.py` proxies to `http://localhost:8096/tools`, but the active dope-memory runtime is on `3020`. Evidence: `services/dope-memory/mcp_stdio_adapter.py`, `repo-truth-pack/dope-memory/TRANSPORT_AND_RUNBOOK.md`. This mismatch remains pre-existing drift; the adapter is not the active transport path.
+- `/mcp` endpoint is now live. As of PR #857 (2026-06-10), `dope_memory_main.py` serves a real MCP streamable-HTTP endpoint at `/mcp` on port `3020`. The `mcp_catalog.yaml` `transport: http` and `.mcp.json` `"type": "http"` entries are correct. The earlier "Missing `/mcp` runtime" drift entry is closed.
 - Docs must not collapse `3020` and `8096` into one surface. `3020` is current dope-memory runtime reality; `8096` is older WMA transport reality.
 
 ### 8. Working Rules

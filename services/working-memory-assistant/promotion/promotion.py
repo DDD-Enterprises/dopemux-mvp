@@ -8,6 +8,8 @@ the Phase 1 promotion rules defined in spec 05_promotion_redaction.md.
 from dataclasses import dataclass
 from typing import Any, Optional
 
+from chronicle.store import VALID_CATEGORIES, VALID_OUTCOMES, VALID_WORKFLOW_PHASES
+
 from .redactor import Redactor
 
 # Phase 1 promotable event types (canonical dotted form)
@@ -393,17 +395,10 @@ class PromotionEngine:
         if not category or not entry_type or not summary:
             return None
 
-        # Validate category/entry_type
-        valid_categories = {
-            "planning",
-            "implementation",
-            "review",
-            "debugging",
-            "research",
-            "deployment",
-            "architecture",
-            "documentation",
-        }
+        # Validate category/entry_type.
+        # Manual entries are restricted to an intentional subset of the
+        # schema's entry types — machine-generated types (error,
+        # workflow_transition, task_event) cannot be claimed manually.
         valid_entry_types = {
             "manual_note",
             "decision",
@@ -412,7 +407,19 @@ class PromotionEngine:
             "milestone",
         }
 
-        if category not in valid_categories or entry_type not in valid_entry_types:
+        if category not in VALID_CATEGORIES or entry_type not in valid_entry_types:
+            return None
+
+        # Validate caller-controlled outcome/workflow_phase. The fail-closed
+        # store raises ValueError on invalid enums; if that propagated, the
+        # eventbus consumer would never ack the message and retry the poison
+        # event forever. Reject at promotion time instead (not promotable).
+        outcome = data.get("outcome", "in_progress")
+        if outcome not in VALID_OUTCOMES:
+            return None
+
+        workflow_phase = data.get("workflow_phase")
+        if workflow_phase is not None and workflow_phase not in VALID_WORKFLOW_PHASES:
             return None
 
         # Get importance from payload or default
@@ -430,9 +437,9 @@ class PromotionEngine:
             category=category,
             entry_type=entry_type,
             summary=summary[:500],
-            outcome=data.get("outcome", "in_progress"),
+            outcome=outcome,
             importance_score=importance,
-            workflow_phase=data.get("workflow_phase"),
+            workflow_phase=workflow_phase,
             details=details,
             reasoning=data.get("reasoning"),
             tags=self._extract_tags(data),
