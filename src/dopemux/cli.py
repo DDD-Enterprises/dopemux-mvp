@@ -1722,13 +1722,18 @@ def start(
     requested_role = role or os.environ.get("DOPEMUX_AGENT_ROLE")
     
     wizard_instance = None
-    
-    if not requested_role and not dry_run and not background and sys.stdin.isatty() and not os.getenv("DOPEMUX_SKIP_WIZARD"):
+
+    # Parse DOPEMUX_SKIP_WIZARD consistently with sibling skip flags
+    # (e.g. DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT, DOPEMUX_SKIP_MCP_START): only
+    # 1/true/yes enable the skip, so DOPEMUX_SKIP_WIZARD=0/false does NOT skip.
+    skip_wizard = os.getenv("DOPEMUX_SKIP_WIZARD", "0").lower() in {"1", "true", "yes"}
+
+    if not requested_role and not dry_run and not background and sys.stdin.isatty() and not skip_wizard:
         requested_role, wizard_instance = start_wizard()
         if not requested_role:
             console.print("[warning]Launch cancelled by user[/warning]")
             sys.exit(0)
-    elif not dry_run and not background and sys.stdin.isatty() and not os.getenv("DOPEMUX_SKIP_WIZARD"):
+    elif not dry_run and not background and sys.stdin.isatty() and not skip_wizard:
         # Initialize wizard in boot-sequence mode if role was pre-selected
         from .ux.launcher_wizard import LauncherWizard, LauncherState
         try:
