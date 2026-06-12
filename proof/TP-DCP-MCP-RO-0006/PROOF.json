@@ -77,7 +77,8 @@
     "fixes_applied": [],
     "remaining_risks": [
       "dope-context BLOCKED until Phase 2 transport bridge",
-      "get_index_status PROPOSED-only (inventory gap not retroactively resolved)"
+      "get_index_status PROPOSED-only (inventory gap not retroactively resolved)",
+      "/workflow/state classified CONFIRMED_READ_ONLY but absent from the TP-DCP-MCP-RO-0001 inventory; 0001 artifact not retroactively fixed (acceptable, committed artifact). A future packet or manifest refresh should reconcile (see AUDITOR_REPORT.md §C and ARCHITECTURE.md §13/§20)."
     ],
     "skip_reason": null
   }
