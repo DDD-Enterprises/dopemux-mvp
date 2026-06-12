@@ -126,11 +126,13 @@ export default function TeamDashboard() {
                   sx={{
                     cursor: 'help',
                     transition: 'all 0.2s ease',
+                    border: '1px solid transparent',
                     '&:hover, &:focus-visible': {
+                      bgcolor: alpha(brandTokens.colors.serumMint, 0.12),
                       borderColor: brandTokens.colors.serumMint,
-                      boxShadow: `0 0 8px ${alpha(brandTokens.colors.serumMint, 0.3)}`,
+                      boxShadow: `0 0 12px ${alpha(brandTokens.colors.serumMint, 0.3)}`,
                       transform: 'translateY(-1px)',
-                    }
+                    },
                   }}
                 />
               </Tooltip>
@@ -144,11 +146,13 @@ export default function TeamDashboard() {
                   sx={{
                     cursor: 'help',
                     transition: 'all 0.2s ease',
+                    border: '1px solid transparent',
                     '&:hover, &:focus-visible': {
+                      bgcolor: alpha(brandTokens.colors.ritualCyan, 0.12),
                       borderColor: brandTokens.colors.ritualCyan,
-                      boxShadow: `0 0 8px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
+                      boxShadow: `0 0 12px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
                       transform: 'translateY(-1px)',
-                    }
+                    },
                   }}
                 />
               </Tooltip>
