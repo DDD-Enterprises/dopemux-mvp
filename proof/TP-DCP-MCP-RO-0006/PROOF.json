@@ -78,7 +78,8 @@
     "remaining_risks": [
       "dope-context BLOCKED until Phase 2 transport bridge",
       "get_index_status PROPOSED-only (inventory gap not retroactively resolved)",
-      "/workflow/state classified CONFIRMED_READ_ONLY but absent from the TP-DCP-MCP-RO-0001 inventory; 0001 artifact not retroactively fixed (acceptable, committed artifact). A future packet or manifest refresh should reconcile (see AUDITOR_REPORT.md §C and ARCHITECTURE.md §13/§20)."
+      "/workflow/state classified CONFIRMED_READ_ONLY but absent from the TP-DCP-MCP-RO-0001 inventory; 0001 artifact not retroactively fixed (acceptable, committed artifact). A future packet or manifest refresh should reconcile (see AUDITOR_REPORT.md §C and ARCHITECTURE.md §13/§20).",
+      "task-orchestrator project_id fallback: when a registry profile omits task_orchestrator_project_id, the facade falls back to the facade project_id, which may not match the actual task-orchestrator project routing in all deployments. Operators should set task_orchestrator_project_id explicitly (AUDITOR_REPORT.md residual risk 3)."
     ],
     "skip_reason": null
   }
