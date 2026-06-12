@@ -9,11 +9,13 @@
   "commands_run": 18,
   "artifacts": [
     "PROOF.json",
+    "ORIGIN_MAIN_DELTA_VS_0000B.md",
+    "ROUTING_POLICY_ORIGIN_MAIN_LEDGER.md"
+  ],
+  "artifacts_listed_but_not_committed": [
     "AUDIT.md",
     "COMMAND_LOG.md",
     "ORIGIN_MAIN_SURFACE_CENSUS.md",
-    "ORIGIN_MAIN_DELTA_VS_0000B.md",
-    "ROUTING_POLICY_ORIGIN_MAIN_LEDGER.md",
     "RED_LANE_ORIGIN_MAIN_LEDGER.md"
   ],
   "resolved_unknowns": [
