@@ -129,3 +129,7 @@
 ## 2025-05-27 - [Tactile Feedback for Task Persistence]
 **Learning:** Extending the "Tactile Confirmation" pattern (icon swap + tooltip update + pulse animation) to the current ritual task allows users to confidently capture and share their focus without breaking ritual flow. Additionally, ensuring "destructive" actions like 'Reset' have high-visibility focus states (using color-coordinated glows) prevents "lost focus" frustration for keyboard users during high-stress ritual management.
 **Action:** Apply the three-tier tactile confirmation loop to task-level actions and use status-coordinated glows for high-priority focus states to support both confidence and orientation.
+
+## 2026-06-13 - [Interactive Metadata Pattern]
+**Learning:** In high-intensity productivity dashboards, key task metadata (Complexity, Energy, Finish Time) is often buried in list views. Elevating this metadata to the active task card improves grounding. Using the "Interactive Metadata" pattern—combining `tabIndex={0}`, descriptive Tooltips, and ARIA labels—ensures this information is accessible and provides tactile feedback for keyboard users without cluttering the visual UI.
+**Action:** Consistently apply the Interactive Metadata pattern to active focus areas to maintain user context and accessibility.
