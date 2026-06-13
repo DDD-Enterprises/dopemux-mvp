@@ -1,0 +1,219 @@
+$ git fetch origin pull/724/head:prmerge/20260530_203332-724
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/724/head -> prmerge/20260530_203332-724
+
+$ git worktree add /tmp/dopemux-pr-merge-724-20260530_203332 prmerge/20260530_203332-724
+exit=0
+--- stdout ---
+HEAD is now at 71b572a19 fix(audit): remediate audit proof schema compliance issues and align UI data sources
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_203332-724')
+Updating files:  24% (3276/13522)
+Updating files:  25% (3381/13522)
+Updating files:  26% (3516/13522)
+Updating files:  27% (3651/13522)
+Updating files:  28% (3787/13522)
+Updating files:  29% (3922/13522)
+Updating files:  30% (4057/13522)
+Updating files:  31% (4192/13522)
+Updating files:  32% (4328/13522)
+Updating files:  33% (4463/13522)
+Updating files:  34% (4598/13522)
+Updating files:  35% (4733/13522)
+Updating files:  36% (4868/13522)
+Updating files:  37% (5004/13522)
+Updating files:  38% (5139/13522)
+Updating files:  39% (5274/13522)
+Updating files:  40% (5409/13522)
+Updating files:  41% (5545/13522)
+Updating files:  42% (5680/13522)
+Updating files:  43% (5815/13522)
+Updating files:  44% (5950/13522)
+Updating files:  45% (6085/13522)
+Updating files:  46% (6221/13522)
+Updating files:  47% (6356/13522)
+Updating files:  48% (6491/13522)
+Updating files:  49% (6626/13522)
+Updating files:  50% (6761/13522)
+Updating files:  51% (6897/13522)
+Updating files:  52% (7032/13522)
+Updating files:  53% (7167/13522)
+Updating files:  54% (7302/13522)
+Updating files:  55% (7438/13522)
+Updating files:  55% (7439/13522)
+Updating files:  56% (7573/13522)
+Updating files:  57% (7708/13522)
+Updating files:  58% (7843/13522)
+Updating files:  59% (7978/13522)
+Updating files:  60% (8114/13522)
+Updating files:  61% (8249/13522)
+Updating files:  62% (8384/13522)
+Updating files:  63% (8519/13522)
+Updating files:  64% (8655/13522)
+Updating files:  65% (8790/13522)
+Updating files:  66% (8925/13522)
+Updating files:  67% (9060/13522)
+Updating files:  68% (9195/13522)
+Updating files:  69% (9331/13522)
+Updating files:  70% (9466/13522)
+Updating files:  71% (9601/13522)
+Updating files:  72% (9736/13522)
+Updating files:  73% (9872/13522)
+Updating files:  74% (10007/13522)
+Updating files:  75% (10142/13522)
+Updating files:  76% (10277/13522)
+Updating files:  77% (10412/13522)
+Updating files:  78% (10548/13522)
+Updating files:  79% (10683/13522)
+Updating files:  80% (10818/13522)
+Updating files:  81% (10953/13522)
+Updating files:  82% (11089/13522)
+Updating files:  83% (11224/13522)
+Updating files:  83% (11248/13522)
+Updating files:  84% (11359/13522)
+Updating files:  85% (11494/13522)
+Updating files:  86% (11629/13522)
+Updating files:  87% (11765/13522)
+Updating files:  88% (11900/13522)
+Updating files:  89% (12035/13522)
+Updating files:  90% (12170/13522)
+Updating files:  91% (12306/13522)
+Updating files:  92% (12441/13522)
+Updating files:  93% (12576/13522)
+Updating files:  94% (12711/13522)
+Updating files:  95% (12846/13522)
+Updating files:  96% (12982/13522)
+Updating files:  97% (13117/13522)
+Updating files:  98% (13252/13522)
+Updating files:  99% (13387/13522)
+Updating files: 100% (13522/13522)
+Updating files: 100% (13522/13522), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+71b572a196f5147d2e447cc96fe94ba20208dee1
+
+$ gh pr update-branch 724 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/tp-cs-101-plugin-path-b
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/tp-cs-101-plugin-path-b -> FETCH_HEAD
+
+$ git reset --hard origin/codex/tp-cs-101-plugin-path-b
+exit=0
+--- stdout ---
+HEAD is now at 71b572a19 fix(audit): remediate audit proof schema compliance issues and align UI data sources
+
+$ git diff --name-only --diff-filter=ACMR d38e138730f2abf20c56207df9887b579765efa9...HEAD
+exit=0
+--- stdout ---
+.claude/claude.md
+.claude/hooks/orchestrator_enforcement.py
+.claude/hooks/orchestrator_subagent_protocol.py
+.claude/settings.json
+CHANGELOG.md
+INSTALL.md
+docs/02-how-to/install.md
+docs/02-how-to/universal-extractor-usage.md
+docs/03-reference/orchestrator-integration/plugin-hooks-port.md
+install.sh
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/AUDITOR_REPORT.md
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json
+scripts/deploy/deployment/stack_up_all.sh
+scripts/install-docker-mcp-servers.sh
+scripts/setup.sh
+services/dope-context/Dockerfile
+services/mcp-capture/server.py
+services/mcp-integration-bridge/kg_authority.py
+services/mcp-integration-bridge/main.py
+services/repo-truth-extractor/extraction_hygiene.py
+services/repo-truth-extractor/lib/intelligence_router.py
+services/repo-truth-extractor/lib/prescan/engine.py
+services/repo-truth-extractor/phases.py
+services/repo-truth-extractor/reporting.py
+services/repo-truth-extractor/rte_constants.py
+services/repo-truth-extractor/rte_promptset.py
+services/repo-truth-extractor/run_extraction_v4.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_pre_live_gate_v25.py
+services/repo-truth-extractor/validate_pre_live_gate_v25.py
+src/dopemux/claude/native_hooks.py
+src/dopemux/cli.py
+src/dopemux/mcp/broker.py
+src/dopemux/mcp/gate.py
+src/dopemux/mcp/server_manager.py
+src/dopemux/mcp/session_manager.py
+src/dopemux/orchestrator/ui/data_sources.py
+tests/mcp/test_discovery_gate_strict.py
+tests/mcp/test_mcp_internal_lockdown.py
+tests/test_orchestrator_enforcement_hooks.py
+tests/test_orchestrator_subagent_protocol.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .claude/claude.md .claude/hooks/orchestrator_enforcement.py .claude/hooks/orchestrator_subagent_protocol.py .claude/settings.json CHANGELOG.md INSTALL.md docs/02-how-to/install.md docs/02-how-to/universal-extractor-usage.md docs/03-reference/orchestrator-integration/plugin-hooks-port.md install.sh proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/AUDITOR_REPORT.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json scripts/deploy/deployment/stack_up_all.sh scripts/install-docker-mcp-servers.sh scripts/setup.sh services/dope-context/Dockerfile services/mcp-capture/server.py services/mcp-integration-bridge/kg_authority.py services/mcp-integration-bridge/main.py services/repo-truth-extractor/extraction_hygiene.py services/repo-truth-extractor/lib/intelligence_router.py services/repo-truth-extractor/lib/prescan/engine.py services/repo-truth-extractor/phases.py services/repo-truth-extractor/reporting.py services/repo-truth-extractor/rte_constants.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/run_extraction_v4.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/claude/native_hooks.py src/dopemux/cli.py src/dopemux/mcp/broker.py src/dopemux/mcp/gate.py src/dopemux/mcp/server_manager.py src/dopemux/mcp/session_manager.py src/dopemux/orchestrator/ui/data_sources.py tests/mcp/test_discovery_gate_strict.py tests/mcp/test_mcp_internal_lockdown.py tests/test_orchestrator_enforcement_hooks.py tests/test_orchestrator_subagent_protocol.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/02-how-to/install.md docs/02-how-to/universal-extractor-usage.md docs/03-reference/orchestrator-integration/plugin-hooks-port.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/02-how-to/install.md docs/02-how-to/universal-extractor-usage.md docs/03-reference/orchestrator-integration/plugin-hooks-port.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/02-how-to/install.md docs/02-how-to/universal-extractor-usage.md docs/03-reference/orchestrator-integration/plugin-hooks-port.md
+exit=0
+--- stdout ---
+docs-hygiene: total=3 active=3 quarantine=0 violations=0
+docs-hygiene: checked 3 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/02-how-to/install.md docs/02-how-to/universal-extractor-usage.md docs/03-reference/orchestrator-integration/plugin-hooks-port.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=3 active=3 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 3 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-724-20260530_203332
+exit=0
+
+$ gh pr merge 724 --auto --rebase
+exit=0
+

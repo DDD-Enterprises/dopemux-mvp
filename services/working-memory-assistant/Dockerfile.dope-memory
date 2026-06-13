@@ -20,7 +20,7 @@ ENV LOG_LEVEL=INFO
 ENV ENVIRONMENT=production
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     curl \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
@@ -28,21 +28,25 @@ RUN apt-get update && apt-get install -y \
 # Create app directory
 WORKDIR /app
 
-# Copy dependency manifests first for better caching
+# Copy dependency manifests plus the package trees pyproject declares
+# (setuptools needs every listed package dir present to build the wheel)
 COPY pyproject.toml .
-COPY src/dopemux/__init__.py src/dopemux/__init__.py
+COPY README.md .
+COPY src src
+COPY tools tools
 
 # Install Python dependencies from centralized manifest
-RUN pip install --no-cache-dir .[services]
+RUN pip install --no-cache-dir "wheel>=0.46.2" && pip install --no-cache-dir .[services]
 
 # Copy application code (relative to root build context)
 COPY services/working-memory-assistant/chronicle/ ./chronicle/
 COPY services/working-memory-assistant/promotion/ ./promotion/
-COPY services/working-memory-assistant/mcp/ ./mcp/
+COPY services/working-memory-assistant/wma_mcp/ ./wma_mcp/
 COPY services/working-memory-assistant/reflection/ ./reflection/
 COPY services/working-memory-assistant/trajectory/ ./trajectory/
 COPY services/working-memory-assistant/canonical_ledger.py .
 COPY services/working-memory-assistant/dope_memory_main.py .
+COPY services/working-memory-assistant/mcp_http.py .
 COPY services/working-memory-assistant/eventbus_consumer.py .
 COPY services/working-memory-assistant/postgres_mirror_sync.py .
 

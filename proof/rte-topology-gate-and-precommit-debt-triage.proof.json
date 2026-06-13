@@ -1,0 +1,120 @@
+{
+  "packet": {
+    "title": "RTE topology gate and precommit debt triage",
+    "branch": "tp/rte-topology-gate-and-precommit-debt-triage",
+    "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/rte-live-cert-artifact-contract-hardening",
+    "objective_status": "PARTIAL",
+    "runtime_authority_status": "Preserved",
+    "triage_status": "Topological smoke not exercised; repo-wide precommit debt classified"
+  },
+  "commit_plan": {
+    "planned_slices": [
+      {
+        "slice": 0,
+        "name": "Create follow-on branch and collect blocker evidence",
+        "status": "completed"
+      },
+      {
+        "slice": 1,
+        "name": "Inventory topology smoke surfaces and classify the remaining UNKNOWN gate",
+        "status": "completed"
+      },
+      {
+        "slice": 2,
+        "name": "Run repo-wide precommit and classify non-packet debt",
+        "status": "completed"
+      }
+    ],
+    "completed_slices": [
+      {
+        "slice": 0,
+        "summary": [
+          "Created follow-on branch tp/rte-topology-gate-and-precommit-debt-triage from tp/rte-live-cert-artifact-contract-hardening.",
+          "Kept the existing split-cert packet commit e0f461495086192bc1127ab360d3851997be0f81 as the branch base."
+        ]
+      },
+      {
+        "slice": 1,
+        "summary": [
+          "Searched the RTE surfaces for a narrow degraded-topology smoke harness and found only the certification writer's topology classification path, not a runnable degraded matrix.",
+          "Confirmed the live doctor evidence carries provider reachability but no degraded-topology service matrix."
+        ]
+      },
+      {
+        "slice": 2,
+        "summary": [
+          "Ran pre-commit run --all-files and captured the repeated blocker categories.",
+          "Classified the failures as repo-wide docs/root-hygiene debt rather than packet-local RTE regressions."
+        ]
+      }
+    ],
+    "replan_events": [
+      {
+        "reason": "The new packet had no runnable topology-smoke harness to execute without broadening scope beyond the RTE certification path.",
+        "action": "Converted the packet from a fix task into an evidence-backed triage packet and preserved the topology gate as explicit UNKNOWN."
+      }
+    ],
+    "skipped_or_abandoned_slices": [
+      {
+        "slice": 3,
+        "name": "Execute degraded-topology matrix",
+        "status": "deferred",
+        "rationale": "No narrow degraded-topology harness was present in the observed RTE path; adding one would have expanded scope beyond triage."
+      }
+    ],
+    "commit_shas": [
+      {
+        "sha": "e0f461495086192bc1127ab360d3851997be0f81",
+        "role": "base_head_from_split_cert_packet",
+        "created_in_this_packet": false
+      }
+    ]
+  },
+  "finalization": {
+    "codereview_status": "not_run",
+    "precommit_status": "failed_repo_wide_debt",
+    "evidence_ledger_completeness": "complete for blocker classification; incomplete for topology execution",
+    "final_confidence": "PARTIAL",
+    "residual_risks": [
+      "Topology resilience remains UNKNOWN because no degraded-topology smoke matrix was exercised.",
+      "Repo-wide precommit debt still blocks a clean all-files run and lives outside packet-local scope.",
+      "This packet does not create a PR because it is triage-only and not merge-ready."
+    ],
+    "pr_url": null,
+    "merge_readiness": "not_ready",
+    "worktree_cleanup_status": "pending"
+  },
+  "evidence_ledger": {
+    "files_inspected": [
+      "services/repo-truth-extractor/reporting.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py",
+      "docs/05-audit-reports/rte-live-certification-gates.md",
+      "proof/rte-live-cert-and-artifact-contract-hardening.proof.json"
+    ],
+    "topology_inventory_results": [
+      "Only the certification writer's operator_topology_resilience path was found in the RTE surfaces.",
+      "No dedicated degraded-topology smoke harness or service-matrix test path was found in the observed RTE area."
+    ],
+    "precommit_results": [
+      "docs-frontmatter-guard auto-modified docs/DOCS_AUDIT.md and docs/marketing/FEATURES_AND_BENEFITS.md",
+      "docs-placement-hygiene failed on docs/DOCS_AUDIT.md and docs/marketing/FEATURES_AND_BENEFITS.md",
+      "docs-filename-hygiene failed on docs/DOCS_AUDIT.md and docs/marketing/FEATURES_AND_BENEFITS.md",
+      "root-hygiene failed on QUICKSTART.md",
+      "markdownlint failed on docs/marketing/FEATURES_AND_BENEFITS.md trailing whitespace"
+    ],
+    "tests_run": [
+      "pre-commit run --all-files",
+      "git diff --check"
+    ],
+    "diffs_reviewed": [
+      "Current split-cert packet proof and certification status artifacts were reviewed as the upstream base for this triage packet."
+    ],
+    "codereview_findings": [],
+    "precommit_verdict": "failed_repo_wide_debt",
+    "residual_unknowns": [
+      "Whether a future packet should add a narrow topology-smoke harness or defer the gate further.",
+      "Whether the repo-wide docs/root hygiene debt is best handled as one cleanup packet or several smaller ones."
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "decision": {
+    "action": "blocked",
+    "command": [],
+    "reason": "22 active unresolved review threads remain.; Required checks are failing.; Required approval is missing.; Local validation is required before merge readiness can be declared.; Required checks are failing.",
+    "reason_code": "active_thread"
+  },
+  "checks": {
+    "checks_total": 19,
+    "checks_success": 17,
+    "checks_failure": 2,
+    "checks_pending": 0,
+    "required_checks_pending": 0,
+    "required_checks_failed": 2,
+    "optional_checks_pending": 0,
+    "optional_checks_failed": 0,
+    "review_decision": "",
+    "mergeable": "CONFLICTING",
+    "merge_state_status": "DIRTY",
+    "blocker_types": [
+      "required_check_failed",
+      "approval_missing"
+    ],
+    "warning_types": []
+  },
+  "check_wait": {
+    "wait_used": false,
+    "wait_reason": "no_wait_needed",
+    "iterations": 1,
+    "final_status": "required_failed",
+    "timed_out": false,
+    "history": [
+      {
+        "attempt": 1,
+        "green": false,
+        "checks_total": 19,
+        "checks_success": 17,
+        "checks_failure": 2,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 2,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "CONFLICTING",
+        "merge_state_status": "DIRTY",
+        "blocker_types": [
+          "required_check_failed",
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    ]
+  }
+}

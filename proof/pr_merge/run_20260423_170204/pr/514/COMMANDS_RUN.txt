@@ -1,0 +1,363 @@
+$ git fetch origin pull/514/head:prmerge/20260423_170204-514
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/514/head -> prmerge/20260423_170204-514
+
+$ git worktree add /tmp/dopemux-pr-merge-514-20260423_170204 prmerge/20260423_170204-514
+exit=0
+--- stdout ---
+HEAD is now at 31524517f fix(rte): restore canonical doc state lost in prior blind merge
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260423_170204-514')
+Updating files:  39% (4813/12046)
+Updating files:  40% (4819/12046)
+Updating files:  41% (4939/12046)
+Updating files:  42% (5060/12046)
+Updating files:  43% (5180/12046)
+Updating files:  44% (5301/12046)
+Updating files:  45% (5421/12046)
+Updating files:  46% (5542/12046)
+Updating files:  47% (5662/12046)
+Updating files:  48% (5783/12046)
+Updating files:  49% (5903/12046)
+Updating files:  50% (6023/12046)
+Updating files:  51% (6144/12046)
+Updating files:  52% (6264/12046)
+Updating files:  53% (6385/12046)
+Updating files:  54% (6505/12046)
+Updating files:  55% (6626/12046)
+Updating files:  56% (6746/12046)
+Updating files:  57% (6867/12046)
+Updating files:  58% (6987/12046)
+Updating files:  59% (7108/12046)
+Updating files:  60% (7228/12046)
+Updating files:  61% (7349/12046)
+Updating files:  62% (7469/12046)
+Updating files:  63% (7589/12046)
+Updating files:  64% (7710/12046)
+Updating files:  65% (7830/12046)
+Updating files:  66% (7951/12046)
+Updating files:  67% (8071/12046)
+Updating files:  68% (8192/12046)
+Updating files:  69% (8312/12046)
+Updating files:  70% (8433/12046)
+Updating files:  71% (8553/12046)
+Updating files:  72% (8674/12046)
+Updating files:  73% (8794/12046)
+Updating files:  74% (8915/12046)
+Updating files:  75% (9035/12046)
+Updating files:  76% (9155/12046)
+Updating files:  77% (9276/12046)
+Updating files:  78% (9396/12046)
+Updating files:  79% (9517/12046)
+Updating files:  80% (9637/12046)
+Updating files:  81% (9758/12046)
+Updating files:  82% (9878/12046)
+Updating files:  83% (9999/12046)
+Updating files:  84% (10119/12046)
+Updating files:  85% (10240/12046)
+Updating files:  86% (10360/12046)
+Updating files:  87% (10481/12046)
+Updating files:  88% (10601/12046)
+Updating files:  89% (10721/12046)
+Updating files:  90% (10842/12046)
+Updating files:  91% (10962/12046)
+Updating files:  92% (11083/12046)
+Updating files:  93% (11203/12046)
+Updating files:  94% (11324/12046)
+Updating files:  95% (11444/12046)
+Updating files:  96% (11565/12046)
+Updating files:  97% (11685/12046)
+Updating files:  98% (11806/12046)
+Updating files:  99% (11926/12046)
+Updating files: 100% (12046/12046)
+Updating files: 100% (12046/12046), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+31524517f3bf1c89d3107adad76cb3e14f7a81a1
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYGV", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wcI"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYGz", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wc5"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYHT", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661weE"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYHp", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wfE"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYH9", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wgU"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYIW", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661whZ"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYIv", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wiy"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYJH", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wkq"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYJd", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wlc"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYJr", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wmD"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYKA", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wnF"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYKb", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wn6"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYKt", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wo3"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYLC", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wpr"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw9859NYLW", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw98661wqO"}}}}
+
+$ gh pr update-branch 514 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin feat/rte-intelligence-wiring
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                feat/rte-intelligence-wiring -> FETCH_HEAD
+
+$ git reset --hard origin/feat/rte-intelligence-wiring
+exit=0
+--- stdout ---
+HEAD is now at 31524517f fix(rte): restore canonical doc state lost in prior blind merge
+
+$ git diff --name-only --diff-filter=ACMR 2ece87f8bc949a876df1a4601440fe2eddcb12fc...HEAD
+exit=0
+--- stdout ---
+docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md
+docs/03-reference/systems/dopemux/transport-contracts.md
+docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md
+docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md
+docs/90-adr/adr-220-dopetask-direct-health-endpoint.md
+docs/90-adr/adr-221-event-stream-rate-limits.md
+llm-plans/RTE_AUDIT_FIXES_PLAN.md
+llm-plans/RTE_STABILIZATION_AND_INTELLIGENCE_WIRING.md
+pal_validation.json
+proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json
+services/repo-truth-extractor/README.md
+services/repo-truth-extractor/lib/prescan/grok_passes.py
+services/repo-truth-extractor/lib/prescan/partition_brief_generator.py
+services/repo-truth-extractor/rte_promptset.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_intelligence_routing_integration.py
+services/repo-truth-extractor/tests/test_truth_run_cli.py
+services/repo-truth-extractor/validate_pre_live_gate_v25.py
+src/dopemux/cli.py
+src/dopemux/commands/extract_commands.py
+src/dopemux/commands/extractor_commands.py
+task-packets/INDEX.md
+task-packets/TP-DMX-RTEAUDIT-110.json
+task-packets/TP-DMX-RTECANON-001.json
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md llm-plans/RTE_AUDIT_FIXES_PLAN.md llm-plans/RTE_STABILIZATION_AND_INTELLIGENCE_WIRING.md pal_validation.json proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json services/repo-truth-extractor/README.md services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/partition_brief_generator.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_intelligence_routing_integration.py services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py src/dopemux/commands/extractor_commands.py task-packets/INDEX.md task-packets/TP-DMX-RTEAUDIT-110.json task-packets/TP-DMX-RTECANON-001.json
+exit=1
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Failed
+- hook id: docs-frontmatter-guard
+- exit code: 1
+- files were modified by this hook
+
+Updated 3 file(s):
+ - docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md
+ - docs/90-adr/adr-221-event-stream-rate-limits.md
+ - docs/03-reference/systems/dopemux/transport-contracts.md
+Updated 2 file(s):
+ - docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md
+ - docs/90-adr/adr-220-dopetask-direct-health-endpoint.md
+
+Validate documentation against knowledge graph schema......................................Failed
+- hook id: docs-graph-validator
+- exit code: 1
+
+❌ 2 error(s) found:
+  docs/90-adr/adr-221-event-stream-rate-limits.md: Invalid status 'active' for adr. Must be one of: accepted, rejected, superseded, proposed
+  docs/90-adr/adr-221-event-stream-rate-limits.md: Invalid node_type 'adr'. Must be one of: Milestone, ADR, Caveat, Decision, Pattern, Task, Symbol, DocPage, File, Error
+
+⚠️  2 warning(s):
+  docs/90-adr/adr-221-event-stream-rate-limits.md: Missing recommended section: Context
+  docs/90-adr/adr-221-event-stream-rate-limits.md: Missing recommended section: Decision
+
+❌ 1 error(s) found:
+  docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Invalid status 'active' for adr. Must be one of: proposed, rejected, accepted, superseded
+
+⚠️  2 warning(s):
+  docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Missing recommended section: Context
+  docs/90-adr/adr-220-dopetask-direct-health-endpoint.md: Missing recommended section: Decision
+
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Failed
+- hook id: root-hygiene
+- exit code: 1
+
+root-hygiene: FAILED
+Policy: /private/tmp/dopemux-pr-merge-514-20260423_170204/config/repo_hygiene/root_hygiene_policy.json
+1. pal_validation.json
+   reason: root files must be explicitly allowlisted
+   suggested destination: reports/ (generated machine outputs and bundles)
+Move files to the suggested destination, or explicitly update config/repo_hygiene/root_hygiene_policy.json when the new root entry is intentional.
+root-hygiene: OK (4 paths checked)
+root-hygiene: OK (4 paths checked)
+root-hygiene: OK (4 paths checked)
+root-hygiene: OK (4 paths checked)
+root-hygiene: OK (4 paths checked)
+
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Failed
+- hook id: trailing-whitespace
+- exit code: 1
+- files were modified by this hook
+
+Fixing docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md
+Fixing docs/90-adr/adr-221-event-stream-rate-limits.md
+Fixing docs/03-reference/systems/dopemux/transport-contracts.md
+Fixing docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md
+
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ git diff --name-only --diff-filter=ACMR 2ece87f8bc949a876df1a4601440fe2eddcb12fc...HEAD
+exit=0
+--- stdout ---
+docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md
+docs/03-reference/systems/dopemux/transport-contracts.md
+docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md
+docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md
+docs/90-adr/adr-220-dopetask-direct-health-endpoint.md
+docs/90-adr/adr-221-event-stream-rate-limits.md
+llm-plans/RTE_AUDIT_FIXES_PLAN.md
+llm-plans/RTE_STABILIZATION_AND_INTELLIGENCE_WIRING.md
+pal_validation.json
+proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json
+services/repo-truth-extractor/README.md
+services/repo-truth-extractor/lib/prescan/grok_passes.py
+services/repo-truth-extractor/lib/prescan/partition_brief_generator.py
+services/repo-truth-extractor/rte_promptset.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_intelligence_routing_integration.py
+services/repo-truth-extractor/tests/test_truth_run_cli.py
+services/repo-truth-extractor/validate_pre_live_gate_v25.py
+src/dopemux/cli.py
+src/dopemux/commands/extract_commands.py
+src/dopemux/commands/extractor_commands.py
+task-packets/INDEX.md
+task-packets/TP-DMX-RTEAUDIT-110.json
+task-packets/TP-DMX-RTECANON-001.json
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+--- stdout ---
+docs/03-reference/systems/dopemux/transport-contracts.md
+docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md
+docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md
+docs/90-adr/adr-220-dopetask-direct-health-endpoint.md
+docs/90-adr/adr-221-event-stream-rate-limits.md
+
+$ git ls-files --others --exclude-standard
+exit=0
+--- stdout ---
+reports/pal_validation.json
+
+$ pre-commit run --files docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md llm-plans/RTE_AUDIT_FIXES_PLAN.md llm-plans/RTE_STABILIZATION_AND_INTELLIGENCE_WIRING.md pal_validation.json proof/rte-gemini-deep-pal-audit-2026-04-23.proof.json reports/pal_validation.json services/repo-truth-extractor/README.md services/repo-truth-extractor/lib/prescan/grok_passes.py services/repo-truth-extractor/lib/prescan/partition_brief_generator.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_intelligence_routing_integration.py services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/cli.py src/dopemux/commands/extract_commands.py src/dopemux/commands/extractor_commands.py task-packets/INDEX.md task-packets/TP-DMX-RTEAUDIT-110.json task-packets/TP-DMX-RTECANON-001.json
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-hygiene: total=7 active=7 quarantine=0 violations=0
+docs-hygiene: checked 7 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md docs/03-reference/systems/dopemux/transport-contracts.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md docs/90-adr/adr-220-dopetask-direct-health-endpoint.md docs/90-adr/adr-221-event-stream-rate-limits.md task-packets/INDEX.md
+exit=1
+--- stdout ---
+docs-filename-hygiene: total=7 active=7 quarantine=0 exempt=2 violations=1
+docs-filename-hygiene: FAILED
+1. task-packets/INDEX.md
+   target: task-packets/index.md
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-514-20260423_170204
+exit=0
+

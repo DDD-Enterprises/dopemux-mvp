@@ -1,0 +1,392 @@
+$ git fetch origin pull/481/head:prmerge/20260418_111828-481
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/481/head -> prmerge/20260418_111828-481
+
+$ git worktree add /tmp/dopemux-pr-merge-481-20260418_111828 prmerge/20260418_111828-481
+exit=0
+--- stdout ---
+HEAD is now at 8247097de fix(hygiene): move python wrapper script to scripts/
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260418_111828-481')
+Updating files:  41% (5030/11994)
+Updating files:  42% (5038/11994)
+Updating files:  43% (5158/11994)
+Updating files:  44% (5278/11994)
+Updating files:  45% (5398/11994)
+Updating files:  46% (5518/11994)
+Updating files:  47% (5638/11994)
+Updating files:  48% (5758/11994)
+Updating files:  49% (5878/11994)
+Updating files:  50% (5997/11994)
+Updating files:  51% (6117/11994)
+Updating files:  52% (6237/11994)
+Updating files:  53% (6357/11994)
+Updating files:  54% (6477/11994)
+Updating files:  55% (6597/11994)
+Updating files:  56% (6717/11994)
+Updating files:  57% (6837/11994)
+Updating files:  58% (6957/11994)
+Updating files:  59% (7077/11994)
+Updating files:  60% (7197/11994)
+Updating files:  61% (7317/11994)
+Updating files:  62% (7437/11994)
+Updating files:  63% (7557/11994)
+Updating files:  64% (7677/11994)
+Updating files:  65% (7797/11994)
+Updating files:  66% (7917/11994)
+Updating files:  67% (8036/11994)
+Updating files:  68% (8156/11994)
+Updating files:  69% (8276/11994)
+Updating files:  70% (8396/11994)
+Updating files:  71% (8516/11994)
+Updating files:  72% (8636/11994)
+Updating files:  73% (8756/11994)
+Updating files:  74% (8876/11994)
+Updating files:  75% (8996/11994)
+Updating files:  76% (9116/11994)
+Updating files:  77% (9236/11994)
+Updating files:  78% (9356/11994)
+Updating files:  79% (9476/11994)
+Updating files:  80% (9596/11994)
+Updating files:  81% (9716/11994)
+Updating files:  82% (9836/11994)
+Updating files:  82% (9859/11994)
+Updating files:  83% (9956/11994)
+Updating files:  84% (10075/11994)
+Updating files:  85% (10195/11994)
+Updating files:  86% (10315/11994)
+Updating files:  87% (10435/11994)
+Updating files:  88% (10555/11994)
+Updating files:  89% (10675/11994)
+Updating files:  90% (10795/11994)
+Updating files:  91% (10915/11994)
+Updating files:  92% (11035/11994)
+Updating files:  93% (11155/11994)
+Updating files:  94% (11275/11994)
+Updating files:  95% (11395/11994)
+Updating files:  96% (11515/11994)
+Updating files:  97% (11635/11994)
+Updating files:  98% (11755/11994)
+Updating files:  99% (11875/11994)
+Updating files: 100% (11994/11994)
+Updating files: 100% (11994/11994), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+8247097deefe8fc0ea34faaddafbd63bb3cee6c3
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rnG", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwC0"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rnN", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwDb"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rnQ", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwDq"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rnW", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwD0"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rnd", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwED"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rng", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwEW"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rnk", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwEu"}}}}
+
+$ gh pr update-branch 481 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin tp/dopecode-phase8-events-replay
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                tp/dopecode-phase8-events-replay -> FETCH_HEAD
+
+$ git reset --hard origin/tp/dopecode-phase8-events-replay
+exit=0
+--- stdout ---
+HEAD is now at 8247097de fix(hygiene): move python wrapper script to scripts/
+
+$ git diff --name-only --diff-filter=ACMR b6147b85346c958423db8a7162ee847a01e282d4...HEAD
+exit=0
+--- stdout ---
+.claude/worktrees/cli-refactor
+proof/dopecode_phase6.proof.json
+proof/dopecode_phase6_contract.md
+proof/dopecode_phase6_implementation.md
+proof/dopecode_phase8.proof.json
+proof/dopecode_phase8_contract.md
+proof/dopecode_phase8_implementation.md
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/OFFLINE_GATE_RESULTS.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/ONLINE_PREFLIGHT_RESULTS.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/PAL_VALIDATION.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/TRUTH_SPLIT_REPORT.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/VALIDATION_SCOPE.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/VALIDATION_SUMMARY.md
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/VALIDATION_VERDICT.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/OFFLINE_GATE_RESULTS.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/ONLINE_PREFLIGHT_RESULTS.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/PAL_VALIDATION.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/TRUTH_SPLIT_REPORT.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/VALIDATION_SCOPE.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/VALIDATION_SUMMARY.md
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/VALIDATION_VERDICT.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/OFFLINE_GATE_RESULTS.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/ONLINE_PREFLIGHT_RESULTS.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/PAL_VALIDATION.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/TRUTH_SPLIT_REPORT.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/VALIDATION_SCOPE.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/VALIDATION_SUMMARY.md
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/VALIDATION_VERDICT.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/OFFLINE_GATE_RESULTS.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/ONLINE_PREFLIGHT_RESULTS.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/PAL_VALIDATION.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/TRUTH_SPLIT_REPORT.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/VALIDATION_SCOPE.json
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/VALIDATION_SUMMARY.md
+reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/VALIDATION_VERDICT.json
+scripts/env_extract.py
+scripts/env_outputs/env_vars.txt
+scripts/env_outputs/manifests.txt
+scripts/env_outputs/packages.txt
+scripts/python
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/BATCH_PILOT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/BREAKER_STATE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/CERTIFICATION_RESULT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PHASE_CONTRACT_MAP.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PHASE_GATE_DECISION.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PHASE_SLICE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PROVIDER_PREFLIGHT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/RUNNER_IDENTITY.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/RUN_MANIFEST.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/RUN_ROUTING_FINGERPRINT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/spend_ledger.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/BATCH_PILOT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/BREAKER_STATE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/CERTIFICATION_RESULT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PHASE_CONTRACT_MAP.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PHASE_GATE_DECISION.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PHASE_SLICE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PROVIDER_PREFLIGHT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/RUNNER_IDENTITY.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/RUN_MANIFEST.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/RUN_ROUTING_FINGERPRINT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/spend_ledger.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/BATCH_PILOT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/BREAKER_STATE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/CERTIFICATION_RESULT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PHASE_CONTRACT_MAP.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PHASE_GATE_DECISION.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PHASE_SLICE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PROVIDER_PREFLIGHT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/RUNNER_IDENTITY.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/RUN_MANIFEST.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/RUN_ROUTING_FINGERPRINT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/spend_ledger.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/BATCH_PILOT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/BREAKER_STATE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/CERTIFICATION_RESULT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PHASE_CONTRACT_MAP.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PHASE_GATE_DECISION.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PHASE_SLICE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PROVIDER_PREFLIGHT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/RUNNER_IDENTITY.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/RUN_MANIFEST.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/RUN_ROUTING_FINGERPRINT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/spend_ledger.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/BATCH_PILOT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/BREAKER_STATE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/CERTIFICATION_RESULT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PHASE_CONTRACT_MAP.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PHASE_GATE_DECISION.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PHASE_SLICE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PROVIDER_PREFLIGHT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/RUNNER_IDENTITY.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/RUN_MANIFEST.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/RUN_ROUTING_FINGERPRINT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/spend_ledger.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/BATCH_PILOT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/BREAKER_STATE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/CERTIFICATION_RESULT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PHASE_CONTRACT_MAP.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PHASE_GATE_DECISION.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PHASE_SLICE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PROVIDER_PREFLIGHT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/RUNNER_IDENTITY.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/RUN_MANIFEST.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/RUN_ROUTING_FINGERPRINT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/spend_ledger.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/BATCH_PILOT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/BREAKER_STATE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/CERTIFICATION_RESULT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PHASE_CONTRACT_MAP.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PHASE_GATE_DECISION.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PHASE_SLICE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PROVIDER_PREFLIGHT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/RUNNER_IDENTITY.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/RUN_MANIFEST.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/RUN_ROUTING_FINGERPRINT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/spend_ledger.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/BATCH_PILOT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/BREAKER_STATE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/CERTIFICATION_RESULT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PHASE_CONTRACT_MAP.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PHASE_GATE_DECISION.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PHASE_SLICE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PROVIDER_PREFLIGHT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/RUNNER_IDENTITY.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/RUN_MANIFEST.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/RUN_ROUTING_FINGERPRINT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/spend_ledger.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/BATCH_PILOT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/BREAKER_STATE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/CERTIFICATION_RESULT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_CONTRACT_MAP.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_GATE_DECISION.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_SLICE.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PROVIDER_PREFLIGHT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUNNER_IDENTITY.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUN_MANIFEST.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUN_ROUTING_FINGERPRINT.json
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/spend_ledger.json
+services/serena/dopecode/execution_receipts.py
+services/serena/dopecode/navigation/ast_engine.py
+services/serena/dopecode/policy/mutation_policy.py
+services/serena/dopecode/runtime.py
+services/serena/dopecode/transform/orchestration.py
+services/serena/dopecode/transform/refactor_layer.py
+services/serena/dopecode/transform/write_layer.py
+services/serena/tests/test_dopecode_ast_engine.py
+services/serena/tests/test_dopecode_execution_receipts.py
+services/serena/tests/test_dopecode_policy.py
+services/serena/tests/test_dopecode_refactor_layer.py
+services/serena/tests/test_dopecode_write_layer.py
+src/dopemux/execution/dopecode_receipts.py
+tests/scripts/test_env_extract.py
+tmp/local_tools.txt
+tmp/upstream_tools.txt
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .claude/worktrees/cli-refactor proof/dopecode_phase6.proof.json proof/dopecode_phase6_contract.md proof/dopecode_phase6_implementation.md proof/dopecode_phase8.proof.json proof/dopecode_phase8_contract.md proof/dopecode_phase8_implementation.md reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/OFFLINE_GATE_RESULTS.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/ONLINE_PREFLIGHT_RESULTS.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/PAL_VALIDATION.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/TRUTH_SPLIT_REPORT.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/VALIDATION_SCOPE.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/VALIDATION_SUMMARY.md reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031149Z/VALIDATION_VERDICT.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/OFFLINE_GATE_RESULTS.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/ONLINE_PREFLIGHT_RESULTS.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/PAL_VALIDATION.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/TRUTH_SPLIT_REPORT.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/VALIDATION_SCOPE.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/VALIDATION_SUMMARY.md reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031613Z/VALIDATION_VERDICT.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/OFFLINE_GATE_RESULTS.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/ONLINE_PREFLIGHT_RESULTS.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/PAL_VALIDATION.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/TRUTH_SPLIT_REPORT.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/VALIDATION_SCOPE.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/VALIDATION_SUMMARY.md reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031811Z/VALIDATION_VERDICT.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/OFFLINE_GATE_RESULTS.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/ONLINE_PREFLIGHT_RESULTS.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/PAL_VALIDATION.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/TRUTH_SPLIT_REPORT.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/VALIDATION_SCOPE.json reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/VALIDATION_SUMMARY.md reports/repo-truth-extractor/pre_live_gate_v25/pre_live_gate_v25_20260418T031822Z/VALIDATION_VERDICT.json scripts/env_extract.py scripts/env_outputs/env_vars.txt scripts/env_outputs/manifests.txt scripts/env_outputs/packages.txt scripts/python services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/BATCH_PILOT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/BREAKER_STATE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/CERTIFICATION_RESULT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PHASE_CONTRACT_MAP.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PHASE_GATE_DECISION.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PHASE_SLICE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PROVIDER_PREFLIGHT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/RUNNER_IDENTITY.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/RUN_MANIFEST.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/RUN_ROUTING_FINGERPRINT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/spend_ledger.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/BATCH_PILOT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/BREAKER_STATE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/CERTIFICATION_RESULT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PHASE_CONTRACT_MAP.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PHASE_GATE_DECISION.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PHASE_SLICE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PROVIDER_PREFLIGHT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/RUNNER_IDENTITY.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/RUN_MANIFEST.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/RUN_ROUTING_FINGERPRINT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/spend_ledger.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/BATCH_PILOT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/BREAKER_STATE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/CERTIFICATION_RESULT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PHASE_CONTRACT_MAP.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PHASE_GATE_DECISION.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PHASE_SLICE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PROVIDER_PREFLIGHT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/RUNNER_IDENTITY.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/RUN_MANIFEST.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/RUN_ROUTING_FINGERPRINT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/spend_ledger.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/BATCH_PILOT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/BREAKER_STATE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/CERTIFICATION_RESULT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PHASE_CONTRACT_MAP.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PHASE_GATE_DECISION.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PHASE_SLICE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PROVIDER_PREFLIGHT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/RUNNER_IDENTITY.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/RUN_MANIFEST.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/RUN_ROUTING_FINGERPRINT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/spend_ledger.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/BATCH_PILOT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/BREAKER_STATE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/CERTIFICATION_RESULT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PHASE_CONTRACT_MAP.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PHASE_GATE_DECISION.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PHASE_SLICE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PROVIDER_PREFLIGHT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/RUNNER_IDENTITY.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/RUN_MANIFEST.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/RUN_ROUTING_FINGERPRINT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/spend_ledger.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/BATCH_PILOT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/BREAKER_STATE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/CERTIFICATION_RESULT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PHASE_CONTRACT_MAP.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PHASE_GATE_DECISION.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PHASE_SLICE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PROVIDER_PREFLIGHT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/RUNNER_IDENTITY.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/RUN_MANIFEST.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/RUN_ROUTING_FINGERPRINT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/spend_ledger.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/BATCH_PILOT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/BREAKER_STATE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/CERTIFICATION_RESULT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PHASE_CONTRACT_MAP.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PHASE_GATE_DECISION.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PHASE_SLICE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PROVIDER_PREFLIGHT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/RUNNER_IDENTITY.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/RUN_MANIFEST.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/RUN_ROUTING_FINGERPRINT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/spend_ledger.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/BATCH_PILOT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/BREAKER_STATE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/CERTIFICATION_RESULT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PHASE_CONTRACT_MAP.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PHASE_GATE_DECISION.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PHASE_SLICE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PROVIDER_PREFLIGHT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/RUNNER_IDENTITY.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/RUN_MANIFEST.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/RUN_ROUTING_FINGERPRINT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/spend_ledger.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/BATCH_PILOT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/BREAKER_STATE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/CERTIFICATION_RESULT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_CONTRACT_MAP.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_GATE_DECISION.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_SLICE.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PROVIDER_PREFLIGHT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUNNER_IDENTITY.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUN_MANIFEST.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUN_ROUTING_FINGERPRINT.json services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/spend_ledger.json services/serena/dopecode/execution_receipts.py services/serena/dopecode/navigation/ast_engine.py services/serena/dopecode/policy/mutation_policy.py services/serena/dopecode/runtime.py services/serena/dopecode/transform/orchestration.py services/serena/dopecode/transform/refactor_layer.py services/serena/dopecode/transform/write_layer.py services/serena/tests/test_dopecode_ast_engine.py services/serena/tests/test_dopecode_execution_receipts.py services/serena/tests/test_dopecode_policy.py services/serena/tests/test_dopecode_refactor_layer.py services/serena/tests/test_dopecode_write_layer.py src/dopemux/execution/dopecode_receipts.py tests/scripts/test_env_extract.py tmp/local_tools.txt tmp/upstream_tools.txt
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rnG", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwFp"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw98577rnG"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw98577rnG","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rnQ", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwGS"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw98577rnQ"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw98577rnQ","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rnW", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwHA"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw98577rnW"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw98577rnW","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rnd", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwH3"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw98577rnd"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw98577rnd","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rng", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwIS"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw98577rng"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw98577rng","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw98577rnk", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9865IwJH"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw98577rnk"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw98577rnk","isResolved":true}}}}
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-481-20260418_111828
+exit=0
+
+$ gh pr merge 481 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Cannot use `-d` or `--delete-branch` when merge queue enabled
+
+$ gh pr merge 481 --auto --rebase
+exit=0
+--- stderr ---
+! The merge strategy for main is set by the merge queue
+

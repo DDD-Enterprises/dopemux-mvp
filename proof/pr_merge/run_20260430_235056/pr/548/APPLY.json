@@ -1,0 +1,315 @@
+{
+  "run_id": "20260430_235056",
+  "pr_state": {
+    "pr_id": 548,
+    "title": "Restore deterministic runtime authority verifier",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "fix/restore-runtime-authority-verifier",
+    "ci_status": "FAILURE",
+    "mergeable": "CONFLICTING",
+    "merge_state_status": "DIRTY",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-01T06:40:07Z",
+    "is_draft": false,
+    "additions": 1594,
+    "deletions": 0,
+    "changed_files": 4,
+    "unresolved_threads": 1,
+    "active_unresolved_threads": 1,
+    "outdated_unresolved_threads": 0,
+    "pr_class": "MIXED",
+    "risk_score": 2164.0,
+    "check_summary": {
+      "total": 26,
+      "success": 25,
+      "failure": 1,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 1,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "apply_blocked",
+    "head_sha": "14b60d2dba482ba2404467f4ba577cfffb388882",
+    "base_sha": "a00a0a6b1f9e3ccc586161a06b030eaa45e4bd05"
+  },
+  "lifecycle_state": "apply_blocked",
+  "apply_actions": [
+    "prepare worktree",
+    "rebase branch",
+    "apply review thread fixes",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "blocked",
+    "command": [],
+    "reason": "Rebase conflict encountered.; 1 active unresolved review threads remain.; Required checks are failing.; Required approval is missing.; Local validation is required before merge readiness can be declared.",
+    "reason_code": "conflict_detected"
+  },
+  "blockers": [
+    {
+      "type": "conflict_detected",
+      "source": "local_rebase_simulation",
+      "name": "Rebase conflict encountered.",
+      "details": "X Cannot update PR branch due to conflicts\n\nLocal conflict reproduction:\nRebasing (1/1)\nerror: could not apply 14b60d2db... Restore deterministic runtime authority verifier\nhint: Resolve all conflicts manually, mark them as resolved with\nhint: \"git add/rm <conflicted_files>\", then run \"git rebase --continue\".\nhint: You can instead skip this commit: run \"git rebase --skip\".\nhint: To abort and get back to the state before \"git rebase\", run \"git rebase --abort\".\nhint: Disable this message with \"git config set advice.mergeConflict false\"\nRecorded preimage for 'config/runtime_authority_manifest.json'\nRecorded preimage for 'scripts/verify_runtime_authority.py'\nRecorded preimage for 'tests/unit/test_runtime_authority_manifest.py'\nCould not apply 14b60d2db... # Restore deterministic runtime authority verifier",
+      "metadata": {
+        "detail": "X Cannot update PR branch due to conflicts\n\nLocal conflict reproduction:\nRebasing (1/1)\nerror: could not apply 14b60d2db... Restore deterministic runtime authority verifier\nhint: Resolve all conflicts manually, mark them as resolved with\nhint: \"git add/rm <conflicted_files>\", then run \"git rebase --continue\".\nhint: You can instead skip this commit: run \"git rebase --skip\".\nhint: To abort and get back to the state before \"git rebase\", run \"git rebase --abort\".\nhint: Disable this message with \"git config set advice.mergeConflict false\"\nRecorded preimage for 'config/runtime_authority_manifest.json'\nRecorded preimage for 'scripts/verify_runtime_authority.py'\nRecorded preimage for 'tests/unit/test_runtime_authority_manifest.py'\nCould not apply 14b60d2db... # Restore deterministic runtime authority verifier"
+      }
+    },
+    {
+      "type": "active_thread",
+      "source": "github_protection_review",
+      "name": "1 active unresolved review threads remain.",
+      "details": null,
+      "metadata": {
+        "active_threads": 1
+      }
+    },
+    {
+      "type": "required_check_failed",
+      "source": "github_protection_review",
+      "name": "Required checks are failing.",
+      "details": null,
+      "metadata": {
+        "checks_total": 26,
+        "checks_success": 25,
+        "checks_failure": 1,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 1,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "CONFLICTING",
+        "merge_state_status": "DIRTY",
+        "blocker_types": [
+          "required_check_failed",
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "type": "approval_missing",
+      "source": "github_protection_review",
+      "name": "Required approval is missing.",
+      "details": null,
+      "metadata": {}
+    },
+    {
+      "type": "validation_failed",
+      "source": "local_validation",
+      "name": "Local validation is required before merge readiness can be declared.",
+      "details": null,
+      "metadata": {
+        "validation_status": "failed"
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "details": {
+        "diff_size": 1594
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "details": {
+        "risk_score": 2164.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "3d8667480a0c19acffff4b3ba69045245feb66e2f297a4bf037b80743348aacc"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 26,
+        "checks_success": 25,
+        "checks_failure": 1,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 1,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "CONFLICTING",
+        "merge_state_status": "DIRTY",
+        "blocker_types": [
+          "required_check_failed",
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "failed",
+      "details": {
+        "status": "failed",
+        "required_for_merge_ready": true,
+        "passed": false,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run",
+            "status": "failed",
+            "returncode": 1,
+            "stdout": "[ERROR] Unmerged files.  Resolve before committing.\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "c3e653bf70d2e9bd1b9bc39c05d9b046091b35af1670c69dd13b4fc8b7b992bb",
+          "valid_for_sha": "14b60d2dba482ba2404467f4ba577cfffb388882",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "applied",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        }
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "failed",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state"
+    ],
+    "winning_reason": "apply_phase_gates",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "failed",
+    "required_for_merge_ready": true,
+    "passed": false,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run",
+        "status": "failed",
+        "returncode": 1,
+        "stdout": "[ERROR] Unmerged files.  Resolve before committing.\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "c3e653bf70d2e9bd1b9bc39c05d9b046091b35af1670c69dd13b4fc8b7b992bb",
+      "valid_for_sha": "14b60d2dba482ba2404467f4ba577cfffb388882",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "applied",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    }
+  },
+  "thread_dispositions": [
+    {
+      "thread_id": "PRRT_kwDOPyIw985-7bfU",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/governance/runtime-authority-verification.md",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ],
+  "fingerprint": {
+    "input_fingerprint": "2bf9c71e91108eadabc88c19083c1d7c7abfb2e0625fff26f3e5c7dfc181c8f5",
+    "valid_for_sha": "14b60d2dba482ba2404467f4ba577cfffb388882",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "commands": "proof/pr_merge/run_20260430_235056/pr/548/COMMANDS_RUN.txt"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "allowed": false,
+  "reason_code": "DENY_NO_IMPLEMENTER_BLOCKER",
+  "required_class": "REMEDIATION",
+  "evidence": {
+    "merge_readiness": "READY",
+    "merge_generated_at": "2026-06-04T23:05:00Z",
+    "proof_generated_at": "2026-06-04T23:05:00Z",
+    "merge_pr_head_sha": "04ac5c13c089e0bdbb9c85e32af4b8f0c30150c5",
+    "merge_proof_head_sha": "04ac5c13c089e0bdbb9c85e32af4b8f0c30150c5",
+    "merge_proof_freshness": {
+      "matches_pr_head": true,
+      "pr_head_sha": "04ac5c13c089e0bdbb9c85e32af4b8f0c30150c5",
+      "proof_recorded_sha": "04ac5c13c089e0bdbb9c85e32af4b8f0c30150c5",
+      "reason": "Human integrator verified.",
+      "self_reference_exception": null,
+      "status": "CURRENT"
+    },
+    "audit_proof_head_sha": "04ac5c13c089e0bdbb9c85e32af4b8f0c30150c5",
+    "merge_embedded_audit_status": "PASS",
+    "proof_embedded_audit_status": "PASS",
+    "blockers": []
+  }
+}

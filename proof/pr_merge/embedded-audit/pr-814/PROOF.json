@@ -1,0 +1,22 @@
+{
+  "embedded_audit": {
+    "auditor_model": "human_integrator",
+    "auditor_tool": "gemini-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": "manual-verification",
+    "remaining_risks": [],
+    "report_path": "claudedocs/gptr-mcp-container-update-proof-2026-06-04.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "generated_at": "2026-06-04T22:46:00Z",
+  "github_mutation_route_added": false,
+  "head_sha": "6004dd53f9c175d0cb761f204e815367be9b40a6",
+  "mutation_performed": false,
+  "packet_id": "TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001",
+  "pr_number": 814,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

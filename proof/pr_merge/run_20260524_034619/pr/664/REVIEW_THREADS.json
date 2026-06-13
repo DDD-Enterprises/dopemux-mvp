@@ -1,0 +1,25 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw986DalK5",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "ui-dashboard/src/components/TaskSequencer.tsx",
+      "line": 878,
+      "original_line": 878,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987DDen4",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Preserve dynamic accessible name for finish-time metadata**\n\nThe finish-time element is now keyboard-focusable and has an explicit `aria-label`, but it is wrapped in a MUI `Tooltip` without `describeChild`. In MUI, tooltip `title` is used as the child’s accessible label by default, so assistive tech may announce only the static tooltip text (“Estimated wall-clock finish time”) instead of the dynamic finish time you intended. This regresses the accessibility goal for keyboard/screen-reader users on paused/active task rows; use `describeChild` (or equivalent labeling strategy) so the tooltip becomes a description rather than replacing the control’s label.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-20T08:43:58Z",
+          "path": "ui-dashboard/src/components/TaskSequencer.tsx",
+          "line": 878,
+          "original_line": 878
+        }
+      ]
+    }
+  ]
+}

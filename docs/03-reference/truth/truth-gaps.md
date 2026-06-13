@@ -5,7 +5,7 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-04-02'
-last_review: '2026-04-02'
+last_review: '2026-06-10'
 next_review: '2026-07-01'
 prelude: Truth Gaps (reference) for dopemux documentation and developer workflows.
 ---
@@ -31,7 +31,7 @@ Method:
 
 - `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/dope_memory_main.py`
 - `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/main.py`
-- `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/mcp/server.py`
+- `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/wma_mcp/server.py` (formerly `mcp/server.py`; renamed 2026-06-10)
   - Multiple memory-related surfaces exist with overlapping names but different transport/runtime status.
 - `/Users/hue/code/dopemux-mvp/services/serena`
 - `/Users/hue/code/dopemux-mvp/docker/mcp-servers-source/serena`

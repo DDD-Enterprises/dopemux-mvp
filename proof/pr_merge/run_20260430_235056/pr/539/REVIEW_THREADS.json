@@ -1,0 +1,43 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw985-mEyQ",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "ui-dashboard/src/components/TaskSequencer.tsx",
+      "line": null,
+      "original_line": 173,
+      "original_start_line": 172,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9868oo0v",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`getFinishTimeLabel()` computes `finishDate` from `Date.now() + minutes * 60000`, but the `minutes` value passed in is the *rounded* `totalRemainingMinutes` (Math.ceil of remaining time). Because the component re-renders every second while the timer runs, the displayed/announced finish time can drift later while `totalRemainingMinutes` stays constant, and can be off by up to ~1 minute due to the ceil. Consider basing the finish timestamp on the unrounded remaining duration (e.g., use a `rawRemainingMinutes` float before the `Math.ceil`, or compute remaining seconds/ms directly) so the estimated completion time is stable/monotonic and matches the remaining-time math used elsewhere.\n",
+          "created_at": "2026-04-29T23:23:36Z",
+          "path": "ui-dashboard/src/components/TaskSequencer.tsx",
+          "line": null,
+          "original_line": 173
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FRB-",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-01T06:00:44Z",
+          "path": "ui-dashboard/src/components/TaskSequencer.tsx",
+          "line": null,
+          "original_line": 173
+        },
+        {
+          "id": "PRRC_kwDOPyIw9869FS_G",
+          "author": "google-labs-jules",
+          "body": "Acknowledged. I've refactored the finish time calculation to be more deterministic. By using fractional remaining minutes and stabilizing the calculation within a `useMemo` block, the estimated finish time now remains constant as the timer progresses, only updating if the task estimates themselves are modified. This eliminates visual jitter while providing accurate temporal grounding.",
+          "created_at": "2026-05-01T06:04:34Z",
+          "path": "ui-dashboard/src/components/TaskSequencer.tsx",
+          "line": null,
+          "original_line": 173
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+$ git fetch origin pull/815/head:prmerge/20260604_160411-815
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/815/head -> prmerge/20260604_160411-815
+
+$ git worktree add /tmp/dopemux-pr-merge-815-20260604_160411 prmerge/20260604_160411-815
+exit=0
+--- stdout ---
+HEAD is now at 4547d56df feat(cockpit): add frame and rule render primitives
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260604_160411-815')
+Updating files:  16% (2313/13935)
+Updating files:  17% (2369/13935)
+Updating files:  18% (2509/13935)
+Updating files:  19% (2648/13935)
+Updating files:  20% (2787/13935)
+Updating files:  21% (2927/13935)
+Updating files:  22% (3066/13935)
+Updating files:  23% (3206/13935)
+Updating files:  24% (3345/13935)
+Updating files:  25% (3484/13935)
+Updating files:  26% (3624/13935)
+Updating files:  27% (3763/13935)
+Updating files:  28% (3902/13935)
+Updating files:  29% (4042/13935)
+Updating files:  30% (4181/13935)
+Updating files:  31% (4320/13935)
+Updating files:  32% (4460/13935)
+Updating files:  33% (4599/13935)
+Updating files:  34% (4738/13935)
+Updating files:  35% (4878/13935)
+Updating files:  36% (5017/13935)
+Updating files:  37% (5156/13935)
+Updating files:  38% (5296/13935)
+Updating files:  39% (5435/13935)
+Updating files:  40% (5574/13935)
+Updating files:  40% (5616/13935)
+Updating files:  41% (5714/13935)
+Updating files:  42% (5853/13935)
+Updating files:  43% (5993/13935)
+Updating files:  44% (6132/13935)
+Updating files:  45% (6271/13935)
+Updating files:  46% (6411/13935)
+Updating files:  47% (6550/13935)
+Updating files:  48% (6689/13935)
+Updating files:  49% (6829/13935)
+Updating files:  50% (6968/13935)
+Updating files:  51% (7107/13935)
+Updating files:  52% (7247/13935)
+Updating files:  53% (7386/13935)
+Updating files:  54% (7525/13935)
+Updating files:  55% (7665/13935)
+Updating files:  56% (7804/13935)
+Updating files:  57% (7943/13935)
+Updating files:  58% (8083/13935)
+Updating files:  59% (8222/13935)
+Updating files:  60% (8361/13935)
+Updating files:  61% (8501/13935)
+Updating files:  62% (8640/13935)
+Updating files:  63% (8780/13935)
+Updating files:  64% (8919/13935)
+Updating files:  65% (9058/13935)
+Updating files:  65% (9068/13935)
+Updating files:  66% (9198/13935)
+Updating files:  67% (9337/13935)
+Updating files:  68% (9476/13935)
+Updating files:  69% (9616/13935)
+Updating files:  70% (9755/13935)
+Updating files:  71% (9894/13935)
+Updating files:  72% (10034/13935)
+Updating files:  73% (10173/13935)
+Updating files:  74% (10312/13935)
+Updating files:  75% (10452/13935)
+Updating files:  76% (10591/13935)
+Updating files:  77% (10730/13935)
+Updating files:  78% (10870/13935)
+Updating files:  79% (11009/13935)
+Updating files:  80% (11148/13935)
+Updating files:  81% (11288/13935)
+Updating files:  82% (11427/13935)
+Updating files:  83% (11567/13935)
+Updating files:  84% (11706/13935)
+Updating files:  85% (11845/13935)
+Updating files:  86% (11985/13935)
+Updating files:  87% (12124/13935)
+Updating files:  88% (12263/13935)
+Updating files:  89% (12403/13935)
+Updating files:  90% (12542/13935)
+Updating files:  91% (12681/13935)
+Updating files:  92% (12821/13935)
+Updating files:  92% (12839/13935)
+Updating files:  93% (12960/13935)
+Updating files:  94% (13099/13935)
+Updating files:  95% (13239/13935)
+Updating files:  96% (13378/13935)
+Updating files:  97% (13517/13935)
+Updating files:  98% (13657/13935)
+Updating files:  99% (13796/13935)
+Updating files: 100% (13935/13935)
+Updating files: 100% (13935/13935), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+4547d56dfb5301e9835d5f70f29b3b095812c9ad
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986HNWiC", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987IPDCV"}}}}
+
+$ gh pr update-branch 815 --rebase
+exit=0
+--- stdout ---
+✓ PR branch updated
+
+$ git fetch origin codex/cockpit-frame-rule-primitives-20260604
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/cockpit-frame-rule-primitives-20260604 -> FETCH_HEAD
+ + 4547d56df...04ac5c13c codex/cockpit-frame-rule-primitives-20260604 -> origin/codex/cockpit-frame-rule-primitives-20260604  (forced update)
+
+$ git reset --hard origin/codex/cockpit-frame-rule-primitives-20260604
+exit=0
+--- stdout ---
+HEAD is now at 04ac5c13c feat(cockpit): add frame and rule render primitives
+
+$ git diff --name-only --diff-filter=ACMR 2f6f362236aa8429877664c675a5373cd9acf16e...HEAD
+exit=0
+--- stdout ---
+out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json
+out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt
+proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-001/implementation-notes.md
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_cost_profiles.py
+services/repo-truth-extractor/tests/test_pre_live_gate_v25.py
+services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py
+services/repo-truth-extractor/validate_pre_live_gate_v25.py
+src/dopemux/ui/cockpit/render.py
+task-packets/INDEX.md
+task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json
+tests/unit/dopemux/ui/cockpit/test_cockpit_render.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/COMMAND_SURFACE_INVENTORY.json out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001/sha256sums.txt proof/rte-golive-remediation/TP-RTE-GOLIVE-REMEDIATION-001/implementation-notes.md services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/ui/cockpit/render.py task-packets/INDEX.md task-packets/generated/TP-RTE-GOLIVE-REMEDIATION-001.json tests/unit/dopemux/ui/cockpit/test_cockpit_render.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py task-packets/INDEX.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-815-20260604_160411
+exit=0
+

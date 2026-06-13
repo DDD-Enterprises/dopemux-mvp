@@ -1,0 +1,514 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw9859QlZQ",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/tests/test_intelligence_routing_integration.py",
+      "line": 25,
+      "original_line": 25,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661wYm",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This new test lives under `services/`, but `pytest.ini` sets `testpaths = tests` and `norecursedirs` includes `services`, so it will not run in the default CI/unit lanes. If this behavior is important for regression coverage, move/duplicate it under `tests/` or add an explicit CI invocation that runs this file.",
+          "created_at": "2026-04-24T00:02:10Z",
+          "path": "services/repo-truth-extractor/tests/test_intelligence_routing_integration.py",
+          "line": 25,
+          "original_line": 25
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612j9",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-04-24T00:10:31Z",
+          "path": "services/repo-truth-extractor/tests/test_intelligence_routing_integration.py",
+          "line": 25,
+          "original_line": 25
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859QlZe",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+      "line": 6,
+      "original_line": 6,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661wY_",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This audit report is missing YAML frontmatter. `scripts/docs_validator.py` requires frontmatter (and `id/title/type` at minimum) for docs under `docs/`, so this will fail docs validation gates. Add the required frontmatter block (and ensure `type` matches the path normalization, likely `reference` for `docs/05-audit-reports/`).",
+          "created_at": "2026-04-24T00:02:11Z",
+          "path": "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+          "line": 6,
+          "original_line": 6
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612lE",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-04-24T00:10:33Z",
+          "path": "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+          "line": 6,
+          "original_line": 6
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859QlZv",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+      "line": null,
+      "original_line": 9,
+      "original_start_line": 4,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661wZT",
+          "author": "copilot-pull-request-reviewer",
+          "body": "Frontmatter `type` is set to `Architecture Decision Record`, but `scripts/docs_validator.py` only accepts `type: adr` for ADRs (and requires ADR fields like `status`, `prelude`, and `graph_metadata`). This file will fail docs validation until the frontmatter is normalized (type/status casing) and the required ADR fields are added.\n```suggestion\ntype: adr\nowner: Claude Agent\ndate: 2026-04-23\nstatus: active\nprelude: \"Defines three-tier event stream backpressure with server-side rate limiting, client-side buffering, and debounce to preserve responsiveness while reducing cognitive overload.\"\ntags: [u3-resolved, event-stream, frame-budget, backpressure, rate-limiting, performance-tuning]\nadhd_summary: \"200 evt/sec + 15min tail buffer + 50ms debounce for ADHD context windows\"\ngraph_metadata:\n  node_type: decision\n  decision_id: adr-221\n  relates_to: [event-stream, backpressure, rate-limiting, performance]\n```",
+          "created_at": "2026-04-24T00:02:11Z",
+          "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+          "line": null,
+          "original_line": 9
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612nD",
+          "author": "hu3mann",
+          "body": "Automated queue-drain applied a minimal fix and will run verification before resolving this thread.",
+          "created_at": "2026-04-24T00:10:34Z",
+          "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+          "line": null,
+          "original_line": 9
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859QlZ3",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "config/pricing.yaml",
+      "line": 217,
+      "original_line": 217,
+      "original_start_line": 143,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661wZe",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The PR title/description focuses on tokenization + pricing hardening, but this change set also introduces a new canonical `dopemux rte` command family, multiple new ADRs, and large transport-contract documentation. If these are intentional, consider updating the PR description to reflect the broader scope (or splitting into focused PRs) so reviewers can evaluate impact/risk accurately.",
+          "created_at": "2026-04-24T00:02:11Z",
+          "path": "config/pricing.yaml",
+          "line": 217,
+          "original_line": 217
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612pa",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-04-24T00:10:36Z",
+          "path": "config/pricing.yaml",
+          "line": 217,
+          "original_line": 217
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859QlaC",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "line": 8267,
+      "original_line": 8267,
+      "original_start_line": 8263,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661wZr",
+          "author": "copilot-pull-request-reviewer",
+          "body": "Importing `estimate_tokens` in the middle of the module will trigger flake8/PEP8 E402 (imports not at top level) and can break lint gates. Move the import to the module import section (or wrap usage behind an existing top-level import block) to keep lint deterministic.",
+          "created_at": "2026-04-24T00:02:12Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 8267,
+          "original_line": 8267
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612rD",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-04-24T00:10:37Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 8267,
+          "original_line": 8267
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859QlaN",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/lib/prescan/token_counter.py",
+      "line": 52,
+      "original_line": 47,
+      "original_start_line": 21,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661wZ8",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`estimate_tokens` documents a `method` argument that can select between `\"tiktoken\"` and `\"chars\"`, but the implementation ignores the `method` parameter and always uses tiktoken when available. Either honor the `method` argument or remove it to avoid surprising callers and to keep the API contract accurate.",
+          "created_at": "2026-04-24T00:02:12Z",
+          "path": "services/repo-truth-extractor/lib/prescan/token_counter.py",
+          "line": 52,
+          "original_line": 47
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612sV",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-04-24T00:10:38Z",
+          "path": "services/repo-truth-extractor/lib/prescan/token_counter.py",
+          "line": 52,
+          "original_line": 47
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859QlaR",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/tests/test_intelligence_routing_integration.py",
+      "line": null,
+      "original_line": 124,
+      "original_start_line": 123,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661waB",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The test currently includes an in-line uncertainty comment (`\"wait let's check\"`) next to an assertion, which makes expected behavior ambiguous and can cause churn if semantics change. Please either remove the comment or replace it with a clear expectation tied to the runner's documented dry-run contract.\n```suggestion\n        # In dry-run mode, the runner emits the request artifact for inspection but\n        # does not count the partition as a successful execution in the summary.\n        assert results[\"ok\"] == 0\n```",
+          "created_at": "2026-04-24T00:02:12Z",
+          "path": "services/repo-truth-extractor/tests/test_intelligence_routing_integration.py",
+          "line": null,
+          "original_line": 124
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612tR",
+          "author": "hu3mann",
+          "body": "Automated queue-drain applied a minimal fix and will run verification before resolving this thread.",
+          "created_at": "2026-04-24T00:10:40Z",
+          "path": "services/repo-truth-extractor/tests/test_intelligence_routing_integration.py",
+          "line": null,
+          "original_line": 124
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859Qlah",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/tests/test_grok_passes_validation.py",
+      "line": 25,
+      "original_line": 25,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661waX",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This new test lives under `services/`, but `pytest.ini` sets `testpaths = tests` and `norecursedirs` includes `services`, so it will not run in the default CI/unit lanes. If this behavior is important for regression coverage, move/duplicate it under `tests/` or add an explicit CI invocation that runs this file.",
+          "created_at": "2026-04-24T00:02:12Z",
+          "path": "services/repo-truth-extractor/tests/test_grok_passes_validation.py",
+          "line": 25,
+          "original_line": 25
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612uE",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-04-24T00:10:41Z",
+          "path": "services/repo-truth-extractor/tests/test_grok_passes_validation.py",
+          "line": 25,
+          "original_line": 25
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859Qlaq",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+      "line": 6,
+      "original_line": 6,
+      "original_start_line": 1,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661waj",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This implementation report is missing YAML frontmatter. `scripts/docs_validator.py` requires frontmatter (and `id/title/type` at minimum) for docs under `docs/`, so this will fail docs validation gates. Add the required frontmatter block (and ensure `type` matches the path normalization, likely `reference` for `docs/05-audit-reports/`).",
+          "created_at": "2026-04-24T00:02:13Z",
+          "path": "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+          "line": 6,
+          "original_line": 6
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612vh",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-04-24T00:10:42Z",
+          "path": "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+          "line": 6,
+          "original_line": 6
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859Qla0",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "docs/90-adr/adr-220-dopetask-direct-health-endpoint.md",
+      "line": null,
+      "original_line": 9,
+      "original_start_line": 4,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661waw",
+          "author": "copilot-pull-request-reviewer",
+          "body": "Frontmatter `type` is set to `Architecture Decision Record`, but `scripts/docs_validator.py` only accepts `type: adr` for ADRs (and requires ADR fields like `status`, `prelude`, and `graph_metadata`). This file will fail docs validation until the frontmatter is normalized (type/status casing) and the required ADR fields are added.\n```suggestion\ntype: adr\nowner: Claude Agent\ndate: 2026-04-23\nstatus: active\nprelude: \"dopetask exposes a direct /health endpoint so the Services pane can probe execution-plane health without relying on an aggregator.\"\ntags: [u2-resolved, services-health, dopetask, execution-plane, monitoring]\nadhd_summary: \"Direct health probe from Services pane, no aggregation bottleneck\"\ngraph_metadata:\n  node_type: adr\n  decision_id: adr-220\n  status: active\n```",
+          "created_at": "2026-04-24T00:02:13Z",
+          "path": "docs/90-adr/adr-220-dopetask-direct-health-endpoint.md",
+          "line": null,
+          "original_line": 9
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612wz",
+          "author": "hu3mann",
+          "body": "Automated queue-drain applied a minimal fix and will run verification before resolving this thread.",
+          "created_at": "2026-04-24T00:10:43Z",
+          "path": "docs/90-adr/adr-220-dopetask-direct-health-endpoint.md",
+          "line": null,
+          "original_line": 9
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859QlbE",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "line": 13289,
+      "original_line": 13287,
+      "original_start_line": 13284,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661wbC",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`call_llm_with_ladder` is now invoked with a single-entry ladder `[(p_provider, p_model_id, p_api_key_env)]`, which discards the multi-hop `step_ladder` returned by `resolve_effective_step_route`. This removes configured fallback/escalation behavior for the step and can reduce reliability/cost safety expectations. Consider passing the resolved ladder (and if a partition tier override is used, resolve a full ladder for that override) rather than forcing a single candidate.",
+          "created_at": "2026-04-24T00:02:13Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 13289,
+          "original_line": 13287
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612yw",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-04-24T00:10:45Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 13289,
+          "original_line": 13287
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859QlbP",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+      "line": 285,
+      "original_line": 285,
+      "original_start_line": 253,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661wbV",
+          "author": "copilot-pull-request-reviewer",
+          "body": "`run_passes_batched` iterates over `plan.batches`, but `_execute_pass` currently builds the same full-pass payload regardless of `batch_info` and caches purely by `pass_id + corpus_summary`. This means every batch will re-run (or cache-hit) the same request and store duplicate results, rather than executing per-batch payloads. `_execute_pass` should incorporate batch-specific content (and cache keying) or `run_passes_batched` should pass the batch payload explicitly.",
+          "created_at": "2026-04-24T00:02:13Z",
+          "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+          "line": 285,
+          "original_line": 285
+        },
+        {
+          "id": "PRRC_kwDOPyIw986612zv",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-04-24T00:10:46Z",
+          "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py",
+          "line": 285,
+          "original_line": 285
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859Qltz",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/lib/prescan/token_counter.py",
+      "line": 45,
+      "original_line": 42,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661w0Z",
+          "author": "github-actions",
+          "body": "🟡 The `method` parameter is ignored when `tiktoken` is available. If `_TIKTOKEN_AVAILABLE` is True, it always uses `tiktoken` regardless of the requested `method`.\n\n```suggestion\n    if _TIKTOKEN_AVAILABLE and method == \"tiktoken\":\n        try:\n            enc = tiktoken.get_encoding(\"cl100k_base\")\n            return len(enc.encode(text))\n        except Exception as e:\n            logger.warning(f\"tiktoken encoding failed, falling back to chars: {e}\")\n```",
+          "created_at": "2026-04-24T00:02:46Z",
+          "path": "services/repo-truth-extractor/lib/prescan/token_counter.py",
+          "line": 45,
+          "original_line": 42
+        },
+        {
+          "id": "PRRC_kwDOPyIw9866120m",
+          "author": "hu3mann",
+          "body": "Automated queue-drain applied a minimal fix and will run verification before resolving this thread.",
+          "created_at": "2026-04-24T00:10:47Z",
+          "path": "services/repo-truth-extractor/lib/prescan/token_counter.py",
+          "line": 45,
+          "original_line": 42
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859Qlu4",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "line": null,
+      "original_line": 11841,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661w14",
+          "author": "github-actions",
+          "body": "🔴 This uses the `endpoint_base` from the outer scope, which corresponds to the initial provider. If `p_provider` was overridden by a partition-tier upgrade, this will use the wrong base URL for auth sequence resolution.\n\n```suggestion\n            gemini_sequence = _gemini_auth_mode_sequence(\n                cfg.gemini_auth_mode, llm_base_url(p_provider, cfg)\n            )\n```",
+          "created_at": "2026-04-24T00:02:48Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": null,
+          "original_line": 11841
+        },
+        {
+          "id": "PRRC_kwDOPyIw9866121o",
+          "author": "hu3mann",
+          "body": "Automated queue-drain applied a minimal fix and will run verification before resolving this thread.",
+          "created_at": "2026-04-24T00:10:49Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": null,
+          "original_line": 11841
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859QlvO",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "line": 11859,
+      "original_line": 11857,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661w2W",
+          "author": "github-actions",
+          "body": "🔴 This uses `provider` from the outer scope instead of the partition-local `p_provider`. If a tier override changed the provider, the reported auth flags will be incorrect.\n\n```suggestion\n                else sdk_auth_present_flags(p_provider, True)\n```",
+          "created_at": "2026-04-24T00:02:49Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 11859,
+          "original_line": 11857
+        },
+        {
+          "id": "PRRC_kwDOPyIw9866122h",
+          "author": "hu3mann",
+          "body": "Automated queue-drain applied a minimal fix and will run verification before resolving this thread.",
+          "created_at": "2026-04-24T00:10:50Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 11859,
+          "original_line": 11857
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859Qlvy",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "line": 11868,
+      "original_line": 11866,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661w3H",
+          "author": "github-actions",
+          "body": "🔴 This uses `endpoint_base` from the outer scope. If the provider was overridden for this partition, this metadata field will reflect the wrong base URL.\n\n```suggestion\n                \"endpoint_base_url\": llm_base_url(p_provider, cfg),\n```",
+          "created_at": "2026-04-24T00:02:50Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 11868,
+          "original_line": 11866
+        },
+        {
+          "id": "PRRC_kwDOPyIw9866124A",
+          "author": "hu3mann",
+          "body": "Automated queue-drain applied a minimal fix and will run verification before resolving this thread.",
+          "created_at": "2026-04-24T00:10:51Z",
+          "path": "services/repo-truth-extractor/run_extraction_v5.py",
+          "line": 11868,
+          "original_line": 11866
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw9859Ql2S",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "services/repo-truth-extractor/lib/prescan/token_counter.py",
+      "line": 77,
+      "original_line": 72,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw98661w_0",
+          "author": "github-actions",
+          "body": "🟡 When `max_preview_bytes > 0`, this function returns the token count for the preview only, but when `max_preview_bytes == 0`, it estimates the whole file based on stat size. This inconsistency can lead to significant underestimation if callers expect a file-level estimate. Consider scaling the result or renaming the function to reflect it only measures the preview tokens.",
+          "created_at": "2026-04-24T00:03:03Z",
+          "path": "services/repo-truth-extractor/lib/prescan/token_counter.py",
+          "line": 77,
+          "original_line": 72
+        },
+        {
+          "id": "PRRC_kwDOPyIw9866125i",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-04-24T00:10:52Z",
+          "path": "services/repo-truth-extractor/lib/prescan/token_counter.py",
+          "line": 77,
+          "original_line": 72
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "pr_id": "506",
+  "cycle_id": "ad065b99-a675-4a51-a76a-5dca0baa3607",
+  "next_tactic": "APPLY_FIX",
+  "strategy_id": "STAGED_SEQUENCE_MERGE",
+  "posture": "HOLD",
+  "computed_at": 1776938468.174877
+}

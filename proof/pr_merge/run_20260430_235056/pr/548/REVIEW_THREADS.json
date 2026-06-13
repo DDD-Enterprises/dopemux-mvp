@@ -1,0 +1,25 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw985-7bfU",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/governance/runtime-authority-verification.md",
+      "line": 35,
+      "original_line": 35,
+      "original_start_line": 21,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw9869FmCS",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The “Authority Hierarchy” section reads like the verifier algorithmically resolves evidence priority across runtime/config/TRUTH docs/etc, but the script only validates paths/markers explicitly listed in the manifest. Consider rewording to clarify it’s *authoring guidance / intended evidence precedence* for maintaining the manifest, not something the verifier automatically computes.",
+          "created_at": "2026-05-01T06:40:07Z",
+          "path": "docs/03-reference/governance/runtime-authority-verification.md",
+          "line": 35,
+          "original_line": 35
+        }
+      ]
+    }
+  ]
+}

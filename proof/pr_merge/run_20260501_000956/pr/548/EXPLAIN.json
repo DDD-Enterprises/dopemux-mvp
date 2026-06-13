@@ -1,0 +1,88 @@
+{
+  "why_blocked": [
+    "Required checks are failing.",
+    "Required approval is missing.",
+    "Local validation is required before merge readiness can be declared."
+  ],
+  "evidence": [
+    {
+      "kind": "blocker",
+      "finding_type": "required_check_failed",
+      "message": "Required checks are failing.",
+      "details": {
+        "checks_total": 26,
+        "checks_success": 25,
+        "checks_failure": 1,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 1,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BEHIND",
+        "blocker_types": [
+          "required_check_failed",
+          "approval_missing"
+        ],
+        "warning_types": []
+      },
+      "source": "github_protection_review",
+      "override": null
+    },
+    {
+      "kind": "blocker",
+      "finding_type": "approval_missing",
+      "message": "Required approval is missing.",
+      "details": {},
+      "source": "github_protection_review",
+      "override": null
+    },
+    {
+      "kind": "blocker",
+      "finding_type": "validation_not_executed",
+      "message": "Local validation is required before merge readiness can be declared.",
+      "details": {
+        "validation_status": "not_executed"
+      },
+      "source": "local_validation",
+      "override": null
+    },
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "details": {
+        "diff_size": 1594
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "next_action": "clear blockers",
+  "changed_since_prior_scan": [],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "details": {
+        "diff_size": 1594
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "details": {
+        "risk_score": 1904.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ]
+}

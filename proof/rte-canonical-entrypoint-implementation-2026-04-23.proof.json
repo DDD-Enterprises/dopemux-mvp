@@ -1,0 +1,72 @@
+{
+  "packet_id": "TP-DMX-RTECANON-001",
+  "date": "2026-04-23",
+  "branch": "codex/rte-canonical-operator-entrypoint",
+  "status": "implemented",
+  "canonical_runtime": "services/repo-truth-extractor/run_extraction_v5.py",
+  "canonical_operator_family": "dopemux rte",
+  "legacy_surfaces": {
+    "compatibility_aliases": [
+      "dopemux upgrades",
+      "dopemux extract truth-run"
+    ],
+    "hard_refused": [
+      "dopemux truth"
+    ]
+  },
+  "policy_alignment": {
+    "runtime_default_routing_policy": "cost",
+    "cli_v5_default_routing_policy": "cost",
+    "truth_run_default_routing_policy": "cost",
+    "validator_default_target_policy": "cost"
+  },
+  "resume_semantics": {
+    "preserved": true,
+    "implicit_resume_omits_run_id": true,
+    "implicit_resume_display_run_id": "latest_run_id.txt"
+  },
+  "evidence": [
+    {
+      "type": "code",
+      "path": "src/dopemux/cli.py",
+      "claim": "Adds `dopemux rte` and mounts the canonical RTE commands on it."
+    },
+    {
+      "type": "code",
+      "path": "src/dopemux/cli.py",
+      "claim": "Demotes `dopemux truth` to an explicit fail-closed redirect."
+    },
+    {
+      "type": "code",
+      "path": "src/dopemux/commands/extract_commands.py",
+      "claim": "Keeps `dopemux extract truth-run` as a compatibility alias while aligning its policy default to `cost`."
+    },
+    {
+      "type": "code",
+      "path": "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+      "claim": "Aligns validator target policy default to `cost`."
+    },
+    {
+      "type": "test",
+      "path": "services/repo-truth-extractor/tests/test_truth_run_cli.py",
+      "claim": "Covers `dopemux rte` registration, `truth-run` default routing policy, and implicit resume semantics."
+    },
+    {
+      "type": "doc",
+      "path": "services/repo-truth-extractor/README.md",
+      "claim": "Names `dopemux rte` as canonical and documents retained compatibility aliases."
+    }
+  ],
+  "validation": [
+    "python -m json.tool task-packets/TP-DMX-RTECANON-001.json",
+    "python -m json.tool proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json",
+    "python -m py_compile src/dopemux/cli.py src/dopemux/commands/extract_commands.py src/dopemux/commands/extractor_commands.py services/repo-truth-extractor/validate_pre_live_gate_v25.py services/repo-truth-extractor/tests/test_truth_run_cli.py",
+    "git diff --check -- src/dopemux/cli.py src/dopemux/commands/extract_commands.py src/dopemux/commands/extractor_commands.py services/repo-truth-extractor/validate_pre_live_gate_v25.py services/repo-truth-extractor/README.md docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md proof/rte-canonical-entrypoint-implementation-2026-04-23.proof.json task-packets/TP-DMX-RTECANON-001.json task-packets/INDEX.md"
+  ],
+  "unknowns": [
+    "The repository still retains the broader `dopemux upgrades` compatibility family rather than removing it entirely.",
+    "Proof artifacts under `proof/` remain ignored by `.gitignore` in this checkout.",
+    "The packet's requested pytest validation could not run in this environment because `pytest` is not installed.",
+    "Direct CLI import validation could not run in this environment because `click` is not installed."
+  ]
+}

@@ -189,6 +189,15 @@ jobs:
             tests/test_brand_voice.py \
             -n auto --maxfail=1 --disable-warnings --no-cov
 
+      # Separate pytest process: the WMA tests/conftest.py prepends the service
+      # dir (which has a top-level utils.py) to sys.path, shadowing the `utils`
+      # package that tests/unit imports when collected in the same process.
+      - name: ▶️ Run dope-memory MCP endpoint gate
+        run: |
+          uv run --frozen pytest \
+            services/working-memory-assistant/tests/test_mcp_http_endpoint.py \
+            --maxfail=1 --disable-warnings --no-cov
+
       - name: 🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)
         run: |
           PYTHONPATH=src uv run --frozen pytest \

@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "artifact_version": "3.1",
+    "tool_version": "3.1.0",
+    "policy_schema_version": 1,
+    "generated_at": "2026-04-19T00:36:33Z",
+    "run_id": "20260418_111828",
+    "repo_root": "/Users/hue/code/dopemux-mvp",
+    "git_remote_origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "git_repo_name": "DDD-Enterprises/dopemux-mvp",
+    "current_branch": "tp/dopecode-phase8-events-replay",
+    "default_branch": "main",
+    "pr_head_sha": "",
+    "base_sha": "",
+    "applied_tree_sha": ""
+  },
+  "strategy": "hybrid",
+  "cycle_detected": false,
+  "layers": [
+    {
+      "layer": 0,
+      "pr_ids": [
+        482,
+        464,
+        481,
+        471,
+        467,
+        480,
+        475,
+        472,
+        473,
+        474,
+        477,
+        479
+      ]
+    }
+  ],
+  "edges": {},
+  "ordered_pr_ids": [
+    482,
+    464,
+    481,
+    471,
+    467,
+    480,
+    475,
+    472,
+    473,
+    474,
+    477,
+    479
+  ]
+}

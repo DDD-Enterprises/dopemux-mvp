@@ -1,0 +1,12 @@
+{
+  "applied": [
+    {
+      "thread_id": "PRRT_kwDOPyIw985-7bfU",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/03-reference/governance/runtime-authority-verification.md",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ]
+}
