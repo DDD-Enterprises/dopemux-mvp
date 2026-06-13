@@ -341,7 +341,9 @@ jobs:
         run: |
           PYTHONPATH=src uv run --frozen pytest \
             services/repo-truth-extractor/tests/ \
-            -q --tb=short --disable-warnings --no-cov
+            -n auto --dist worksteal \
+            -q --tb=short --disable-warnings --no-cov \
+            --durations=40 --durations-min=0.05
 
   auditor-router:
     name: "🧪 Auditor Router"
