@@ -57,7 +57,7 @@
 
 **Required fixes**: None.
 
-**Escalation needed**: NO for Auditor B surface. (PR merge still requires Auditor A and supervisor review).
+**Escalation needed**: NO for Auditor B surface. (PR merge still requires supervisor review and branch/PR hygiene.)
 
 **Independence note**: This is an independent audit by Gemini CLI.
 
@@ -65,13 +65,13 @@
 
 ## Blocking findings
 
-None.
+None for design-domain content.
 
 ---
 
 ## Non-blocking findings
 
-N1–N5 per AUDITOR_A_REPORT.md (all non-blocking). See Auditor B report for additional surface.
+N1–N5 per AUDITOR_A_REPORT.md (all non-blocking). See Auditor B report for contradiction-hunt surface.
 
 ---
 
@@ -82,9 +82,9 @@ N1–N5 per AUDITOR_A_REPORT.md (all non-blocking). See Auditor B report for add
 2. model_slot.config_only: false → true
 3. Classification: R0_READ/safe_read → R2_TESTS/requires_operator with authority_class
 4. Audit findings: None → UNKNOWN_NOT_AUDITED
-5. PAL chain: marked executed: false with deviation and supervisor_review_required
+5. PAL chain: marked partial with deviation and supervisor acceptance
 6. operator_approval.approval_ref added
-7. Final capture appended with actual git diff
+7. Final staged diff proof captured
 8. GPT55_REVIEW_BRIEF.md updated with diff and corrected audit findings
 
 ---
@@ -95,23 +95,22 @@ N1–N5 per AUDITOR_A_REPORT.md (all non-blocking). See Auditor B report for add
   - Auditor A: Claude Sonnet 4.6, PASS_WITH_RISKS, no blocking findings.
   - Auditor B: Gemini 2.5 Pro, PASS, zero contradictions.
 - **Remaining audit risks**: Auditor A N1–N5 are accepted as non-blocking follow-on items.
-- **PAL chain deviation accepted**: Scout/Planner/Challenge prompts created but not run. GPT-5.5 Pro supervisor accepted this deviation for design-only 0001 after independent Claude and Gemini audits.
-- **Runtime health not proven**: LiteLLM unhealthy, stale alias unresolved, PAL inventory not locked — hard stops for any runtime work
-- **Current branch WIP**: Feature branch, not main; must not be normalized
+- **PAL chain deviation accepted**: Scout/Planner/Challenge prompts were not run. GPT-5.5 Pro supervisor accepted this deviation for design-only 0001 after independent Claude and Gemini audits.
+- **Runtime health not proven**: LiteLLM unhealthy, stale alias unresolved, PAL inventory not locked — hard stops for runtime work.
+- **Current branch WIP risk**: do not normalize mixed PR #834 state into a clean 0001 claim.
 
 ---
 
 ## Escalation needed
 
-**NO** for packet completion — dual auditor requirement now satisfied:
-- Auditor A (Claude Sonnet 4.6): PASS_WITH_RISKS — independent, live test run
-- Auditor B (Gemini 2.5 Pro): PASS — independent, 0 contradictions
+**NO** for domain-model completion.
 
-**YES** for PR merge:
-- Execute PAL chain prompts (Scout/Planner/Challenge) or explicitly accept deviation with supervisor approval
-- Verify operator approval reference is acceptable to maintainers
-- GPT-5.5 Pro supervisor review via GPT55_REVIEW_BRIEF.md
+**YES** for merge readiness:
+- restore into a clean branch or repair PR #834 scope contamination
+- regenerate final capture after staging in the target checkout
+- ensure the PR title/body match `DMX-DCP-MODEL-ROUTING-MVP-0001`
+- do not claim merge readiness without current checks and PR Steward readiness
 
 ---
 
-**Status**: Dual independent audit complete. Packet ready for supervisor review and PR.
+**Status**: Dual independent audit complete. Packet content is acceptable with risks. Merge readiness remains BLOCKED_NOT_REQUESTED.

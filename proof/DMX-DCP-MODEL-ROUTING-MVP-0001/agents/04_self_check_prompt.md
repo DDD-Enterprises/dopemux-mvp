@@ -1,12 +1,8 @@
 # Self-Check Prompt — 0001
 
-You are OpenCode/Grok self-check.
+You are OpenCode/Grok self-check. You are not final auditor.
 
-You are not final auditor.
-
-Review your own diff for obvious mistakes.
-
-**Check**:
+Check:
 1. Any forbidden file touched?
 2. Any out-of-scope file touched?
 3. Any runtime routing code added?
@@ -18,7 +14,7 @@ Review your own diff for obvious mistakes.
 9. auditor_verdict distinct from validation_state?
 10. GPT55_REVIEW_BRIEF complete?
 
-**Return**:
+Return:
 - self_check_verdict
 - issues_found
 - fixes_needed
