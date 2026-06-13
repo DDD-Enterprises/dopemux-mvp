@@ -50,8 +50,15 @@ for plan in "${PLANS[@]}"; do
   done
   [[ -n "$src" ]] || { printf 'No TTF output for %s under %s/dist/%s\n' "$plan" "$IOSEVKA_REPO" "$plan" >&2; exit 1; }
 
-  cp "$src"/*.ttf "$OUT_DIR"/
-  count="$(find "$src" -maxdepth 1 -iname '*.ttf' | wc -l | tr -d ' ')"
+  ttf_outputs=()
+  while IFS= read -r f; do ttf_outputs+=("$f"); done < <(find "$src" -maxdepth 1 -type f -iname '*.ttf' -print | sort)
+  count="${#ttf_outputs[@]}"
+  if [[ "$count" -eq 0 ]]; then
+    printf 'No TTF files produced for %s in %s\n' "$plan" "$src" >&2
+    exit 1
+  fi
+
+  cp "${ttf_outputs[@]}" "$OUT_DIR"/
   printf '  copied %s TTF face(s) from %s\n' "$count" "$src"
 done
 
