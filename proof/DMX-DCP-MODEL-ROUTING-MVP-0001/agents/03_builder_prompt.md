@@ -1,20 +1,16 @@
 # Builder Prompt — 0001
 
-You are Builder for DMX-DCP-MODEL-ROUTING-MVP-0001.
+You are Builder for DMX-DCP-MODEL-ROUTING-MVP-0001 restore.
 
-Execute the plan from Planner.
+You may edit/copy only allowed proof files unless the operator explicitly authorizes .gitignore changes.
 
-Do not edit files outside the allowed scope.
+Do not implement runtime routing.
+Do not call models.
+Do not call MCP.
+Do not touch forbidden files.
 
-**Constraints**:
-- Design/domain-model only
-- OpenCode backend_only
-- No runtime routing
-- No MCP calls
-- No Dopetask/Task Orchestrator writes
-
-**Return**:
-- files created
-- validations run
+Return:
+- files restored
+- commands run
 - exit codes
-- confidence
+- risks
