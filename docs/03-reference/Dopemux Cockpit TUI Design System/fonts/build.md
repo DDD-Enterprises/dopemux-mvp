@@ -4,86 +4,128 @@ title: Dopemux Term Build Recipe
 type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-04-27'
-last_review: '2026-04-27'
-next_review: '2026-06-15'
-prelude: Build and patch recipe for the Dopemux cockpit terminal font stack.
+date: '2026-06-12'
+last_review: '2026-06-12'
+next_review: '2026-09-12'
+prelude: Build and patch recipe for the Dopemux cockpit font stack.
 ---
 # Dopemux Term Build Recipe
 
 ## Purpose
 
-This folder documents the local build recipe for the cockpit terminal font.
-It does not ship generated font binaries by default.
+Local build + Nerd-Font patch recipe for the cockpit font stack. Generated
+binaries are not shipped or committed by default.
 
-Canonical brand mono: `Dopemux Term Regular`.
-Canonical rich-glyph terminal font: `Dopemux Term Nerd Font Regular`.
-User-facing font families are `Dopemux Term` and `Dopemux Term Nerd Font`.
+Two families:
 
-## Source Tools
+- `Dopemux Term` — canonical operator mono (spacing `term`).
+- `Dopemux Editor` — quasi-proportional prose-set companion (`--font-editor`).
 
-- Iosevka Customizer
-- Iosevka custom build via `private-build-plans.toml`
-- Nerd Fonts font-patcher
+Canonical rich-glyph terminal font: `Dopemux Term Nerd Font Mono`.
 
-Iosevka is build provenance only. Nerd Fonts is patching/tooling provenance
-only. Operator-facing docs, CSS, previews, surfaces, and UI kit examples use
-the Dopemux family names.
+## Source tools
 
-## Local Build Flow
+- Iosevka custom build via `private-build-plans.toml` (build provenance only)
+- Nerd Fonts `font-patcher` (patching / tooling provenance only)
 
-1. Generate/refine `private-build-plans.toml` using the Iosevka Customizer.
-2. Build Dopemux Term Regular from Iosevka source.
-3. Patch the built font with Nerd Fonts font-patcher.
-4. Install/test locally.
-5. Do not commit binaries without explicit approval.
+Operator-facing docs, CSS, previews, and UI kits use the Dopemux family names —
+never "Iosevka" or "Nerd Fonts" as user-facing names.
 
-## Output Naming
+## Faces
 
-- `DopemuxTerm-Regular.ttf`
-- `DopemuxTermNerdFont-Regular.ttf`
+Per family: `Regular` + `Medium`, each `Upright` / `Italic` / `Oblique`, normal
+width (12 faces total). Bold is the real Medium face — never synthesized. Slab is
+excluded.
 
-## Build Attributes
+## Build flow
 
-- spacing: `term`
-- serifs: `sans`
-- weight: `Regular / 400`
-- slope: `upright`
-- width: `normal`
-- ligatures: disabled or minimized for cockpit terminal use
-- character variants prioritize ambiguity reduction
-- supports Dopemux cockpit branding and mint-mojo operator surfaces
+Prereqs: Node.js + npm; FontForge (`brew install fontforge`); local checkouts of
+Iosevka and Nerd Fonts.
 
-## Verification Commands
+```sh
+git clone https://github.com/be5invis/Iosevka      # IOSEVKA_REPO
+git clone https://github.com/ryanoasis/nerd-fonts  # NERD_FONTS_REPO
+
+export IOSEVKA_REPO=/path/to/Iosevka
+export NERD_FONTS_REPO=/path/to/nerd-fonts
+export OUT_DIR="$PWD/out"
+mkdir -p "$OUT_DIR"
+
+# 1. Build the unpatched Dopemux Term + Dopemux Editor faces.
+./build-dopemux-fonts.sh
+
+# 2. Patch each built face with Nerd Font glyphs.
+./patch-nerd-font.sh
+```
+
+`build-dopemux-fonts.sh` copies `private-build-plans.toml` into the Iosevka
+checkout and runs `npm run build -- ttf::IosevkaDopemuxTerm` and
+`... ttf::IosevkaDopemuxEditor`, then collects the TTFs into `OUT_DIR`. Set
+`IOSEVKA_TARGET=ttf-unhinted` to skip the `ttfautohint` dependency.
+
+`patch-nerd-font.sh` runs `fontforge -script font-patcher --complete --mono
+--careful` over every built face and writes
+`$OUT_DIR/nerd-font/DopemuxTermNerdFont-*.ttf` (and `DopemuxEditorNerdFont-*`).
+`--complete` guarantees the codepoints in `src/dopemux/ui/theme.py::Glyphs`.
+
+> Patcher invocation note: `font-patcher` requires FontForge's Python and must be
+> run as `fontforge -script font-patcher ...`, never `python3 font-patcher`.
+
+## Output naming
+
+- `DopemuxTerm-{Regular,Italic,Oblique,Medium,MediumItalic,MediumOblique}.ttf`
+- `DopemuxEditor-{Regular,Italic,Oblique,Medium,MediumItalic,MediumOblique}.ttf`
+- `DopemuxTermNerdFont-{...}.ttf` (internal family `Dopemux Term Nerd Font Mono`)
+- `DopemuxEditorNerdFont-{...}.ttf`
+
+## Verification
 
 From the repository root:
 
 ```sh
 SCOPE="docs/03-reference/Dopemux Cockpit TUI Design System"
 
-FORBIDDEN_FONTS='Jet''Brains|Jet''Brains Mono|Fira'' Code|SF''Mono|Men''lo|Con''solas'
-rg -n "$FORBIDDEN_FONTS" "$SCOPE" || true
+# Off-brand mono families must not appear in operator-facing files.
+FORBIDDEN='Jet''Brains|Fira'' Code|SF''Mono|Men''lo|Con''solas'
+rg -n "$FORBIDDEN" "$SCOPE" || true
 
-rg -n "Dopemux Term|DopemuxTerm|Dopemux Term Nerd Font|DopemuxTermNerdFont" "$SCOPE" || true
+rg -n "Dopemux Term|Dopemux Editor|DopemuxTerm|DopemuxEditor" "$SCOPE" || true
 
-find "$SCOPE" -type f \( -iname "*.ttf" -o -iname "*.otf" -o -iname "*.woff" -o -iname "*.woff2" \) -print
+find "$SCOPE" -type f \( -iname '*.ttf' -o -iname '*.otf' -o -iname '*.woff' -o -iname '*.woff2' \) -print
 git status --short --untracked-files=all
+
+# After patching, confirm Nerd glyphs landed (example codepoints from Glyphs):
+python3 - "$OUT_DIR/nerd-font/DopemuxTermNerdFont-Regular.ttf" <<'PY'
+import sys
+from fontTools.ttLib import TTFont
+cmap = TTFont(sys.argv[1]).getBestCmap()
+want = {0xF058: "success", 0xF057: "error", 0xF06A: "warning", 0xE725: "git", 0xF308: "docker"}
+for cp, name in want.items():
+    print(("OK  " if cp in cmap else "MISS"), f"U+{cp:04X}", name)
+PY
 ```
 
-The first command should return no matches. The Dopemux naming command
-should show package-wide use of the Dopemux family names. The binary check
-must be reviewed before any commit or artifact handoff.
+The forbidden check should return nothing. The verification snippet should print
+`OK` for every codepoint once patching has run.
 
-## No-Binary-Commit Rule
+## No-binary-commit rule
 
 Generated `.ttf`, `.otf`, `.woff`, and `.woff2` files are not committed by
-default. Commit generated binaries only after explicit approval and after
-the binary list has been reviewed.
+default (`.gitignore`). Commit binaries only after explicit approval and review
+of the binary list.
 
-## Future Variants
+## Notes
 
-- Bold may be added later if cockpit surfaces need a real bold face instead
-  of synthesized bold.
-- Slab is intentionally excluded from the canonical cockpit terminal font.
-  It may be explored later for display-only surfaces, never dense TUI,
-  provenance, log, or cockpit rows.
+- `private-build-plans.toml` carries the family / spacing / weight / slope matrix.
+  Ambiguity-reduction character variants (`cv__` / `ss__`) should be exported from
+  the Iosevka Customizer into the `variants.design` sections, not hand-guessed.
+- The legacy `IosevkaHueTerm` / `IosevkaHueEditorQP` exports (single "Extended"
+  width, no Nerd glyphs) are superseded by the `Dopemux Term` / `Dopemux Editor`
+  naming produced here.
+
+## Future variants
+
+- Additional weights beyond Regular/Medium may be added to
+  `private-build-plans.toml` if cockpit surfaces need them.
+- Slab is intentionally excluded from the cockpit font; explore only for
+  display-only surfaces, never dense TUI / provenance / log / cockpit rows.

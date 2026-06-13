@@ -1,59 +1,74 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Local recipe only. This script does not download dependencies and generated
-# font binaries are not committed by default.
+# Patch every built Dopemux face with Nerd Fonts glyphs.
+#
+# Local recipe only: does NOT download dependencies and generated binaries are
+# NOT committed (.gitignore). Run build-dopemux-fonts.sh first to populate
+# OUT_DIR with unpatched Dopemux*-*.ttf. See build.md.
+#
+# Required env:
+#   NERD_FONTS_REPO  local checkout of https://github.com/ryanoasis/nerd-fonts
+#   OUT_DIR          directory holding the built Dopemux*-*.ttf
+# Optional env:
+#   PATCHED_DIR      output dir for patched faces (default: $OUT_DIR/nerd-font)
 
-: "${IOSEVKA_REPO:?Set IOSEVKA_REPO to a local Iosevka checkout.}"
-: "${NERD_FONTS_REPO:?Set NERD_FONTS_REPO to a local Nerd Fonts checkout.}"
-: "${OUT_DIR:?Set OUT_DIR to the output directory for generated fonts.}"
-
-if [[ ! -d "$IOSEVKA_REPO" ]]; then
-  printf 'Missing IOSEVKA_REPO directory: %s\n' "$IOSEVKA_REPO" >&2
-  exit 1
-fi
-
-if [[ ! -d "$NERD_FONTS_REPO" ]]; then
-  printf 'Missing NERD_FONTS_REPO directory: %s\n' "$NERD_FONTS_REPO" >&2
-  exit 1
-fi
-
-if [[ ! -d "$OUT_DIR" ]]; then
-  printf 'Missing OUT_DIR directory: %s\n' "$OUT_DIR" >&2
-  exit 1
-fi
+: "${NERD_FONTS_REPO:?Set NERD_FONTS_REPO to a local Nerd Fonts checkout (git clone https://github.com/ryanoasis/nerd-fonts).}"
+: "${OUT_DIR:?Set OUT_DIR to the directory holding built Dopemux*-*.ttf.}"
 
 FONT_PATCHER="$NERD_FONTS_REPO/font-patcher"
-BUILT_FONT="$IOSEVKA_REPO/dist/IosevkaDopemuxTerm/TTF/DopemuxTerm-Regular.ttf"
-PATCH_TMP="$OUT_DIR/.dopemux-term-nerd-font-patch"
-PATCHED_FONT="$OUT_DIR/DopemuxTermNerdFont-Regular.ttf"
+PATCHED_DIR="${PATCHED_DIR:-$OUT_DIR/nerd-font}"
+PATCH_TMP="$OUT_DIR/.dopemux-nerd-font-patch"
 
-if [[ ! -f "$FONT_PATCHER" ]]; then
-  printf 'Missing Nerd Fonts font-patcher: %s\n' "$FONT_PATCHER" >&2
+[[ -d "$NERD_FONTS_REPO" ]] || { printf 'Missing NERD_FONTS_REPO directory: %s\n' "$NERD_FONTS_REPO" >&2; exit 1; }
+[[ -f "$FONT_PATCHER" ]]    || { printf 'Missing Nerd Fonts font-patcher: %s\n' "$FONT_PATCHER" >&2; exit 1; }
+[[ -d "$OUT_DIR" ]]        || { printf 'Missing OUT_DIR directory: %s\n' "$OUT_DIR" >&2; exit 1; }
+command -v fontforge >/dev/null || { printf 'fontforge not found; install FontForge (brew install fontforge).\n' >&2; exit 1; }
+
+# Inputs: every built Dopemux face that is not already a Nerd Font.
+# (while-read rather than mapfile so this runs on macOS's stock bash 3.2.)
+INPUTS=()
+while IFS= read -r f; do INPUTS+=("$f"); done < <(find "$OUT_DIR" -maxdepth 1 -type f -iname 'Dopemux*-*.ttf' ! -iname '*NerdFont*' -print | sort)
+if [[ "${#INPUTS[@]}" -eq 0 ]]; then
+  printf 'No built Dopemux*-*.ttf in %s. Run build-dopemux-fonts.sh first.\n' "$OUT_DIR" >&2
   exit 1
 fi
 
-if [[ ! -f "$BUILT_FONT" ]]; then
-  printf 'Missing built Dopemux Term font: %s\n' "$BUILT_FONT" >&2
-  printf 'Build Dopemux Term Regular from private-build-plans.toml first.\n' >&2
-  exit 1
-fi
+mkdir -p "$PATCHED_DIR"
+patched=0
+for input in "${INPUTS[@]}"; do
+  rm -rf "$PATCH_TMP"
+  mkdir -p "$PATCH_TMP"
+  printf 'Patching %s...\n' "$(basename "$input")"
 
+  # --complete: all Nerd Font glyph sets (guarantees the codepoints documented in
+  #             src/dopemux/ui/theme.py::Glyphs).
+  # --mono:     single-width cells for terminal / TUI rendering.
+  # --careful:  never overwrite glyphs already present in the source face.
+  # font-patcher requires FontForge's Python: run via `fontforge -script`,
+  # NOT `python3 font-patcher`.
+  fontforge -quiet -script "$FONT_PATCHER" "$input" \
+    --complete --mono --careful \
+    --outputdir "$PATCH_TMP" >/dev/null
+
+  produced=()
+  while IFS= read -r f; do produced+=("$f"); done < <(find "$PATCH_TMP" -maxdepth 1 -type f -iname '*.ttf' -print)
+  if [[ "${#produced[@]}" -ne 1 ]]; then
+    printf 'Expected exactly one patched TTF for %s; found %s.\n' "$(basename "$input")" "${#produced[@]}" >&2
+    exit 1
+  fi
+
+  # DopemuxTerm-MediumOblique.ttf -> DopemuxTermNerdFont-MediumOblique.ttf
+  base="$(basename "$input" .ttf)"
+  family="${base%%-*}"
+  face="${base#*-}"
+  out="$PATCHED_DIR/${family}NerdFont-${face}.ttf"
+  cp "${produced[0]}" "$out"
+  printf '  -> %s\n' "$out"
+  patched=$((patched + 1))
+done
 rm -rf "$PATCH_TMP"
-mkdir -p "$PATCH_TMP"
 
-# Prefer monospaced/single-width patching for terminal and TUI use.
-python3 "$FONT_PATCHER" "$BUILT_FONT" \
-  --mono \
-  --careful \
-  --outputdir "$PATCH_TMP"
-
-mapfile -t PATCHED_OUTPUTS < <(find "$PATCH_TMP" -maxdepth 1 -type f -iname "*.ttf" -print)
-if [[ "${#PATCHED_OUTPUTS[@]}" -ne 1 ]]; then
-  printf 'Expected exactly one patched TTF in %s; found %s.\n' "$PATCH_TMP" "${#PATCHED_OUTPUTS[@]}" >&2
-  exit 1
-fi
-
-cp "${PATCHED_OUTPUTS[0]}" "$PATCHED_FONT"
-printf 'Wrote %s\n' "$PATCHED_FONT"
-printf 'Review generated binaries before committing; binaries are not committed by default.\n'
+printf '\nPatched %s face(s) into %s\n' "$patched" "$PATCHED_DIR"
+printf 'Internal family becomes "<Family> Nerd Font Mono" (the --mono build).\n'
+printf 'Review generated binaries before committing; binaries are not committed by default (.gitignore).\n'
