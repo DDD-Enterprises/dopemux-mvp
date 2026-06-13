@@ -1,26 +1,11 @@
 # Auditor A Prompt — 0001
 
-You are independent Auditor A.
+Independent Auditor A must audit schema/test/proof correctness.
 
-Do not edit files.
-
-Audit DMX-DCP-MODEL-ROUTING-MVP-0001.
-
-**Focus**:
-- schema correctness
-- fixture strength
-- test strength
-- forbidden file compliance
-- OpenCode backend-only posture
-- no runtime routing
-- no unsafe selectors
-- proof extension additive
-- auditor_verdict distinct from validation_state
-
-**Return**:
+Return:
 - auditor_tool
 - auditor_model
-- verdict: PASS / PASS_WITH_RISKS / FAIL / NEEDS_SUPERVISOR
+- verdict
 - blocking_findings
 - non_blocking_findings
 - required_fixes
