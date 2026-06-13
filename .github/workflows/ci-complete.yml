@@ -307,7 +307,7 @@ jobs:
           python-version: "3.11"
 
       - name: 📦 Install dependencies
-        run: python -m pip install --upgrade pip pytest pyyaml
+        run: python -m pip install --upgrade pip pytest pyyaml pytest-asyncio
 
       - name: ▶️ Run routing consistency gate
         run: pytest tests/test_model_routing_consistency.py --noconftest -q --tb=short
