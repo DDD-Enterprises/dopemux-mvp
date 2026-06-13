@@ -351,44 +351,15 @@ vibeOut.txt
 # Router artifacts
 services/router/
 
-# Generated proof artifacts (still ignored)
+# Generated proof artifacts
+# NOTE: proof/ directories are TRACKED by default for staged-diff proof gates.
+# Specific generated subdirectories may be ignored below if needed.
 .taskx/proof/
 .dopetask/proof/
 extraction/prescan/
 
-# Tracked packet proof ledger (specific exceptions removed; proof/ is now fully tracked)
-!proof/rte-seam-extraction-foundation.proof.json
-!proof/rte-main-integration-audit-staging.proof.json
-!proof/rte-certification-overclaim-and-escalation-truth-hardening.proof.json
-!proof/rte-all-valid-work-branch-scan.proof.json
-!proof/rte-provider-preflight-scope-truth-hardening.proof.json
-!proof/repo-branch-worktree-stash-audit-2026-05-02.proof.json
-!proof/repo-remaining-work-disposition-2026-05-02.proof.json
-!proof/repo-deep-remaining-work-audit-2026-05-02.proof.json
-!proof/repo-cli-system-recovery-tranche-2026-05-02.proof.json
-!proof/repo-cli-system-recovery-tranche-2026-05-02.implementation-notes.md
-!proof/TP-OPS-MAC-SCRUBBER-001/
-!proof/TP-OPS-MAC-SCRUBBER-001/**
-!proof/cockpit-main-state-recon/
-!proof/cockpit-main-state-recon/**
-!proof/fast-dev-os/
-!proof/fast-dev-os/**
-!proof/orchestrator/
-!proof/orchestrator/**
-!proof/TP-DMX-ACTIONBRIDGE-CLI-102/
-!proof/TP-DMX-ACTIONBRIDGE-CLI-102/**
-!proof/TP-DMX-COPILOT-RENDERER-103/
-!proof/TP-DMX-COPILOT-RENDERER-103/**
-!proof/TP-DMX-AUDIT-CI-PROVENANCE-104/
-!proof/TP-DMX-AUDIT-CI-PROVENANCE-104/**
-!proof/TP-DMX-AI-ROUTING-001/
-!proof/TP-DMX-AI-ROUTING-001/**
-!proof/TP-DMX-AI-ROUTING-002/
-!proof/TP-DMX-AI-ROUTING-002/**
-!proof/TP-DMX-AI-ROUTING-003/
-!proof/TP-DMX-AI-ROUTING-003/**
-!proof/TP-DMX-PR-AUDIT-ROUTER-001/
-!proof/TP-DMX-PR-AUDIT-ROUTER-001/**
+# Tracked packet proof ledger (all proof/ contents are trackable)
+!proof/
 
 # Extraction and Research artifacts
 _audit_out/
