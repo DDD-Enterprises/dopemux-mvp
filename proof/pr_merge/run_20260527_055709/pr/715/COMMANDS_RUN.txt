@@ -1,0 +1,151 @@
+$ git fetch origin pull/715/head:prmerge/20260527_055709-715
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/715/head -> prmerge/20260527_055709-715
+
+$ git worktree add /tmp/dopemux-pr-merge-715-20260527_055709 prmerge/20260527_055709-715
+exit=0
+--- stdout ---
+HEAD is now at 4d8cf459c style(palette): consolidate color-aware icons and micro-interactions into unified notification view
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260527_055709-715')
+Updating files:  38% (5091/13085)
+Updating files:  39% (5104/13085)
+Updating files:  40% (5234/13085)
+Updating files:  41% (5365/13085)
+Updating files:  42% (5496/13085)
+Updating files:  43% (5627/13085)
+Updating files:  44% (5758/13085)
+Updating files:  45% (5889/13085)
+Updating files:  46% (6020/13085)
+Updating files:  47% (6150/13085)
+Updating files:  48% (6281/13085)
+Updating files:  49% (6412/13085)
+Updating files:  50% (6543/13085)
+Updating files:  51% (6674/13085)
+Updating files:  52% (6805/13085)
+Updating files:  53% (6936/13085)
+Updating files:  54% (7066/13085)
+Updating files:  55% (7197/13085)
+Updating files:  56% (7328/13085)
+Updating files:  57% (7459/13085)
+Updating files:  58% (7590/13085)
+Updating files:  59% (7721/13085)
+Updating files:  60% (7851/13085)
+Updating files:  61% (7982/13085)
+Updating files:  62% (8113/13085)
+Updating files:  63% (8244/13085)
+Updating files:  64% (8375/13085)
+Updating files:  65% (8506/13085)
+Updating files:  66% (8637/13085)
+Updating files:  67% (8767/13085)
+Updating files:  68% (8898/13085)
+Updating files:  69% (9029/13085)
+Updating files:  70% (9160/13085)
+Updating files:  71% (9291/13085)
+Updating files:  72% (9422/13085)
+Updating files:  73% (9553/13085)
+Updating files:  74% (9683/13085)
+Updating files:  75% (9814/13085)
+Updating files:  76% (9945/13085)
+Updating files:  77% (10076/13085)
+Updating files:  78% (10207/13085)
+Updating files:  79% (10338/13085)
+Updating files:  80% (10468/13085)
+Updating files:  81% (10599/13085)
+Updating files:  82% (10730/13085)
+Updating files:  83% (10861/13085)
+Updating files:  84% (10992/13085)
+Updating files:  85% (11123/13085)
+Updating files:  86% (11254/13085)
+Updating files:  87% (11384/13085)
+Updating files:  87% (11508/13085)
+Updating files:  88% (11515/13085)
+Updating files:  89% (11646/13085)
+Updating files:  90% (11777/13085)
+Updating files:  91% (11908/13085)
+Updating files:  92% (12039/13085)
+Updating files:  93% (12170/13085)
+Updating files:  94% (12300/13085)
+Updating files:  95% (12431/13085)
+Updating files:  96% (12562/13085)
+Updating files:  97% (12693/13085)
+Updating files:  98% (12824/13085)
+Updating files:  99% (12955/13085)
+Updating files: 100% (13085/13085)
+Updating files: 100% (13085/13085), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+4d8cf459c9d8f494316c4d0704163304e29c627f
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E81ZX", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FV_kT"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E81Zr", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FV_oK"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986E81Zy", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FV_sy"}}}}
+
+$ gh pr update-branch 715 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin palette-notification-iconography-9918379728212595040
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                palette-notification-iconography-9918379728212595040 -> FETCH_HEAD
+
+$ git reset --hard origin/palette-notification-iconography-9918379728212595040
+exit=0
+--- stdout ---
+HEAD is now at 4d8cf459c style(palette): consolidate color-aware icons and micro-interactions into unified notification view
+
+$ git diff --name-only --diff-filter=ACMR 898310bd01cf48b2703a166b429d4b330ec9f84e...HEAD
+exit=0
+--- stdout ---
+ui-dashboard/src/App.tsx
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files ui-dashboard/src/App.tsx
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files......................(no files to check)Skipped
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-715-20260527_055709
+exit=0
+

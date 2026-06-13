@@ -1,0 +1,215 @@
+$ git fetch origin pull/545/head:prmerge/20260430_230532-545
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/545/head -> prmerge/20260430_230532-545
+
+$ git worktree add /tmp/dopemux-pr-merge-545-20260430_230532 prmerge/20260430_230532-545
+exit=0
+--- stdout ---
+HEAD is now at 823f56339 docs: make Codex execute TP lifecycle end-to-end
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260430_230532-545')
+Updating files:   9% (1180/12144)
+Updating files:  10% (1215/12144)
+Updating files:  11% (1336/12144)
+Updating files:  12% (1458/12144)
+Updating files:  13% (1579/12144)
+Updating files:  14% (1701/12144)
+Updating files:  15% (1822/12144)
+Updating files:  16% (1944/12144)
+Updating files:  17% (2065/12144)
+Updating files:  18% (2186/12144)
+Updating files:  19% (2308/12144)
+Updating files:  20% (2429/12144)
+Updating files:  21% (2551/12144)
+Updating files:  22% (2672/12144)
+Updating files:  23% (2794/12144)
+Updating files:  24% (2915/12144)
+Updating files:  25% (3036/12144)
+Updating files:  26% (3158/12144)
+Updating files:  27% (3279/12144)
+Updating files:  28% (3401/12144)
+Updating files:  29% (3522/12144)
+Updating files:  30% (3644/12144)
+Updating files:  31% (3765/12144)
+Updating files:  32% (3887/12144)
+Updating files:  33% (4008/12144)
+Updating files:  34% (4129/12144)
+Updating files:  35% (4251/12144)
+Updating files:  36% (4372/12144)
+Updating files:  37% (4494/12144)
+Updating files:  38% (4615/12144)
+Updating files:  39% (4737/12144)
+Updating files:  40% (4858/12144)
+Updating files:  41% (4980/12144)
+Updating files:  42% (5101/12144)
+Updating files:  43% (5222/12144)
+Updating files:  43% (5332/12144)
+Updating files:  44% (5344/12144)
+Updating files:  45% (5465/12144)
+Updating files:  46% (5587/12144)
+Updating files:  47% (5708/12144)
+Updating files:  48% (5830/12144)
+Updating files:  49% (5951/12144)
+Updating files:  50% (6072/12144)
+Updating files:  51% (6194/12144)
+Updating files:  52% (6315/12144)
+Updating files:  53% (6437/12144)
+Updating files:  54% (6558/12144)
+Updating files:  55% (6680/12144)
+Updating files:  56% (6801/12144)
+Updating files:  57% (6923/12144)
+Updating files:  58% (7044/12144)
+Updating files:  59% (7165/12144)
+Updating files:  60% (7287/12144)
+Updating files:  61% (7408/12144)
+Updating files:  62% (7530/12144)
+Updating files:  63% (7651/12144)
+Updating files:  64% (7773/12144)
+Updating files:  65% (7894/12144)
+Updating files:  66% (8016/12144)
+Updating files:  67% (8137/12144)
+Updating files:  68% (8258/12144)
+Updating files:  69% (8380/12144)
+Updating files:  70% (8501/12144)
+Updating files:  70% (8559/12144)
+Updating files:  71% (8623/12144)
+Updating files:  72% (8744/12144)
+Updating files:  73% (8866/12144)
+Updating files:  74% (8987/12144)
+Updating files:  75% (9108/12144)
+Updating files:  76% (9230/12144)
+Updating files:  77% (9351/12144)
+Updating files:  78% (9473/12144)
+Updating files:  79% (9594/12144)
+Updating files:  80% (9716/12144)
+Updating files:  81% (9837/12144)
+Updating files:  82% (9959/12144)
+Updating files:  83% (10080/12144)
+Updating files:  84% (10201/12144)
+Updating files:  85% (10323/12144)
+Updating files:  86% (10444/12144)
+Updating files:  87% (10566/12144)
+Updating files:  88% (10687/12144)
+Updating files:  89% (10809/12144)
+Updating files:  90% (10930/12144)
+Updating files:  91% (11052/12144)
+Updating files:  92% (11173/12144)
+Updating files:  93% (11294/12144)
+Updating files:  94% (11416/12144)
+Updating files:  95% (11537/12144)
+Updating files:  96% (11659/12144)
+Updating files:  97% (11780/12144)
+Updating files:  98% (11902/12144)
+Updating files:  99% (12023/12144)
+Updating files: 100% (12144/12144)
+Updating files: 100% (12144/12144), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+823f56339377271b430047bcd76449c14a9210eb
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiYx", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FTgM"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiZl", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FTg5"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiZ8", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FThc"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-uiah", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FTiO"}}}}
+
+$ gh pr update-branch 545 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/agents-codex-endtoend-default
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/agents-codex-endtoend-default -> FETCH_HEAD
+
+$ git reset --hard origin/codex/agents-codex-endtoend-default
+exit=0
+--- stdout ---
+HEAD is now at 823f56339 docs: make Codex execute TP lifecycle end-to-end
+
+$ git diff --name-only --diff-filter=ACMR 3a19442eac0f63cc4f3e239bbf26583415318c78...HEAD
+exit=0
+--- stdout ---
+AGENTS.md
+task-packets/INDEX.md
+task-packets/TP-DMX-AGENTS-CODEX-ENDTOEND-0001.json
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files AGENTS.md task-packets/INDEX.md task-packets/TP-DMX-AGENTS-CODEX-ENDTOEND-0001.json
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py task-packets/INDEX.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-545-20260430_230532
+exit=0
+
+$ gh pr merge 545 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#545 is not mergeable: the head branch is not up to date with the base branch.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+

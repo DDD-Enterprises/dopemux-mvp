@@ -384,6 +384,37 @@ python main.py
 docker logs wma-service
 ```
 
+## dope-memory MCP Endpoint
+
+The `dope-memory` compose service (entrypoint `dope_memory_main.py`, container port `3020`) now serves a real MCP **streamable-HTTP** endpoint at `/mcp` (shipped in PR #857). This is distinct from the WMA snapshot/recovery REST surface described above.
+
+### Transport
+
+- Protocol: MCP streamable HTTP
+- Endpoint: `http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp`
+- `.mcp.json` type: `"http"`
+
+### Tools (10)
+
+All 10 MCP tools and the REST `/tools/*` endpoints share the same `DopeMemoryMCPServer` backend instance and the same canonical `chronicle.sqlite` ledger:
+
+| Tool | Purpose |
+|---|---|
+| `memory_search` | Search chronicle entries |
+| `memory_store` | Append a work-log entry |
+| `memory_recap` | Summarize recent chronicle activity |
+| `memory_mark_issue` | Flag a chronicle entry as an issue |
+| `memory_link_resolution` | Link a resolution to a flagged issue |
+| `memory_replay_session` | Replay a chronicle session |
+| `memory_correct` | Supersede or correct a chronicle entry |
+| `memory_generate_reflection` | Generate a reflection card from chronicle data |
+| `memory_reflections` | Retrieve stored reflections |
+| `memory_trajectory` | Derive trajectory state from chronicle |
+
+### Package naming caveat
+
+The service-local Python package was renamed from `mcp/` to `wma_mcp/` because naming it `mcp/` caused it to shadow the pip-installed `mcp` SDK that fastmcp depends on when the container copies it to `/app/mcp`. If you add service-local packages here, do not name them `mcp/`.
+
 ## Future Enhancements
 
 - **Predictive Context**: AI-powered context prediction for proactive snapshots

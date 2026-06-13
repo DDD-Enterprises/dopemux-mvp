@@ -1,0 +1,148 @@
+{
+  "meta": {
+    "artifact_version": "3.1",
+    "tool_version": "3.1.0",
+    "policy_schema_version": 1,
+    "generated_at": "2026-06-01T00:22:43Z",
+    "run_id": "20260531_172221",
+    "repo_root": "/Users/hue/code/dopemux-mvp",
+    "git_remote_origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "git_repo_name": "DDD-Enterprises/dopemux-mvp",
+    "current_branch": "feat/autoreview-platform-series",
+    "default_branch": "main",
+    "pr_head_sha": "",
+    "base_sha": "",
+    "applied_tree_sha": ""
+  },
+  "strategy": "hybrid",
+  "cycle_detected": false,
+  "layers": [
+    {
+      "layer": 0,
+      "pr_ids": [
+        735,
+        725,
+        740,
+        737,
+        751,
+        771,
+        763,
+        774,
+        773,
+        755,
+        724
+      ]
+    },
+    {
+      "layer": 1,
+      "pr_ids": [
+        756,
+        776,
+        758
+      ]
+    },
+    {
+      "layer": 2,
+      "pr_ids": [
+        760,
+        761
+      ]
+    },
+    {
+      "layer": 3,
+      "pr_ids": [
+        765,
+        762
+      ]
+    },
+    {
+      "layer": 4,
+      "pr_ids": [
+        766
+      ]
+    },
+    {
+      "layer": 5,
+      "pr_ids": [
+        767
+      ]
+    },
+    {
+      "layer": 6,
+      "pr_ids": [
+        770
+      ]
+    },
+    {
+      "layer": 7,
+      "pr_ids": [
+        772
+      ]
+    },
+    {
+      "layer": 8,
+      "pr_ids": [
+        775
+      ]
+    }
+  ],
+  "edges": {
+    "771": [
+      776
+    ],
+    "772": [
+      775
+    ],
+    "770": [
+      772
+    ],
+    "767": [
+      770
+    ],
+    "766": [
+      767
+    ],
+    "765": [
+      766
+    ],
+    "761": [
+      762,
+      765
+    ],
+    "756": [
+      761
+    ],
+    "758": [
+      760
+    ],
+    "755": [
+      756,
+      758
+    ]
+  },
+  "ordered_pr_ids": [
+    735,
+    725,
+    740,
+    737,
+    751,
+    771,
+    763,
+    774,
+    773,
+    755,
+    724,
+    756,
+    776,
+    758,
+    760,
+    761,
+    765,
+    762,
+    766,
+    767,
+    770,
+    772,
+    775
+  ]
+}

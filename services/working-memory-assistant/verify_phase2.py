@@ -64,12 +64,12 @@ def verify_constructor_signatures():
     print("\n=== Verifying Constructor Signatures ===")
 
     from dope_memory_main import DopeMemoryMCPServer as HttpServer
-    from mcp.server import DopeMemoryMCPServer as CoreServer
+    from wma_mcp.server import DopeMemoryMCPServer as CoreServer
 
     http_sig = str(inspect.signature(HttpServer.__init__))
     core_sig = str(inspect.signature(CoreServer.__init__))
     print(f"✓ dope_memory_main.DopeMemoryMCPServer.__init__{http_sig}")
-    print(f"✓ mcp.server.DopeMemoryMCPServer.__init__{core_sig}")
+    print(f"✓ wma_mcp.server.DopeMemoryMCPServer.__init__{core_sig}")
     return True
 
 

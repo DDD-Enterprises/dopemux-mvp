@@ -1,0 +1,105 @@
+{
+  "packet_id": "DMX-COCKPIT-ARCHIVE-INTENT-001",
+  "project": "dopemux-mvp",
+  "generated_date": "2026-04-24",
+  "mode": "docs_proof_task_packet_only",
+  "repo_identity": {
+    "observed_root": "/Users/hue/code/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "repo_marker_present": true,
+    "origin_observed": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "requested_branch": "codex/cockpit-archive-intent-pack",
+    "actual_branch_at_inspection": "codex/rte-wizard-prescan-telemetry",
+    "branch_creation_status": "failed",
+    "branch_creation_error": "fatal: cannot lock ref 'refs/heads/codex/cockpit-archive-intent-pack': Unable to create '/Users/hue/code/dopemux-mvp/.git/refs/heads/codex/cockpit-archive-intent-pack.lock': Operation not permitted"
+  },
+  "scope": {
+    "runtime_code_modified": false,
+    "ui_implemented": false,
+    "services_or_adapters_added": false,
+    "archive_docs_promoted_to_runtime_truth": false,
+    "outputs": [
+      "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+      "docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md",
+      "docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md",
+      "proof/cockpit-archive-intent-pack-2026-04-24.proof.json",
+      "task-packets/DMX-COCKPIT-ARCHIVE-INTENT-001.json",
+      "task-packets/INDEX.md"
+    ]
+  },
+  "commands_run": [
+    "git rev-parse --show-toplevel",
+    "test -f .dopetaskroot",
+    "git remote -v",
+    "git branch --show-current",
+    "git status --short --branch",
+    "find . -type f \\( -iname '*adhd*' -o -iname '*lifestyle*' -o -iname '*wellness*' -o -iname '*habit*' -o -iname '*energy*' -o -iname '*focus*' -o -iname '*context*' -o -iname '*operator*' -o -iname '*roadmap*' -o -iname '*archive*' -o -iname '*planned*' \\) | sort",
+    "find docs archive archives archived old tmp task-packets -type f 2>/dev/null | sort | tee /tmp/cockpit-archive-docs.txt",
+    "rg -n -i \"adhd|lifestyle|wellness|habit|routine|energy|focus|attention|break|recovery|calendar|schedule|notification|reminder|context|operator support|cognitive|executive|dopamine|health|sleep|exercise|meal|mood|personal|planner|ritual|aftercare\" docs archive archives archived old tmp task-packets services src 2>/dev/null | tee /tmp/cockpit-adhd-lifestyle-rg.txt",
+    "rg -n -i \"adhd|energy|attention|break|focus|context|unfinished|progress|activity|cognitive|recommendation|schedule|calendar|notification|reminder\" services src tests docs/05-audit-reports 2>/dev/null"
+  ],
+  "primary_sources_inspected": [
+    "docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md",
+    "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md",
+    "docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md",
+    "docs/03-reference/truth/truth-systems.md",
+    "docs/03-reference/truth/truth-gaps.md",
+    "docs/03-reference/planes/pm/pm-plane.md",
+    "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+    "src/dopemux/adhd/context_manager.py",
+    "src/dopemux/adhd/attention_monitor.py",
+    "src/dopemux/adhd/task_decomposer.py",
+    "src/dopemux/adhd/workflow_manager.py",
+    "services/adhd_engine/ml/energy_predictor.py",
+    "services/adhd_engine/domains/attention/context_preserver.py",
+    "services/adhd_engine/domains/attention/overwhelm_detector.py",
+    "services/adhd_engine/domains/attention/hyperfocus_guard.py",
+    "services/adhd_engine/domains/attention/procrastination_detector.py",
+    "services/adhd-notifier/mobile_push.py",
+    "services/adhd-notifier/daily_reporter.py",
+    "docs/archive/history/sourceFiles/docs__ADHD_FEATURES.md",
+    "docs/archive/history/sourceFiles/docs__04-explanation__features__adhd-finishing-helpers.md",
+    "docs/archive/history/sourceFiles/docs__04-explanation__features__adhd-optimizations.md",
+    "docs/archive/history/sourceFiles/output__individual_files__DOPEMUX_LIFE_AUTOMATION_FEATURES_docs.md",
+    "docs/archive/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__architecture__life-automation-adhd-support.md"
+  ],
+  "feature_classification_summary": {
+    "partially_implemented": 11,
+    "planned_only": 12,
+    "conflicting": 2,
+    "unknown": 1
+  },
+  "top_3_operator_support_recommendations": [
+    {
+      "capability": "Source-labeled Operator Support rail",
+      "status": "partially implemented",
+      "design_treatment": "shared support rail only"
+    },
+    {
+      "capability": "Interruption recovery and unfinished-work visibility",
+      "status": "mixed: context preservation partially implemented; finishing helpers planned-only",
+      "design_treatment": "PM triage cue and Implementer re-entry cue only when tied to source evidence"
+    },
+    {
+      "capability": "Bounded next-task recommendation",
+      "status": "partially implemented",
+      "design_treatment": "advisory Top-3 only"
+    }
+  ],
+  "remaining_unknowns": [
+    "Live ADHD dashboard and service deployment were not queried.",
+    "Serena canonicality remains UNKNOWN from prior PM/Implementer pack.",
+    "External/proxy MCP live tool inventories were not queried.",
+    "Branch creation and PR creation were blocked by git metadata write permission in this sandbox.",
+    "Pre-existing unrelated runtime/test/generated changes remain in the worktree and are outside this packet."
+  ],
+  "validation": {
+    "task_packet_json_tool": "passed",
+    "proof_json_tool_initial": "passed",
+    "diff_check_allowlist_tracked": "passed",
+    "output_file_presence": "passed",
+    "runtime_code_change_check": "packet edits are limited to docs/proof/task-packet paths; pre-existing unrelated runtime/test/generated changes remain in the worktree",
+    "proof_gitignore_status": "proof/cockpit-archive-intent-pack-2026-04-24.proof.json is ignored by .gitignore rule proof/* and would require force-add for commit/PR inclusion",
+    "notes": "Validation was performed by python -m json.tool, git diff --check, ls, git check-ignore, and git status path-scoped checks."
+  }
+}

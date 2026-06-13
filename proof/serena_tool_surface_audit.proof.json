@@ -1,0 +1,49 @@
+{
+  "packet_name": "Serena Tool Surface Contract Audit (Targeted)",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-wt-serena-upstream-diff",
+  "branch_name": "tp/serena-tool-surface-audit",
+  "tool_families_analyzed": [
+    "File Read / Navigation",
+    "File Write / Editing",
+    "Symbolic Refactoring",
+    "Project / Workspace Management",
+    "Memory / Retrieval",
+    "Code Intelligence / Analysis",
+    "Local Extensions (ADHD tools)",
+    "Misc / Utility"
+  ],
+  "upstream_files_inspected": [
+    "src/serena/tools/file_tools.py",
+    "src/serena/tools/symbol_tools.py",
+    "src/serena/tools/workflow_tools.py",
+    "src/serena/mcp.py"
+  ],
+  "local_files_inspected": [
+    "services/serena/mcp_server.py"
+  ],
+  "classifications": {
+    "intentional_hardening": [
+      "Removal of all upstream Write/Edit tools",
+      "Removal of all upstream Symbolic Refactoring tools"
+    ],
+    "local_only_extension": [
+      "ADHD tool surface (20+ tools)",
+      "Complexity analysis tools"
+    ],
+    "intentional_product_decision": [
+      "Workspace-root scoping vs Project-activation model"
+    ]
+  },
+  "top_risks": [
+    "Operator friction due to 100% read-only constraint (cannot create test files)",
+    "ADHD toolset sprawl (loosely accumulated, needs pruning)",
+    "Divergence from upstream pattern search capability"
+  ],
+  "final_decision": {
+    "write_strategy": "Option B Subset (create_file + write_test_file only)",
+    "surface_direction": "NEEDS PRUNING (Consolidate metric/pattern tools)",
+    "fork_integrity": "INTACT"
+  },
+  "confidence": "high",
+  "pr_url": "tp/serena-tool-surface-audit"
+}
