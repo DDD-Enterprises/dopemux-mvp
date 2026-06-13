@@ -20,6 +20,11 @@ FONT_PATCHER="$NERD_FONTS_REPO/font-patcher"
 PATCHED_DIR="${PATCHED_DIR:-$OUT_DIR/nerd-font}"
 PATCH_TMP="$OUT_DIR/.dopemux-nerd-font-patch"
 
+cleanup_patch_tmp() {
+  rm -rf "$PATCH_TMP"
+}
+trap cleanup_patch_tmp EXIT
+
 [[ -d "$NERD_FONTS_REPO" ]] || { printf 'Missing NERD_FONTS_REPO directory: %s\n' "$NERD_FONTS_REPO" >&2; exit 1; }
 [[ -f "$FONT_PATCHER" ]]    || { printf 'Missing Nerd Fonts font-patcher: %s\n' "$FONT_PATCHER" >&2; exit 1; }
 [[ -d "$OUT_DIR" ]]        || { printf 'Missing OUT_DIR directory: %s\n' "$OUT_DIR" >&2; exit 1; }
@@ -67,7 +72,7 @@ for input in "${INPUTS[@]}"; do
   printf '  -> %s\n' "$out"
   patched=$((patched + 1))
 done
-rm -rf "$PATCH_TMP"
+cleanup_patch_tmp
 
 printf '\nPatched %s face(s) into %s\n' "$patched" "$PATCHED_DIR"
 printf 'Internal family becomes "<Family> Nerd Font Mono" (the --mono build).\n'
