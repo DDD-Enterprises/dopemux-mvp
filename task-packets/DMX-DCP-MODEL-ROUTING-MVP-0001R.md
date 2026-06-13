@@ -1,3 +1,15 @@
+---
+id: DMX-DCP-MODEL-ROUTING-MVP-0001R
+title: Dmx Dcp Model Routing Mvp 0001R
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-13'
+last_review: '2026-06-13'
+next_review: '2026-09-11'
+prelude: Dmx Dcp Model Routing Mvp 0001R (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Task Packet: DMX-DCP-MODEL-ROUTING-MVP-0001R
 
 ## Packet Identity
