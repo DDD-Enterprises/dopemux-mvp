@@ -5,7 +5,7 @@ Pure data types for the DCP Routing & Execution Plane.
 Invariants enforced by design:
 - No I/O.
 - No network.
-- No subprocess.
+- No external process execution.
 - No runner, connector, MCP, GitHub, Dopetask, OpenCode,
   Grok, Claude, Gemini, AGY, ConPort, dope-memory, dope-context,
   or Task Orchestrator imports.
@@ -192,7 +192,7 @@ class RouteStatus(str, Enum):
 class RouteDecision:
     """Minimal DCP routing domain model record.
 
-    This is pure data. No methods trigger I/O, network, subprocess,
+    This is pure data. No methods trigger I/O, network, external process run,
     runner invocation, or external service access.
 
     Default values are intentionally conservative:
