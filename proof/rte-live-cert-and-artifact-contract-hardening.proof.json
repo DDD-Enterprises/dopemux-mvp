@@ -1,0 +1,163 @@
+{
+  "packet": {
+    "title": "RTE-live-cert and artifact-contract hardening",
+    "branch": "tp/rte-live-cert-artifact-contract-hardening",
+    "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/rte-live-cert-artifact-contract-hardening",
+    "objective_status": "PARTIAL",
+    "runtime_authority_status": "Preserved",
+    "certification_status": "Split gates emitted; topology gate remains unknown from available evidence"
+  },
+  "commit_plan": {
+    "planned_slices": [
+      {
+        "slice": 0,
+        "name": "Freeze baseline and characterize current certification, artifact writers, and artifact readers",
+        "status": "completed"
+      },
+      {
+        "slice": 1,
+        "name": "Add a split certification model with separate static, live-provider, and topology gates",
+        "status": "completed"
+      },
+      {
+        "slice": 2,
+        "name": "Harden live-provider gating",
+        "status": "completed"
+      },
+      {
+        "slice": 3,
+        "name": "Contract-lock artifact schemas and deterministic ordering",
+        "status": "completed"
+      },
+      {
+        "slice": 4,
+        "name": "Topology-smoke hardening for operator-facing certification truth",
+        "status": "partial"
+      },
+      {
+        "slice": 5,
+        "name": "Final hardening, docs, proof, and certification result",
+        "status": "pending"
+      }
+    ],
+    "completed_slices": [
+      {
+        "slice": 0,
+        "summary": [
+          "Characterization coverage now locks the current reports/rte-production-certification-status.json split-gate baseline.",
+          "Artifact inventory and writer/reader entry points are captured in the characterization tests."
+        ]
+      },
+      {
+        "slice": 1,
+        "summary": [
+          "services/repo-truth-extractor/reporting.py now emits CERTIFICATION_RESULT.json with separate canonical_runner_correctness, live_provider_readiness, artifact_contract_stability, and operator_topology_resilience gates.",
+          "services/repo-truth-extractor/run_extraction_v5.py writes the certification result at confidence-ramp, doctor, and run-complete checkpoints."
+        ]
+      },
+      {
+        "slice": 2,
+        "summary": [
+          "Doctor evidence and provider preflight data now feed the live-provider gate without collapsing into the static gate.",
+          "Provider readiness remains explicit UNKNOWN when no provider evidence is present."
+        ]
+      },
+      {
+        "slice": 3,
+        "summary": [
+          "Artifact contract regression coverage now checks CERTIFICATION_RESULT.json, PROOF_PACK.json, COVERAGE_ROLLUP.json, RUN_DASHBOARD.json, STEP_METRICS.json, and FAILURE_INDEX.json surfaces.",
+          "Deterministic ordering is locked by the current characterization tests."
+        ]
+      }
+    ],
+    "replan_events": [
+      {
+        "reason": "The live doctor payload proved provider readiness but did not contain degraded-topology coverage, so topology truth could not be promoted beyond UNKNOWN without inventing evidence.",
+        "action": "Kept the certification helper fail-closed and wrote the packet proof with an explicit topology gap instead of fabricating a PASS."
+      }
+    ],
+    "skipped_or_abandoned_slices": [
+      {
+        "slice": 4,
+        "name": "Topology-smoke hardening for operator-facing certification truth",
+        "status": "partial",
+        "rationale": "The repository exposes split topology classification in the certification writer, but no narrow degraded-topology runtime harness was available in this packet. The live doctor payload only proved provider reachability, not degraded service-matrix truth."
+      },
+      {
+        "slice": 5,
+        "name": "Final hardening, docs, proof, and certification result",
+        "status": "partial",
+        "rationale": "Proof capture is complete, but the packet is not VERIFIED because the topology gate remains explicit UNKNOWN and the final precommit/PR handoff was not completed from verified topology evidence."
+      }
+    ],
+    "commit_shas": [
+      {
+        "sha": "400a97bb2a598faed3907ef0dd9ca93728cc71ae",
+        "role": "base_head_before_packet",
+        "created_in_this_packet": false
+      }
+    ]
+  },
+  "finalization": {
+    "codereview_status": "not_run",
+    "precommit_status": "not_run",
+    "evidence_ledger_completeness": "complete for baseline, split certification, live-provider evidence, and artifact contract characterization; incomplete for degraded-topology smoke",
+    "final_confidence": "PARTIAL",
+    "residual_risks": [
+      "Topology resilience beyond the doctor probe has not been exercised for degraded service matrices.",
+      "External non-repo consumers of the certification artifact remain unknown.",
+      "A future packet may still need to tighten live-provider evidence across additional provider-family combinations."
+    ],
+    "pr_url": null,
+    "merge_readiness": "not_ready",
+    "worktree_cleanup_status": "pending"
+  },
+  "evidence_ledger": {
+    "files_inspected": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/reporting.py",
+      "services/repo-truth-extractor/rte_reports.py",
+      "services/repo-truth-extractor/rte_config.py",
+      "services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "services/repo-truth-extractor/tests/test_rte_v5_characterization.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py",
+      "reports/rte-production-certification-status.json",
+      "docs/05-audit-reports/rte-live-certification-gates.md"
+    ],
+    "artifact_writers_identified": [
+      "services/repo-truth-extractor/reporting.py -> write_certification_result",
+      "services/repo-truth-extractor/run_extraction_v5.py -> run_doctor_full, write_confidence_ramp_artifacts, end-of-run certification write",
+      "services/repo-truth-extractor/rte_reports.py -> certification wrapper"
+    ],
+    "artifact_readers_identified": [
+      "services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py"
+    ],
+    "provider_auth_preflight_flows_traced": [
+      "run_doctor_full -> provider_reachability probes in DOCTOR_FULL.json",
+      "write_certification_result -> provider_preflight_payload and doctor probe fallback",
+      "PRELIVE_VALIDATOR_RESULT.json -> canonical runner gate input"
+    ],
+    "topology_scenarios_exercised": [
+      "Live doctor probe on current keys produced provider reachability evidence only.",
+      "Helper-level topology PASS path exercised with synthetic required_artifact_groups coverage in unit test."
+    ],
+    "tests_run": [
+      "UV_CACHE_DIR=/Users/hue/code/dopemux-mvp/.worktrees/rte-live-cert-artifact-contract-hardening/.uv-cache uv run --frozen pytest services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py services/repo-truth-extractor/tests/test_run_extraction_v5_rollup_reports.py -q",
+      "UV_CACHE_DIR=/Users/hue/code/dopemux-mvp/.worktrees/rte-live-cert-artifact-contract-hardening/.uv-cache uv run --frozen python services/repo-truth-extractor/run_extraction_v5.py --preset staged-safe --doctor --run-id rte_live_cert_doctor --output-root /Users/hue/code/dopemux-mvp/.worktrees/rte-live-cert-artifact-contract-hardening/.evidence"
+    ],
+    "diffs_reviewed": [
+      "Split certification result writer and wrapper path",
+      "Operator safety test updates for CERTIFICATION_RESULT.json emission",
+      "Certification status report rewrite under reports/"
+    ],
+    "codereview_findings": [],
+    "precommit_verdict": "not_run",
+    "residual_unknowns": [
+      "No degraded-topology service matrix was exercised in this packet.",
+      "The repo does not expose a narrow topology smoke harness in the observed RTE path."
+    ]
+  }
+}

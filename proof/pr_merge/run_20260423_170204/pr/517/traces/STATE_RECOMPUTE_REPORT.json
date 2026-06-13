@@ -1,0 +1,688 @@
+{
+  "pr_id": "517",
+  "cycle_id": "212fa2ae-409f-42e2-bb9a-50f9fe1bfc38",
+  "state_before": {
+    "run_id": "20260423_170204",
+    "pr_state": {
+      "pr_id": 517,
+      "title": "feat(rte): make dopemux rte the canonical operator entrypoint",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "codex/rte-canonical-operator-entrypoint",
+      "ci_status": "FAILURE",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "BEHIND",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-04-24T00:01:48Z",
+      "is_draft": true,
+      "auto_merge_enabled": false,
+      "additions": 1016,
+      "deletions": 321,
+      "changed_files": 15,
+      "unresolved_threads": 0,
+      "active_unresolved_threads": 0,
+      "outdated_unresolved_threads": 0,
+      "pr_class": "BLOCKED",
+      "risk_score": 2257.0,
+      "check_summary": {
+        "total": 24,
+        "success": 17,
+        "failure": 3,
+        "pending": 4,
+        "required_pending": 4,
+        "required_failure": 3,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "0c718b4ef79040005960bcb84045d94500990606",
+      "base_sha": "2ece87f8bc949a876df1a4601440fe2eddcb12fc"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase codex/rte-canonical-operator-entrypoint onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "auto_merge_fallback",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "517",
+        "--auto",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "Required or optional checks are pending; enabling auto-merge.",
+      "reason_code": "auto_merge_active_checks"
+    },
+    "blockers": [
+      {
+        "type": "draft_pr",
+        "source": "github_protection_review",
+        "name": "Draft pull requests are blocked from merge.",
+        "details": null,
+        "metadata": {}
+      },
+      {
+        "type": "required_check_failed",
+        "source": "github_protection_review",
+        "name": "Required checks are failing.",
+        "details": null,
+        "metadata": {
+          "checks_total": 24,
+          "checks_success": 17,
+          "checks_failure": 3,
+          "checks_pending": 4,
+          "required_checks_pending": 4,
+          "required_checks_failed": 3,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BEHIND",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [
+            "Analyze (javascript-typescript)",
+            "Analyze (python)"
+          ],
+          "blocker_types": [
+            "required_check_failed",
+            "required_check_pending"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "type": "validation_not_executed",
+        "source": "local_validation",
+        "name": "Local validation is required before merge readiness can be declared.",
+        "details": null,
+        "metadata": {
+          "validation_status": "not_executed"
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "large_diff",
+        "message": "Large diff size may increase merge risk.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "diff_size": 1337
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "observations": [
+      {
+        "kind": "observation",
+        "finding_type": "high_risk_score",
+        "message": "PR has elevated risk score relative to queue.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "risk_score": 2257.0
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 24,
+          "checks_success": 17,
+          "checks_failure": 3,
+          "checks_pending": 4,
+          "required_checks_pending": 4,
+          "required_checks_failed": 3,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BEHIND",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [
+            "Analyze (javascript-typescript)",
+            "Analyze (python)"
+          ],
+          "blocker_types": [
+            "required_check_failed",
+            "required_check_pending"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "not_executed",
+        "details": {
+          "status": "not_executed",
+          "required_for_merge_ready": true,
+          "passed": false,
+          "attempts": 0,
+          "remediation_applied": false,
+          "steps": [],
+          "input_fingerprint": null,
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "not_executed",
+      "required_for_merge_ready": true,
+      "passed": false,
+      "attempts": 0,
+      "remediation_applied": false,
+      "steps": [],
+      "input_fingerprint": null,
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [],
+    "fingerprint": {
+      "input_fingerprint": "2eea5a167f5477b2ffbce46f118874718a4f6a350ada5d8f9271c612b3518652",
+      "valid_for_sha": "0c718b4ef79040005960bcb84045d94500990606",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"Draft pull requests are blocked from merge.\", \"Required checks are failing.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"draft_pr\", \"message\": \"Draft pull requests are blocked from merge.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"required_check_failed\", \"message\": \"Required checks are failing.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 24, \"checks_success\": 17, \"checks_failure\": 3, \"checks_pending\": 4, \"required_checks_pending\": 4, \"required_checks_failed\": 3, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BEHIND\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [\"\\ud83e\\uddea Unit Tests\"], \"failed_required_check_entries\": [{\"check_name\": \"\\ud83e\\uddea Unit Tests\", \"details_url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564\", \"status\": \"COMPLETED\", \"conclusion\": \"FAILURE\"}], \"pending_required_checks\": [\"Analyze (javascript-typescript)\", \"Analyze (python)\"], \"blocker_types\": [\"required_check_failed\", \"required_check_pending\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_not_executed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"not_executed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1337}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1337}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 2257.0}, \"source\": \"heuristics\", \"override\": null}]}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "READY"
+    ]
+  },
+  "state_after": {
+    "run_id": "20260423_170204",
+    "pr_state": {
+      "pr_id": 517,
+      "title": "feat(rte): make dopemux rte the canonical operator entrypoint",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "codex/rte-canonical-operator-entrypoint",
+      "ci_status": "FAILURE",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "BEHIND",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-04-24T00:01:48Z",
+      "is_draft": true,
+      "auto_merge_enabled": false,
+      "additions": 1016,
+      "deletions": 321,
+      "changed_files": 15,
+      "unresolved_threads": 0,
+      "active_unresolved_threads": 0,
+      "outdated_unresolved_threads": 0,
+      "pr_class": "BLOCKED",
+      "risk_score": 2257.0,
+      "check_summary": {
+        "total": 24,
+        "success": 17,
+        "failure": 3,
+        "pending": 4,
+        "required_pending": 4,
+        "required_failure": 3,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "0c718b4ef79040005960bcb84045d94500990606",
+      "base_sha": "2ece87f8bc949a876df1a4601440fe2eddcb12fc"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase codex/rte-canonical-operator-entrypoint onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "auto_merge_fallback",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "517",
+        "--auto",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "Required or optional checks are pending; enabling auto-merge.",
+      "reason_code": "auto_merge_active_checks"
+    },
+    "blockers": [
+      {
+        "type": "draft_pr",
+        "source": "github_protection_review",
+        "name": "Draft pull requests are blocked from merge.",
+        "details": null,
+        "metadata": {}
+      },
+      {
+        "type": "required_check_failed",
+        "source": "github_protection_review",
+        "name": "Required checks are failing.",
+        "details": null,
+        "metadata": {
+          "checks_total": 24,
+          "checks_success": 17,
+          "checks_failure": 3,
+          "checks_pending": 4,
+          "required_checks_pending": 4,
+          "required_checks_failed": 3,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BEHIND",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [
+            "Analyze (javascript-typescript)",
+            "Analyze (python)"
+          ],
+          "blocker_types": [
+            "required_check_failed",
+            "required_check_pending"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "type": "validation_not_executed",
+        "source": "local_validation",
+        "name": "Local validation is required before merge readiness can be declared.",
+        "details": null,
+        "metadata": {
+          "validation_status": "not_executed"
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "large_diff",
+        "message": "Large diff size may increase merge risk.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "diff_size": 1337
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "observations": [
+      {
+        "kind": "observation",
+        "finding_type": "high_risk_score",
+        "message": "PR has elevated risk score relative to queue.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "risk_score": 2257.0
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 24,
+          "checks_success": 17,
+          "checks_failure": 3,
+          "checks_pending": 4,
+          "required_checks_pending": 4,
+          "required_checks_failed": 3,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BEHIND",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [
+            "\ud83e\uddea Unit Tests"
+          ],
+          "failed_required_check_entries": [
+            {
+              "check_name": "\ud83e\uddea Unit Tests",
+              "details_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564",
+              "status": "COMPLETED",
+              "conclusion": "FAILURE"
+            }
+          ],
+          "pending_required_checks": [
+            "Analyze (javascript-typescript)",
+            "Analyze (python)"
+          ],
+          "blocker_types": [
+            "required_check_failed",
+            "required_check_pending"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "not_executed",
+        "details": {
+          "status": "not_executed",
+          "required_for_merge_ready": true,
+          "passed": false,
+          "attempts": 0,
+          "remediation_applied": false,
+          "steps": [],
+          "input_fingerprint": null,
+          "failure_fingerprint": null
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "not_executed",
+      "required_for_merge_ready": true,
+      "passed": false,
+      "attempts": 0,
+      "remediation_applied": false,
+      "steps": [],
+      "input_fingerprint": null,
+      "failure_fingerprint": null
+    },
+    "thread_dispositions": [],
+    "fingerprint": {
+      "input_fingerprint": "2eea5a167f5477b2ffbce46f118874718a4f6a350ada5d8f9271c612b3518652",
+      "valid_for_sha": "0c718b4ef79040005960bcb84045d94500990606",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"Draft pull requests are blocked from merge.\", \"Required checks are failing.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"draft_pr\", \"message\": \"Draft pull requests are blocked from merge.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"required_check_failed\", \"message\": \"Required checks are failing.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 24, \"checks_success\": 17, \"checks_failure\": 3, \"checks_pending\": 4, \"required_checks_pending\": 4, \"required_checks_failed\": 3, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BEHIND\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [\"\\ud83e\\uddea Unit Tests\"], \"failed_required_check_entries\": [{\"check_name\": \"\\ud83e\\uddea Unit Tests\", \"details_url\": \"https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/24864997700/job/72798955564\", \"status\": \"COMPLETED\", \"conclusion\": \"FAILURE\"}], \"pending_required_checks\": [\"Analyze (javascript-typescript)\", \"Analyze (python)\"], \"blocker_types\": [\"required_check_failed\", \"required_check_pending\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_not_executed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"not_executed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1337}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1337}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 2257.0}, \"source\": \"heuristics\", \"override\": null}]}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "READY"
+    ],
+    "pr_id": "517",
+    "posture": "HOLD",
+    "refreshed_at": 1776989101.434004,
+    "recomputed_at": 1776989101.4340181,
+    "last_event": {
+      "type": "cycle_complete"
+    },
+    "selected_tactic": "READY"
+  }
+}

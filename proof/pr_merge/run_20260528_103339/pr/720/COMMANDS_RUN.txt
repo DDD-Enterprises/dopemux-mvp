@@ -1,0 +1,220 @@
+$ git fetch origin pull/720/head:prmerge/20260528_103339-720
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/720/head -> prmerge/20260528_103339-720
+
+$ git worktree add /tmp/dopemux-pr-merge-720-20260528_103339 prmerge/20260528_103339-720
+exit=0
+--- stdout ---
+HEAD is now at 4ab83ba04 🎨 Palette: Enhance signal feed scannability and fix App.tsx regressions
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260528_103339-720')
+Updating files:  25% (3325/13085)
+Updating files:  26% (3403/13085)
+Updating files:  27% (3533/13085)
+Updating files:  28% (3664/13085)
+Updating files:  29% (3795/13085)
+Updating files:  30% (3926/13085)
+Updating files:  31% (4057/13085)
+Updating files:  32% (4188/13085)
+Updating files:  33% (4319/13085)
+Updating files:  34% (4449/13085)
+Updating files:  35% (4580/13085)
+Updating files:  36% (4711/13085)
+Updating files:  37% (4842/13085)
+Updating files:  38% (4973/13085)
+Updating files:  39% (5104/13085)
+Updating files:  40% (5234/13085)
+Updating files:  41% (5365/13085)
+Updating files:  42% (5496/13085)
+Updating files:  43% (5627/13085)
+Updating files:  44% (5758/13085)
+Updating files:  45% (5889/13085)
+Updating files:  46% (6020/13085)
+Updating files:  47% (6150/13085)
+Updating files:  48% (6281/13085)
+Updating files:  49% (6412/13085)
+Updating files:  50% (6543/13085)
+Updating files:  51% (6674/13085)
+Updating files:  52% (6805/13085)
+Updating files:  53% (6936/13085)
+Updating files:  54% (7066/13085)
+Updating files:  55% (7197/13085)
+Updating files:  56% (7328/13085)
+Updating files:  57% (7459/13085)
+Updating files:  58% (7590/13085)
+Updating files:  59% (7721/13085)
+Updating files:  60% (7851/13085)
+Updating files:  61% (7982/13085)
+Updating files:  62% (8113/13085)
+Updating files:  63% (8244/13085)
+Updating files:  64% (8375/13085)
+Updating files:  65% (8506/13085)
+Updating files:  66% (8637/13085)
+Updating files:  67% (8767/13085)
+Updating files:  68% (8898/13085)
+Updating files:  69% (9029/13085)
+Updating files:  70% (9160/13085)
+Updating files:  71% (9291/13085)
+Updating files:  72% (9422/13085)
+Updating files:  73% (9553/13085)
+Updating files:  73% (9666/13085)
+Updating files:  74% (9683/13085)
+Updating files:  75% (9814/13085)
+Updating files:  76% (9945/13085)
+Updating files:  77% (10076/13085)
+Updating files:  78% (10207/13085)
+Updating files:  79% (10338/13085)
+Updating files:  80% (10468/13085)
+Updating files:  81% (10599/13085)
+Updating files:  82% (10730/13085)
+Updating files:  83% (10861/13085)
+Updating files:  84% (10992/13085)
+Updating files:  85% (11123/13085)
+Updating files:  86% (11254/13085)
+Updating files:  87% (11384/13085)
+Updating files:  88% (11515/13085)
+Updating files:  89% (11646/13085)
+Updating files:  90% (11777/13085)
+Updating files:  91% (11908/13085)
+Updating files:  92% (12039/13085)
+Updating files:  93% (12170/13085)
+Updating files:  94% (12300/13085)
+Updating files:  95% (12431/13085)
+Updating files:  96% (12562/13085)
+Updating files:  97% (12693/13085)
+Updating files:  98% (12824/13085)
+Updating files:  99% (12955/13085)
+Updating files: 100% (13085/13085)
+Updating files: 100% (13085/13085), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+4ab83ba0494da7e0aae14d3f4e7b4fb544efc16d
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FQYSn", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3Vxi"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FQYuA", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987F3Vzr"}}}}
+
+$ gh pr update-branch 720 --rebase
+exit=0
+--- stdout ---
+✓ PR branch updated
+
+$ git fetch origin palette-ux-enhancement-signal-feed-8587038171870529849
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                palette-ux-enhancement-signal-feed-8587038171870529849 -> FETCH_HEAD
+ + 4ab83ba04...20873de4c palette-ux-enhancement-signal-feed-8587038171870529849 -> origin/palette-ux-enhancement-signal-feed-8587038171870529849  (forced update)
+
+$ git reset --hard origin/palette-ux-enhancement-signal-feed-8587038171870529849
+exit=0
+--- stdout ---
+HEAD is now at 20873de4c 🎨 Palette: Enhance signal feed scannability and fix App.tsx regressions
+
+$ git diff --name-only --diff-filter=ACMR 898310bd01cf48b2703a166b429d4b330ec9f84e...HEAD
+exit=0
+--- stdout ---
+.claude/claude.md
+.claude/commands/dx/backlinks.md
+.claude/commands/dx/block.md
+.claude/commands/dx/blocked.md
+.claude/commands/dx/cancel.md
+.claude/commands/dx/complete-tree.md
+.claude/commands/dx/complete.md
+.claude/commands/dx/context.md
+.claude/commands/dx/depends.md
+.claude/commands/dx/implement.md
+.claude/commands/dx/next.md
+.claude/commands/dx/note.md
+.claude/commands/dx/notes.md
+.claude/commands/dx/preview.md
+.claude/commands/dx/reopen.md
+.claude/commands/dx/resume.md
+.claude/commands/dx/search.md
+.claude/commands/dx/start.md
+.claude/commands/dx/tree.md
+.claude/modules/coordination/authority-matrix.md
+.claude/modules/coordination/integration-bridge.md
+.claude/modules/shared/event-patterns.md
+.claude/modules/shared/governance-principles.md
+.claude/modules/shared/sprint.md
+.claude/modules/shared/superclaude-workflows.md
+.claude/personas/PERSONA_INDEX.md
+.github/copilot-instructions.md
+.taskorchestrator/config.yaml
+AGENTS.md
+config/instructions/agents.instructions.md
+config/repo_hygiene/root_hygiene_policy.json
+docs/03-reference/dx-command-authoring.md
+docs/03-reference/orchestrator-note-filling-protocol.md
+docs/03-reference/systems/component-catalog.md
+docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md
+docs/90-adr/adr-task-orchestrator-as-workflow-authority.md
+docs/90-adr/adr-task-orchestrator-claude-surface-integration.md
+scripts/external-references/README.md
+scripts/external-references/task-orchestrator-current-stdio.sh.snapshot-2026-05-27
+scripts/external-references/task-orchestrator-current-stdio.sh.snapshot-2026-05-27-v3.8.0
+ui-dashboard/src/App.tsx
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .claude/claude.md .claude/commands/dx/backlinks.md .claude/commands/dx/block.md .claude/commands/dx/blocked.md .claude/commands/dx/cancel.md .claude/commands/dx/complete-tree.md .claude/commands/dx/complete.md .claude/commands/dx/context.md .claude/commands/dx/depends.md .claude/commands/dx/implement.md .claude/commands/dx/next.md .claude/commands/dx/note.md .claude/commands/dx/notes.md .claude/commands/dx/preview.md .claude/commands/dx/reopen.md .claude/commands/dx/resume.md .claude/commands/dx/search.md .claude/commands/dx/start.md .claude/commands/dx/tree.md .claude/modules/coordination/authority-matrix.md .claude/modules/coordination/integration-bridge.md .claude/modules/shared/event-patterns.md .claude/modules/shared/governance-principles.md .claude/modules/shared/sprint.md .claude/modules/shared/superclaude-workflows.md .claude/personas/PERSONA_INDEX.md .github/copilot-instructions.md .taskorchestrator/config.yaml AGENTS.md config/instructions/agents.instructions.md config/repo_hygiene/root_hygiene_policy.json docs/03-reference/dx-command-authoring.md docs/03-reference/orchestrator-note-filling-protocol.md docs/03-reference/systems/component-catalog.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md docs/90-adr/adr-task-orchestrator-as-workflow-authority.md docs/90-adr/adr-task-orchestrator-claude-surface-integration.md scripts/external-references/README.md scripts/external-references/task-orchestrator-current-stdio.sh.snapshot-2026-05-27 scripts/external-references/task-orchestrator-current-stdio.sh.snapshot-2026-05-27-v3.8.0 ui-dashboard/src/App.tsx
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/03-reference/dx-command-authoring.md docs/03-reference/orchestrator-note-filling-protocol.md docs/03-reference/systems/component-catalog.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md docs/90-adr/adr-task-orchestrator-as-workflow-authority.md docs/90-adr/adr-task-orchestrator-claude-surface-integration.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/03-reference/dx-command-authoring.md docs/03-reference/orchestrator-note-filling-protocol.md docs/03-reference/systems/component-catalog.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md docs/90-adr/adr-task-orchestrator-as-workflow-authority.md docs/90-adr/adr-task-orchestrator-claude-surface-integration.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/03-reference/dx-command-authoring.md docs/03-reference/orchestrator-note-filling-protocol.md docs/03-reference/systems/component-catalog.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md docs/90-adr/adr-task-orchestrator-as-workflow-authority.md docs/90-adr/adr-task-orchestrator-claude-surface-integration.md
+exit=0
+--- stdout ---
+docs-hygiene: total=6 active=6 quarantine=0 violations=0
+docs-hygiene: checked 6 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/03-reference/dx-command-authoring.md docs/03-reference/orchestrator-note-filling-protocol.md docs/03-reference/systems/component-catalog.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md docs/90-adr/adr-task-orchestrator-as-workflow-authority.md docs/90-adr/adr-task-orchestrator-claude-surface-integration.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=6 active=6 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 6 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-720-20260528_103339
+exit=0
+

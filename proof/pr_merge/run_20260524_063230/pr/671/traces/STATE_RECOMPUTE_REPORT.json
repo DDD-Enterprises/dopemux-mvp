@@ -1,0 +1,890 @@
+{
+  "pr_id": "671",
+  "cycle_id": "f920ba2b-7a9d-4f7a-be03-8764ab1da836",
+  "state_before": {
+    "run_id": "20260524_063230",
+    "pr_state": {
+      "pr_id": 671,
+      "title": "TP-DMX-PR-QUEUE-BLOCKERS-001: audit/block PR #659 and #664",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "tp/dmx-pr-queue-blockers-001",
+      "ci_status": "PENDING",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "BLOCKED",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-05-24T13:30:56Z",
+      "is_draft": false,
+      "auto_merge_enabled": false,
+      "additions": 4799,
+      "deletions": 0,
+      "changed_files": 107,
+      "unresolved_threads": 1,
+      "active_unresolved_threads": 1,
+      "outdated_unresolved_threads": 0,
+      "pr_class": "COMMENTS_ONLY",
+      "risk_score": 6039.0,
+      "check_summary": {
+        "total": 20,
+        "success": 18,
+        "failure": 0,
+        "pending": 2,
+        "required_pending": 2,
+        "required_failure": 0,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "bdbc4d28d87987dd531411496ae8f447be280635",
+      "base_sha": "1fb5601152537b35d0660be7e754de78d63f9148"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase tp/dmx-pr-queue-blockers-001 onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "auto_merge_fallback",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "671",
+        "--auto",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "Required or optional checks are pending; enabling auto-merge.",
+      "reason_code": "auto_merge_active_checks"
+    },
+    "blockers": [
+      {
+        "type": "active_thread",
+        "source": "github_protection_review",
+        "name": "1 active unresolved review threads remain.",
+        "details": null,
+        "metadata": {
+          "active_threads": 1
+        }
+      },
+      {
+        "type": "required_check_pending",
+        "source": "github_protection_review",
+        "name": "Required checks are still pending.",
+        "details": null,
+        "metadata": {
+          "checks_total": 20,
+          "checks_success": 18,
+          "checks_failure": 0,
+          "checks_pending": 2,
+          "required_checks_pending": 2,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [
+            "Analyze (python)"
+          ],
+          "blocker_types": [
+            "required_check_pending"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "type": "validation_failed",
+        "source": "local_validation",
+        "name": "Local validation is required before merge readiness can be declared.",
+        "details": null,
+        "metadata": {
+          "validation_status": "failed"
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "large_diff",
+        "message": "Large diff size may increase merge risk.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "diff_size": 4799
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "observations": [
+      {
+        "kind": "observation",
+        "finding_type": "high_risk_score",
+        "message": "PR has elevated risk score relative to queue.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "risk_score": 6039.0
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 20,
+          "checks_success": 18,
+          "checks_failure": 0,
+          "checks_pending": 2,
+          "required_checks_pending": 2,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [
+            "Analyze (python)"
+          ],
+          "blocker_types": [
+            "required_check_pending"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "failed",
+        "details": {
+          "status": "failed",
+          "required_for_merge_ready": true,
+          "passed": false,
+          "attempts": 1,
+          "remediation_applied": true,
+          "steps": [
+            {
+              "name": "pre-commit",
+              "command": "pre-commit run --files .Jules/palette.md .claude/claude.md .claude/modules/shared/governance-principles.md .githooks/pre-commit .github/workflows/preflight.yml .gitignore AGENTS.md README.md config/preflight/ledger.json config/pricing.yaml docker/mcp-servers-source/desktop-commander/requirements.txt docker/mcp-servers-source/pal/pal-mcp-server/uv.lock docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/task-packet-template.json docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md docs/docs_index.yaml out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.zip out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/DRIFT_AND_UNKNOWN_REPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/GPT55_INVESTIGATION_INTAKE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/INTAKE_START_PROMPT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/OPERATOR_START_HERE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_INSTRUCTIONS_UNDER_8000.txt out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_SETUP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROOF.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_CURRENT_RECON.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_DIGEST.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/SOURCE_RESOLUTION_REPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREADS_TO_CREATE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/00-intake-supervisor-ledger.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/01-tp-forge.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/02-implementation-intake.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/03-audit-red-team.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/04-cockpit-dopeui.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/05-dopetask-dopeagent-integration.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/06-research-vendor-tools.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/01_RULES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/02_PROJECT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/03_ARCHITECTURE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/04_SYSTEM_BOUNDARIES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/05_PM_PLANE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/06_SERVICE_CATALOG.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/07_TRUTH_SCOPE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/08_TRUTH_SYSTEMS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/09_TRUTH_INTERFACES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/10_TRUTH_DATA_EVENTS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/11_TRUTH_CANONICALS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/12_TRUTH_GAPS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/13_SYSTEM_DOPEMUX.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/14_SYSTEM_DOPETASK.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/15_SYSTEM_TASKORCHESTRATOR.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/16_SYSTEM_CONPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/17_SYSTEM_DOPEMEMORY.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/18_SYSTEM_DOPECONTEXT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/19_SYSTEM_DOPECONBRIDGE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/20_SYSTEM_ADHDENGINE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/21_SYSTEM_REPOTRUTHEXTRACTOR.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/22_AGENTS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/23_PAL_EXECUTION_RULES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/24_PAL_CHAINING_DOCTRINE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/25_DOPETASK_CANONICAL_SPEC.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/26_PROOF_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/27_PROOF_BUNDLE_SCHEMA.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/28_HANDOFF_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/29_ADAPTER_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/30_ADAPTER_SCHEMA.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/31_TASK_PACKET_TEMPLATE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/32_AUTHORITY_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/33_DOC_TRUST_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/34_DOCUMENTATION_SOURCE_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/35_RUNTIME_AUTHORITY_VERIFICATION.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/36_CODEX_AUTHORITY_REFRESH.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/37_CODEX_PROMPT_PACK.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/38_CODEX_REFRESH_GAP_REGISTER.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/39_AGENT_WORKFLOW.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/40_GOVERNANCE_MODEL.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.md out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage-expanded.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/codereview.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-allowlist-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt.stderr out/rte-macro-pkt-remaining-parallel-001/CLOSEOUT.md out/rte-macro-pkt-remaining-parallel-001/DEPENDENCY_GRAPH.md out/rte-macro-pkt-remaining-parallel-001/MACRO_MANIFEST.json out/rte-macro-pkt-remaining-parallel-001/NO_LIVE_PROVIDER_ATTESTATION.md out/rte-macro-pkt-remaining-parallel-001/PARALLEL_SAFETY_MATRIX.md out/rte-macro-pkt-remaining-parallel-001/SUBPACKET_INDEX.md out/rte-macro-pkt-remaining-parallel-001/WAVE_PLAN.md out/rte-macro-pkt-remaining-parallel-001/WRITE_SCOPE_COLLISION_MATRIX.md out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md package-lock.json proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROPOSED_CHANGES.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_AFTER.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_BEFORE.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROPOSED_CHANGES.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_AFTER.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_BEFORE.json pyproject.toml scripts/gpt-researcher/two_phase_runner.py scripts/preflight.sh services/conport_kg_ui/package-lock.json services/repo-truth-extractor/benchmarking/pricing/catalog.py services/repo-truth-extractor/lib/batch_clients.py services/repo-truth-extractor/lib/phase_contract_map.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/route_options.py services/repo-truth-extractor/lib/spend_ledger.py services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/promptsets/v4/model_map.yaml services/repo-truth-extractor/rte_phase_wrappers.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/__init__.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_2d_high_1_home_scan_consent.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_1_secret_assign_regex.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_2_walker_env_variants.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py services/repo-truth-extractor/tests/test_output_safety.py services/repo-truth-extractor/tests/test_route_request_options.py task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json task-packets/generated/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005.json tests/scripts/test_gpt_researcher_two_phase_runner.py ui-dashboard/package-lock.json ui-dashboard/src/App.tsx ui-dashboard/src/components/TaskSequencer.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts uv.lock",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.................................................................................Passed\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-frontmatter-fix",
+              "command": "python scripts/docs_frontmatter_guard.py --fix docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+              "status": "failed",
+              "returncode": 1,
+              "stdout": "Updated 3 file(s):\n - docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md\n - docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md\n - docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-validator",
+              "command": "python scripts/docs_validator.py docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "name": "docs-hygiene",
+              "command": "python scripts/check_docs_hygiene.py --check docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "docs-hygiene: total=37 active=37 quarantine=0 violations=0\ndocs-hygiene: checked 37 files, OK\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-filename-hygiene",
+              "command": "python scripts/check_docs_filename_hygiene.py --check docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+              "status": "failed",
+              "returncode": 1,
+              "stdout": "docs-filename-hygiene: total=37 active=37 quarantine=0 exempt=4 violations=2\ndocs-filename-hygiene: FAILED\n1. task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md\n   target: task-packets/tp-dmx-gptr-two-phase-runner-001.md\n2. task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md\n   target: task-packets/tp-dmx-preflight-governance-adoption-001.md\n",
+              "stderr": ""
+            }
+          ],
+          "input_fingerprint": {
+            "input_fingerprint": "5c6e7392d47e8a0ae9a5716433f00465e9aff8d96a1ffdcc089f1f598fd2fc00",
+            "valid_for_sha": "ea582a32d8e77a3eb7a1ef91e11ec4a0ad126e97",
+            "stale_if": [
+              "PR head SHA changes",
+              "base SHA changes",
+              "effective policy fingerprint changes",
+              "applied tree contents change"
+            ],
+            "created_from_state": "discovered",
+            "review_state_hash": "",
+            "check_state_hash": "",
+            "validation_command_hash": "",
+            "apply_tree_sha": "",
+            "dirty_state": ""
+          },
+          "failure_fingerprint": "fa8b44443566c923e4cf56a2e617332ed7a47ac5185d28f6c71e3dc7a5b2d61c"
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "failed",
+      "required_for_merge_ready": true,
+      "passed": false,
+      "attempts": 1,
+      "remediation_applied": true,
+      "steps": [
+        {
+          "name": "pre-commit",
+          "command": "pre-commit run --files .Jules/palette.md .claude/claude.md .claude/modules/shared/governance-principles.md .githooks/pre-commit .github/workflows/preflight.yml .gitignore AGENTS.md README.md config/preflight/ledger.json config/pricing.yaml docker/mcp-servers-source/desktop-commander/requirements.txt docker/mcp-servers-source/pal/pal-mcp-server/uv.lock docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/task-packet-template.json docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md docs/docs_index.yaml out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.zip out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/DRIFT_AND_UNKNOWN_REPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/GPT55_INVESTIGATION_INTAKE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/INTAKE_START_PROMPT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/OPERATOR_START_HERE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_INSTRUCTIONS_UNDER_8000.txt out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_SETUP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROOF.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_CURRENT_RECON.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_DIGEST.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/SOURCE_RESOLUTION_REPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREADS_TO_CREATE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/00-intake-supervisor-ledger.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/01-tp-forge.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/02-implementation-intake.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/03-audit-red-team.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/04-cockpit-dopeui.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/05-dopetask-dopeagent-integration.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/06-research-vendor-tools.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/01_RULES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/02_PROJECT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/03_ARCHITECTURE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/04_SYSTEM_BOUNDARIES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/05_PM_PLANE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/06_SERVICE_CATALOG.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/07_TRUTH_SCOPE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/08_TRUTH_SYSTEMS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/09_TRUTH_INTERFACES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/10_TRUTH_DATA_EVENTS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/11_TRUTH_CANONICALS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/12_TRUTH_GAPS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/13_SYSTEM_DOPEMUX.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/14_SYSTEM_DOPETASK.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/15_SYSTEM_TASKORCHESTRATOR.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/16_SYSTEM_CONPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/17_SYSTEM_DOPEMEMORY.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/18_SYSTEM_DOPECONTEXT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/19_SYSTEM_DOPECONBRIDGE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/20_SYSTEM_ADHDENGINE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/21_SYSTEM_REPOTRUTHEXTRACTOR.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/22_AGENTS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/23_PAL_EXECUTION_RULES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/24_PAL_CHAINING_DOCTRINE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/25_DOPETASK_CANONICAL_SPEC.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/26_PROOF_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/27_PROOF_BUNDLE_SCHEMA.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/28_HANDOFF_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/29_ADAPTER_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/30_ADAPTER_SCHEMA.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/31_TASK_PACKET_TEMPLATE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/32_AUTHORITY_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/33_DOC_TRUST_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/34_DOCUMENTATION_SOURCE_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/35_RUNTIME_AUTHORITY_VERIFICATION.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/36_CODEX_AUTHORITY_REFRESH.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/37_CODEX_PROMPT_PACK.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/38_CODEX_REFRESH_GAP_REGISTER.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/39_AGENT_WORKFLOW.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/40_GOVERNANCE_MODEL.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.md out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage-expanded.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/codereview.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-allowlist-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt.stderr out/rte-macro-pkt-remaining-parallel-001/CLOSEOUT.md out/rte-macro-pkt-remaining-parallel-001/DEPENDENCY_GRAPH.md out/rte-macro-pkt-remaining-parallel-001/MACRO_MANIFEST.json out/rte-macro-pkt-remaining-parallel-001/NO_LIVE_PROVIDER_ATTESTATION.md out/rte-macro-pkt-remaining-parallel-001/PARALLEL_SAFETY_MATRIX.md out/rte-macro-pkt-remaining-parallel-001/SUBPACKET_INDEX.md out/rte-macro-pkt-remaining-parallel-001/WAVE_PLAN.md out/rte-macro-pkt-remaining-parallel-001/WRITE_SCOPE_COLLISION_MATRIX.md out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md package-lock.json proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROPOSED_CHANGES.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_AFTER.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_BEFORE.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROPOSED_CHANGES.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_AFTER.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_BEFORE.json pyproject.toml scripts/gpt-researcher/two_phase_runner.py scripts/preflight.sh services/conport_kg_ui/package-lock.json services/repo-truth-extractor/benchmarking/pricing/catalog.py services/repo-truth-extractor/lib/batch_clients.py services/repo-truth-extractor/lib/phase_contract_map.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/route_options.py services/repo-truth-extractor/lib/spend_ledger.py services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/promptsets/v4/model_map.yaml services/repo-truth-extractor/rte_phase_wrappers.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/__init__.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_2d_high_1_home_scan_consent.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_1_secret_assign_regex.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_2_walker_env_variants.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py services/repo-truth-extractor/tests/test_output_safety.py services/repo-truth-extractor/tests/test_route_request_options.py task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json task-packets/generated/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005.json tests/scripts/test_gpt_researcher_two_phase_runner.py ui-dashboard/package-lock.json ui-dashboard/src/App.tsx ui-dashboard/src/components/TaskSequencer.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts uv.lock",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.................................................................................Passed\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-frontmatter-fix",
+          "command": "python scripts/docs_frontmatter_guard.py --fix docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+          "status": "failed",
+          "returncode": 1,
+          "stdout": "Updated 3 file(s):\n - docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md\n - docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md\n - docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-validator",
+          "command": "python scripts/docs_validator.py docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "name": "docs-hygiene",
+          "command": "python scripts/check_docs_hygiene.py --check docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "docs-hygiene: total=37 active=37 quarantine=0 violations=0\ndocs-hygiene: checked 37 files, OK\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-filename-hygiene",
+          "command": "python scripts/check_docs_filename_hygiene.py --check docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+          "status": "failed",
+          "returncode": 1,
+          "stdout": "docs-filename-hygiene: total=37 active=37 quarantine=0 exempt=4 violations=2\ndocs-filename-hygiene: FAILED\n1. task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md\n   target: task-packets/tp-dmx-gptr-two-phase-runner-001.md\n2. task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md\n   target: task-packets/tp-dmx-preflight-governance-adoption-001.md\n",
+          "stderr": ""
+        }
+      ],
+      "input_fingerprint": {
+        "input_fingerprint": "5c6e7392d47e8a0ae9a5716433f00465e9aff8d96a1ffdcc089f1f598fd2fc00",
+        "valid_for_sha": "ea582a32d8e77a3eb7a1ef91e11ec4a0ad126e97",
+        "stale_if": [
+          "PR head SHA changes",
+          "base SHA changes",
+          "effective policy fingerprint changes",
+          "applied tree contents change"
+        ],
+        "created_from_state": "discovered",
+        "review_state_hash": "",
+        "check_state_hash": "",
+        "validation_command_hash": "",
+        "apply_tree_sha": "",
+        "dirty_state": ""
+      },
+      "failure_fingerprint": "fa8b44443566c923e4cf56a2e617332ed7a47ac5185d28f6c71e3dc7a5b2d61c"
+    },
+    "thread_dispositions": [
+      {
+        "thread_id": "PRRT_kwDOPyIw986DdStg",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json",
+        "applied": false,
+        "escalation_needed": false
+      }
+    ],
+    "fingerprint": {
+      "input_fingerprint": "10be13f01a05702268f7e4a72cbecef22a35d9c98802c5df4b8f6ca43ea09444",
+      "valid_for_sha": "bdbc4d28d87987dd531411496ae8f447be280635",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"1 active unresolved review threads remain.\", \"Required checks are still pending.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"1 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 1}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"required_check_pending\", \"message\": \"Required checks are still pending.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 20, \"checks_success\": 18, \"checks_failure\": 0, \"checks_pending\": 2, \"required_checks_pending\": 2, \"required_checks_failed\": 0, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [\"Analyze (python)\"], \"blocker_types\": [\"required_check_pending\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_failed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"failed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 4799}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 4799}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 6039.0}, \"source\": \"heuristics\", \"override\": null}]}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "APPLY_FIX"
+    ]
+  },
+  "state_after": {
+    "run_id": "20260524_063230",
+    "pr_state": {
+      "pr_id": 671,
+      "title": "TP-DMX-PR-QUEUE-BLOCKERS-001: audit/block PR #659 and #664",
+      "author": "hu3mann",
+      "state": "OPEN",
+      "base_ref": "main",
+      "head_ref": "tp/dmx-pr-queue-blockers-001",
+      "ci_status": "PENDING",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "BLOCKED",
+      "review_decision": "",
+      "labels": [],
+      "updated_at": "2026-05-24T13:30:56Z",
+      "is_draft": false,
+      "auto_merge_enabled": false,
+      "additions": 4799,
+      "deletions": 0,
+      "changed_files": 107,
+      "unresolved_threads": 1,
+      "active_unresolved_threads": 1,
+      "outdated_unresolved_threads": 0,
+      "pr_class": "COMMENTS_ONLY",
+      "risk_score": 6039.0,
+      "check_summary": {
+        "total": 20,
+        "success": 18,
+        "failure": 0,
+        "pending": 2,
+        "required_pending": 2,
+        "required_failure": 0,
+        "optional_pending": 0,
+        "optional_failure": 0
+      },
+      "lifecycle_state": "apply_blocked",
+      "head_sha": "bdbc4d28d87987dd531411496ae8f447be280635",
+      "base_sha": "1fb5601152537b35d0660be7e754de78d63f9148"
+    },
+    "lifecycle_state": "apply_blocked",
+    "apply_actions": [
+      "rebase tp/dmx-pr-queue-blockers-001 onto main",
+      "resolve review threads",
+      "run validation"
+    ],
+    "merge_decision": {
+      "action": "auto_merge_fallback",
+      "command": [
+        "gh",
+        "pr",
+        "merge",
+        "671",
+        "--auto",
+        "--rebase",
+        "--delete-branch"
+      ],
+      "reason": "Required or optional checks are pending; enabling auto-merge.",
+      "reason_code": "auto_merge_active_checks"
+    },
+    "blockers": [
+      {
+        "type": "active_thread",
+        "source": "github_protection_review",
+        "name": "1 active unresolved review threads remain.",
+        "details": null,
+        "metadata": {
+          "active_threads": 1
+        }
+      },
+      {
+        "type": "required_check_pending",
+        "source": "github_protection_review",
+        "name": "Required checks are still pending.",
+        "details": null,
+        "metadata": {
+          "checks_total": 20,
+          "checks_success": 18,
+          "checks_failure": 0,
+          "checks_pending": 2,
+          "required_checks_pending": 2,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [
+            "Analyze (python)"
+          ],
+          "blocker_types": [
+            "required_check_pending"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "type": "validation_failed",
+        "source": "local_validation",
+        "name": "Local validation is required before merge readiness can be declared.",
+        "details": null,
+        "metadata": {
+          "validation_status": "failed"
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "kind": "warning",
+        "finding_type": "large_diff",
+        "message": "Large diff size may increase merge risk.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "diff_size": 4799
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "observations": [
+      {
+        "kind": "observation",
+        "finding_type": "high_risk_score",
+        "message": "PR has elevated risk score relative to queue.",
+        "id": "",
+        "severity": null,
+        "category": "",
+        "suggestion": "",
+        "details": {
+          "risk_score": 6039.0
+        },
+        "source": "heuristics",
+        "override": null
+      }
+    ],
+    "truth_sources": [
+      {
+        "name": "effective_policy",
+        "status": "loaded",
+        "details": {
+          "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+        }
+      },
+      {
+        "name": "github_protection_review",
+        "status": "observed",
+        "details": {
+          "checks_total": 20,
+          "checks_success": 18,
+          "checks_failure": 0,
+          "checks_pending": 2,
+          "required_checks_pending": 2,
+          "required_checks_failed": 0,
+          "optional_checks_pending": 0,
+          "optional_checks_failed": 0,
+          "review_decision": "",
+          "approval_required": false,
+          "mergeable": "MERGEABLE",
+          "merge_state_status": "BLOCKED",
+          "protection": {
+            "available": true,
+            "protected": true,
+            "branch": "main",
+            "required_approving_review_count": 0,
+            "approval_required": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_conversation_resolution": true,
+            "required_status_checks": [
+              "\ud83d\udd12 Security Review",
+              "\ud83d\udcda Documentation Check",
+              "identity-check",
+              "\ud83e\uddea Unit Tests",
+              "Analyze (python)",
+              "Analyze (javascript-typescript)",
+              "Analyze (ruby)"
+            ],
+            "strict_status_checks": true,
+            "enforce_admins": false,
+            "required_linear_history": true
+          },
+          "failed_required_checks": [],
+          "failed_required_check_entries": [],
+          "pending_required_checks": [
+            "Analyze (python)"
+          ],
+          "blocker_types": [
+            "required_check_pending"
+          ],
+          "warning_types": []
+        }
+      },
+      {
+        "name": "local_validation",
+        "status": "failed",
+        "details": {
+          "status": "failed",
+          "required_for_merge_ready": true,
+          "passed": false,
+          "attempts": 1,
+          "remediation_applied": true,
+          "steps": [
+            {
+              "name": "pre-commit",
+              "command": "pre-commit run --files .Jules/palette.md .claude/claude.md .claude/modules/shared/governance-principles.md .githooks/pre-commit .github/workflows/preflight.yml .gitignore AGENTS.md README.md config/preflight/ledger.json config/pricing.yaml docker/mcp-servers-source/desktop-commander/requirements.txt docker/mcp-servers-source/pal/pal-mcp-server/uv.lock docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/task-packet-template.json docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md docs/docs_index.yaml out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.zip out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/DRIFT_AND_UNKNOWN_REPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/GPT55_INVESTIGATION_INTAKE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/INTAKE_START_PROMPT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/OPERATOR_START_HERE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_INSTRUCTIONS_UNDER_8000.txt out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_SETUP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROOF.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_CURRENT_RECON.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_DIGEST.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/SOURCE_RESOLUTION_REPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREADS_TO_CREATE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/00-intake-supervisor-ledger.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/01-tp-forge.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/02-implementation-intake.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/03-audit-red-team.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/04-cockpit-dopeui.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/05-dopetask-dopeagent-integration.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/06-research-vendor-tools.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/01_RULES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/02_PROJECT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/03_ARCHITECTURE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/04_SYSTEM_BOUNDARIES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/05_PM_PLANE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/06_SERVICE_CATALOG.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/07_TRUTH_SCOPE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/08_TRUTH_SYSTEMS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/09_TRUTH_INTERFACES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/10_TRUTH_DATA_EVENTS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/11_TRUTH_CANONICALS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/12_TRUTH_GAPS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/13_SYSTEM_DOPEMUX.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/14_SYSTEM_DOPETASK.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/15_SYSTEM_TASKORCHESTRATOR.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/16_SYSTEM_CONPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/17_SYSTEM_DOPEMEMORY.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/18_SYSTEM_DOPECONTEXT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/19_SYSTEM_DOPECONBRIDGE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/20_SYSTEM_ADHDENGINE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/21_SYSTEM_REPOTRUTHEXTRACTOR.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/22_AGENTS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/23_PAL_EXECUTION_RULES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/24_PAL_CHAINING_DOCTRINE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/25_DOPETASK_CANONICAL_SPEC.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/26_PROOF_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/27_PROOF_BUNDLE_SCHEMA.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/28_HANDOFF_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/29_ADAPTER_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/30_ADAPTER_SCHEMA.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/31_TASK_PACKET_TEMPLATE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/32_AUTHORITY_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/33_DOC_TRUST_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/34_DOCUMENTATION_SOURCE_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/35_RUNTIME_AUTHORITY_VERIFICATION.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/36_CODEX_AUTHORITY_REFRESH.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/37_CODEX_PROMPT_PACK.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/38_CODEX_REFRESH_GAP_REGISTER.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/39_AGENT_WORKFLOW.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/40_GOVERNANCE_MODEL.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.md out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage-expanded.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/codereview.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-allowlist-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt.stderr out/rte-macro-pkt-remaining-parallel-001/CLOSEOUT.md out/rte-macro-pkt-remaining-parallel-001/DEPENDENCY_GRAPH.md out/rte-macro-pkt-remaining-parallel-001/MACRO_MANIFEST.json out/rte-macro-pkt-remaining-parallel-001/NO_LIVE_PROVIDER_ATTESTATION.md out/rte-macro-pkt-remaining-parallel-001/PARALLEL_SAFETY_MATRIX.md out/rte-macro-pkt-remaining-parallel-001/SUBPACKET_INDEX.md out/rte-macro-pkt-remaining-parallel-001/WAVE_PLAN.md out/rte-macro-pkt-remaining-parallel-001/WRITE_SCOPE_COLLISION_MATRIX.md out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md package-lock.json proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROPOSED_CHANGES.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_AFTER.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_BEFORE.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROPOSED_CHANGES.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_AFTER.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_BEFORE.json pyproject.toml scripts/gpt-researcher/two_phase_runner.py scripts/preflight.sh services/conport_kg_ui/package-lock.json services/repo-truth-extractor/benchmarking/pricing/catalog.py services/repo-truth-extractor/lib/batch_clients.py services/repo-truth-extractor/lib/phase_contract_map.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/route_options.py services/repo-truth-extractor/lib/spend_ledger.py services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/promptsets/v4/model_map.yaml services/repo-truth-extractor/rte_phase_wrappers.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/__init__.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_2d_high_1_home_scan_consent.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_1_secret_assign_regex.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_2_walker_env_variants.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py services/repo-truth-extractor/tests/test_output_safety.py services/repo-truth-extractor/tests/test_route_request_options.py task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json task-packets/generated/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005.json tests/scripts/test_gpt_researcher_two_phase_runner.py ui-dashboard/package-lock.json ui-dashboard/src/App.tsx ui-dashboard/src/components/TaskSequencer.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts uv.lock",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.................................................................................Passed\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-frontmatter-fix",
+              "command": "python scripts/docs_frontmatter_guard.py --fix docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+              "status": "failed",
+              "returncode": 1,
+              "stdout": "Updated 3 file(s):\n - docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md\n - docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md\n - docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-validator",
+              "command": "python scripts/docs_validator.py docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "name": "docs-hygiene",
+              "command": "python scripts/check_docs_hygiene.py --check docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+              "status": "passed",
+              "returncode": 0,
+              "stdout": "docs-hygiene: total=37 active=37 quarantine=0 violations=0\ndocs-hygiene: checked 37 files, OK\n",
+              "stderr": ""
+            },
+            {
+              "name": "docs-filename-hygiene",
+              "command": "python scripts/check_docs_filename_hygiene.py --check docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+              "status": "failed",
+              "returncode": 1,
+              "stdout": "docs-filename-hygiene: total=37 active=37 quarantine=0 exempt=4 violations=2\ndocs-filename-hygiene: FAILED\n1. task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md\n   target: task-packets/tp-dmx-gptr-two-phase-runner-001.md\n2. task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md\n   target: task-packets/tp-dmx-preflight-governance-adoption-001.md\n",
+              "stderr": ""
+            }
+          ],
+          "input_fingerprint": {
+            "input_fingerprint": "5c6e7392d47e8a0ae9a5716433f00465e9aff8d96a1ffdcc089f1f598fd2fc00",
+            "valid_for_sha": "ea582a32d8e77a3eb7a1ef91e11ec4a0ad126e97",
+            "stale_if": [
+              "PR head SHA changes",
+              "base SHA changes",
+              "effective policy fingerprint changes",
+              "applied tree contents change"
+            ],
+            "created_from_state": "discovered",
+            "review_state_hash": "",
+            "check_state_hash": "",
+            "validation_command_hash": "",
+            "apply_tree_sha": "",
+            "dirty_state": ""
+          },
+          "failure_fingerprint": "fa8b44443566c923e4cf56a2e617332ed7a47ac5185d28f6c71e3dc7a5b2d61c"
+        }
+      },
+      {
+        "name": "local_rebase_simulation",
+        "status": "not_run",
+        "details": {}
+      },
+      {
+        "name": "heuristics",
+        "status": "computed",
+        "details": {
+          "precedence": [
+            "effective_policy",
+            "github_protection_review",
+            "local_validation",
+            "local_rebase_simulation",
+            "heuristics"
+          ]
+        }
+      }
+    ],
+    "precedence_order": [
+      "effective_policy",
+      "github_protection_review",
+      "local_validation",
+      "local_rebase_simulation",
+      "heuristics"
+    ],
+    "decision_basis": {
+      "truth_precedence": [
+        "policy",
+        "github_protection",
+        "local_validation",
+        "local_apply_state",
+        "heuristics"
+      ],
+      "winning_sources": [
+        "policy",
+        "github_protection",
+        "local_validation"
+      ],
+      "winning_reason": "merge_readiness",
+      "suppressed_sources": [
+        {
+          "source": "heuristics",
+          "reason": "lower_precedence"
+        }
+      ]
+    },
+    "validation_report": {
+      "status": "failed",
+      "required_for_merge_ready": true,
+      "passed": false,
+      "attempts": 1,
+      "remediation_applied": true,
+      "steps": [
+        {
+          "name": "pre-commit",
+          "command": "pre-commit run --files .Jules/palette.md .claude/claude.md .claude/modules/shared/governance-principles.md .githooks/pre-commit .github/workflows/preflight.yml .gitignore AGENTS.md README.md config/preflight/ledger.json config/pricing.yaml docker/mcp-servers-source/desktop-commander/requirements.txt docker/mcp-servers-source/pal/pal-mcp-server/uv.lock docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/task-packet-template.json docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/proof-bundle-template.json docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md docs/docs_index.yaml out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.zip out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/DRIFT_AND_UNKNOWN_REPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/GPT55_INVESTIGATION_INTAKE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/INTAKE_START_PROMPT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/OPERATOR_START_HERE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_INSTRUCTIONS_UNDER_8000.txt out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROJECT_SETUP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/PROOF.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_CURRENT_RECON.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/REPO_MAP_DIGEST.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/SOURCE_RESOLUTION_REPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREADS_TO_CREATE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/00-intake-supervisor-ledger.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/01-tp-forge.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/02-implementation-intake.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/03-audit-red-team.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/04-cockpit-dopeui.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/05-dopetask-dopeagent-integration.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/06-research-vendor-tools.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/01_RULES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/02_PROJECT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/03_ARCHITECTURE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/04_SYSTEM_BOUNDARIES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/05_PM_PLANE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/06_SERVICE_CATALOG.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/07_TRUTH_SCOPE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/08_TRUTH_SYSTEMS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/09_TRUTH_INTERFACES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/10_TRUTH_DATA_EVENTS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/11_TRUTH_CANONICALS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/12_TRUTH_GAPS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/13_SYSTEM_DOPEMUX.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/14_SYSTEM_DOPETASK.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/15_SYSTEM_TASKORCHESTRATOR.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/16_SYSTEM_CONPORT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/17_SYSTEM_DOPEMEMORY.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/18_SYSTEM_DOPECONTEXT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/19_SYSTEM_DOPECONBRIDGE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/20_SYSTEM_ADHDENGINE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/21_SYSTEM_REPOTRUTHEXTRACTOR.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/22_AGENTS.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/23_PAL_EXECUTION_RULES.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/24_PAL_CHAINING_DOCTRINE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/25_DOPETASK_CANONICAL_SPEC.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/26_PROOF_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/27_PROOF_BUNDLE_SCHEMA.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/28_HANDOFF_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/29_ADAPTER_CONTRACT.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/30_ADAPTER_SCHEMA.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/31_TASK_PACKET_TEMPLATE.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/32_AUTHORITY_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/33_DOC_TRUST_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/34_DOCUMENTATION_SOURCE_MAP.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/35_RUNTIME_AUTHORITY_VERIFICATION.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/36_CODEX_AUTHORITY_REFRESH.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/37_CODEX_PROMPT_PACK.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/38_CODEX_REFRESH_GAP_REGISTER.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/39_AGENT_WORKFLOW.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/40_GOVERNANCE_MODEL.md out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.json out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES_MANIFEST.md out/proofs/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PR_QUEUE_BLOCKERS_LEDGER.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage-expanded.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/allowlist-check-prestage.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage-expanded.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files-status-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/changed-files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/codereview.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-allowlist-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-cached-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-diff-check.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-git-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-json-tool.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/final-packet-schema.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/head-artifact-validation.tsv out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-659.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-blocker-comment.md out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-comment-post-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-object-exists.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-out_proof_TP-DMX-MOBILE-TUI-SPEC-001_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-proof_codex-refresh_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES_PROOF.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-001-AUTHORITY-MATRIX.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-002-OPERATOR-RUNBOOK.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-CODEX-REFRESH-003-PROOF-PACKET-TEMPLATES.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664-head-task-packets_generated_TP-DMX-MOBILE-TUI-SPEC-001.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.files.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.reviewThreads.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pr-664.view.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/pre-commit.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-branch.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-auth.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-gh-repo.json.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-marker.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-pwd.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-remote.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-root.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/preflight-status.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/schema-validation.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/thread00-ledger-lookup.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-cached-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-git-diff-check-prestage.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-packet-schema-final.txt.stderr out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/validate-proof-json-tool.txt.stderr out/rte-macro-pkt-remaining-parallel-001/CLOSEOUT.md out/rte-macro-pkt-remaining-parallel-001/DEPENDENCY_GRAPH.md out/rte-macro-pkt-remaining-parallel-001/MACRO_MANIFEST.json out/rte-macro-pkt-remaining-parallel-001/NO_LIVE_PROVIDER_ATTESTATION.md out/rte-macro-pkt-remaining-parallel-001/PARALLEL_SAFETY_MATRIX.md out/rte-macro-pkt-remaining-parallel-001/SUBPACKET_INDEX.md out/rte-macro-pkt-remaining-parallel-001/WAVE_PLAN.md out/rte-macro-pkt-remaining-parallel-001/WRITE_SCOPE_COLLISION_MATRIX.md out/rte-ux-valuation-opus-audit/RTE-UX-VAL-001_NO_RUNTIME_CHANGE_ATTESTATION.md package-lock.json proof/fast-dev-os/TP-DMX-FDOS-004-AUTHORITY-REFRESH/PROOF.json proof/fast-dev-os/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK/PROOF.json proof/fast-dev-os/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES/PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_PROPOSED_CHANGES.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_AFTER.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005_ROUTE_INVENTORY_BEFORE.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROOF.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_PROPOSED_CHANGES.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_AFTER.json proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-MODEL-REFRESH-004_ROUTE_INVENTORY_BEFORE.json pyproject.toml scripts/gpt-researcher/two_phase_runner.py scripts/preflight.sh services/conport_kg_ui/package-lock.json services/repo-truth-extractor/benchmarking/pricing/catalog.py services/repo-truth-extractor/lib/batch_clients.py services/repo-truth-extractor/lib/phase_contract_map.py services/repo-truth-extractor/lib/prescan/models.py services/repo-truth-extractor/lib/route_options.py services/repo-truth-extractor/lib/spend_ledger.py services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/output_safety.py services/repo-truth-extractor/promptsets/v4/model_map.yaml services/repo-truth-extractor/rte_phase_wrappers.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/__init__.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_2d_high_1_home_scan_consent.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_1_secret_assign_regex.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_4_high_2_walker_env_variants.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_opt_model_refresh.py services/repo-truth-extractor/tests/test_output_safety.py services/repo-truth-extractor/tests/test_route_request_options.py task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md task-packets/generated/TP-DMX-DOCS-FRONTDOOR-POSITIONING-002.json task-packets/generated/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP.json task-packets/generated/TP-DMX-FDOS-004-AUTHORITY-REFRESH.json task-packets/generated/TP-DMX-FDOS-005-EXECUTOR-PROMPT-PACK.json task-packets/generated/TP-DMX-FDOS-006-PACKET-PROOF-TEMPLATES.json task-packets/generated/TP-DMX-PR-QUEUE-BLOCKERS-001.json task-packets/generated/TP-RTE-FINAL-AUDIT-DEFERRED-MODEL-ROUTING-005.json tests/scripts/test_gpt_researcher_two_phase_runner.py ui-dashboard/package-lock.json ui-dashboard/src/App.tsx ui-dashboard/src/components/TaskSequencer.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts uv.lock",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.................................................................................Passed\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-frontmatter-fix",
+          "command": "python scripts/docs_frontmatter_guard.py --fix docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+          "status": "failed",
+          "returncode": 1,
+          "stdout": "Updated 3 file(s):\n - docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md\n - docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md\n - docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-validator",
+          "command": "python scripts/docs_validator.py docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "name": "docs-hygiene",
+          "command": "python scripts/check_docs_hygiene.py --check docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+          "status": "passed",
+          "returncode": 0,
+          "stdout": "docs-hygiene: total=37 active=37 quarantine=0 violations=0\ndocs-hygiene: checked 37 files, OK\n",
+          "stderr": ""
+        },
+        {
+          "name": "docs-filename-hygiene",
+          "command": "python scripts/check_docs_filename_hygiene.py --check docs/03-reference/fast-dev-os/evidence-notes.md docs/03-reference/fast-dev-os/packet-ledger.md docs/03-reference/fast-dev-os/pr-ledger.md docs/03-reference/fast-dev-os/project-constitution.md docs/03-reference/fast-dev-os/prompts/claude-code-implementer-prompt.md docs/03-reference/fast-dev-os/prompts/gemini-auditor-prompt.md docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md docs/03-reference/fast-dev-os/prompts/grok-build-bounded-prompt.md docs/03-reference/fast-dev-os/prompts/jules-bounded-github-prompt.md docs/03-reference/fast-dev-os/prompts/master-priming-prompt.md docs/03-reference/fast-dev-os/prompts/readme.md docs/03-reference/fast-dev-os/prompts/role-priming-prompts.md docs/03-reference/fast-dev-os/prompts/template-acceptance-decision.md docs/03-reference/fast-dev-os/prompts/template-audit-prompt.md docs/03-reference/fast-dev-os/prompts/template-codex-single-run-prompt.md docs/03-reference/fast-dev-os/prompts/template-implementation-report.md docs/03-reference/fast-dev-os/proof-ledger.md docs/03-reference/fast-dev-os/readme.md docs/03-reference/fast-dev-os/runtime-dependency-cones.md docs/03-reference/fast-dev-os/template-pr-body.md docs/03-reference/fast-dev-os/template-task-packet.md docs/03-reference/fast-dev-os/templates-proof/readme.md docs/03-reference/fast-dev-os/thread00-current-operating-ledger.md docs/03-reference/fast-dev-os/unknown-conflicting-stale.md docs/03-reference/fast-dev-os/validation-command-library.md docs/03-reference/governance/documentation-gap-register.md docs/04-explanation/product/elevator-pitches.md docs/04-explanation/product/faq.md docs/04-explanation/product/features-and-benefits.md docs/04-explanation/product/homepage-copy.md docs/04-explanation/product/positioning.md docs/INDEX.md docs/archive/claudedocs/audit-2026-05-22/audit-branch-manifest.md docs/archive/claudedocs/audit-2026-05-22/hygiene-sweep-report.md docs/archive/claudedocs/audit-2026-05-22/operator-quickstart.md task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md",
+          "status": "failed",
+          "returncode": 1,
+          "stdout": "docs-filename-hygiene: total=37 active=37 quarantine=0 exempt=4 violations=2\ndocs-filename-hygiene: FAILED\n1. task-packets/TP-DMX-GPTR-TWO-PHASE-RUNNER-001.md\n   target: task-packets/tp-dmx-gptr-two-phase-runner-001.md\n2. task-packets/TP-DMX-PREFLIGHT-GOVERNANCE-ADOPTION-001.md\n   target: task-packets/tp-dmx-preflight-governance-adoption-001.md\n",
+          "stderr": ""
+        }
+      ],
+      "input_fingerprint": {
+        "input_fingerprint": "5c6e7392d47e8a0ae9a5716433f00465e9aff8d96a1ffdcc089f1f598fd2fc00",
+        "valid_for_sha": "ea582a32d8e77a3eb7a1ef91e11ec4a0ad126e97",
+        "stale_if": [
+          "PR head SHA changes",
+          "base SHA changes",
+          "effective policy fingerprint changes",
+          "applied tree contents change"
+        ],
+        "created_from_state": "discovered",
+        "review_state_hash": "",
+        "check_state_hash": "",
+        "validation_command_hash": "",
+        "apply_tree_sha": "",
+        "dirty_state": ""
+      },
+      "failure_fingerprint": "fa8b44443566c923e4cf56a2e617332ed7a47ac5185d28f6c71e3dc7a5b2d61c"
+    },
+    "thread_dispositions": [
+      {
+        "thread_id": "PRRT_kwDOPyIw986DdStg",
+        "disposition": "decline_with_rationale",
+        "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+        "path": "out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/PROOF.json",
+        "applied": false,
+        "escalation_needed": false
+      }
+    ],
+    "fingerprint": {
+      "input_fingerprint": "10be13f01a05702268f7e4a72cbecef22a35d9c98802c5df4b8f6ca43ea09444",
+      "valid_for_sha": "bdbc4d28d87987dd531411496ae8f447be280635",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes beyond allowed tolerance",
+        "review state changes",
+        "active thread set changes",
+        "required check set changes",
+        "effective policy fingerprint changes"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "artifacts": {
+      "explain": "{\"why_blocked\": [\"1 active unresolved review threads remain.\", \"Required checks are still pending.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"1 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 1}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"required_check_pending\", \"message\": \"Required checks are still pending.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 20, \"checks_success\": 18, \"checks_failure\": 0, \"checks_pending\": 2, \"required_checks_pending\": 2, \"required_checks_failed\": 0, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [\"Analyze (python)\"], \"blocker_types\": [\"required_check_pending\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_failed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"failed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 4799}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 4799}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 6039.0}, \"source\": \"heuristics\", \"override\": null}]}",
+      "operator_state": ""
+    },
+    "blocked_by_global_fix_pr": null,
+    "allowed_actions": [
+      "APPLY_FIX"
+    ],
+    "pr_id": "671",
+    "posture": "HOLD",
+    "refreshed_at": 1779629600.156309,
+    "recomputed_at": 1779629600.156325,
+    "last_event": {
+      "type": "cycle_complete"
+    },
+    "selected_tactic": "APPLY_FIX"
+  }
+}

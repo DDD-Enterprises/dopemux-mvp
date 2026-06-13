@@ -1,0 +1,267 @@
+$ git fetch origin pull/537/head:prmerge/20260430_230955-537
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/537/head -> prmerge/20260430_230955-537
+
+$ git worktree add /tmp/dopemux-pr-merge-537-20260430_230955 prmerge/20260430_230955-537
+exit=0
+--- stdout ---
+HEAD is now at f4a174007 docs: assemble MCP customization deep research data packs
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260430_230955-537')
+Updating files:  17% (2069/12159)
+Updating files:  18% (2189/12159)
+Updating files:  19% (2311/12159)
+Updating files:  20% (2432/12159)
+Updating files:  21% (2554/12159)
+Updating files:  22% (2675/12159)
+Updating files:  23% (2797/12159)
+Updating files:  24% (2919/12159)
+Updating files:  25% (3040/12159)
+Updating files:  26% (3162/12159)
+Updating files:  27% (3283/12159)
+Updating files:  28% (3405/12159)
+Updating files:  29% (3527/12159)
+Updating files:  30% (3648/12159)
+Updating files:  31% (3770/12159)
+Updating files:  32% (3891/12159)
+Updating files:  33% (4013/12159)
+Updating files:  34% (4135/12159)
+Updating files:  35% (4256/12159)
+Updating files:  36% (4378/12159)
+Updating files:  37% (4499/12159)
+Updating files:  38% (4621/12159)
+Updating files:  39% (4743/12159)
+Updating files:  40% (4864/12159)
+Updating files:  41% (4986/12159)
+Updating files:  42% (5107/12159)
+Updating files:  43% (5229/12159)
+Updating files:  44% (5350/12159)
+Updating files:  45% (5472/12159)
+Updating files:  46% (5594/12159)
+Updating files:  47% (5715/12159)
+Updating files:  48% (5837/12159)
+Updating files:  49% (5958/12159)
+Updating files:  50% (6080/12159)
+Updating files:  51% (6202/12159)
+Updating files:  52% (6323/12159)
+Updating files:  53% (6445/12159)
+Updating files:  54% (6566/12159)
+Updating files:  55% (6688/12159)
+Updating files:  56% (6810/12159)
+Updating files:  56% (6819/12159)
+Updating files:  57% (6931/12159)
+Updating files:  58% (7053/12159)
+Updating files:  59% (7174/12159)
+Updating files:  60% (7296/12159)
+Updating files:  61% (7417/12159)
+Updating files:  62% (7539/12159)
+Updating files:  63% (7661/12159)
+Updating files:  64% (7782/12159)
+Updating files:  65% (7904/12159)
+Updating files:  66% (8025/12159)
+Updating files:  67% (8147/12159)
+Updating files:  68% (8269/12159)
+Updating files:  69% (8390/12159)
+Updating files:  70% (8512/12159)
+Updating files:  71% (8633/12159)
+Updating files:  72% (8755/12159)
+Updating files:  73% (8877/12159)
+Updating files:  74% (8998/12159)
+Updating files:  75% (9120/12159)
+Updating files:  76% (9241/12159)
+Updating files:  77% (9363/12159)
+Updating files:  78% (9485/12159)
+Updating files:  79% (9606/12159)
+Updating files:  80% (9728/12159)
+Updating files:  81% (9849/12159)
+Updating files:  82% (9971/12159)
+Updating files:  83% (10092/12159)
+Updating files:  84% (10214/12159)
+Updating files:  85% (10336/12159)
+Updating files:  86% (10457/12159)
+Updating files:  87% (10579/12159)
+Updating files:  88% (10700/12159)
+Updating files:  89% (10822/12159)
+Updating files:  90% (10944/12159)
+Updating files:  91% (11065/12159)
+Updating files:  92% (11187/12159)
+Updating files:  93% (11308/12159)
+Updating files:  94% (11430/12159)
+Updating files:  95% (11552/12159)
+Updating files:  96% (11673/12159)
+Updating files:  97% (11795/12159)
+Updating files:  98% (11916/12159)
+Updating files:  99% (12038/12159)
+Updating files:  99% (12157/12159)
+Updating files: 100% (12159/12159)
+Updating files: 100% (12159/12159), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+f4a1740075d622500c12aceec5fc20c17f5dcac8
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-D1vg", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWUt"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-D1wR", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWVq"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-D1w4", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWWP"}}}}
+
+$ gh pr update-branch 537 --rebase
+exit=0
+--- stdout ---
+✓ PR branch updated
+
+$ git fetch origin research/dmx-mcp-customization-dr-data
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                research/dmx-mcp-customization-dr-data -> FETCH_HEAD
+ + f4a174007...59f9b9567 research/dmx-mcp-customization-dr-data -> origin/research/dmx-mcp-customization-dr-data  (forced update)
+
+$ git reset --hard origin/research/dmx-mcp-customization-dr-data
+exit=0
+--- stdout ---
+HEAD is now at 59f9b9567 docs: assemble MCP customization deep research data packs
+
+$ git diff --name-only --diff-filter=ACMR 3a19442eac0f63cc4f3e239bbf26583415318c78...HEAD
+exit=0
+--- stdout ---
+.Jules/palette.md
+.github/agents/dopemux-implementer.agent.md
+.github/agents/dopemux-planner.agent.md
+.github/agents/dopemux-reviewer.agent.md
+.github/agents/dopemux-testgen.agent.md
+docs/03-reference/governance/agent-workflow.md
+docs/research/mcp-customization/MANIFEST.sha256
+docs/research/mcp-customization/README_UPLOAD_ORDER.md
+docs/research/mcp-customization/data/dopemux-authority-map.json
+docs/research/mcp-customization/data/evidence-ledger.md
+docs/research/mcp-customization/data/responsibility-collision-matrix.md
+docs/research/mcp-customization/data/upstream-source-manifest.json
+docs/research/mcp-customization/data/upstream-surface-inventory.json
+docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md
+docs/research/mcp-customization/dr-upload/01-conport.md
+docs/research/mcp-customization/dr-upload/02-task-orchestrator.md
+docs/research/mcp-customization/dr-upload/03-serena.md
+docs/research/mcp-customization/dr-upload/04-claude-context.md
+docs/research/mcp-customization/dr-upload/05-claude-mem.md
+docs/research/mcp-customization/dr-upload/06-mem0.md
+docs/research/mcp-customization/dr-upload/07-cross-system-synthesis.md
+task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json
+ui-dashboard/src/App.tsx
+ui-dashboard/src/components/TaskSequencer.tsx
+ui-dashboard/src/components/__tests__/Accessibility.test.ts
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .Jules/palette.md .github/agents/dopemux-implementer.agent.md .github/agents/dopemux-planner.agent.md .github/agents/dopemux-reviewer.agent.md .github/agents/dopemux-testgen.agent.md docs/03-reference/governance/agent-workflow.md docs/research/mcp-customization/MANIFEST.sha256 docs/research/mcp-customization/README_UPLOAD_ORDER.md docs/research/mcp-customization/data/dopemux-authority-map.json docs/research/mcp-customization/data/evidence-ledger.md docs/research/mcp-customization/data/responsibility-collision-matrix.md docs/research/mcp-customization/data/upstream-source-manifest.json docs/research/mcp-customization/data/upstream-surface-inventory.json docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md docs/research/mcp-customization/dr-upload/01-conport.md docs/research/mcp-customization/dr-upload/02-task-orchestrator.md docs/research/mcp-customization/dr-upload/03-serena.md docs/research/mcp-customization/dr-upload/04-claude-context.md docs/research/mcp-customization/dr-upload/05-claude-mem.md docs/research/mcp-customization/dr-upload/06-mem0.md docs/research/mcp-customization/dr-upload/07-cross-system-synthesis.md task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json ui-dashboard/src/App.tsx ui-dashboard/src/components/TaskSequencer.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts
+exit=1
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Failed
+- hook id: docs-frontmatter-guard
+- exit code: 1
+- files were modified by this hook
+
+Updated 3 file(s):
+ - docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md
+ - docs/research/mcp-customization/dr-upload/02-task-orchestrator.md
+ - docs/research/mcp-customization/README_UPLOAD_ORDER.md
+Updated 4 file(s):
+ - docs/research/mcp-customization/dr-upload/04-claude-context.md
+ - docs/research/mcp-customization/dr-upload/06-mem0.md
+ - docs/research/mcp-customization/data/evidence-ledger.md
+ - docs/research/mcp-customization/dr-upload/01-conport.md
+Updated 4 file(s):
+ - docs/research/mcp-customization/data/responsibility-collision-matrix.md
+ - docs/research/mcp-customization/dr-upload/07-cross-system-synthesis.md
+ - docs/research/mcp-customization/dr-upload/03-serena.md
+ - docs/research/mcp-customization/dr-upload/05-claude-mem.md
+
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Failed
+- hook id: docs-placement-hygiene
+- exit code: 1
+
+docs-hygiene: total=4 active=4 quarantine=0 violations=3
+docs-hygiene: FAILED
+1. docs/research/mcp-customization/README_UPLOAD_ORDER.md
+   rule: unknown-top-level-fallback
+   target: docs/archive/unclassified-top-level/research/mcp-customization/README_UPLOAD_ORDER.md
+2. docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md
+   rule: unknown-top-level-fallback
+   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md
+3. docs/research/mcp-customization/dr-upload/02-task-orchestrator.md
+   rule: unknown-top-level-fallback
+   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/02-task-orchestrator.md
+docs-hygiene: total=4 active=4 quarantine=0 violations=4
+docs-hygiene: FAILED
+1. docs/research/mcp-customization/data/evidence-ledger.md
+   rule: unknown-top-level-fallback
+   target: docs/archive/unclassified-top-level/research/mcp-customization/data/evidence-ledger.md
+2. docs/research/mcp-customization/dr-upload/01-conport.md
+   rule: unknown-top-level-fallback
+   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/01-conport.md
+3. docs/research/mcp-customization/dr-upload/04-claude-context.md
+   rule: unknown-top-level-fallback
+   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/04-claude-context.md
+4. docs/research/mcp-customization/dr-upload/06-mem0.md
+   rule: unknown-top-level-fallback
+   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/06-mem0.md
+docs-hygiene: total=4 active=4 quarantine=0 violations=4
+docs-hygiene: FAILED
+1. docs/research/mcp-customization/data/responsibility-collision-matrix.md
+   rule: unknown-top-level-fallback
+   target: docs/archive/unclassified-top-level/research/mcp-customization/data/responsibility-collision-matrix.md
+2. docs/research/mcp-customization/dr-upload/03-serena.md
+   rule: unknown-top-level-fallback
+   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/03-serena.md
+3. docs/research/mcp-customization/dr-upload/05-claude-mem.md
+   rule: unknown-top-level-fallback
+   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/05-claude-mem.md
+4. docs/research/mcp-customization/dr-upload/07-cross-system-synthesis.md
+   rule: unknown-top-level-fallback
+   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/07-cross-system-synthesis.md
+
+Enforce docs filename hygiene (kebab-case).................................................Failed
+- hook id: docs-filename-hygiene
+- exit code: 1
+
+docs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=1
+docs-filename-hygiene: FAILED
+1. docs/research/mcp-customization/README_UPLOAD_ORDER.md
+   target: docs/research/mcp-customization/readme-upload-order.md
+docs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 4 files, OK
+docs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 4 files, OK
+
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-537-20260430_230955
+exit=0
+

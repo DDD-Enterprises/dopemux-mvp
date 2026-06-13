@@ -1,0 +1,23 @@
+{
+  "allowed": true,
+  "reason_code": "ALLOW_FINALIZATION",
+  "required_class": "FINALIZATION",
+  "evidence": {
+    "merge_readiness": "READY",
+    "merge_generated_at": "2026-06-04T22:46:00Z",
+    "proof_generated_at": "2026-06-04T22:46:00Z",
+    "merge_pr_head_sha": "adf97ad33b31a0018bba5a6e9b523b92fa70eea4",
+    "merge_proof_head_sha": "adf97ad33b31a0018bba5a6e9b523b92fa70eea4",
+    "merge_proof_freshness": {
+      "matches_pr_head": true,
+      "pr_head_sha": "adf97ad33b31a0018bba5a6e9b523b92fa70eea4",
+      "proof_recorded_sha": "adf97ad33b31a0018bba5a6e9b523b92fa70eea4",
+      "reason": "Human integrator verified.",
+      "self_reference_exception": null,
+      "status": "CURRENT"
+    },
+    "audit_proof_head_sha": "adf97ad33b31a0018bba5a6e9b523b92fa70eea4",
+    "merge_embedded_audit_status": "PASS",
+    "proof_embedded_audit_status": "PASS"
+  }
+}

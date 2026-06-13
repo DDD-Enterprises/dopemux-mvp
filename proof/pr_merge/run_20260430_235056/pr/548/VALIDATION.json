@@ -1,0 +1,33 @@
+{
+  "status": "failed",
+  "required_for_merge_ready": true,
+  "passed": false,
+  "attempts": 1,
+  "remediation_applied": false,
+  "steps": [
+    {
+      "name": "pre-commit",
+      "command": "pre-commit run",
+      "status": "failed",
+      "returncode": 1,
+      "stdout": "[ERROR] Unmerged files.  Resolve before committing.\n",
+      "stderr": ""
+    }
+  ],
+  "input_fingerprint": {
+    "input_fingerprint": "c3e653bf70d2e9bd1b9bc39c05d9b046091b35af1670c69dd13b4fc8b7b992bb",
+    "valid_for_sha": "14b60d2dba482ba2404467f4ba577cfffb388882",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes",
+      "effective policy fingerprint changes",
+      "applied tree contents change"
+    ],
+    "created_from_state": "applied",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  }
+}

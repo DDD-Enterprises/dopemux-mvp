@@ -1,0 +1,478 @@
+{
+  "run_id": "20260423_024348",
+  "pr_state": {
+    "pr_id": 506,
+    "title": "feat(rte): enforce multi-provider structured outputs",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "feat/rte-structured-outputs-enforcement-v2",
+    "ci_status": "PENDING",
+    "mergeable": "UNKNOWN",
+    "merge_state_status": "UNKNOWN",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-04-23T10:01:27Z",
+    "is_draft": false,
+    "auto_merge_enabled": false,
+    "additions": 572,
+    "deletions": 40,
+    "changed_files": 5,
+    "unresolved_threads": 6,
+    "active_unresolved_threads": 2,
+    "outdated_unresolved_threads": 4,
+    "pr_class": "COMMENTS_ONLY",
+    "risk_score": 992.0,
+    "check_summary": {
+      "total": 1,
+      "success": 0,
+      "failure": 0,
+      "pending": 1,
+      "required_pending": 1,
+      "required_failure": 0,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "merge_ready",
+    "head_sha": "58857b278b542c37f1544b1b04989b48c610f19a",
+    "base_sha": "2004d99ff8f829f844aab2213dd78558912e2ac7"
+  },
+  "lifecycle_state": "merge_ready",
+  "apply_actions": [
+    "rebase feat/rte-structured-outputs-enforcement-v2 onto main",
+    "resolve review threads",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "auto_merge_fallback",
+    "command": [
+      "gh",
+      "pr",
+      "merge",
+      "506",
+      "--auto",
+      "--rebase",
+      "--delete-branch"
+    ],
+    "reason": "Required or optional checks are pending; enabling auto-merge.",
+    "reason_code": "auto_merge_active_checks"
+  },
+  "blockers": [],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "threads_resolved_locally",
+      "message": "GitHub shows 2 active threads, but they were resolved locally and validation passed.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "active_threads": 2
+      },
+      "source": "local_validation",
+      "override": null
+    },
+    {
+      "kind": "warning",
+      "finding_type": "ci_pending_but_local_passed",
+      "message": "GitHub CI is pending, but local validation passed.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "checks_total": 1,
+        "checks_success": 0,
+        "checks_failure": 0,
+        "checks_pending": 1,
+        "required_checks_pending": 1,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "UNKNOWN",
+        "merge_state_status": "UNKNOWN",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [
+          "identity-check"
+        ],
+        "blocker_types": [
+          "required_check_pending"
+        ],
+        "warning_types": []
+      },
+      "source": "local_validation",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 992.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 1,
+        "checks_success": 0,
+        "checks_failure": 0,
+        "checks_pending": 1,
+        "required_checks_pending": 1,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "UNKNOWN",
+        "merge_state_status": "UNKNOWN",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [
+          "identity-check"
+        ],
+        "blocker_types": [
+          "required_check_pending"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "passed",
+      "details": {
+        "status": "passed",
+        "required_for_merge_ready": true,
+        "passed": true,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run --files services/repo-truth-extractor/lib/prescan/provider_catalog.py services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_structured_output_provider_modes.py",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "Validate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files......................(no files to check)Skipped\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-frontmatter-fix",
+            "command": "python scripts/docs_frontmatter_guard.py --fix",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-validator",
+            "command": "python scripts/docs_validator.py",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-hygiene",
+            "command": "python scripts/check_docs_hygiene.py --check",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-filename-hygiene",
+            "command": "python scripts/check_docs_filename_hygiene.py --check",
+            "status": "skipped",
+            "returncode": null,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "root-hygiene",
+            "command": "python scripts/check_root_hygiene.py",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "root-hygiene: no candidate files to check\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "b437c9a03a470a25455a0068df15d205b215b62759744c5147ed4570d60dc50c",
+          "valid_for_sha": "84a3d66a6f5c98d96b973a2a523944a4c336cbdd",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "discovered",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        },
+        "failure_fingerprint": null
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "merge_readiness",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "passed",
+    "required_for_merge_ready": true,
+    "passed": true,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run --files services/repo-truth-extractor/lib/prescan/provider_catalog.py services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_structured_output_provider_modes.py",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "Validate YAML frontmatter in docs......................................(no files to check)Skipped\nValidate documentation against knowledge graph schema..................(no files to check)Skipped\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped\nValidate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped\nEnforce markdown file locations for changed files......................(no files to check)Skipped\nEnforce docs placement hygiene (changed files).........................(no files to check)Skipped\nEnforce docs filename hygiene (kebab-case).............................(no files to check)Skipped\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...........................................................(no files to check)Skipped\ntrim trailing whitespace...............................................(no files to check)Skipped\nfix end of files.......................................................(no files to check)Skipped\ncheck yaml.............................................................(no files to check)Skipped\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-frontmatter-fix",
+        "command": "python scripts/docs_frontmatter_guard.py --fix",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-validator",
+        "command": "python scripts/docs_validator.py",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-hygiene",
+        "command": "python scripts/check_docs_hygiene.py --check",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-filename-hygiene",
+        "command": "python scripts/check_docs_filename_hygiene.py --check",
+        "status": "skipped",
+        "returncode": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "root-hygiene",
+        "command": "python scripts/check_root_hygiene.py",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "root-hygiene: no candidate files to check\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "b437c9a03a470a25455a0068df15d205b215b62759744c5147ed4570d60dc50c",
+      "valid_for_sha": "84a3d66a6f5c98d96b973a2a523944a4c336cbdd",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "failure_fingerprint": null
+  },
+  "thread_dispositions": [
+    {
+      "thread_id": "PRRT_kwDOPyIw9859CkxT",
+      "disposition": "auto_resolve_outdated",
+      "reason": "Thread is safe to resolve after green verification and no newer objection.",
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859Ckx7",
+      "disposition": "auto_resolve_outdated",
+      "reason": "Thread is safe to resolve after green verification and no newer objection.",
+      "path": "services/repo-truth-extractor/run_extraction_v5.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859CkyT",
+      "disposition": "auto_resolve_outdated",
+      "reason": "Thread is safe to resolve after green verification and no newer objection.",
+      "path": "services/repo-truth-extractor/tests/test_structured_output_provider_modes.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859Ckyu",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/tests/test_structured_output_provider_modes.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859CkzN",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/repo-truth-extractor/llm_runtime.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw9859Ckzl",
+      "disposition": "auto_resolve_outdated",
+      "reason": "Thread is safe to resolve after green verification and no newer objection.",
+      "path": "services/repo-truth-extractor/lib/structured_output_contracts.py",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ],
+  "fingerprint": {
+    "input_fingerprint": "9006fc287eac7657270b70f440ad00bf88624ec6dac87249cc6d77b9a92e33b9",
+    "valid_for_sha": "58857b278b542c37f1544b1b04989b48c610f19a",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "explain": "{\"why_blocked\": [], \"evidence\": [{\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 2 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 2}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"ci_pending_but_local_passed\", \"message\": \"GitHub CI is pending, but local validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 1, \"checks_success\": 0, \"checks_failure\": 0, \"checks_pending\": 1, \"required_checks_pending\": 1, \"required_checks_failed\": 0, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"UNKNOWN\", \"merge_state_status\": \"UNKNOWN\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [\"identity-check\"], \"blocker_types\": [\"required_check_pending\"], \"warning_types\": []}, \"source\": \"local_validation\", \"override\": null}], \"next_action\": \"merge\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 2 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 2}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"ci_pending_but_local_passed\", \"message\": \"GitHub CI is pending, but local validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 1, \"checks_success\": 0, \"checks_failure\": 0, \"checks_pending\": 1, \"required_checks_pending\": 1, \"required_checks_failed\": 0, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"UNKNOWN\", \"merge_state_status\": \"UNKNOWN\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [\"identity-check\"], \"blocker_types\": [\"required_check_pending\"], \"warning_types\": []}, \"source\": \"local_validation\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 992.0}, \"source\": \"heuristics\", \"override\": null}]}",
+    "operator_state": ""
+  },
+  "blocked_by_global_fix_pr": null
+}

@@ -1,0 +1,124 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw986FXTk_",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "src/dopemux/claude/native_hooks.py",
+      "line": 311,
+      "original_line": 309,
+      "original_start_line": 307,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FteAS",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Include the hook event name with the nudge context**\n\nWhen the edit nudge fires after the fifth `Edit`/`Write`, this path returns `additionalContext` via `_allow`, but `_allow` emits only `hookSpecificOutput.additionalContext` and never includes `hookSpecificOutput.hookEventName`. Claude Code's hook JSON schema requires `hookSpecificOutput` to carry the event name, so the new PostToolUse nudge context is not processed as event-specific context and the feature silently fails in the scenario it was added for.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-28T10:14:46Z",
+          "path": "src/dopemux/claude/native_hooks.py",
+          "line": 311,
+          "original_line": 309
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3WnP",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:34:44Z",
+          "path": "src/dopemux/claude/native_hooks.py",
+          "line": 311,
+          "original_line": 309
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FXWKQ",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": ".claude/hooks/orchestrator_post_edit_nudge.py",
+      "line": null,
+      "original_line": 43,
+      "original_start_line": 35,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987Fthkg",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The nudge state file is keyed only by project root, so two Claude sessions in the same checkout share one edit counter and `reset_edit_counter()` from a new SessionStart will clear another active session's progress. This makes the documented per-session threshold/cooldown unreliable; include the hook `session_id` (or another session-scoped key) in the state filename or stored state and pass it from `native_hooks.py`.",
+          "created_at": "2026-05-28T10:17:35Z",
+          "path": ".claude/hooks/orchestrator_post_edit_nudge.py",
+          "line": null,
+          "original_line": 43
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3WpM",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:34:45Z",
+          "path": ".claude/hooks/orchestrator_post_edit_nudge.py",
+          "line": null,
+          "original_line": 43
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FXWK_",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": ".claude/hooks/orchestrator_post_edit_nudge.py",
+      "line": null,
+      "original_line": 88,
+      "original_start_line": 76,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987Fthlh",
+          "author": "copilot-pull-request-reviewer",
+          "body": "These new hook modules add cache TTL/parsing and edit-threshold behavior, but there are no unit tests covering the cache reader/writer, stale or malformed cache handling, work-item gating, or threshold/cooldown transitions. This repository has pytest coverage for native hooks and the project guidance requires tests for new Python modules, so add targeted tests for these public hook functions before relying on them in SessionStart/PostToolUse.",
+          "created_at": "2026-05-28T10:17:36Z",
+          "path": ".claude/hooks/orchestrator_post_edit_nudge.py",
+          "line": null,
+          "original_line": 88
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3WrQ",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:34:47Z",
+          "path": ".claude/hooks/orchestrator_post_edit_nudge.py",
+          "line": null,
+          "original_line": 88
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FXWLk",
+      "is_resolved": false,
+      "is_outdated": true,
+      "viewer_can_resolve": true,
+      "path": ".claude/output-styles/orchestrator.md",
+      "line": null,
+      "original_line": 50,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FthmM",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The ordering rule contradicts the example above it: the example renders `root › parent › item`, while this bullet says the deepest item is shown first and the root is last. Pick one ordering so implementers following this behavior spec do not produce incompatible breadcrumb headers.\n",
+          "created_at": "2026-05-28T10:17:36Z",
+          "path": ".claude/output-styles/orchestrator.md",
+          "line": null,
+          "original_line": 50
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3Ws9",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:34:48Z",
+          "path": ".claude/output-styles/orchestrator.md",
+          "line": null,
+          "original_line": 50
+        }
+      ]
+    }
+  ]
+}

@@ -363,7 +363,7 @@
         },
         {
           "forbidden_domain": "chronicle_runtime",
-          "path": "services/working-memory-assistant/mcp/server.py",
+          "path": "services/working-memory-assistant/wma_mcp/server.py",
           "reason": "This co-located MCP logic is not proven as the active dope-memory runtime."
         },
         {
@@ -419,7 +419,7 @@
           "role": "support_runtime"
         },
         {
-          "path": "services/working-memory-assistant/mcp/server.py",
+          "path": "services/working-memory-assistant/wma_mcp/server.py",
           "required": true,
           "role": "unconfirmed_mcp_logic"
         }

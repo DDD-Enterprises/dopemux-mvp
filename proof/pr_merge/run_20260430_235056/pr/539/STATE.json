@@ -1,0 +1,257 @@
+{
+  "run_id": "20260430_235056",
+  "pr_state": {
+    "pr_id": 539,
+    "title": "🎨 Palette: Temporal grounding and interactivity in Task Sequencer",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "palette/temporal-grounding-5138664270733569142",
+    "ci_status": "SUCCESS",
+    "mergeable": "CONFLICTING",
+    "merge_state_status": "DIRTY",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-01T06:05:15Z",
+    "is_draft": false,
+    "additions": 45,
+    "deletions": 1618,
+    "changed_files": 8,
+    "unresolved_threads": 1,
+    "active_unresolved_threads": 0,
+    "outdated_unresolved_threads": 1,
+    "pr_class": "CONFLICTS_ONLY",
+    "risk_score": 2063.0,
+    "check_summary": {
+      "total": 19,
+      "success": 19,
+      "failure": 0,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 0,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "merge_blocked",
+    "head_sha": "eeafc5ad89b40ba0d8ee28125d3192ded6406297",
+    "base_sha": "3a19442eac0f63cc4f3e239bbf26583415318c78"
+  },
+  "lifecycle_state": "merge_blocked",
+  "apply_actions": [],
+  "merge_decision": {
+    "action": "blocked",
+    "command": [],
+    "reason": "Required approval is missing.; Local validation is required before merge readiness can be declared.",
+    "reason_code": "approval_missing"
+  },
+  "blockers": [
+    {
+      "type": "approval_missing",
+      "source": "github_protection_review",
+      "name": "Required approval is missing.",
+      "details": null,
+      "metadata": {}
+    },
+    {
+      "type": "validation_failed",
+      "source": "local_validation",
+      "name": "Local validation is required before merge readiness can be declared.",
+      "details": null,
+      "metadata": {
+        "validation_status": "failed"
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "details": {
+        "diff_size": 1663
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "details": {
+        "risk_score": 2063.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "3d8667480a0c19acffff4b3ba69045245feb66e2f297a4bf037b80743348aacc"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 19,
+        "checks_success": 19,
+        "checks_failure": 0,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "CONFLICTING",
+        "merge_state_status": "DIRTY",
+        "blocker_types": [
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "failed",
+      "details": {
+        "status": "failed",
+        "required_for_merge_ready": true,
+        "passed": false,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run",
+            "status": "failed",
+            "returncode": 1,
+            "stdout": "[ERROR] Unmerged files.  Resolve before committing.\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "44770af9a4556124c1d7101e13f808e98d5d420af4f98c1390d83e44fcc40a56",
+          "valid_for_sha": "eeafc5ad89b40ba0d8ee28125d3192ded6406297",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "applied",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        }
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "remote_merge_gate",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "failed",
+    "required_for_merge_ready": true,
+    "passed": false,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run",
+        "status": "failed",
+        "returncode": 1,
+        "stdout": "[ERROR] Unmerged files.  Resolve before committing.\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "44770af9a4556124c1d7101e13f808e98d5d420af4f98c1390d83e44fcc40a56",
+      "valid_for_sha": "eeafc5ad89b40ba0d8ee28125d3192ded6406297",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "applied",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    }
+  },
+  "thread_dispositions": [],
+  "fingerprint": {
+    "input_fingerprint": "ba82d42478dd577986864ff53aefefe5de035bc04c42a842af378dac15b644cf",
+    "valid_for_sha": "eeafc5ad89b40ba0d8ee28125d3192ded6406297",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "commands": "proof/pr_merge/run_20260430_235056/pr/539/COMMANDS_RUN.txt"
+  }
+}

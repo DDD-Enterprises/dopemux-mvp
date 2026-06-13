@@ -1,0 +1,409 @@
+{
+  "run_id": "20260527_055709",
+  "pr_state": {
+    "pr_id": 713,
+    "title": "feat(governance): bootstrap auditor router pal clink classification",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "codex/tp-dmx-auditor-router-pal-clink-002",
+    "ci_status": "FAILURE",
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "BLOCKED",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-27T12:59:36Z",
+    "is_draft": false,
+    "auto_merge_enabled": false,
+    "additions": 5581,
+    "deletions": 1,
+    "changed_files": 76,
+    "unresolved_threads": 6,
+    "active_unresolved_threads": 2,
+    "outdated_unresolved_threads": 4,
+    "pr_class": "MIXED",
+    "risk_score": 7032.0,
+    "check_summary": {
+      "total": 21,
+      "success": 19,
+      "failure": 2,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 2,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "apply_blocked",
+    "head_sha": "67fb23963647c629141a01ddafc71d21773e807d",
+    "base_sha": "898310bd01cf48b2703a166b429d4b330ec9f84e"
+  },
+  "lifecycle_state": "apply_blocked",
+  "apply_actions": [
+    "rebase codex/tp-dmx-auditor-router-pal-clink-002 onto main",
+    "resolve review threads",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "rebase_merge",
+    "command": [
+      "gh",
+      "pr",
+      "merge",
+      "713",
+      "--rebase",
+      "--delete-branch"
+    ],
+    "reason": "All gates are green; rebase merge selected by default.",
+    "reason_code": "rebase_merge_ready"
+  },
+  "blockers": [
+    {
+      "type": "active_thread",
+      "source": "github_protection_review",
+      "name": "2 active unresolved review threads remain.",
+      "details": null,
+      "metadata": {
+        "active_threads": 2
+      }
+    },
+    {
+      "type": "required_check_failed",
+      "source": "github_protection_review",
+      "name": "Required checks are failing.",
+      "details": null,
+      "metadata": {
+        "checks_total": 21,
+        "checks_success": 19,
+        "checks_failure": 2,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 2,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)",
+            "ci-summary"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [],
+        "blocker_types": [
+          "required_check_failed"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "type": "validation_failed",
+      "source": "local_validation",
+      "name": "Local validation is required before merge readiness can be declared.",
+      "details": null,
+      "metadata": {
+        "validation_status": "failed"
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "diff_size": 5582
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 7032.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 21,
+        "checks_success": 19,
+        "checks_failure": 2,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 2,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)",
+            "ci-summary"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [],
+        "blocker_types": [
+          "required_check_failed"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "failed",
+      "details": {
+        "status": "failed",
+        "required_for_merge_ready": true,
+        "passed": false,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run --files .antigravitycli/8045acdf-ddc1-4770-9e5f-66a542feed87.json .antigravitycli/c1be0ae4-af24-4184-9a66-bb7ce6372872.json claudedocs/CROSS_REPO_INVENTORY.md claudedocs/pr-718-remediation-plan-for-agy.md claudedocs/pr-reviews/2026-05-27-pr700-plus-remediation-plan.md docs/ops/embedded-audit.md docs/ops/health-check-matrix.md docs/ops/pr-acceptance.md docs/ops/tool-routing-matrix.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PAL_CLINK_AUDIT_INPUT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PAL_CLINK_AUDIT_OUTPUT.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/ARTIFACT_INDEX.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/AUDITOR_REPORT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/MANIFEST.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/SUMMARY.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/AUDITOR_ROUTE.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/PAL_CLINK_AUDIT_OUTPUT.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/ROUTE_PROBE_OUTPUTS.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/ARTIFACT_INDEX.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/MANIFEST.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/SUMMARY.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/AUDITOR_ROUTE_WRAPPER_DIRECT.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/AUDITOR_ROUTE_WRAPPER_PAL.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/ROUTE_PROBE_OUTPUTS_WRAPPER_PAL.json schemas/proof/auditor_route.schema.json schemas/proof/embedded_audit.schema.json scripts/auditor-preflight task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json task-packets/generated/TP-DMX-AUDITOR-ROUTER-WRAPPER-003.json tests/auditor_router/test_pal_clink.py tests/auditor_router/test_preflight.py tests/fixtures/auditor_router/pal_clink_audit_safe_claude_available/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_audit_safe_claude_available/probes.json tests/fixtures/auditor_router/pal_clink_audit_safe_gemini_available/clink_configs/gemini-audit.json tests/fixtures/auditor_router/pal_clink_audit_safe_gemini_available/probes.json tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required/probes.json tests/fixtures/auditor_router/pal_clink_mutation_flag_in_role_args/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_mutation_flag_in_role_args/probes.json tests/fixtures/auditor_router/pal_clink_no_configs_found/clink_configs/.gitkeep tests/fixtures/auditor_router/pal_clink_no_configs_found/probes.json tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/PAL_CLINK_AUDIT_OUTPUT.json tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/probes.json tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available/probes.json tests/fixtures/auditor_router/pal_clink_only_mutating_configs/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_only_mutating_configs/probes.json tests/fixtures/auditor_router/pal_clink_selected_when_all_tier1_not_installed/clink_configs/gemini-audit.json tests/fixtures/auditor_router/pal_clink_selected_when_all_tier1_not_installed/probes.json tools/auditor_router/fixtures.py tools/auditor_router/models.py tools/auditor_router/pal_clink.py tools/auditor_router/policy.py tools/auditor_router/preflight.py",
+            "status": "failed",
+            "returncode": 1,
+            "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Failed\n- hook id: markdown-location-guard\n- exit code: 1\n\n✅ All markdown files in approved locations\n❌ claudedocs/CROSS_REPO_INVENTORY.md\n\nMove misplaced .md files to docs/ or see plan.md for cleanup strategy\n❌ claudedocs/pr-718-remediation-plan-for-agy.md\n\nMove misplaced .md files to docs/ or see plan.md for cleanup strategy\n❌ claudedocs/pr-reviews/2026-05-27-pr700-plus-remediation-plan.md\n\nMove misplaced .md files to docs/ or see plan.md for cleanup strategy\n✅ All markdown files in approved locations\n✅ All markdown files in approved locations\n\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "9096e59e59fdba6b1fbca59f3e6975f04e341f950ed744f1bd886e1dd1f61e19",
+          "valid_for_sha": "67fb23963647c629141a01ddafc71d21773e807d",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "discovered",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        },
+        "failure_fingerprint": "398a65bce49a9a8870dd178a0c243d24098a9e84d3a6d1610d8e7be4978f5f29"
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "merge_readiness",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "failed",
+    "required_for_merge_ready": true,
+    "passed": false,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run --files .antigravitycli/8045acdf-ddc1-4770-9e5f-66a542feed87.json .antigravitycli/c1be0ae4-af24-4184-9a66-bb7ce6372872.json claudedocs/CROSS_REPO_INVENTORY.md claudedocs/pr-718-remediation-plan-for-agy.md claudedocs/pr-reviews/2026-05-27-pr700-plus-remediation-plan.md docs/ops/embedded-audit.md docs/ops/health-check-matrix.md docs/ops/pr-acceptance.md docs/ops/tool-routing-matrix.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PAL_CLINK_AUDIT_INPUT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PAL_CLINK_AUDIT_OUTPUT.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/ARTIFACT_INDEX.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/AUDITOR_REPORT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/MANIFEST.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/SUMMARY.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/AUDITOR_ROUTE.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/PAL_CLINK_AUDIT_OUTPUT.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/artifacts/ROUTE_PROBE_OUTPUTS.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/ARTIFACT_INDEX.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/CHANGED_FILES.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/DIFF_STAT.txt proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/GIT_STATE.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/MANIFEST.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/SUMMARY.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/VALIDATION_OUTPUT.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/AUDITOR_ROUTE_WRAPPER_DIRECT.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/AUDITOR_ROUTE_WRAPPER_PAL.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/artifacts/ROUTE_PROBE_OUTPUTS_WRAPPER_PAL.json schemas/proof/auditor_route.schema.json schemas/proof/embedded_audit.schema.json scripts/auditor-preflight task-packets/generated/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002.json task-packets/generated/TP-DMX-AUDITOR-ROUTER-WRAPPER-003.json tests/auditor_router/test_pal_clink.py tests/auditor_router/test_preflight.py tests/fixtures/auditor_router/pal_clink_audit_safe_claude_available/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_audit_safe_claude_available/probes.json tests/fixtures/auditor_router/pal_clink_audit_safe_gemini_available/clink_configs/gemini-audit.json tests/fixtures/auditor_router/pal_clink_audit_safe_gemini_available/probes.json tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_chosen_when_direct_auth_required/probes.json tests/fixtures/auditor_router/pal_clink_mutation_flag_in_role_args/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_mutation_flag_in_role_args/probes.json tests/fixtures/auditor_router/pal_clink_no_configs_found/clink_configs/.gitkeep tests/fixtures/auditor_router/pal_clink_no_configs_found/probes.json tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/PAL_CLINK_AUDIT_OUTPUT.json tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_no_verdict_needs_supervisor/probes.json tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_not_chosen_when_direct_available/probes.json tests/fixtures/auditor_router/pal_clink_only_mutating_configs/clink_configs/claude-audit.json tests/fixtures/auditor_router/pal_clink_only_mutating_configs/probes.json tests/fixtures/auditor_router/pal_clink_selected_when_all_tier1_not_installed/clink_configs/gemini-audit.json tests/fixtures/auditor_router/pal_clink_selected_when_all_tier1_not_installed/probes.json tools/auditor_router/fixtures.py tools/auditor_router/models.py tools/auditor_router/pal_clink.py tools/auditor_router/policy.py tools/auditor_router/preflight.py",
+        "status": "failed",
+        "returncode": 1,
+        "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Failed\n- hook id: markdown-location-guard\n- exit code: 1\n\n✅ All markdown files in approved locations\n❌ claudedocs/CROSS_REPO_INVENTORY.md\n\nMove misplaced .md files to docs/ or see plan.md for cleanup strategy\n❌ claudedocs/pr-718-remediation-plan-for-agy.md\n\nMove misplaced .md files to docs/ or see plan.md for cleanup strategy\n❌ claudedocs/pr-reviews/2026-05-27-pr700-plus-remediation-plan.md\n\nMove misplaced .md files to docs/ or see plan.md for cleanup strategy\n✅ All markdown files in approved locations\n✅ All markdown files in approved locations\n\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "9096e59e59fdba6b1fbca59f3e6975f04e341f950ed744f1bd886e1dd1f61e19",
+      "valid_for_sha": "67fb23963647c629141a01ddafc71d21773e807d",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "failure_fingerprint": "398a65bce49a9a8870dd178a0c243d24098a9e84d3a6d1610d8e7be4978f5f29"
+  },
+  "thread_dispositions": [
+    {
+      "thread_id": "PRRT_kwDOPyIw986E8Z_D",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "tools/auditor_router/pal_clink.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986E8Z_H",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "tools/auditor_router/pal_clink.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986E8ol-",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "tools/auditor_router/pal_clink.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986E8ol_",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "tools/auditor_router/pal_clink.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986E87X_",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "tools/auditor_router/pal_clink.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986FGbBm",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "tools/auditor_router/pal_clink.py",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ],
+  "fingerprint": {
+    "input_fingerprint": "b3dc38fdcdba41c9edb297c62cecfdb0c1c722345f7c643b7c744e2b3c8bca67",
+    "valid_for_sha": "67fb23963647c629141a01ddafc71d21773e807d",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "explain": "{\"why_blocked\": [\"2 active unresolved review threads remain.\", \"Required checks are failing.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"2 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 2}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"required_check_failed\", \"message\": \"Required checks are failing.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 21, \"checks_success\": 19, \"checks_failure\": 2, \"checks_pending\": 0, \"required_checks_pending\": 0, \"required_checks_failed\": 2, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\", \"ci-summary\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [], \"blocker_types\": [\"required_check_failed\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_failed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"failed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 5582}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 5582}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 7032.0}, \"source\": \"heuristics\", \"override\": null}]}",
+    "operator_state": ""
+  },
+  "blocked_by_global_fix_pr": null
+}

@@ -1,0 +1,224 @@
+$ git fetch origin pull/688/head:prmerge/20260524_063230-688
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/688/head -> prmerge/20260524_063230-688
+
+$ git worktree add /tmp/dopemux-pr-merge-688-20260524_063230 prmerge/20260524_063230-688
+exit=0
+--- stdout ---
+HEAD is now at db8ae61fe proof(rte): record E8 PR URL
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260524_063230-688')
+Updating files:  16% (2109/12817)
+Updating files:  17% (2179/12817)
+Updating files:  18% (2308/12817)
+Updating files:  19% (2436/12817)
+Updating files:  20% (2564/12817)
+Updating files:  21% (2692/12817)
+Updating files:  22% (2820/12817)
+Updating files:  23% (2948/12817)
+Updating files:  24% (3077/12817)
+Updating files:  25% (3205/12817)
+Updating files:  26% (3333/12817)
+Updating files:  27% (3461/12817)
+Updating files:  28% (3589/12817)
+Updating files:  29% (3717/12817)
+Updating files:  30% (3846/12817)
+Updating files:  31% (3974/12817)
+Updating files:  32% (4102/12817)
+Updating files:  33% (4230/12817)
+Updating files:  34% (4358/12817)
+Updating files:  35% (4486/12817)
+Updating files:  36% (4615/12817)
+Updating files:  37% (4743/12817)
+Updating files:  38% (4871/12817)
+Updating files:  39% (4999/12817)
+Updating files:  40% (5127/12817)
+Updating files:  41% (5255/12817)
+Updating files:  42% (5384/12817)
+Updating files:  43% (5512/12817)
+Updating files:  44% (5640/12817)
+Updating files:  45% (5768/12817)
+Updating files:  46% (5896/12817)
+Updating files:  47% (6024/12817)
+Updating files:  48% (6153/12817)
+Updating files:  49% (6281/12817)
+Updating files:  50% (6409/12817)
+Updating files:  50% (6489/12817)
+Updating files:  51% (6537/12817)
+Updating files:  52% (6665/12817)
+Updating files:  53% (6794/12817)
+Updating files:  54% (6922/12817)
+Updating files:  55% (7050/12817)
+Updating files:  56% (7178/12817)
+Updating files:  57% (7306/12817)
+Updating files:  58% (7434/12817)
+Updating files:  59% (7563/12817)
+Updating files:  60% (7691/12817)
+Updating files:  61% (7819/12817)
+Updating files:  62% (7947/12817)
+Updating files:  63% (8075/12817)
+Updating files:  64% (8203/12817)
+Updating files:  65% (8332/12817)
+Updating files:  66% (8460/12817)
+Updating files:  67% (8588/12817)
+Updating files:  68% (8716/12817)
+Updating files:  69% (8844/12817)
+Updating files:  70% (8972/12817)
+Updating files:  71% (9101/12817)
+Updating files:  72% (9229/12817)
+Updating files:  73% (9357/12817)
+Updating files:  74% (9485/12817)
+Updating files:  75% (9613/12817)
+Updating files:  76% (9741/12817)
+Updating files:  77% (9870/12817)
+Updating files:  78% (9998/12817)
+Updating files:  79% (10126/12817)
+Updating files:  80% (10254/12817)
+Updating files:  81% (10382/12817)
+Updating files:  81% (10405/12817)
+Updating files:  82% (10510/12817)
+Updating files:  83% (10639/12817)
+Updating files:  84% (10767/12817)
+Updating files:  85% (10895/12817)
+Updating files:  86% (11023/12817)
+Updating files:  87% (11151/12817)
+Updating files:  88% (11279/12817)
+Updating files:  89% (11408/12817)
+Updating files:  90% (11536/12817)
+Updating files:  91% (11664/12817)
+Updating files:  92% (11792/12817)
+Updating files:  93% (11920/12817)
+Updating files:  94% (12048/12817)
+Updating files:  95% (12177/12817)
+Updating files:  96% (12305/12817)
+Updating files:  97% (12433/12817)
+Updating files:  98% (12561/12817)
+Updating files:  99% (12689/12817)
+Updating files: 100% (12817/12817)
+Updating files: 100% (12817/12817), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+db8ae61fe73f234d30e994c1fa0de9010704f7a8
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986EWvON", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYYjQ"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986EWvY2", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYYk7"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986EXHJA", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987EYYmc"}}}}
+
+$ gh pr update-branch 688 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/rte-costprofile-e4-finish-001
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/rte-costprofile-e4-finish-001 -> FETCH_HEAD
+   b65d3da98..db8ae61fe  codex/rte-costprofile-e4-finish-001 -> origin/codex/rte-costprofile-e4-finish-001
+
+$ git reset --hard origin/codex/rte-costprofile-e4-finish-001
+exit=0
+--- stdout ---
+HEAD is now at db8ae61fe proof(rte): record E8 PR URL
+
+$ git diff --name-only --diff-filter=ACMR fbaebabe41dda37e57f462ae5193b4ac8d637f0c...HEAD
+exit=0
+--- stdout ---
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/PROOF.json
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/sha256sums.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001/PROOF.json
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001/sha256sums.txt
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/PROOF.json
+proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/sha256sums.txt
+services/repo-truth-extractor/lib/structured_output_contracts.py
+services/repo-truth-extractor/llm_runtime.py
+services/repo-truth-extractor/promptsets/v4/model_map.v2.yaml.bak
+services/repo-truth-extractor/promptsets/v4/model_map.yaml
+services/repo-truth-extractor/promptsets/v4/scripts/README.md
+services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py
+services/repo-truth-extractor/rte_promptset.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_cell_aliased_ladders.py
+services/repo-truth-extractor/tests/test_disable_provider_kill_switch.py
+services/repo-truth-extractor/tests/test_legacy_ladder_deprecation_warning.py
+services/repo-truth-extractor/tests/test_llm_runtime_cached_tokens_meta.py
+services/repo-truth-extractor/tests/test_llm_runtime_cell_alias_resolution.py
+services/repo-truth-extractor/tests/test_llm_runtime_service_tier_passthrough.py
+services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py
+services/repo-truth-extractor/tests/test_model_map_v3_impact_class_enforcement.py
+services/repo-truth-extractor/tests/test_model_map_v3_loader.py
+services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py
+services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py
+services/repo-truth-extractor/tests/test_per_request_failover.py
+services/repo-truth-extractor/tests/test_phase_d_contract_map.py
+services/repo-truth-extractor/tests/test_phase_interaction.py
+task-packets/INDEX.md
+task-packets/generated/TP-RTE-COSTPROFILE-E8-YAML-V3-001.json
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/PROOF.json proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E4-FINISH-001/sha256sums.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001/PROOF.json proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001/sha256sums.txt proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/PROOF.json proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-E8-YAML-V3-001/sha256sums.txt services/repo-truth-extractor/lib/structured_output_contracts.py services/repo-truth-extractor/llm_runtime.py services/repo-truth-extractor/promptsets/v4/model_map.v2.yaml.bak services/repo-truth-extractor/promptsets/v4/model_map.yaml services/repo-truth-extractor/promptsets/v4/scripts/README.md services/repo-truth-extractor/promptsets/v4/scripts/migrate_model_map_v2_to_v3.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_cell_aliased_ladders.py services/repo-truth-extractor/tests/test_disable_provider_kill_switch.py services/repo-truth-extractor/tests/test_legacy_ladder_deprecation_warning.py services/repo-truth-extractor/tests/test_llm_runtime_cached_tokens_meta.py services/repo-truth-extractor/tests/test_llm_runtime_cell_alias_resolution.py services/repo-truth-extractor/tests/test_llm_runtime_service_tier_passthrough.py services/repo-truth-extractor/tests/test_migrate_model_map_v2_to_v3.py services/repo-truth-extractor/tests/test_model_map_v3_impact_class_enforcement.py services/repo-truth-extractor/tests/test_model_map_v3_loader.py services/repo-truth-extractor/tests/test_model_map_v3_per_step_overrides.py services/repo-truth-extractor/tests/test_model_map_v3_tag_routing_deltas.py services/repo-truth-extractor/tests/test_per_request_failover.py services/repo-truth-extractor/tests/test_phase_d_contract_map.py services/repo-truth-extractor/tests/test_phase_interaction.py task-packets/INDEX.md task-packets/generated/TP-RTE-COSTPROFILE-E8-YAML-V3-001.json
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix task-packets/INDEX.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py task-packets/INDEX.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-hygiene: total=1 active=1 quarantine=0 violations=0
+docs-hygiene: checked 1 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check task-packets/INDEX.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=1 active=1 quarantine=0 exempt=1 violations=0
+docs-filename-hygiene: checked 1 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-688-20260524_063230
+exit=0
+
