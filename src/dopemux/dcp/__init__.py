@@ -33,6 +33,10 @@ from dopemux.dcp.routing_model import (
     TaskSource,
     TaskType,
 )
+from dopemux.dcp.routing_classifier import (
+    RoutingClassificationInput,
+    classify_route,
+)
 
 __all__ = [
     # Proof artifact readers (pre-existing)
@@ -64,4 +68,7 @@ __all__ = [
     "RuntimeImpact",
     "TaskSource",
     "TaskType",
+    # Routing classification engine (DMX-DCP-MODEL-ROUTING-MVP-0002)
+    "RoutingClassificationInput",
+    "classify_route",
 ]
