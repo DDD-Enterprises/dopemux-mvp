@@ -50,6 +50,46 @@
     ],
     "review_result": "PASS: proof, manifest, docs, and focused test are consistent with the packet allowlist and packet validation commands; no runtime-fleet behavior was exercised."
   },
+  "main_sync_refresh": {
+    "refreshed_at": "2026-06-14T10:41:20-07:00",
+    "origin_main_head": "a2396a92279d44f14992611be72d05b9d8136c0c",
+    "merge_commit": "3e2ec5c38748b60f84bbc79f4e5dd3b67a51a049",
+    "merge_result": "PASS: origin/main merged into codex/tp-dmx-coldstart-l0-dep-audit-100 with no conflicts.",
+    "local_validation_rerun": [
+      {
+        "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0
+      },
+      {
+        "cmd": "python -m json.tool templates/plugin/l0_membership.json",
+        "exit_code": 0
+      },
+      {
+        "cmd": "python -m compileall -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0
+      },
+      {
+        "cmd": "pytest -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0,
+        "result": "3 passed"
+      },
+      {
+        "cmd": "pytest -q tests/unit/dcp/test_routing_classifier.py",
+        "exit_code": 0,
+        "result": "70 passed"
+      },
+      {
+        "cmd": "git diff --check",
+        "exit_code": 0
+      }
+    ],
+    "not_run": [
+      "No live fleet startup.",
+      "No Docker container startup.",
+      "No provider calls.",
+      "No task-orchestrator item transition because MCP transport remained unavailable earlier in this session."
+    ]
+  },
   "embedded_audit": {
     "required": false,
     "status": "SKIPPED",
