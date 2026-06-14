@@ -15,7 +15,8 @@ from urllib.parse import urlparse
 
 import httpx
 import docker
-from rich.console import Console
+
+from dopemux.console import console
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class HealthChecker:
 
     def __init__(self, project_root: Path):
         self.project_root = project_root
-        self.console = Console()
+        self.console = console
         self.docker_client = None
         self.timeout = 30  # seconds
 
