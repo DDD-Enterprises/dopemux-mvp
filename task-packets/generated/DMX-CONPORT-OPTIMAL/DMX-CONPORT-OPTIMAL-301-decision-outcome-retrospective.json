@@ -1,0 +1,136 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-301-decision-outcome-retrospective",
+  "project": "dopemux-mvp",
+  "target": "Add PATCH /api/decisions/{decision_id}/outcome REST endpoint and update_decision_outcome MCP tool so agents can record retrospective outcomes on existing decisions without touching the immutable summary/rationale fields.",
+  "invariants": [
+    "This packet must not modify the summary or rationale fields of any existing decision.",
+    "This packet must preserve the append-only invariant: only outcome_status, outcome_notes, outcome_date, and lessons_learned may be written by the new endpoint.",
+    "This packet must not add a new migration if migration 001 already defines the outcome columns; verify before adding SQL.",
+    "This packet must fail-closed on unknown decision_id (404) and on attempts to write immutable fields (400).",
+    "This packet must classify any unresolved schema ambiguity as UNKNOWN and stop rather than guess.",
+    "This packet must not touch files outside the allowlist."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-109-mcp-server-baseline"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CONPORT-OPTIMAL",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/conport-optimal-301-decision-outcome-retrospective",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): add decision outcome retrospective endpoint and MCP tool",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/server.py",
+      "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+      "docker/mcp-servers-source/conport/tests/test_decision_outcome.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-301-decision-outcome-retrospective.json",
+      "proof/conport-optimal-301/DMX-CONPORT-OPTIMAL-301-decision-outcome-retrospective/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-301-decision-outcome-retrospective.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-301-decision-outcome-retrospective.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_decision_outcome.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): decision outcome retrospective endpoint + MCP tool",
+    "body": "Adds PATCH /api/decisions/{decision_id}/outcome that writes only outcome_status, outcome_notes, outcome_date, and lessons_learned. The summary and rationale fields remain immutable. Adds update_decision_outcome MCP tool in server.py and JSON-RPC handler in conport_mcp_stdio.py. Migration 001 already defines the outcome columns; no new migration is added unless the preflight check finds them absent.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: create a fresh dedicated worktree from origin/main. Verify repo marker (.dopetaskroot), origin identity, branch name, and clean baseline. Read docker/mcp-servers-source/conport/schema.sql and migrations/001*.sql to confirm that outcome_status, outcome_notes, outcome_date, and lessons_learned columns already exist on the decisions table. Record findings in proof.",
+      "validation": [
+        "Worktree path, branch, origin, marker verified and recorded in proof.",
+        "Confirmed (or UNKNOWN) whether outcome columns exist in migration 001 — no guessing."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/conport/schema.sql",
+        "docker/mcp-servers-source/conport/migrations/001_initial_schema.sql",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "If and only if the preflight in S1 found that outcome columns are absent from the schema, add a new migration file docker/mcp-servers-source/conport/migrations/009_outcome_columns.sql that adds outcome_status (TEXT), outcome_notes (TEXT), outcome_date (TEXT), and lessons_learned (TEXT) to the decisions table. Skip this step entirely if the columns already exist.",
+      "validation": [
+        "Migration file created only when columns were confirmed absent in S1.",
+        "Migration is idempotent (uses IF NOT EXISTS or equivalent guard).",
+        "If columns already exist, this step is marked NOT_RUN with reason."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_decision_outcome.py covering: (a) PATCH /api/decisions/{id}/outcome updates outcome fields and returns 200; (b) summary and rationale are unchanged after the PATCH; (c) PATCH on unknown id returns 404; (d) PATCH body containing summary or rationale is rejected with 400.",
+      "validation": [
+        "Tests exist and fail (red) before production code is added.",
+        "Test file is self-contained and does not require external services beyond the in-process test client."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Implement PATCH /api/decisions/{decision_id}/outcome in enhanced_server.py. Accept a JSON body with only outcome_status, outcome_notes, outcome_date, lessons_learned. Reject (400) any body that includes summary or rationale. Return 404 for unknown decision_id. Use a targeted UPDATE that names each outcome column explicitly — never a wildcard UPDATE.",
+      "validation": [
+        "All four tests from S3 pass (green).",
+        "The UPDATE statement names only outcome columns — summary and rationale are not in the SET clause.",
+        "No regression in existing enhanced_server.py routes (run full test suite if available)."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Add update_decision_outcome MCP tool registration in server.py (tool schema: decision_id string required; outcome_status, outcome_notes, outcome_date, lessons_learned all optional strings). Add the JSON-RPC handler in conport_mcp_stdio.py that calls the REST PATCH endpoint or the shared data layer directly, matching the pattern used by existing MCP tools in those files.",
+      "validation": [
+        "update_decision_outcome appears in the MCP tool listing.",
+        "JSON-RPC handler routes correctly and returns the updated outcome fields.",
+        "Pattern matches existing MCP tool implementations in server.py and conport_mcp_stdio.py."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/conport_mcp_stdio.py"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run all tests, validate the TP JSON against the canonical schema, commit only allowlisted files, push the branch, open a PR against main, and file the proof bundle.",
+      "validation": [
+        "TP JSON validates with exit 0 against dopetask-canonical-spec.json.",
+        "All targeted tests pass; any NOT_RUN items are recorded with reason.",
+        "Only allowlisted files are staged — git diff --staged lists no extras.",
+        "PR URL recorded in proof bundle."
+      ]
+    }
+  ]
+}

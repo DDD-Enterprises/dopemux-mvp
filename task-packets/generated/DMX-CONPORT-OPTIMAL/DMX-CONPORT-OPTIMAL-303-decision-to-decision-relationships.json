@@ -1,0 +1,144 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-303-decision-to-decision-relationships",
+  "project": "dopemux-mvp",
+  "target": "Activate the decision_relationships table and expose REST + MCP interfaces to create and list typed decision-to-decision links (builds_upon, supersedes, conflicts_with, validates, implements, questions), enabling semantic knowledge-graph traversal across related decisions.",
+  "invariants": [
+    "This packet must not merge decision_relationships into entity_relationships; that consolidation is deferred and must not happen here.",
+    "This packet must verify whether decision_relationships exists in schema.sql or any migration before adding new SQL.",
+    "This packet must fail-closed on unknown source_decision_id or target_decision_id (404).",
+    "This packet must reject relationship_type values not in the allowed enum (builds_upon, supersedes, conflicts_with, validates, implements, questions) with 400.",
+    "This packet must not modify existing decisions data or the entity_relationships table.",
+    "This packet must not touch files outside the allowlist.",
+    "This packet must classify unresolved schema ambiguity as UNKNOWN and stop."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-202-entity-relationships"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CONPORT-OPTIMAL",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/conport-optimal-303-decision-to-decision-relationships",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): add decision-to-decision typed relationship REST routes and MCP tools",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/server.py",
+      "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+      "docker/mcp-servers-source/conport/tests/test_decision_relationships.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-303-decision-to-decision-relationships.json",
+      "proof/conport-optimal-303/DMX-CONPORT-OPTIMAL-303-decision-to-decision-relationships/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-303-decision-to-decision-relationships.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-303-decision-to-decision-relationships.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_decision_relationships.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): decision-to-decision typed relationship routes + MCP tools",
+    "body": "Activates the decision_relationships table (separate from entity_relationships; consolidation is explicitly deferred as a future refactor). Adds POST /api/decisions/{id}/relationships to create a typed link and GET /api/decisions/{id}/relationships to list all edges for a decision. Allowed relationship_type values: builds_upon, supersedes, conflicts_with, validates, implements, questions. Adds link_decisions and get_decision_relationships MCP tools in server.py and JSON-RPC handlers in conport_mcp_stdio.py.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: create a fresh dedicated worktree from origin/main. Verify repo marker, origin identity, branch, and clean baseline. Inspect schema.sql and all migration files to determine whether decision_relationships is already defined. Also confirm that entity_relationships exists (it should, per DMX-CONPORT-OPTIMAL-202 dependency). Record both findings in proof. Note: do NOT attempt to merge or alias these tables — they are intentionally separate.",
+      "validation": [
+        "Worktree verified and recorded in proof.",
+        "decision_relationships table existence classified as EXISTS, ABSENT, or UNKNOWN.",
+        "entity_relationships confirmed present (or recorded as UNKNOWN if not found).",
+        "No merger of the two tables performed or planned."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/conport/schema.sql",
+        "docker/mcp-servers-source/conport/migrations/",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "If S1 found decision_relationships ABSENT, create docker/mcp-servers-source/conport/migrations/010_decision_relationships.sql with: id INTEGER PRIMARY KEY AUTOINCREMENT, source_decision_id INTEGER NOT NULL REFERENCES decisions(id), target_decision_id INTEGER NOT NULL REFERENCES decisions(id), relationship_type TEXT NOT NULL CHECK(relationship_type IN ('builds_upon','supersedes','conflicts_with','validates','implements','questions')), notes TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(source_decision_id, target_decision_id, relationship_type). If EXISTS, skip and record NOT_RUN.",
+      "validation": [
+        "Migration file created only when table was confirmed absent in S1.",
+        "SQL uses CREATE TABLE IF NOT EXISTS.",
+        "CHECK constraint names exactly the six allowed relationship_type values.",
+        "UNIQUE constraint prevents duplicate typed edges.",
+        "If table already existed, step is recorded as NOT_RUN with reason."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_decision_relationships.py covering: (a) POST /api/decisions/{id}/relationships creates a typed link and returns 201 with edge id; (b) GET /api/decisions/{id}/relationships lists all edges where id is source or target; (c) POST with an invalid relationship_type returns 400; (d) POST with unknown source_decision_id returns 404; (e) POST with unknown target_decision_id returns 404; (f) duplicate typed edge returns 409.",
+      "validation": [
+        "All six test cases exist and fail (red) before production code is added.",
+        "Tests are self-contained and use in-process test client."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Implement two REST routes in enhanced_server.py: POST /api/decisions/{decision_id}/relationships (body: target_decision_id required, relationship_type required from enum, notes optional) and GET /api/decisions/{decision_id}/relationships (returns all edges where decision_id is source or target, each edge includes both decision ids, type, notes, created_at). Validate relationship_type against the enum; fail-closed on invalid type, unknown ids, and duplicate edges.",
+      "validation": [
+        "All six tests from S3 pass (green).",
+        "relationship_type enum validation is exhaustive — unknown types return 400, not 500.",
+        "Duplicate edge returns 409 (not a silent no-op).",
+        "No regression in other enhanced_server.py routes."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Add two MCP tools in server.py: link_decisions (source_decision_id, target_decision_id, relationship_type, notes optional) and get_decision_relationships (decision_id). Add JSON-RPC handlers in conport_mcp_stdio.py following the existing handler pattern. relationship_type enum must be documented in the tool schema description.",
+      "validation": [
+        "link_decisions and get_decision_relationships appear in the MCP tool listing.",
+        "JSON-RPC create and list round-trips succeed.",
+        "Tool schema documents all six valid relationship_type values.",
+        "Pattern consistency with existing tools confirmed."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/conport_mcp_stdio.py"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run all targeted tests, validate TP JSON, commit only allowlisted files, push branch, open PR against main, and file proof bundle. Confirm in proof that decision_relationships and entity_relationships remain separate tables and that no consolidation occurred.",
+      "validation": [
+        "TP JSON validates with exit 0 against dopetask-canonical-spec.json.",
+        "Targeted tests pass; NOT_RUN items recorded with reasons.",
+        "Only allowlisted files are staged.",
+        "Proof bundle explicitly notes decision_relationships and entity_relationships remain separate.",
+        "PR URL recorded in proof bundle."
+      ]
+    }
+  ]
+}
