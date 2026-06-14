@@ -52,7 +52,7 @@ Observed result:
 
 - `fonts/.gitignore`
 - `fonts/BUILD.md`
-- `fonts/README.md`
+- `fonts/readme.md`
 - `fonts/patch-nerd-font.sh`
 - `fonts/private-build-plans.toml`
 
