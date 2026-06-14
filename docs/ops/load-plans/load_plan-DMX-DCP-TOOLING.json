@@ -50,7 +50,7 @@
       "redlane": true,
       "proof_required": true,
       "proof_path": "proof/DMX-DCP-TOOLING-101/PROOF.json",
-      "files_allowed": ["schemas/dcp/manifest.json", "schemas/dcp/dcp_manifest.schema.json", "schemas/dcp/README.md", "docs/90-adr/adr-dcp-deterministic-vs-llm-boundary.md", "tests/dcp/test_dcp_contracts_consistency.py", ".github/workflows/ci-complete.yml", "proof/DMX-DCP-TOOLING-101/**", "task-packets/generated/DMX-DCP-TOOLING-101.json"],
+      "files_allowed": ["schemas/dcp/manifest.json", "schemas/dcp/dcp_contracts_manifest.schema.json", "schemas/dcp/README.md", "docs/90-adr/adr-dcp-deterministic-vs-llm-boundary.md", "tests/dcp/test_contracts_consistency.py", ".github/workflows/ci-complete.yml", "proof/DMX-DCP-TOOLING-101/**", "task-packets/generated/DMX-DCP-TOOLING-101.json"],
       "commit": "feat(dcp): TP-101 contracts manifest, promotion ladder, det-vs-LLM ADR",
       "stop_conditions": ["A schema exists in schemas/dcp/ that cannot be classified for the manifest", "Consistency test cannot cross-validate ci_gates against ci-complete.yml job names"]
     },

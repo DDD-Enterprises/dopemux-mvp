@@ -36,7 +36,7 @@
       "src/dopemux/dcp/approval.py",
       "src/dopemux/dcp/proof_family.py",
       "src/dopemux/dcp/red_lane_scanner.py",
-      "config/approval_policy.yaml",
+      "config/orchestrator/approval_policy.yaml",
       "docs/dcp/adapter-contract-approval-steward.md",
       "tests/dcp/test_approval.py",
       "proof/DMX-DCP-TOOLING-110/PROOF.json"
@@ -44,7 +44,7 @@
   },
   "pr": {
     "title": "feat(dcp): dcp accept + approval reader + scanner consumers (DMX-DCP-TOOLING-110)",
-    "body": "## Summary\n- Implements `dopemux dcp accept --tp <TP-ID> [--decision allow|gated|refuse] --as <identity>`: writes proof/<tp>/APPROVAL.json conforming to dcp_approval_artifact schema.\n- Enforces: TTY required + typed confirmation phrase (refuses when non-interactive per design D-E); requester != approver at write time; --tp sanitized to ^[A-Za-z0-9_-]{1,64}$; requester sourced from PROOF.json implementer identity; approver from --as (asserted, labeled); head_sha populated via live git read (D-E carve-out).\n- Registers dcp.accept as T6 capability in config/approval_policy.yaml.\n- Adds proof_family.py family DCP_APPROVAL_ARTIFACT: classify + expose fields; honor expiry_window.\n- Adds scanner consumers: (1) AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR builtin detector — merge-readiness artifact present without valid fresh APPROVAL.json → BLOCKER; (2) B.6 sanctioned-change downgrade — PROOF-CONTRACT-SCHEMA-MUTATION finding downgrades to WARNING when valid APPROVAL.json is present and covers flagged paths.\n- Delivers docs/dcp/adapter-contract-approval-steward.md documenting the adapter contract for future steward/classifier rewiring (out of scope here).\n\n## Validation\n- write → classify → scan integration test.\n- requester == approver rejected.\n- Non-TTY refusal verified.\n- Path traversal attempts rejected.\n- Expired approval treated as invalid.\n- AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR BLOCKER fires without approval.\n- Sanctioned-change downgrade demonstrated with valid approval.\n\n## NOT_RUN\n- Steward/classifier rewiring (out of scope, adapter contract doc only).\n- Cryptographic identity (V2).",
+    "body": "## Summary\n- Implements `dopemux dcp accept --tp <TP-ID> [--decision allow|gated|refuse] --as <identity>`: writes proof/<tp>/APPROVAL.json conforming to dcp_approval_artifact schema.\n- Enforces: TTY required + typed confirmation phrase (refuses when non-interactive per design D-E); requester != approver at write time; --tp sanitized to ^[A-Za-z0-9_-]{1,64}$; requester sourced from PROOF.json implementer identity; approver from --as (asserted, labeled); head_sha populated via live git read (D-E carve-out).\n- Registers dcp.accept as T6 capability in config/orchestrator/approval_policy.yaml.\n- Adds proof_family.py family DCP_APPROVAL_ARTIFACT: classify + expose fields; honor expiry_window.\n- Adds scanner consumers: (1) AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR builtin detector — merge-readiness artifact present without valid fresh APPROVAL.json → BLOCKER; (2) B.6 sanctioned-change downgrade — PROOF-CONTRACT-SCHEMA-MUTATION finding downgrades to WARNING when valid APPROVAL.json is present and covers flagged paths.\n- Delivers docs/dcp/adapter-contract-approval-steward.md documenting the adapter contract for future steward/classifier rewiring (out of scope here).\n\n## Validation\n- write → classify → scan integration test.\n- requester == approver rejected.\n- Non-TTY refusal verified.\n- Path traversal attempts rejected.\n- Expired approval treated as invalid.\n- AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR BLOCKER fires without approval.\n- Sanctioned-change downgrade demonstrated with valid approval.\n\n## NOT_RUN\n- Steward/classifier rewiring (out of scope, adapter contract doc only).\n- Cryptographic identity (V2).",
     "base": "main"
   },
   "steps": [
@@ -53,7 +53,7 @@
       "task": "Preflight: inspect dcp_approval_artifact schema, current approval_policy.yaml, proof_family.py, and red_lane_scanner.py AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR builtin status.",
       "commands": [
         "python -m json.tool schemas/dcp/dcp_approval_artifact.schema.json 2>/dev/null || find schemas -name '*approval*' | head -5",
-        "grep -n 'T6\\|dcp.accept\\|approval' config/approval_policy.yaml | head -20 || true",
+        "grep -n 'T6\\|dcp.accept\\|approval' config/orchestrator/approval_policy.yaml | head -20 || true",
         "grep -n 'proof_family\\|DCP_APPROVAL' src/dopemux/dcp/proof_family.py | head -20 || true",
         "grep -n 'AGENT-APPROVED-MERGE\\|merge_readiness\\|approval' src/dopemux/dcp/red_lane_scanner.py | head -20 || true"
       ],
@@ -65,7 +65,7 @@
       ],
       "context_files": [
         "schemas/dcp/dcp_approval_artifact.schema.json",
-        "config/approval_policy.yaml",
+        "config/orchestrator/approval_policy.yaml",
         "src/dopemux/dcp/proof_family.py",
         "src/dopemux/dcp/red_lane_scanner.py",
         "claudedocs/dcp-tooling-system/30-design.md"
@@ -84,11 +84,11 @@
     },
     {
       "id": "S3",
-      "task": "Add DCP_APPROVAL_ARTIFACT family to src/dopemux/dcp/proof_family.py: classify proof artifacts, expose decision/requester/approver/head_sha/expiry_window fields, enforce expiry (stale approval → invalid). Register dcp.accept as T6 capability in config/approval_policy.yaml.",
+      "task": "Add DCP_APPROVAL_ARTIFACT family to src/dopemux/dcp/proof_family.py: classify proof artifacts, expose decision/requester/approver/head_sha/expiry_window fields, enforce expiry (stale approval → invalid). Register dcp.accept as T6 capability in config/orchestrator/approval_policy.yaml.",
       "validation": [
         "python -m pytest tests/dcp/test_approval.py::test_proof_family_classifies_approval_artifact -xvs exits 0.",
         "python -m pytest tests/dcp/test_approval.py::test_expired_approval_treated_as_invalid -xvs exits 0.",
-        "grep 'dcp.accept\\|T6' config/approval_policy.yaml confirms registration."
+        "grep 'dcp.accept\\|T6' config/orchestrator/approval_policy.yaml confirms registration."
       ]
     },
     {
