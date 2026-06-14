@@ -21,7 +21,7 @@ Two families:
 - `Dopemux Term` — canonical operator mono (spacing `term`).
 - `Dopemux Editor` — quasi-proportional prose-set companion (`--font-editor`).
 
-Canonical rich-glyph terminal font: `Dopemux Term Nerd Font Mono`.
+Canonical rich-glyph terminal font: `DopemuxTerm Nerd Font Mono`.
 
 ## Source tools
 
@@ -76,7 +76,7 @@ Term faces are patched with `--mono`; Editor faces keep their source spacing.
 
 - `DopemuxTerm-{Regular,Italic,Oblique,Medium,MediumItalic,MediumOblique}.ttf`
 - `DopemuxEditor-{Regular,Italic,Oblique,Medium,MediumItalic,MediumOblique}.ttf`
-- `DopemuxTermNerdFont-{...}.ttf` (internal family `Dopemux Term Nerd Font Mono`)
+- `DopemuxTermNerdFont-{...}.ttf` (internal family `DopemuxTerm Nerd Font Mono`)
 - `DopemuxEditorNerdFont-{...}.ttf` (keeps Editor source spacing)
 
 ## Verification

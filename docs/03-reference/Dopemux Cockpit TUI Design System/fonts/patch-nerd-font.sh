@@ -47,6 +47,8 @@ if [[ "${#INPUTS[@]}" -eq 0 ]]; then
 fi
 
 mkdir -p "$PATCHED_DIR"
+rm -f "$PATCHED_DIR"/DopemuxTermNerdFont-*.ttf "$PATCHED_DIR"/DopemuxEditorNerdFont-*.ttf
+
 patched=0
 for input in "${INPUTS[@]}"; do
   rm -rf "$PATCH_TMP"
