@@ -5,6 +5,51 @@
   },
   "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-coldstart-l0-dep-audit-100",
   "branch": "codex/tp-dmx-coldstart-l0-dep-audit-100",
+  "review_refresh": {
+    "refreshed_at": "2026-06-14T10:17:35-07:00",
+    "head_before_refresh": "2051d4b0c9b7d2b1d6c0208b800a6426dff57c03",
+    "pull_request": {
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/886",
+      "number": 886,
+      "state": "OPEN",
+      "draft": false,
+      "head": "codex/tp-dmx-coldstart-l0-dep-audit-100",
+      "base": "main",
+      "status_rollup": "Observed via gh pr view: required visible checks succeeded; Gemini Dispatch jobs and installer/integration/coverage jobs were skipped."
+    },
+    "orchestrator": {
+      "item_state_update": "NOT_RUN",
+      "reason": "task-orchestrator MCP get_context failed with Transport closed during review refresh; item transition was not advanced from Codex."
+    },
+    "local_validation_rerun": [
+      {
+        "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0
+      },
+      {
+        "cmd": "python -m json.tool templates/plugin/l0_membership.json",
+        "exit_code": 0
+      },
+      {
+        "cmd": "python -m compileall -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0
+      },
+      {
+        "cmd": "pytest -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0,
+        "result": "3 passed"
+      },
+      {
+        "cmd": "git diff --check",
+        "exit_code": 0
+      },
+      {
+        "cmd": "pre-commit run --files task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json templates/plugin/l0_membership.json tests/coldstart/__init__.py tests/coldstart/test_l0_membership.py docs/02-how-to/l0-dependency-audit.md proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/PROOF.json proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/AUDITOR_REPORT.md",
+        "exit_code": 0
+      }
+    ],
+    "review_result": "PASS: proof, manifest, docs, and focused test are consistent with the packet allowlist and packet validation commands; no runtime-fleet behavior was exercised."
+  },
   "embedded_audit": {
     "required": false,
     "status": "SKIPPED",
