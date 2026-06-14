@@ -126,6 +126,18 @@ _MUTATING_ALLOWED: list[str] = [
 
 _SAFE_ALLOWED: list[str] = _READ_ONLY_ALLOWED + _MUTATING_ALLOWED
 
+_REQUESTED_ACTION_RED_LANE: frozenset[str] = frozenset(
+    _ALWAYS_FORBIDDEN
+    + [
+        "live_write_to_service",
+        "call_connector_live",
+        "call_mcp_live",
+        "execute_dopetask_live",
+        "write_task_orchestrator",
+        "execute_runner_live",
+    ]
+)
+
 # ─────────────────────────────────────────────
 # Helper derivers
 # ─────────────────────────────────────────────
@@ -164,6 +176,8 @@ def _derive_red_lane_state(inp: RoutingClassificationInput) -> RedLaneState:
         or inp.touches_auth
         or inp.touches_security
         or inp.touches_destructive_path
+        or inp.requires_network
+        or inp.requires_external_service
         or inp.requires_live_write
         or inp.requires_runner_execution
         or inp.requires_connector_call
@@ -172,8 +186,11 @@ def _derive_red_lane_state(inp: RoutingClassificationInput) -> RedLaneState:
         or inp.requires_task_orchestrator_write
         or inp.has_conflicting_evidence
         or inp.risk_class is RiskClass.RED_LANE
+        or inp.task_type is TaskType.MERGE
         or inp.task_type is TaskType.LIVE_WRITE
+        or inp.runtime_impact is RuntimeImpact.SERVICE_MUTATION
         or inp.runtime_impact is RuntimeImpact.LIVE_WRITE
+        or bool(_requested_forbidden_actions(inp))
     )
     return RedLaneState.RED_LANE if red_flags else RedLaneState.CLEAR
 
@@ -321,9 +338,16 @@ def _derive_forbidden_actions(inp: RoutingClassificationInput) -> list[str]:
     """Build the list of forbidden actions, always including hard-block set."""
     forbidden = list(_ALWAYS_FORBIDDEN)
 
+    if inp.requires_network:
+        _append_unique(forbidden, "network_access")
+    if inp.requires_external_service:
+        _append_unique(forbidden, "external_service_access")
+    if inp.task_type is TaskType.MERGE:
+        _append_unique(forbidden, "merge_task")
     if (
         inp.requires_live_write
         or inp.task_type is TaskType.LIVE_WRITE
+        or inp.runtime_impact is RuntimeImpact.SERVICE_MUTATION
         or inp.runtime_impact is RuntimeImpact.LIVE_WRITE
     ):
         _append_unique(forbidden, "live_write_to_service")
@@ -364,6 +388,14 @@ def _derive_stop_conditions(
         conditions.append("auth_surface_in_scope")
     if inp.touches_ci:
         conditions.append("ci_surface_in_scope")
+    if inp.requires_network:
+        conditions.append("network_required")
+    if inp.requires_external_service:
+        conditions.append("external_service_required")
+    if inp.task_type is TaskType.MERGE:
+        conditions.append("merge_task_requested")
+    if inp.runtime_impact is RuntimeImpact.SERVICE_MUTATION:
+        conditions.append("service_mutation_requested")
     if (
         inp.requires_live_write
         or inp.task_type is TaskType.LIVE_WRITE
@@ -372,6 +404,8 @@ def _derive_stop_conditions(
         conditions.append("live_write_requested")
     if inp.requires_runner_execution:
         conditions.append("runner_execution_requested")
+    for action in _requested_forbidden_actions(inp):
+        conditions.append(f"forbidden_action_requested:{action}")
 
     return conditions
 
@@ -395,6 +429,15 @@ def _collect_unknowns(inp: RoutingClassificationInput) -> list[str]:
 def _append_unique(lst: list[str], item: str) -> None:
     if item not in lst:
         lst.append(item)
+
+
+def _requested_forbidden_actions(inp: RoutingClassificationInput) -> list[str]:
+    """Return requested actions that are explicitly never delegated."""
+    return [
+        action
+        for action in inp.requested_actions
+        if action in _REQUESTED_ACTION_RED_LANE
+    ]
 
 
 # ─────────────────────────────────────────────
