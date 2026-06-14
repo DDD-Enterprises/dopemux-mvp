@@ -21,6 +21,7 @@ committed (`.gitignore`).
 | `Dopemux Term` | term (monospace) | operator / CLI / TUI mono | `--font-mono` |
 | `Dopemux Editor` | quasi-proportional | prose-set code companion | `--font-editor` |
 | `Dopemux Term Nerd Font Mono` | term + Nerd glyphs | rich-glyph terminal icon set | terminal font |
+| `Dopemux Editor Nerd Font` | quasi-proportional + Nerd glyphs | prose-set companion with icons | editor font |
 
 Each family ships **Regular + Medium**, upright / italic / oblique. Bold is a
 real Medium face — never synthesized.
@@ -54,7 +55,7 @@ export NERD_FONTS_REPO=/path/to/nerd-fonts    # git clone ryanoasis/nerd-fonts
 export OUT_DIR="$PWD/out" && mkdir -p "$OUT_DIR"
 
 ./build-dopemux-fonts.sh    # Iosevka -> Dopemux Term / Dopemux Editor TTFs
-./patch-nerd-font.sh        # -> $OUT_DIR/nerd-font/DopemuxTermNerdFont-*.ttf
+./patch-nerd-font.sh        # -> $OUT_DIR/nerd-font/Dopemux{Term,Editor}NerdFont-*.ttf
 ```
 
 See `build.md` for the full recipe, attributes, and verification.
