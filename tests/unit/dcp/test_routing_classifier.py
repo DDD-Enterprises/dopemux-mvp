@@ -697,7 +697,10 @@ def test_external_service_requirement_blocks_and_is_not_runnable() -> None:
     assert "external_service_required" in decision.stop_conditions
 
 
-@pytest.mark.parametrize("action", ["merge_pr", "execute_runner"])
+@pytest.mark.parametrize(
+    "action",
+    ["merge_pr", "execute_runner", "network_access", "external_service_access"],
+)
 def test_forbidden_requested_action_blocks_route(action: str) -> None:
     inp = RoutingClassificationInput(
         task_type=TaskType.CODE_CHANGE,
@@ -821,6 +824,24 @@ def test_unknown_complexity_is_not_runnable() -> None:
     assert decision.status is RouteStatus.UNKNOWN
     assert not _is_runnable(decision)
     assert decision.allowed_actions == ["inspect_runtime_code"]
+
+
+def test_architectural_complexity_requires_supervisor_and_is_not_runnable() -> None:
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.ARCHITECTURAL,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.status is RouteStatus.NEEDS_SUPERVISOR
+    assert decision.escalation_requirement is EscalationRequirement.ON_RISK
+    assert not _is_runnable(decision)
+    assert "edit_allowlisted_files" not in decision.allowed_actions
+    assert "open_pr" not in decision.allowed_actions
 
 
 def test_mutating_classification_requires_proof_obligations() -> None:

@@ -134,6 +134,8 @@ _REQUESTED_ACTION_RED_LANE: frozenset[str] = frozenset(
     _ALWAYS_FORBIDDEN
     + [
         "live_write_to_service",
+        "network_access",
+        "external_service_access",
         "call_connector_live",
         "call_mcp_live",
         "execute_dopetask_live",
@@ -231,6 +233,9 @@ def _derive_route_status(
     if inp.risk_class is RiskClass.UNKNOWN or inp.task_type is TaskType.UNKNOWN:
         return RouteStatus.UNKNOWN
 
+    if inp.complexity_class is ComplexityClass.ARCHITECTURAL:
+        return RouteStatus.NEEDS_SUPERVISOR
+
     if inp.risk_class in _HIGH_RISK_CLASSES:
         return RouteStatus.NEEDS_SUPERVISOR
 
@@ -326,6 +331,9 @@ def _derive_escalation_requirement(
         return EscalationRequirement.ON_UNKNOWN
 
     if inp.risk_class in _HIGH_RISK_CLASSES:
+        return EscalationRequirement.ON_RISK
+
+    if inp.complexity_class is ComplexityClass.ARCHITECTURAL:
         return EscalationRequirement.ON_RISK
 
     return EscalationRequirement.NONE
