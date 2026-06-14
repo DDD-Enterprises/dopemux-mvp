@@ -647,10 +647,17 @@ def test_runtime_impact_live_write_enum_blocks_and_is_not_runnable() -> None:
     assert "live_write_to_service" in decision.forbidden_actions
 
 
+_READ_ONLY_BASE_ALLOWED = [
+    "inspect_runtime_code",
+    "run_targeted_tests",
+    "capture_proof",
+]
+
+
 def test_unknown_authority_allowed_actions_exclude_mutations() -> None:
     decision = classify_route(_default())
     assert decision.status is RouteStatus.UNKNOWN
-    assert decision.allowed_actions == ["inspect_runtime_code"]
+    assert decision.allowed_actions == _READ_ONLY_BASE_ALLOWED
     assert "edit_allowlisted_files" not in decision.allowed_actions
     assert "open_pr" not in decision.allowed_actions
     assert "run_embedded_audit" not in decision.allowed_actions
@@ -712,6 +719,7 @@ def test_forbidden_requested_action_blocks_route(action: str) -> None:
     decision = classify_route(inp)
     assert decision.red_lane_state is RedLaneState.RED_LANE
     assert not _is_runnable(decision)
+    assert "forbidden_requested_action" in decision.stop_conditions
     assert f"forbidden_action_requested:{action}" in decision.stop_conditions
 
 
@@ -754,7 +762,7 @@ def test_read_only_route_excludes_mutating_allowed_actions() -> None:
     )
     decision = classify_route(inp)
     assert decision.status is RouteStatus.ALLOWED
-    assert decision.allowed_actions == ["inspect_runtime_code"]
+    assert decision.allowed_actions == _READ_ONLY_BASE_ALLOWED
     assert "edit_allowlisted_files" not in decision.allowed_actions
     assert "open_pr" not in decision.allowed_actions
 
@@ -771,7 +779,7 @@ def test_unknown_runtime_impact_is_not_runnable() -> None:
     assert decision.runtime_impact is RuntimeImpact.UNKNOWN
     assert decision.status is RouteStatus.UNKNOWN
     assert not _is_runnable(decision)
-    assert decision.allowed_actions == ["inspect_runtime_code"]
+    assert decision.allowed_actions == _READ_ONLY_BASE_ALLOWED
 
 
 def test_ci_touching_route_requires_supervisor_and_is_not_runnable() -> None:
@@ -823,7 +831,7 @@ def test_unknown_complexity_is_not_runnable() -> None:
     assert decision.complexity_class is ComplexityClass.UNKNOWN
     assert decision.status is RouteStatus.UNKNOWN
     assert not _is_runnable(decision)
-    assert decision.allowed_actions == ["inspect_runtime_code"]
+    assert decision.allowed_actions == _READ_ONLY_BASE_ALLOWED
 
 
 def test_architectural_complexity_requires_supervisor_and_is_not_runnable() -> None:
@@ -906,6 +914,86 @@ def test_unknown_task_source_is_not_runnable() -> None:
     assert "task_source_unknown" in decision.unknowns
 
 
+def test_unknown_task_source_is_recorded_in_unknowns() -> None:
+    decision = classify_route(_default())
+    assert "task_source_unknown" in decision.unknowns
+
+
+def test_unknown_task_source_does_not_allow_edit_or_open_pr() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        requested_actions=["edit_allowlisted_files", "open_pr"],
+    )
+    decision = classify_route(inp)
+    assert decision.task_source is TaskSource.UNKNOWN
+    assert not _is_runnable(decision)
+    assert "edit_allowlisted_files" not in decision.allowed_actions
+    assert "open_pr" not in decision.allowed_actions
+
+
+def test_read_only_requested_run_targeted_tests_does_not_grant_edit_or_open_pr() -> None:
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.READ_ONLY,
+        risk_class=RiskClass.R0_READ,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        requested_actions=["run_targeted_tests"],
+    )
+    decision = classify_route(inp)
+    assert decision.status is RouteStatus.ALLOWED
+    assert decision.allowed_actions == ["run_targeted_tests"]
+    assert "edit_allowlisted_files" not in decision.allowed_actions
+    assert "open_pr" not in decision.allowed_actions
+
+
+def test_read_only_requested_capture_proof_does_not_grant_edit_or_open_pr() -> None:
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.READ_ONLY,
+        risk_class=RiskClass.R0_READ,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        requested_actions=["capture_proof"],
+    )
+    decision = classify_route(inp)
+    assert decision.status is RouteStatus.ALLOWED
+    assert decision.allowed_actions == ["capture_proof"]
+    assert "edit_allowlisted_files" not in decision.allowed_actions
+    assert "open_pr" not in decision.allowed_actions
+
+
+def test_requested_actions_narrow_not_widen_allowed_actions() -> None:
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        requested_actions=["run_targeted_tests", "open_pr", "edit_allowlisted_files"],
+    )
+    decision = classify_route(inp)
+    assert decision.status is RouteStatus.ALLOWED
+    assert decision.allowed_actions == [
+        "run_targeted_tests",
+        "open_pr",
+        "edit_allowlisted_files",
+    ]
+    assert "run_embedded_audit" not in decision.allowed_actions
+    assert "capture_proof" not in decision.allowed_actions
+
+
 @pytest.mark.parametrize("action", ["run_targeted_tests", "capture_proof"])
 def test_read_only_requested_actions_do_not_grant_edit_or_pr(action: str) -> None:
     inp = RoutingClassificationInput(
@@ -920,10 +1008,42 @@ def test_read_only_requested_actions_do_not_grant_edit_or_pr(action: str) -> Non
     )
     decision = classify_route(inp)
     assert decision.status is RouteStatus.ALLOWED
-    assert action in decision.allowed_actions
+    assert decision.allowed_actions == [action]
     assert "edit_allowlisted_files" not in decision.allowed_actions
     assert "open_pr" not in decision.allowed_actions
     assert "run_embedded_audit" not in decision.allowed_actions
+
+
+def test_forbidden_requested_merge_pr_blocks_route() -> None:
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        requested_actions=["merge_pr"],
+    )
+    decision = classify_route(inp)
+    assert not _is_runnable(decision)
+    assert "forbidden_requested_action" in decision.stop_conditions
+
+
+def test_forbidden_requested_execute_runner_blocks_route() -> None:
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        requested_actions=["execute_runner"],
+    )
+    decision = classify_route(inp)
+    assert not _is_runnable(decision)
+    assert "forbidden_requested_action" in decision.stop_conditions
 
 
 # ─────────────────────────────────────────────
