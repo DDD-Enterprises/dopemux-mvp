@@ -29,7 +29,7 @@ If the user invokes this skill without any other guidance, ask them what they wa
 - **Bridge / proxy actions are segregated** into their own pane labeled `adapter-only segregated`.
 - **Three sizes only**: `120x40` (canonical), `100x32`, `80x24`. Below 80x24 = `[BLOCKER]`.
 - **No web UI, mouse interactions, hover states, chat surfaces, animations, gradients, rounded corners, shadows, or emoji.**
-- **Type**: monospace only (JetBrains Mono Nerd Font preferred). Single weight per surface; emphasis = bold + color.
+- **Type**: monospace only (Dopemux Term Nerd Font Mono preferred). Single weight per surface; emphasis = bold + color.
 - **Forbidden vocabulary** (validated by `cockpit/tokens.py`): `magic, brain, autonomous, smart, seamless, next-gen, all set, everything looks good, supercharged, probably, maybe, I think, as an AI`. Forbidden arrows: `→ ⇒ ➜`. Forbidden ellipsis: `… ...`. Use `->`.
 - **ADHD/lifestyle features are advisory/future-only** unless runtime evidence proves implementation.
 

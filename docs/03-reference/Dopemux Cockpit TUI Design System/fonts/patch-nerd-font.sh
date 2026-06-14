@@ -19,6 +19,7 @@ set -euo pipefail
 FONT_PATCHER="$NERD_FONTS_REPO/font-patcher"
 PATCHED_DIR="${PATCHED_DIR:-$OUT_DIR/nerd-font}"
 PATCH_TMP="$OUT_DIR/.dopemux-nerd-font-patch"
+BUILD_MANIFEST="$OUT_DIR/.dopemux-built-fonts.txt"
 
 cleanup_patch_tmp() {
   rm -rf "$PATCH_TMP"
@@ -30,12 +31,18 @@ trap cleanup_patch_tmp EXIT
 [[ -d "$OUT_DIR" ]]        || { printf 'Missing OUT_DIR directory: %s\n' "$OUT_DIR" >&2; exit 1; }
 command -v fontforge >/dev/null || { printf 'fontforge not found; install FontForge (brew install fontforge).\n' >&2; exit 1; }
 
-# Inputs: every built Dopemux face that is not already a Nerd Font.
+# Inputs: faces produced by the current build-dopemux-fonts.sh run.
 # (while-read rather than mapfile so this runs on macOS's stock bash 3.2.)
+[[ -f "$BUILD_MANIFEST" ]] || { printf 'Missing build manifest: %s. Run build-dopemux-fonts.sh first.\n' "$BUILD_MANIFEST" >&2; exit 1; }
 INPUTS=()
-while IFS= read -r f; do INPUTS+=("$f"); done < <(find "$OUT_DIR" -maxdepth 1 -type f -iname 'Dopemux*-*.ttf' ! -iname '*NerdFont*' -print | sort)
+while IFS= read -r f; do
+  [[ -n "$f" ]] || continue
+  input="$OUT_DIR/$f"
+  [[ -f "$input" ]] || { printf 'Manifested built font missing: %s\n' "$input" >&2; exit 1; }
+  INPUTS+=("$input")
+done < "$BUILD_MANIFEST"
 if [[ "${#INPUTS[@]}" -eq 0 ]]; then
-  printf 'No built Dopemux*-*.ttf in %s. Run build-dopemux-fonts.sh first.\n' "$OUT_DIR" >&2
+  printf 'No built Dopemux faces listed in %s. Run build-dopemux-fonts.sh first.\n' "$BUILD_MANIFEST" >&2
   exit 1
 fi
 
@@ -45,15 +52,24 @@ for input in "${INPUTS[@]}"; do
   rm -rf "$PATCH_TMP"
   mkdir -p "$PATCH_TMP"
   printf 'Patching %s...\n' "$(basename "$input")"
+  base="$(basename "$input" .ttf)"
+  family="${base%%-*}"
+  face="${base#*-}"
+
+  patch_args=(--complete --careful)
+  if [[ "$family" == "DopemuxTerm" ]]; then
+    patch_args+=(--mono)
+  fi
 
   # --complete: all Nerd Font glyph sets (guarantees the codepoints documented in
   #             src/dopemux/ui/theme.py::Glyphs).
-  # --mono:     single-width cells for terminal / TUI rendering.
+  # --mono:     single-width cells for terminal / TUI rendering. Term only;
+  #             Editor remains quasi-proportional.
   # --careful:  never overwrite glyphs already present in the source face.
   # font-patcher requires FontForge's Python: run via `fontforge -script`,
   # NOT `python3 font-patcher`.
   fontforge -quiet -script "$FONT_PATCHER" "$input" \
-    --complete --mono --careful \
+    "${patch_args[@]}" \
     --outputdir "$PATCH_TMP" >/dev/null
 
   produced=()
@@ -64,9 +80,6 @@ for input in "${INPUTS[@]}"; do
   fi
 
   # DopemuxTerm-MediumOblique.ttf -> DopemuxTermNerdFont-MediumOblique.ttf
-  base="$(basename "$input" .ttf)"
-  family="${base%%-*}"
-  face="${base#*-}"
   out="$PATCHED_DIR/${family}NerdFont-${face}.ttf"
   cp "${produced[0]}" "$out"
   printf '  -> %s\n' "$out"
@@ -75,5 +88,5 @@ done
 cleanup_patch_tmp
 
 printf '\nPatched %s face(s) into %s\n' "$patched" "$PATCHED_DIR"
-printf 'Internal family becomes "<Family> Nerd Font Mono" (the --mono build).\n'
+printf 'DopemuxTerm uses --mono; DopemuxEditor keeps source spacing.\n'
 printf 'Review generated binaries before committing; binaries are not committed by default (.gitignore).\n'

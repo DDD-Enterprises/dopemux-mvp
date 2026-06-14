@@ -20,6 +20,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLAN_SRC="$SCRIPT_DIR/private-build-plans.toml"
 IOSEVKA_TARGET="${IOSEVKA_TARGET:-ttf}"
+BUILD_MANIFEST="$OUT_DIR/.dopemux-built-fonts.txt"
+BUILD_MANIFEST_TMP="$OUT_DIR/.dopemux-built-fonts.txt.tmp"
 
 # Build plans defined in private-build-plans.toml.
 PLANS=(IosevkaDopemuxTerm IosevkaDopemuxEditor)
@@ -37,18 +39,20 @@ if [[ ! -d "$IOSEVKA_REPO/node_modules" ]]; then
   ( cd "$IOSEVKA_REPO" && npm ci )
 fi
 
+: > "$BUILD_MANIFEST_TMP"
+rm -f "$OUT_DIR"/DopemuxTerm-*.ttf "$OUT_DIR"/DopemuxEditor-*.ttf
+
 for plan in "${PLANS[@]}"; do
   printf 'Building %s (%s)...\n' "$plan" "$IOSEVKA_TARGET"
   ( cd "$IOSEVKA_REPO" && npm run build -- "${IOSEVKA_TARGET}::${plan}" )
 
-  src=""
-  for sub in TTF TTF-Unhinted; do
-    if [[ -d "$IOSEVKA_REPO/dist/$plan/$sub" ]]; then
-      src="$IOSEVKA_REPO/dist/$plan/$sub"
-      break
-    fi
-  done
+  case "$IOSEVKA_TARGET" in
+    ttf) src="$IOSEVKA_REPO/dist/$plan/TTF" ;;
+    ttf-unhinted) src="$IOSEVKA_REPO/dist/$plan/TTF-Unhinted" ;;
+    *) printf 'Unsupported IOSEVKA_TARGET for TTF collection: %s\n' "$IOSEVKA_TARGET" >&2; exit 1 ;;
+  esac
   [[ -n "$src" ]] || { printf 'No TTF output for %s under %s/dist/%s\n' "$plan" "$IOSEVKA_REPO" "$plan" >&2; exit 1; }
+  [[ -d "$src" ]] || { printf 'Expected %s output for %s at %s\n' "$IOSEVKA_TARGET" "$plan" "$src" >&2; exit 1; }
 
   ttf_outputs=()
   while IFS= read -r f; do ttf_outputs+=("$f"); done < <(find "$src" -maxdepth 1 -type f -iname '*.ttf' -print | sort)
@@ -59,9 +63,13 @@ for plan in "${PLANS[@]}"; do
   fi
 
   cp "${ttf_outputs[@]}" "$OUT_DIR"/
+  for f in "${ttf_outputs[@]}"; do
+    basename "$f" >> "$BUILD_MANIFEST_TMP"
+  done
   printf '  copied %s TTF face(s) from %s\n' "$count" "$src"
 done
+mv "$BUILD_MANIFEST_TMP" "$BUILD_MANIFEST"
 
 printf '\nBuilt faces in %s:\n' "$OUT_DIR"
-find "$OUT_DIR" -maxdepth 1 -iname 'Dopemux*-*.ttf' ! -iname '*NerdFont*' -print | sort
+sed "s#^#$OUT_DIR/#" "$BUILD_MANIFEST"
 printf '\nBuild artifacts are not committed (.gitignore). Next: ./patch-nerd-font.sh\n'

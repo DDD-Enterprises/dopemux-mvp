@@ -63,9 +63,10 @@ checkout and runs `npm run build -- ttf::IosevkaDopemuxTerm` and
 `... ttf::IosevkaDopemuxEditor`, then collects the TTFs into `OUT_DIR`. Set
 `IOSEVKA_TARGET=ttf-unhinted` to skip the `ttfautohint` dependency.
 
-`patch-nerd-font.sh` runs `fontforge -script font-patcher --complete --mono
---careful` over every built face and writes
+`patch-nerd-font.sh` runs `fontforge -script font-patcher --complete --careful`
+over the faces from the current build manifest and writes
 `$OUT_DIR/nerd-font/DopemuxTermNerdFont-*.ttf` (and `DopemuxEditorNerdFont-*`).
+Term faces are patched with `--mono`; Editor faces keep their source spacing.
 `--complete` guarantees the codepoints in `src/dopemux/ui/theme.py::Glyphs`.
 
 > Patcher invocation note: `font-patcher` requires FontForge's Python and must be
@@ -76,7 +77,7 @@ checkout and runs `npm run build -- ttf::IosevkaDopemuxTerm` and
 - `DopemuxTerm-{Regular,Italic,Oblique,Medium,MediumItalic,MediumOblique}.ttf`
 - `DopemuxEditor-{Regular,Italic,Oblique,Medium,MediumItalic,MediumOblique}.ttf`
 - `DopemuxTermNerdFont-{...}.ttf` (internal family `Dopemux Term Nerd Font Mono`)
-- `DopemuxEditorNerdFont-{...}.ttf`
+- `DopemuxEditorNerdFont-{...}.ttf` (keeps Editor source spacing)
 
 ## Verification
 
