@@ -737,6 +737,52 @@ def test_service_mutation_runtime_impact_blocks_and_is_not_runnable() -> None:
     assert "service_mutation_requested" in decision.stop_conditions
 
 
+def test_read_only_route_excludes_mutating_allowed_actions() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.READ_ONLY,
+        risk_class=RiskClass.R0_READ,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.status is RouteStatus.ALLOWED
+    assert decision.allowed_actions == ["inspect_runtime_code"]
+    assert "edit_allowlisted_files" not in decision.allowed_actions
+    assert "open_pr" not in decision.allowed_actions
+
+
+def test_unknown_runtime_impact_is_not_runnable() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.runtime_impact is RuntimeImpact.UNKNOWN
+    assert decision.status is RouteStatus.UNKNOWN
+    assert not _is_runnable(decision)
+    assert decision.allowed_actions == ["inspect_runtime_code"]
+
+
+def test_ci_touching_route_requires_supervisor_and_is_not_runnable() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        touches_ci=True,
+    )
+    decision = classify_route(inp)
+    assert decision.escalation_requirement is EscalationRequirement.ALWAYS
+    assert decision.status is RouteStatus.NEEDS_SUPERVISOR
+    assert not _is_runnable(decision)
+    assert "edit_allowlisted_files" not in decision.allowed_actions
+    assert "open_pr" not in decision.allowed_actions
+
+
 # ─────────────────────────────────────────────
 # Test 33 — Round-trip from_dict works
 # ─────────────────────────────────────────────
