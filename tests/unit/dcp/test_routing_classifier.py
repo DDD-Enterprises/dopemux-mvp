@@ -47,6 +47,7 @@ from dopemux.dcp.routing_model import (
     RouteDecision,
     RouteStatus,
     RuntimeImpact,
+    TaskSource,
     TaskType,
 )
 
@@ -740,6 +741,7 @@ def test_service_mutation_runtime_impact_blocks_and_is_not_runnable() -> None:
 
 def test_read_only_route_excludes_mutating_allowed_actions() -> None:
     inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
         task_type=TaskType.READ_ONLY,
         risk_class=RiskClass.R0_READ,
         runtime_impact=RuntimeImpact.READ_ONLY,
@@ -756,6 +758,7 @@ def test_read_only_route_excludes_mutating_allowed_actions() -> None:
 
 def test_unknown_runtime_impact_is_not_runnable() -> None:
     inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
         task_type=TaskType.CODE_CHANGE,
         risk_class=RiskClass.R1_LOW,
         authority_class=AuthorityClass.OPERATOR,
@@ -770,6 +773,7 @@ def test_unknown_runtime_impact_is_not_runnable() -> None:
 
 def test_ci_touching_route_requires_supervisor_and_is_not_runnable() -> None:
     inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
         task_type=TaskType.CODE_CHANGE,
         risk_class=RiskClass.R1_LOW,
         runtime_impact=RuntimeImpact.LOCAL_ONLY,
@@ -788,6 +792,7 @@ def test_ci_touching_route_requires_supervisor_and_is_not_runnable() -> None:
 
 def test_missing_proof_blocks_mutating_classification() -> None:
     inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
         task_type=TaskType.CODE_CHANGE,
         risk_class=RiskClass.R1_LOW,
         runtime_impact=RuntimeImpact.LOCAL_ONLY,
@@ -804,6 +809,7 @@ def test_missing_proof_blocks_mutating_classification() -> None:
 
 def test_unknown_complexity_is_not_runnable() -> None:
     inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
         task_type=TaskType.CODE_CHANGE,
         risk_class=RiskClass.R1_LOW,
         runtime_impact=RuntimeImpact.LOCAL_ONLY,
@@ -819,6 +825,7 @@ def test_unknown_complexity_is_not_runnable() -> None:
 
 def test_mutating_classification_requires_proof_obligations() -> None:
     inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
         task_type=TaskType.CODE_CHANGE,
         risk_class=RiskClass.R1_LOW,
         runtime_impact=RuntimeImpact.LOCAL_ONLY,
@@ -834,6 +841,7 @@ def test_mutating_classification_requires_proof_obligations() -> None:
 
 def test_mutating_classification_requires_audit_obligation() -> None:
     inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
         task_type=TaskType.CODE_CHANGE,
         risk_class=RiskClass.R1_LOW,
         runtime_impact=RuntimeImpact.LOCAL_ONLY,
@@ -859,6 +867,42 @@ def test_classify_route_uses_deterministic_route_id() -> None:
     first = classify_route(inp)
     second = classify_route(inp)
     assert first.route_id == second.route_id
+
+
+def test_unknown_task_source_is_not_runnable() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.task_source is TaskSource.UNKNOWN
+    assert decision.status is RouteStatus.UNKNOWN
+    assert not _is_runnable(decision)
+    assert "task_source_unknown" in decision.unknowns
+
+
+@pytest.mark.parametrize("action", ["run_targeted_tests", "capture_proof"])
+def test_read_only_requested_actions_do_not_grant_edit_or_pr(action: str) -> None:
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.READ_ONLY,
+        risk_class=RiskClass.R0_READ,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        requested_actions=[action],
+    )
+    decision = classify_route(inp)
+    assert decision.status is RouteStatus.ALLOWED
+    assert action in decision.allowed_actions
+    assert "edit_allowlisted_files" not in decision.allowed_actions
+    assert "open_pr" not in decision.allowed_actions
+    assert "run_embedded_audit" not in decision.allowed_actions
 
 
 # ─────────────────────────────────────────────

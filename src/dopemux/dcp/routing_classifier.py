@@ -126,6 +126,10 @@ _MUTATING_ALLOWED: list[str] = [
 
 _SAFE_ALLOWED: list[str] = _READ_ONLY_ALLOWED + _MUTATING_ALLOWED
 
+_NON_EDIT_REQUESTED_ALLOWED: frozenset[str] = frozenset(
+    ["run_targeted_tests", "capture_proof"]
+)
+
 _REQUESTED_ACTION_RED_LANE: frozenset[str] = frozenset(
     _ALWAYS_FORBIDDEN
     + [
@@ -214,6 +218,9 @@ def _derive_route_status(
 
     if inp.has_stale_proof:
         return RouteStatus.BLOCKED
+
+    if inp.task_source is TaskSource.UNKNOWN:
+        return RouteStatus.UNKNOWN
 
     if inp.runtime_impact is RuntimeImpact.UNKNOWN:
         return RouteStatus.UNKNOWN
@@ -339,7 +346,11 @@ def _derive_allowed_actions(
         return []
     if status is RouteStatus.ALLOWED:
         if not _has_mutating_scope(inp):
-            return list(_READ_ONLY_ALLOWED)
+            allowed = list(_READ_ONLY_ALLOWED)
+            for action in inp.requested_actions:
+                if action in _NON_EDIT_REQUESTED_ALLOWED:
+                    _append_unique(allowed, action)
+            return allowed
         return list(_SAFE_ALLOWED)
     # UNKNOWN / NEEDS_SUPERVISOR / PENDING: read-only inspection only
     return list(_READ_ONLY_ALLOWED)
@@ -424,6 +435,8 @@ def _derive_stop_conditions(
 def _collect_unknowns(inp: RoutingClassificationInput) -> list[str]:
     """Record which authority/risk dimensions are unknown."""
     unknowns: list[str] = []
+    if inp.task_source is TaskSource.UNKNOWN:
+        unknowns.append("task_source_unknown")
     if inp.authority_class is AuthorityClass.UNKNOWN or inp.has_unknown_authority:
         unknowns.append("authority_class_unknown")
     if inp.task_type is TaskType.UNKNOWN:
@@ -461,7 +474,10 @@ def _has_mutating_scope(inp: RoutingClassificationInput) -> bool:
         or inp.touches_public_behavior
         or inp.task_type
         in (TaskType.CODE_CHANGE, TaskType.SCHEMA_ONLY, TaskType.PROOF_BUNDLE)
-        or any(action in _MUTATING_ALLOWED for action in inp.requested_actions)
+        or any(
+            action in ("edit_allowlisted_files", "open_pr", "run_embedded_audit")
+            for action in inp.requested_actions
+        )
     )
 
 
