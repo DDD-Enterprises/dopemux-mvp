@@ -1,0 +1,318 @@
+{
+  "version": "1.0",
+  "generated": "2026-06-14T00:00:00Z",
+  "items": [
+    {
+      "id": "dx/backlinks",
+      "type": "skill",
+      "path": ".claude/commands/dx/backlinks.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/backlinks.md:6 allowed-tools includes mcp__task-orchestrator__query_dependencies"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/block",
+      "type": "skill",
+      "path": ".claude/commands/dx/block.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/block.md:6-7 allowed-tools include task-orchestrator get_context and advance_item"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/blocked",
+      "type": "skill",
+      "path": ".claude/commands/dx/blocked.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/blocked.md:6 allowed-tools includes mcp__task-orchestrator__get_blocked_items"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/cancel",
+      "type": "skill",
+      "path": ".claude/commands/dx/cancel.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/cancel.md:6-7 allowed-tools include task-orchestrator get_context and advance_item"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/complete",
+      "type": "skill",
+      "path": ".claude/commands/dx/complete.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/complete.md:6-7 allowed-tools include task-orchestrator get_context and advance_item"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/complete-tree",
+      "type": "skill",
+      "path": ".claude/commands/dx/complete-tree.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/complete-tree.md:6-8 allowed-tools include task-orchestrator query_items, complete_tree, and advance_item"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/context",
+      "type": "skill",
+      "path": ".claude/commands/dx/context.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/context.md:6-8 allowed-tools include task-orchestrator and mcp__conport__get_active_context"],
+      "fleet_deps": ["task-orchestrator MCP", "ConPort MCP"]
+    },
+    {
+      "id": "dx/depends",
+      "type": "skill",
+      "path": ".claude/commands/dx/depends.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/depends.md:6-7 allowed-tools include task-orchestrator query_dependencies and manage_dependencies"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/implement",
+      "type": "skill",
+      "path": ".claude/commands/dx/implement.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/implement.md:6 allowed-tools includes mcp__conport__*", ".claude/commands/dx/implement.md:65 calls localhost:8095 assessment endpoint"],
+      "fleet_deps": ["ConPort MCP", "localhost:8095 assessment service"]
+    },
+    {
+      "id": "dx/next",
+      "type": "skill",
+      "path": ".claude/commands/dx/next.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/next.md:6-8 allowed-tools include task-orchestrator get_next_item/get_context and ConPort active context"],
+      "fleet_deps": ["task-orchestrator MCP", "ConPort MCP"]
+    },
+    {
+      "id": "dx/note",
+      "type": "skill",
+      "path": ".claude/commands/dx/note.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/note.md:6-8 allowed-tools include task-orchestrator get_context, manage_notes, and query_notes"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/notes",
+      "type": "skill",
+      "path": ".claude/commands/dx/notes.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/notes.md:6 allowed-tools includes mcp__task-orchestrator__query_notes"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/preview",
+      "type": "skill",
+      "path": ".claude/commands/dx/preview.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/preview.md:6 allowed-tools includes mcp__task-orchestrator__get_next_status"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/reopen",
+      "type": "skill",
+      "path": ".claude/commands/dx/reopen.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/reopen.md:6 allowed-tools includes mcp__task-orchestrator__get_context"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/resume",
+      "type": "skill",
+      "path": ".claude/commands/dx/resume.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/resume.md:6-7 allowed-tools include task-orchestrator get_context and advance_item"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/search",
+      "type": "skill",
+      "path": ".claude/commands/dx/search.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/search.md:6-7 allowed-tools include task-orchestrator query_items and query_notes"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/start",
+      "type": "skill",
+      "path": ".claude/commands/dx/start.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/start.md:6-7 allowed-tools include task-orchestrator get_context and advance_item"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "dx/tree",
+      "type": "skill",
+      "path": ".claude/commands/dx/tree.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/dx/tree.md:6 allowed-tools includes mcp__task-orchestrator__query_items"],
+      "fleet_deps": ["task-orchestrator MCP"]
+    },
+    {
+      "id": "hook/check-energy",
+      "type": "hook",
+      "path": ".claude/hooks/check_energy.sh",
+      "tier": "L0.5",
+      "evidence": [".claude/hooks/check_energy.sh:7 defaults ADHD_ENGINE_URL to http://localhost:8080/api/v1", ".claude/hooks/check_energy.sh:18 curls the ADHD engine state endpoint"],
+      "fleet_deps": ["ADHD Engine localhost:8080"]
+    },
+    {
+      "id": "hook/dcp-denylist-nudge",
+      "type": "hook",
+      "path": ".claude/hooks/dcp_denylist_nudge.py",
+      "tier": "L0",
+      "evidence": ["Source scan found no task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns; route_manifest.py import failure returns () fail-open."],
+      "fleet_deps": []
+    },
+    {
+      "id": "hook/dcp-surface-guard",
+      "type": "hook",
+      "path": ".claude/hooks/dcp_surface_guard.py",
+      "tier": "L0",
+      "evidence": ["Source scan found no task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns; dopemux import failure falls back to hardcoded red-lane patterns."],
+      "fleet_deps": []
+    },
+    {
+      "id": "hook/log-progress",
+      "type": "hook",
+      "path": ".claude/hooks/log_progress.sh",
+      "tier": "L0.5",
+      "evidence": [".claude/hooks/log_progress.sh:7 defaults ADHD_ENGINE_URL to http://localhost:8080/api/v1", ".claude/hooks/log_progress.sh:14-15 posts progress to the ADHD engine"],
+      "fleet_deps": ["ADHD Engine localhost:8080"]
+    },
+    {
+      "id": "hook/mcp-health-probe",
+      "type": "hook",
+      "path": ".claude/hooks/mcp_health_probe.py",
+      "tier": "L0.5",
+      "evidence": [".claude/hooks/mcp_health_probe.py:81 probes 127.0.0.1 ports", ".claude/hooks/mcp_health_probe.py:91 runs docker ps"],
+      "fleet_deps": ["local MCP ports", "Docker"]
+    },
+    {
+      "id": "hook/orchestrator-enforcement",
+      "type": "hook",
+      "path": ".claude/hooks/orchestrator_enforcement.py",
+      "tier": "L0.5",
+      "evidence": [".claude/hooks/orchestrator_enforcement.py:20 documents enforcement for mcp__task-orchestrator__* tool calls"],
+      "fleet_deps": ["task-orchestrator MCP call surface"]
+    },
+    {
+      "id": "hook/orchestrator-post-edit-nudge",
+      "type": "hook",
+      "path": ".claude/hooks/orchestrator_post_edit_nudge.py",
+      "tier": "L0",
+      "evidence": ["Source scan found no task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns."],
+      "fleet_deps": []
+    },
+    {
+      "id": "hook/orchestrator-session-start",
+      "type": "hook",
+      "path": ".claude/hooks/orchestrator_session_start.py",
+      "tier": "L0.5",
+      "evidence": [".claude/hooks/orchestrator_session_start.py:6 emits context after mcp__task-orchestrator__get_context"],
+      "fleet_deps": ["task-orchestrator MCP call surface"]
+    },
+    {
+      "id": "hook/orchestrator-subagent-protocol",
+      "type": "hook",
+      "path": ".claude/hooks/orchestrator_subagent_protocol.py",
+      "tier": "L0.5",
+      "evidence": [".claude/hooks/orchestrator_subagent_protocol.py:11 injects the mcp__task-orchestrator__ tool prefix into subagent protocol text"],
+      "fleet_deps": ["task-orchestrator MCP call surface"]
+    },
+    {
+      "id": "hook/prompt-analyzer",
+      "type": "hook",
+      "path": ".claude/hooks/prompt_analyzer.py",
+      "tier": "L0.5",
+      "evidence": [".claude/hooks/prompt_analyzer.py:27 sets ADHD_ENGINE_URL to http://localhost:8080/api/v1", ".claude/hooks/prompt_analyzer.py:295 sets TASK_ORCH_URL to http://localhost:3009"],
+      "fleet_deps": ["ADHD Engine localhost:8080", "task-orchestrator localhost:3009"]
+    },
+    {
+      "id": "hook/proof-tracking-guard",
+      "type": "hook",
+      "path": ".claude/hooks/proof_tracking_guard.py",
+      "tier": "L0",
+      "evidence": ["Source scan found no task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns; git failures return None fail-open."],
+      "fleet_deps": []
+    },
+    {
+      "id": "hook/save-context",
+      "type": "hook",
+      "path": ".claude/hooks/save_context.sh",
+      "tier": "L0.5",
+      "evidence": [".claude/hooks/save_context.sh:11 defaults ADHD_ENGINE_URL to http://localhost:8080/api/v1", ".claude/hooks/save_context.sh:17-18 curls the ADHD engine save-context endpoint"],
+      "fleet_deps": ["ADHD Engine localhost:8080"]
+    },
+    {
+      "id": "hook/session-lifecycle",
+      "type": "hook",
+      "path": ".claude/hooks/session_lifecycle.py",
+      "tier": "L0.5",
+      "evidence": [".claude/hooks/session_lifecycle.py:9 sets ORCHESTRATOR_URL to http://localhost:3009", ".claude/hooks/session_lifecycle.py:15 posts to the orchestrator tool endpoint"],
+      "fleet_deps": ["task-orchestrator localhost:3009"]
+    },
+    {
+      "id": "hook/track-file-edit",
+      "type": "hook",
+      "path": ".claude/hooks/track_file_edit.sh",
+      "tier": "L0.5",
+      "evidence": [".claude/hooks/track_file_edit.sh:7 sets ORCHESTRATOR_URL to http://localhost:3009", ".claude/hooks/track_file_edit.sh:16 posts to the orchestrator track_edit endpoint"],
+      "fleet_deps": ["task-orchestrator localhost:3009"]
+    },
+    {
+      "id": "command/implement",
+      "type": "skill",
+      "path": ".claude/commands/implement.md",
+      "tier": "L0",
+      "evidence": ["Source scan found no task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns."],
+      "fleet_deps": []
+    },
+    {
+      "id": "command/plan",
+      "type": "skill",
+      "path": ".claude/commands/plan.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/plan.md:3 instructs storing plan summary to ConPort decision/progress"],
+      "fleet_deps": ["ConPort"]
+    },
+    {
+      "id": "command/plan-slice",
+      "type": "skill",
+      "path": ".claude/commands/plan-slice.md",
+      "tier": "L0",
+      "evidence": ["Source scan found no task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns."],
+      "fleet_deps": []
+    },
+    {
+      "id": "command/plan-tasks",
+      "type": "skill",
+      "path": ".claude/commands/plan-tasks.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/plan-tasks.md:2 calls /mcp task-master-ai create_tasks"],
+      "fleet_deps": ["task-master-ai MCP"]
+    },
+    {
+      "id": "command/research-deep",
+      "type": "skill",
+      "path": ".claude/commands/research-deep.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/research-deep.md:10 requires docker ps health check for dopemux-mcp-gptr-mcp", ".claude/commands/research-deep.md:14 updates ConPort active context"],
+      "fleet_deps": ["Docker", "gpt-researcher MCP", "ConPort MCP"]
+    },
+    {
+      "id": "command/research-quick",
+      "type": "skill",
+      "path": ".claude/commands/research-quick.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/research-quick.md:10 requires docker ps health check for dopemux-mcp-gptr-mcp"],
+      "fleet_deps": ["Docker", "gpt-researcher MCP"]
+    },
+    {
+      "id": "command/research-report",
+      "type": "skill",
+      "path": ".claude/commands/research-report.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/research-report.md:13 reads ConPort active context", ".claude/commands/research-report.md:17 requires docker ps health check for dopemux-mcp-gptr-mcp"],
+      "fleet_deps": ["Docker", "gpt-researcher MCP", "ConPort MCP"]
+    }
+  ]
+}
