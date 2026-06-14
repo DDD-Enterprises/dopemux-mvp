@@ -47,7 +47,7 @@ KEY_FILES=(
   "preview/11-rails.html"
   "preview/18-inspector.html"
   "preview/20-cockpit-composition.html"
-  "fonts/README.md"
+  "fonts/readme.md"
   "ui_kits/cockpit/Primitives.jsx"
   "ui_kits/cockpit/Cockpit.jsx"
   "ui_kits/cockpit/README.md"
@@ -127,7 +127,7 @@ Preserve valid package-specific content while removing stale rules:
 EOF
 
 (
-  cd /tmp
+  cd "${OUT_DIR:h}"
   zip -qr "$ZIP" "${OUT_DIR:t}"
 )
 
