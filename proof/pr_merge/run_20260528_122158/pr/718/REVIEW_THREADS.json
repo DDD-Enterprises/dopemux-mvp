@@ -1,0 +1,376 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw986FCHCe",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "tools/pr_action_bridge/compiler.py",
+      "line": null,
+      "original_line": 133,
+      "original_start_line": 131,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FQF7O",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Read the nested PR metadata emitted by PR Steward**\n\nWhen this compiler is fed actual `MERGE_READINESS.json` from `tools.pr_steward.classifier.build_artifacts`, the object has `pr.number` and no top-level `pr_number`/`repo` (also enforced by `schemas/pr_steward/merge_readiness.schema.json`). These required-key checks therefore raise `KeyError` before producing any `ACTION_PLAN`, so the PR Action Bridge cannot consume the steward artifacts it is meant to compile; use the emitted nested `pr` shape or update the steward artifact/schema to include the top-level fields.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-27T07:56:15Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": null,
+          "original_line": 133
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWQKI",
+          "author": "hu3mann",
+          "body": "Outdated thread candidate for auto-resolution; pending verification.",
+          "created_at": "2026-05-27T13:09:12Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": null,
+          "original_line": 133
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWQ00",
+          "author": "hu3mann",
+          "body": "✅ Automated verification passed for this auto_resolve_outdated.",
+          "created_at": "2026-05-27T13:09:38Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": null,
+          "original_line": 133
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FCHCj",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "scripts/audit/build_evidence_bundle.py",
+      "line": null,
+      "original_line": 135,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FQF7T",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Avoid writing absolute allowed roots into audit bundles**\n\nIf callers pass an absolute `--allowed-root` (for example `$PWD`, which is common in automation), this raw string is copied into `manifest.json` as `source_root`, exposing the host checkout path despite the bundle builder's no-host-path invariant. The bundled file paths are already relative to the root, so the manifest should store a stable redacted/relative root rather than the caller's absolute path.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-27T07:56:15Z",
+          "path": "scripts/audit/build_evidence_bundle.py",
+          "line": null,
+          "original_line": 135
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWQOW",
+          "author": "hu3mann",
+          "body": "Outdated thread candidate for auto-resolution; pending verification.",
+          "created_at": "2026-05-27T13:09:15Z",
+          "path": "scripts/audit/build_evidence_bundle.py",
+          "line": null,
+          "original_line": 135
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWQ55",
+          "author": "hu3mann",
+          "body": "✅ Automated verification passed for this auto_resolve_outdated.",
+          "created_at": "2026-05-27T13:09:41Z",
+          "path": "scripts/audit/build_evidence_bundle.py",
+          "line": null,
+          "original_line": 135
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FCJHw",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/ops/pr-action-bridge.md",
+      "line": 108,
+      "original_line": 95,
+      "original_start_line": 29,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FQIvn",
+          "author": "copilot-pull-request-reviewer",
+          "body": "This new doc references the old API surface that the same series replaced. Two stale items:\n\n1. Lines 30-44 show `from tools.pr_action_bridge.compiler import compile` and `compile(...)`. Per TP-DMX-PR-ACTION-BRIDGE-006, the function was renamed to `compile_action_plan()` (and `compile` shadowed a Python builtin). The code examples here will not work as written and will mislead readers.\n\n2. Line 87 of the action taxonomy table still lists `PROOF_STALE_OR_MISSING → proof-stale`. Per TP-DMX-PR-STEWARD-FRESHNESS-005 and TP-DMX-PR-STEWARD-HARDEN-010, this blocker was split into `PROOF_STALE → proof-stale` and `PROOF_MISSING → proof-missing`. The new `UNKNOWN_PR_AUTHOR → unknown-pr-author` row is also missing.\n\nPlease update both the import/call examples and the blocker taxonomy table to match the shipped code/schema in this same PR.",
+          "created_at": "2026-05-27T07:58:18Z",
+          "path": "docs/ops/pr-action-bridge.md",
+          "line": 108,
+          "original_line": 95
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWQSj",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T13:09:17Z",
+          "path": "docs/ops/pr-action-bridge.md",
+          "line": 108,
+          "original_line": 95
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3Ypy",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:36:29Z",
+          "path": "docs/ops/pr-action-bridge.md",
+          "line": 108,
+          "original_line": 95
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FCJIP",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "docs/03-reference/templates/copilot/pr-repair-packet.md",
+      "line": 27,
+      "original_line": 15,
+      "original_start_line": 12,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FQIwN",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The supervisor-role prohibition list enumerates categories Copilot must not act on, but it omits two supervisor categories that were added by this same PR (TP-DMX-PR-STEWARD-HARDEN-010): `proof-missing` and `unknown-pr-author`. As written, an aggressive reader could conclude these categories are not supervisor-only and are fair game for Copilot. Please add `proof-missing` and `unknown-pr-author` to this enumerated list (and ideally to the parallel list in `docs/ops/copilot-pr-repair-lane.md` lines 46-50) so the template's governance enumeration matches the action_plan.schema.json supervisor taxonomy.",
+          "created_at": "2026-05-27T07:58:18Z",
+          "path": "docs/03-reference/templates/copilot/pr-repair-packet.md",
+          "line": 27,
+          "original_line": 15
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWQVi",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T13:09:19Z",
+          "path": "docs/03-reference/templates/copilot/pr-repair-packet.md",
+          "line": 27,
+          "original_line": 15
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3Yr9",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:36:31Z",
+          "path": "docs/03-reference/templates/copilot/pr-repair-packet.md",
+          "line": 27,
+          "original_line": 15
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FCqHh",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "tools/pr_action_bridge/compiler.py",
+      "line": 82,
+      "original_line": 82,
+      "original_start_line": 81,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FQ2Mc",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Match actual CI triage fields when finding source items**\n\nWhen the bridge compiles the `CI_TRIAGE.json` emitted by `tools.pr_steward.classifier`, check records contain fields such as `name`, `required`, `status`, `conclusion`, `head_sha`, `blocking`, and `rationale`, but no `blockers` array. This lookup therefore never matches real failed/pending/unknown checks and emits `source_item_id: null`, so the generated action plan/repair packet loses the specific failing check name despite the bridge docs describing `source_item_id` as the actionable pointer into `ci_triage`.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-27T08:29:55Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": 82,
+          "original_line": 82
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWQZY",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T13:09:22Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": 82,
+          "original_line": 82
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3YuH",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:36:33Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": 82,
+          "original_line": 82
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FGAQG",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "tools/pr_action_bridge/compiler.py",
+      "line": 167,
+      "original_line": 167,
+      "original_start_line": 166,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FVbL9",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Keep unknown blocker actions schema-valid**\n\nIf `merge_readiness.blockers` contains a new or otherwise unrecognized blocker, this fail-closed branch emits `category: \"unknown-blocker\"`, but `schemas/pr_action_bridge/action_plan.schema.json` does not include that category in its enum. That means the compiler can produce an ACTION_PLAN that downstream schema validation rejects exactly in the compatibility case this branch is trying to handle; either add the category to the schema or map unknown blockers to an existing schema-valid supervisor category.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-27T12:23:57Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": 167,
+          "original_line": 167
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWQdQ",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T13:09:24Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": 167,
+          "original_line": 167
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3Ywj",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:36:34Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": 167,
+          "original_line": 167
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FGbl9",
+      "is_resolved": true,
+      "is_outdated": false,
+      "viewer_can_resolve": false,
+      "path": "tools/pr_action_bridge/compiler.py",
+      "line": 75,
+      "original_line": 75,
+      "original_start_line": 74,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FWBLw",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Use actual thread disposition keys for source IDs**\n\nWhen compiling real `THREAD_DISPOSITIONS.json` emitted by `tools.pr_steward.classifier`, each thread record has `is_resolved` and `thread_id`, not `resolved`/`id`. Because this lookup defaults the missing `resolved` key to `True`, an `UNRESOLVED_REVIEW_THREAD` blocker never resolves to the offending thread and the action plan emits `source_item_id: null`, removing the actionable pointer the bridge is supposed to provide.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-27T12:59:20Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": 75,
+          "original_line": 75
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWQhZ",
+          "author": "hu3mann",
+          "body": "Outdated thread candidate for auto-resolution; pending verification.",
+          "created_at": "2026-05-27T13:09:27Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": 75,
+          "original_line": 75
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWQ-d",
+          "author": "hu3mann",
+          "body": "✅ Automated verification passed for this auto_resolve_outdated.",
+          "created_at": "2026-05-27T13:09:44Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": 75,
+          "original_line": 75
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FGbmF",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "scripts/audit/build_evidence_bundle.py",
+      "line": 236,
+      "original_line": 236,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FWBL8",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Redact escaped absolute paths before recording rejections**\n\nIf a caller passes an absolute source outside `allowed_root`, this branch writes the raw host path into the rejected record, which is then serialized into `manifest.json`/`redactions.json`; the bundle docs promise no absolute host paths in output, so a rejected `/home/.../secret.env` can still leak checkout/user path information even though content is not read. Store a stable placeholder or root-relative-safe value for path escapes instead of `str(source)`.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-27T12:59:21Z",
+          "path": "scripts/audit/build_evidence_bundle.py",
+          "line": 236,
+          "original_line": 236
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FWQlZ",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T13:09:30Z",
+          "path": "scripts/audit/build_evidence_bundle.py",
+          "line": 236,
+          "original_line": 236
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3YzZ",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:36:36Z",
+          "path": "scripts/audit/build_evidence_bundle.py",
+          "line": 236,
+          "original_line": 236
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FHP2T",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "tools/pr_action_bridge/compiler.py",
+      "line": 67,
+      "original_line": 67,
+      "original_start_line": 64,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FXF_0",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Match review ledger dispositions for source IDs**\n\nThe real `REVIEW_ITEM_LEDGER.json` emitted by `tools.pr_steward.classifier` stores `id`, `disposition`, `blocking`, and rationale fields, not a per-item `blockers` array. For review/comment blockers such as `REQUEST_CHANGES`, `REVIEW_ITEM_MUST_FIX`, `REVIEW_ITEM_NEEDS_SUPERVISOR`, and unknown reviewers, this lookup never finds the originating review item (and `REQUEST_CHANGES` is not in this branch at all), so ACTION_PLAN entries lose the actionable `source_item_id`. Match the ledger's `blocking`/`disposition` shape or emit blocker metadata into the ledger.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-27T13:42:59Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": 67,
+          "original_line": 67
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3Y2B",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:36:39Z",
+          "path": "tools/pr_action_bridge/compiler.py",
+          "line": 67,
+          "original_line": 67
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FXl6l",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": "tools/pr_steward/collector.py",
+      "line": 24,
+      "original_line": 24,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987Ft4MX",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Remove unsupported gh pr view field**\n\nIn live PR Steward runs this field is passed to `gh pr view --json`, but the official `gh pr view` JSON field list does not include `authorAssociation` (it includes fields such as `author`, `comments`, `reviews`, `statusCheckRollup`, etc.). GitHub CLI rejects unknown JSON fields before returning PR data, so every live harvest will fall into the `gh pr view failed` incomplete path and emit `HARVEST_INCOMPLETE` instead of classifying the PR; fetch the association through a supported field/API path or drop it from this command.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-28T10:33:12Z",
+          "path": "tools/pr_steward/collector.py",
+          "line": 24,
+          "original_line": 24
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3Y4Z",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:36:41Z",
+          "path": "tools/pr_steward/collector.py",
+          "line": 24,
+          "original_line": 24
+        }
+      ]
+    }
+  ]
+}

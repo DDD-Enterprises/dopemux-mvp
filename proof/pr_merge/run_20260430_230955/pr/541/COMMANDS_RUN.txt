@@ -1,0 +1,158 @@
+$ git fetch origin pull/541/head:prmerge/20260430_230955-541
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/541/head -> prmerge/20260430_230955-541
+
+$ git worktree add /tmp/dopemux-pr-merge-541-20260430_230955 prmerge/20260430_230955-541
+exit=0
+--- stdout ---
+HEAD is now at 4bdbd3ac2 Create docs trust map and docs-vs-runtime diff
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260430_230955-541')
+Updating files:  16% (2021/12145)
+Updating files:  17% (2065/12145)
+Updating files:  18% (2187/12145)
+Updating files:  19% (2308/12145)
+Updating files:  20% (2429/12145)
+Updating files:  21% (2551/12145)
+Updating files:  22% (2672/12145)
+Updating files:  23% (2794/12145)
+Updating files:  24% (2915/12145)
+Updating files:  25% (3037/12145)
+Updating files:  26% (3158/12145)
+Updating files:  27% (3280/12145)
+Updating files:  28% (3401/12145)
+Updating files:  29% (3523/12145)
+Updating files:  30% (3644/12145)
+Updating files:  31% (3765/12145)
+Updating files:  32% (3887/12145)
+Updating files:  33% (4008/12145)
+Updating files:  34% (4130/12145)
+Updating files:  35% (4251/12145)
+Updating files:  36% (4373/12145)
+Updating files:  37% (4494/12145)
+Updating files:  38% (4616/12145)
+Updating files:  39% (4737/12145)
+Updating files:  40% (4858/12145)
+Updating files:  41% (4980/12145)
+Updating files:  42% (5101/12145)
+Updating files:  43% (5223/12145)
+Updating files:  44% (5344/12145)
+Updating files:  45% (5466/12145)
+Updating files:  46% (5587/12145)
+Updating files:  47% (5709/12145)
+Updating files:  48% (5830/12145)
+Updating files:  49% (5952/12145)
+Updating files:  50% (6073/12145)
+Updating files:  51% (6194/12145)
+Updating files:  52% (6316/12145)
+Updating files:  53% (6437/12145)
+Updating files:  54% (6559/12145)
+Updating files:  54% (6648/12145)
+Updating files:  55% (6680/12145)
+Updating files:  56% (6802/12145)
+Updating files:  57% (6923/12145)
+Updating files:  58% (7045/12145)
+Updating files:  59% (7166/12145)
+Updating files:  60% (7287/12145)
+Updating files:  61% (7409/12145)
+Updating files:  62% (7530/12145)
+Updating files:  63% (7652/12145)
+Updating files:  64% (7773/12145)
+Updating files:  65% (7895/12145)
+Updating files:  66% (8016/12145)
+Updating files:  67% (8138/12145)
+Updating files:  68% (8259/12145)
+Updating files:  69% (8381/12145)
+Updating files:  70% (8502/12145)
+Updating files:  71% (8623/12145)
+Updating files:  72% (8745/12145)
+Updating files:  73% (8866/12145)
+Updating files:  74% (8988/12145)
+Updating files:  75% (9109/12145)
+Updating files:  76% (9231/12145)
+Updating files:  77% (9352/12145)
+Updating files:  78% (9474/12145)
+Updating files:  79% (9595/12145)
+Updating files:  80% (9716/12145)
+Updating files:  81% (9838/12145)
+Updating files:  82% (9959/12145)
+Updating files:  83% (10081/12145)
+Updating files:  84% (10202/12145)
+Updating files:  85% (10324/12145)
+Updating files:  86% (10445/12145)
+Updating files:  87% (10567/12145)
+Updating files:  88% (10688/12145)
+Updating files:  89% (10810/12145)
+Updating files:  90% (10931/12145)
+Updating files:  91% (11052/12145)
+Updating files:  92% (11174/12145)
+Updating files:  93% (11295/12145)
+Updating files:  93% (11392/12145)
+Updating files:  94% (11417/12145)
+Updating files:  95% (11538/12145)
+Updating files:  96% (11660/12145)
+Updating files:  97% (11781/12145)
+Updating files:  98% (11903/12145)
+Updating files:  99% (12024/12145)
+Updating files: 100% (12145/12145)
+Updating files: 100% (12145/12145), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+4bdbd3ac28e42f0c95f819198f20a478139211cf
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-t1u8", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWBk"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-t1vh", body: "Automated queue-drain applied a minimal fix and will run verification before resolving this thread."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWCG"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-t1v3", body: "Automated queue-drain applied a minimal fix and will run verification before resolving this thread."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWCq"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-t1wK", body: "Automated queue-drain applied a minimal fix and will run verification before resolving this thread."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWDR"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw985-t1wc", body: "Automated queue-drain applied a minimal fix and will run verification before resolving this thread."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw9869FWEA"}}}}
+
+$ git add -A
+exit=0
+
+$ git commit -m 'review-response: address thread suggestions (pr-merge/20260430_230955/PR-541)'
+exit=0
+--- stdout ---
+[prmerge/20260430_230955-541 6b14a0d27] review-response: address thread suggestions (pr-merge/20260430_230955/PR-541)
+ 3 files changed, 8 insertions(+), 5 deletions(-)
+
+$ git push origin HEAD:docs/trust-map-runtime-diff --force-with-lease
+exit=0
+--- stderr ---
+remote: 
+remote: GitHub found 18 vulnerabilities on DDD-Enterprises/dopemux-mvp's default branch (2 critical, 7 high, 9 moderate). To find out more, visit:        
+remote:      https://github.com/DDD-Enterprises/dopemux-mvp/security/dependabot        
+remote: 
+To https://github.com/DDD-Enterprises/dopemux-mvp.git
+   4bdbd3ac2..6b14a0d27  HEAD -> docs/trust-map-runtime-diff
+
+$ gh pr update-branch 541 --rebase
+exit=1
+--- stderr ---
+GraphQL: head sha didn't match the current head ref. (updatePullRequestBranch)
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-541-20260430_230955
+exit=0
+

@@ -1,0 +1,96 @@
+{
+  "cwd": "/Users/hue/code/dopemux-mvp",
+  "python": "system",
+  "platform": "Darwin",
+  "pid": 84284,
+  "repo_slug": "DDD-Enterprises/dopemux-mvp",
+  "rate_limit": {
+    "available": true,
+    "resources": {
+      "core": {
+        "limit": 5000,
+        "used": 10,
+        "remaining": 4990,
+        "reset": 1777620867
+      },
+      "search": {
+        "limit": 30,
+        "used": 0,
+        "remaining": 30,
+        "reset": 1777618315
+      },
+      "graphql": {
+        "limit": 5000,
+        "used": 687,
+        "remaining": 4313,
+        "reset": 1777618822
+      },
+      "integration_manifest": {
+        "limit": 5000,
+        "used": 0,
+        "remaining": 5000,
+        "reset": 1777621855
+      },
+      "source_import": {
+        "limit": 100,
+        "used": 0,
+        "remaining": 100,
+        "reset": 1777618315
+      },
+      "code_scanning_upload": {
+        "limit": 5000,
+        "used": 10,
+        "remaining": 4990,
+        "reset": 1777620867
+      },
+      "code_scanning_autofix": {
+        "limit": 10,
+        "used": 0,
+        "remaining": 10,
+        "reset": 1777618315
+      },
+      "actions_runner_registration": {
+        "limit": 10000,
+        "used": 0,
+        "remaining": 10000,
+        "reset": 1777621855
+      },
+      "scim": {
+        "limit": 15000,
+        "used": 0,
+        "remaining": 15000,
+        "reset": 1777621855
+      },
+      "dependency_snapshots": {
+        "limit": 100,
+        "used": 0,
+        "remaining": 100,
+        "reset": 1777618315
+      },
+      "dependency_sbom": {
+        "limit": 100,
+        "used": 0,
+        "remaining": 100,
+        "reset": 1777618315
+      },
+      "audit_log": {
+        "limit": 1750,
+        "used": 0,
+        "remaining": 1750,
+        "reset": 1777621855
+      },
+      "audit_log_streaming": {
+        "limit": 15,
+        "used": 0,
+        "remaining": 15,
+        "reset": 1777621855
+      },
+      "code_search": {
+        "limit": 10,
+        "used": 0,
+        "remaining": 10,
+        "reset": 1777618315
+      }
+    }
+  }
+}

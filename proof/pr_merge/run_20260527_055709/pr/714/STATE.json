@@ -1,0 +1,490 @@
+{
+  "run_id": "20260527_055709",
+  "pr_state": {
+    "pr_id": 714,
+    "title": "feat(orchestrator): add remaining operator workflows",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "codex/tp-dmx-orch-007-plugin-hooks",
+    "ci_status": "PENDING",
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "BLOCKED",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-27T12:59:09Z",
+    "is_draft": false,
+    "auto_merge_enabled": false,
+    "additions": 11278,
+    "deletions": 8,
+    "changed_files": 64,
+    "unresolved_threads": 6,
+    "active_unresolved_threads": 5,
+    "outdated_unresolved_threads": 1,
+    "pr_class": "COMMENTS_ONLY",
+    "risk_score": 12436.0,
+    "check_summary": {
+      "total": 21,
+      "success": 20,
+      "failure": 0,
+      "pending": 1,
+      "required_pending": 1,
+      "required_failure": 0,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "merge_ready",
+    "head_sha": "53de58107acf37906d09f40531d8b2d9d1eae533",
+    "base_sha": "898310bd01cf48b2703a166b429d4b330ec9f84e"
+  },
+  "lifecycle_state": "merge_ready",
+  "apply_actions": [
+    "rebase codex/tp-dmx-orch-007-plugin-hooks onto main",
+    "resolve review threads",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "auto_merge_fallback",
+    "command": [
+      "gh",
+      "pr",
+      "merge",
+      "714",
+      "--auto",
+      "--rebase",
+      "--delete-branch"
+    ],
+    "reason": "Required or optional checks are pending; enabling auto-merge.",
+    "reason_code": "auto_merge_active_checks"
+  },
+  "blockers": [],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "threads_resolved_locally",
+      "message": "GitHub shows 5 active threads, but they were resolved locally and validation passed.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "active_threads": 5
+      },
+      "source": "local_validation",
+      "override": null
+    },
+    {
+      "kind": "warning",
+      "finding_type": "ci_pending_but_local_passed",
+      "message": "GitHub CI is pending, but local validation passed.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "checks_total": 21,
+        "checks_success": 20,
+        "checks_failure": 0,
+        "checks_pending": 1,
+        "required_checks_pending": 1,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)",
+            "ci-summary"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [],
+        "blocker_types": [
+          "required_check_pending"
+        ],
+        "warning_types": []
+      },
+      "source": "local_validation",
+      "override": null
+    },
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "diff_size": 11286
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 12436.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 21,
+        "checks_success": 20,
+        "checks_failure": 0,
+        "checks_pending": 1,
+        "required_checks_pending": 1,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)",
+            "ci-summary"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [],
+        "blocker_types": [
+          "required_check_pending"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "passed",
+      "details": {
+        "status": "passed",
+        "required_for_merge_ready": true,
+        "passed": true,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run --files PM_PLANE.md config/orchestrator/approval_policy.yaml config/orchestrator/plugin_hooks.yaml docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md proof/dmx-orch-integration/TP-DMX-ORCH-001/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-003/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-004/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-008/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-009/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-010/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-011/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-012/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-013/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-014A/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-014B/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-015/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-016/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json services/task-orchestrator/query_server.py services/task-orchestrator/task_orchestrator/mcp/__init__.py src/dopemux/cli.py src/dopemux/commands/orchestrator_commands.py src/dopemux/orchestrator/hooks.py src/dopemux/orchestrator/mcp_wrappers.py src/dopemux/orchestrator/operator_workflows.py src/dopemux/orchestrator/policy.py src/dopemux/orchestrator/validation/__init__.py src/dopemux/orchestrator/validation/json_io.py src/dopemux/orchestrator/validation/packets.py src/dopemux/orchestrator/validation/proof.py src/dopemux/orchestrator/validation/report.py src/dopemux/orchestrator/workflow_dsl.py task-packets/generated/TP-DMX-ORCH-001.json task-packets/generated/TP-DMX-ORCH-002.json task-packets/generated/TP-DMX-ORCH-003.json task-packets/generated/TP-DMX-ORCH-004.json task-packets/generated/TP-DMX-ORCH-005.json task-packets/generated/TP-DMX-ORCH-006.json task-packets/generated/TP-DMX-ORCH-007.json task-packets/generated/TP-DMX-ORCH-008.json task-packets/generated/TP-DMX-ORCH-009.json task-packets/generated/TP-DMX-ORCH-010.json task-packets/generated/TP-DMX-ORCH-011.json task-packets/generated/TP-DMX-ORCH-012.json task-packets/generated/TP-DMX-ORCH-013.json task-packets/generated/TP-DMX-ORCH-014A.json task-packets/generated/TP-DMX-ORCH-014B.json task-packets/generated/TP-DMX-ORCH-015.json task-packets/generated/TP-DMX-ORCH-016.json task-packets/generated/TP-DMX-ORCH-017.json tests/unit/orchestrator/test_hooks.py tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/orchestrator/test_operator_workflows.py tests/unit/orchestrator/test_policy.py tests/unit/orchestrator/test_validation.py tests/unit/orchestrator/test_workflow_dsl.py tests/unit/test_cli_orchestrator_commands.py tests/unit/test_cli_orchestrator_validation_commands.py tests/unit/test_task_orchestrator_mcp_wrappers.py",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.................................................................................Passed\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-frontmatter-fix",
+            "command": "python scripts/docs_frontmatter_guard.py --fix docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "All docs have valid frontmatter.\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-validator",
+            "command": "python scripts/docs_validator.py docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "name": "docs-hygiene",
+            "command": "python scripts/check_docs_hygiene.py --check docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "docs-hygiene: total=2 active=2 quarantine=0 violations=0\ndocs-hygiene: checked 2 files, OK\n",
+            "stderr": ""
+          },
+          {
+            "name": "docs-filename-hygiene",
+            "command": "python scripts/check_docs_filename_hygiene.py --check docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "docs-filename-hygiene: total=2 active=2 quarantine=0 exempt=0 violations=0\ndocs-filename-hygiene: checked 2 files, OK\n",
+            "stderr": ""
+          },
+          {
+            "name": "root-hygiene",
+            "command": "python scripts/check_root_hygiene.py",
+            "status": "passed",
+            "returncode": 0,
+            "stdout": "root-hygiene: no candidate files to check\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "2046d6c01ebf44a6953be92b761453407419e6006a33c593b8167474d5a7c820",
+          "valid_for_sha": "53de58107acf37906d09f40531d8b2d9d1eae533",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "discovered",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        },
+        "failure_fingerprint": null
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "merge_readiness",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "passed",
+    "required_for_merge_ready": true,
+    "passed": true,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run --files PM_PLANE.md config/orchestrator/approval_policy.yaml config/orchestrator/plugin_hooks.yaml docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md proof/dmx-orch-integration/TP-DMX-ORCH-001/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-002/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-003/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-004/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-005/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-006/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-007/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-008/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-009/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-010/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-011/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-012/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-013/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-014A/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-014B/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-015/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-016/PROOF.json proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json services/task-orchestrator/query_server.py services/task-orchestrator/task_orchestrator/mcp/__init__.py src/dopemux/cli.py src/dopemux/commands/orchestrator_commands.py src/dopemux/orchestrator/hooks.py src/dopemux/orchestrator/mcp_wrappers.py src/dopemux/orchestrator/operator_workflows.py src/dopemux/orchestrator/policy.py src/dopemux/orchestrator/validation/__init__.py src/dopemux/orchestrator/validation/json_io.py src/dopemux/orchestrator/validation/packets.py src/dopemux/orchestrator/validation/proof.py src/dopemux/orchestrator/validation/report.py src/dopemux/orchestrator/workflow_dsl.py task-packets/generated/TP-DMX-ORCH-001.json task-packets/generated/TP-DMX-ORCH-002.json task-packets/generated/TP-DMX-ORCH-003.json task-packets/generated/TP-DMX-ORCH-004.json task-packets/generated/TP-DMX-ORCH-005.json task-packets/generated/TP-DMX-ORCH-006.json task-packets/generated/TP-DMX-ORCH-007.json task-packets/generated/TP-DMX-ORCH-008.json task-packets/generated/TP-DMX-ORCH-009.json task-packets/generated/TP-DMX-ORCH-010.json task-packets/generated/TP-DMX-ORCH-011.json task-packets/generated/TP-DMX-ORCH-012.json task-packets/generated/TP-DMX-ORCH-013.json task-packets/generated/TP-DMX-ORCH-014A.json task-packets/generated/TP-DMX-ORCH-014B.json task-packets/generated/TP-DMX-ORCH-015.json task-packets/generated/TP-DMX-ORCH-016.json task-packets/generated/TP-DMX-ORCH-017.json tests/unit/orchestrator/test_hooks.py tests/unit/orchestrator/test_mcp_wrappers.py tests/unit/orchestrator/test_operator_workflows.py tests/unit/orchestrator/test_policy.py tests/unit/orchestrator/test_validation.py tests/unit/orchestrator/test_workflow_dsl.py tests/unit/test_cli_orchestrator_commands.py tests/unit/test_cli_orchestrator_validation_commands.py tests/unit/test_task_orchestrator_mcp_wrappers.py",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.................................................................................Passed\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-frontmatter-fix",
+        "command": "python scripts/docs_frontmatter_guard.py --fix docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "All docs have valid frontmatter.\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-validator",
+        "command": "python scripts/docs_validator.py docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "docs-hygiene",
+        "command": "python scripts/check_docs_hygiene.py --check docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "docs-hygiene: total=2 active=2 quarantine=0 violations=0\ndocs-hygiene: checked 2 files, OK\n",
+        "stderr": ""
+      },
+      {
+        "name": "docs-filename-hygiene",
+        "command": "python scripts/check_docs_filename_hygiene.py --check docs/03-reference/systems/task-orchestrator/operator-integration-authority.md docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "docs-filename-hygiene: total=2 active=2 quarantine=0 exempt=0 violations=0\ndocs-filename-hygiene: checked 2 files, OK\n",
+        "stderr": ""
+      },
+      {
+        "name": "root-hygiene",
+        "command": "python scripts/check_root_hygiene.py",
+        "status": "passed",
+        "returncode": 0,
+        "stdout": "root-hygiene: no candidate files to check\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "2046d6c01ebf44a6953be92b761453407419e6006a33c593b8167474d5a7c820",
+      "valid_for_sha": "53de58107acf37906d09f40531d8b2d9d1eae533",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "failure_fingerprint": null
+  },
+  "thread_dispositions": [
+    {
+      "thread_id": "PRRT_kwDOPyIw986E2KHg",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "src/dopemux/orchestrator/operator_workflows.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986E2KHp",
+      "disposition": "auto_resolve_outdated",
+      "reason": "Thread is safe to resolve after green verification and no newer objection.",
+      "path": "src/dopemux/commands/orchestrator_commands.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986E2MuO",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "src/dopemux/orchestrator/validation/proof.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986E2MvT",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "proof/dmx-orch-integration/TP-DMX-ORCH-017/PROOF.json",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986E82ms",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw986E82mu",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "src/dopemux/orchestrator/policy.py",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ],
+  "fingerprint": {
+    "input_fingerprint": "1019914f8fae338f55aecff4c584f6a60befbd602dd414a9f801723bff3ea2af",
+    "valid_for_sha": "53de58107acf37906d09f40531d8b2d9d1eae533",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "explain": "{\"why_blocked\": [], \"evidence\": [{\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 5 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 5}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"ci_pending_but_local_passed\", \"message\": \"GitHub CI is pending, but local validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 21, \"checks_success\": 20, \"checks_failure\": 0, \"checks_pending\": 1, \"required_checks_pending\": 1, \"required_checks_failed\": 0, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\", \"ci-summary\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [], \"blocker_types\": [\"required_check_pending\"], \"warning_types\": []}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 11286}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"merge\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"threads_resolved_locally\", \"message\": \"GitHub shows 5 active threads, but they were resolved locally and validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 5}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"ci_pending_but_local_passed\", \"message\": \"GitHub CI is pending, but local validation passed.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 21, \"checks_success\": 20, \"checks_failure\": 0, \"checks_pending\": 1, \"required_checks_pending\": 1, \"required_checks_failed\": 0, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"MERGEABLE\", \"merge_state_status\": \"BLOCKED\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\", \"ci-summary\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [], \"blocker_types\": [\"required_check_pending\"], \"warning_types\": []}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 11286}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 12436.0}, \"source\": \"heuristics\", \"override\": null}]}",
+    "operator_state": ""
+  },
+  "blocked_by_global_fix_pr": null
+}

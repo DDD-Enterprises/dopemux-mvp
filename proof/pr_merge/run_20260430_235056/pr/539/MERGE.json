@@ -1,0 +1,53 @@
+{
+  "decision": {
+    "action": "blocked",
+    "command": [],
+    "reason": "Required approval is missing.; Local validation is required before merge readiness can be declared.",
+    "reason_code": "approval_missing"
+  },
+  "checks": {
+    "checks_total": 19,
+    "checks_success": 19,
+    "checks_failure": 0,
+    "checks_pending": 0,
+    "required_checks_pending": 0,
+    "required_checks_failed": 0,
+    "optional_checks_pending": 0,
+    "optional_checks_failed": 0,
+    "review_decision": "",
+    "mergeable": "CONFLICTING",
+    "merge_state_status": "DIRTY",
+    "blocker_types": [
+      "approval_missing"
+    ],
+    "warning_types": []
+  },
+  "check_wait": {
+    "wait_used": false,
+    "wait_reason": "no_wait_needed",
+    "iterations": 1,
+    "final_status": "green",
+    "timed_out": false,
+    "history": [
+      {
+        "attempt": 1,
+        "green": true,
+        "checks_total": 19,
+        "checks_success": 19,
+        "checks_failure": 0,
+        "checks_pending": 0,
+        "required_checks_pending": 0,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "mergeable": "CONFLICTING",
+        "merge_state_status": "DIRTY",
+        "blocker_types": [
+          "approval_missing"
+        ],
+        "warning_types": []
+      }
+    ]
+  }
+}

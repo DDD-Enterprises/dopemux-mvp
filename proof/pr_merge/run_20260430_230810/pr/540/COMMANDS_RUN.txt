@@ -1,0 +1,116 @@
+$ git fetch origin pull/540/head:prmerge/20260430_230810-540
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/540/head -> prmerge/20260430_230810-540
+
+$ git worktree add /tmp/dopemux-pr-merge-540-20260430_230810 prmerge/20260430_230810-540
+exit=0
+--- stdout ---
+HEAD is now at 96ec0f422 Add deterministic runtime authority verifier
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260430_230810-540')
+Updating files:  17% (2068/12143)
+Updating files:  18% (2186/12143)
+Updating files:  19% (2308/12143)
+Updating files:  20% (2429/12143)
+Updating files:  21% (2551/12143)
+Updating files:  22% (2672/12143)
+Updating files:  23% (2793/12143)
+Updating files:  24% (2915/12143)
+Updating files:  25% (3036/12143)
+Updating files:  26% (3158/12143)
+Updating files:  27% (3279/12143)
+Updating files:  28% (3401/12143)
+Updating files:  29% (3522/12143)
+Updating files:  30% (3643/12143)
+Updating files:  31% (3765/12143)
+Updating files:  32% (3886/12143)
+Updating files:  33% (4008/12143)
+Updating files:  34% (4129/12143)
+Updating files:  35% (4251/12143)
+Updating files:  36% (4372/12143)
+Updating files:  37% (4493/12143)
+Updating files:  38% (4615/12143)
+Updating files:  39% (4736/12143)
+Updating files:  40% (4858/12143)
+Updating files:  41% (4979/12143)
+Updating files:  42% (5101/12143)
+Updating files:  43% (5222/12143)
+Updating files:  44% (5343/12143)
+Updating files:  45% (5465/12143)
+Updating files:  46% (5586/12143)
+Updating files:  47% (5708/12143)
+Updating files:  48% (5829/12143)
+Updating files:  49% (5951/12143)
+Updating files:  50% (6072/12143)
+Updating files:  51% (6193/12143)
+Updating files:  52% (6315/12143)
+Updating files:  53% (6436/12143)
+Updating files:  53% (6437/12143)
+Updating files:  54% (6558/12143)
+Updating files:  55% (6679/12143)
+Updating files:  56% (6801/12143)
+Updating files:  57% (6922/12143)
+Updating files:  58% (7043/12143)
+Updating files:  59% (7165/12143)
+Updating files:  60% (7286/12143)
+Updating files:  61% (7408/12143)
+Updating files:  62% (7529/12143)
+Updating files:  63% (7651/12143)
+Updating files:  64% (7772/12143)
+Updating files:  65% (7893/12143)
+Updating files:  66% (8015/12143)
+Updating files:  67% (8136/12143)
+Updating files:  68% (8258/12143)
+Updating files:  69% (8379/12143)
+Updating files:  70% (8501/12143)
+Updating files:  71% (8622/12143)
+Updating files:  72% (8743/12143)
+Updating files:  73% (8865/12143)
+Updating files:  74% (8986/12143)
+Updating files:  75% (9108/12143)
+Updating files:  76% (9229/12143)
+Updating files:  77% (9351/12143)
+Updating files:  78% (9472/12143)
+Updating files:  79% (9593/12143)
+Updating files:  80% (9715/12143)
+Updating files:  81% (9836/12143)
+Updating files:  82% (9958/12143)
+Updating files:  83% (10079/12143)
+Updating files:  84% (10201/12143)
+Updating files:  85% (10322/12143)
+Updating files:  86% (10443/12143)
+Updating files:  87% (10565/12143)
+Updating files:  87% (10611/12143)
+Updating files:  88% (10686/12143)
+Updating files:  89% (10808/12143)
+Updating files:  90% (10929/12143)
+Updating files:  91% (11051/12143)
+Updating files:  92% (11172/12143)
+Updating files:  93% (11293/12143)
+Updating files:  94% (11415/12143)
+Updating files:  95% (11536/12143)
+Updating files:  96% (11658/12143)
+Updating files:  97% (11779/12143)
+Updating files:  98% (11901/12143)
+Updating files:  99% (12022/12143)
+Updating files: 100% (12143/12143)
+Updating files: 100% (12143/12143), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+96ec0f422cf8b2ab9fabb8ac82b42cc2a9fd2765
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-540-20260430_230810
+exit=0
+
+$ gh pr merge 540 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#540 is not mergeable: the merge commit cannot be cleanly created.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+Run the following to resolve the merge conflicts locally:
+  gh pr checkout 540 && git fetch origin main && git rebase origin/main
+

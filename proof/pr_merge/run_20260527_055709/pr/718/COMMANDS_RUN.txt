@@ -1,0 +1,325 @@
+$ git fetch origin pull/718/head:prmerge/20260527_055709-718
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/718/head -> prmerge/20260527_055709-718
+
+$ git worktree add /tmp/dopemux-pr-merge-718-20260527_055709 prmerge/20260527_055709-718
+exit=0
+--- stdout ---
+HEAD is now at 382d22094 docs(pr-bridge): update API reference to compile_action_plan
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260527_055709-718')
+Updating files:  36% (4745/13162)
+Updating files:  37% (4870/13162)
+Updating files:  38% (5002/13162)
+Updating files:  39% (5134/13162)
+Updating files:  40% (5265/13162)
+Updating files:  41% (5397/13162)
+Updating files:  42% (5529/13162)
+Updating files:  43% (5660/13162)
+Updating files:  44% (5792/13162)
+Updating files:  45% (5923/13162)
+Updating files:  46% (6055/13162)
+Updating files:  47% (6187/13162)
+Updating files:  48% (6318/13162)
+Updating files:  49% (6450/13162)
+Updating files:  50% (6581/13162)
+Updating files:  51% (6713/13162)
+Updating files:  52% (6845/13162)
+Updating files:  53% (6976/13162)
+Updating files:  54% (7108/13162)
+Updating files:  55% (7240/13162)
+Updating files:  56% (7371/13162)
+Updating files:  57% (7503/13162)
+Updating files:  58% (7634/13162)
+Updating files:  59% (7766/13162)
+Updating files:  60% (7898/13162)
+Updating files:  61% (8029/13162)
+Updating files:  62% (8161/13162)
+Updating files:  63% (8293/13162)
+Updating files:  64% (8424/13162)
+Updating files:  65% (8556/13162)
+Updating files:  66% (8687/13162)
+Updating files:  67% (8819/13162)
+Updating files:  68% (8951/13162)
+Updating files:  69% (9082/13162)
+Updating files:  70% (9214/13162)
+Updating files:  71% (9346/13162)
+Updating files:  72% (9477/13162)
+Updating files:  73% (9609/13162)
+Updating files:  74% (9740/13162)
+Updating files:  75% (9872/13162)
+Updating files:  76% (10004/13162)
+Updating files:  77% (10135/13162)
+Updating files:  78% (10267/13162)
+Updating files:  79% (10398/13162)
+Updating files:  80% (10530/13162)
+Updating files:  81% (10662/13162)
+Updating files:  82% (10793/13162)
+Updating files:  83% (10925/13162)
+Updating files:  84% (11057/13162)
+Updating files:  85% (11188/13162)
+Updating files:  85% (11316/13162)
+Updating files:  86% (11320/13162)
+Updating files:  87% (11451/13162)
+Updating files:  88% (11583/13162)
+Updating files:  89% (11715/13162)
+Updating files:  90% (11846/13162)
+Updating files:  91% (11978/13162)
+Updating files:  92% (12110/13162)
+Updating files:  93% (12241/13162)
+Updating files:  94% (12373/13162)
+Updating files:  95% (12504/13162)
+Updating files:  96% (12636/13162)
+Updating files:  97% (12768/13162)
+Updating files:  98% (12899/13162)
+Updating files:  99% (13031/13162)
+Updating files: 100% (13162/13162)
+Updating files: 100% (13162/13162), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+382d22094acbed6afbd455848e63f8bd4aaee5fa
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FCHCe", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWQKI"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FCHCj", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWQOW"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FCJHw", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWQSj"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FCJIP", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWQVi"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FCqHh", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWQZY"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FGAQG", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWQdQ"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FGbl9", body: "Outdated thread candidate for auto-resolution; pending verification."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWQhZ"}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FGbmF", body: "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWQlZ"}}}}
+
+$ gh pr update-branch 718 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin claude/upbeat-thompson-35f2e8
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                claude/upbeat-thompson-35f2e8 -> FETCH_HEAD
+
+$ git reset --hard origin/claude/upbeat-thompson-35f2e8
+exit=0
+--- stdout ---
+HEAD is now at 382d22094 docs(pr-bridge): update API reference to compile_action_plan
+
+$ git diff --name-only --diff-filter=ACMR 898310bd01cf48b2703a166b429d4b330ec9f84e...HEAD
+exit=0
+--- stdout ---
+.github/workflows/ci-complete.yml
+.github/workflows/pr-steward.yml
+.github/workflows/preflight.yml
+docs/03-reference/templates/copilot/pr-repair-packet.md
+docs/03-reference/truth/truth-audit-proofs.md
+docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md
+docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md
+docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md
+docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md
+docs/ops/audit-bundles.md
+docs/ops/branch-policy-audit.md
+docs/ops/ci-trigger-refresh.md
+docs/ops/copilot-pr-repair-lane.md
+docs/ops/embedded-audit-proof.md
+docs/ops/load-plans/load_plan-DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED.json
+docs/ops/pal-clink-audit-runner.md
+docs/ops/pr-action-bridge.md
+docs/ops/pr-fixtures.md
+docs/ops/pr-gate-runbook.md
+docs/ops/pr-steward-readiness.md
+proof/TP-DMX-AUDIT-BUNDLE-001/AUDITOR_REPORT.md
+proof/TP-DMX-AUDIT-BUNDLE-001/PROOF.json
+proof/TP-DMX-AUDIT-PROOF-004/AUDITOR_REPORT.md
+proof/TP-DMX-AUDIT-PROOF-004/PROOF.json
+proof/TP-DMX-AUDIT-ROUTER-002/AUDITOR_REPORT.md
+proof/TP-DMX-AUDIT-ROUTER-002/PROOF.json
+proof/TP-DMX-BRANCH-POLICY-AUDIT-012/AUDITOR_REPORT.md
+proof/TP-DMX-BRANCH-POLICY-AUDIT-012/PROOF.json
+proof/TP-DMX-CI-TRIGGERS-008/AUDITOR_REPORT.md
+proof/TP-DMX-CI-TRIGGERS-008/PROOF.json
+proof/TP-DMX-COPILOT-REPAIR-007/AUDITOR_REPORT.md
+proof/TP-DMX-COPILOT-REPAIR-007/PROOF.json
+proof/TP-DMX-PAL-CLINK-RUNNER-003/AUDITOR_REPORT.md
+proof/TP-DMX-PAL-CLINK-RUNNER-003/PROOF.json
+proof/TP-DMX-PR-ACTION-BRIDGE-006/AUDITOR_REPORT.md
+proof/TP-DMX-PR-ACTION-BRIDGE-006/PROOF.json
+proof/TP-DMX-PR-FIXTURES-011/AUDITOR_REPORT.md
+proof/TP-DMX-PR-FIXTURES-011/PROOF.json
+proof/TP-DMX-PR-GATE-009/AUDITOR_REPORT.md
+proof/TP-DMX-PR-GATE-009/PROOF.json
+proof/TP-DMX-PR-STEWARD-FRESHNESS-005/AUDITOR_REPORT.md
+proof/TP-DMX-PR-STEWARD-FRESHNESS-005/PROOF.json
+proof/TP-DMX-PR-STEWARD-HARDEN-010/AUDITOR_REPORT.md
+proof/TP-DMX-PR-STEWARD-HARDEN-010/PROOF.json
+schemas/audit/audit_route.schema.json
+schemas/audit/bundle_manifest.schema.json
+schemas/audit/pal_clink_audit_output.schema.json
+schemas/copilot/repair_packet.schema.json
+schemas/pr_action_bridge/action_plan.schema.json
+schemas/pr_steward/ci_triage.schema.json
+schemas/pr_steward/merge_readiness.schema.json
+schemas/pr_steward/pr_state_snapshot.schema.json
+schemas/pr_steward/review_item_ledger.schema.json
+schemas/pr_steward/thread_dispositions.schema.json
+scripts/audit/__init__.py
+scripts/audit/auditor_router.py
+scripts/audit/build_evidence_bundle.py
+scripts/audit/pal_clink_runner.py
+scripts/audit/route_schema.py
+scripts/audit/validate_audit_proof.py
+tests/audit/__init__.py
+tests/audit/fixtures/clean_file.txt
+tests/audit/test_audit_proof.py
+tests/audit/test_auditor_router.py
+tests/audit/test_evidence_bundle.py
+tests/audit/test_pal_clink_runner.py
+tests/audit/test_validator_scope.py
+tests/ci/__init__.py
+tests/ci/test_pr_gate.py
+tests/copilot_repair/__init__.py
+tests/copilot_repair/test_repair_packet.py
+tests/fixtures/pr_action_bridge/needs_implementer_failed_check.json
+tests/fixtures/pr_action_bridge/needs_supervisor_proof_missing.json
+tests/fixtures/pr_action_bridge/needs_supervisor_proof_stale.json
+tests/fixtures/pr_action_bridge/needs_supervisor_unknown_author.json
+tests/fixtures/pr_action_bridge/ready_green.json
+tests/fixtures/pr_steward/mixed_sha_checks_block/harvest.json
+tests/fixtures/pr_steward/proof_missing_blocks/harvest.json
+tests/fixtures/pr_steward/proof_stale_blocks/harvest.json
+tests/fixtures/pr_steward/unknown_pr_author_blocks/harvest.json
+tests/pr_action_bridge/__init__.py
+tests/pr_action_bridge/test_compiler.py
+tests/pr_action_bridge/test_compiler_fixtures.py
+tests/pr_steward/test_classifier_embedded_audit_normalization.py
+tests/pr_steward/test_classifier_mixed_sha.py
+tests/pr_steward/test_classifier_proof_status.py
+tests/pr_steward/test_classifier_readiness_harden.py
+tests/pr_steward/test_intake.py
+tools/pr_action_bridge/__init__.py
+tools/pr_action_bridge/compiler.py
+tools/pr_steward/classifier.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .github/workflows/ci-complete.yml .github/workflows/pr-steward.yml .github/workflows/preflight.yml docs/03-reference/templates/copilot/pr-repair-packet.md docs/03-reference/truth/truth-audit-proofs.md docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md docs/ops/audit-bundles.md docs/ops/branch-policy-audit.md docs/ops/ci-trigger-refresh.md docs/ops/copilot-pr-repair-lane.md docs/ops/embedded-audit-proof.md docs/ops/load-plans/load_plan-DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED.json docs/ops/pal-clink-audit-runner.md docs/ops/pr-action-bridge.md docs/ops/pr-fixtures.md docs/ops/pr-gate-runbook.md docs/ops/pr-steward-readiness.md proof/TP-DMX-AUDIT-BUNDLE-001/AUDITOR_REPORT.md proof/TP-DMX-AUDIT-BUNDLE-001/PROOF.json proof/TP-DMX-AUDIT-PROOF-004/AUDITOR_REPORT.md proof/TP-DMX-AUDIT-PROOF-004/PROOF.json proof/TP-DMX-AUDIT-ROUTER-002/AUDITOR_REPORT.md proof/TP-DMX-AUDIT-ROUTER-002/PROOF.json proof/TP-DMX-BRANCH-POLICY-AUDIT-012/AUDITOR_REPORT.md proof/TP-DMX-BRANCH-POLICY-AUDIT-012/PROOF.json proof/TP-DMX-CI-TRIGGERS-008/AUDITOR_REPORT.md proof/TP-DMX-CI-TRIGGERS-008/PROOF.json proof/TP-DMX-COPILOT-REPAIR-007/AUDITOR_REPORT.md proof/TP-DMX-COPILOT-REPAIR-007/PROOF.json proof/TP-DMX-PAL-CLINK-RUNNER-003/AUDITOR_REPORT.md proof/TP-DMX-PAL-CLINK-RUNNER-003/PROOF.json proof/TP-DMX-PR-ACTION-BRIDGE-006/AUDITOR_REPORT.md proof/TP-DMX-PR-ACTION-BRIDGE-006/PROOF.json proof/TP-DMX-PR-FIXTURES-011/AUDITOR_REPORT.md proof/TP-DMX-PR-FIXTURES-011/PROOF.json proof/TP-DMX-PR-GATE-009/AUDITOR_REPORT.md proof/TP-DMX-PR-GATE-009/PROOF.json proof/TP-DMX-PR-STEWARD-FRESHNESS-005/AUDITOR_REPORT.md proof/TP-DMX-PR-STEWARD-FRESHNESS-005/PROOF.json proof/TP-DMX-PR-STEWARD-HARDEN-010/AUDITOR_REPORT.md proof/TP-DMX-PR-STEWARD-HARDEN-010/PROOF.json schemas/audit/audit_route.schema.json schemas/audit/bundle_manifest.schema.json schemas/audit/pal_clink_audit_output.schema.json schemas/copilot/repair_packet.schema.json schemas/pr_action_bridge/action_plan.schema.json schemas/pr_steward/ci_triage.schema.json schemas/pr_steward/merge_readiness.schema.json schemas/pr_steward/pr_state_snapshot.schema.json schemas/pr_steward/review_item_ledger.schema.json schemas/pr_steward/thread_dispositions.schema.json scripts/audit/__init__.py scripts/audit/auditor_router.py scripts/audit/build_evidence_bundle.py scripts/audit/pal_clink_runner.py scripts/audit/route_schema.py scripts/audit/validate_audit_proof.py tests/audit/__init__.py tests/audit/fixtures/clean_file.txt tests/audit/test_audit_proof.py tests/audit/test_auditor_router.py tests/audit/test_evidence_bundle.py tests/audit/test_pal_clink_runner.py tests/audit/test_validator_scope.py tests/ci/__init__.py tests/ci/test_pr_gate.py tests/copilot_repair/__init__.py tests/copilot_repair/test_repair_packet.py tests/fixtures/pr_action_bridge/needs_implementer_failed_check.json tests/fixtures/pr_action_bridge/needs_supervisor_proof_missing.json tests/fixtures/pr_action_bridge/needs_supervisor_proof_stale.json tests/fixtures/pr_action_bridge/needs_supervisor_unknown_author.json tests/fixtures/pr_action_bridge/ready_green.json tests/fixtures/pr_steward/mixed_sha_checks_block/harvest.json tests/fixtures/pr_steward/proof_missing_blocks/harvest.json tests/fixtures/pr_steward/proof_stale_blocks/harvest.json tests/fixtures/pr_steward/unknown_pr_author_blocks/harvest.json tests/pr_action_bridge/__init__.py tests/pr_action_bridge/test_compiler.py tests/pr_action_bridge/test_compiler_fixtures.py tests/pr_steward/test_classifier_embedded_audit_normalization.py tests/pr_steward/test_classifier_mixed_sha.py tests/pr_steward/test_classifier_proof_status.py tests/pr_steward/test_classifier_readiness_harden.py tests/pr_steward/test_intake.py tools/pr_action_bridge/__init__.py tools/pr_action_bridge/compiler.py tools/pr_steward/classifier.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/03-reference/templates/copilot/pr-repair-packet.md docs/03-reference/truth/truth-audit-proofs.md docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md docs/ops/audit-bundles.md docs/ops/branch-policy-audit.md docs/ops/ci-trigger-refresh.md docs/ops/copilot-pr-repair-lane.md docs/ops/embedded-audit-proof.md docs/ops/pal-clink-audit-runner.md docs/ops/pr-action-bridge.md docs/ops/pr-fixtures.md docs/ops/pr-gate-runbook.md docs/ops/pr-steward-readiness.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/03-reference/templates/copilot/pr-repair-packet.md docs/03-reference/truth/truth-audit-proofs.md docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md docs/ops/audit-bundles.md docs/ops/branch-policy-audit.md docs/ops/ci-trigger-refresh.md docs/ops/copilot-pr-repair-lane.md docs/ops/embedded-audit-proof.md docs/ops/pal-clink-audit-runner.md docs/ops/pr-action-bridge.md docs/ops/pr-fixtures.md docs/ops/pr-gate-runbook.md docs/ops/pr-steward-readiness.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/03-reference/templates/copilot/pr-repair-packet.md docs/03-reference/truth/truth-audit-proofs.md docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md docs/ops/audit-bundles.md docs/ops/branch-policy-audit.md docs/ops/ci-trigger-refresh.md docs/ops/copilot-pr-repair-lane.md docs/ops/embedded-audit-proof.md docs/ops/pal-clink-audit-runner.md docs/ops/pr-action-bridge.md docs/ops/pr-fixtures.md docs/ops/pr-gate-runbook.md docs/ops/pr-steward-readiness.md
+exit=0
+--- stdout ---
+docs-hygiene: total=16 active=16 quarantine=0 violations=0
+docs-hygiene: checked 16 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/03-reference/templates/copilot/pr-repair-packet.md docs/03-reference/truth/truth-audit-proofs.md docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md docs/05-audit-reports/repo-branch-worktree-cleanup-phase2.md docs/05-audit-reports/repo-branch-worktree-cleanup-phase3.md docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md docs/ops/audit-bundles.md docs/ops/branch-policy-audit.md docs/ops/ci-trigger-refresh.md docs/ops/copilot-pr-repair-lane.md docs/ops/embedded-audit-proof.md docs/ops/pal-clink-audit-runner.md docs/ops/pr-action-bridge.md docs/ops/pr-fixtures.md docs/ops/pr-gate-runbook.md docs/ops/pr-steward-readiness.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=16 active=16 quarantine=0 exempt=4 violations=0
+docs-filename-hygiene: checked 16 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FCHCe", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWQ00"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986FCHCe"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986FCHCe","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FCHCj", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWQ55"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986FCHCj"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986FCHCj","isResolved":true}}}}
+
+$ gh api graphql -f 'query=mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "PRRT_kwDOPyIw986FGbl9", body: "\u2705 Automated verification passed for this auto_resolve_outdated."}) { comment { id } } }'
+exit=0
+--- stdout ---
+{"data":{"addPullRequestReviewThreadReply":{"comment":{"id":"PRRC_kwDOPyIw987FWQ-d"}}}}
+
+$ gh api graphql -f 'query=mutation { resolveReviewThread(input: {threadId: "PRRT_kwDOPyIw986FGbl9"}) { thread { id isResolved } } }'
+exit=0
+--- stdout ---
+{"data":{"resolveReviewThread":{"thread":{"id":"PRRT_kwDOPyIw986FGbl9","isResolved":true}}}}
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-718-20260527_055709
+exit=0
+
+$ gh pr merge 718 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#718 is not mergeable: the base branch policy prohibits the merge.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+

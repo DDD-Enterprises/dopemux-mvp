@@ -1,0 +1,292 @@
+$ git fetch origin pull/724/head:prmerge/20260530_221722-724
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/724/head -> prmerge/20260530_221722-724
+
+$ git worktree add /tmp/dopemux-pr-merge-724-20260530_221722 prmerge/20260530_221722-724
+exit=0
+--- stdout ---
+HEAD is now at fdb8d2dca fix(audit): remediate audit proof schema compliance issues and align UI data sources
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_221722-724')
+Updating files:  30% (4138/13550)
+Updating files:  31% (4201/13550)
+Updating files:  32% (4336/13550)
+Updating files:  33% (4472/13550)
+Updating files:  34% (4607/13550)
+Updating files:  35% (4743/13550)
+Updating files:  36% (4878/13550)
+Updating files:  37% (5014/13550)
+Updating files:  38% (5149/13550)
+Updating files:  39% (5285/13550)
+Updating files:  40% (5420/13550)
+Updating files:  41% (5556/13550)
+Updating files:  42% (5691/13550)
+Updating files:  43% (5827/13550)
+Updating files:  44% (5962/13550)
+Updating files:  45% (6098/13550)
+Updating files:  46% (6233/13550)
+Updating files:  47% (6369/13550)
+Updating files:  48% (6504/13550)
+Updating files:  49% (6640/13550)
+Updating files:  50% (6775/13550)
+Updating files:  51% (6911/13550)
+Updating files:  52% (7046/13550)
+Updating files:  53% (7182/13550)
+Updating files:  54% (7317/13550)
+Updating files:  55% (7453/13550)
+Updating files:  56% (7588/13550)
+Updating files:  57% (7724/13550)
+Updating files:  58% (7859/13550)
+Updating files:  59% (7995/13550)
+Updating files:  60% (8130/13550)
+Updating files:  61% (8266/13550)
+Updating files:  62% (8401/13550)
+Updating files:  63% (8537/13550)
+Updating files:  64% (8672/13550)
+Updating files:  65% (8808/13550)
+Updating files:  66% (8943/13550)
+Updating files:  67% (9079/13550)
+Updating files:  68% (9214/13550)
+Updating files:  69% (9350/13550)
+Updating files:  70% (9485/13550)
+Updating files:  71% (9621/13550)
+Updating files:  72% (9756/13550)
+Updating files:  73% (9892/13550)
+Updating files:  74% (10027/13550)
+Updating files:  75% (10163/13550)
+Updating files:  75% (10185/13550)
+Updating files:  76% (10298/13550)
+Updating files:  77% (10434/13550)
+Updating files:  78% (10569/13550)
+Updating files:  79% (10705/13550)
+Updating files:  80% (10840/13550)
+Updating files:  81% (10976/13550)
+Updating files:  82% (11111/13550)
+Updating files:  83% (11247/13550)
+Updating files:  84% (11382/13550)
+Updating files:  85% (11518/13550)
+Updating files:  86% (11653/13550)
+Updating files:  87% (11789/13550)
+Updating files:  88% (11924/13550)
+Updating files:  89% (12060/13550)
+Updating files:  90% (12195/13550)
+Updating files:  91% (12331/13550)
+Updating files:  92% (12466/13550)
+Updating files:  93% (12602/13550)
+Updating files:  94% (12737/13550)
+Updating files:  95% (12873/13550)
+Updating files:  96% (13008/13550)
+Updating files:  97% (13144/13550)
+Updating files:  98% (13279/13550)
+Updating files:  99% (13415/13550)
+Updating files: 100% (13550/13550)
+Updating files: 100% (13550/13550), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+fdb8d2dca37f1fb937c8cc7f970f52eaaf70e546
+
+$ gh pr update-branch 724 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin codex/tp-cs-101-plugin-path-b
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                codex/tp-cs-101-plugin-path-b -> FETCH_HEAD
+
+$ git reset --hard origin/codex/tp-cs-101-plugin-path-b
+exit=0
+--- stdout ---
+HEAD is now at fdb8d2dca fix(audit): remediate audit proof schema compliance issues and align UI data sources
+
+$ git diff --name-only --diff-filter=ACMR 508bcc0df74db4ee5d1384d8a2da73acdccd8c2e...HEAD
+exit=0
+--- stdout ---
+.claude/claude.md
+.claude/hooks/orchestrator_enforcement.py
+.claude/hooks/orchestrator_subagent_protocol.py
+.claude/settings.json
+CHANGELOG.md
+INSTALL.md
+docs/02-how-to/install.md
+docs/02-how-to/universal-extractor-usage.md
+docs/03-reference/orchestrator-integration/plugin-hooks-port.md
+install.sh
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/AUDITOR_REPORT.md
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json
+scripts/deploy/deployment/stack_up_all.sh
+scripts/install-docker-mcp-servers.sh
+scripts/setup.sh
+services/dope-context/Dockerfile
+services/mcp-capture/server.py
+services/mcp-integration-bridge/kg_authority.py
+services/mcp-integration-bridge/main.py
+services/repo-truth-extractor/extraction_hygiene.py
+services/repo-truth-extractor/lib/intelligence_router.py
+services/repo-truth-extractor/lib/prescan/engine.py
+services/repo-truth-extractor/phases.py
+services/repo-truth-extractor/reporting.py
+services/repo-truth-extractor/rte_constants.py
+services/repo-truth-extractor/rte_promptset.py
+services/repo-truth-extractor/run_extraction_v4.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_pre_live_gate_v25.py
+services/repo-truth-extractor/validate_pre_live_gate_v25.py
+src/dopemux/claude/native_hooks.py
+src/dopemux/cli.py
+src/dopemux/mcp/broker.py
+src/dopemux/mcp/gate.py
+src/dopemux/mcp/server_manager.py
+src/dopemux/mcp/session_manager.py
+tests/mcp/test_discovery_gate_strict.py
+tests/mcp/test_mcp_internal_lockdown.py
+tests/test_orchestrator_enforcement_hooks.py
+tests/test_orchestrator_subagent_protocol.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .claude/claude.md .claude/hooks/orchestrator_enforcement.py .claude/hooks/orchestrator_subagent_protocol.py .claude/settings.json CHANGELOG.md INSTALL.md docs/02-how-to/install.md docs/02-how-to/universal-extractor-usage.md docs/03-reference/orchestrator-integration/plugin-hooks-port.md install.sh proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/AUDITOR_REPORT.md proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json scripts/deploy/deployment/stack_up_all.sh scripts/install-docker-mcp-servers.sh scripts/setup.sh services/dope-context/Dockerfile services/mcp-capture/server.py services/mcp-integration-bridge/kg_authority.py services/mcp-integration-bridge/main.py services/repo-truth-extractor/extraction_hygiene.py services/repo-truth-extractor/lib/intelligence_router.py services/repo-truth-extractor/lib/prescan/engine.py services/repo-truth-extractor/phases.py services/repo-truth-extractor/reporting.py services/repo-truth-extractor/rte_constants.py services/repo-truth-extractor/rte_promptset.py services/repo-truth-extractor/run_extraction_v4.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py services/repo-truth-extractor/validate_pre_live_gate_v25.py src/dopemux/claude/native_hooks.py src/dopemux/cli.py src/dopemux/mcp/broker.py src/dopemux/mcp/gate.py src/dopemux/mcp/server_manager.py src/dopemux/mcp/session_manager.py tests/mcp/test_discovery_gate_strict.py tests/mcp/test_mcp_internal_lockdown.py tests/test_orchestrator_enforcement_hooks.py tests/test_orchestrator_subagent_protocol.py
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/docs_frontmatter_guard.py --fix docs/02-how-to/install.md docs/02-how-to/universal-extractor-usage.md docs/03-reference/orchestrator-integration/plugin-hooks-port.md
+exit=0
+--- stdout ---
+All docs have valid frontmatter.
+
+$ python scripts/docs_validator.py docs/02-how-to/install.md docs/02-how-to/universal-extractor-usage.md docs/03-reference/orchestrator-integration/plugin-hooks-port.md
+exit=0
+
+$ python scripts/check_docs_hygiene.py --check docs/02-how-to/install.md docs/02-how-to/universal-extractor-usage.md docs/03-reference/orchestrator-integration/plugin-hooks-port.md
+exit=0
+--- stdout ---
+docs-hygiene: total=3 active=3 quarantine=0 violations=0
+docs-hygiene: checked 3 files, OK
+
+$ python scripts/check_docs_filename_hygiene.py --check docs/02-how-to/install.md docs/02-how-to/universal-extractor-usage.md docs/03-reference/orchestrator-integration/plugin-hooks-port.md
+exit=0
+--- stdout ---
+docs-filename-hygiene: total=3 active=3 quarantine=0 exempt=0 violations=0
+docs-filename-hygiene: checked 3 files, OK
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ pytest tests/ --maxfail=1 --disable-warnings --cov=src/dopemux --cov-report=term-missing --cov-report=xml:coverage.xml --cov-report=html:htmlcov
+exit=1
+--- stdout ---
+........................................................................ [  2%]
+........................................................................ [  4%]
+........................................................................ [  7%]
+........................................................................ [  9%]
+........................................................................ [ 12%]
+........................................................................ [ 14%]
+........................................................................ [ 16%]
+........................................................................ [ 19%]
+........................................................................ [ 21%]
+........................................................................ [ 24%]
+.....................................................................F
+=================================== FAILURES ===================================
+________ TestTransitionsIntegration.test_record_transition_cli_success _________
+
+obj = <module 'dopemux' from '/private/tmp/dopemux-pr-merge-724-20260530_221722/src/dopemux/__init__.py'>
+name = 'pm', ann = 'dopemux.pm'
+
+    def annotated_getattr(obj: object, name: str, ann: str) -> object:
+        try:
+>           obj = getattr(obj, name)
+                  ^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'dopemux' has no attribute 'pm'
+
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/monkeypatch.py:92: AttributeError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_transitions_integration.TestTransitionsIntegration object at 0x1215fbdd0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x125843860>
+
+    def test_record_transition_cli_success(self, monkeypatch):
+        from unittest.mock import MagicMock
+        mock_adapter = MagicMock()
+        mock_adapter.transition.return_value = {
+            "schema_version": "1",
+            "workflow_id": "wf-1",
+            "transition": "start",
+            "idempotency_key": "idem-key-1",
+            "actor": "operator",
+            "canonical_writer": "task-orchestrator",
+            "receipt": {
+                "proof_id": "p-123",
+                "operation": "workflow transition start",
+                "status": "accepted",
+            },
+        }
+    
+>       monkeypatch.setattr(
+            "dopemux.pm.adapters.orchestrator.SyncTaskOrchestratorAdapter",
+            lambda *args, **kwargs: mock_adapter,
+        )
+
+tests/integration/orchestrator/test_transitions_integration.py:59: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/monkeypatch.py:104: in derive_importpath
+    target = resolve(module)
+             ^^^^^^^^^^^^^^^
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/monkeypatch.py:86: in resolve
+    found = annotated_getattr(found, part, used)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+obj = <module 'dopemux' from '/private/tmp/dopemux-pr-merge-724-20260530_221722/src/dopemux/__init__.py'>
+name = 'pm', ann = 'dopemux.pm'
+
+    def annotated_getattr(obj: object, name: str, ann: str) -> object:
+        try:
+            obj = getattr(obj, name)
+        except AttributeError as e:
+>           raise AttributeError(
+                f"{type(obj).__name__!r} object at {ann} has no attribute {name!r}"
+            ) from e
+E           AttributeError: 'module' object at dopemux.pm has no attribute 'pm'
+
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/_pytest/monkeypatch.py:94: AttributeError
+=========================== short test summary info ============================
+SKIPPED [1] tests/unit/test_bridge_task_integration.py:3: bridge task integration tests are quarantined from the fast unit lane pending dopecon-bridge dependency slimming
+SKIPPED [1] tests/unit/test_conport_memory_server.py:3: conport memory server tests are quarantined from the fast unit lane pending MCP dependency slimming
+SKIPPED [1] tests/unit/test_task_coordinator_execution_leases.py:21: task-orchestrator service deps not available: attempted relative import beyond top-level package
+FAILED tests/integration/orchestrator/test_transitions_integration.py::TestTransitionsIntegration::test_record_transition_cli_success
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 789 passed, 3 skipped, 1 warning in 52.29s
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-724-20260530_221722
+exit=0
+

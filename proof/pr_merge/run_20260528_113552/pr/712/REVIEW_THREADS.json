@@ -1,0 +1,334 @@
+{
+  "threads": [
+    {
+      "id": "PRRT_kwDOPyIw986Ew-YB",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+      "line": null,
+      "original_line": 139,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E4i_O",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Use deferred-state floor in Gate 2 validation**\n\nGate 2’s validation still hard-requires `≥9 xfailed`, but this same packet now documents an env-driven `XFAIL -> SKIPPED` shift and treats deferred-state as `xfailed + skipped`. With the recorded result (`8 xfailed`, `1 skipped`), this criterion contradicts the packet’s own PASS verdict and can cause strict readers or automation to mark the gate as failed despite the intended deferred-state policy.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T10:35:51Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": null,
+          "original_line": 139
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986Ew-YG",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+      "line": null,
+      "original_line": 161,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E4i_V",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Set RTE_DISABLE_LIVE_LLM_IN_TESTS for Gate 4 probe**\n\nThe packet invariant says `RTE_DISABLE_LIVE_LLM_IN_TESTS=1` must be set for every test/probe step, but the Gate 4 route-readiness command omits it. That breaks the packet’s own safety contract and weakens the \"no live provider calls\" guarantee for reproducibility, especially if these focused tests later gain code paths that can touch provider preflight/network logic.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T10:35:51Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": null,
+          "original_line": 161
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986ExAnk",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json",
+      "line": null,
+      "original_line": 5,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E4l9y",
+          "author": "copilot-pull-request-reviewer",
+          "body": "PROOF.json claims “All 5 verification gates passed under RTE_DISABLE_LIVE_LLM_IN_TESTS=1”, but the recorded Gate 4 command does not set that env var. For auditability, either rerun Gate 4 with RTE_DISABLE_LIVE_LLM_IN_TESTS=1 (and update route_readiness_probe.txt + sha256sums + summaries) or adjust the PROOF/report narrative so it accurately reflects which gates were run under the flag.\n",
+          "created_at": "2026-05-26T10:37:54Z",
+          "path": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json",
+          "line": null,
+          "original_line": 5
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986ExAoQ",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json",
+      "line": null,
+      "original_line": 75,
+      "original_start_line": 68,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E4l-m",
+          "author": "copilot-pull-request-reviewer",
+          "body": "Gate 4 command recorded in PROOF.json omits RTE_DISABLE_LIVE_LLM_IN_TESTS=1, conflicting with the packet invariant and the report/verdict_summary wording. Consider prefixing the command with RTE_DISABLE_LIVE_LLM_IN_TESTS=1 for consistency and re-generating the evidence file + sha256sums so the proof bundle remains self-consistent.",
+          "created_at": "2026-05-26T10:37:54Z",
+          "path": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json",
+          "line": null,
+          "original_line": 75
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986ExAov",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/SERIES_VERIFICATION_REPORT.md",
+      "line": null,
+      "original_line": 16,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E4l_J",
+          "author": "copilot-pull-request-reviewer",
+          "body": "The route-readiness gate’s recorded command does not include RTE_DISABLE_LIVE_LLM_IN_TESTS=1, but the Executive Verdict states all 5 gates ran under that flag. For consistency/auditability, either rerun the route-readiness probe with the flag set (and update evidence + sha256sums) or soften the claim in the Executive Verdict to specify which gates were run under RTE_DISABLE_LIVE_LLM_IN_TESTS=1.\n",
+          "created_at": "2026-05-26T10:37:55Z",
+          "path": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/SERIES_VERIFICATION_REPORT.md",
+          "line": null,
+          "original_line": 16
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986ExUzp",
+      "is_resolved": true,
+      "is_outdated": false,
+      "viewer_can_resolve": false,
+      "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+      "line": 82,
+      "original_line": 81,
+      "original_start_line": 79,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E5Chj",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Include planner in Codex PAL chain**\n\nAdd `planner` to `pal_chain.steps` for this Codex packet. `AGENTS.md` (§5) defines the minimum Codex chain as `analyze -> planner -> codereview -> precommit`, but this packet omits `planner`, making the packet non-compliant with repo governance and likely to be rejected or handled inconsistently by automation that expects the required chain.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T11:02:29Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": 82,
+          "original_line": 81
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986ExUzt",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+      "line": null,
+      "original_line": 112,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E5Chn",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Pin worktree creation to captured base SHA**\n\nUse the SHA captured in S1 when creating the worktree branch instead of `origin/main`. This command currently rebases on a moving ref, so if `origin/main` advances between S1 and S2 the verification branch can be created from the wrong commit, breaking reproducibility of the series-gate evidence (or forcing a false block on the subsequent HEAD-match validation).\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T11:02:29Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": null,
+          "original_line": 112
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986Exaws",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+      "line": null,
+      "original_line": 93,
+      "original_start_line": 89,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E5LJB",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Enforce dirty-check stop condition in preflight commands**\n\nS1 declares a hard stop when the local checkout has tracked changes, but the command list never checks repo cleanliness (no `git status --porcelain`/equivalent assertion), so this packet can proceed from a dirty tree and produce series-gate evidence contaminated by unrelated local edits. That undermines reproducibility for the verification gate because the preflight contract is not actually enforced by the executable steps.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T11:12:09Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": null,
+          "original_line": 93
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986Exh-C",
+      "is_resolved": true,
+      "is_outdated": false,
+      "viewer_can_resolve": false,
+      "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+      "line": 98,
+      "original_line": 94,
+      "original_start_line": 93,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E5VY2",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Enforce ancestor assertions for prerequisite PRs**\n\nS1 requires PR #709 and #710 merge commits to be ancestors of `origin/main`, but the command list only captures `gh pr view` output and never performs an executable ancestor check (for example via `git merge-base --is-ancestor` on each `mergeCommit`). In scenarios where a PR is merged but not actually contained in the current `origin/main` history, this packet can still proceed and incorrectly mark the series gate as verified.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T11:23:28Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": 98,
+          "original_line": 94
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986Ex1Bu",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json",
+      "line": null,
+      "original_line": 34,
+      "original_start_line": 33,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E5wJR",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Recompute Gate 1 no-live assertions from repair proof**\n\nDo not hardcode `live_provider_calls` / `live_extraction` as `NOT_RUN` here unless they are actually present in the referenced repair artifact. The cited source (`proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001/PROOF.json` at the captured base SHA) does not expose those as root fields, so this Gate 1 PASS evidence is currently unverifiable from the stated contract and can falsely certify the series as VERIFIED.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T11:52:15Z",
+          "path": "proof/rte-cost-profile-redesign/TP-RTE-COSTPROFILE-F-VERIFY-002/PROOF.json",
+          "line": null,
+          "original_line": 34
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986Ex_mI",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+      "line": null,
+      "original_line": 107,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E5-z5",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Assert repair-proof status contract in preflight commands**\n\nS1’s stop conditions and validation require the repair proof to have `status == VERIFIED`, `status_scope == repair_gate_only_not_series_gate`, and `follow_up_packets` containing `TP-RTE-COSTPROFILE-F-VERIFY-002`, but the executable checks only validate the no-live fields. As written, this preflight can pass even if the repair artifact has the wrong scope or does not reference this packet, which undermines the gate’s series-verification dependency check and can certify against an invalid upstream proof.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T12:08:21Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": null,
+          "original_line": 107
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986Ex_mK",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+      "line": null,
+      "original_line": 193,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987E5-z9",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Keep Gate 5 under RTE_DISABLE_LIVE_LLM_IN_TESTS**\n\nThe packet invariant says `RTE_DISABLE_LIVE_LLM_IN_TESTS=1` must stay set for every test/probe step, but S7 runs the CLI import probe without that env guard. This creates a contract mismatch and weakens the no-live guarantee for reproducibility; if import-time behavior ever touches LLM/provider paths, this step can execute outside the intended safety boundary.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T12:08:21Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": null,
+          "original_line": 193
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986E8nnL",
+      "is_resolved": true,
+      "is_outdated": true,
+      "viewer_can_resolve": false,
+      "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+      "line": null,
+      "original_line": 167,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987FIerg",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Parse print-config structure before asserting cost_profile**\n\nGate 3 claims to verify a **top-level** `cost_profile` field, but the command only runs `grep -q 'cost_profile'` on raw output, which cannot distinguish top-level JSON from any other occurrence in logs or nested data. In runs where `cost_profile` appears elsewhere but the top-level field is missing or malformed, this gate would still pass and could incorrectly mark the series verification as successful.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-26T22:56:32Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": null,
+          "original_line": 167
+        },
+        {
+          "id": "PRRC_kwDOPyIw987FV-tQ",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-27T12:57:30Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": null,
+          "original_line": 167
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3XCG",
+          "author": "hu3mann",
+          "body": "Outdated thread candidate for auto-resolution; pending verification.",
+          "created_at": "2026-05-28T17:35:06Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": null,
+          "original_line": 167
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3XNN",
+          "author": "hu3mann",
+          "body": "✅ Automated verification passed for this auto_resolve_outdated.",
+          "created_at": "2026-05-28T17:35:16Z",
+          "path": "task-packets/generated/TP-RTE-COSTPROFILE-F-VERIFY-002.json",
+          "line": null,
+          "original_line": 167
+        }
+      ]
+    },
+    {
+      "id": "PRRT_kwDOPyIw986FXm8e",
+      "is_resolved": false,
+      "is_outdated": false,
+      "viewer_can_resolve": true,
+      "path": ".gitignore",
+      "line": 381,
+      "original_line": 381,
+      "original_start_line": null,
+      "comments": [
+        {
+          "id": "PRRC_kwDOPyIw987Ft5y0",
+          "author": "chatgpt-codex-connector",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Remove the unallowlisted .DS_Store artifact**\n\nThis broad unignore also re-includes macOS metadata, and this commit actually adds `proof/rte-cost-profile-redesign/.DS_Store`. That file is not in the packet's commit allowlist, while S13 requires every staged path to be allowlisted, so the verification proof can be committed in a state that violates its own governance gate and pollutes the proof tree with a local binary artifact. Remove the file and/or add a narrower ignore exception for `.DS_Store` under this proof subtree.\n\nUseful? React with 👍 / 👎.",
+          "created_at": "2026-05-28T10:34:11Z",
+          "path": ".gitignore",
+          "line": 381,
+          "original_line": 381
+        },
+        {
+          "id": "PRRC_kwDOPyIw987F3XEk",
+          "author": "hu3mann",
+          "body": "Automated queue-drain could not safely auto-apply this suggestion. Keeping behavior deterministic and deferring to a targeted follow-up fix.",
+          "created_at": "2026-05-28T17:35:08Z",
+          "path": ".gitignore",
+          "line": 381,
+          "original_line": 381
+        }
+      ]
+    }
+  ]
+}

@@ -5,7 +5,7 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-04-02'
-last_review: '2026-04-02'
+last_review: '2026-06-10'
 next_review: '2026-07-01'
 prelude: Truth Canonicals (reference) for dopemux documentation and developer workflows.
 ---
@@ -76,7 +76,7 @@ Authority order note:
 - Candidates:
   - `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/dope_memory_main.py`
   - `/Users/hue/code/dopemux-mvp/services/dope-memory/mcp_stdio_adapter.py`
-  - `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/mcp/server.py`
+  - `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/wma_mcp/server.py` (formerly `mcp/server.py`; renamed 2026-06-10)
 - Evidence for `dope_memory_main.py`:
   - Docstring identifies canonical entry point for the Dope-Memory service.
   - `compose.yml` `dope-memory` service builds from the working-memory-assistant Dockerfile and runs this entrypoint.

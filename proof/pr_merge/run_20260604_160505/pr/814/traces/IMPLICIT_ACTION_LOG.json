@@ -1,0 +1,21 @@
+{
+  "pr_id": "814",
+  "cycle_id": "0a785a14-4057-4e18-bb4c-2f8f567ef645",
+  "implicit_actions": [
+    {
+      "action": "REFRESH_STATE",
+      "reason": "Starting closed-loop cycle",
+      "timestamp": 1780614309.871852
+    },
+    {
+      "action": "SELECT_TACTIC",
+      "reason": "Computing next safe tactic",
+      "timestamp": 1780614309.8718562
+    },
+    {
+      "action": "RECOMPUTE_SUMMARY",
+      "reason": "Updating posture and blockers after tactic selection",
+      "timestamp": 1780614309.871862
+    }
+  ]
+}

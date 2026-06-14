@@ -1,0 +1,69 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "name": "binary:git",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/git",
+      "remediation": "Install `git` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:gh",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/gh",
+      "remediation": "Install `gh` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:python",
+      "status": "passed",
+      "required": true,
+      "details": "/tmp/dmx-bin/python",
+      "remediation": "Install `python` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:pre-commit",
+      "status": "passed",
+      "required": true,
+      "details": "/tmp/dmx-bin/pre-commit",
+      "remediation": "Install `pre-commit` and ensure it is on PATH."
+    },
+    {
+      "name": "gh_auth",
+      "status": "passed",
+      "required": true,
+      "details": "github.com\n  ✓ Logged in to github.com account hu3mann (keyring)\n  - Active account: true\n  - Git operations protocol: ssh\n  - Token: gho_************************************\n  - Token scopes: 'admin:public_key', 'gist', 'read:org', 'repo', 'workflow'",
+      "remediation": "Run `gh auth login` for the target repository."
+    },
+    {
+      "name": "git_remote",
+      "status": "passed",
+      "required": true,
+      "details": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "remediation": "Configure the `origin` remote."
+    },
+    {
+      "name": "git_worktree",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp                                                           5f216582c [main]\n/private/tmp/dopemux-mvp-phase1-serena-audit                                          b6147b853 (detached HEAD)\n/private/tmp/dopemux-pr-merge-514-20260423_170024                                     f6a4e8e91 [prmerge/20260423_170024-514] prunable\n/private/tmp/dopemux-pr519                                                            c43667bdf (detached HEAD) prunable\n/private/tmp/resolve-517                                                              060c93db8 [codex/rte-canonical-operator-entrypoint] prunable\n/Users/hue/code/ARCH-5.5-PRO                                                          5f216582c (detached HEAD)\n/Users/hue/code/dopemux-mvp-wt-agents-copilot-specs                                   225477ce1 [agents/dopemux-copilot-agent-specs]\n/Users/hue/code/dopemux-mvp-wt-agents-copilot-specs-fresh                             552ce36c8 (detached HEAD)\n/Users/hue/code/dopemux-mvp-wt-cockpit-design-system                                  c836e3410 [codex/cockpit-design-system]\n/Users/hue/code/dopemux-mvp-wt-cockpit-pm-textual                                     c90ed07c0 [test/pm-authority-ports]\n/Users/hue/code/dopemux-mvp-wt-dopecode-ast                                           40edc271c [codex/dopecode-ast-navigation-20260417]\n/Users/hue/code/dopemux-mvp-wt-mcp-audit-hardening                                    087f99329 [codex/mcp-audit-hardening]\n/Users/hue/code/dopemux-mvp-wt-mcp-customization-dr-data                              cba686305 [research/dmx-mcp-customization-dr-data]\n/Users/hue/code/dopemux-mvp-wt-pm-writes-phase1                                       94c508605 [codex/pm-writes-phase1]\n/Users/hue/code/dopemux-mvp-wt-runtime-authority-20260430-195535                      5f216582c [audit/runtime-authority-verifier-20260430-195535]\n/Users/hue/code/dopemux-mvp-wt-runtime-authority-20260430-201805                      5f216582c [audit/runtime-authority-verifier-20260430-201805]\n/Users/hue/code/dopemux-mvp-wt-tui-hardening                                          f23c3294c [codex/tui-runtime-unknown-hardening]\n/Users/hue/code/dopemux-mvp/.claude/worktrees/admiring-jepsen-0715aa                  a1ca9131f [claude/admiring-jepsen-0715aa]\n/Users/hue/code/dopemux-mvp/.claude/worktrees/optimistic-torvalds-3158d6              b33cfc69f [claude/optimistic-torvalds-3158d6]\n/Users/hue/code/dopemux-mvp/docs/03-reference/.claude/worktrees/jovial-hellman-c3848d a1ca9131f [claude/jovial-hellman-c3848d] prunable\n/Users/hue/code/project-docs-improvement                                              00cb80dd9 [audit/runtime-authority-verifier-project-docs-improvement]",
+      "remediation": "Use a git version with worktree support."
+    },
+    {
+      "name": "git_ignorecase",
+      "status": "warning",
+      "required": false,
+      "details": "core.ignorecase=true",
+      "remediation": "Git case-insensitivity detected. Some renames might require `git mv` to be detected on this OS."
+    }
+  ],
+  "policy_resolution": {
+    "source": "repo",
+    "path": "/Users/hue/code/dopemux-mvp/config/pr_merge_specialist/policy.yaml",
+    "fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d",
+    "policy_schema_version": 1,
+    "overrides": []
+  },
+  "override_records": []
+}

@@ -1,0 +1,475 @@
+exit_code=1
+{
+  "generated_at": "2026-04-18T04:02:35.157858+00:00",
+  "run_id": "run_20260418T040217Z",
+  "status": "FAIL",
+  "phase_scope": [
+    "A",
+    "H",
+    "D",
+    "C"
+  ],
+  "step_scope": {},
+  "scope_kind": "launch",
+  "scope_complete_for_launch": true,
+  "routes": {
+    "gemini:gemini-3-flash-preview:GEMINI_API_KEY": "[REDACTED]",
+    "openai:gpt-5-mini:OPENAI_API_KEY": "[REDACTED]",
+    "openai:gpt-5-nano:OPENAI_API_KEY": "[REDACTED]",
+    "openai:gpt-5.2:OPENAI_API_KEY": "[REDACTED]",
+    "openrouter:openai/gpt-5.3-codex:OPENROUTER_API_KEY": "[REDACTED]",
+    "openrouter:openai/gpt-5.4:OPENROUTER_API_KEY": "[REDACTED]",
+    "xai:grok-4.20-beta-0309-non-reasoning:XAI_API_KEY": "[REDACTED]",
+    "xai:grok-4.20-beta-0309-reasoning:XAI_API_KEY": "[REDACTED]",
+    "xai:grok-code-fast-1:XAI_API_KEY": "[REDACTED]"
+  },
+  "probes": [
+    {
+      "provider": "gemini",
+      "model_id": "gemini-3-flash-preview",
+      "api_key_env_name": "GEMINI_API_KEY",
+      "api_key_env_resolved": "GEMINI_API_KEY",
+      "api_key_present": true,
+      "transport": "sdk",
+      "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent",
+      "status_code": 200,
+      "failure_type": null,
+      "provider_error_reason": null,
+      "provider_signature": "provider=gemini;model=gemini-3-flash-preview;host=generativelanguage.googleapis.com;path=/v1beta/models/gemini-3-flash-preview:generateContent;auth_mode=sdk_api_key",
+      "gemini_auth_mode_requested": "auto",
+      "gemini_auth_mode_effective": "sdk_api_key",
+      "gemini_auth_attempt_sequence": [
+        "sdk_api_key"
+      ],
+      "ready": true,
+      "readiness_blocker": {
+        "ready": true,
+        "blocker_code": "READY",
+        "blocker_class": "ready",
+        "remediation_class": "none",
+        "rerun_worthiness": "ready_now",
+        "human_summary": "Provider route is live-ready."
+      }
+    },
+    {
+      "provider": "openai",
+      "model_id": "gpt-5-mini",
+      "api_key_env_name": "OPENAI_API_KEY",
+      "api_key_env_resolved": "OPENAI_API_KEY",
+      "api_key_present": true,
+      "transport": "openai_sdk",
+      "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+      "status_code": 429,
+      "failure_type": "quota_or_billing",
+      "provider_error_reason": null,
+      "provider_signature": "provider=openai;model=gpt-5-mini;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
+      "gemini_auth_mode_requested": null,
+      "gemini_auth_mode_effective": null,
+      "gemini_auth_attempt_sequence": null,
+      "ready": false,
+      "readiness_blocker": {
+        "ready": false,
+        "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+        "blocker_class": "quota_billing",
+        "remediation_class": "restore_quota_or_billing",
+        "rerun_worthiness": "rerun_after_billing_fix",
+        "human_summary": "Provider quota or billing is blocking live readiness for `openai` model `gpt-5-mini`."
+      }
+    },
+    {
+      "provider": "openai",
+      "model_id": "gpt-5-nano",
+      "api_key_env_name": "OPENAI_API_KEY",
+      "api_key_env_resolved": "OPENAI_API_KEY",
+      "api_key_present": true,
+      "transport": "openai_sdk",
+      "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+      "status_code": 429,
+      "failure_type": "quota_or_billing",
+      "provider_error_reason": null,
+      "provider_signature": "provider=openai;model=gpt-5-nano;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
+      "gemini_auth_mode_requested": null,
+      "gemini_auth_mode_effective": null,
+      "gemini_auth_attempt_sequence": null,
+      "ready": false,
+      "readiness_blocker": {
+        "ready": false,
+        "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+        "blocker_class": "quota_billing",
+        "remediation_class": "restore_quota_or_billing",
+        "rerun_worthiness": "rerun_after_billing_fix",
+        "human_summary": "Provider quota or billing is blocking live readiness for `openai` model `gpt-5-nano`."
+      }
+    },
+    {
+      "provider": "openai",
+      "model_id": "gpt-5.2",
+      "api_key_env_name": "OPENAI_API_KEY",
+      "api_key_env_resolved": "OPENAI_API_KEY",
+      "api_key_present": true,
+      "transport": "openai_sdk",
+      "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+      "status_code": 429,
+      "failure_type": "quota_or_billing",
+      "provider_error_reason": null,
+      "provider_signature": "provider=openai;model=gpt-5.2;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
+      "gemini_auth_mode_requested": null,
+      "gemini_auth_mode_effective": null,
+      "gemini_auth_attempt_sequence": null,
+      "ready": false,
+      "readiness_blocker": {
+        "ready": false,
+        "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+        "blocker_class": "quota_billing",
+        "remediation_class": "restore_quota_or_billing",
+        "rerun_worthiness": "rerun_after_billing_fix",
+        "human_summary": "Provider quota or billing is blocking live readiness for `openai` model `gpt-5.2`."
+      }
+    },
+    {
+      "provider": "openrouter",
+      "model_id": "openai/gpt-5.3-codex",
+      "api_key_env_name": "OPENROUTER_API_KEY",
+      "api_key_env_resolved": "OPENROUTER_API_KEY",
+      "api_key_present": true,
+      "transport": "openai_sdk",
+      "endpoint_effective": "https://openrouter.ai/api/v1/chat/completions",
+      "status_code": 402,
+      "failure_type": "quota_or_billing",
+      "provider_error_reason": null,
+      "provider_signature": "provider=openrouter;model=openai/gpt-5.3-codex;host=openrouter.ai;path=/api/v1/chat/completions;auth_mode=bearer",
+      "gemini_auth_mode_requested": null,
+      "gemini_auth_mode_effective": null,
+      "gemini_auth_attempt_sequence": null,
+      "ready": false,
+      "readiness_blocker": {
+        "ready": false,
+        "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+        "blocker_class": "quota_billing",
+        "remediation_class": "restore_quota_or_billing",
+        "rerun_worthiness": "rerun_after_billing_fix",
+        "human_summary": "Provider quota or billing is blocking live readiness for `openrouter` model `openai/gpt-5.3-codex`."
+      }
+    },
+    {
+      "provider": "openrouter",
+      "model_id": "openai/gpt-5.4",
+      "api_key_env_name": "OPENROUTER_API_KEY",
+      "api_key_env_resolved": "OPENROUTER_API_KEY",
+      "api_key_present": true,
+      "transport": "openai_sdk",
+      "endpoint_effective": "https://openrouter.ai/api/v1/chat/completions",
+      "status_code": 402,
+      "failure_type": "quota_or_billing",
+      "provider_error_reason": null,
+      "provider_signature": "provider=openrouter;model=openai/gpt-5.4;host=openrouter.ai;path=/api/v1/chat/completions;auth_mode=bearer",
+      "gemini_auth_mode_requested": null,
+      "gemini_auth_mode_effective": null,
+      "gemini_auth_attempt_sequence": null,
+      "ready": false,
+      "readiness_blocker": {
+        "ready": false,
+        "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+        "blocker_class": "quota_billing",
+        "remediation_class": "restore_quota_or_billing",
+        "rerun_worthiness": "rerun_after_billing_fix",
+        "human_summary": "Provider quota or billing is blocking live readiness for `openrouter` model `openai/gpt-5.4`."
+      }
+    },
+    {
+      "provider": "xai",
+      "model_id": "grok-4.20-beta-0309-non-reasoning",
+      "api_key_env_name": "XAI_API_KEY",
+      "api_key_env_resolved": "XAI_API_KEY",
+      "api_key_present": true,
+      "transport": "openai_sdk",
+      "endpoint_effective": "https://api.x.ai/v1/chat/completions",
+      "status_code": 200,
+      "failure_type": null,
+      "provider_error_reason": null,
+      "provider_signature": "provider=xai;model=grok-4.20-beta-0309-non-reasoning;host=api.x.ai;path=/v1/chat/completions;auth_mode=bearer",
+      "gemini_auth_mode_requested": null,
+      "gemini_auth_mode_effective": null,
+      "gemini_auth_attempt_sequence": null,
+      "ready": true,
+      "readiness_blocker": {
+        "ready": true,
+        "blocker_code": "READY",
+        "blocker_class": "ready",
+        "remediation_class": "none",
+        "rerun_worthiness": "ready_now",
+        "human_summary": "Provider route is live-ready."
+      }
+    },
+    {
+      "provider": "xai",
+      "model_id": "grok-4.20-beta-0309-reasoning",
+      "api_key_env_name": "XAI_API_KEY",
+      "api_key_env_resolved": "XAI_API_KEY",
+      "api_key_present": true,
+      "transport": "openai_sdk",
+      "endpoint_effective": "https://api.x.ai/v1/chat/completions",
+      "status_code": 200,
+      "failure_type": null,
+      "provider_error_reason": null,
+      "provider_signature": "provider=xai;model=grok-4.20-beta-0309-reasoning;host=api.x.ai;path=/v1/chat/completions;auth_mode=bearer",
+      "gemini_auth_mode_requested": null,
+      "gemini_auth_mode_effective": null,
+      "gemini_auth_attempt_sequence": null,
+      "ready": true,
+      "readiness_blocker": {
+        "ready": true,
+        "blocker_code": "READY",
+        "blocker_class": "ready",
+        "remediation_class": "none",
+        "rerun_worthiness": "ready_now",
+        "human_summary": "Provider route is live-ready."
+      }
+    },
+    {
+      "provider": "xai",
+      "model_id": "grok-code-fast-1",
+      "api_key_env_name": "XAI_API_KEY",
+      "api_key_env_resolved": "XAI_API_KEY",
+      "api_key_present": true,
+      "transport": "openai_sdk",
+      "endpoint_effective": "https://api.x.ai/v1/chat/completions",
+      "status_code": 200,
+      "failure_type": null,
+      "provider_error_reason": null,
+      "provider_signature": "provider=xai;model=grok-code-fast-1;host=api.x.ai;path=/v1/chat/completions;auth_mode=bearer",
+      "gemini_auth_mode_requested": null,
+      "gemini_auth_mode_effective": null,
+      "gemini_auth_attempt_sequence": null,
+      "ready": true,
+      "readiness_blocker": {
+        "ready": true,
+        "blocker_code": "READY",
+        "blocker_class": "ready",
+        "remediation_class": "none",
+        "rerun_worthiness": "ready_now",
+        "human_summary": "Provider route is live-ready."
+      }
+    }
+  ],
+  "failed_providers": [
+    "openai",
+    "openai",
+    "openai",
+    "openrouter",
+    "openrouter"
+  ],
+  "failed_blocker_codes": [
+    "QUOTA_OR_BILLING_BLOCK"
+  ],
+  "failure_summary": [
+    {
+      "provider": "openai",
+      "model_id": "gpt-5-mini",
+      "api_key_env": "OPENAI_API_KEY",
+      "failure_type": "quota_or_billing",
+      "status_code": 429,
+      "provider_signature": "provider=openai;model=gpt-5-mini;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
+      "readiness_blocker": {
+        "ready": false,
+        "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+        "blocker_class": "quota_billing",
+        "remediation_class": "restore_quota_or_billing",
+        "rerun_worthiness": "rerun_after_billing_fix",
+        "human_summary": "Provider quota or billing is blocking live readiness for `openai` model `gpt-5-mini`."
+      },
+      "remediation": null
+    },
+    {
+      "provider": "openai",
+      "model_id": "gpt-5-nano",
+      "api_key_env": "OPENAI_API_KEY",
+      "failure_type": "quota_or_billing",
+      "status_code": 429,
+      "provider_signature": "provider=openai;model=gpt-5-nano;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
+      "readiness_blocker": {
+        "ready": false,
+        "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+        "blocker_class": "quota_billing",
+        "remediation_class": "restore_quota_or_billing",
+        "rerun_worthiness": "rerun_after_billing_fix",
+        "human_summary": "Provider quota or billing is blocking live readiness for `openai` model `gpt-5-nano`."
+      },
+      "remediation": null
+    },
+    {
+      "provider": "openai",
+      "model_id": "gpt-5.2",
+      "api_key_env": "OPENAI_API_KEY",
+      "failure_type": "quota_or_billing",
+      "status_code": 429,
+      "provider_signature": "provider=openai;model=gpt-5.2;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
+      "readiness_blocker": {
+        "ready": false,
+        "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+        "blocker_class": "quota_billing",
+        "remediation_class": "restore_quota_or_billing",
+        "rerun_worthiness": "rerun_after_billing_fix",
+        "human_summary": "Provider quota or billing is blocking live readiness for `openai` model `gpt-5.2`."
+      },
+      "remediation": null
+    },
+    {
+      "provider": "openrouter",
+      "model_id": "openai/gpt-5.3-codex",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "failure_type": "quota_or_billing",
+      "status_code": 402,
+      "provider_signature": "provider=openrouter;model=openai/gpt-5.3-codex;host=openrouter.ai;path=/api/v1/chat/completions;auth_mode=bearer",
+      "readiness_blocker": {
+        "ready": false,
+        "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+        "blocker_class": "quota_billing",
+        "remediation_class": "restore_quota_or_billing",
+        "rerun_worthiness": "rerun_after_billing_fix",
+        "human_summary": "Provider quota or billing is blocking live readiness for `openrouter` model `openai/gpt-5.3-codex`."
+      },
+      "remediation": null
+    },
+    {
+      "provider": "openrouter",
+      "model_id": "openai/gpt-5.4",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "failure_type": "quota_or_billing",
+      "status_code": 402,
+      "provider_signature": "provider=openrouter;model=openai/gpt-5.4;host=openrouter.ai;path=/api/v1/chat/completions;auth_mode=bearer",
+      "readiness_blocker": {
+        "ready": false,
+        "blocker_code": "QUOTA_OR_BILLING_BLOCK",
+        "blocker_class": "quota_billing",
+        "remediation_class": "restore_quota_or_billing",
+        "rerun_worthiness": "rerun_after_billing_fix",
+        "human_summary": "Provider quota or billing is blocking live readiness for `openrouter` model `openai/gpt-5.4`."
+      },
+      "remediation": null
+    }
+  ],
+  "rerun_worthiness": "worth_rerunning_after_fixes",
+  "routing_policy": "cost",
+  "routing_policy_version": "RTE_ROUTING_V1",
+  "batch_capability": {
+    "enabled": false,
+    "provider": "auto",
+    "status": "SKIPPED",
+    "checks": []
+  }
+}
+WARNING: model_map.yaml steps outside repo_truth_map JSON scope: C:C18, C:C19, C:C20, C:C21, G:G5, G:G6, G:G7, Q:Q11, R:R0, R:R10, R:R11, R:R2, R:R3, R:R4, R:R5, R:R6, R:R7, R:R8, R:R9, S:S0, S:S1, S:S10, S:S11, S:S12, S:S2, S:S3, S:S4, S:S5, S:S6, S:S7, S:S8, S:S9, Z:Z1
+FIRST_LIVE_PRESET {"applied_defaults": {"batch_mode": false, "batch_wait_timeout_seconds": 1800, "max_cost_usd": 5.0, "partition_workers": 1, "phase_sequence": ["A", "H", "D", "C"], "routing_policy": "cost"}, "compare_mode": null, "full_recommended_sequence": ["A", "H", "D", "C", "CHECKPOINT_REVIEW", "R", "X", "T", "Z", "S", "SP"], "notes": ["Validator is step zero for live preset execution unless --skip-pre-live-validator is set.", "The initial stage stops after A/H/D/C so operators can review artifacts before synthesis phases.", "Strict step-level routes can still override the top-level policy preview for some prompts."], "output_root": null, "preset": "first-live", "selected_phases": ["A", "H", "D", "C"], "stage": "initial"}
+21:02:17 [INFO] RUN_LOG_ENABLED path=/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/RUN.log
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A1 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A11 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A12 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A13 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A99 provider=openrouter model=openai/gpt-5.4
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H1 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H3 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H9 provider=openrouter model=openai/gpt-5.4
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D1 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D4 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D5 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C2 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C3 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C4 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C8 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C9 provider=openrouter model=openai/gpt-5.4
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C12 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C13 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C14 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C15 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C16 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C17 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A1 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A11 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A12 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A13 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A99 provider=openrouter model=openai/gpt-5.4
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H1 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H3 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H9 provider=openrouter model=openai/gpt-5.4
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D1 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D4 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D5 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C2 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C3 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C4 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C8 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C9 provider=openrouter model=openai/gpt-5.4
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C12 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C13 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C14 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C15 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C16 provider=openrouter model=openai/gpt-5.3-codex
+21:02:17 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C17 provider=openrouter model=openai/gpt-5.3-codex
+21:02:18 [INFO] AFC is enabled with max remote calls: 10.
+21:02:19 [INFO] HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent "HTTP/1.1 200 OK"
+21:02:20 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+21:02:20 [INFO] Retrying request to /chat/completions in 0.434061 seconds
+21:02:20 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+21:02:20 [INFO] Retrying request to /chat/completions in 0.898254 seconds
+21:02:21 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+21:02:21 [WARNING] LLM call failed attempt 1/4 status=429 failure_type=quota_or_billing provider_error_reason=None exception_type=RateLimitError response_body_redacted=REDACTED
+21:02:21 [ERROR] LLM call failed after 1 attempts (0.0s retry delay).
+21:02:21 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+21:02:21 [INFO] Retrying request to /chat/completions in 0.466832 seconds
+21:02:22 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+21:02:22 [INFO] Retrying request to /chat/completions in 0.849607 seconds
+21:02:23 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+21:02:23 [WARNING] LLM call failed attempt 1/4 status=429 failure_type=quota_or_billing provider_error_reason=None exception_type=RateLimitError response_body_redacted=REDACTED
+21:02:23 [ERROR] LLM call failed after 1 attempts (0.0s retry delay).
+21:02:23 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+21:02:23 [INFO] Retrying request to /chat/completions in 0.451970 seconds
+21:02:24 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+21:02:24 [INFO] Retrying request to /chat/completions in 0.917903 seconds
+21:02:25 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+21:02:25 [WARNING] LLM call failed attempt 1/4 status=429 failure_type=quota_or_billing provider_error_reason=None exception_type=RateLimitError response_body_redacted=REDACTED
+21:02:25 [ERROR] LLM call failed after 1 attempts (0.0s retry delay).
+21:02:25 [INFO] HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 402 Payment Required"
+21:02:25 [WARNING] LLM call failed attempt 1/4 status=402 failure_type=quota_or_billing provider_error_reason=None exception_type=APIStatusError response_body_redacted=REDACTED
+21:02:25 [ERROR] LLM call failed after 1 attempts (0.0s retry delay).
+21:02:25 [INFO] HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 402 Payment Required"
+21:02:25 [WARNING] LLM call failed attempt 1/4 status=402 failure_type=quota_or_billing provider_error_reason=None exception_type=APIStatusError response_body_redacted=REDACTED
+21:02:25 [ERROR] LLM call failed after 1 attempts (0.0s retry delay).
+21:02:25 [INFO] HTTP Request: POST https://api.x.ai/v1/chat/completions "HTTP/1.1 200 OK"
+21:02:25 [WARNING] SpendLedger using unknown-model fallback pricing provider=xai model=grok-4.20-beta-0309-non-reasoning pricing_key=xai/grok-4.20-beta-0309-non-reasoning policy=baseline_v1_fallback
+21:02:27 [INFO] HTTP Request: POST https://api.x.ai/v1/chat/completions "HTTP/1.1 200 OK"
+21:02:35 [INFO] HTTP Request: POST https://api.x.ai/v1/chat/completions "HTTP/1.1 200 OK"
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A1 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A11 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A12 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A13 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=A step=A99 provider=openrouter model=openai/gpt-5.4
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H1 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H3 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=H step=H9 provider=openrouter model=openai/gpt-5.4
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D1 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D4 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=D step=D5 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C0 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C2 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C3 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C4 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C8 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C9 provider=openrouter model=openai/gpt-5.4
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C12 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C13 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C14 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C15 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C16 provider=openrouter model=openai/gpt-5.3-codex
+21:02:35 [INFO] STRICT_ROUTE_CHOSEN phase=C step=C17 provider=openrouter model=openai/gpt-5.3-codex

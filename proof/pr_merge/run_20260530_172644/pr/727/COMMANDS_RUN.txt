@@ -1,0 +1,194 @@
+$ git fetch origin pull/727/head:prmerge/20260530_172644-727
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/727/head -> prmerge/20260530_172644-727
+
+$ git worktree add /tmp/dopemux-pr-merge-727-20260530_172644 prmerge/20260530_172644-727
+exit=0
+--- stdout ---
+HEAD is now at 97da74c91 fix(qa): merge base+overlay compose files, fix update_baseline arg in SKILL.md
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260530_172644-727')
+Updating files:  30% (4078/13538)
+Updating files:  31% (4197/13538)
+Updating files:  32% (4333/13538)
+Updating files:  33% (4468/13538)
+Updating files:  34% (4603/13538)
+Updating files:  35% (4739/13538)
+Updating files:  36% (4874/13538)
+Updating files:  37% (5010/13538)
+Updating files:  38% (5145/13538)
+Updating files:  39% (5280/13538)
+Updating files:  40% (5416/13538)
+Updating files:  41% (5551/13538)
+Updating files:  42% (5686/13538)
+Updating files:  43% (5822/13538)
+Updating files:  44% (5957/13538)
+Updating files:  45% (6093/13538)
+Updating files:  46% (6228/13538)
+Updating files:  47% (6363/13538)
+Updating files:  48% (6499/13538)
+Updating files:  49% (6634/13538)
+Updating files:  50% (6769/13538)
+Updating files:  51% (6905/13538)
+Updating files:  52% (7040/13538)
+Updating files:  53% (7176/13538)
+Updating files:  54% (7311/13538)
+Updating files:  55% (7446/13538)
+Updating files:  56% (7582/13538)
+Updating files:  57% (7717/13538)
+Updating files:  58% (7853/13538)
+Updating files:  59% (7988/13538)
+Updating files:  60% (8123/13538)
+Updating files:  61% (8259/13538)
+Updating files:  62% (8394/13538)
+Updating files:  63% (8529/13538)
+Updating files:  64% (8665/13538)
+Updating files:  65% (8800/13538)
+Updating files:  66% (8936/13538)
+Updating files:  67% (9071/13538)
+Updating files:  68% (9206/13538)
+Updating files:  69% (9342/13538)
+Updating files:  70% (9477/13538)
+Updating files:  71% (9612/13538)
+Updating files:  72% (9748/13538)
+Updating files:  73% (9883/13538)
+Updating files:  73% (9959/13538)
+Updating files:  74% (10019/13538)
+Updating files:  75% (10154/13538)
+Updating files:  76% (10289/13538)
+Updating files:  77% (10425/13538)
+Updating files:  78% (10560/13538)
+Updating files:  79% (10696/13538)
+Updating files:  80% (10831/13538)
+Updating files:  81% (10966/13538)
+Updating files:  82% (11102/13538)
+Updating files:  83% (11237/13538)
+Updating files:  84% (11372/13538)
+Updating files:  85% (11508/13538)
+Updating files:  86% (11643/13538)
+Updating files:  87% (11779/13538)
+Updating files:  88% (11914/13538)
+Updating files:  89% (12049/13538)
+Updating files:  90% (12185/13538)
+Updating files:  91% (12320/13538)
+Updating files:  92% (12455/13538)
+Updating files:  93% (12591/13538)
+Updating files:  94% (12726/13538)
+Updating files:  95% (12862/13538)
+Updating files:  96% (12997/13538)
+Updating files:  97% (13132/13538)
+Updating files:  98% (13268/13538)
+Updating files:  99% (13403/13538)
+Updating files: 100% (13538/13538)
+Updating files: 100% (13538/13538), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+97da74c9138ed9fceba8dcfffc35cf62b0346552
+
+$ gh pr update-branch 727 --rebase
+exit=0
+--- stdout ---
+✓ PR branch already up-to-date
+
+$ git fetch origin claude/hopeful-shirley-656b07
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                claude/hopeful-shirley-656b07 -> FETCH_HEAD
+
+$ git reset --hard origin/claude/hopeful-shirley-656b07
+exit=0
+--- stdout ---
+HEAD is now at 97da74c91 fix(qa): merge base+overlay compose files, fix update_baseline arg in SKILL.md
+
+$ git diff --name-only --diff-filter=ACMR 755bf38460d1f2f6bba6e072ec9a627e9e218b15...HEAD
+exit=0
+--- stdout ---
+.pre-commit-config.yaml
+claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md
+claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md.v1.bak
+claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md
+claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md.v1.bak
+claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md
+claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md.v1.bak
+claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md
+claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md.v1.bak
+claudedocs/beta-readiness-2026-05-29/04-IMPLEMENTER-ASSIGNMENTS.md
+claudedocs/beta-readiness-2026-05-29/05-DISPATCH-PROMPTS.md
+config/repo_hygiene/root_hygiene_policy.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json
+proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json
+proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json
+pyproject.toml
+qa/.env.example
+qa/README.md
+qa/SKILL.md
+qa/backlog-map.yaml
+qa/baseline/baseline.json
+qa/baseline/snapshots/.gitkeep
+qa/lib/qa_common.py
+qa/lib/qa_common.sh
+qa/results/.gitkeep
+qa/runbook.md
+qa/scenarios/00_env_up.sh
+qa/scenarios/01_probe_entrypoints.sh
+qa/scenarios/10_install_gauntlet.sh
+qa/scenarios/20_cli_sweep.py
+qa/scenarios/30_mcp_roundtrips.sh
+qa/scenarios/40_multi_instance_collision.sh
+qa/scenarios/50_hooks_lifecycle.sh
+qa/scenarios/60_rte_routing_safety.sh
+qa/scenarios/61_live_lane.sh
+qa/scenarios/70_pytest_lanes.sh
+qa/scenarios/80_docs_drift.py
+qa/scenarios/90_tui_renders.sh
+qa/scenarios/99_env_down.sh
+src/dopemux/orchestrator/ui/data_sources.py
+uv.lock
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .pre-commit-config.yaml claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md claudedocs/beta-readiness-2026-05-29/00-MASTER-REPORT.md.v1.bak claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md claudedocs/beta-readiness-2026-05-29/01-SEQUENCED-BACKLOG.md.v1.bak claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md claudedocs/beta-readiness-2026-05-29/02-REMOVE-CONSOLIDATE.md.v1.bak claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md claudedocs/beta-readiness-2026-05-29/03-AGENT-WRAPPING-SPEC.md.v1.bak claudedocs/beta-readiness-2026-05-29/04-IMPLEMENTER-ASSIGNMENTS.md claudedocs/beta-readiness-2026-05-29/05-DISPATCH-PROMPTS.md config/repo_hygiene/root_hygiene_policy.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/review_bundle/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/PROOF.json proof/TP-DMX-AUDITOR-ROUTER-WRAPPER-003/review_bundle/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/PROOF.json proof/TP-DMX-PR-STEWARD-RESOLVED-THREAD-PROOF-SEMANTICS-001/review_bundle/PROOF.json pyproject.toml qa/.env.example qa/README.md qa/SKILL.md qa/backlog-map.yaml qa/baseline/baseline.json qa/baseline/snapshots/.gitkeep qa/lib/qa_common.py qa/lib/qa_common.sh qa/results/.gitkeep qa/runbook.md qa/scenarios/00_env_up.sh qa/scenarios/01_probe_entrypoints.sh qa/scenarios/10_install_gauntlet.sh qa/scenarios/20_cli_sweep.py qa/scenarios/30_mcp_roundtrips.sh qa/scenarios/40_multi_instance_collision.sh qa/scenarios/50_hooks_lifecycle.sh qa/scenarios/60_rte_routing_safety.sh qa/scenarios/61_live_lane.sh qa/scenarios/70_pytest_lanes.sh qa/scenarios/80_docs_drift.py qa/scenarios/90_tui_renders.sh qa/scenarios/99_env_down.sh src/dopemux/orchestrator/ui/data_sources.py uv.lock
+exit=0
+--- stdout ---
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...........................................................(no files to check)Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+
+$ python scripts/check_root_hygiene.py
+exit=0
+--- stdout ---
+root-hygiene: no candidate files to check
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-727-20260530_172644
+exit=0
+
+$ gh pr merge 727 --rebase --delete-branch
+exit=1
+--- stderr ---
+X Pull request DDD-Enterprises/dopemux-mvp#727 is not mergeable: the base branch policy prohibits the merge.
+To have the pull request merged after all the requirements have been met, add the `--auto` flag.
+To use administrator privileges to immediately merge the pull request, add the `--admin` flag.
+
