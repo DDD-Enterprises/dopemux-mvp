@@ -817,6 +817,21 @@ def test_unknown_complexity_is_not_runnable() -> None:
     assert decision.allowed_actions == ["inspect_runtime_code"]
 
 
+def test_mutating_classification_requires_proof_obligations() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.status is RouteStatus.ALLOWED
+    assert ProofRequirement.DIFF_STAT in decision.proof_requirements
+    assert ProofRequirement.FULL_PROOF_BUNDLE in decision.proof_requirements
+
+
 # ─────────────────────────────────────────────
 # Test 33 — Round-trip from_dict works
 # ─────────────────────────────────────────────

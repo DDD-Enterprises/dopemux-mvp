@@ -24,7 +24,7 @@ into a conservative `RouteDecision` skeleton using types from
 **IN**
 - `src/dopemux/dcp/routing_classifier.py` — pure classifier module
 - `src/dopemux/dcp/__init__.py` — exports added
-- `tests/unit/dcp/test_routing_classifier.py` — 54 focused unit tests
+- `tests/unit/dcp/test_routing_classifier.py` — 55 focused unit tests
 - `task-packets/DMX-DCP-MODEL-ROUTING-MVP-0002.md` — this file
 
 **OUT** — No runner execution, live backend, connector, GitHub, MCP, CI workflow,
@@ -45,7 +45,7 @@ or external package dependencies.
 | Gate | Result |
 |------|--------|
 | compileall src/dopemux/dcp | PASS |
-| pytest routing_model + routing_classifier (100 tests) | PASS |
+| pytest routing_model + routing_classifier (101 tests) | PASS |
 | git diff --check | PASS |
 | static no-go scan | PASS (all matches are docstrings/string constants) |
 | diff scope | PASS (only allowed files changed) |
