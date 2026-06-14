@@ -3,7 +3,7 @@
 Pure-function classifier: maps RoutingClassificationInput → RouteDecision.
 
 Invariants enforced by design:
-- No I/O, filesystem writes, network, subprocess, shell, or external services.
+- No I/O, filesystem writes, network, shell, or external services.
 - Only imports stdlib and routing_model.
 - Unknown / conflicting / risky inputs fail closed.
 - RED_LANE state overrides any ALLOW preference.

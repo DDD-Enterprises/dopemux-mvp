@@ -1,10 +1,14 @@
 ---
 id: DMX-DCP-MODEL-ROUTING-MVP-0002
-title: "Add pure-function routing classification engine"
-series: DMX-DCP-MODEL-ROUTING-MVP
-status: IMPLEMENTED
-risk: MEDIUM
-branch: dcp/model-routing-0002-classifier
+title: Add pure-function routing classification engine
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-13'
+last_review: '2026-06-13'
+next_review: '2026-09-11'
+prelude: Pure-function routing classification engine mapping task attributes into
+  conservative RouteDecision data using the DCP routing domain model.
 ---
 
 # DMX-DCP-MODEL-ROUTING-MVP-0002 — Routing Classification Engine
