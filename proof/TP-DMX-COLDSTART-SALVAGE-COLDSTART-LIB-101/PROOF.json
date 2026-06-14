@@ -1,0 +1,128 @@
+{
+  "task_packet": {
+    "id": "TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101",
+    "path": "task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json"
+  },
+  "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-coldstart-salvage-coldstart-lib-101",
+  "branch": "codex/tp-dmx-coldstart-salvage-coldstart-lib-101",
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Extraction is covered by mocked unit tests only; live Docker, macOS Keychain, 1Password, and installer end-to-end paths were not exercised."
+    ],
+    "skip_reason": "Packet risk is MEDIUM and this implementation is scoped to extracted helper modules, mocked unit tests, and proof artifacts; no separate embedded auditor was invoked."
+  },
+  "repo": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "base": "origin/main",
+    "base_head": "a2396a922"
+  },
+  "summary": {
+    "created_package": "src/dopemux/coldstart",
+    "source_modules": [
+      "platform.py",
+      "secrets_resolver.py",
+      "network.py",
+      "compose_orchestrator.py",
+      "update_manager.py",
+      "rollback_manager.py"
+    ],
+    "test_count": 15,
+    "existing_installer_tests_count": 7
+  },
+  "commands": [
+    {
+      "cmd": "pytest -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py",
+      "exit_code": 2,
+      "result": "RED: collection failed because dopemux.coldstart did not exist"
+    },
+    {
+      "cmd": "python -m pip install -e . --no-deps",
+      "exit_code": 0,
+      "result": "Editable install used to make the packet's bare python -c import command see the src-layout package; no dependencies were installed."
+    },
+    {
+      "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m compileall -q src/dopemux/coldstart/",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m compileall -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py",
+      "exit_code": 0
+    },
+    {
+      "cmd": "pytest -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py",
+      "exit_code": 0,
+      "result": "15 passed"
+    },
+    {
+      "cmd": "pytest -q tests/scripts/test_install_sh_secrets.py tests/scripts/test_shell_installer.py",
+      "exit_code": 0,
+      "result": "7 passed"
+    },
+    {
+      "cmd": "python -c \"from dopemux.coldstart import platform, secrets_resolver, network, compose_orchestrator, update_manager, rollback_manager; print('imports OK')\"",
+      "exit_code": 1,
+      "result": "Pre-install check failed because plain Python did not include this repo's src/ directory on sys.path."
+    },
+    {
+      "cmd": "python -c \"from dopemux.coldstart import platform, secrets_resolver, network, compose_orchestrator, update_manager, rollback_manager; print('imports OK')\"",
+      "exit_code": 0,
+      "result": "imports OK after local editable install"
+    },
+    {
+      "cmd": "rg -n \"CHANGE_ME|dev_password|sk-dev\" src/dopemux/coldstart",
+      "exit_code": 1,
+      "result": "No matches"
+    },
+    {
+      "cmd": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "diff_scope": [
+    "src/dopemux/coldstart/__init__.py",
+    "src/dopemux/coldstart/platform.py",
+    "src/dopemux/coldstart/secrets_resolver.py",
+    "src/dopemux/coldstart/network.py",
+    "src/dopemux/coldstart/compose_orchestrator.py",
+    "src/dopemux/coldstart/update_manager.py",
+    "src/dopemux/coldstart/rollback_manager.py",
+    "tests/coldstart/__init__.py",
+    "tests/coldstart/test_platform.py",
+    "tests/coldstart/test_secrets_resolver.py",
+    "tests/coldstart/test_network.py",
+    "tests/coldstart/test_compose_orchestrator.py",
+    "tests/coldstart/test_update_manager.py",
+    "task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json",
+    "proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/PROOF.json",
+    "proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/AUDITOR_REPORT.md"
+  ],
+  "not_run": [
+    "No live Docker daemon, docker network, or docker compose operations.",
+    "No macOS Keychain, 1Password, or arbitrary secret command execution against real credentials.",
+    "No live install.sh full-stack execution.",
+    "No provider calls.",
+    "No package build/install validation beyond local editable install with --no-deps."
+  ],
+  "residual_risks": [
+    "The Python extraction is not wired back into install.sh in this packet; behavior parity is tested at the helper level only.",
+    "The Python wait_healthy helper treats explicit unhealthy status as not healthy; this avoids the bash substring hazard where grep healthy may also match unhealthy.",
+    "Plain python imports require an installed package or PYTHONPATH=src in this local environment."
+  ],
+  "unknowns": [
+    "Whether downstream packets will replace install.sh call sites or keep these helpers as import-only foundation remains out of scope for this packet.",
+    "Live Docker, Keychain, and 1Password behavior remains unverified without operator credentials and services."
+  ]
+}
