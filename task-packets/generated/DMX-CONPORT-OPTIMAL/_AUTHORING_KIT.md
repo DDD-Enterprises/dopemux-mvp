@@ -1,3 +1,14 @@
+---
+id: _AUTHORING_KIT
+title: ' Authoring Kit'
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-14'
+last_review: '2026-06-14'
+next_review: '2026-09-12'
+prelude: ' Authoring Kit (explanation) for dopemux documentation and developer workflows.'
+---
 # DMX-CONPORT-OPTIMAL Authoring Kit
 
 Schema version: `dopetask-canonical-spec.json` (draft-07) as of 2026-06-13.
