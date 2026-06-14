@@ -15,7 +15,7 @@ Invariants enforced by design:
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from dopemux.dcp.routing_model import (
     AuditRequirement,
@@ -112,8 +112,11 @@ _ALWAYS_FORBIDDEN: list[str] = [
     "execute_dopetask",
 ]
 
-_SAFE_ALLOWED: list[str] = [
+_READ_ONLY_ALLOWED: list[str] = [
     "inspect_runtime_code",
+]
+
+_MUTATING_ALLOWED: list[str] = [
     "edit_allowlisted_files",
     "run_targeted_tests",
     "capture_proof",
@@ -121,9 +124,37 @@ _SAFE_ALLOWED: list[str] = [
     "open_pr",
 ]
 
+_SAFE_ALLOWED: list[str] = _READ_ONLY_ALLOWED + _MUTATING_ALLOWED
+
 # ─────────────────────────────────────────────
 # Helper derivers
 # ─────────────────────────────────────────────
+
+
+def _normalize_enum(value: object, enum_cls: type) -> object:
+    """Normalize enum members and string names/values; otherwise UNKNOWN."""
+    if isinstance(value, enum_cls):
+        return value
+    if isinstance(value, str):
+        for member in enum_cls:
+            if value == member.name or value == member.value:
+                return member
+    return enum_cls.UNKNOWN
+
+
+def _normalize_input(inp: RoutingClassificationInput) -> RoutingClassificationInput:
+    """Return a normalized copy without mutating caller-owned input."""
+    return replace(
+        inp,
+        task_source=_normalize_enum(inp.task_source, TaskSource),
+        task_type=_normalize_enum(inp.task_type, TaskType),
+        risk_class=_normalize_enum(inp.risk_class, RiskClass),
+        complexity_class=_normalize_enum(inp.complexity_class, ComplexityClass),
+        authority_class=_normalize_enum(inp.authority_class, AuthorityClass),
+        runtime_impact=_normalize_enum(inp.runtime_impact, RuntimeImpact),
+        backend_kind=_normalize_enum(inp.backend_kind, BackendKind),
+        connector_kind=_normalize_enum(inp.connector_kind, ConnectorKind),
+    )
 
 
 def _derive_red_lane_state(inp: RoutingClassificationInput) -> RedLaneState:
@@ -141,6 +172,8 @@ def _derive_red_lane_state(inp: RoutingClassificationInput) -> RedLaneState:
         or inp.requires_task_orchestrator_write
         or inp.has_conflicting_evidence
         or inp.risk_class is RiskClass.RED_LANE
+        or inp.task_type is TaskType.LIVE_WRITE
+        or inp.runtime_impact is RuntimeImpact.LIVE_WRITE
     )
     return RedLaneState.RED_LANE if red_flags else RedLaneState.CLEAR
 
@@ -270,17 +303,29 @@ def _derive_allowed_actions(
     red_lane: RedLaneState,
     status: RouteStatus,
 ) -> list[str]:
-    """Return passive/safe allowed actions for this route."""
+    """Return actions permitted for this route.
+
+    Mutating actions (edit_allowlisted_files, open_pr) are only permitted
+    when the route is fully ALLOWED — not for UNKNOWN, NEEDS_SUPERVISOR, or
+    PENDING status, which should not imply repo-changing actions are safe.
+    """
     if red_lane is RedLaneState.RED_LANE or status is RouteStatus.BLOCKED:
         return []
-    return list(_SAFE_ALLOWED)
+    if status is RouteStatus.ALLOWED:
+        return list(_SAFE_ALLOWED)
+    # UNKNOWN / NEEDS_SUPERVISOR / PENDING: read-only inspection only
+    return list(_READ_ONLY_ALLOWED)
 
 
 def _derive_forbidden_actions(inp: RoutingClassificationInput) -> list[str]:
     """Build the list of forbidden actions, always including hard-block set."""
     forbidden = list(_ALWAYS_FORBIDDEN)
 
-    if inp.requires_live_write:
+    if (
+        inp.requires_live_write
+        or inp.task_type is TaskType.LIVE_WRITE
+        or inp.runtime_impact is RuntimeImpact.LIVE_WRITE
+    ):
         _append_unique(forbidden, "live_write_to_service")
     if inp.requires_connector_call:
         _append_unique(forbidden, "call_connector_live")
@@ -319,7 +364,11 @@ def _derive_stop_conditions(
         conditions.append("auth_surface_in_scope")
     if inp.touches_ci:
         conditions.append("ci_surface_in_scope")
-    if inp.requires_live_write:
+    if (
+        inp.requires_live_write
+        or inp.task_type is TaskType.LIVE_WRITE
+        or inp.runtime_impact is RuntimeImpact.LIVE_WRITE
+    ):
         conditions.append("live_write_requested")
     if inp.requires_runner_execution:
         conditions.append("runner_execution_requested")
@@ -358,28 +407,30 @@ def classify_route(inp: RoutingClassificationInput) -> RouteDecision:
 
     Pure function: no I/O, no mutation of *inp*, no external calls.
     """
-    red_lane = _derive_red_lane_state(inp)
-    status = _derive_route_status(inp, red_lane)
-    proof_reqs = _derive_proof_requirements(inp)
-    audit_req = _derive_audit_requirement(inp)
-    escalation_req = _derive_escalation_requirement(inp, red_lane)
-    allowed = _derive_allowed_actions(inp, red_lane, status)
-    forbidden = _derive_forbidden_actions(inp)
-    stop_conds = _derive_stop_conditions(inp, red_lane)
-    unknowns = _collect_unknowns(inp)
+    normalized = _normalize_input(inp)
+
+    red_lane = _derive_red_lane_state(normalized)
+    status = _derive_route_status(normalized, red_lane)
+    proof_reqs = _derive_proof_requirements(normalized)
+    audit_req = _derive_audit_requirement(normalized)
+    escalation_req = _derive_escalation_requirement(normalized, red_lane)
+    allowed = _derive_allowed_actions(normalized, red_lane, status)
+    forbidden = _derive_forbidden_actions(normalized)
+    stop_conds = _derive_stop_conditions(normalized, red_lane)
+    unknowns = _collect_unknowns(normalized)
 
     confidence = "LOW" if unknowns or red_lane is RedLaneState.RED_LANE else "MEDIUM"
 
     return RouteDecision(
         route_id=str(uuid.uuid4()),
-        task_source=inp.task_source,
-        task_type=inp.task_type,
-        risk_class=inp.risk_class,
-        complexity_class=inp.complexity_class,
-        authority_class=inp.authority_class,
-        runtime_impact=inp.runtime_impact,
-        backend_kind=inp.backend_kind,
-        connector_kind=inp.connector_kind,
+        task_source=normalized.task_source,
+        task_type=normalized.task_type,
+        risk_class=normalized.risk_class,
+        complexity_class=normalized.complexity_class,
+        authority_class=normalized.authority_class,
+        runtime_impact=normalized.runtime_impact,
+        backend_kind=normalized.backend_kind,
+        connector_kind=normalized.connector_kind,
         proof_requirements=proof_reqs,
         audit_requirement=audit_req,
         escalation_requirement=escalation_req,
@@ -387,7 +438,7 @@ def classify_route(inp: RoutingClassificationInput) -> RouteDecision:
         allowed_actions=allowed,
         forbidden_actions=forbidden,
         stop_conditions=stop_conds,
-        evidence_refs=list(inp.evidence_refs),
+        evidence_refs=list(normalized.evidence_refs),
         unknowns=unknowns,
         confidence=confidence,
         status=status,
