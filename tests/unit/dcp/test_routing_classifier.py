@@ -667,6 +667,76 @@ def test_risk_class_red_lane_string_normalizes_and_blocks() -> None:
     assert not _is_runnable(decision)
 
 
+def test_network_requirement_blocks_and_is_not_runnable() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        requires_network=True,
+    )
+    decision = classify_route(inp)
+    assert decision.red_lane_state is RedLaneState.RED_LANE
+    assert not _is_runnable(decision)
+    assert "network_required" in decision.stop_conditions
+
+
+def test_external_service_requirement_blocks_and_is_not_runnable() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        requires_external_service=True,
+    )
+    decision = classify_route(inp)
+    assert decision.red_lane_state is RedLaneState.RED_LANE
+    assert not _is_runnable(decision)
+    assert "external_service_required" in decision.stop_conditions
+
+
+@pytest.mark.parametrize("action", ["merge_pr", "execute_runner"])
+def test_forbidden_requested_action_blocks_route(action: str) -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        requested_actions=[action],
+    )
+    decision = classify_route(inp)
+    assert decision.red_lane_state is RedLaneState.RED_LANE
+    assert not _is_runnable(decision)
+    assert f"forbidden_action_requested:{action}" in decision.stop_conditions
+
+
+def test_merge_task_type_blocks_and_is_not_runnable() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.MERGE,
+        risk_class=RiskClass.R1_LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.red_lane_state is RedLaneState.RED_LANE
+    assert not _is_runnable(decision)
+    assert "merge_task_requested" in decision.stop_conditions
+
+
+def test_service_mutation_runtime_impact_blocks_and_is_not_runnable() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.SERVICE_MUTATION,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.red_lane_state is RedLaneState.RED_LANE
+    assert not _is_runnable(decision)
+    assert "service_mutation_requested" in decision.stop_conditions
+
+
 # ─────────────────────────────────────────────
 # Test 33 — Round-trip from_dict works
 # ─────────────────────────────────────────────
