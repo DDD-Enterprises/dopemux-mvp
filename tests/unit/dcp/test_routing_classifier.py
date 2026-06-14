@@ -38,6 +38,7 @@ from dopemux.dcp.routing_model import (
     AuditRequirement,
     AuthorityClass,
     BackendKind,
+    ComplexityClass,
     ConnectorKind,
     EscalationRequirement,
     ProofRequirement,
@@ -742,6 +743,7 @@ def test_read_only_route_excludes_mutating_allowed_actions() -> None:
         task_type=TaskType.READ_ONLY,
         risk_class=RiskClass.R0_READ,
         runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
         authority_class=AuthorityClass.OPERATOR,
         has_unknown_authority=False,
     )
@@ -771,6 +773,7 @@ def test_ci_touching_route_requires_supervisor_and_is_not_runnable() -> None:
         task_type=TaskType.CODE_CHANGE,
         risk_class=RiskClass.R1_LOW,
         runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.LOW,
         authority_class=AuthorityClass.OPERATOR,
         has_unknown_authority=False,
         touches_ci=True,
@@ -781,6 +784,37 @@ def test_ci_touching_route_requires_supervisor_and_is_not_runnable() -> None:
     assert not _is_runnable(decision)
     assert "edit_allowlisted_files" not in decision.allowed_actions
     assert "open_pr" not in decision.allowed_actions
+
+
+def test_missing_proof_blocks_mutating_classification() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        has_missing_proof=True,
+    )
+    decision = classify_route(inp)
+    assert decision.status is RouteStatus.BLOCKED
+    assert not _is_runnable(decision)
+    assert decision.allowed_actions == []
+
+
+def test_unknown_complexity_is_not_runnable() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.complexity_class is ComplexityClass.UNKNOWN
+    assert decision.status is RouteStatus.UNKNOWN
+    assert not _is_runnable(decision)
+    assert decision.allowed_actions == ["inspect_runtime_code"]
 
 
 # ─────────────────────────────────────────────

@@ -209,13 +209,16 @@ def _derive_route_status(
     if inp.authority_class is AuthorityClass.BLOCKED:
         return RouteStatus.BLOCKED
 
-    if inp.has_missing_proof and (inp.is_repo_changing or inp.is_non_trivial):
+    if inp.has_missing_proof and (_has_mutating_scope(inp) or inp.is_non_trivial):
         return RouteStatus.BLOCKED
 
     if inp.has_stale_proof:
         return RouteStatus.BLOCKED
 
     if inp.runtime_impact is RuntimeImpact.UNKNOWN:
+        return RouteStatus.UNKNOWN
+
+    if inp.complexity_class is ComplexityClass.UNKNOWN:
         return RouteStatus.UNKNOWN
 
     if inp.risk_class is RiskClass.UNKNOWN or inp.task_type is TaskType.UNKNOWN:
