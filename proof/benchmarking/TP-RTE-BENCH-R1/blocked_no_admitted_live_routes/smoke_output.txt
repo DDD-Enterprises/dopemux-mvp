@@ -1,0 +1,3 @@
+baseline_run_id=same_run_controls
+campaign_run_id=
+selected_routes=route_openrouter_openai_gpt_5_4_v1,route_openai_gpt_5_4_v1,route_openrouter_openai_gpt_5_3_codex_v1,route_openai_gpt_5_4_mini_v1,route_local_fixture_v1

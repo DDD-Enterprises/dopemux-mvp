@@ -1,0 +1,388 @@
+{
+  "run_id": "20260430_230955",
+  "pr_state": {
+    "pr_id": 537,
+    "title": "docs: MCP customization deep research data packs",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "research/dmx-mcp-customization-dr-data",
+    "ci_status": "PENDING",
+    "mergeable": "UNKNOWN",
+    "merge_state_status": "UNKNOWN",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-01T06:11:14Z",
+    "is_draft": false,
+    "auto_merge_enabled": false,
+    "additions": 1425,
+    "deletions": 0,
+    "changed_files": 16,
+    "unresolved_threads": 3,
+    "active_unresolved_threads": 3,
+    "outdated_unresolved_threads": 0,
+    "pr_class": "COMMENTS_ONLY",
+    "risk_score": 1915.0,
+    "check_summary": {
+      "total": 1,
+      "success": 0,
+      "failure": 0,
+      "pending": 1,
+      "required_pending": 1,
+      "required_failure": 0,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "apply_blocked",
+    "head_sha": "59f9b95678e1d1b1c915bdb481e5204fe9bd4c7e",
+    "base_sha": "911ac39d9f4436d69370f4dbdcee21f388347938"
+  },
+  "lifecycle_state": "apply_blocked",
+  "apply_actions": [
+    "rebase research/dmx-mcp-customization-dr-data onto main",
+    "resolve review threads",
+    "run validation"
+  ],
+  "merge_decision": {
+    "action": "auto_merge_fallback",
+    "command": [
+      "gh",
+      "pr",
+      "merge",
+      "537",
+      "--auto",
+      "--rebase",
+      "--delete-branch"
+    ],
+    "reason": "Required or optional checks are pending; enabling auto-merge.",
+    "reason_code": "auto_merge_active_checks"
+  },
+  "blockers": [
+    {
+      "type": "active_thread",
+      "source": "github_protection_review",
+      "name": "3 active unresolved review threads remain.",
+      "details": null,
+      "metadata": {
+        "active_threads": 3
+      }
+    },
+    {
+      "type": "required_check_pending",
+      "source": "github_protection_review",
+      "name": "Required checks are still pending.",
+      "details": null,
+      "metadata": {
+        "checks_total": 1,
+        "checks_success": 0,
+        "checks_failure": 0,
+        "checks_pending": 1,
+        "required_checks_pending": 1,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "UNKNOWN",
+        "merge_state_status": "UNKNOWN",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [
+          "identity-check"
+        ],
+        "blocker_types": [
+          "required_check_pending"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "type": "validation_failed",
+      "source": "local_validation",
+      "name": "Local validation is required before merge readiness can be declared.",
+      "details": null,
+      "metadata": {
+        "validation_status": "failed"
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "warning",
+      "finding_type": "large_diff",
+      "message": "Large diff size may increase merge risk.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "diff_size": 1425
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "observations": [
+    {
+      "kind": "observation",
+      "finding_type": "high_risk_score",
+      "message": "PR has elevated risk score relative to queue.",
+      "id": "",
+      "severity": null,
+      "category": "",
+      "suggestion": "",
+      "details": {
+        "risk_score": 1915.0
+      },
+      "source": "heuristics",
+      "override": null
+    }
+  ],
+  "truth_sources": [
+    {
+      "name": "effective_policy",
+      "status": "loaded",
+      "details": {
+        "policy_fingerprint": "aed2843dce63f3b7c8c9934833c0dcc4e8d8134cad114be8ae905ba3bae37d9d"
+      }
+    },
+    {
+      "name": "github_protection_review",
+      "status": "observed",
+      "details": {
+        "checks_total": 1,
+        "checks_success": 0,
+        "checks_failure": 0,
+        "checks_pending": 1,
+        "required_checks_pending": 1,
+        "required_checks_failed": 0,
+        "optional_checks_pending": 0,
+        "optional_checks_failed": 0,
+        "review_decision": "",
+        "approval_required": false,
+        "mergeable": "UNKNOWN",
+        "merge_state_status": "UNKNOWN",
+        "protection": {
+          "available": true,
+          "protected": true,
+          "branch": "main",
+          "required_approving_review_count": 0,
+          "approval_required": false,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_conversation_resolution": true,
+          "required_status_checks": [
+            "🔒 Security Review",
+            "📚 Documentation Check",
+            "identity-check",
+            "🧪 Unit Tests",
+            "Analyze (python)",
+            "Analyze (javascript-typescript)",
+            "Analyze (ruby)"
+          ],
+          "strict_status_checks": true,
+          "enforce_admins": false,
+          "required_linear_history": true
+        },
+        "failed_required_checks": [],
+        "failed_required_check_entries": [],
+        "pending_required_checks": [
+          "identity-check"
+        ],
+        "blocker_types": [
+          "required_check_pending"
+        ],
+        "warning_types": []
+      }
+    },
+    {
+      "name": "local_validation",
+      "status": "failed",
+      "details": {
+        "status": "failed",
+        "required_for_merge_ready": true,
+        "passed": false,
+        "attempts": 1,
+        "remediation_applied": false,
+        "steps": [
+          {
+            "name": "pre-commit",
+            "command": "pre-commit run --files .Jules/palette.md .github/agents/dopemux-implementer.agent.md .github/agents/dopemux-planner.agent.md .github/agents/dopemux-reviewer.agent.md .github/agents/dopemux-testgen.agent.md docs/03-reference/governance/agent-workflow.md docs/research/mcp-customization/MANIFEST.sha256 docs/research/mcp-customization/README_UPLOAD_ORDER.md docs/research/mcp-customization/data/dopemux-authority-map.json docs/research/mcp-customization/data/evidence-ledger.md docs/research/mcp-customization/data/responsibility-collision-matrix.md docs/research/mcp-customization/data/upstream-source-manifest.json docs/research/mcp-customization/data/upstream-surface-inventory.json docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md docs/research/mcp-customization/dr-upload/01-conport.md docs/research/mcp-customization/dr-upload/02-task-orchestrator.md docs/research/mcp-customization/dr-upload/03-serena.md docs/research/mcp-customization/dr-upload/04-claude-context.md docs/research/mcp-customization/dr-upload/05-claude-mem.md docs/research/mcp-customization/dr-upload/06-mem0.md docs/research/mcp-customization/dr-upload/07-cross-system-synthesis.md task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json ui-dashboard/src/App.tsx ui-dashboard/src/components/TaskSequencer.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts",
+            "status": "failed",
+            "returncode": 1,
+            "stdout": "Validate YAML frontmatter in docs..........................................................Failed\n- hook id: docs-frontmatter-guard\n- exit code: 1\n- files were modified by this hook\n\nUpdated 3 file(s):\n - docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md\n - docs/research/mcp-customization/dr-upload/02-task-orchestrator.md\n - docs/research/mcp-customization/README_UPLOAD_ORDER.md\nUpdated 4 file(s):\n - docs/research/mcp-customization/dr-upload/04-claude-context.md\n - docs/research/mcp-customization/dr-upload/06-mem0.md\n - docs/research/mcp-customization/data/evidence-ledger.md\n - docs/research/mcp-customization/dr-upload/01-conport.md\nUpdated 4 file(s):\n - docs/research/mcp-customization/data/responsibility-collision-matrix.md\n - docs/research/mcp-customization/dr-upload/07-cross-system-synthesis.md\n - docs/research/mcp-customization/dr-upload/03-serena.md\n - docs/research/mcp-customization/dr-upload/05-claude-mem.md\n\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Failed\n- hook id: docs-placement-hygiene\n- exit code: 1\n\ndocs-hygiene: total=4 active=4 quarantine=0 violations=3\ndocs-hygiene: FAILED\n1. docs/research/mcp-customization/README_UPLOAD_ORDER.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/README_UPLOAD_ORDER.md\n2. docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md\n3. docs/research/mcp-customization/dr-upload/02-task-orchestrator.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/02-task-orchestrator.md\ndocs-hygiene: total=4 active=4 quarantine=0 violations=4\ndocs-hygiene: FAILED\n1. docs/research/mcp-customization/data/evidence-ledger.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/data/evidence-ledger.md\n2. docs/research/mcp-customization/dr-upload/01-conport.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/01-conport.md\n3. docs/research/mcp-customization/dr-upload/04-claude-context.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/04-claude-context.md\n4. docs/research/mcp-customization/dr-upload/06-mem0.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/06-mem0.md\ndocs-hygiene: total=4 active=4 quarantine=0 violations=4\ndocs-hygiene: FAILED\n1. docs/research/mcp-customization/data/responsibility-collision-matrix.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/data/responsibility-collision-matrix.md\n2. docs/research/mcp-customization/dr-upload/03-serena.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/03-serena.md\n3. docs/research/mcp-customization/dr-upload/05-claude-mem.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/05-claude-mem.md\n4. docs/research/mcp-customization/dr-upload/07-cross-system-synthesis.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/07-cross-system-synthesis.md\n\nEnforce docs filename hygiene (kebab-case).................................................Failed\n- hook id: docs-filename-hygiene\n- exit code: 1\n\ndocs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=1\ndocs-filename-hygiene: FAILED\n1. docs/research/mcp-customization/README_UPLOAD_ORDER.md\n   target: docs/research/mcp-customization/readme-upload-order.md\ndocs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=0\ndocs-filename-hygiene: checked 4 files, OK\ndocs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=0\ndocs-filename-hygiene: checked 4 files, OK\n\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+            "stderr": ""
+          }
+        ],
+        "input_fingerprint": {
+          "input_fingerprint": "03397797383fe494375c3b3b3e7e13295639a0d46ccece182a3a26607bbd0525",
+          "valid_for_sha": "f4a1740075d622500c12aceec5fc20c17f5dcac8",
+          "stale_if": [
+            "PR head SHA changes",
+            "base SHA changes",
+            "effective policy fingerprint changes",
+            "applied tree contents change"
+          ],
+          "created_from_state": "discovered",
+          "review_state_hash": "",
+          "check_state_hash": "",
+          "validation_command_hash": "",
+          "apply_tree_sha": "",
+          "dirty_state": ""
+        },
+        "failure_fingerprint": "398a65bce49a9a8870dd178a0c243d24098a9e84d3a6d1610d8e7be4978f5f29"
+      }
+    },
+    {
+      "name": "local_rebase_simulation",
+      "status": "not_run",
+      "details": {}
+    },
+    {
+      "name": "heuristics",
+      "status": "computed",
+      "details": {
+        "precedence": [
+          "effective_policy",
+          "github_protection_review",
+          "local_validation",
+          "local_rebase_simulation",
+          "heuristics"
+        ]
+      }
+    }
+  ],
+  "precedence_order": [
+    "effective_policy",
+    "github_protection_review",
+    "local_validation",
+    "local_rebase_simulation",
+    "heuristics"
+  ],
+  "decision_basis": {
+    "truth_precedence": [
+      "policy",
+      "github_protection",
+      "local_validation",
+      "local_apply_state",
+      "heuristics"
+    ],
+    "winning_sources": [
+      "policy",
+      "github_protection",
+      "local_validation"
+    ],
+    "winning_reason": "merge_readiness",
+    "suppressed_sources": [
+      {
+        "source": "heuristics",
+        "reason": "lower_precedence"
+      }
+    ]
+  },
+  "validation_report": {
+    "status": "failed",
+    "required_for_merge_ready": true,
+    "passed": false,
+    "attempts": 1,
+    "remediation_applied": false,
+    "steps": [
+      {
+        "name": "pre-commit",
+        "command": "pre-commit run --files .Jules/palette.md .github/agents/dopemux-implementer.agent.md .github/agents/dopemux-planner.agent.md .github/agents/dopemux-reviewer.agent.md .github/agents/dopemux-testgen.agent.md docs/03-reference/governance/agent-workflow.md docs/research/mcp-customization/MANIFEST.sha256 docs/research/mcp-customization/README_UPLOAD_ORDER.md docs/research/mcp-customization/data/dopemux-authority-map.json docs/research/mcp-customization/data/evidence-ledger.md docs/research/mcp-customization/data/responsibility-collision-matrix.md docs/research/mcp-customization/data/upstream-source-manifest.json docs/research/mcp-customization/data/upstream-surface-inventory.json docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md docs/research/mcp-customization/dr-upload/01-conport.md docs/research/mcp-customization/dr-upload/02-task-orchestrator.md docs/research/mcp-customization/dr-upload/03-serena.md docs/research/mcp-customization/dr-upload/04-claude-context.md docs/research/mcp-customization/dr-upload/05-claude-mem.md docs/research/mcp-customization/dr-upload/06-mem0.md docs/research/mcp-customization/dr-upload/07-cross-system-synthesis.md task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json ui-dashboard/src/App.tsx ui-dashboard/src/components/TaskSequencer.tsx ui-dashboard/src/components/__tests__/Accessibility.test.ts",
+        "status": "failed",
+        "returncode": 1,
+        "stdout": "Validate YAML frontmatter in docs..........................................................Failed\n- hook id: docs-frontmatter-guard\n- exit code: 1\n- files were modified by this hook\n\nUpdated 3 file(s):\n - docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md\n - docs/research/mcp-customization/dr-upload/02-task-orchestrator.md\n - docs/research/mcp-customization/README_UPLOAD_ORDER.md\nUpdated 4 file(s):\n - docs/research/mcp-customization/dr-upload/04-claude-context.md\n - docs/research/mcp-customization/dr-upload/06-mem0.md\n - docs/research/mcp-customization/data/evidence-ledger.md\n - docs/research/mcp-customization/dr-upload/01-conport.md\nUpdated 4 file(s):\n - docs/research/mcp-customization/data/responsibility-collision-matrix.md\n - docs/research/mcp-customization/dr-upload/07-cross-system-synthesis.md\n - docs/research/mcp-customization/dr-upload/03-serena.md\n - docs/research/mcp-customization/dr-upload/05-claude-mem.md\n\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude ≤100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Failed\n- hook id: docs-placement-hygiene\n- exit code: 1\n\ndocs-hygiene: total=4 active=4 quarantine=0 violations=3\ndocs-hygiene: FAILED\n1. docs/research/mcp-customization/README_UPLOAD_ORDER.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/README_UPLOAD_ORDER.md\n2. docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md\n3. docs/research/mcp-customization/dr-upload/02-task-orchestrator.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/02-task-orchestrator.md\ndocs-hygiene: total=4 active=4 quarantine=0 violations=4\ndocs-hygiene: FAILED\n1. docs/research/mcp-customization/data/evidence-ledger.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/data/evidence-ledger.md\n2. docs/research/mcp-customization/dr-upload/01-conport.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/01-conport.md\n3. docs/research/mcp-customization/dr-upload/04-claude-context.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/04-claude-context.md\n4. docs/research/mcp-customization/dr-upload/06-mem0.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/06-mem0.md\ndocs-hygiene: total=4 active=4 quarantine=0 violations=4\ndocs-hygiene: FAILED\n1. docs/research/mcp-customization/data/responsibility-collision-matrix.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/data/responsibility-collision-matrix.md\n2. docs/research/mcp-customization/dr-upload/03-serena.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/03-serena.md\n3. docs/research/mcp-customization/dr-upload/05-claude-mem.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/05-claude-mem.md\n4. docs/research/mcp-customization/dr-upload/07-cross-system-synthesis.md\n   rule: unknown-top-level-fallback\n   target: docs/archive/unclassified-top-level/research/mcp-customization/dr-upload/07-cross-system-synthesis.md\n\nEnforce docs filename hygiene (kebab-case).................................................Failed\n- hook id: docs-filename-hygiene\n- exit code: 1\n\ndocs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=1\ndocs-filename-hygiene: FAILED\n1. docs/research/mcp-customization/README_UPLOAD_ORDER.md\n   target: docs/research/mcp-customization/readme-upload-order.md\ndocs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=0\ndocs-filename-hygiene: checked 4 files, OK\ndocs-filename-hygiene: total=4 active=4 quarantine=0 exempt=0 violations=0\ndocs-filename-hygiene: checked 4 files, OK\n\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+        "stderr": ""
+      }
+    ],
+    "input_fingerprint": {
+      "input_fingerprint": "03397797383fe494375c3b3b3e7e13295639a0d46ccece182a3a26607bbd0525",
+      "valid_for_sha": "f4a1740075d622500c12aceec5fc20c17f5dcac8",
+      "stale_if": [
+        "PR head SHA changes",
+        "base SHA changes",
+        "effective policy fingerprint changes",
+        "applied tree contents change"
+      ],
+      "created_from_state": "discovered",
+      "review_state_hash": "",
+      "check_state_hash": "",
+      "validation_command_hash": "",
+      "apply_tree_sha": "",
+      "dirty_state": ""
+    },
+    "failure_fingerprint": "398a65bce49a9a8870dd178a0c243d24098a9e84d3a6d1610d8e7be4978f5f29"
+  },
+  "thread_dispositions": [
+    {
+      "thread_id": "PRRT_kwDOPyIw985-D1vg",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-D1wR",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/research/mcp-customization/README_UPLOAD_ORDER.md",
+      "applied": false,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-D1w4",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json",
+      "applied": false,
+      "escalation_needed": false
+    }
+  ],
+  "fingerprint": {
+    "input_fingerprint": "df329d28088547eb8fea465b35c9e0f32176d6d3507d40440126be94a5f77844",
+    "valid_for_sha": "59f9b95678e1d1b1c915bdb481e5204fe9bd4c7e",
+    "stale_if": [
+      "PR head SHA changes",
+      "base SHA changes beyond allowed tolerance",
+      "review state changes",
+      "active thread set changes",
+      "required check set changes",
+      "effective policy fingerprint changes"
+    ],
+    "created_from_state": "discovered",
+    "review_state_hash": "",
+    "check_state_hash": "",
+    "validation_command_hash": "",
+    "apply_tree_sha": "",
+    "dirty_state": ""
+  },
+  "artifacts": {
+    "explain": "{\"why_blocked\": [\"3 active unresolved review threads remain.\", \"Required checks are still pending.\", \"Local validation is required before merge readiness can be declared.\"], \"evidence\": [{\"kind\": \"blocker\", \"finding_type\": \"active_thread\", \"message\": \"3 active unresolved review threads remain.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"active_threads\": 3}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"required_check_pending\", \"message\": \"Required checks are still pending.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"checks_total\": 1, \"checks_success\": 0, \"checks_failure\": 0, \"checks_pending\": 1, \"required_checks_pending\": 1, \"required_checks_failed\": 0, \"optional_checks_pending\": 0, \"optional_checks_failed\": 0, \"review_decision\": \"\", \"approval_required\": false, \"mergeable\": \"UNKNOWN\", \"merge_state_status\": \"UNKNOWN\", \"protection\": {\"available\": true, \"protected\": true, \"branch\": \"main\", \"required_approving_review_count\": 0, \"approval_required\": false, \"require_code_owner_reviews\": false, \"require_last_push_approval\": false, \"required_conversation_resolution\": true, \"required_status_checks\": [\"\\ud83d\\udd12 Security Review\", \"\\ud83d\\udcda Documentation Check\", \"identity-check\", \"\\ud83e\\uddea Unit Tests\", \"Analyze (python)\", \"Analyze (javascript-typescript)\", \"Analyze (ruby)\"], \"strict_status_checks\": true, \"enforce_admins\": false, \"required_linear_history\": true}, \"failed_required_checks\": [], \"failed_required_check_entries\": [], \"pending_required_checks\": [\"identity-check\"], \"blocker_types\": [\"required_check_pending\"], \"warning_types\": []}, \"source\": \"github_protection_review\", \"override\": null}, {\"kind\": \"blocker\", \"finding_type\": \"validation_failed\", \"message\": \"Local validation is required before merge readiness can be declared.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"validation_status\": \"failed\"}, \"source\": \"local_validation\", \"override\": null}, {\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1425}, \"source\": \"heuristics\", \"override\": null}], \"next_action\": \"clear blockers\", \"changed_since_prior_scan\": [], \"warnings\": [{\"kind\": \"warning\", \"finding_type\": \"large_diff\", \"message\": \"Large diff size may increase merge risk.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"diff_size\": 1425}, \"source\": \"heuristics\", \"override\": null}], \"observations\": [{\"kind\": \"observation\", \"finding_type\": \"high_risk_score\", \"message\": \"PR has elevated risk score relative to queue.\", \"id\": \"\", \"severity\": null, \"category\": \"\", \"suggestion\": \"\", \"details\": {\"risk_score\": 1915.0}, \"source\": \"heuristics\", \"override\": null}]}",
+    "operator_state": ""
+  },
+  "blocked_by_global_fix_pr": null
+}

@@ -1,0 +1,157 @@
+{
+  "id": "DMX-DCP-0001-CARVE-FROM-854",
+  "project": "dopemux-mvp",
+  "target": "Carve clean DMX-DCP-MODEL-ROUTING-MVP-0001 domain model + proof only from mixed PR #854 (head 3fb93ebf)",
+  "invariants": [
+    "Exactly the 0001 domain model per its own task-packet allowed list (no runtime, no OpenCode authority, no forbidden surfaces)",
+    "No merge of the mixed PR #854 as a 'design-only' packet",
+    "Proof artifacts (including staged-diff) must faithfully reflect only the 0001 allowed set after fresh capture in this clean worktree",
+    "All proof/ directories remain trackable (general !proof/ rule carried as minimal hygiene prerequisite)",
+    "Fresh final capture in dedicated worktree supersedes prior reconstruction; explicit manual-vs-embedded audit taxonomy",
+    "merge_readiness remains BLOCKED_NOT_REQUESTED until PR Steward on the resulting clean branch",
+    "Hard stop on any forbidden file (per 0001 packet §5/6)"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "origin/main@0d3db00efc47e938c6720f590d084a9f11eec9af",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-MODEL-ROUTING-MVP-0001",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "commit": {
+    "message": "chore(dcp): carve clean DMX-DCP-MODEL-ROUTING-MVP-0001 domain model + proof (from mixed PR #854)",
+    "allowlist": [
+      ".gitignore",
+      "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001.md",
+      "docs/03-reference/dcp/model-routing-domain.md",
+      "schemas/dcp/dcp_routing_classification.schema.json",
+      "schemas/dcp/dcp_routing_decision.schema.json",
+      "schemas/dcp/dcp_execution_lane.schema.json",
+      "schemas/dcp/dcp_model_slot.schema.json",
+      "schemas/dcp/dcp_backend_runner.schema.json",
+      "schemas/dcp/dcp_authority_surface.schema.json",
+      "schemas/dcp/dcp_audit_route.schema.json",
+      "schemas/dcp/dcp_stop_condition.schema.json",
+      "schemas/dcp/dcp_routing_proof_extension.schema.json",
+      "tests/dcp/test_dcp_model_routing_0001_domain.py",
+      "tests/fixtures/dcp/model_routing_0001/safe_read_task.json",
+      "tests/fixtures/dcp/model_routing_0001/design_only_task.json",
+      "tests/fixtures/dcp/model_routing_0001/litellm_unhealthy_stop.json",
+      "tests/fixtures/dcp/model_routing_0001/stale_alias_stop.json",
+      "tests/fixtures/dcp/model_routing_0001/policy_advisory_not_runtime.json",
+      "tests/fixtures/dcp/model_routing_0001/mcp_unknown_surface.json",
+      "tests/fixtures/dcp/model_routing_0001/workflow_red_lane_forbidden.json",
+      "tests/fixtures/dcp/model_routing_0001/opencode_backend_only.json",
+      "tests/fixtures/dcp/model_routing_0001/dopetask_execution_forbidden.json",
+      "tests/fixtures/dcp/model_routing_0001/task_orchestrator_write_forbidden.json",
+      "tests/fixtures/dcp/model_routing_0001/dopecode_legacy_serena_alias.json",
+      "tests/fixtures/dcp/model_routing_0001/agent_authority_unknown.json",
+      "tests/fixtures/dcp/model_routing_0001/arbitrary_selector_rejected.json",
+      "tests/fixtures/dcp/model_routing_0001/auditor_verdict_distinct.json",
+      "tests/fixtures/dcp/model_routing_0001/proof_extension_additive.json",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/PROOF.json",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/COMMAND_LOG.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/HANDOFF.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/GPT55_REVIEW_BRIEF.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/IMPLEMENTER_NOTES.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/PAL_CHAIN.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/01_scout_prompt.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/02_planner_prompt.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/03_builder_prompt.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/04_self_check_prompt.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/05_auditor_a_prompt.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/06_auditor_b_prompt.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/07_gpt55_review_prompt.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDITOR_A_REPORT.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDITOR_B_REPORT.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDIT_SUMMARY.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_NAME_ONLY.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_STAT.md",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/FINAL_STATUS_PORCELAIN.txt",
+      "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/AUDITOR_REPORT.md",
+      "task-packets/DMX-DCP-0001-CARVE-FROM-854.json"
+    ],
+    "verify": [
+      "git diff --cached --name-only | sort -u | diff -u <(printf '%s\n' \"${allowlist[@]}\" | sort -u) - && echo 'allowlist fidelity OK'",
+      "git diff --check",
+      "python -m json.tool proof/DMX-DCP-MODEL-ROUTING-MVP-0001/PROOF.json >/dev/null"
+    ]
+  },
+  "pr": {
+    "title": "DMX-DCP-MODEL-ROUTING-MVP-0001 domain model + dual independent audit (clean carve from #854)",
+    "body": "Clean extraction of the 0001 DCP Routing Domain Model (design-only) from the mixed PR #854.\n\nSee:\n- task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001.md (authoritative contract, allowed/forbidden, hard stops)\n- docs/03-reference/dcp/model-routing-domain.md\n- The 9 dcp_routing_*.schema.json + test + 15 fixtures\n- proof/DMX-DCP-MODEL-ROUTING-MVP-0001/ (fresh capture in dedicated worktree; explicit manual independent audit COMPLETE vs. embedded SKIPPED)\n\nThis PR contains **only** the 0001 domain model slice + the minimal .gitignore hygiene to make proof/ directories trackable for staged-diff gates.\n\nPer AGENTS.md §8 and the embedded PROOF.json: merge_readiness BLOCKED_NOT_REQUESTED until PR Steward confirms on latest head after final capture.\n\nPredecessor 0000* packets, OpenCode/PAL wiring (including the stdio proxy stub), Docker/compose changes, litellm security work, and other infra remain on the 854 lineage (or a follow-on B PR) and require their own runtime proofs + security classification before any merge consideration.\n\n🤖 Carved per approved plan (see session plan.md) following AGENTS.md Codex lifecycle.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "CARVE-01",
+      "task": "Primary preflight + create fresh dedicated worktree from verified origin/main@0d3db00e; verify inside worktree (main, clean porcelain, AGENTS.md marker, origin/main resolvable, not primary checkout)",
+      "validation": "git rev-parse --show-toplevel == /Users/hue/code/dopemux-mvp-0001-carve; git status --porcelain is empty; AGENTS.md present; origin/main SHA matches recorded; current branch is detached/main from the base commit"
+    },
+    {
+      "id": "CARVE-02",
+      "task": "Create this carve Task Packet (DMX-DCP-0001-CARVE-FROM-854.json) with canonical fields, exact allowlist (0001 packet files + .gitignore hygiene + generated proof artifacts + this TP), non-empty validation per step, and commit.allowlist. Validate syntax + required shape (manual checklist against dopetask-canonical-spec + python -m json.tool)",
+      "validation": "python -m json.tool task-packets/DMX-DCP-0001-CARVE-FROM-854.json >/dev/null; file contains required top-level keys (id,project,target,repo_binding,series,commit,pr,steps); every step has id+task+non-empty validation; commit.allowlist has 49 entries and matches the 0001 packet contract + hygiene decision; no undeclared root fields that violate observed schema"
+    },
+    {
+      "id": "CARVE-03",
+      "task": ".gitignore hygiene decision + materialize: confirm origin/main lacks general !proof/ (only specific old exceptions); apply the general proof-tracking rule from 854 head (or equivalent clean rule) so new proof/ dirs are trackable by default. Then `git checkout 3fb93ebfaf99206180ade3114ad6d034a4a71346 -- <every path in allowlist except the TP and .gitignore (already handled)>`. Stage exactly the allowlist. Verify restricted diff --name-only --stat matches allowlist with 0 external files.",
+      "validation": "grep -E '^!proof/$' .gitignore succeeds (or equivalent general rule present); git diff --cached --name-only | sort -u equals the allowlist (modulo generated proof files that will be updated in later step); git diff --cached --stat shows only 0001 + .gitignore; 0 files outside the packet contract"
+    },
+    {
+      "id": "CARVE-04",
+      "task": "Domain validations in clean tree: python -m json.tool on all 9 routing schemas; pytest on tests/dcp/test_dcp_model_routing_0001_domain.py (expect 15/15 PASS); fixture validation per 0001 packet; diff-allowlist check against the staged set.",
+      "validation": "All 9 schemas parse as valid JSON; pytest ... -q reports 15 passed; fixture validation (if script present in packet context) exits 0; staged set exactly matches files_changed that will be recorded in the updated PROOF.json"
+    },
+    {
+      "id": "CARVE-05",
+      "task": "Fresh proof capture + wording repair (supersedes reconstruction): re-stage after hygiene; regenerate STAGED_DIFF_* for the pure slice only; append fresh final capture outputs (git status --porcelain=v1, git diff --cached --name-only, git diff --cached --stat, json.tool PROOF) to COMMAND_LOG.md with 'final capture in clean dedicated worktree' note; update PROOF.json: branch = carve branch name, source_reconstruction with 'carved cleanly in /Users/hue/code/dopemux-mvp-0001-carve from origin/main@0d3db00e; prior swamp reconstruction superseded', explicit 'manual independent audit: COMPLETE (Claude Sonnet 4.6 PASS_WITH_RISKS + Gemini 2.5 Pro PASS)', 'embedded workflow audit: SKIPPED (planning/baseline series; no external audit toolchain required per skip_reason)', pr_readiness = 'DRAFT_PR_READY_AFTER_FINAL_CAPTURE', merge_readiness = 'BLOCKED_NOT_REQUESTED', carried_risks limited to design-only + any carve-specific, files_changed = the actual pure staged set. Fix any stale auditor text in audit/ reports to match PROOF.json auditor_verdict. Update FINAL_STATUS_PORCELAIN.txt and HANDOFF/IMPLEMENTER_NOTES for consistency with clean carve.",
+      "validation": "STAGED_DIFF_STAT.md reports only files from the 0001 allowlist (19-file repair slice or equivalent pure count); COMMAND_LOG ends with appended fresh capture block containing the four commands + outputs and the 'do not claim final PR readiness until...' instruction is satisfied by the append; PROOF.json has the explicit taxonomy strings and BLOCKED_NOT_REQUESTED; no 'auditor_verdict: NOT_RUN' poison or stale reconstruction claims that contradict the clean capture; git status --porcelain shows clean after updates (or only expected proof updates)"
+    },
+    {
+      "id": "CARVE-06",
+      "task": "Gates: git diff --check; targeted pre-commit on changed paths (or full if hook is present/safe); re-confirm domain test still green after any proof edits.",
+      "validation": "git diff --check exits 0 with no output; pre-commit (if run) reports clean or only non-blocking on proof text; pytest on the 0001 domain test still 15/15"
+    },
+    {
+      "id": "CARVE-07",
+      "task": "Codereview + precommit per AGENTS.md §5 (min analyze→planner→codereview→precommit for this design-only carve; or packet-appropriate PAL chain). Record status + any accepted deviation in the TP proof / IMPLEMENTER_NOTES.",
+      "validation": "Codereview (PAL or equivalent) output captured; precommit clean; any deviation explicitly noted with supervisor-style acceptance rationale; no blocking findings that would violate the 0001 packet hard stops"
+    },
+    {
+      "id": "CARVE-08",
+      "task": "Commit (message + allowlist from this TP), push branch (recommend dcp/model-routing-0001), gh pr create --draft with accurate body (references 0001 packet, this carve TP, AGENTS §8, embedded PROOF.json, 'design-only slice extracted cleanly; B cargo (OpenCode/PAL/Docker/0000*) remains on 854 lineage'). Record commit SHA and PR URL (or exact blocker).",
+      "validation": "Commit SHA recorded; git log --oneline -1 shows only allowlist files; branch pushed; gh pr create returns draft PR URL or the exact error is logged; PR title/body match the 'clean carve' narrative and do not claim the mixed infra"
+    },
+    {
+      "id": "CARVE-09",
+      "task": "Emit full AGENTS.md §8 proof bundle for the carve operation (TP path + ID, worktree path=/Users/hue/code/dopemux-mvp-0001-carve, branch, repo identity result + clean status, base SHA, slices completed = the allowlist, files changed + stat, validations with explicit PASS/FAIL/NOT_RUN exit codes, codereview status, precommit status, commit SHA, PR URL or blocker, residual risks + all UNKNOWNs, cleanup status of worktree). Also update this carve TP with final commit/PR fields if the schema supports post-execution patch.",
+      "validation": "Proof bundle (text or committed artifact) contains every required element from AGENTS §8; no 'NOT_RUN' collapsed into PASS; worktree path and cleanup recorded; primary 854 branch left untouched for B follow-on"
+    },
+    {
+      "id": "CARVE-10",
+      "task": "Cleanup / handoff: optionally git worktree remove (or leave for inspection); produce short guidance for the user on B work (the 6 items from the #854 verdict: proof taxonomy in mixed PROOFs, pal-stdio runtime proof, verify-pal.sh + smoke execution proof, Docker Scout classification, PR body rewrite to combined, keep BLOCKED until Steward). Do not delete the original 854 branch or its proof artifacts.",
+      "validation": "Worktree removal (if performed) exits cleanly or 'left for inspection' is noted; B guidance emitted in chat or a B-proof artifact; primary checkout remains on the 854 branch in known state"
+    }
+  ],
+  "execution": {
+    "agent": "grok-4.3",
+    "model": "grok-4.3",
+    "authority": "backend_only",
+    "worktree": "/Users/hue/code/dopemux-mvp-0001-carve",
+    "base_commit": "0d3db00efc47e938c6720f590d084a9f11eec9af",
+    "source_commit_for_materialization": "3fb93ebfaf99206180ade3114ad6d034a4a71346",
+    "pal_chain": {
+      "enabled": false,
+      "required": false,
+      "note": "Design-only carve of already-audited domain model; min AGENTS §5 chain executed as codereview/precommit step"
+    }
+  },
+  "notes": "This TP controls the carve operation only. The content authority for what '0001' contains remains task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001.md and its embedded proof. The .gitignore hygiene is included solely to satisfy the 'proof directories are intentionally trackable' invariant for the 0001 proof tree (and future packets). All OpenCode/PAL stdio, Docker, compose, security classification, and 0000* predecessor work is explicitly out of scope and must be handled under separate TP(s) or the 854 lineage with runtime proof."
+}

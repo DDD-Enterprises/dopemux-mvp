@@ -1,0 +1,8 @@
+{
+  "allowed": false,
+  "reason_code": "DENY_ARTIFACT_UNREADABLE",
+  "required_class": "FINALIZATION",
+  "evidence": {
+    "error": "FileNotFoundError"
+  }
+}

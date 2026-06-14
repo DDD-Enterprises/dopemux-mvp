@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "artifact_version": "3.1",
+    "tool_version": "3.1.0",
+    "policy_schema_version": 1,
+    "generated_at": "2026-05-01T07:16:18Z",
+    "run_id": "20260501_001615",
+    "repo_root": "/Users/hue/code/dopemux-mvp",
+    "git_remote_origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "git_repo_name": "DDD-Enterprises/dopemux-mvp",
+    "current_branch": "main",
+    "default_branch": "main",
+    "pr_head_sha": "910ce7f03b18f8ff2156ac3e63e6e2920432730d",
+    "base_sha": "911ac39d9f4436d69370f4dbdcee21f388347938",
+    "applied_tree_sha": ""
+  },
+  "pr": {
+    "pr_id": 544,
+    "title": "docs(cockpit): preserve local design package work",
+    "author": "hu3mann",
+    "state": "OPEN",
+    "base_ref": "main",
+    "head_ref": "codex/main-clean-local-work-pr",
+    "ci_status": "FAILURE",
+    "mergeable": "CONFLICTING",
+    "merge_state_status": "DIRTY",
+    "review_decision": "",
+    "labels": [],
+    "updated_at": "2026-05-01T06:12:03Z",
+    "is_draft": false,
+    "additions": 7302,
+    "deletions": 1113,
+    "changed_files": 73,
+    "unresolved_threads": 24,
+    "active_unresolved_threads": 22,
+    "outdated_unresolved_threads": 2,
+    "pr_class": "MIXED",
+    "risk_score": 11395.0,
+    "check_summary": {
+      "total": 19,
+      "success": 17,
+      "failure": 2,
+      "pending": 0,
+      "required_pending": 0,
+      "required_failure": 2,
+      "optional_pending": 0,
+      "optional_failure": 0
+    },
+    "lifecycle_state": "discovered",
+    "head_sha": "910ce7f03b18f8ff2156ac3e63e6e2920432730d",
+    "base_sha": "911ac39d9f4436d69370f4dbdcee21f388347938"
+  }
+}

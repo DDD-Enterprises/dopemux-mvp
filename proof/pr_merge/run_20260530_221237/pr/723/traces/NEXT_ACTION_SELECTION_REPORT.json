@@ -1,0 +1,8 @@
+{
+  "pr_id": "723",
+  "cycle_id": "0153dc24-4ac3-41ae-a281-052cb092d03c",
+  "next_tactic": "DEFER",
+  "strategy_id": "OURS_THEN_PORT_SELECTIVE",
+  "posture": "HOLD",
+  "computed_at": 1780204472.933084
+}

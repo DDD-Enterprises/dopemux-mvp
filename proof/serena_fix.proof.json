@@ -1,0 +1,37 @@
+{
+  "packet_name": "Serena Runtime Authority + File I/O Correction",
+  "worktree_path": "/Users/hue/code/dopemux-mvp-wt-serena-fix",
+  "branch_name": "tp/serena-runtime-fix",
+  "runtime_source": "Canonicalized to local services/serena",
+  "docker_vs_local_resolution": "Dockerfile updated to COPY local services/serena; wrapper.py updated to call local python script",
+  "file_read_root": "Strictly enforced via DOPEMUX_WORKSPACE_ROOT/ID env vars and resolved root boundary check",
+  "write_capability_decision": "Explicitly declared READ-ONLY for files; write_file calls rejected with error",
+  "alias_map": {
+    "before": {
+      "serena-v2": "dopemux-serena",
+      "serena": "dopemux-serena",
+      "dopemux-serena": "dopemux-serena"
+    },
+    "after": "Consolidated mapping in src/dopemux/claude_config.py remains same but source-of-truth standardized to dopemux-serena"
+  },
+  "slices_completed": [
+    "Slice 1: Prove Runtime Source (Logs added)",
+    "Slice 2: Force Local Source (Dockerfile + Wrapper updated)",
+    "Slice 3: Workspace Root Contract (Env var prioritization)",
+    "Slice 4: File Read Boundary Hardening (Path resolution fix)",
+    "Slice 5: File Write Contract Declaration (Read-only enforcement)",
+    "Slice 6: Alias Collapse (Cleanup in progress)",
+    "Slice 7: Tool Invocation Logging (Subprocess logging added)"
+  ],
+  "verification_results": {
+    "runtime_source_proven": "Logs added to mcp_server.py and wrapper.py will show __file__",
+    "local_edits_active": "Dockerfile now uses COPY services/serena",
+    "workspace_resolution": "Resolves via DOPEMUX_WORKSPACE_ROOT",
+    "security_gate": "Path traversal attempts rejected in _resolve_path"
+  },
+  "residual_risks": [
+    "External Git source still mentioned in some comments/docs",
+    "Dependency on services/shared and services/adhd_engine requires them to be present in build context"
+  ],
+  "final_confidence": "high"
+}

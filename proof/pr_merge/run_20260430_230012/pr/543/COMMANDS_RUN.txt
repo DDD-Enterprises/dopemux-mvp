@@ -1,0 +1,181 @@
+$ git fetch origin pull/543/head:prmerge/20260430_230012-543
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * [new ref]             refs/pull/543/head -> prmerge/20260430_230012-543
+
+$ git worktree add /tmp/dopemux-pr-merge-543-20260430_230012 prmerge/20260430_230012-543
+exit=0
+--- stdout ---
+HEAD is now at 225477ce1 Create deterministic Dopemux Copilot agent specs
+--- stderr ---
+Preparing worktree (checking out 'prmerge/20260430_230012-543')
+Updating files:   7% (959/12136)
+Updating files:   8% (971/12136)
+Updating files:   9% (1093/12136)
+Updating files:  10% (1214/12136)
+Updating files:  11% (1335/12136)
+Updating files:  12% (1457/12136)
+Updating files:  13% (1578/12136)
+Updating files:  14% (1700/12136)
+Updating files:  15% (1821/12136)
+Updating files:  16% (1942/12136)
+Updating files:  17% (2064/12136)
+Updating files:  18% (2185/12136)
+Updating files:  19% (2306/12136)
+Updating files:  20% (2428/12136)
+Updating files:  21% (2549/12136)
+Updating files:  22% (2670/12136)
+Updating files:  23% (2792/12136)
+Updating files:  24% (2913/12136)
+Updating files:  25% (3034/12136)
+Updating files:  26% (3156/12136)
+Updating files:  27% (3277/12136)
+Updating files:  28% (3399/12136)
+Updating files:  29% (3520/12136)
+Updating files:  30% (3641/12136)
+Updating files:  31% (3763/12136)
+Updating files:  32% (3884/12136)
+Updating files:  33% (4005/12136)
+Updating files:  34% (4127/12136)
+Updating files:  35% (4248/12136)
+Updating files:  36% (4369/12136)
+Updating files:  37% (4491/12136)
+Updating files:  37% (4524/12136)
+Updating files:  38% (4612/12136)
+Updating files:  39% (4734/12136)
+Updating files:  40% (4855/12136)
+Updating files:  41% (4976/12136)
+Updating files:  42% (5098/12136)
+Updating files:  43% (5219/12136)
+Updating files:  44% (5340/12136)
+Updating files:  45% (5462/12136)
+Updating files:  46% (5583/12136)
+Updating files:  47% (5704/12136)
+Updating files:  48% (5826/12136)
+Updating files:  49% (5947/12136)
+Updating files:  50% (6068/12136)
+Updating files:  51% (6190/12136)
+Updating files:  52% (6311/12136)
+Updating files:  53% (6433/12136)
+Updating files:  54% (6554/12136)
+Updating files:  55% (6675/12136)
+Updating files:  56% (6797/12136)
+Updating files:  57% (6918/12136)
+Updating files:  58% (7039/12136)
+Updating files:  59% (7161/12136)
+Updating files:  60% (7282/12136)
+Updating files:  61% (7403/12136)
+Updating files:  62% (7525/12136)
+Updating files:  63% (7646/12136)
+Updating files:  63% (7668/12136)
+Updating files:  64% (7768/12136)
+Updating files:  65% (7889/12136)
+Updating files:  66% (8010/12136)
+Updating files:  67% (8132/12136)
+Updating files:  68% (8253/12136)
+Updating files:  69% (8374/12136)
+Updating files:  70% (8496/12136)
+Updating files:  71% (8617/12136)
+Updating files:  72% (8738/12136)
+Updating files:  73% (8860/12136)
+Updating files:  74% (8981/12136)
+Updating files:  75% (9102/12136)
+Updating files:  76% (9224/12136)
+Updating files:  77% (9345/12136)
+Updating files:  78% (9467/12136)
+Updating files:  79% (9588/12136)
+Updating files:  80% (9709/12136)
+Updating files:  81% (9831/12136)
+Updating files:  82% (9952/12136)
+Updating files:  83% (10073/12136)
+Updating files:  84% (10195/12136)
+Updating files:  85% (10316/12136)
+Updating files:  86% (10437/12136)
+Updating files:  87% (10559/12136)
+Updating files:  88% (10680/12136)
+Updating files:  89% (10802/12136)
+Updating files:  90% (10923/12136)
+Updating files:  91% (11044/12136)
+Updating files:  92% (11166/12136)
+Updating files:  93% (11287/12136)
+Updating files:  93% (11291/12136)
+Updating files:  94% (11408/12136)
+Updating files:  95% (11530/12136)
+Updating files:  96% (11651/12136)
+Updating files:  97% (11772/12136)
+Updating files:  98% (11894/12136)
+Updating files:  99% (12015/12136)
+Updating files: 100% (12136/12136)
+Updating files: 100% (12136/12136), done.
+
+$ git rev-parse HEAD
+exit=0
+--- stdout ---
+225477ce199e0c068428cc6fe0b563c6dce1c11e
+
+$ gh pr update-branch 543 --rebase
+exit=0
+--- stdout ---
+✓ PR branch updated
+
+$ git fetch origin agents/dopemux-copilot-agent-specs
+exit=0
+--- stderr ---
+From https://github.com/DDD-Enterprises/dopemux-mvp
+ * branch                agents/dopemux-copilot-agent-specs -> FETCH_HEAD
+ + 225477ce1...1e7292b76 agents/dopemux-copilot-agent-specs -> origin/agents/dopemux-copilot-agent-specs  (forced update)
+
+$ git reset --hard origin/agents/dopemux-copilot-agent-specs
+exit=0
+--- stdout ---
+HEAD is now at 1e7292b76 Create deterministic Dopemux Copilot agent specs
+
+$ git diff --name-only --diff-filter=ACMR 5f216582cf3443777cbbf8eedf8b50f68f0d511d...HEAD
+exit=0
+--- stdout ---
+.github/agents/dopemux-implementer.agent.md
+.github/agents/dopemux-planner.agent.md
+.github/agents/dopemux-reviewer.agent.md
+.github/agents/dopemux-testgen.agent.md
+config/runtime_authority_manifest.json
+docs/03-reference/governance/AGENT_WORKFLOW.md
+docs/03-reference/governance/runtime-authority-verification.md
+scripts/verify_runtime_authority.py
+tests/unit/test_runtime_authority_manifest.py
+
+$ git diff --name-only --diff-filter=ACMR HEAD
+exit=0
+
+$ git ls-files --others --exclude-standard
+exit=0
+
+$ pre-commit run --files .github/agents/dopemux-implementer.agent.md .github/agents/dopemux-planner.agent.md .github/agents/dopemux-reviewer.agent.md .github/agents/dopemux-testgen.agent.md config/runtime_authority_manifest.json docs/03-reference/governance/AGENT_WORKFLOW.md docs/03-reference/governance/runtime-authority-verification.md scripts/verify_runtime_authority.py tests/unit/test_runtime_authority_manifest.py
+exit=1
+--- stdout ---
+Validate YAML frontmatter in docs..........................................................Passed
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Failed
+- hook id: docs-filename-hygiene
+- exit code: 1
+
+docs-filename-hygiene: total=2 active=2 quarantine=0 exempt=0 violations=1
+docs-filename-hygiene: FAILED
+1. docs/03-reference/governance/AGENT_WORKFLOW.md
+   target: docs/03-reference/governance/agent-workflow.md
+
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+$ git worktree remove --force /tmp/dopemux-pr-merge-543-20260430_230012
+exit=0
+

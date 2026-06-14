@@ -1,0 +1,28 @@
+{
+  "applied": [
+    {
+      "thread_id": "PRRT_kwDOPyIw985-D1vg",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/research/mcp-customization/dr-upload/00-dopemux-context-boundaries.md",
+      "applied": true,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-D1wR",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "docs/research/mcp-customization/README_UPLOAD_ORDER.md",
+      "applied": true,
+      "escalation_needed": false
+    },
+    {
+      "thread_id": "PRRT_kwDOPyIw985-D1w4",
+      "disposition": "decline_with_rationale",
+      "reason": "Suggestion is not safely auto-applicable; posting rationale and resolving.",
+      "path": "task-packets/TP-DMX-MCP-DATA-ASSEMBLY-001.json",
+      "applied": true,
+      "escalation_needed": false
+    }
+  ]
+}
