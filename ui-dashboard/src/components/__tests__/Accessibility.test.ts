@@ -114,14 +114,20 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toMatch(/animation:\s*'copy-success 0.4s ease-out'/);
   expect(content).toContain('<IconButton');
   expect(content).toContain('onClick={() => handleCopyTaskTitle(currentTask.title)}');
+
+  // Verify list item accessibility labels
+  expect(content).toMatch(/aria-label=\{\`\$\{task\.title\} - \$\{isCurrent \? 'Active' : isCompleted \? 'Completed' : 'Pending'\}\`\}/);
 });
 
-test('TaskSequencer.tsx implements overtime visual cues', () => {
+test('TaskSequencer.tsx implements overtime and near-overtime visual cues', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('const isOvertime = useMemo(() =>');
+  expect(content).toContain('const isNearOvertime = useMemo(() =>');
+  expect(content).toContain('progressPercent > 80');
   expect(content).toContain('color: isOvertime ? brandTokens.colors.gremlinPink : \'inherit\'');
   expect(content).toContain('OVERTIME +{overtimeMinutes}M');
-  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*brandTokens\.colors\.saintGold,\s*0\.1\s*\)/);
+  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*isNearOvertime\s*\?\s*brandTokens\.colors\.giltEdge\s*:\s*brandTokens\.colors\.saintGold,\s*0\.1\s*\)/);
+  expect(content).toMatch(/Nearing estimated time \(\$\{Math\.round\(progressPercent\)\}\%\)/);
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {

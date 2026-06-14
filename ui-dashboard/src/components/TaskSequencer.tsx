@@ -228,6 +228,17 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
   const currentTask = tasks.find((task) => task.id === currentTaskId);
 
+  const progressPercent = useMemo(() => {
+    if (!currentTask) return 0;
+    return (taskTimer / (currentTask.estimatedMinutes * 60)) * 100;
+  }, [currentTask, taskTimer]);
+
+  const isNearOvertime = useMemo(() => {
+    if (!currentTask) return false;
+    const isOT = (taskTimer / 60) > currentTask.estimatedMinutes;
+    return progressPercent > 80 && !isOT;
+  }, [currentTask, taskTimer, progressPercent]);
+
   const nextTaskAfterCompletion = useMemo(
     () => getCompletionTransitionTask(currentTaskId, tasks, optimizedTasks),
     [currentTaskId, optimizedTasks, tasks]
@@ -549,7 +560,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               </Typography>
             )}
           </Box>
-          <Tooltip title="Current task progress based on estimate" arrow>
+          <Tooltip
+            title={
+              isNearOvertime
+                ? `Nearing estimated time (${Math.round(progressPercent)}%)`
+                : 'Current task progress based on estimate'
+            }
+            arrow
+          >
             <Box
               tabIndex={0}
               sx={{
@@ -564,20 +582,30 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             >
               <LinearProgress
                 variant="determinate"
-                value={Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)}
+                value={Math.min(100, progressPercent)}
                 sx={{
                   height: 6,
                   borderRadius: 3,
                   bgcolor: alpha(
-                    isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
+                    isOvertime
+                      ? brandTokens.colors.gremlinPink
+                      : isNearOvertime
+                        ? brandTokens.colors.giltEdge
+                        : brandTokens.colors.saintGold,
                     0.1
                   ),
                   '& .MuiLinearProgress-bar': {
-                    bgcolor: isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
+                    bgcolor: isOvertime
+                      ? brandTokens.colors.gremlinPink
+                      : isNearOvertime
+                        ? brandTokens.colors.giltEdge
+                        : brandTokens.colors.saintGold,
                     borderRadius: 3,
                     boxShadow: isOvertime
                       ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.6)}`
-                      : brandTokens.shadows.goldBloom,
+                      : isNearOvertime
+                        ? `0 0 12px ${alpha(brandTokens.colors.giltEdge, 0.6)}`
+                        : brandTokens.shadows.goldBloom,
                   },
                 }}
                 aria-label={`Progress for task: ${currentTask.title}`}
@@ -588,9 +616,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                           ? 'minute'
                           : 'minutes'
                       } past estimate`
-                    : `${Math.round(
-                        Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)
-                      )}% of estimated time`
+                    : isNearOvertime
+                      ? `${Math.round(progressPercent)}% - nearing estimated time`
+                      : `${Math.round(progressPercent)}% of estimated time`
                 }
               />
             </Box>
@@ -822,6 +850,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               <ListItem
                 alignItems="flex-start"
                 aria-current={isCurrent ? 'step' : undefined}
+                aria-label={`${task.title} - ${isCurrent ? 'Active' : isCompleted ? 'Completed' : 'Pending'}`}
                 sx={{
                   position: 'relative',
                   bgcolor: isCurrent ? alpha(brandTokens.colors.ritualCyan, 0.08) : 'transparent',
