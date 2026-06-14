@@ -20,7 +20,7 @@ committed (`.gitignore`).
 |---|---|---|---|
 | `Dopemux Term` | term (monospace) | operator / CLI / TUI mono | `--font-mono` |
 | `Dopemux Editor` | quasi-proportional | prose-set code companion | `--font-editor` |
-| `Dopemux Term Nerd Font Mono` | term + Nerd glyphs | rich-glyph terminal icon set | terminal font |
+| `DopemuxTerm Nerd Font Mono` | term + Nerd glyphs | rich-glyph terminal icon set | terminal font |
 | `Dopemux Editor Nerd Font` | quasi-proportional + Nerd glyphs | prose-set companion with icons | editor font |
 
 Each family ships **Regular + Medium**, upright / italic / oblique. Bold is a
@@ -32,7 +32,7 @@ Operator-facing CSS declares (off-brand mono families are excluded per the
 forbidden list in `build.md`):
 
 ```
-"Dopemux Term Nerd Font Mono", "Dopemux Term", ui-monospace, monospace
+"DopemuxTerm Nerd Font Mono", "Dopemux Term", ui-monospace, monospace
 ```
 
 The web cockpit (`colors_and_type.css`) loads `Dopemux Term` via `@font-face`.
@@ -41,7 +41,7 @@ The web cockpit (`colors_and_type.css`) loads `Dopemux Term` via `@font-face`.
 
 The icon set in `src/dopemux/ui/theme.py::Glyphs` uses Nerd Font / Powerline
 codepoints. These are **not** present in the plain `Dopemux Term` build — they
-are added by patching it into **`Dopemux Term Nerd Font Mono`** with the Nerd
+are added by patching it into **`DopemuxTerm Nerd Font Mono`** with the Nerd
 Fonts `font-patcher` (`patch-nerd-font.sh`).
 
 The fallback chain degrades gracefully: every glyph has an ASCII fallback in
