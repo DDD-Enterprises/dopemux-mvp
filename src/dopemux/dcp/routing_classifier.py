@@ -114,6 +114,8 @@ _ALWAYS_FORBIDDEN: list[str] = [
 
 _READ_ONLY_ALLOWED: list[str] = [
     "inspect_runtime_code",
+    "run_targeted_tests",
+    "capture_proof",
 ]
 
 _MUTATING_ALLOWED: list[str] = [
@@ -123,12 +125,6 @@ _MUTATING_ALLOWED: list[str] = [
     "run_embedded_audit",
     "open_pr",
 ]
-
-_SAFE_ALLOWED: list[str] = _READ_ONLY_ALLOWED + _MUTATING_ALLOWED
-
-_NON_EDIT_REQUESTED_ALLOWED: frozenset[str] = frozenset(
-    ["run_targeted_tests", "capture_proof"]
-)
 
 _REQUESTED_ACTION_RED_LANE: frozenset[str] = frozenset(
     _ALWAYS_FORBIDDEN
@@ -347,21 +343,22 @@ def _derive_allowed_actions(
     """Return actions permitted for this route.
 
     Mutating actions (edit_allowlisted_files, open_pr) are only permitted
-    when the route is fully ALLOWED — not for UNKNOWN, NEEDS_SUPERVISOR, or
-    PENDING status, which should not imply repo-changing actions are safe.
+    when the route is fully ALLOWED with mutating scope. requested_actions
+    may only narrow the classification base set — never widen it.
     """
     if red_lane is RedLaneState.RED_LANE or status is RouteStatus.BLOCKED:
         return []
-    if status is RouteStatus.ALLOWED:
-        if not _has_mutating_scope(inp):
-            allowed = list(_READ_ONLY_ALLOWED)
-            for action in inp.requested_actions:
-                if action in _NON_EDIT_REQUESTED_ALLOWED:
-                    _append_unique(allowed, action)
-            return allowed
-        return list(_SAFE_ALLOWED)
-    # UNKNOWN / NEEDS_SUPERVISOR / PENDING: read-only inspection only
-    return list(_READ_ONLY_ALLOWED)
+
+    if status is RouteStatus.ALLOWED and _has_mutating_scope(inp):
+        base_allowed = list(_MUTATING_ALLOWED)
+    else:
+        base_allowed = list(_READ_ONLY_ALLOWED)
+
+    if inp.requested_actions:
+        return [
+            action for action in inp.requested_actions if action in base_allowed
+        ]
+    return base_allowed
 
 
 def _derive_forbidden_actions(inp: RoutingClassificationInput) -> list[str]:
@@ -434,8 +431,11 @@ def _derive_stop_conditions(
         conditions.append("live_write_requested")
     if inp.requires_runner_execution:
         conditions.append("runner_execution_requested")
-    for action in _requested_forbidden_actions(inp):
-        conditions.append(f"forbidden_action_requested:{action}")
+    forbidden_requested = _requested_forbidden_actions(inp)
+    if forbidden_requested:
+        conditions.append("forbidden_requested_action")
+        for action in forbidden_requested:
+            conditions.append(f"forbidden_action_requested:{action}")
 
     return conditions
 
@@ -482,10 +482,6 @@ def _has_mutating_scope(inp: RoutingClassificationInput) -> bool:
         or inp.touches_public_behavior
         or inp.task_type
         in (TaskType.CODE_CHANGE, TaskType.SCHEMA_ONLY, TaskType.PROOF_BUNDLE)
-        or any(
-            action in ("edit_allowlisted_files", "open_pr", "run_embedded_audit")
-            for action in inp.requested_actions
-        )
     )
 
 
