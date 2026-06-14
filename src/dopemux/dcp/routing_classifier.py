@@ -215,10 +215,16 @@ def _derive_route_status(
     if inp.has_stale_proof:
         return RouteStatus.BLOCKED
 
+    if inp.runtime_impact is RuntimeImpact.UNKNOWN:
+        return RouteStatus.UNKNOWN
+
     if inp.risk_class is RiskClass.UNKNOWN or inp.task_type is TaskType.UNKNOWN:
         return RouteStatus.UNKNOWN
 
     if inp.risk_class in _HIGH_RISK_CLASSES:
+        return RouteStatus.NEEDS_SUPERVISOR
+
+    if inp.touches_ci:
         return RouteStatus.NEEDS_SUPERVISOR
 
     if inp.authority_class in (AuthorityClass.SUPERVISOR, AuthorityClass.DUAL):
@@ -329,6 +335,8 @@ def _derive_allowed_actions(
     if red_lane is RedLaneState.RED_LANE or status is RouteStatus.BLOCKED:
         return []
     if status is RouteStatus.ALLOWED:
+        if not _has_mutating_scope(inp):
+            return list(_READ_ONLY_ALLOWED)
         return list(_SAFE_ALLOWED)
     # UNKNOWN / NEEDS_SUPERVISOR / PENDING: read-only inspection only
     return list(_READ_ONLY_ALLOWED)
@@ -438,6 +446,20 @@ def _requested_forbidden_actions(inp: RoutingClassificationInput) -> list[str]:
         for action in inp.requested_actions
         if action in _REQUESTED_ACTION_RED_LANE
     ]
+
+
+def _has_mutating_scope(inp: RoutingClassificationInput) -> bool:
+    """Return True only when a route is explicitly repo/code/proof changing."""
+    return (
+        inp.is_repo_changing
+        or inp.touches_files
+        or inp.touches_tests
+        or inp.touches_docs
+        or inp.touches_public_behavior
+        or inp.task_type
+        in (TaskType.CODE_CHANGE, TaskType.SCHEMA_ONLY, TaskType.PROOF_BUNDLE)
+        or any(action in _MUTATING_ALLOWED for action in inp.requested_actions)
+    )
 
 
 # ─────────────────────────────────────────────
