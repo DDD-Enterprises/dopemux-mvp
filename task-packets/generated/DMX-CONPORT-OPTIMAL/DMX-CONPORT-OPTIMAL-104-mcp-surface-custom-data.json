@@ -1,0 +1,125 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
+  "project": "dopemux-mvp",
+  "target": "Expose custom_data CRUD via MCP by adding get_custom_data, save_custom_data, and delete_custom_data FastMCP tools in server.py and conport_mcp_stdio.py, and registering them in enhanced_server.py JSON-RPC dispatch.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "FastMCP tools must proxy the existing REST handlers — do not duplicate logic.",
+    "Tool signatures must match the existing REST /api/custom_data/* contract exactly.",
+    "JSON-RPC dispatch entries must be added to both dispatch_map and _get_tool_schemas.",
+    "Do not change the REST API route shapes or response envelopes.",
+    "All three operations (save, get, delete) must form a verifiable round-trip.",
+    "Classify any ambiguous schema authority as UNKNOWN — do not assume."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-103-retire-dead-codebases",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-104-mcp-surface-custom-data",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): expose custom_data CRUD via MCP surface (get/save/delete)",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/server.py",
+      "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data.json",
+      "proof/conport-optimal-104-mcp-surface-custom-data/DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m pytest docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): expose custom_data CRUD via MCP (get/save/delete)",
+    "body": "Adds three FastMCP tools to expose the existing custom_data REST handlers via the MCP surface:\n- `get_custom_data(workspace_id, category, key?)` — proxies GET /api/custom_data/{ws}\n- `save_custom_data(workspace_id, category, key, value)` — proxies POST /api/custom_data/{ws}\n- `delete_custom_data(workspace_id, category, key)` — proxies DELETE /api/custom_data/{ws}/{category}/{key}\n\nAdds JSON-RPC dispatch_map entries and _get_tool_schemas entries in enhanced_server.py. Verifies save→get→delete round-trip via MCP and that `tools/list` advertises the new tools.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight worktree. Read server.py, conport_mcp_stdio.py, and enhanced_server.py to understand existing FastMCP tool pattern, dispatch_map structure, and _get_tool_schemas format. Identify the custom_data REST endpoints already present in enhanced_server.py.",
+      "context_files": [
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "AGENTS.md"
+      ],
+      "validation": [
+        "Existing FastMCP tool registration pattern confirmed by direct read of server.py.",
+        "dispatch_map and _get_tool_schemas structure confirmed by direct read of enhanced_server.py.",
+        "Custom_data REST route shapes recorded in proof for contract reference."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py covering: (a) get_custom_data tool is advertised in tools/list; (b) save_custom_data→get_custom_data round-trip returns saved value; (c) delete_custom_data removes the entry.",
+      "expected_files": [
+        "docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py"
+      ],
+      "validation": [
+        "Tests exist and fail before production code changes.",
+        "Test assertions cover all three tool operations."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add get_custom_data, save_custom_data, and delete_custom_data FastMCP tools to server.py and conport_mcp_stdio.py, following the exact pattern of existing tools. Each tool must proxy the corresponding REST handler via aiohttp client call to localhost:3004.",
+      "validation": [
+        "Three new tool functions present in server.py with @mcp.tool() or equivalent decorator.",
+        "Three matching proxy functions present in conport_mcp_stdio.py.",
+        "No business logic duplicated — tools delegate entirely to REST handlers."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Register the three new tools in enhanced_server.py: add entries to dispatch_map routing JSON-RPC calls and add schema entries to _get_tool_schemas.",
+      "validation": [
+        "dispatch_map contains get_custom_data, save_custom_data, delete_custom_data keys.",
+        "_get_tool_schemas returns schemas for all three tools.",
+        "grep confirms presence of all three tool names in enhanced_server.py."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run tests, verify tools/list advertises new tools against live container, run PAL codereview and precommit, commit, push, open PR, file proof bundle.",
+      "commands": [
+        "python3 -m pytest docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py -q"
+      ],
+      "validation": [
+        "All tests PASS with exit code 0.",
+        "tools/list response captured in proof confirms all three tools advertised.",
+        "Only allowlisted files staged and committed."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get",
+  "project": "dopemux-mvp",
+  "target": "Remove the auto-fork write side-effect from GET /api/progress by gating it behind an explicit ?auto_fork=true query param, and update the DCP readonly facade to stay read-only.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "A plain GET /api/progress must create zero rows in any table after this fix.",
+    "The ?auto_fork=true behavior must be preserved exactly for callers that opt in.",
+    "The env var DOPEMUX_AUTO_FORK_PROGRESS may set the default to true for backward compatibility in specific deployments — document this in a comment.",
+    "The DCP readonly facade (services/dcp-readonly-facade/) must not be given write capability.",
+    "Do not alter any other GET route to add write side-effects.",
+    "Classify any ambiguous caller behavior as UNKNOWN — do not assume."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-107-gate-autofork-on-get",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(conport): gate auto-fork behind explicit ?auto_fork=true on GET /api/progress",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "services/dcp-readonly-facade/src/dcp_facade/conport.py",
+      "docker/mcp-servers-source/conport/tests/test_gate_autofork.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get.json",
+      "proof/conport-optimal-107-gate-autofork-on-get/DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m pytest docker/mcp-servers-source/conport/tests/test_gate_autofork.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(conport): gate auto-fork write side-effect behind ?auto_fork=true on GET",
+    "body": "Fixes a correctness bug where `GET /api/progress` on an empty workspace silently creates rows via auto-fork, violating GET idempotency.\n\nChanges:\n1. In enhanced_server.py `_get_progress` (~line 911): reads `auto_fork` query param (default `false`); reads env `DOPEMUX_AUTO_FORK_PROGRESS` as fallback default; only forks when either is truthy.\n2. Updates services/dcp-readonly-facade/src/dcp_facade/conport.py to ensure the facade caller never passes ?auto_fork=true.\n\nAcceptance: plain `GET /api/progress` on empty workspace creates 0 rows; `GET /api/progress?auto_fork=true` forks as before.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight worktree. Read _get_progress in enhanced_server.py (~line 911) to understand current auto-fork logic. Read services/dcp-readonly-facade/src/dcp_facade/conport.py to understand how it calls the progress endpoint.",
+      "context_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "services/dcp-readonly-facade/src/dcp_facade/conport.py",
+        "AGENTS.md"
+      ],
+      "validation": [
+        "Auto-fork code path located in enhanced_server.py _get_progress and documented in proof.",
+        "DCP facade caller invocation pattern documented — URL params recorded.",
+        "Current default behavior (always-fork vs conditional) confirmed by direct read."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_gate_autofork.py covering: (a) plain GET /api/progress on fresh workspace returns 200 and creates zero rows; (b) GET /api/progress?auto_fork=true on fresh workspace creates one forked progress entry; (c) DCP facade call does not trigger auto-fork.",
+      "expected_files": [
+        "docker/mcp-servers-source/conport/tests/test_gate_autofork.py"
+      ],
+      "validation": [
+        "Tests exist and (a) passes trivially before fix, (b) and (c) fail before fix if fork is currently unconditional.",
+        "Test for zero-row case counts actual DB rows — not just HTTP status."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Apply the gate: in enhanced_server.py _get_progress, read request.rel_url.query.get('auto_fork', os.environ.get('DOPEMUX_AUTO_FORK_PROGRESS', 'false')) and skip fork logic when falsy. Add inline comment documenting the env var override.",
+      "validation": [
+        "auto_fork parameter read logic present in _get_progress.",
+        "DOPEMUX_AUTO_FORK_PROGRESS env var fallback documented in comment.",
+        "Fork block is inside a conditional — not unconditional."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Update DCP facade conport.py to ensure its progress call does not include ?auto_fork=true. Run all tests. Run PAL codereview and precommit. Commit, push, open PR, file proof bundle.",
+      "commands": [
+        "python3 -m pytest docker/mcp-servers-source/conport/tests/test_gate_autofork.py -q"
+      ],
+      "validation": [
+        "All tests PASS with exit code 0.",
+        "Zero-row assertion confirmed via test output captured in proof.",
+        "DCP facade file diff confirms no ?auto_fork=true added.",
+        "Only allowlisted files staged and committed."
+      ]
+    }
+  ]
+}

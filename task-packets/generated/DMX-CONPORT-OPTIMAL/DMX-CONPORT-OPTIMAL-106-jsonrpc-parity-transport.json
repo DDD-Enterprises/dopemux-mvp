@@ -1,0 +1,118 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport",
+  "project": "dopemux-mvp",
+  "target": "Close JSON-RPC discovery gaps by adding conport_workspace_summary to dispatch_map, adding admin tool schemas for fork_instance/promote/promote_all to _get_tool_schemas, fixing the advertised SSE URL in info_server.py, and exposing port 3005 in Dockerfile.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "Admin tools (fork_instance, promote, promote_all) are documented admin-only — add schemas only, do not enable them for unauthenticated callers.",
+    "Do not change the REST route shapes or response envelopes.",
+    "info_server.py SSE URL fix must change :3004 to :3005 only for the advertised SSE endpoint.",
+    "Dockerfile EXPOSE 3005 must be additive — do not remove existing EXPOSE directives.",
+    "tools/list must advertise exactly 12 tools after this packet (verify count)."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
+    "DMX-CONPORT-OPTIMAL-105-mcp-surface-search"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-105-mcp-surface-search",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-106-jsonrpc-parity-transport",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): close JSON-RPC discovery gaps and fix SSE transport advertisement",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/info_server.py",
+      "docker/mcp-servers-source/conport/Dockerfile",
+      "docker/mcp-servers-source/conport/tests/test_jsonrpc_parity.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport.json",
+      "proof/conport-optimal-106-jsonrpc-parity-transport/DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m pytest docker/mcp-servers-source/conport/tests/test_jsonrpc_parity.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): close JSON-RPC discovery gaps and fix SSE transport URL",
+    "body": "Closes three JSON-RPC discovery gaps and one transport mis-advertisement:\n1. Adds `conport_workspace_summary` to enhanced_server.py dispatch_map so the tool is reachable via JSON-RPC.\n2. Adds schema entries for `fork_instance`, `promote`, and `promote_all` to _get_tool_schemas (documented admin-only, schemas only).\n3. Fixes info_server.py advertised SSE URL from :3004 to :3005.\n4. Adds `EXPOSE 3005` to Dockerfile.\n\nDepends on DMX-CONPORT-OPTIMAL-104 and DMX-CONPORT-OPTIMAL-105 (all 12 tools must exist before parity can be verified).\n\nAcceptance: tools/list advertises 12 tools including workspace_summary.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight worktree. Read enhanced_server.py dispatch_map and _get_tool_schemas to enumerate current tools. Read info_server.py to locate the SSE URL advertisement. Read Dockerfile for current EXPOSE directives.",
+      "context_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/info_server.py",
+        "docker/mcp-servers-source/conport/Dockerfile",
+        "AGENTS.md"
+      ],
+      "validation": [
+        "Current dispatch_map keys enumerated and recorded in proof.",
+        "Current _get_tool_schemas keys enumerated — gap list identified.",
+        "info_server.py SSE URL value found and recorded.",
+        "Dockerfile EXPOSE directives recorded."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_jsonrpc_parity.py covering: (a) tools/list response contains exactly 12 tools; (b) conport_workspace_summary is in tools/list; (c) fork_instance schema is present in tools/list; (d) GET /info SSE URL contains :3005.",
+      "expected_files": [
+        "docker/mcp-servers-source/conport/tests/test_jsonrpc_parity.py"
+      ],
+      "validation": [
+        "Tests exist and fail before production code changes.",
+        "12-tool count assertion is explicit."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Apply three changes to enhanced_server.py: (1) add conport_workspace_summary to dispatch_map; (2) add fork_instance, promote, and promote_all schema entries to _get_tool_schemas with admin-only note in description. Apply one change to info_server.py: fix SSE URL string from :3004 to :3005. Add EXPOSE 3005 to Dockerfile.",
+      "validation": [
+        "grep confirms conport_workspace_summary in enhanced_server.py dispatch_map.",
+        "grep confirms fork_instance, promote, promote_all in _get_tool_schemas.",
+        "grep confirms info_server.py SSE URL now references port 3005.",
+        "grep confirms EXPOSE 3005 in Dockerfile."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run tests against live container. Verify tools/list count is 12. Run PAL codereview and precommit. Commit, push, open PR, file proof bundle.",
+      "commands": [
+        "python3 -m pytest docker/mcp-servers-source/conport/tests/test_jsonrpc_parity.py -q"
+      ],
+      "validation": [
+        "All parity tests PASS with exit code 0.",
+        "tools/list JSON response captured in proof with tool count verified at 12.",
+        "Only allowlisted files staged and committed."
+      ]
+    }
+  ]
+}
