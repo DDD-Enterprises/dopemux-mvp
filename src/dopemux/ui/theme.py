@@ -338,11 +338,11 @@ class Glyphs:
 
     # ── Fallback map (glyph -> ascii) ──
     _FALLBACK = {
-        SUCCESS: "\u2713",  # ✓
-        ERROR: "\u2717",  # ✗
+        SUCCESS: "OK",
+        ERROR: "X",
         WARNING: "!",
         INFO: "i",
-        RUNNING: "\u25b6",  # ▶
+        RUNNING: ">",
         PENDING: "~",
         BLOCKED: "#",
         SKIPPED: "-",
@@ -356,7 +356,38 @@ class Glyphs:
         ARROW_RIGHT: ">",
         ARROW_DOWN: "v",
         PROMPT: ">",
+        DOCKER: "docker",
+        SERVER: "server",
+        DATABASE: "db",
+        BRAND_MARK: "--- O ---",
+        SECTION_RULE: "---",
     }
+
+
+_GLYPH_ATTRS = tuple(
+    name
+    for name, value in vars(Glyphs).items()
+    if name.isupper() and isinstance(value, str)
+)
+_PRIMARY_GLYPHS = {name: getattr(Glyphs, name) for name in _GLYPH_ATTRS}
+
+
+def _glyph_fallback_requested(mode: RenderMode | None = None) -> bool:
+    """Return whether Glyphs should render as ASCII-safe fallback strings."""
+    override = os.environ.get("DOPEMUX_GLYPHS", "").strip().lower()
+    if override in {"ascii", "fallback", "plain"}:
+        return True
+    if override in {"nerd", "rich", "primary"}:
+        return False
+    return (mode or _detect_render_mode()) == RenderMode.PLAIN
+
+
+def _apply_glyph_render_mode(mode: RenderMode | None = None) -> None:
+    """Apply render-mode-aware glyph fallbacks to Glyphs class attributes."""
+    use_fallback = _glyph_fallback_requested(mode)
+    for name, primary in _PRIMARY_GLYPHS.items():
+        value = Glyphs._FALLBACK.get(primary, primary) if use_fallback else primary
+        setattr(Glyphs, name, value)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -432,6 +463,7 @@ def get_render_mode() -> RenderMode:
     global _cached_render_mode
     if _cached_render_mode is None:
         _cached_render_mode = _detect_render_mode()
+    _apply_glyph_render_mode(_cached_render_mode)
     return _cached_render_mode
 
 
@@ -440,6 +472,7 @@ def set_render_mode(mode: RenderMode) -> None:
     global _cached_render_mode
     _cached_render_mode = mode
     os.environ["DOPEMUX_RENDER_MODE"] = mode.value
+    _apply_glyph_render_mode(mode)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -458,6 +491,7 @@ def create_console(**kwargs: Any) -> Console:
         A :class:`rich.console.Console` configured with :data:`DOPEMUX_THEME`.
     """
     mode = _detect_render_mode()
+    _apply_glyph_render_mode(mode)
     no_color = mode == RenderMode.PLAIN
     return Console(
         theme=DOPEMUX_THEME,
