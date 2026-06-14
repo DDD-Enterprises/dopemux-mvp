@@ -246,7 +246,7 @@ def _derive_proof_requirements(inp: RoutingClassificationInput) -> list[ProofReq
     """Return an increasing set of proof obligations based on risk."""
     proofs: list[ProofRequirement] = []
 
-    if inp.is_repo_changing or inp.is_non_trivial:
+    if _has_mutating_scope(inp) or inp.is_non_trivial:
         proofs.append(ProofRequirement.DIFF_STAT)
         proofs.append(ProofRequirement.FULL_PROOF_BUNDLE)
 
