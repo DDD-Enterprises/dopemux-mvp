@@ -287,7 +287,7 @@ def _derive_audit_requirement(inp: RoutingClassificationInput) -> AuditRequireme
     if inp.requires_runner_execution or inp.requires_connector_call:
         return AuditRequirement.EMBEDDED_AUDITOR
 
-    if inp.is_non_trivial or inp.is_repo_changing:
+    if _has_mutating_scope(inp) or inp.is_non_trivial:
         return AuditRequirement.SELF_CHECK
 
     return AuditRequirement.NONE
@@ -465,6 +465,47 @@ def _has_mutating_scope(inp: RoutingClassificationInput) -> bool:
     )
 
 
+def _stable_route_id(inp: RoutingClassificationInput) -> str:
+    """Return a deterministic route identifier for replayable decisions."""
+    payload = (
+        inp.task_source.value,
+        inp.task_type.value,
+        inp.risk_class.value,
+        inp.complexity_class.value,
+        inp.authority_class.value,
+        inp.runtime_impact.value,
+        inp.backend_kind.value,
+        inp.connector_kind.value,
+        inp.description,
+        tuple(inp.evidence_refs),
+        tuple(inp.requested_actions),
+        inp.touches_files,
+        inp.touches_tests,
+        inp.touches_docs,
+        inp.touches_ci,
+        inp.touches_security,
+        inp.touches_auth,
+        inp.touches_secrets,
+        inp.touches_public_behavior,
+        inp.touches_destructive_path,
+        inp.requires_network,
+        inp.requires_external_service,
+        inp.requires_live_write,
+        inp.requires_runner_execution,
+        inp.requires_connector_call,
+        inp.requires_mcp_call,
+        inp.requires_dopetask_execution,
+        inp.requires_task_orchestrator_write,
+        inp.has_unknown_authority,
+        inp.has_conflicting_evidence,
+        inp.has_stale_proof,
+        inp.has_missing_proof,
+        inp.is_repo_changing,
+        inp.is_non_trivial,
+    )
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, repr(payload)))
+
+
 # ─────────────────────────────────────────────
 # Public entry point
 # ─────────────────────────────────────────────
@@ -490,7 +531,7 @@ def classify_route(inp: RoutingClassificationInput) -> RouteDecision:
     confidence = "LOW" if unknowns or red_lane is RedLaneState.RED_LANE else "MEDIUM"
 
     return RouteDecision(
-        route_id=str(uuid.uuid4()),
+        route_id=_stable_route_id(normalized),
         task_source=normalized.task_source,
         task_type=normalized.task_type,
         risk_class=normalized.risk_class,

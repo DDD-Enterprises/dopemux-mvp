@@ -832,6 +832,35 @@ def test_mutating_classification_requires_proof_obligations() -> None:
     assert ProofRequirement.FULL_PROOF_BUNDLE in decision.proof_requirements
 
 
+def test_mutating_classification_requires_audit_obligation() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.status is RouteStatus.ALLOWED
+    assert decision.audit_requirement is AuditRequirement.SELF_CHECK
+
+
+def test_classify_route_uses_deterministic_route_id() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.READ_ONLY,
+        risk_class=RiskClass.R0_READ,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        evidence_refs=["proof/a.json"],
+    )
+    first = classify_route(inp)
+    second = classify_route(inp)
+    assert first.route_id == second.route_id
+
+
 # ─────────────────────────────────────────────
 # Test 33 — Round-trip from_dict works
 # ─────────────────────────────────────────────
