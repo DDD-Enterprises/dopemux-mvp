@@ -79,7 +79,7 @@ surfaces/                   Surface A/B/C — cockpit mockups
   C-web-dashboard-direction.html     web direction  · not implemented
 ui_kits/cockpit/            Surface A — Services composition (React demo)
 assets/                     glyphs, brand mark, frame characters reference
-fonts/                      Iosevka Hue Term + substitution notes
+fonts/                      Dopemux Term / Editor build and substitution notes
 ```
 
 ### What lives where
@@ -159,9 +159,9 @@ Bridge/proxy writes are segregated to a sub-pane that announces
 layered glass. Inset panels use `--surface-navy` (`#041628`) for row alt
 and selected-row highlight only.
 
-**Type.** **Iosevka Hue Term** (`fonts/IosevkaHueTerm-Regular.ttf`) is the
-brand mono. Falls back through JetBrains Mono Nerd Font, JetBrains Mono,
-Fira Code, system mono. Single weight, single size per
+**Type.** **Dopemux Term** (`fonts/DopemuxTerm-Regular.ttf`) is the
+brand mono. Falls back through Dopemux Term Nerd Font Mono and system mono.
+Regular and Medium are built locally; use one size per
 viewport. No display type, no sans, no serif. Emphasis is bold + color,
 never size. Cells are 1ch × 1.25em. The renderer is character-based;
 the framebuffer (`cockpit/frame.py`) refuses sub-cell drawing.
@@ -233,8 +233,8 @@ with a `[BLOCKER]` panel (see `render.py::TOO_SMALL_MESSAGE`).
 **No emoji.** Ever.
 
 **Nerd Font glyphs** (`src/dopemux/ui/theme.py::Glyphs`) for status,
-dev, system, and navigation icons. Primary set assumes JetBrains Mono
-Nerd Font. Every glyph has an ASCII fallback registered in
+dev, system, and navigation icons. Primary set assumes Dopemux Term Nerd
+Font Mono. Every glyph has an ASCII fallback registered in
 `Glyphs._FALLBACK` for `NO_COLOR` / non-Nerd-Font terminals
 (`SUCCESS \uf058 → ✓`, `ERROR \uf057 → ✗`, `BLOCKED \uf05e → #`, etc.).
 
@@ -259,11 +259,10 @@ If a target terminal cannot render Nerd Font, the ASCII fallback map
 in `Glyphs._FALLBACK` is the only acceptable substitute. Do not pull
 in Lucide / Heroicons / Phosphor / etc.
 
-> **Iosevka Hue Term** ships at `fonts/IosevkaHueTerm-Regular.ttf` and is
-> the canonical brand mono. The Nerd Font glyph set is declared as a
-> fallback for icon coverage, but Iosevka itself is what the system
-> renders in. No Nerd Font binary ships here — if you need pixel-perfect
-> Nerd Font glyphs alongside Iosevka, drop one into `fonts/`.
+> **Dopemux Term** is built locally as `fonts/DopemuxTerm-Regular.ttf` and
+> is the canonical brand mono. The Nerd Font glyph set is patched into
+> Dopemux Term Nerd Font Mono for terminal icon coverage. Generated font
+> binaries are local build artifacts and are not committed by default.
 
 ---
 

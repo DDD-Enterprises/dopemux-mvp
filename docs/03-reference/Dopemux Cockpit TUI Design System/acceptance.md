@@ -71,12 +71,12 @@ Every box must be checkable against the artifacts in this folder.
       not embedded inside any runtime cockpit screen.
 
 ## Typography & glyphs
-- [x] Brand mono (`Iosevka Hue Term`, `fonts/IosevkaHueTerm-Regular.ttf`)
+- [x] Brand mono (`Dopemux Term`, locally built as `fonts/DopemuxTerm-Regular.ttf`)
       is declared via `@font-face` in `colors_and_type.css`.
 - [x] Mono fallback chain documented:
-      Iosevka → JetBrains Mono Nerd Font → JetBrains Mono → Fira Code → system mono.
+      Dopemux Term Nerd Font Mono → Dopemux Term → system mono.
 - [x] No Nerd Font binary ships; substitution flag is documented in
-      `fonts/README.md` and the README.
+      `fonts/readme.md` and the README.
 - [x] ASCII fallback table card exists (`preview/21-ascii-fallback.html`)
       and maps every glyph + frame char to its ASCII substitute.
 - [x] Box-drawing characters are single-cell or carry an ASCII fallback.
