@@ -4,34 +4,58 @@ title: Fonts
 type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-04-25'
-last_review: '2026-04-25'
-next_review: '2026-07-25'
-prelude: Font stack notes and substitution guidance for the cockpit design system.
+date: '2026-06-12'
+last_review: '2026-06-12'
+next_review: '2026-09-12'
+prelude: Font stack notes and build/patch pointers for the cockpit design system.
 ---
 
 # Fonts
 
-This design system declares the following font stack:
+The cockpit ships two bespoke Iosevka-derived families, built locally from
+`private-build-plans.toml` (see `build.md`). Generated binaries are **not**
+committed (`.gitignore`).
+
+| Family | Spacing | Role | CSS token |
+|---|---|---|---|
+| `Dopemux Term` | term (monospace) | operator / CLI / TUI mono | `--font-mono` |
+| `Dopemux Editor` | quasi-proportional | prose-set code companion | `--font-editor` |
+| `DopemuxTerm Nerd Font Mono` | term + Nerd glyphs | rich-glyph terminal icon set | terminal font |
+| `Dopemux Editor Nerd Font` | quasi-proportional + Nerd glyphs | prose-set companion with icons | editor font |
+
+Each family ships **Regular + Medium**, upright / italic / oblique. Bold is a
+real Medium face — never synthesized.
+
+## Font stack
+
+Operator-facing CSS declares (off-brand mono families are excluded per the
+forbidden list in `build.md`):
 
 ```
-"JetBrainsMono Nerd Font", "JetBrains Mono", "Fira Code",
-"SFMono-Regular", "Menlo", "Consolas", ui-monospace, monospace
+"DopemuxTerm Nerd Font Mono", "Dopemux Term", ui-monospace, monospace
 ```
 
-**Brand mono:** `IosevkaHueTerm-Regular.ttf` ships in this folder and is
-loaded via `@font-face` in `colors_and_type.css`. Single weight; bold is
-synthesized.
+The web cockpit (`colors_and_type.css`) loads `Dopemux Term` via `@font-face`.
 
-**Nerd Font:** No Nerd Font binary ships here. The cockpit needs a monospace font with
-Powerline / Nerd Font glyph coverage to render the icon set in
-`src/dopemux/ui/theme.py::Glyphs`. The fallback chain degrades to plain
-mono — every glyph has an ASCII fallback in `Glyphs._FALLBACK`, so the
-TUI remains legible without the font.
+## Nerd Font glyphs
 
-If pixel-perfect Nerd Font glyphs matter to you, drop a build of
-**JetBrains Mono Nerd Font** into this folder and add a `@font-face`
-rule in your output.
+The icon set in `src/dopemux/ui/theme.py::Glyphs` uses Nerd Font / Powerline
+codepoints. These are **not** present in the plain `Dopemux Term` build — they
+are added by patching it into **`DopemuxTerm Nerd Font Mono`** with the Nerd
+Fonts `font-patcher` (`patch-nerd-font.sh`).
 
-> Get JetBrains Mono Nerd Font:
-> https://www.nerdfonts.com/font-downloads (look for "JetBrainsMono")
+The fallback chain degrades gracefully: every glyph has an ASCII fallback in
+`Glyphs._FALLBACK`, so the TUI stays legible even without the Nerd Font face.
+
+## Build & patch
+
+```sh
+export IOSEVKA_REPO=/path/to/Iosevka          # git clone be5invis/Iosevka
+export NERD_FONTS_REPO=/path/to/nerd-fonts    # git clone ryanoasis/nerd-fonts
+export OUT_DIR="$PWD/out" && mkdir -p "$OUT_DIR"
+
+./build-dopemux-fonts.sh    # Iosevka -> Dopemux Term / Dopemux Editor TTFs
+./patch-nerd-font.sh        # -> $OUT_DIR/nerd-font/Dopemux{Term,Editor}NerdFont-*.ttf
+```
+
+See `build.md` for the full recipe, attributes, and verification.
