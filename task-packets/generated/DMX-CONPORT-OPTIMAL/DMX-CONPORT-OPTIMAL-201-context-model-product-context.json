@@ -1,0 +1,133 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-201-context-model-product-context",
+  "project": "dopemux-mvp",
+  "target": "Give ConPort an intentional product-vs-active context model by adding a product_context column to workspace_contexts via migration 008, exposing GET/POST REST endpoints, and adding get_product_context/update_product_context MCP tools — gated on Operator Decision 1 (Option B default; Option A = convention-via-custom_data fallback with no code change).",
+  "invariants": [
+    "This packet MUST NOT execute unless Operator Decision Gate 1 is explicitly set to Option B.",
+    "Option A (no-code fallback via custom_data convention) is the safe default if the operator has not confirmed Option B.",
+    "This packet must not modify any table other than workspace_contexts.",
+    "Migration 008 must be additive only — no column drops, no renames, no data loss.",
+    "The new product_context column must be TEXT NULLABLE so existing rows are unaffected.",
+    "product_context and active_context must remain independently readable and writable.",
+    "All new MCP tools must be registered in both server.py and conport_mcp_stdio.py.",
+    "This packet must not alter existing get_active_context or update_active_context behavior.",
+    "Classify missing operator decision as UNKNOWN; fail closed."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-109-surface-parity-tests"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-201-product-context",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): add product_context column, REST endpoints, and MCP tools (Decision Gate 1-B)",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/migrations/008_product_context.sql",
+      "docker/mcp-servers-source/conport/schema.sql",
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/server.py",
+      "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+      "docker/mcp-servers-source/conport/tests/test_product_context.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-201-context-model-product-context.json",
+      "proof/conport-optimal-201/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-201-context-model-product-context.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-201-context-model-product-context.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_product_context.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): product context model — migration 008 + REST + MCP tools",
+    "body": "Implements Operator Decision Gate 1, Option B: adds product_context TEXT column to workspace_contexts via migration 008_product_context.sql, exposes GET/POST /api/context/{workspace_id}/product REST endpoints, registers get_product_context and update_product_context MCP tools in server.py and conport_mcp_stdio.py, and updates _ensure_schema for live systems. Product context round-trips independently of active context.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: confirm Operator Decision Gate 1 is set to Option B. Read AGENTS.md, schema.sql, enhanced_server.py, server.py, conport_mcp_stdio.py, and the existing migrations 001–007 to understand current schema and MCP tool registration patterns. Record baseline commit SHA and clean worktree status in proof.",
+      "validation": [
+        "Operator Decision 1 Option B is explicitly confirmed; if absent, abort and record UNKNOWN.",
+        "Migration numbering 001–007 is confirmed; 008 does not yet exist.",
+        "Existing get_active_context / update_active_context tool signatures are captured for non-regression reference."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docker/mcp-servers-source/conport/schema.sql",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+        "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_product_context.py covering: (a) GET /api/context/{workspace_id}/product returns 200 with null or string body, (b) POST /api/context/{workspace_id}/product persists and is retrievable, (c) product context and active context are independent (updating one does not alter the other), (d) get_product_context MCP tool round-trips, (e) update_product_context MCP tool persists.",
+      "validation": [
+        "All 5 test cases exist and fail (target code absent).",
+        "No test imports non-existent symbols."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Author migration 008_product_context.sql: ALTER TABLE workspace_contexts ADD COLUMN IF NOT EXISTS product_context TEXT. Update schema.sql to include the column definition. Update _ensure_schema in enhanced_server.py to add the column for live systems that bypass migrations.",
+      "validation": [
+        "008_product_context.sql is valid SQL and idempotent (IF NOT EXISTS).",
+        "schema.sql contains product_context TEXT column in workspace_contexts.",
+        "_ensure_schema block adds product_context TEXT if absent."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/migrations/008_product_context.sql"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Implement REST endpoints in enhanced_server.py: GET /api/context/{workspace_id}/product (SELECT product_context FROM workspace_contexts WHERE workspace_id=?) and POST /api/context/{workspace_id}/product (UPDATE workspace_contexts SET product_context=? WHERE workspace_id=?, INSERT if absent). Add get_product_context and update_product_context MCP tools in server.py (tool definitions + handlers) and conport_mcp_stdio.py (JSON-RPC dispatch). Mirror the registration pattern of get_active_context / update_active_context exactly.",
+      "validation": [
+        "GET returns {\"product_context\": null} for a new workspace.",
+        "POST then GET round-trips the stored value.",
+        "get_product_context and update_product_context appear in both server.py tool list and conport_mcp_stdio.py dispatch table.",
+        "No existing tool signatures were altered."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run tests, validate schema, commit, push, open PR, record proof bundle.",
+      "validation": [
+        "pytest test_product_context.py exits 0 with all 5 tests passing.",
+        "python -m jsonschema exits 0 for the TP JSON.",
+        "Only allowlisted files are staged.",
+        "Proof bundle records: TP id, worktree, branch, files changed, test exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks."
+      ]
+    }
+  ]
+}
