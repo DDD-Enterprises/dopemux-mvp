@@ -45,6 +45,7 @@ from dopemux.dcp.routing_model import (
     RiskClass,
     RouteDecision,
     RouteStatus,
+    RuntimeImpact,
     TaskType,
 )
 
@@ -519,9 +520,10 @@ def test_unknown_red_lane_not_runnable() -> None:
 
 
 def test_string_risk_class_normalizes() -> None:
-    inp = RoutingClassificationInput(risk_class=RiskClass.R1_LOW)
+    inp = RoutingClassificationInput(risk_class="R1_LOW")
     decision = classify_route(inp)
     assert isinstance(decision.risk_class, RiskClass)
+    assert decision.risk_class is RiskClass.R1_LOW
 
 
 # ─────────────────────────────────────────────
@@ -530,9 +532,14 @@ def test_string_risk_class_normalizes() -> None:
 
 
 def test_invalid_enum_string_falls_back_safely() -> None:
-    # Pass AuthorityClass.UNKNOWN (closest safe fallback for unknown input)
-    inp = RoutingClassificationInput(authority_class=AuthorityClass.UNKNOWN)
+    inp = RoutingClassificationInput(
+        task_type="NOT_A_TASK_TYPE",
+        risk_class=RiskClass.R1_LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
     decision = classify_route(inp)
+    assert decision.task_type is TaskType.UNKNOWN
     assert not _is_runnable(decision)
 
 
@@ -593,6 +600,71 @@ def test_serialization_works() -> None:
     assert isinstance(d, dict)
     assert "status" in d
     assert "red_lane_state" in d
+
+
+def test_to_dict_after_string_enum_input() -> None:
+    inp = RoutingClassificationInput(
+        task_type="CODE_CHANGE",
+        risk_class="R1_LOW",
+        complexity_class="LOW",
+        authority_class="OPERATOR",
+        runtime_impact="LOCAL_ONLY",
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    d = decision.to_dict()
+    assert d["task_type"] == "CODE_CHANGE"
+    assert d["risk_class"] == "R1_LOW"
+    assert d["runtime_impact"] == "LOCAL_ONLY"
+
+
+def test_task_type_live_write_enum_blocks_and_is_not_runnable() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.LIVE_WRITE,
+        risk_class=RiskClass.R1_LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.red_lane_state is RedLaneState.RED_LANE
+    assert not _is_runnable(decision)
+    assert "live_write_to_service" in decision.forbidden_actions
+
+
+def test_runtime_impact_live_write_enum_blocks_and_is_not_runnable() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LIVE_WRITE,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.red_lane_state is RedLaneState.RED_LANE
+    assert not _is_runnable(decision)
+    assert "live_write_to_service" in decision.forbidden_actions
+
+
+def test_unknown_authority_allowed_actions_exclude_mutations() -> None:
+    decision = classify_route(_default())
+    assert decision.status is RouteStatus.UNKNOWN
+    assert decision.allowed_actions == ["inspect_runtime_code"]
+    assert "edit_allowlisted_files" not in decision.allowed_actions
+    assert "open_pr" not in decision.allowed_actions
+    assert "run_embedded_audit" not in decision.allowed_actions
+
+
+def test_risk_class_red_lane_string_normalizes_and_blocks() -> None:
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        risk_class="RED_LANE",
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.risk_class is RiskClass.RED_LANE
+    assert decision.red_lane_state is RedLaneState.RED_LANE
+    assert not _is_runnable(decision)
 
 
 # ─────────────────────────────────────────────
