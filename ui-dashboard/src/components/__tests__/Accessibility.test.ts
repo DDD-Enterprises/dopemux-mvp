@@ -116,12 +116,13 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('onClick={() => handleCopyTaskTitle(currentTask.title)}');
 });
 
-test('TaskSequencer.tsx implements overtime visual cues', () => {
+test('TaskSequencer.tsx implements overtime visual cues and progressive urgency', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
-  expect(content).toContain('const isOvertime = useMemo(() =>');
+  expect(content).toContain('const isOvertime = progressPercent > 100;');
   expect(content).toContain('color: isOvertime ? brandTokens.colors.gremlinPink : \'inherit\'');
   expect(content).toContain('OVERTIME +{overtimeMinutes}M');
-  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*brandTokens\.colors\.saintGold,\s*0\.1\s*\)/);
+  // Progressive urgency color logic
+  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*progressPercent\s*>\s*80\s*\?\s*brandTokens\.colors\.giltEdge\s*:\s*brandTokens\.colors\.ritualCyan,\s*0\.1\s*\)/);
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {

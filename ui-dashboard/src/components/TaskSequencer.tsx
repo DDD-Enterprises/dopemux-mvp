@@ -240,10 +240,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
   const statusTone = statusStyles[cognitiveState.status];
 
-  const isOvertime = useMemo(() => {
-    if (!currentTask) return false;
-    return (taskTimer / 60) > currentTask.estimatedMinutes;
+  const progressPercent = useMemo(() => {
+    if (!currentTask) return 0;
+    return (taskTimer / (currentTask.estimatedMinutes * 60)) * 100;
   }, [currentTask, taskTimer]);
+
+  const isOvertime = progressPercent > 100;
 
   const overtimeMinutes = isOvertime
     ? Math.floor(taskTimer / 60 - currentTask!.estimatedMinutes)
@@ -564,20 +566,31 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             >
               <LinearProgress
                 variant="determinate"
-                value={Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)}
+                value={Math.min(100, progressPercent)}
                 sx={{
                   height: 6,
                   borderRadius: 3,
                   bgcolor: alpha(
-                    isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
+                    isOvertime
+                      ? brandTokens.colors.gremlinPink
+                      : progressPercent > 80
+                        ? brandTokens.colors.giltEdge
+                        : brandTokens.colors.ritualCyan,
                     0.1
                   ),
                   '& .MuiLinearProgress-bar': {
-                    bgcolor: isOvertime ? brandTokens.colors.gremlinPink : brandTokens.colors.saintGold,
+                    bgcolor: isOvertime
+                      ? brandTokens.colors.gremlinPink
+                      : progressPercent > 80
+                        ? brandTokens.colors.giltEdge
+                        : brandTokens.colors.ritualCyan,
                     borderRadius: 3,
                     boxShadow: isOvertime
                       ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.6)}`
-                      : brandTokens.shadows.goldBloom,
+                      : progressPercent > 80
+                        ? `0 0 12px ${alpha(brandTokens.colors.giltEdge, 0.4)}`
+                        : `0 0 12px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   },
                 }}
                 aria-label={`Progress for task: ${currentTask.title}`}
@@ -588,9 +601,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                           ? 'minute'
                           : 'minutes'
                       } past estimate`
-                    : `${Math.round(
-                        Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)
-                      )}% of estimated time`
+                    : `${Math.round(Math.min(100, progressPercent))}% of estimated time`
                 }
               />
             </Box>
