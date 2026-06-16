@@ -3,6 +3,7 @@
   "project": "dopemux-mvp",
   "target": "Activate the decision_relationships table and expose REST + MCP interfaces to create and list typed decision-to-decision links (builds_upon, supersedes, conflicts_with, validates, implements, questions), enabling semantic knowledge-graph traversal across related decisions.",
   "invariants": [
+    "This packet must not execute until the Tier-0 migration foundation (DMX-CONPORT-OPTIMAL-001) is applied and the schema_version health gate is green — the decision_relationships table is created by migration 001, which Tier-0 now applies; this packet MUST NOT attempt to create or use that table before the foundation is confirmed applied.",
     "This packet must not merge decision_relationships into entity_relationships; that consolidation is deferred and must not happen here.",
     "This packet must verify whether decision_relationships exists in schema.sql or any migration before adding new SQL.",
     "This packet must fail-closed on unknown source_decision_id or target_decision_id (404).",
@@ -70,9 +71,10 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Preflight: create a fresh dedicated worktree from origin/main. Verify repo marker, origin identity, branch, and clean baseline. Inspect schema.sql and all migration files to determine whether decision_relationships is already defined. Also confirm that entity_relationships exists (it should, per DMX-CONPORT-OPTIMAL-202 dependency). Record both findings in proof. Note: do NOT attempt to merge or alias these tables — they are intentionally separate.",
+      "task": "NOTE: The decision_relationships table is created by migration 001, which is applied by the Tier-0 foundation packet (DMX-CONPORT-OPTIMAL-001). This packet MUST NOT proceed unless the Tier-0 health gate is confirmed green (schema_version shows migration 001 applied). Preflight: create a fresh dedicated worktree from origin/main. Verify repo marker, origin identity, branch, and clean baseline. Confirm Tier-0 gate is green by checking /health 'graph' and 'schema_version' fields. Then inspect schema.sql and all migration files to determine whether decision_relationships is already defined at runtime. Also confirm that entity_relationships exists (it should, per DMX-CONPORT-OPTIMAL-202 dependency). Record all findings in proof. Note: do NOT attempt to merge or alias these tables — they are intentionally separate per ADR-D3.",
       "validation": [
         "Worktree verified and recorded in proof.",
+        "Tier-0 health gate confirmed green (schema_version shows migration 001 applied) before proceeding — if not green, STOP and record BLOCKED.",
         "decision_relationships table existence classified as EXISTS, ABSENT, or UNKNOWN.",
         "entity_relationships confirmed present (or recorded as UNKNOWN if not found).",
         "No merger of the two tables performed or planned."

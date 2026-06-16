@@ -1,0 +1,37 @@
+{
+  "program": "DMX-CONPORT-OPTIMAL-TIER0",
+  "date": "2026-06-16",
+  "source_plan": "claudedocs/conport-optimal-coverage-and-hardening-analysis-2026-06-16.md",
+  "validation": "17-agent adversarial workflow + gpt-5.2 external review; verdict: Tier-0 foundation is a prerequisite before any feature packet; see dossier §1 §4 and ADR docs/90-adr/adr-conport-hardening-scope-and-trinity-boundaries.md D1",
+  "tag": "dmx-conport-optimal-tier0,series,supervised-only",
+  "root": {
+    "ref": "root",
+    "title": "DMX-CONPORT-OPTIMAL-TIER0: migration-apply foundation + traversal repair (blocks Tier-2/Tier-3)",
+    "summary": "Two-packet foundation that must complete before any DMX-CONPORT-OPTIMAL feature packets (202/203/301/302/303) execute. RUNTIME-VERIFIED finding: the live ConPort DB has only 2 tables (decisions, entity_relationships) because enhanced_server.py::_ensure_schema applies only schema.sql and never invokes the migrations/ directory. Five Tier-2/Tier-3 packets target tables/columns that do not exist at runtime. Packet 001 ships a gated, operator-invoked, idempotent, ordered migration runner (migrate.py) plus a checksummed schema_migrations table and a fail-closed /health gate that refuses writes when migrations are absent or partial. Packet 002 repairs the entity_relationships CTE column names and uuid handling in unified_queries.py so the traversal endpoint executes cleanly against the real schema. This is a SEPARATE orchestrator root — do NOT perturb the existing loaded root 44452f53."
+  },
+  "epics": [
+    {"ref": "E0", "title": "Tier-0: migration and traversal foundation", "phase": 0}
+  ],
+  "leaves": [
+    {
+      "ref": "L001",
+      "parent": "E0",
+      "title": "DMX-CONPORT-OPTIMAL-001: gated migration runner + checksummed schema_migrations + fail-closed health gate",
+      "disp": "HARDEN",
+      "targets": "docker/mcp-servers-source/conport/migrate.py (new); docker/mcp-servers-source/conport/enhanced_server.py (health gate + write-refusal); docker/mcp-servers-source/conport/tests/test_migration_runner.py (new)",
+      "accept": "migrate.py applies migrations idempotently in numeric order; schema_migrations table records version + checksum + applied_at; /health reports degraded when migrations absent or partial; write endpoints return 503 when degraded; reads succeed; rebuild-from-zero test passes"
+    },
+    {
+      "ref": "L002",
+      "parent": "E0",
+      "title": "DMX-CONPORT-OPTIMAL-002: entity_relationships CTE column-name and uuid-handling repair in unified_queries.py",
+      "disp": "REBUILD",
+      "targets": "docker/mcp-servers-source/conport/unified_queries.py; docker/mcp-servers-source/conport/tests/test_entity_traversal.py (new)",
+      "accept": "CTE references source_id/target_id (matching live schema); no ::int cast on uuid columns; get_related_decisions returns correct graph shape; all traversal tests pass; VERIFIED-NO-OP recorded if bug already fixed by prior PR"
+    }
+  ],
+  "blocks": [
+    ["L001", "L002"]
+  ],
+  "notes": "CRITICAL SEQUENCING: This Tier-0 root is a SEPARATE orchestrator tree from the existing loaded DMX-CONPORT-OPTIMAL root (task_orchestrator_root_id 44452f53). Do NOT add Tier-0 leaves to the existing tree and do NOT reorder or remove any edges from the 44452f53 DAG. Load this as a new independent root. The logical blocking relationship is: Tier-0 (L001 then L002) must complete before executing DMX-CONPORT-OPTIMAL-202, 203, 301, 302, 303 from the existing tree. Enforcing this cross-tree constraint is the operator's responsibility (the task-orchestrator does not natively enforce cross-root deps). Recommend operator annotation: after loading this tree, add a gate note to existing DMX-CONPORT-OPTIMAL-202 stating 'blocked until Tier-0 root complete'. OPERATOR-DECISION defaults (baked into L001 invariants): Q1 = migration history append-only in-DB (schema_migrations table); Q2 = degraded mode = read-only (writes refused, reads allowed). To change these defaults, amend the invariants before execution — not at runtime. Packet 002 (L002) depends on 001 (L001) being complete and /health reporting healthy, so the migration-apply path is live before the traversal repair runs. The executing agent for 002 must re-verify column names at HEAD before patching (the dossier finding may have been resolved by PR #894 or subsequent commits); VERIFIED-NO-OP is a valid and acceptable outcome."
+}

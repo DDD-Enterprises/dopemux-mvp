@@ -1,0 +1,120 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-002-entity-traversal-repair",
+  "project": "dopemux-mvp",
+  "target": "Repair the entity_relationships traversal at the data layer in unified_queries.py: fix any CTE column-name mismatches against the live entity_relationships schema (source_id/target_id, both uuid), remove any ::int casts applied to uuid values, and ensure the recursive CTE executes cleanly against the real table columns as RUNTIME-VERIFIED in the live DB. Handler-layer bugs (unclamped max_depth, int() coercion on handler params) are owned by the amended DMX-CONPORT-OPTIMAL-203 and must NOT be duplicated here.",
+  "invariants": [
+    "This packet owns ONLY unified_queries.py CTE column-name and uuid-handling fixes. Handler-layer fixes (int(max_depth) clamping, decision_id validation) belong to DMX-CONPORT-OPTIMAL-203.",
+    "The executing agent must re-verify the actual column names in entity_relationships against the live DB (or schema.sql) before making any changes — do not patch from the dossier alone. If the column names are already correct at HEAD, record that as VERIFIED and close the step with a no-op; do not create a fabricated fix.",
+    "The CTE must use the actual column names as they exist in the live entity_relationships table. RUNTIME-VERIFIED columns: source_id (uuid), target_id (uuid). Do not introduce source_item_id or target_item_id.",
+    "No ::int cast may be applied to any uuid column (source_id, target_id, decisions.id). Use ::text for string comparison where needed.",
+    "Do not alter the entity_relationships table schema. This packet touches only Python/SQL query code.",
+    "Do not alter enhanced_server.py except for import adjustments if the UnifiedQueryAPI interface signature changes.",
+    "The response shape of get_related_decisions must be preserved: root, nodes (id, workspace_id, summary, depth), total_nodes, max_depth_reached.",
+    "Classify any ambiguity between dossier claims and HEAD code as UNKNOWN; re-verify from source before patching.",
+    "If PAL codereview identifies additional uuid-handling issues in unified_queries.py (outside the CTE fix), record them as findings but do not fix them in this packet — create a follow-on note instead."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-001-migration-apply-foundation"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-001-migration-apply-foundation",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-002-entity-traversal-repair",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(conport): repair entity_relationships CTE column names and uuid handling in unified_queries.py",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/unified_queries.py",
+      "docker/mcp-servers-source/conport/tests/test_entity_traversal.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-002-entity-traversal-repair.json",
+      "proof/conport-optimal-002/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-002-entity-traversal-repair.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-002-entity-traversal-repair.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_entity_traversal.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(conport): repair entity_relationships CTE column names and uuid handling (data layer only)",
+    "body": "Repairs the entity_relationships traversal at the data layer in unified_queries.py.\n\nContext: The dossier (conport-optimal-coverage-and-hardening-analysis-2026-06-16.md §3.1 T0-TRAVERSE) RUNTIME-VERIFIED that the live entity_relationships table has columns source_id (uuid) and target_id (uuid) — not source_item_id / target_item_id. Any CTE referencing the wrong column names would produce a PostgreSQL error at query time. Additionally, ::int casts on uuid values are invalid and must be removed.\n\nThis packet's scope is exclusively the data-layer fix in unified_queries.py (get_related_decisions and related CTE helpers). Handler-layer issues (max_depth clamping, int() coercion on query params in enhanced_server.py) are owned by DMX-CONPORT-OPTIMAL-203.\n\nThe executing agent must verify actual column names at HEAD against schema.sql / live DB before patching. If the fix was already applied by a prior PR (e.g. #894), the agent records VERIFIED-NO-OP and closes the step with no change to unified_queries.py. Fabricated fixes are not acceptable.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify worktree is on a fresh branch from origin/main, DMX-CONPORT-OPTIMAL-001 is complete (schema_migrations table exists in DB, /health reports healthy). Read schema.sql for entity_relationships column definitions. Read unified_queries.py get_related_decisions in full. Run 'SELECT column_name, data_type FROM information_schema.columns WHERE table_name = entity_relationships' against the live DB if accessible. Record the actual column names (source_id vs source_item_id, etc.) and data types as RUNTIME-VERIFIED or UNKNOWN. Read DMX-CONPORT-OPTIMAL-203 JSON to confirm handler-layer bugs are excluded from this packet's scope.",
+      "validation": [
+        "Actual entity_relationships column names are recorded with evidence source (schema.sql line / live DB query result / UNKNOWN).",
+        "The current unified_queries.py CTE column references are recorded verbatim.",
+        "Any discrepancy between dossier claims and HEAD code is documented as an UNKNOWN or RESOLVED item.",
+        "DMX-CONPORT-OPTIMAL-203 scope is confirmed as distinct from this packet."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docker/mcp-servers-source/conport/unified_queries.py",
+        "docker/mcp-servers-source/conport/schema.sql",
+        "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-203-fix-workspace-relationships-traversal.json",
+        "claudedocs/conport-optimal-coverage-and-hardening-analysis-2026-06-16.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_entity_traversal.py BEFORE any production changes. Tests must cover: (a) get_related_decisions with a valid UUID decision_id returns a graph dict with keys root, nodes, total_nodes, max_depth_reached; (b) no ValueError or psycopg/asyncpg ProgrammingError is raised for UUID source_id / target_id values (catches ::int cast bugs); (c) depth-1 traversal returns only direct neighbors; (d) depth-2 traversal returns second-hop nodes; (e) the CTE does not reference source_item_id or target_item_id (static analysis of the generated SQL string or an assertion on column names used). If S1 found the bug is already fixed (VERIFIED-NO-OP), write tests that assert the correct behavior holds — they should pass immediately and serve as regression guards.",
+      "validation": [
+        "All 5 test cases are present.",
+        "Tests that exercise new behavior fail before the fix (if the bug exists at HEAD); tests that assert already-correct behavior pass immediately.",
+        "Tests use UUID strings for all entity IDs, not integers.",
+        "Test file path matches commit allowlist."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Apply the minimal fix to unified_queries.py. If S1 confirmed the column names are already correct (source_id / target_id) and no ::int casts exist on uuid columns: record VERIFIED-NO-OP in proof, do not modify unified_queries.py. If bugs are present: rename any source_item_id to source_id, any target_item_id to target_id; remove any ::int cast applied to source_id, target_id, or decisions.id; use ::text for comparisons where string equality is needed (the existing pattern r.source_id::text = dg.id is the correct idiom). Do not change the response shape, caching logic, or any code outside the CTE and its column references.",
+      "validation": [
+        "All S2 tests pass after the change (or pass unchanged if VERIFIED-NO-OP).",
+        "No ::int cast remains on any uuid column in unified_queries.py.",
+        "The CTE references source_id and target_id (matching entity_relationships schema).",
+        "Response shape is unchanged: root (str), nodes (list of {id, workspace_id, summary, depth}), total_nodes (int), max_depth_reached (int)."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run the full test suite (test_entity_traversal.py + existing conport tests), validate the TP JSON, commit only allowlisted files, push branch, open PR against main, record proof bundle. Proof bundle must include: TP id, worktree path, branch, repo identity, list of files changed with line counts (or VERIFIED-NO-OP for unified_queries.py if no change made), test exit codes, codereview status (PAL codereview), precommit status, commit SHA, PR URL or exact blocker, residual risks. Explicitly list any out-of-scope findings surfaced by PAL codereview that belong to DMX-CONPORT-OPTIMAL-203 or follow-on packets.",
+      "validation": [
+        "pytest test_entity_traversal.py exits 0; all 5 cases pass.",
+        "python -m jsonschema exits 0 for this TP JSON.",
+        "Only allowlisted files are staged.",
+        "Proof bundle written to proof/conport-optimal-002/ and included in the commit.",
+        "VERIFIED-NO-OP outcome (if applicable) is recorded with evidence, not treated as a skip."
+      ]
+    }
+  ]
+}

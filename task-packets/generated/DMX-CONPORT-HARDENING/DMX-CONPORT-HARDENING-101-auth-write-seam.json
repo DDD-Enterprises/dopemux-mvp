@@ -1,0 +1,129 @@
+{
+  "id": "DMX-CONPORT-HARDENING-101-auth-write-seam",
+  "project": "dopemux-mvp",
+  "target": "Insert a write-path auth check (bearer / shared-secret) that is ACTIVE only when env CONPORT_AUTH_TOKEN is set, and is a pure no-op otherwise; gate the FastMCP write tools in server.py and the :3004 monitoring_middleware chain in enhanced_server.py.",
+  "invariants": [
+    "This seam must default to OFF / no-op when CONPORT_AUTH_TOKEN is unset; it must not change runtime behavior unless explicitly enabled by the operator.",
+    "This packet must not add auth to read-only tools (get_progress, get_decisions, get_recent_activity, get_active_work, workspace_summary, get_context).",
+    "When CONPORT_AUTH_TOKEN is set and a write request is missing or has an invalid bearer token the server must return HTTP 401 (or MCP error) and must NOT write to the database.",
+    "The auth check must be fail-closed only when the token IS configured; when unset it is a transparent pass-through.",
+    "This packet must not modify schema.sql or any migration file.",
+    "This packet must not alter the :3005 SSE transport binding or the FastMCP tool signatures visible to agents.",
+    "This packet must not commit secrets or hardcode any token value."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-hardening",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-hardening-101-auth-write-seam",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): add default-off write-path auth seam (CONPORT_AUTH_TOKEN)",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/server.py",
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/auth.py",
+      "docker/mcp-servers-source/conport/tests/test_auth_write_seam.py",
+      "task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-101-auth-write-seam.json",
+      "proof/conport-hardening-101/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-101-auth-write-seam.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-101-auth-write-seam.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_auth_write_seam.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): default-off write-path auth seam (CONPORT_AUTH_TOKEN)",
+    "body": "Adds a write-path auth check to the ConPort :3005 FastMCP surface (server.py) and the :3004 enhanced_server.py monitoring_middleware chain. When CONPORT_AUTH_TOKEN is unset (default) the check is a transparent no-op and runtime behavior is unchanged. When the token is set, every write tool call must present a matching bearer token or receive a 401 / MCP error — no write reaches the database. Read-only tools are not gated. Auth module lives in a new auth.py to keep both server files minimal.\n\nSurface: :3005 FastMCP (server.py) write tools — log_decision, log_progress, update_progress, update_context, fork_instance, promote, promote_all — plus :3004 enhanced_server.py write routes via middleware.\nBehavior when flag unset: zero change.\nBehavior when flag set: fail-closed on missing/wrong token.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify fresh worktree from origin/main, confirm repo marker, origin identity, branch, and clean status. Read docker/mcp-servers-source/conport/server.py and enhanced_server.py in full. Identify every write tool in server.py (@mcp.tool() functions that POST/PUT) and every write route in enhanced_server.py. Record findings in the proof preflight note.",
+      "validation": [
+        "All write tools in server.py are enumerated: log_decision, log_progress, update_progress, update_context, fork_instance, promote, promote_all.",
+        "The :3004 monitoring_middleware insertion point (~line 148-150 in enhanced_server.py) is identified and confirmed.",
+        "No write to primary checkout; worktree is clean and at origin/main HEAD."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docs/90-adr/adr-conport-hardening-scope-and-trinity-boundaries.md",
+        "claudedocs/conport-optimal-coverage-and-hardening-analysis-2026-06-16.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Author docker/mcp-servers-source/conport/auth.py implementing: (a) check_auth_token(token_header: str | None) -> bool that reads os.getenv('CONPORT_AUTH_TOKEN'), returns True immediately when env is unset (no-op path), returns True when token matches, returns False when token is set but header is missing or does not match; (b) WRITE_TOOLS = frozenset of the write tool names for use as a guard list. Write failing tests in docker/mcp-servers-source/conport/tests/test_auth_write_seam.py covering: token-unset always passes, token-set correct bearer passes, token-set wrong bearer fails, token-set missing header fails, read-tool bypass (not gated).",
+      "validation": [
+        "auth.py exists and has no hardcoded token values.",
+        "Tests fail (production code not yet wired) covering all four cases plus read-tool bypass.",
+        "CONPORT_AUTH_TOKEN unset path returns True without inspecting the header at all."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/auth.py",
+        "docker/mcp-servers-source/conport/tests/test_auth_write_seam.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Wire the auth check into server.py: import check_auth_token from auth; add a _check_write_auth(request_context) helper that is called at the top of each write tool function (log_decision, log_progress, update_progress, update_context, fork_instance, promote, promote_all). When check_auth_token returns False, raise an MCP-compatible error with message 'Unauthorized: CONPORT_AUTH_TOKEN is configured but request is missing or has an invalid token.' Read-only tools (get_progress, get_decisions, get_recent_activity, get_active_work, workspace_summary, get_context) must NOT be touched.",
+      "validation": [
+        "Every @mcp.tool() write function calls _check_write_auth early before any I/O.",
+        "Read-only @mcp.tool() functions are unmodified.",
+        "No token value appears in source; only os.getenv('CONPORT_AUTH_TOKEN') in auth.py.",
+        "Tests for the server.py gate pass (mock CONPORT_AUTH_TOKEN env var)."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Wire the auth check into enhanced_server.py :3004 surface: insert an auth middleware immediately ahead of monitoring_middleware (~line 148-150). The middleware reads the Authorization header, calls check_auth_token, and returns a 401 JSON response for write HTTP methods (POST, PUT, PATCH, DELETE) when auth fails. For GET requests (reads) it is a pass-through regardless of token configuration.",
+      "validation": [
+        "The auth middleware is the FIRST entry in app.middlewares, before monitoring_middleware.",
+        "GET requests pass through without auth check even when CONPORT_AUTH_TOKEN is set.",
+        "POST/PUT/DELETE to any route return 401 JSON when token is set and header is wrong.",
+        "Tests cover the middleware path for both surfaces."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run all tests, validate the TP JSON, commit only allowlisted files, push the branch, open a PR against main, and file the proof bundle at proof/conport-hardening-101/ including: TP path+ID, worktree path, branch, repo identity, slices completed, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL, residual risks, UNKNOWNs, and cleanup status.",
+      "validation": [
+        "python -m pytest docker/mcp-servers-source/conport/tests/test_auth_write_seam.py -q exits 0.",
+        "python -m jsonschema -i task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-101-auth-write-seam.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "git diff --check exits 0.",
+        "Only allowlisted files are staged.",
+        "PR is open against main with proof bundle committed."
+      ]
+    }
+  ]
+}

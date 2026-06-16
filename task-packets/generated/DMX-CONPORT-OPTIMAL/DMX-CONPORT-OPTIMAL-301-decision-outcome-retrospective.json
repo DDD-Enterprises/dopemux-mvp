@@ -3,6 +3,7 @@
   "project": "dopemux-mvp",
   "target": "Add PATCH /api/decisions/{decision_id}/outcome REST endpoint and update_decision_outcome MCP tool so agents can record retrospective outcomes on existing decisions without touching the immutable summary/rationale fields.",
   "invariants": [
+    "This packet must not execute until the Tier-0 migration foundation (DMX-CONPORT-OPTIMAL-001) is applied and the schema_version health gate is green — the target outcome columns (outcome_status, outcome_notes, outcome_date, lessons_learned) on the decisions table are created by migration 001, which Tier-0 now applies; this packet MUST NOT attempt to create or use those columns before the foundation is confirmed applied.",
     "This packet must not modify the summary or rationale fields of any existing decision.",
     "This packet must preserve the append-only invariant: only outcome_status, outcome_notes, outcome_date, and lessons_learned may be written by the new endpoint.",
     "This packet must not add a new migration if migration 001 already defines the outcome columns; verify before adding SQL.",
@@ -69,10 +70,11 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Preflight: create a fresh dedicated worktree from origin/main. Verify repo marker (.dopetaskroot), origin identity, branch name, and clean baseline. Read docker/mcp-servers-source/conport/schema.sql and migrations/001*.sql to confirm that outcome_status, outcome_notes, outcome_date, and lessons_learned columns already exist on the decisions table. Record findings in proof.",
+      "task": "NOTE: The outcome columns (outcome_status, outcome_notes, outcome_date, lessons_learned) on the decisions table are created by migration 001, which is applied by the Tier-0 foundation packet (DMX-CONPORT-OPTIMAL-001). This packet MUST NOT proceed unless the Tier-0 health gate is confirmed green (schema_version shows migration 001 applied). Preflight: create a fresh dedicated worktree from origin/main. Verify repo marker (.dopetaskroot), origin identity, branch name, and clean baseline. Confirm Tier-0 gate is green by checking /health 'graph' and 'schema_version' fields. Then read docker/mcp-servers-source/conport/schema.sql and migrations/001*.sql to confirm that outcome columns exist at runtime. Record findings in proof.",
       "validation": [
         "Worktree path, branch, origin, marker verified and recorded in proof.",
-        "Confirmed (or UNKNOWN) whether outcome columns exist in migration 001 — no guessing."
+        "Tier-0 health gate confirmed green (schema_version shows migration 001 applied) before proceeding — if not green, STOP and record BLOCKED.",
+        "Confirmed (or UNKNOWN) whether outcome columns exist in migration 001 at runtime — no guessing."
       ],
       "context_files": [
         "docker/mcp-servers-source/conport/schema.sql",

@@ -9,7 +9,11 @@
     "The env var DOPEMUX_AUTO_FORK_PROGRESS may set the default to true for backward compatibility in specific deployments — document this in a comment.",
     "The DCP readonly facade (services/dcp-readonly-facade/) must not be given write capability.",
     "Do not alter any other GET route to add write side-effects.",
-    "Classify any ambiguous caller behavior as UNKNOWN — do not assume."
+    "Classify any ambiguous caller behavior as UNKNOWN — do not assume.",
+    "fork_instance, promote, and promote_all MUST be marked admin-scoped behind a default-permissive flag (default: any caller may invoke them; operator may restrict to admin-only by setting the flag). NOTE: agents bind the :3005 FastMCP surface where these are advertised @mcp.tool() tools, not hidden dark methods.",
+    "promote MUST include an idempotency guard: calling promote on an already-promoted item must be a no-op (return success without re-applying), not an error or a double-apply.",
+    "promote_all MUST carry the real percentage value through the event it emits — today it emits percentage=0, losing the actual value. Fix the event payload to include the correct percentage.",
+    "The auto-fork refetch path that currently raises AttributeError MUST be fixed; classify the root cause before patching."
   ],
   "depends_on": [
     "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
@@ -100,15 +104,41 @@
     },
     {
       "id": "S4",
-      "task": "Update DCP facade conport.py to ensure its progress call does not include ?auto_fork=true. Run all tests. Run PAL codereview and precommit. Commit, push, open PR, file proof bundle.",
+      "task": "Update DCP facade conport.py to ensure its progress call does not include ?auto_fork=true. Run auto-fork tests.",
+      "commands": [
+        "python3 -m pytest docker/mcp-servers-source/conport/tests/test_gate_autofork.py -q"
+      ],
+      "validation": [
+        "All auto-fork tests PASS with exit code 0.",
+        "Zero-row assertion confirmed via test output captured in proof.",
+        "DCP facade file diff confirms no ?auto_fork=true added."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Trace and fix the three admin-tool bugs in server.py / enhanced_server.py (whichever file hosts fork_instance, promote, promote_all on the :3005 FastMCP surface): (a) Add a default-permissive admin-scope flag (e.g. DOPEMUX_ADMIN_ONLY_FORK env var, default false) that gates fork_instance/promote/promote_all — document in a comment that agents bind :3005 where these are advertised tools; (b) Add a promote idempotency guard so calling promote on an already-promoted item is a no-op returning success; (c) Fix promote_all to carry the real percentage value through its emitted event (locate the event payload construction and pass the actual percentage argument, not a hardcoded 0); (d) Fix the auto-fork refetch path that raises AttributeError — read the method, identify the missing attribute, and add a None-guard or correct attribute reference.",
+      "context_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/server.py"
+      ],
+      "validation": [
+        "Admin-scope flag present and documented in a comment naming the :3005 FastMCP surface.",
+        "promote idempotency guard present — calling promote twice does not double-apply.",
+        "promote_all event payload carries the real percentage value, not 0.",
+        "AttributeError-raising refetch path is patched with a None-guard or correct attribute reference.",
+        "grep confirms no unconditional AttributeError-raising path remains in the fork refetch logic."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run all tests, validate TP JSON, commit allowlisted files, push, open PR, file proof bundle.",
       "commands": [
         "python3 -m pytest docker/mcp-servers-source/conport/tests/test_gate_autofork.py -q"
       ],
       "validation": [
         "All tests PASS with exit code 0.",
-        "Zero-row assertion confirmed via test output captured in proof.",
-        "DCP facade file diff confirms no ?auto_fork=true added.",
-        "Only allowlisted files staged and committed."
+        "Only allowlisted files staged and committed.",
+        "Proof bundle records all four fixes (admin-scope, idempotency, percentage, AttributeError) with evidence."
       ]
     }
   ]

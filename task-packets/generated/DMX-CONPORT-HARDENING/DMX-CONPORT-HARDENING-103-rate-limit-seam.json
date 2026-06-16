@@ -1,0 +1,135 @@
+{
+  "id": "DMX-CONPORT-HARDENING-103-rate-limit-seam",
+  "project": "dopemux-mvp",
+  "target": "Add a per-caller write rate-limit seam to the ConPort :3005 FastMCP surface (server.py) and :3004 enhanced_server.py write routes, env-gated default-off via CONPORT_RATE_LIMIT_WRITES_PER_MINUTE and CONPORT_RATE_LIMIT_BURST; no-op when unset.",
+  "invariants": [
+    "This seam must default to OFF / no-op when CONPORT_RATE_LIMIT_WRITES_PER_MINUTE is unset; it must not change runtime behavior unless explicitly enabled by the operator.",
+    "The rate-limiter must key per-caller identity (bearer token subject if auth is active, or the literal string 'anon' if CONPORT_AUTH_TOKEN is unset), not per workspace_id.",
+    "When the rate limit is exceeded the server must return HTTP 429 (or MCP error) with a Retry-After header or field indicating when the caller may retry.",
+    "The in-process rate-limit state must use a sliding-window or token-bucket algorithm and must be stored in-memory (no external dependency required); Redis integration is optional and only attempted when REDIS_URL is set.",
+    "Rate-limit state must be reset on process restart; persistence across restarts is not required.",
+    "Read-only tools and GET routes must not be rate-limited.",
+    "This packet must not modify schema.sql or any migration file.",
+    "This packet must not alter the :3005 SSE transport binding or FastMCP tool signatures."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-HARDENING-101-auth-write-seam"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-hardening",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-HARDENING-101-auth-write-seam",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-hardening-103-rate-limit-seam",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): default-off per-caller write rate-limit seam (CONPORT_RATE_LIMIT_*)",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/server.py",
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/rate_limit.py",
+      "docker/mcp-servers-source/conport/tests/test_rate_limit_seam.py",
+      "task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-103-rate-limit-seam.json",
+      "proof/conport-hardening-103/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-103-rate-limit-seam.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-103-rate-limit-seam.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_rate_limit_seam.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): default-off per-caller write rate-limit seam (CONPORT_RATE_LIMIT_*)",
+    "body": "Adds a per-caller write rate-limit seam to ConPort. Controlled by two env vars: CONPORT_RATE_LIMIT_WRITES_PER_MINUTE (sustained rate) and CONPORT_RATE_LIMIT_BURST (burst allowance). When both are unset (default) the limiter is a transparent no-op and runtime behavior is unchanged.\n\nWhen configured: a token-bucket / sliding-window in-memory store (rate_limit.py) keys on caller identity (bearer subject from auth.py or 'anon'). Write calls that exceed the configured rate receive HTTP 429 / MCP error with a Retry-After indicator. GET routes and read-only tools are never rate-limited. Optional Redis backend is activated only when REDIS_URL is also set (degrades gracefully to in-memory if Redis is unreachable).\n\nDepends on DMX-CONPORT-HARDENING-101 for the identity-extraction helper from auth.py.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify fresh worktree from origin/main (includes or rebases onto 101 changes). Confirm auth.py is present. Read server.py and enhanced_server.py. Identify the caller-identity pattern from auth.py to derive the rate-limit key. Plan the algorithm choice (token bucket vs sliding window) and document the rationale in the proof note — token bucket is preferred for burst clarity.",
+      "validation": [
+        "auth.py from TP-101 is present.",
+        "Caller-identity derivation (bearer subject or 'anon') is confirmed available from auth.py.",
+        "Algorithm choice is recorded in proof preflight note with rationale.",
+        "Proof preflight note is filed; primary checkout is untouched."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/auth.py",
+        "task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-101-auth-write-seam.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Author docker/mcp-servers-source/conport/rate_limit.py implementing: (a) RateLimiter class with is_allowed(caller_id: str) -> tuple[bool, int] that returns (True, 0) immediately when CONPORT_RATE_LIMIT_WRITES_PER_MINUTE is unset (no-op path); when set, applies token-bucket algorithm using CONPORT_RATE_LIMIT_WRITES_PER_MINUTE (int) and CONPORT_RATE_LIMIT_BURST (int, default = writes_per_minute); returns (False, retry_after_seconds) when limit exceeded; (b) optional Redis backend: if REDIS_URL is set and redis is importable, use Redis for state; otherwise use a thread-safe in-memory dict with a lock; Redis errors degrade to in-memory silently; (c) module-level singleton get_rate_limiter() -> RateLimiter. Write failing tests in test_rate_limit_seam.py covering: flag-unset always returns (True, 0), within-limit call returns True, over-limit call returns (False, >0), burst allows burst count, Redis-unavailable degrades to in-memory.",
+      "validation": [
+        "rate_limit.py exists with no hardcoded rate values.",
+        "Tests fail because rate_limit calls are not yet wired.",
+        "The no-op path (env unset) returns (True, 0) without inspecting the caller_id at all.",
+        "The algorithm is deterministic for a given sequence of calls in tests."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/rate_limit.py",
+        "docker/mcp-servers-source/conport/tests/test_rate_limit_seam.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Wire the rate limiter into server.py: import get_rate_limiter; at the top of each write tool function (after the auth check from 101), call get_rate_limiter().is_allowed(identity) where identity comes from auth.py. If (False, retry_after): raise an MCP-compatible error with message 'Rate limit exceeded. Retry after {retry_after}s.' and include retry_after in the error detail. Read-only tools are not touched.",
+      "validation": [
+        "Every write @mcp.tool() function calls the rate limiter after the auth check and before any I/O.",
+        "Read-only tools are unmodified.",
+        "Rate-limit error surfaces a Retry-After value.",
+        "Tests for server.py rate-limit wiring pass (mock get_rate_limiter)."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Wire the rate limiter into enhanced_server.py :3004 surface: in the write middleware (from 101 or a sibling middleware), after the auth check, call get_rate_limiter().is_allowed(identity). On (False, retry_after): return a 429 JSON response with {'error': 'rate_limit_exceeded', 'retry_after': retry_after} and Retry-After header. Pass-through for GET requests without checking the rate limiter.",
+      "validation": [
+        "POST/PUT/DELETE routes return 429 with Retry-After when limit exceeded.",
+        "GET routes are not rate-limited.",
+        "The 429 response body includes retry_after in seconds.",
+        "Tests for enhanced_server.py rate-limit middleware pass."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run all tests, validate the TP JSON, commit only allowlisted files, push the branch, open a PR against main, and file the proof bundle at proof/conport-hardening-103/ including: TP path+ID, worktree path, branch, repo identity, slices completed, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL, residual risks, UNKNOWNs, and cleanup status. Note in the proof that the Redis backend path is NOT_RUN in CI (requires a live Redis); mark as residual risk.",
+      "validation": [
+        "python -m pytest docker/mcp-servers-source/conport/tests/test_rate_limit_seam.py -q exits 0 (in-memory path only).",
+        "python -m jsonschema -i task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-103-rate-limit-seam.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "git diff --check exits 0.",
+        "Only allowlisted files are staged.",
+        "PR is open against main with proof bundle committed.",
+        "Proof bundle records Redis backend as NOT_RUN with residual risk noted."
+      ]
+    }
+  ]
+}
