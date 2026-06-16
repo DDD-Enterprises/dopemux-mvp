@@ -1138,3 +1138,185 @@ def test_conflicting_evidence_blocks() -> None:
     inp = RoutingClassificationInput(has_conflicting_evidence=True)
     decision = classify_route(inp)
     assert decision.is_red_lane() or decision.is_blocked()
+
+
+# ─────────────────────────────────────────────
+# 0002R: Reconciliation invariant lock-down tests
+# ─────────────────────────────────────────────
+# These 5 tests assert ALREADY-IMPLEMENTED behaviour only.
+# No new classifier fields or logic were introduced.
+# See task-packets/DMX-DCP-MODEL-ROUTING-MVP-0002R.md for full rationale
+# and the DEFERRED lane-concept cases (0003+ lane-engine work).
+# ─────────────────────────────────────────────
+
+
+def test_unknown_authority_blocks_mutation() -> None:
+    """Lock: unknown authority must not permit any mutation actions.
+
+    When has_unknown_authority=True and authority_class=UNKNOWN the
+    classifier MUST produce a non-runnable decision AND MUST NOT include
+    any mutation-capable action (edit/open_pr/write) in allowed_actions.
+
+    Invariant source: _derive_route_status returns RouteStatus.UNKNOWN for
+    unknown authority; _derive_allowed_actions grants only _READ_ONLY_BASE_ALLOWED
+    when status is not ALLOWED.
+    """
+    inp = RoutingClassificationInput(
+        has_unknown_authority=True,
+        authority_class=AuthorityClass.UNKNOWN,
+    )
+    decision = classify_route(inp)
+
+    # Must not be runnable
+    assert not decision.is_runnable()
+
+    # Must not contain any mutation-capable action
+    mutation_actions = {"edit_allowlisted_files", "open_pr", "run_embedded_audit"}
+    for action in decision.allowed_actions:
+        assert action not in mutation_actions, (
+            f"Mutation action '{action}' must not be allowed under unknown authority"
+        )
+
+
+def test_dopetask_boundary_blocks_dcp_core_execution() -> None:
+    """Lock: dopetask execution boundary must be enforced as an explicit forbidden action.
+
+    When requires_dopetask_execution=True the classifier enters RED_LANE,
+    which blocks execution (status=BLOCKED, not runnable) and records
+    "execute_dopetask" and/or "execute_dopetask_live" in forbidden_actions.
+
+    This explicitly asserts the DCP-core-execution boundary: dopetask execution
+    is never delegatable through the pure-flag classifier.
+    """
+    inp = RoutingClassificationInput(
+        requires_dopetask_execution=True,
+    )
+    decision = classify_route(inp)
+
+    # RED_LANE → not runnable
+    assert not decision.is_runnable()
+
+    # The "dopetask" token must appear in at least one forbidden action
+    assert any("dopetask" in action for action in decision.forbidden_actions), (
+        "expected 'dopetask' in forbidden_actions, got: "
+        + repr(decision.forbidden_actions)
+    )
+
+
+def test_live_write_without_contract_blocks() -> None:
+    """Lock: requires_live_write alone must produce status=BLOCKED and not runnable.
+
+    No contract or proof path in the pure-flag classifier can open a live-write
+    route. The RED_LANE gate is unconditional.
+    """
+    inp = RoutingClassificationInput(
+        requires_live_write=True,
+    )
+    decision = classify_route(inp)
+
+    assert decision.status is RouteStatus.BLOCKED, (
+        f"expected BLOCKED status for live-write input, got {decision.status}"
+    )
+    assert not decision.is_runnable()
+
+
+def test_unresolved_review_threads_block_readiness() -> None:
+    """Lock: has_stale_proof=True blocks the route (status=BLOCKED) regardless of authority.
+
+    Note: "unresolved review threads" as a PR-Steward concern is a HIGHER-LAYER
+    readiness check that lives outside this classifier.  The stale-proof gate
+    (has_stale_proof=True → RouteStatus.BLOCKED) is the analogous in-classifier
+    gate: a route with stale or invalidated evidence is not actionable until proof
+    is refreshed.
+
+    PRECEDENCE (fixed in PRE-PROMPT6-0002, was a latent gap deferred from 0002R):
+    A hard-BLOCKED reason such as stale proof MUST be reported in ``status`` even
+    when authority is also unknown (the conservative default).  ``_derive_route_status``
+    now applies the hard-BLOCKED checks (authority BLOCKED, missing proof, stale
+    proof) BEFORE the UNKNOWN-authority guard — a most-severe-first ordering
+    (BLOCKED > UNKNOWN).  The default ``has_unknown_authority=True`` therefore no
+    longer masks the stale-proof BLOCKED status.
+    """
+    inp = RoutingClassificationInput(
+        has_stale_proof=True,
+        # Default authority is UNKNOWN: the stale-proof BLOCKED reason must still
+        # surface in ``status`` (this is the precedence fix being locked).
+    )
+    decision = classify_route(inp)
+
+    assert decision.status is RouteStatus.BLOCKED, (
+        f"expected BLOCKED for stale proof input, got {decision.status}"
+    )
+    assert not decision.is_runnable()
+    # The stale-proof reason is surfaced in both status and stop_conditions.
+    assert "stale_proof" in decision.stop_conditions
+
+
+def test_hard_blocked_reason_wins_over_unknown_authority() -> None:
+    """Lock: status precedence is most-severe-first — BLOCKED beats UNKNOWN.
+
+    Each hard-BLOCKED reason must be reported in ``status`` even when authority is
+    also unknown (the default).  Before the PRE-PROMPT6-0002 precedence fix the
+    UNKNOWN-authority guard returned first and masked these reasons as
+    RouteStatus.UNKNOWN.
+    """
+    # Stale proof + default unknown authority → BLOCKED (not UNKNOWN).
+    stale = classify_route(RoutingClassificationInput(has_stale_proof=True))
+    assert stale.status is RouteStatus.BLOCKED
+
+    # Explicitly BLOCKED authority + default unknown-authority flag → BLOCKED.
+    blocked_auth = classify_route(
+        RoutingClassificationInput(authority_class=AuthorityClass.BLOCKED)
+    )
+    assert blocked_auth.status is RouteStatus.BLOCKED
+
+    # Missing proof on a mutating/non-trivial route + unknown authority → BLOCKED.
+    missing = classify_route(
+        RoutingClassificationInput(
+            has_missing_proof=True,
+            is_repo_changing=True,
+            is_non_trivial=True,
+        )
+    )
+    assert missing.status is RouteStatus.BLOCKED
+
+
+def test_unknown_authority_alone_still_reports_unknown() -> None:
+    """Lock: with no hard-BLOCKED reason, unknown authority still yields UNKNOWN.
+
+    The precedence fix must not over-block: a route whose only defect is unknown
+    authority (no stale/missing proof, not red-lane) remains RouteStatus.UNKNOWN.
+    """
+    decision = classify_route(
+        RoutingClassificationInput(
+            has_unknown_authority=True,
+            authority_class=AuthorityClass.UNKNOWN,
+        )
+    )
+    assert decision.status is RouteStatus.UNKNOWN
+    assert not decision.is_runnable()
+
+
+def test_secret_pattern_routes_to_supervisor() -> None:
+    """Lock: touches_secrets=True must set RED_LANE, SUPERVISOR_AUDIT, and ALWAYS escalation.
+
+    Three invariants locked simultaneously because they are all derived from the
+    same flag in the classifier and must move together:
+    1. is_red_lane() True  — hard block on execution.
+    2. audit_requirement == SUPERVISOR_AUDIT  — strongest audit obligation.
+    3. escalation_requirement == ALWAYS  — unconditional escalation to supervisor.
+    """
+    inp = RoutingClassificationInput(
+        touches_secrets=True,
+    )
+    decision = classify_route(inp)
+
+    assert decision.is_red_lane(), (
+        "touches_secrets must produce RED_LANE state"
+    )
+    assert decision.audit_requirement is AuditRequirement.SUPERVISOR_AUDIT, (
+        f"expected SUPERVISOR_AUDIT, got {decision.audit_requirement}"
+    )
+    assert decision.escalation_requirement is EscalationRequirement.ALWAYS, (
+        f"expected ALWAYS escalation, got {decision.escalation_requirement}"
+    )

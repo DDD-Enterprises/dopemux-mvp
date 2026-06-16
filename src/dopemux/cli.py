@@ -3292,6 +3292,10 @@ def theme(ctx, name: Optional[str], list_themes: bool):
 cli.add_command(audit)
 cli.add_command(audit.commands["wizard"], "wizard")
 
+from .commands.dcp_commands import dcp  # noqa: E402
+
+cli.add_command(dcp)
+
 
 from .commands.cockpit_commands import cockpit  # noqa: E402
 
