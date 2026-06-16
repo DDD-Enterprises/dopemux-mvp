@@ -485,15 +485,16 @@ def _derive_stop_conditions(
         conditions.append("stale_proof")
     if inp.authority_via_bridge_proxy:
         conditions.append("authority_via_bridge_proxy")
-    if inp.evidence_is_retrieval_derived and not inp.exact_source_fetched:
-        conditions.append("retrieval_derived_evidence_unverified")
-    if inp.is_ecc_external_intake:
-        conditions.append("ecc_external_intake")
-    if (
-        inp.backend_kind in _UNPROVEN_WRAPPER_BACKENDS
-        and not inp.has_backend_wrapper_proof
-    ):
-        conditions.append("backend_wrapper_proof_missing")
+    if _provenance_blocks_executable(inp):
+        if inp.evidence_is_retrieval_derived and not inp.exact_source_fetched:
+            conditions.append("retrieval_derived_evidence_unverified")
+        if inp.is_ecc_external_intake:
+            conditions.append("ecc_external_intake")
+        if (
+            inp.backend_kind in _UNPROVEN_WRAPPER_BACKENDS
+            and not inp.has_backend_wrapper_proof
+        ):
+            conditions.append("backend_wrapper_proof_missing")
     if inp.touches_secrets:
         conditions.append("secrets_surface_in_scope")
     if inp.touches_auth:
