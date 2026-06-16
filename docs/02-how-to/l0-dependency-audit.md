@@ -2,7 +2,7 @@
 title: L0 Dependency Audit
 status: active
 owner: dopemux
-last_verified: 2026-06-14
+last_verified: 2026-06-16
 id: l0-dependency-audit
 type: how-to
 author: '@hu3mann'
@@ -20,6 +20,7 @@ The audit covers:
 
 - `.claude/commands/dx/*.md`
 - `.claude/hooks/*`
+- `.claude/commands/research.md`
 - `.claude/commands/research-quick.md`
 - `.claude/commands/research-deep.md`
 - `.claude/commands/research-report.md`
@@ -34,6 +35,8 @@ The audit covers:
 
 - no `mcp__task-orchestrator__*`
 - no `mcp__conport__*`
+- no generic `mcp__<server>__*` tool reference
+- no `/mcp <server>` slash-command reference
 - no `localhost` or `127.0.0.1` probe
 - no Docker command requirement
 - no localhost `requests.get(...)`
@@ -45,21 +48,18 @@ packet adds and tests an explicit hard-degrade path.
 
 The current audit is conservative: fail-open hooks that still probe localhost or
 Docker are classified as `L0.5` unless the file has no direct fleet-coupling
-pattern.
+pattern. Hook helpers are classified against their registered `.claude/settings.json`
+dispatcher path, not only their standalone helper source.
 
 ## Current Result
 
-The manifest currently records 39 surfaces:
+The manifest currently records 40 surfaces:
 
-- `L0`: 6
-- `L0.5`: 33
+- `L0`: 2
+- `L0.5`: 38
 
 The `L0` set is:
 
-- `hook/dcp-denylist-nudge`
-- `hook/dcp-surface-guard`
-- `hook/orchestrator-post-edit-nudge`
-- `hook/proof-tracking-guard`
 - `command/implement`
 - `command/plan-slice`
 

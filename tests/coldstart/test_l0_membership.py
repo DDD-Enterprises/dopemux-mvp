@@ -49,12 +49,15 @@ EXPECTED_ITEMS = {
     ".claude/commands/plan.md",
     ".claude/commands/plan-slice.md",
     ".claude/commands/plan-tasks.md",
+    ".claude/commands/research.md",
     ".claude/commands/research-deep.md",
     ".claude/commands/research-quick.md",
     ".claude/commands/research-report.md",
 }
 
 FLEET_PATTERNS = {
+    "mcp_tool": re.compile(r"mcp__[A-Za-z0-9_-]+__", re.I),
+    "slash_mcp": re.compile(r"/mcp\s+\S+", re.I),
     "task_orchestrator_mcp": re.compile(r"mcp__task[-_]orchestrator__", re.I),
     "conport_mcp": re.compile(r"mcp__conport__", re.I),
     "localhost": re.compile(r"localhost|127\.0\.0\.1"),

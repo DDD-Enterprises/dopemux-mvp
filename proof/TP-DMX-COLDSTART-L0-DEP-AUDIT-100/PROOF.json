@@ -90,6 +90,32 @@
       "No task-orchestrator item transition because MCP transport remained unavailable earlier in this session."
     ]
   },
+  "review_thread_refresh": {
+    "refreshed_at": "2026-06-16T06:16:33Z",
+    "head_before_refresh": "b27b55b2365fd23c1e40dde00ef2d6996d51edd3",
+    "changes": [
+      "Added .claude/commands/research.md to the closed coverage set and manifest.",
+      "Broadened the L0 guard to catch generic mcp__<server>__ and /mcp <server> references.",
+      "Recorded Serena, PAL, and Zen MCP dependencies for dx/implement.",
+      "Reclassified registered PreToolUse/PostToolUse hook helpers as L0.5 when native_hooks.py dispatch adds Redis-backed hook activity.",
+      "Reclassified orchestrator_post_edit_nudge.py as L0.5 because its useful path depends on cached task-orchestrator context."
+    ],
+    "local_validation_rerun": [
+      {
+        "cmd": "python -m json.tool templates/plugin/l0_membership.json",
+        "exit_code": 0
+      },
+      {
+        "cmd": "python -m compileall -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0
+      },
+      {
+        "cmd": "pytest -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0,
+        "result": "3 passed"
+      }
+    ]
+  },
   "embedded_audit": {
     "required": false,
     "status": "SKIPPED",
@@ -110,9 +136,9 @@
     "base": "origin/main"
   },
   "summary": {
-    "surfaces_audited": 39,
-    "l0_count": 6,
-    "l0_5_count": 33,
+    "surfaces_audited": 40,
+    "l0_count": 2,
+    "l0_5_count": 38,
     "manifest": "templates/plugin/l0_membership.json",
     "test": "tests/coldstart/test_l0_membership.py",
     "documentation": "docs/02-how-to/l0-dependency-audit.md"

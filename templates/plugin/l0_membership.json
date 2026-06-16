@@ -71,8 +71,8 @@
       "type": "skill",
       "path": ".claude/commands/dx/implement.md",
       "tier": "L0.5",
-      "evidence": [".claude/commands/dx/implement.md:6 allowed-tools includes mcp__conport__*", ".claude/commands/dx/implement.md:65 calls localhost:8095 assessment endpoint"],
-      "fleet_deps": ["ConPort MCP", "localhost:8095 assessment service"]
+      "evidence": [".claude/commands/dx/implement.md:6-9 allowed-tools include ConPort, Serena, PAL, and Zen MCP tools", ".claude/commands/dx/implement.md:65 calls localhost:8095 assessment endpoint"],
+      "fleet_deps": ["ConPort MCP", "Serena MCP", "PAL MCP", "Zen MCP", "localhost:8095 assessment service"]
     },
     {
       "id": "dx/next",
@@ -158,17 +158,17 @@
       "id": "hook/dcp-denylist-nudge",
       "type": "hook",
       "path": ".claude/hooks/dcp_denylist_nudge.py",
-      "tier": "L0",
-      "evidence": ["Source scan found no task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns; route_manifest.py import failure returns () fail-open."],
-      "fleet_deps": []
+      "tier": "L0.5",
+      "evidence": ["Source scan found no direct task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns; route_manifest.py import failure returns () fail-open.", ".claude/settings.json:57-65 routes PostToolUse through native_hooks.py; src/dopemux/claude/native_hooks.py:92-97 and 438-444 emit Redis-backed hook activity by default."],
+      "fleet_deps": ["native hook dispatcher Redis activity stream"]
     },
     {
       "id": "hook/dcp-surface-guard",
       "type": "hook",
       "path": ".claude/hooks/dcp_surface_guard.py",
-      "tier": "L0",
-      "evidence": ["Source scan found no task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns; dopemux import failure falls back to hardcoded red-lane patterns."],
-      "fleet_deps": []
+      "tier": "L0.5",
+      "evidence": ["Source scan found no direct task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns; dopemux import failure falls back to hardcoded red-lane patterns.", ".claude/settings.json:37-45 routes PreToolUse through native_hooks.py; src/dopemux/claude/native_hooks.py:92-97 and 350-356 emit Redis-backed hook activity by default."],
+      "fleet_deps": ["native hook dispatcher Redis activity stream"]
     },
     {
       "id": "hook/log-progress",
@@ -198,9 +198,9 @@
       "id": "hook/orchestrator-post-edit-nudge",
       "type": "hook",
       "path": ".claude/hooks/orchestrator_post_edit_nudge.py",
-      "tier": "L0",
-      "evidence": ["Source scan found no task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns."],
-      "fleet_deps": []
+      "tier": "L0.5",
+      "evidence": [".claude/hooks/orchestrator_post_edit_nudge.py:85-112 reads orchestrator context cache and emits manage_notes or /dx:note guidance when active work exists.", ".claude/settings.json:57-65 routes PostToolUse through native_hooks.py; src/dopemux/claude/native_hooks.py:92-97 and 438-464 emit Redis-backed hook activity by default before invoking the nudge."],
+      "fleet_deps": ["task-orchestrator context cache", "native hook dispatcher Redis activity stream"]
     },
     {
       "id": "hook/orchestrator-session-start",
@@ -230,9 +230,9 @@
       "id": "hook/proof-tracking-guard",
       "type": "hook",
       "path": ".claude/hooks/proof_tracking_guard.py",
-      "tier": "L0",
-      "evidence": ["Source scan found no task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns; git failures return None fail-open."],
-      "fleet_deps": []
+      "tier": "L0.5",
+      "evidence": ["Source scan found no direct task-orchestrator MCP, ConPort MCP, localhost, docker, requests.get localhost, or socket connect patterns; git failures return None fail-open.", ".claude/settings.json:57-65 routes PostToolUse through native_hooks.py; src/dopemux/claude/native_hooks.py:92-97 and 438-444 emit Redis-backed hook activity by default."],
+      "fleet_deps": ["native hook dispatcher Redis activity stream"]
     },
     {
       "id": "hook/save-context",
@@ -289,6 +289,14 @@
       "tier": "L0.5",
       "evidence": [".claude/commands/plan-tasks.md:2 calls /mcp task-master-ai create_tasks"],
       "fleet_deps": ["task-master-ai MCP"]
+    },
+    {
+      "id": "command/research",
+      "type": "skill",
+      "path": ".claude/commands/research.md",
+      "tier": "L0.5",
+      "evidence": [".claude/commands/research.md:4 instructs committing research to repo docs and ConPort decision/progress"],
+      "fleet_deps": ["ConPort"]
     },
     {
       "id": "command/research-deep",
