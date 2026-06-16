@@ -147,7 +147,7 @@
       "proof_path": "proof/DMX-DCP-TOOLING-105/PROOF.json",
       "files_allowed": [".claude/hooks/dcp_surface_guard.py", "tests/test_dcp_surface_guard.py", "src/dopemux/claude/native_hooks.py", "proof/DMX-DCP-TOOLING-105/**", "task-packets/generated/DMX-DCP-TOOLING-105.json"],
       "commit": "feat(hooks): TP-105 surface guard taxonomy alignment + full hard-block fallback",
-      "stop_conditions": ["HARD EXTERNAL DEPENDENCY: PR #858 not merged (dcp_surface_guard.py absent from HEAD) — re-scope per 40-plan.md before proceeding"]
+      "stop_conditions": ["Active .claude/hooks/dcp_surface_guard.py absent from HEAD — re-scope to restore or introduce the active PreToolUse guard path before proceeding"]
     },
     {
       "id": "DMX-DCP-TOOLING-106",
@@ -164,7 +164,7 @@
       "redlane": true,
       "proof_required": true,
       "proof_path": "proof/DMX-DCP-TOOLING-106/PROOF.json",
-      "files_allowed": ["schemas/dcp/dcp_helper_receipt.schema.json", "src/dopemux/dcp/receipts.py", "src/dopemux/dcp/red_lane_rules.py", ".gitignore", "tests/dcp/**", "proof/DMX-DCP-TOOLING-106/**", "task-packets/generated/DMX-DCP-TOOLING-106.json"],
+      "files_allowed": ["schemas/dcp/dcp_helper_receipt.schema.json", "schemas/dcp/manifest.json", "src/dopemux/dcp/receipts.py", "src/dopemux/dcp/red_lane_rules.py", ".gitignore", "tests/dcp/**", "proof/DMX-DCP-TOOLING-106/**", "task-packets/generated/DMX-DCP-TOOLING-106.json"],
       "commit": "feat(dcp): TP-106 helper-receipt v1 + emitter + real redactor",
       "stop_conditions": ["Any DR-015 s8 field cannot be provenance-tagged honestly", "Redactor property tests show leakage"]
     },
@@ -202,7 +202,7 @@
       "redlane": false,
       "proof_required": true,
       "proof_path": "proof/DMX-DCP-TOOLING-108/PROOF.json",
-      "files_allowed": ["src/dopemux/commands/dcp_commands.py", "src/dopemux/dcp/**", "src/dopemux/orchestrator/validation/proof.py", "tests/**", "proof/DMX-DCP-TOOLING-108/**", "task-packets/generated/DMX-DCP-TOOLING-108.json"],
+      "files_allowed": ["src/dopemux/commands/dcp_commands.py", "src/dopemux/dcp/**", "src/dopemux/orchestrator/validation/proof.py", "schemas/proof/proof_schema.json", "tests/**", "proof/DMX-DCP-TOOLING-108/**", "task-packets/generated/DMX-DCP-TOOLING-108.json"],
       "commit": "feat(dcp): TP-108 evidence-pack with receipt hash-locking",
       "stop_conditions": ["Any existing committed proof bundle fails either validator after the additive change"]
     },
@@ -323,7 +323,7 @@
   ],
   "blocked_nodes": [],
   "unknowns": [
-    "PR #858 merge timing — TP-105 hard-blocked; re-scope clause defined in 40-plan.md if it stalls",
+    "Active .claude/hooks/dcp_surface_guard.py path must exist before TP-105 taxonomy coupling proceeds",
     "P6 MCP HTTP cutover timing (parallel DX-overhaul wave) — multi-worktree hook reliability degraded until it lands",
     "test_16 replacement final form (resolve inside TP-104 per documented root cause)",
     "jsonschema availability in the CI uv environment for new consistency tests (verify in TP-101)"

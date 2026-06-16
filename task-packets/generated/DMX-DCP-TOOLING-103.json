@@ -38,6 +38,8 @@
     "allowlist": [
       "src/dopemux/dcp/red_lane_rules.py",
       "src/dopemux/dcp/red_lane_scanner.py",
+      "src/dopemux/dcp/red_lane.py",
+      "schemas/dcp/dcp_red_lane_report.schema.json",
       "tests/dcp/test_loader_hardening.py",
       "tests/dcp/test_hardblock_equality.py",
       "task-packets/generated/DMX-DCP-TOOLING-103.json",
@@ -55,7 +57,7 @@
   },
   "pr": {
     "title": "feat(dcp): TP-103 schema-driven rules loader + scanner hardening",
-    "body": "## Summary\n- Adds `load_taxonomy(path) -> list[Rule]` to `red_lane_rules.py`: compiles patterns at load, stamps each Rule with `lane_id` (new field).\n- Adds `Finding.lane_id` passthrough (additive minor bump to report schema).\n- Regenerates `FROZEN_FALLBACK_RULES` to cover ALL hard_block lanes (including the 4 new ones from TP-102) — CI hard-block-equality test enforces coverage.\n- Adds `--packet-id` to `main()` argparse in `red_lane_scanner.py`, removing the TP-DCP-0005 hardcode.\n- Scanner hardening: absent identity fields in completed-packet proofs raise WARNING (self-cert truthiness fix); `diff_text` either implemented or parameter removed with rationale recorded; gh api pattern tightened to executable path_scope.\n- Loader is flag-gated: defaults to FROZEN_FALLBACK_RULES until flag is set.\n- Behavioral equivalence corpus scoped to the 5 pre-existing rules only.\n\n## Depends on\nDMX-DCP-TOOLING-102 (taxonomy instance must be present before loader can reference it).\n\n## Scope\nRuntime source files only: red_lane_rules.py, red_lane_scanner.py. No CI workflow edits (those are in TP-104).\n\n## NOT_RUN\nDirect CI gate integration (TP-104), surface_guard coupling (TP-105), live PR scanning.",
+    "body": "## Summary\n- Adds `load_taxonomy(path) -> list[Rule]` to `red_lane_rules.py`: compiles patterns at load, stamps each Rule with `lane_id` (new field).\n- Adds `Finding.lane_id` passthrough in `red_lane.py` (additive minor bump to report schema).\n- Regenerates `FROZEN_FALLBACK_RULES` to cover ALL hard_block lanes (including the 4 new ones from TP-102) — CI hard-block-equality test enforces coverage.\n- Adds `--packet-id` to `main()` argparse in `red_lane_scanner.py`, removing the TP-DCP-0005 hardcode.\n- Scanner hardening: absent identity fields in completed-packet proofs raise WARNING (self-cert truthiness fix); `diff_text` either implemented or parameter removed with rationale recorded; gh api pattern tightened to executable path_scope.\n- Loader is flag-gated: defaults to FROZEN_FALLBACK_RULES until flag is set.\n- Behavioral equivalence corpus scoped to the 5 pre-existing rules only.\n\n## Depends on\nDMX-DCP-TOOLING-102 (taxonomy instance must be present before loader can reference it).\n\n## Scope\nRuntime source files only: red_lane_rules.py, red_lane_scanner.py, and red_lane.py. No CI workflow edits (those are in TP-104).\n\n## NOT_RUN\nDirect CI gate integration (TP-104), surface_guard coupling (TP-105), live PR scanning.",
     "base": "main"
   },
   "pal_chain": {
@@ -73,7 +75,7 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Preflight repo identity, branch, dirty state. Verify DMX-DCP-TOOLING-102 has merged (config/dcp/red_lane_taxonomy.json exists on HEAD). Read red_lane_rules.py and red_lane_scanner.py in full to establish baseline: current Rule fields, Finding fields, FORBIDDEN_PATHS/TEXT_RULES shape, main() argparse parameters, diff_text handling, self-cert check, and the 5 pre-existing rules that define the equivalence corpus.",
+      "task": "Preflight repo identity, branch, dirty state. Verify DMX-DCP-TOOLING-102 has merged (config/dcp/red_lane_taxonomy.json exists on HEAD). Read red_lane_rules.py, red_lane_scanner.py, and red_lane.py in full to establish baseline: current Rule fields, Finding fields, FORBIDDEN_PATHS/TEXT_RULES shape, main() argparse parameters, diff_text handling, self-cert check, and the 5 pre-existing rules that define the equivalence corpus.",
       "commands": [
         "git remote -v",
         "git branch --show-current",
@@ -82,7 +84,8 @@
         "test -f config/dcp/red_lane_taxonomy.json",
         "test -f .dopetaskroot",
         "cat src/dopemux/dcp/red_lane_rules.py",
-        "cat src/dopemux/dcp/red_lane_scanner.py"
+        "cat src/dopemux/dcp/red_lane_scanner.py",
+        "cat src/dopemux/dcp/red_lane.py"
       ],
       "validation": [
         "Remote identifies DDD-Enterprises/dopemux-mvp.",
@@ -98,6 +101,7 @@
         "claudedocs/dcp-tooling-system/40-plan.md",
         "src/dopemux/dcp/red_lane_rules.py",
         "src/dopemux/dcp/red_lane_scanner.py",
+        "src/dopemux/dcp/red_lane.py",
         "config/dcp/red_lane_taxonomy.json"
       ]
     },
@@ -105,7 +109,9 @@
       "id": "S2",
       "task": "Add load_taxonomy() to red_lane_rules.py: parse config/dcp/red_lane_taxonomy.json, compile patterns at load time, return list[Rule] with each Rule stamped with lane_id (new field added to Rule dataclass/namedtuple). The loader function is flag-gated: a module-level flag USE_TAXONOMY_LOADER=False defaults to FROZEN_FALLBACK_RULES; when True, load_taxonomy() is used. Add Finding.lane_id as an additive field (optional, None when not set by legacy paths). Per design B.3.",
       "expected_files": [
-        "src/dopemux/dcp/red_lane_rules.py"
+        "src/dopemux/dcp/red_lane_rules.py",
+        "src/dopemux/dcp/red_lane.py",
+        "schemas/dcp/dcp_red_lane_report.schema.json"
       ],
       "validation": [
         "load_taxonomy() exists and is callable.",
