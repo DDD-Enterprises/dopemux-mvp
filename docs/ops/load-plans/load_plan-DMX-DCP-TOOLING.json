@@ -88,7 +88,7 @@
       "redlane": false,
       "proof_required": true,
       "proof_path": "proof/DMX-DCP-TOOLING-113/PROOF.json",
-      "files_allowed": ["schemas/mcp_catalog.schema.json", "config/mcp_catalog.yaml", ".github/workflows/ci-complete.yml", "tests/**", "proof/DMX-DCP-TOOLING-113/**", "task-packets/generated/DMX-DCP-TOOLING-113.json"],
+      "files_allowed": ["schemas/dcp/mcp_catalog.schema.json", "mcp_catalog.yaml", ".github/workflows/ci-complete.yml", "tests/dcp/fixtures/mcp_catalog_invalid_deprecated.yaml", "tests/dcp/test_mcp_catalog_lint.py", "proof/DMX-DCP-TOOLING-113/**", "task-packets/generated/DMX-DCP-TOOLING-113.json"],
       "commit": "feat(mcp): TP-113 catalog schema lint + deprecation tracking",
       "stop_conditions": ["Catalog location/shape differs from assumption — verify before authoring schema"]
     },
@@ -183,7 +183,7 @@
       "redlane": false,
       "proof_required": true,
       "proof_path": "proof/DMX-DCP-TOOLING-107/PROOF.json",
-      "files_allowed": ["src/dopemux/cli.py", "src/dopemux/commands/dcp_commands.py", "tests/**", "proof/DMX-DCP-TOOLING-107/**", "task-packets/generated/DMX-DCP-TOOLING-107.json"],
+      "files_allowed": ["src/dopemux/cli.py", "src/dopemux/dcp/cli_dcp.py", "tests/dcp/test_cli_dcp.py", "proof/DMX-DCP-TOOLING-107/**", "task-packets/generated/DMX-DCP-TOOLING-107.json"],
       "commit": "feat(cli): TP-107 dopemux dcp command group v1 (lazy-imported, receipt-emitting)",
       "stop_conditions": ["dopemux --help startup time regresses", "An existing command group name collides"]
     },
@@ -259,7 +259,7 @@
       "redlane": true,
       "proof_required": true,
       "proof_path": "proof/DMX-DCP-TOOLING-111/PROOF.json",
-      "files_allowed": ["config/dcp/project_resource_map.json", "src/dopemux/dcp/resource_map.py", "src/dopemux/commands/dcp_commands.py", "scripts/verify_runtime_authority.py", ".github/workflows/ci-complete.yml", "tests/**", "proof/DMX-DCP-TOOLING-111/**", "task-packets/generated/DMX-DCP-TOOLING-111.json"],
+      "files_allowed": ["config/dcp/project_resource_map.json", "src/dopemux/dcp/resource_map.py", "src/dopemux/dcp/cli_dcp.py", "scripts/verify_runtime_authority.py", ".github/workflows/ci-complete.yml", "tests/dcp/test_resource_map.py", "proof/DMX-DCP-TOOLING-111/**", "task-packets/generated/DMX-DCP-TOOLING-111.json"],
       "commit": "feat(dcp): TP-111 resource-map builder + drift CI gate",
       "stop_conditions": ["Canonical sources conflict (taxonomy vs hygiene policy) — surface, do not pick silently"]
     },
@@ -297,7 +297,7 @@
       "redlane": false,
       "proof_required": true,
       "proof_path": "proof/DMX-DCP-TOOLING-114/PROOF.json",
-      "files_allowed": ["packaging/dcp-plugin/**", "scripts/**", ".github/workflows/ci-complete.yml", "tests/**", "proof/DMX-DCP-TOOLING-114/**", "task-packets/generated/DMX-DCP-TOOLING-114.json"],
+      "files_allowed": ["packaging/dcp-plugin/**", ".claude-plugin/plugin.json", ".claude-plugin/hooks/hooks.json", ".claude-plugin/.mcp.json", ".github/workflows/ci-complete.yml", "tests/dcp/test_plugin_build.py", "proof/DMX-DCP-TOOLING-114/**", "task-packets/generated/DMX-DCP-TOOLING-114.json"],
       "commit": "feat(dcp): TP-114 plugin packaging with automated never-list lint",
       "stop_conditions": ["Compiled artifact contains any never-list surface"]
     },
@@ -316,7 +316,7 @@
       "redlane": false,
       "proof_required": true,
       "proof_path": "proof/DMX-DCP-TOOLING-115/PROOF.json",
-      "files_allowed": ["config/dcp/**", "schemas/dcp/**", "tests/**", "proof/DMX-DCP-TOOLING-115/**", "task-packets/generated/DMX-DCP-TOOLING-115.json"],
+      "files_allowed": ["config/dcp/commands_registry.json", "schemas/dcp/commands_registry.schema.json", "schemas/dcp/manifest.json", ".github/workflows/ci-complete.yml", "tests/dcp/test_commands_registry.py", "proof/DMX-DCP-TOOLING-115/**", "task-packets/generated/DMX-DCP-TOOLING-115.json"],
       "commit": "feat(dcp): TP-115 command/skill governance-metadata registry",
       "stop_conditions": ["Scope creep into delete-list execution (DX-overhaul owns it)"]
     }
