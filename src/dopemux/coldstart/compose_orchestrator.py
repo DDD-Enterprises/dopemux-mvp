@@ -13,6 +13,13 @@ from typing import Callable, Mapping
 Runner = Callable[..., subprocess.CompletedProcess[str]]
 
 
+def _compose_service_name(line: str) -> str | None:
+    columns = line.split()
+    if len(columns) < 4 or columns[0] == "name" or columns[3] == "service":
+        return None
+    return columns[3]
+
+
 class ComposeOrchestrator:
     def __init__(
         self,
@@ -90,10 +97,10 @@ class ComposeOrchestrator:
             service_lines = [
                 line
                 for line in lines
-                if any(service in line for service in services_lower)
+                if _compose_service_name(line) in services_lower
             ]
             all_services_present = all(
-                any(service in line for line in service_lines)
+                any(_compose_service_name(line) == service for line in service_lines)
                 for service in services_lower
             )
             all_healthy = bool(service_lines) and all(

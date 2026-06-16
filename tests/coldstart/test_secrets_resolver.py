@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 
@@ -119,6 +120,28 @@ def test_litellm_database_url_reuses_generated_age_password() -> None:
 
     assert age_password.value
     assert env["AGE_PASSWORD"] == age_password.value
+    assert dsn.value == f"postgresql://dopemux_age:{age_password.value}@dopemux-postgres-age:5432/litellm"
+
+
+def test_default_env_mapping_caches_generated_age_password(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("AGE_PASSWORD", raising=False)
+    monkeypatch.delenv("LITELLM_DATABASE_URL", raising=False)
+
+    age_password = resolve_secret_value(
+        "AGE_PASSWORD",
+        current=None,
+        env_file=None,
+        non_interactive=True,
+    )
+    dsn = resolve_secret_value(
+        "LITELLM_DATABASE_URL",
+        current=None,
+        env_file=None,
+        non_interactive=True,
+    )
+
+    assert age_password.value
+    assert os.environ["AGE_PASSWORD"] == age_password.value
     assert dsn.value == f"postgresql://dopemux_age:{age_password.value}@dopemux-postgres-age:5432/litellm"
 
 

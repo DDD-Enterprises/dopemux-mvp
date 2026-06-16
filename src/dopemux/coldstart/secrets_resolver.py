@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import secrets
 import subprocess
+from collections.abc import MutableMapping
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -188,7 +189,7 @@ def resolve_secret_value(
     policy = _policy(var)
     if policy == "local-defaultable":
         default = _default_value(var, env_map)
-        if default is not None and isinstance(env_map, dict):
+        if default is not None and isinstance(env_map, MutableMapping):
             env_map[var] = default
         return SecretResolution(value=default, source=SecretSource.DEFAULT, is_sensitive=sensitive)
 
