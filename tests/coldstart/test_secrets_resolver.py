@@ -145,6 +145,31 @@ def test_default_env_mapping_caches_generated_age_password(monkeypatch: pytest.M
     assert dsn.value == f"postgresql://dopemux_age:{age_password.value}@dopemux-postgres-age:5432/litellm"
 
 
+def test_existing_age_password_is_cached_for_litellm_database_url(tmp_path: Path) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text("AGE_PASSWORD=existing-age-password\n", encoding="utf-8")
+    env: dict[str, str] = {}
+
+    age_password = resolve_secret_value(
+        "AGE_PASSWORD",
+        current=None,
+        env_file=env_file,
+        non_interactive=True,
+        env=env,
+    )
+    dsn = resolve_secret_value(
+        "LITELLM_DATABASE_URL",
+        current=None,
+        env_file=env_file,
+        non_interactive=True,
+        env=env,
+    )
+
+    assert age_password.value == "existing-age-password"
+    assert env["AGE_PASSWORD"] == "existing-age-password"
+    assert dsn.value == "postgresql://dopemux_age:existing-age-password@dopemux-postgres-age:5432/litellm"
+
+
 def test_manual_value_wins_over_local_defaultable_secret() -> None:
     result = resolve_secret_value(
         "AGE_PASSWORD",

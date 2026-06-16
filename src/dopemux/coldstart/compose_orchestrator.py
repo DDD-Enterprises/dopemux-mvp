@@ -20,6 +20,14 @@ def _compose_service_name(line: str) -> str | None:
     return columns[3]
 
 
+def _compose_service_ready(line: str) -> bool:
+    if "unhealthy" in line:
+        return False
+    if "healthy" in line:
+        return True
+    return "running" in line or "up" in line
+
+
 class ComposeOrchestrator:
     def __init__(
         self,
@@ -103,16 +111,8 @@ class ComposeOrchestrator:
                 any(_compose_service_name(line) == service for line in service_lines)
                 for service in services_lower
             )
-            all_healthy = bool(service_lines) and all(
-                "healthy" in line and "unhealthy" not in line
-                for line in service_lines
-            )
-            running_without_healthchecks = (
-                bool(service_lines)
-                and all("healthy" not in line for line in service_lines)
-                and all(("running" in line or "up" in line) for line in service_lines)
-            )
-            if all_services_present and (all_healthy or running_without_healthchecks):
+            all_ready = bool(service_lines) and all(_compose_service_ready(line) for line in service_lines)
+            if all_services_present and all_ready:
                 return True
             self.sleeper(interval_s)
         return False

@@ -180,6 +180,8 @@ def resolve_secret_value(
     ]
     for value, resolved_source in candidates:
         if value and not is_placeholder_value(value):
+            if var in LOCAL_DEFAULTABLE and isinstance(env_map, MutableMapping):
+                env_map[var] = value
             return SecretResolution(value=value, source=resolved_source, is_sensitive=sensitive)
 
     chosen_source = source or SecretSource.DEFER

@@ -80,3 +80,18 @@ def test_wait_healthy_matches_compose_service_column_exactly() -> None:
     orchestrator = ComposeOrchestrator(runner=runner, sleeper=lambda _: None, monotonic_values=iter([0, 1, 3]))
 
     assert orchestrator.wait_healthy(["pal"], timeout_s=2, interval_s=1) is False
+
+
+def test_wait_healthy_accepts_mixed_healthy_and_no_healthcheck_rows() -> None:
+    output = (
+        "NAME          IMAGE     COMMAND   SERVICE       CREATED   STATUS                 PORTS\n"
+        "postgres      image     cmd       postgres      now       Up 3 seconds (healthy) 5432/tcp\n"
+        "mcp-qdrant    image     cmd       mcp-qdrant    now       Up 3 seconds          8000/tcp\n"
+    )
+
+    def runner(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        return completed(output)
+
+    orchestrator = ComposeOrchestrator(runner=runner, sleeper=lambda _: None, monotonic_values=iter([0, 1]))
+
+    assert orchestrator.wait_healthy(["postgres", "mcp-qdrant"], timeout_s=2, interval_s=1) is True
