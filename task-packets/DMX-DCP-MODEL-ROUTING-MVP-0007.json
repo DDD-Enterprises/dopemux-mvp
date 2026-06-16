@@ -1,0 +1,138 @@
+{
+  "id": "DMX-DCP-MODEL-ROUTING-MVP-0007",
+  "project": "dopemux-mvp",
+  "target": "Define and implement the DCP trusted input-provenance contract so serialized or caller-supplied data cannot confer execution eligibility; only trusted in-process adapters may mint attested classifier input, and untrusted mutating input is capped at non-runnable.",
+  "invariants": [
+    "No value present in serialized or caller-supplied input can confer execution eligibility for mutating scope.",
+    "Raw, from-dict, hand-constructed, and CLI JSON input remains untrusted by default.",
+    "Untrusted mutating input must not produce a runnable RouteDecision.",
+    "Read-only classify behavior remains unchanged.",
+    "Trusted adapters derive provenance from authoritative signals and never accept caller assertions that raise trust.",
+    "The runtime gate in this checkout is RouteDecision.is_runnable(); do not target a non-existent LaneDecision.is_executable API.",
+    "Classifier logic remains deterministic and pure; no connector, runner, live-write, MCP, network, shell, or dopetask execution is introduced."
+  ],
+  "depends_on": [
+    "DMX-DCP-MODEL-ROUTING-MVP-0006",
+    "DMX-DCP-MODEL-ROUTING-MVP-0005"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-MODEL-ROUTING-MVP",
+    "base_branch": "main",
+    "parent_tp_id": "DMX-DCP-MODEL-ROUTING-MVP-0006",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/dcp-0007-input-provenance-contract",
+    "base_branch": "main",
+    "stacked_because": "Co-requisite with 0006 before any future DCP execution surface can trust classifier output."
+  },
+  "commit": {
+    "message": "feat(dcp): add trusted input provenance contract",
+    "allowlist": [
+      "src/dopemux/dcp/input_adapters.py",
+      "src/dopemux/dcp/routing_classifier.py",
+      "src/dopemux/dcp/__init__.py",
+      "src/dopemux/commands/dcp_commands.py",
+      "tests/unit/dcp/test_routing_classifier.py",
+      "tests/unit/dcp/test_dcp_cli.py",
+      "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007.json"
+    ],
+    "verify": [
+      "python -m compileall -q src/dopemux/dcp src/dopemux/commands",
+      "python -m pytest -q tests/unit/dcp/",
+      "ruff check src/dopemux/dcp src/dopemux/commands tests/unit/dcp",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): add trusted input provenance contract",
+    "body": "Implements DMX-DCP-MODEL-ROUTING-MVP-0007. Serialized/caller-supplied input cannot confer execution eligibility; raw CLI/from-dict input remains untrusted, trusted adapters mint attested input by construction, and untrusted mutating input is capped at non-runnable RouteDecision output. No execution, connector, runner, MCP, or live-write surface is added.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect-runtime-trust-boundary",
+      "task": "Inspect classifier input construction, CLI deserialization, existing runnable decision API, and downstream DCP consumers before changing code.",
+      "requirements": [
+        "Confirm the active execution/runnability gate is RouteDecision.is_runnable().",
+        "Confirm no LaneDecision.is_executable API exists in the current checkout before referring to execution gating.",
+        "Confirm _input_from_dict builds RoutingClassificationInput from arbitrary JSON and is therefore untrusted.",
+        "Confirm classify CLI remains read-only."
+      ],
+      "validation": [
+        "Inspection notes identify the existing runtime API and trust boundary before implementation."
+      ],
+      "context_files": [
+        "src/dopemux/dcp/routing_classifier.py",
+        "src/dopemux/dcp/routing_model.py",
+        "src/dopemux/commands/dcp_commands.py",
+        "tests/unit/dcp/test_routing_classifier.py",
+        "tests/unit/dcp/test_dcp_cli.py"
+      ]
+    },
+    {
+      "id": "implement-attested-input-capability",
+      "task": "Add a minimal unforgeable attested-input capability and explicit untrusted path without allowing serialized input to raise trust.",
+      "requirements": [
+        "Add input_adapters.py or equivalent only if it keeps trust construction small and auditable.",
+        "Raw JSON, from_dict, and hand-constructed RoutingClassificationInput must remain untrusted.",
+        "A trusted constructor such as from_authenticated_operator must derive provenance from arguments representing authoritative signals rather than accepting trust-raising caller overrides.",
+        "Any serialized attempt to self-assert attestation or trusted provenance must be ignored or rejected.",
+        "Untrusted mutating input must cap the RouteDecision to non-runnable while read-only classification remains unchanged."
+      ],
+      "validation": [
+        "Raw mutating input is not runnable.",
+        "Raw read-only input classifies as before.",
+        "_input_from_dict output is not execution-eligible.",
+        "Serialized trust/attestation fields cannot make a mutating decision runnable.",
+        "Trusted adapter output can be runnable only when authoritative signals are safe.",
+        "Trusted adapter output remains non-runnable when 0006 risky provenance signals are derived."
+      ],
+      "expected_files": [
+        "src/dopemux/dcp/input_adapters.py",
+        "src/dopemux/dcp/routing_classifier.py",
+        "src/dopemux/dcp/__init__.py",
+        "src/dopemux/commands/dcp_commands.py",
+        "tests/unit/dcp/test_routing_classifier.py",
+        "tests/unit/dcp/test_dcp_cli.py"
+      ]
+    },
+    {
+      "id": "validate-and-audit",
+      "task": "Run focused DCP validation, schema validation, diff hygiene, and independent embedded audit before merge.",
+      "commands": [
+        "python -m compileall -q src/dopemux/dcp src/dopemux/commands",
+        "python -m pytest -q tests/unit/dcp/",
+        "ruff check src/dopemux/dcp src/dopemux/commands tests/unit/dcp",
+        "python -m json.tool task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007.json",
+        "git diff --check"
+      ],
+      "validation": [
+        "All listed commands pass or failures are reported with exact blocker evidence.",
+        "Embedded audit confirms no serialized value confers execution eligibility, from-dict input is always untrusted, adapters derive rather than accept trust-raising overrides, RouteDecision.is_runnable is the implemented gate, and read-only classify behavior is unchanged.",
+        "Diff remains inside the packet allowlist."
+      ]
+    }
+  ]
+}
