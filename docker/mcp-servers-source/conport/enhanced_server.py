@@ -202,7 +202,7 @@ class EnhancedConPortServer:
                 self.unified_query_api = UnifiedQueryAPI(
                     db_pool=self.db_pool,
                     redis_client=self.redis,
-                    schema='ag_catalog'
+                    schema='public'
                 )
                 logger.info("✅ F-NEW-7 Unified Query API initialized")
             except ImportError:
@@ -1461,6 +1461,9 @@ class EnhancedConPortServer:
 
                     for row in decision_rows:
                         decision = dict(row)
+                        decision['id'] = str(decision['id'])
+                        if decision.get('rank') is not None:
+                            decision['rank'] = float(decision['rank'])
                         decision['created_at'] = decision['created_at'].isoformat()
                         results['decisions'].append(decision)
 
@@ -1476,6 +1479,7 @@ class EnhancedConPortServer:
 
                     for row in progress_rows:
                         progress = dict(row)
+                        progress['id'] = str(progress['id'])
                         progress['created_at'] = progress['created_at'].isoformat()
                         results['progress'].append(progress)
 
@@ -2021,7 +2025,7 @@ class EnhancedConPortServer:
             # Execute relationship traversal
             start_time = datetime.now()
             graph = await self.unified_query_api.get_related_decisions(
-                decision_id=int(decision_id),
+                decision_id=decision_id,
                 user_id=user_id,
                 include_workspaces=include_workspaces,
                 max_depth=max_depth
