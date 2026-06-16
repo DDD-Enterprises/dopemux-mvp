@@ -72,6 +72,10 @@ class RecordingConn:
     def __init__(self):
         self.calls = []
 
+    async def fetchval(self, sql, *args):
+        self.calls.append((sql, args))
+        return False
+
     async def fetch(self, sql, *args):
         self.calls.append((sql, args))
         if "user_id" in sql:
@@ -80,6 +84,23 @@ class RecordingConn:
             raise AssertionError("entity_relationships uses source_id/target_id")
         if "::int" in sql:
             raise AssertionError("decisions.id is UUID, not integer")
+        return []
+
+
+class RecordingMigratedConn:
+    def __init__(self):
+        self.calls = []
+
+    async def fetchval(self, sql, *args):
+        self.calls.append((sql, args))
+        if args == ("public", "decisions", "user_id"):
+            return True
+        if args == ("public", "progress_entries", "user_id"):
+            return True
+        return False
+
+    async def fetch(self, sql, *args):
+        self.calls.append((sql, args))
         return []
 
 
@@ -156,6 +177,37 @@ def test_unified_search_matches_active_schema_without_user_id_column():
     assert conn.calls
 
 
+def test_unified_search_preserves_user_scope_when_user_id_column_exists():
+    conn = RecordingMigratedConn()
+    api = unified_queries.UnifiedQueryAPI(db_pool=FakePool(conn), redis_client=FakeRedis())
+
+    results = asyncio.run(
+        api.search_across_workspaces(
+            user_id="alice",
+            query="test",
+            workspaces=["bob-ws"],
+        )
+    )
+
+    assert results == []
+    search_sql, search_args = conn.calls[-1]
+    assert "WHERE user_id = $2" in search_sql
+    assert "AND workspace_id = ANY($3)" in search_sql
+    assert search_args == ("test", "alice", ["bob-ws"], 50)
+
+
+def test_get_user_workspaces_preserves_user_scope_when_user_id_column_exists():
+    conn = RecordingMigratedConn()
+    api = unified_queries.UnifiedQueryAPI(db_pool=FakePool(conn), redis_client=FakeRedis())
+
+    workspaces = asyncio.run(api._get_user_workspaces("alice"))
+
+    assert workspaces == []
+    workspace_sql, workspace_args = conn.calls[-1]
+    assert "WHERE user_id = $1" in workspace_sql
+    assert workspace_args == ("alice",)
+
+
 def test_relationship_traversal_uses_uuid_relationship_columns():
     conn = RecordingConn()
     api = unified_queries.UnifiedQueryAPI(db_pool=FakePool(conn), redis_client=FakeRedis())
@@ -173,3 +225,39 @@ def test_relationship_traversal_uses_uuid_relationship_columns():
         "total_nodes": 0,
         "max_depth_reached": 0,
     }
+
+
+def test_relationship_traversal_preserves_user_scope_when_user_id_column_exists():
+    conn = RecordingMigratedConn()
+    api = unified_queries.UnifiedQueryAPI(db_pool=FakePool(conn), redis_client=FakeRedis())
+
+    graph = asyncio.run(
+        api.get_related_decisions(
+            decision_id="00000000-0000-0000-0000-000000000001",
+            user_id="alice",
+        )
+    )
+
+    assert graph["total_nodes"] == 0
+    relationship_sql, relationship_args = conn.calls[-1]
+    assert "WHERE id::text = $1 AND user_id = $2" in relationship_sql
+    assert "WHERE d.user_id = $2" in relationship_sql
+    assert relationship_args == (
+        "00000000-0000-0000-0000-000000000001",
+        "alice",
+        3,
+        True,
+    )
+
+
+def test_workspace_summary_preserves_user_scope_when_user_id_columns_exist():
+    conn = RecordingMigratedConn()
+    api = unified_queries.UnifiedQueryAPI(db_pool=FakePool(conn), redis_client=FakeRedis())
+
+    summaries = asyncio.run(api.get_workspace_summary("alice"))
+
+    assert summaries == []
+    summary_sql, summary_args = conn.calls[-1]
+    assert "ON p.workspace_id = d.workspace_id AND p.user_id = d.user_id" in summary_sql
+    assert "WHERE d.user_id = $1" in summary_sql
+    assert summary_args == ("alice",)

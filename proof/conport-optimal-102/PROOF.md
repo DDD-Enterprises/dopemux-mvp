@@ -14,7 +14,7 @@ Branch/PR: existing `fix/conport-coldstart-grant` branch for PR #894, bundled wi
   - Passes relationship `decision_id` through as text so UUID/text route ids do not force integer casting.
 - `docker/mcp-servers-source/conport/unified_queries.py`
   - Defaults to `public`.
-  - Removes dependency on unapplied `user_id` columns.
+  - Keeps cold-start compatibility when `user_id` columns are absent, but restores user-scoped predicates when migration 003 user columns are present.
   - Uses UUID/text decision ids and active `entity_relationships.source_id` / `target_id` columns.
 - `docker/mcp-servers-source/conport/Dockerfile`
   - Copies `unified_queries.py` into the image so `enhanced_server.py` can import it at runtime.
@@ -26,7 +26,7 @@ Branch/PR: existing `fix/conport-coldstart-grant` branch for PR #894, bundled wi
 PASS:
 - RED/GREEN proof regression:
   - `python -m pytest -q proof/conport-optimal-102/test_conport_102_regression.py`
-  - Final result: `6 passed`.
+  - Final result: `10 passed`.
 - Syntax:
   - `python -m py_compile docker/mcp-servers-source/conport/enhanced_server.py docker/mcp-servers-source/conport/unified_queries.py`
 - Task packet JSON parse:
@@ -61,5 +61,5 @@ PASS:
 
 ## Residual Risk
 
-- This verifies empty-result route behavior and the serialization/schema failure modes. It does not seed live decision/relationship rows for non-empty graph traversal.
-- The public schema is the active runtime schema observed in the local container. Future application of migration 003/004 may reintroduce multi-tenant `user_id` assumptions and should be handled in a separate migration packet.
+- This verifies empty-result route behavior, the serialization/schema failure modes, cold-start no-`user_id` compatibility, and migrated-schema user predicates. It does not seed live decision/relationship rows for non-empty graph traversal.
+- The public schema is the active runtime schema observed in the local container. Migration 003 user-column compatibility is covered by SQL-shape regression tests, not by a live migrated database smoke.

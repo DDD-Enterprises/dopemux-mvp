@@ -104,29 +104,52 @@ class UnifiedQueryAPI:
         if workspaces is None:
             workspaces = await self._get_user_workspaces(user_id)
 
-        # Full-text search across workspaces
-        sql = f"""
-            SELECT
-                id::text as decision_id,
-                workspace_id,
-                summary,
-                rationale,
-                created_at,
-                ts_rank(
-                    to_tsvector('english', summary || ' ' || COALESCE(rationale, '')),
-                    plainto_tsquery('english', $1)
-                ) as relevance_score,
-                tags
-            FROM {self.schema}.decisions
-            WHERE workspace_id = ANY($2)
-              AND to_tsvector('english', summary || ' ' || COALESCE(rationale, ''))
-                  @@ plainto_tsquery('english', $1)
-            ORDER BY relevance_score DESC, created_at DESC
-            LIMIT $3
-        """
-
         async with self.db_pool.acquire() as conn:
-            rows = await conn.fetch(sql, query, workspaces, limit)
+            has_user_id = await self._column_exists(conn, "decisions", "user_id")
+            if has_user_id:
+                sql = f"""
+                    SELECT
+                        id::text as decision_id,
+                        workspace_id,
+                        summary,
+                        rationale,
+                        created_at,
+                        ts_rank(
+                            to_tsvector('english', summary || ' ' || COALESCE(rationale, '')),
+                            plainto_tsquery('english', $1)
+                        ) as relevance_score,
+                        user_id,
+                        tags
+                    FROM {self.schema}.decisions
+                    WHERE user_id = $2
+                      AND workspace_id = ANY($3)
+                      AND to_tsvector('english', summary || ' ' || COALESCE(rationale, ''))
+                          @@ plainto_tsquery('english', $1)
+                    ORDER BY relevance_score DESC, created_at DESC
+                    LIMIT $4
+                """
+                rows = await conn.fetch(sql, query, user_id, workspaces, limit)
+            else:
+                sql = f"""
+                    SELECT
+                        id::text as decision_id,
+                        workspace_id,
+                        summary,
+                        rationale,
+                        created_at,
+                        ts_rank(
+                            to_tsvector('english', summary || ' ' || COALESCE(rationale, '')),
+                            plainto_tsquery('english', $1)
+                        ) as relevance_score,
+                        tags
+                    FROM {self.schema}.decisions
+                    WHERE workspace_id = ANY($2)
+                      AND to_tsvector('english', summary || ' ' || COALESCE(rationale, ''))
+                          @@ plainto_tsquery('english', $1)
+                    ORDER BY relevance_score DESC, created_at DESC
+                    LIMIT $3
+                """
+                rows = await conn.fetch(sql, query, workspaces, limit)
 
         results = [
             UnifiedSearchResult(
@@ -136,7 +159,7 @@ class UnifiedQueryAPI:
                 rationale=row['rationale'] or '',
                 created_at=row['created_at'],
                 relevance_score=float(row['relevance_score']),
-                user_id=user_id,
+                user_id=row['user_id'] if has_user_id else user_id,
                 tags=row['tags'] or []
             )
             for row in rows
@@ -192,41 +215,91 @@ class UnifiedQueryAPI:
         if cached:
             return json.loads(cached)
 
-        # Recursive CTE for relationship traversal
-        sql = f"""
-            WITH RECURSIVE decision_graph AS (
-                -- Base case: starting decision
-                SELECT
-                    id::text as id, workspace_id, summary, 0 as depth,
-                    ARRAY[id::text] as path
-                FROM {self.schema}.decisions
-                WHERE id::text = $1
-
-                UNION
-
-                -- Recursive case: follow relationships
-                SELECT
-                    d.id::text as id, d.workspace_id, d.summary, dg.depth + 1,
-                    dg.path || d.id::text
-                FROM decision_graph dg
-                INNER JOIN {self.schema}.entity_relationships r
-                    ON (dg.id = r.source_id::text OR dg.id = r.target_id::text)
-                INNER JOIN {self.schema}.decisions d
-                    ON (
-                        (r.target_id::text = d.id::text AND r.source_id::text = dg.id)
-                        OR (r.source_id::text = d.id::text AND r.target_id::text = dg.id)
-                    )
-                WHERE dg.depth < $2
-                  AND NOT (d.id::text = ANY(dg.path))
-                  {'AND (d.workspace_id = dg.workspace_id OR $3 = true)' if include_workspaces else ''}
-            )
-            SELECT DISTINCT id, workspace_id, summary, depth
-            FROM decision_graph
-            ORDER BY depth, id
-        """
-
         async with self.db_pool.acquire() as conn:
-            rows = await conn.fetch(sql, str(decision_id), max_depth, include_workspaces)
+            has_user_id = await self._column_exists(conn, "decisions", "user_id")
+            if has_user_id:
+                cross_workspace_clause = (
+                    "AND (d.workspace_id = dg.workspace_id OR $4 = true)"
+                    if include_workspaces else ""
+                )
+                sql = f"""
+                    WITH RECURSIVE decision_graph AS (
+                        -- Base case: starting decision
+                        SELECT
+                            id::text as id, workspace_id, summary, 0 as depth,
+                            ARRAY[id::text] as path
+                        FROM {self.schema}.decisions
+                        WHERE id::text = $1 AND user_id = $2
+
+                        UNION
+
+                        -- Recursive case: follow relationships
+                        SELECT
+                            d.id::text as id, d.workspace_id, d.summary, dg.depth + 1,
+                            dg.path || d.id::text
+                        FROM decision_graph dg
+                        INNER JOIN {self.schema}.entity_relationships r
+                            ON (dg.id = r.source_id::text OR dg.id = r.target_id::text)
+                        INNER JOIN {self.schema}.decisions d
+                            ON (
+                                (r.target_id::text = d.id::text AND r.source_id::text = dg.id)
+                                OR (r.source_id::text = d.id::text AND r.target_id::text = dg.id)
+                            )
+                        WHERE d.user_id = $2
+                          AND dg.depth < $3
+                          AND NOT (d.id::text = ANY(dg.path))
+                          {cross_workspace_clause}
+                    )
+                    SELECT DISTINCT id, workspace_id, summary, depth
+                    FROM decision_graph
+                    ORDER BY depth, id
+                """
+                args = (
+                    (str(decision_id), user_id, max_depth, include_workspaces)
+                    if include_workspaces else (str(decision_id), user_id, max_depth)
+                )
+            else:
+                cross_workspace_clause = (
+                    "AND (d.workspace_id = dg.workspace_id OR $3 = true)"
+                    if include_workspaces else ""
+                )
+                sql = f"""
+                    WITH RECURSIVE decision_graph AS (
+                        -- Base case: starting decision
+                        SELECT
+                            id::text as id, workspace_id, summary, 0 as depth,
+                            ARRAY[id::text] as path
+                        FROM {self.schema}.decisions
+                        WHERE id::text = $1
+
+                        UNION
+
+                        -- Recursive case: follow relationships
+                        SELECT
+                            d.id::text as id, d.workspace_id, d.summary, dg.depth + 1,
+                            dg.path || d.id::text
+                        FROM decision_graph dg
+                        INNER JOIN {self.schema}.entity_relationships r
+                            ON (dg.id = r.source_id::text OR dg.id = r.target_id::text)
+                        INNER JOIN {self.schema}.decisions d
+                            ON (
+                                (r.target_id::text = d.id::text AND r.source_id::text = dg.id)
+                                OR (r.source_id::text = d.id::text AND r.target_id::text = dg.id)
+                            )
+                        WHERE dg.depth < $2
+                          AND NOT (d.id::text = ANY(dg.path))
+                          {cross_workspace_clause}
+                    )
+                    SELECT DISTINCT id, workspace_id, summary, depth
+                    FROM decision_graph
+                    ORDER BY depth, id
+                """
+                args = (
+                    (str(decision_id), max_depth, include_workspaces)
+                    if include_workspaces else (str(decision_id), max_depth)
+                )
+
+            rows = await conn.fetch(sql, *args)
 
         graph = {
             'root': str(decision_id),
@@ -272,28 +345,35 @@ class UnifiedQueryAPI:
             summaries_data = json.loads(cached)
             return [WorkspaceSummary(**s) for s in summaries_data]
 
-        sql = f"""
-            SELECT
-                d.workspace_id,
-                d.workspace_id as name,
-                COUNT(DISTINCT d.id) as total_decisions,
-                COUNT(DISTINCT d.id) FILTER (
-                    WHERE d.created_at >= NOW() - INTERVAL '7 days'
-                ) as recent_decisions_7d,
-                COUNT(DISTINCT p.id) as total_progress,
-                COUNT(DISTINCT p.id) FILTER (
-                    WHERE p.status = 'IN_PROGRESS'
-                ) as in_progress_count,
-                MAX(GREATEST(d.created_at, p.created_at)) as last_activity
-            FROM {self.schema}.decisions d
-            LEFT JOIN {self.schema}.progress_entries p
-                ON p.workspace_id = d.workspace_id
-            GROUP BY d.workspace_id
-            ORDER BY last_activity DESC NULLS LAST
-        """
-
         async with self.db_pool.acquire() as conn:
-            rows = await conn.fetch(sql)
+            decisions_have_user_id = await self._column_exists(conn, "decisions", "user_id")
+            progress_has_user_id = await self._column_exists(conn, "progress_entries", "user_id")
+            user_join_clause = " AND p.user_id = d.user_id" if progress_has_user_id else ""
+            user_where_clause = "WHERE d.user_id = $1" if decisions_have_user_id else ""
+            sql = f"""
+                SELECT
+                    d.workspace_id,
+                    d.workspace_id as name,
+                    COUNT(DISTINCT d.id) as total_decisions,
+                    COUNT(DISTINCT d.id) FILTER (
+                        WHERE d.created_at >= NOW() - INTERVAL '7 days'
+                    ) as recent_decisions_7d,
+                    COUNT(DISTINCT p.id) as total_progress,
+                    COUNT(DISTINCT p.id) FILTER (
+                        WHERE p.status = 'IN_PROGRESS'
+                    ) as in_progress_count,
+                    MAX(GREATEST(d.created_at, p.created_at)) as last_activity
+                FROM {self.schema}.decisions d
+                LEFT JOIN {self.schema}.progress_entries p
+                    ON p.workspace_id = d.workspace_id{user_join_clause}
+                {user_where_clause}
+                GROUP BY d.workspace_id
+                ORDER BY last_activity DESC NULLS LAST
+            """
+            rows = (
+                await conn.fetch(sql, user_id)
+                if decisions_have_user_id else await conn.fetch(sql)
+            )
 
         summaries = [
             WorkspaceSummary(
@@ -337,14 +417,23 @@ class UnifiedQueryAPI:
         if cached:
             return json.loads(cached)
 
-        sql = f"""
-            SELECT DISTINCT workspace_id
-            FROM {self.schema}.decisions
-            ORDER BY workspace_id
-        """
-
         async with self.db_pool.acquire() as conn:
-            rows = await conn.fetch(sql)
+            has_user_id = await self._column_exists(conn, "decisions", "user_id")
+            if has_user_id:
+                sql = f"""
+                    SELECT DISTINCT workspace_id
+                    FROM {self.schema}.decisions
+                    WHERE user_id = $1
+                    ORDER BY workspace_id
+                """
+                rows = await conn.fetch(sql, user_id)
+            else:
+                sql = f"""
+                    SELECT DISTINCT workspace_id
+                    FROM {self.schema}.decisions
+                    ORDER BY workspace_id
+                """
+                rows = await conn.fetch(sql)
 
         workspaces = [row['workspace_id'] for row in rows]
 
@@ -356,3 +445,16 @@ class UnifiedQueryAPI:
         )
 
         return workspaces
+
+    async def _column_exists(self, conn: asyncpg.Connection, table_name: str, column_name: str) -> bool:
+        """Return whether the configured schema exposes a column."""
+        sql = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM information_schema.columns
+                WHERE table_schema = $1
+                  AND table_name = $2
+                  AND column_name = $3
+            )
+        """
+        return bool(await conn.fetchval(sql, self.schema, table_name, column_name))
