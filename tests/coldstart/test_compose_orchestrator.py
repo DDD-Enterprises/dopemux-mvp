@@ -95,3 +95,31 @@ def test_wait_healthy_accepts_mixed_healthy_and_no_healthcheck_rows() -> None:
     orchestrator = ComposeOrchestrator(runner=runner, sleeper=lambda _: None, monotonic_values=iter([0, 1]))
 
     assert orchestrator.wait_healthy(["postgres", "mcp-qdrant"], timeout_s=2, interval_s=1) is True
+
+
+def test_wait_healthy_uses_json_service_field_when_command_has_spaces() -> None:
+    output = (
+        '[{"Name":"redis_leantime","Command":"docker-entrypoint.sh redis server",'
+        '"Service":"redis_leantime","State":"running","Health":"healthy"}]'
+    )
+    seen: list[list[str]] = []
+
+    def runner(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        seen.append(args)
+        return completed(output)
+
+    orchestrator = ComposeOrchestrator(runner=runner, sleeper=lambda _: None, monotonic_values=iter([0, 1]))
+
+    assert orchestrator.wait_healthy(["redis_leantime"], timeout_s=2, interval_s=1) is True
+    assert seen == [["docker", "compose", "-f", "compose.yml", "ps", "--format", "json"]]
+
+
+def test_wait_healthy_does_not_accept_health_starting_as_ready() -> None:
+    output = '[{"Name":"postgres","Service":"postgres","State":"running","Health":"starting"}]'
+
+    def runner(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        return completed(output)
+
+    orchestrator = ComposeOrchestrator(runner=runner, sleeper=lambda _: None, monotonic_values=iter([0, 1, 3]))
+
+    assert orchestrator.wait_healthy(["postgres"], timeout_s=2, interval_s=1) is False
