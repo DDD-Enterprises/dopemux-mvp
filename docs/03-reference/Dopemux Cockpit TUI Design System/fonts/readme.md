@@ -52,7 +52,7 @@ The fallback chain degrades gracefully: every glyph has an ASCII fallback in
 ```sh
 export IOSEVKA_REPO=/path/to/Iosevka          # git clone be5invis/Iosevka
 export NERD_FONTS_REPO=/path/to/nerd-fonts    # git clone ryanoasis/nerd-fonts
-export OUT_DIR="$PWD/out" && mkdir -p "$OUT_DIR"
+export OUT_DIR="$PWD/out"  # ignored by fonts/.gitignore; build script creates it
 
 ./build-dopemux-fonts.sh    # Iosevka -> Dopemux Term / Dopemux Editor TTFs
 ./patch-nerd-font.sh        # -> $OUT_DIR/nerd-font/Dopemux{Term,Editor}NerdFont-*.ttf
