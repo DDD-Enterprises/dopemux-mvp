@@ -12,12 +12,14 @@ from typing import Any
 from dopemux.dcp.routing_model import (
     AuditRequirement,
     BackendKind,
+    ComplexityClass,
     EscalationRequirement,
     RedLaneState,
     RiskClass,
     RouteDecision,
     RouteStatus,
     RuntimeImpact,
+    TaskSource,
     TaskType,
 )
 
@@ -35,6 +37,36 @@ _DOC_TASK_TYPES = {
 
 _AUDIT_TASK_TYPES = {
     TaskType.AUDIT,
+}
+
+_UNKNOWN_TASK_TYPES = {
+    TaskType.UNKNOWN,
+}
+
+_UNKNOWN_TASK_SOURCES = {
+    TaskSource.UNKNOWN,
+}
+
+_UNKNOWN_RISK_CLASSES = {
+    RiskClass.UNKNOWN,
+}
+
+_UNKNOWN_COMPLEXITY_CLASSES = {
+    ComplexityClass.UNKNOWN,
+}
+
+_UNKNOWN_RUNTIME_IMPACTS = {
+    RuntimeImpact.UNKNOWN,
+}
+
+_LIVE_TASK_TYPES = {
+    TaskType.MERGE,
+    TaskType.LIVE_WRITE,
+}
+
+_LIVE_RUNTIME_IMPACTS = {
+    RuntimeImpact.SERVICE_MUTATION,
+    RuntimeImpact.LIVE_WRITE,
 }
 
 _SUPERVISOR_RISKS = {
@@ -255,6 +287,8 @@ def _block_reasons(decision: RouteDecision) -> list[str]:
         reasons.append("escalation_required")
     if decision.unknowns:
         reasons.append("unknowns_present")
+    if _has_unknown_dimension(decision):
+        reasons.append("unknowns_present")
     if decision.stop_conditions:
         reasons.append("stop_conditions_present")
     if _has_stop_condition(decision, "missing_proof"):
@@ -263,6 +297,8 @@ def _block_reasons(decision: RouteDecision) -> list[str]:
         reasons.append("stale_proof")
     if _has_forbidden_action_marker(decision):
         reasons.append("forbidden_action_present")
+    if _has_live_runtime_shape(decision):
+        reasons.append("live_runtime_present")
     if _requires_supervisor(decision):
         reasons.append("risk_requires_supervisor")
 
@@ -280,6 +316,23 @@ def _requires_supervisor(decision: RouteDecision) -> bool:
 
 def _has_stop_condition(decision: RouteDecision, marker: str) -> bool:
     return any(marker in condition for condition in decision.stop_conditions)
+
+
+def _has_unknown_dimension(decision: RouteDecision) -> bool:
+    return (
+        decision.task_source in _UNKNOWN_TASK_SOURCES
+        or decision.task_type in _UNKNOWN_TASK_TYPES
+        or decision.risk_class in _UNKNOWN_RISK_CLASSES
+        or decision.complexity_class in _UNKNOWN_COMPLEXITY_CLASSES
+        or decision.runtime_impact in _UNKNOWN_RUNTIME_IMPACTS
+    )
+
+
+def _has_live_runtime_shape(decision: RouteDecision) -> bool:
+    return (
+        decision.task_type in _LIVE_TASK_TYPES
+        or decision.runtime_impact in _LIVE_RUNTIME_IMPACTS
+    )
 
 
 def _has_forbidden_action_marker(decision: RouteDecision) -> bool:

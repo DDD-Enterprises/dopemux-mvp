@@ -47,8 +47,8 @@ preference data for already-classified `RouteDecision` values.
 | Gate | Result |
 |------|--------|
 | compileall src/dopemux/dcp | PASS |
-| pytest routing_model + routing_classifier + routing_backend_policy | PASS - 154 tests |
-| pytest tests/unit/dcp | PASS - 154 tests |
+| pytest routing_model + routing_classifier + routing_backend_policy | PASS - 157 tests |
+| pytest tests/unit/dcp | PASS - 157 tests |
 | git diff --check | PASS |
 | static no-go scan | PASS - no matches |
 | diff scope | PASS - packet allowlist only |
