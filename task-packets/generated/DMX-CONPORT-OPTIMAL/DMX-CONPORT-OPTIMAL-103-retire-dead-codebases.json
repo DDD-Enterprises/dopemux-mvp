@@ -1,0 +1,131 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-103-retire-dead-codebases",
+  "project": "dopemux-mvp",
+  "target": "Consolidate to one canonical conport codebase: add deprecation docstring to src/conport/memory_server.py, add QUARANTINE.md to services/conport_kg/, and note canonical path in docker/mcp-servers-source/conport/SURFACE_INVENTORY.md. No deletions.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must NOT delete any files — annotate only.",
+    "This packet must NOT modify any runtime-imported modules.",
+    "This packet must verify no runtime imports of the dead modules via grep before closing.",
+    "This packet must not alter the canonical codebase under docker/mcp-servers-source/conport/."
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-101-server-bringup-health-smoke",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-103-retire-dead-codebases",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "chore(conport): quarantine dead codebases — memory_server deprecation + conport_kg QUARANTINE.md",
+    "allowlist": [
+      "src/conport/memory_server.py",
+      "services/conport_kg/QUARANTINE.md",
+      "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-103-retire-dead-codebases.json",
+      "proof/conport-optimal-103/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-103-retire-dead-codebases.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-103-retire-dead-codebases.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "grep -rn 'from src.conport.memory_server\\|import src.conport.memory_server\\|from conport.memory_server\\|import conport.memory_server' src/ services/ docker/ --include='*.py' || echo 'NO RUNTIME IMPORTS FOUND'",
+      "grep -rn 'from services.conport_kg\\|import services.conport_kg\\|from conport_kg\\|import conport_kg' src/ services/ docker/ --include='*.py' | grep -v 'conport_kg/' || echo 'NO RUNTIME IMPORTS FOUND'",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "chore(conport): quarantine dead codebases — 103",
+    "body": "Adds deprecation markers to the two non-canonical conport codebases without deleting them. Adds a DEAD CODE docstring to src/conport/memory_server.py pointing to the canonical path. Creates services/conport_kg/QUARANTINE.md stating it is a non-canonical Apache-AGE graph projection not runtime-integrated (per Memory Trinity ADR). Updates docker/mcp-servers-source/conport/SURFACE_INVENTORY.md to record canonical codebase status. Verified: no runtime imports of dead modules.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read src/conport/memory_server.py, services/conport_kg/ directory listing, and docker/mcp-servers-source/conport/SURFACE_INVENTORY.md to understand current state before making any changes.",
+      "validation": [
+        "src/conport/memory_server.py is read and its import surface catalogued.",
+        "services/conport_kg/ directory listing is captured.",
+        "SURFACE_INVENTORY.md current content is read."
+      ],
+      "context_files": [
+        "src/conport/memory_server.py",
+        "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Grep the entire codebase for runtime imports of src/conport/memory_server and services/conport_kg modules (excluding the modules themselves). Record the full grep output in proof — UNKNOWN if any live import is found.",
+      "validation": [
+        "grep output for memory_server imports is recorded verbatim in proof.",
+        "grep output for conport_kg imports (outside conport_kg/) is recorded verbatim in proof.",
+        "If any live import is found, execution stops and the finding is recorded as UNKNOWN."
+      ],
+      "commands": [
+        "grep -rn 'from src.conport.memory_server\\|import src.conport.memory_server\\|from conport.memory_server\\|import conport.memory_server' src/ services/ docker/ --include='*.py' || echo 'NONE'",
+        "grep -rn 'from services.conport_kg\\|import services.conport_kg\\|from conport_kg\\|import conport_kg' src/ services/ docker/ --include='*.py' | grep -v 'services/conport_kg/' || echo 'NONE'"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add a module-level deprecation docstring to src/conport/memory_server.py. The docstring must read: 'DEAD CODE — superseded by docker/mcp-servers-source/conport/' and note the canonical runtime path. Preserve all existing code below the docstring.",
+      "validation": [
+        "src/conport/memory_server.py first non-blank content is the deprecation docstring.",
+        "Python syntax check passes: python -m py_compile src/conport/memory_server.py.",
+        "No lines of existing code are removed."
+      ],
+      "commands": [
+        "python -m py_compile src/conport/memory_server.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Create services/conport_kg/QUARANTINE.md stating: this directory is a non-canonical Apache-AGE graph projection, it is not runtime-integrated per the Memory Trinity ADR, the canonical conport MCP server is at docker/mcp-servers-source/conport/, and this code must not be imported or deployed without explicit operator approval.",
+      "validation": [
+        "services/conport_kg/QUARANTINE.md exists and contains the non-canonical and Memory Trinity ADR statements.",
+        "The canonical path docker/mcp-servers-source/conport/ is referenced.",
+        "No existing files in services/conport_kg/ are modified."
+      ],
+      "expected_files": [
+        "services/conport_kg/QUARANTINE.md"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Update docker/mcp-servers-source/conport/SURFACE_INVENTORY.md: add or update a 'Canonical Codebase' section noting this directory is the single runtime-integrated conport MCP server, and that src/conport/ and services/conport_kg/ are quarantined dead codebases.",
+      "validation": [
+        "SURFACE_INVENTORY.md contains a section referencing the canonical status of this directory.",
+        "SURFACE_INVENTORY.md references the quarantined paths.",
+        "No other sections of SURFACE_INVENTORY.md are altered beyond the new/updated section."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Commit only allowlisted files, validate TP JSON, push branch, open PR, record proof bundle.",
+      "validation": [
+        "TP JSON validates against dopetask-canonical-spec.json with exit 0.",
+        "Only allowlisted files are staged and committed.",
+        "PR URL recorded in proof."
+      ]
+    }
+  ]
+}
