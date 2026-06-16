@@ -52,6 +52,11 @@ command -v curl >/dev/null 2>&1 || {
   exit 0
 }
 
+cleanup() {
+  "${ROLLBACK_SCRIPT}" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
 "${HTTP_SCRIPT}"
 "${HTTP_SCRIPT}"
 
@@ -60,8 +65,15 @@ count="$(docker ps --format '{{.Names}}' | awk -v n="${container_name}" '$0 == n
 [[ "${count}" == "1" ]] || die "expected exactly one ${container_name}, got ${count}"
 
 port="${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
-curl -fsS \
-  -X POST "http://127.0.0.1:${port}/mcp" \
-  -H 'Content-Type: application/json' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}}}' |
-  grep -q 'serverInfo'
+for _ in $(seq 1 30); do
+  if curl -fsS \
+    -X POST "http://127.0.0.1:${port}/mcp" \
+    -H 'Content-Type: application/json' \
+    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}}}' |
+    grep -q 'serverInfo'; then
+    exit 0
+  fi
+  sleep 1
+done
+
+die "HTTP singleton did not become ready at http://127.0.0.1:${port}/mcp"

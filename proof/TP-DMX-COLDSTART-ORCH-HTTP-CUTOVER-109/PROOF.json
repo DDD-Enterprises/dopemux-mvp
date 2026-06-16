@@ -23,7 +23,8 @@
     "image_ref": "Parsed from scripts/mcp-wrappers/task-orchestrator-current-stdio.sh IMAGE assignment at runtime.",
     "health_probe": "mcp_health_probe.py already probes http/sse URL ports. Its generic remediation wording remains unchanged because the file is outside the packet allowlist.",
         "canonical_writer_repair": "CI test_mcp_commands_catalog proved .mcp.json is generated from repo-local mcp_catalog.yaml defaults. The packet allowlist was expanded to include mcp_catalog.yaml so committed config and the repo-local canonical writer do not drift. The bundled fallback catalog intentionally remains stdio because tests assert that fallback contract.",
-        "post_main_merge": "Merged origin/main at b24f0154bce42fa669f1ff50ff7bf36fcf9560ae after PR #886 and PR #887 landed. The merge had no file overlap with the #888 packet files."
+        "post_main_merge": "Merged origin/main at b24f0154bce42fa669f1ff50ff7bf36fcf9560ae after PR #886 and PR #887 landed. The merge had no file overlap with the #888 packet files.",
+        "review_thread_refresh": "Added TASK_ORCHESTRATOR_HTTP_PORT as the catalog port_var/default_port_base for doctor/init compatibility. Added live-test rollback cleanup and a bounded readiness loop before the initialize probe."
   },
   "validation": {
     "pass": [
@@ -88,6 +89,11 @@
                 "command": "pytest -q tests/unit/test_mcp_commands_catalog.py",
                 "exit_code": 0,
                 "summary": "post-main-merge catalog validation: 13 passed"
+            },
+            {
+                "command": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json && python -m json.tool .mcp.json >/dev/null && python -m json.tool proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json >/dev/null && bash -n scripts/mcp-wrappers/task-orchestrator-http-singleton.sh && bash -n scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh && bash tests/mcp_wrappers/test_orchestrator_http_singleton.sh --dry-run && pytest -q tests/test_mcp_health_probe.py && pytest -q tests/unit/test_mcp_commands_catalog.py && git diff --check origin/main...HEAD",
+                "exit_code": 0,
+                "summary": "review-thread refresh validation: 17 mcp health probe tests and 13 catalog tests passed"
             }
         ],
     "fail": [
