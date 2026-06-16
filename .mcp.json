@@ -21,15 +21,15 @@
       "description": "Temporal chronicle and working-context (per worktree instance)"
     },
     "task-orchestrator": {
-      "type": "stdio",
-      "command": "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
-      "args": [],
+      "type": "http",
+      "url": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
       "env": {
         "TASK_ORCHESTRATOR_PROJECT_ROOT": "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}",
         "DOPEMUX_PROJECT_ROOT": "${DOPEMUX_PROJECT_ROOT:-}",
-        "DOPEMUX_WORKSPACE_ROOT": "${DOPEMUX_WORKSPACE_ROOT:-}"
+        "DOPEMUX_WORKSPACE_ROOT": "${DOPEMUX_WORKSPACE_ROOT:-}",
+        "TASK_ORCHESTRATOR_HTTP_PORT": "${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
       },
-      "description": "Current 13-tool MCP Task Orchestrator with repo-scoped SQLite state"
+      "description": "HTTP singleton MCP Task Orchestrator with repo-scoped SQLite state"
     }
   }
 }

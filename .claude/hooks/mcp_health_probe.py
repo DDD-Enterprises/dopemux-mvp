@@ -27,6 +27,10 @@ _TOTAL_BUDGET_SEC = 2.0
 # Matches ${VAR:-default_port} in .mcp.json URL strings
 _PORT_RE = re.compile(r":(?:\$\{([A-Z0-9_]+):-(\d+)\}|(\d+))/")
 
+_SERVER_REMEDIATION = {
+    "task-orchestrator": "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+}
+
 
 def _cache_path(project_root: Path) -> Path:
     return project_root / ".claude" / _CACHE_FILENAME
@@ -163,9 +167,10 @@ def _format_health(health: dict) -> str | None:
         elif up is False:
             status_parts.append(f"{name} ❌")
             port_str = f":{port}" if port else ""
+            remediation = _SERVER_REMEDIATION.get(name, f"docker compose up -d {name}")
             problems.append(
                 f"⚠️ {name} {port_str} not listening → "
-                f"docker compose up -d {name}"
+                f"{remediation}"
             )
         else:
             status_parts.append(f"{name} ⚙️")  # stdio / unprobed
