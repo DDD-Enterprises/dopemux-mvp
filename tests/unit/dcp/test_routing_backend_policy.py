@@ -125,6 +125,11 @@ def test_unknown_escalation_blocks_backend() -> None:
     _assert_no_backend(decision, "escalation_required")
 
 
+def test_on_unknown_escalation_blocks_backend() -> None:
+    decision = _safe_decision(escalation_requirement=EscalationRequirement.ON_UNKNOWN)
+    _assert_no_backend(decision, "escalation_required")
+
+
 def test_non_empty_unknowns_block_backend() -> None:
     decision = _safe_decision(unknowns=["authority_class_unknown"])
     _assert_no_backend(decision, "unknowns_present")

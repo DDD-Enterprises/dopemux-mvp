@@ -251,10 +251,7 @@ def _block_reasons(decision: RouteDecision) -> list[str]:
         reasons.append("red_lane_active")
     if not decision.is_runnable():
         reasons.append("route_status_not_allowed")
-    if decision.escalation_requirement in (
-        EscalationRequirement.ALWAYS,
-        EscalationRequirement.UNKNOWN,
-    ):
+    if decision.escalation_requirement is not EscalationRequirement.NONE:
         reasons.append("escalation_required")
     if decision.unknowns:
         reasons.append("unknowns_present")
@@ -277,7 +274,7 @@ def _requires_supervisor(decision: RouteDecision) -> bool:
         decision.status is RouteStatus.NEEDS_SUPERVISOR
         or decision.risk_class in _SUPERVISOR_RISKS
         or decision.escalation_requirement
-        in (EscalationRequirement.ALWAYS, EscalationRequirement.ON_RISK)
+        is not EscalationRequirement.NONE
     )
 
 
