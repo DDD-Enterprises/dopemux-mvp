@@ -28,14 +28,14 @@
     "summary": {
         "created_package": "src/dopemux/coldstart",
         "source_modules": [
-      "platform.py",
-      "secrets_resolver.py",
-      "network.py",
-      "compose_orchestrator.py",
-      "update_manager.py",
-      "rollback_manager.py"
+            "platform.py",
+            "secrets_resolver.py",
+            "network.py",
+            "compose_orchestrator.py",
+            "update_manager.py",
+            "rollback_manager.py"
         ],
-        "test_count": 15,
+        "test_count": 19,
         "existing_installer_tests_count": 7
     },
     "review_thread_refresh": {
@@ -86,6 +86,27 @@
             {
                 "cmd": "pre-commit run --files proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/AUDITOR_REPORT.md proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/PROOF.json src/dopemux/coldstart/__init__.py src/dopemux/coldstart/compose_orchestrator.py src/dopemux/coldstart/network.py src/dopemux/coldstart/platform.py src/dopemux/coldstart/rollback_manager.py src/dopemux/coldstart/secrets_resolver.py src/dopemux/coldstart/update_manager.py task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_network.py tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_update_manager.py",
                 "exit_code": 0
+            }
+        ]
+    },
+    "review_thread_refresh_2": {
+        "refreshed_at": "2026-06-16T11:33:00Z",
+        "head_before_refresh": "b2a0071b81af79a66fc6923d86c9f9ddc6baea40",
+        "changes": [
+            "Preserved explicit manual operator values before applying local-defaultable generated defaults.",
+            "Added test coverage for manual AGE_PASSWORD input winning over generated defaults.",
+            "Left pyproject.toml unchanged because it is outside the packet allowlist and requires supervisor review before expansion."
+        ],
+        "local_validation_rerun": [
+            {
+                "cmd": "python -m compileall -q src/dopemux/coldstart/secrets_resolver.py tests/coldstart/test_secrets_resolver.py && pytest -q tests/coldstart/test_secrets_resolver.py",
+                "exit_code": 0,
+                "result": "10 passed"
+            },
+            {
+                "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json && python -m compileall -q src/dopemux/coldstart/ && python -m compileall -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py && pytest -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py && pytest -q tests/scripts/test_install_sh_secrets.py tests/scripts/test_shell_installer.py && PYTHONPATH=src python -c \"from dopemux.coldstart import platform, secrets_resolver, network, compose_orchestrator, update_manager, rollback_manager; print('imports OK')\" && rg -n \"CHANGE_ME|dev_password|sk-dev\" src/dopemux/coldstart; test $? -eq 1",
+                "exit_code": 0,
+                "result": "19 coldstart tests passed; 7 installer tests passed; imports OK; no banned secret placeholders matched"
             }
         ]
     },

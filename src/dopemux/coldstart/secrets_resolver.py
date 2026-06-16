@@ -181,6 +181,10 @@ def resolve_secret_value(
         if value and not is_placeholder_value(value):
             return SecretResolution(value=value, source=resolved_source, is_sensitive=sensitive)
 
+    chosen_source = source or SecretSource.DEFER
+    if chosen_source is SecretSource.MANUAL and manual_value:
+        return SecretResolution(value=manual_value, source=SecretSource.MANUAL, is_sensitive=sensitive)
+
     policy = _policy(var)
     if policy == "local-defaultable":
         default = _default_value(var, env_map)
@@ -195,9 +199,6 @@ def resolve_secret_value(
             f"{var} is not configured. Pre-populate the env file or export it before non-interactive use."
         )
 
-    chosen_source = source or SecretSource.DEFER
-    if chosen_source is SecretSource.MANUAL and manual_value:
-        return SecretResolution(value=manual_value, source=SecretSource.MANUAL, is_sensitive=sensitive)
     if chosen_source is SecretSource.KEYCHAIN:
         value = read_secret_from_keychain(keychain_service or var, runner=runner)
         if value:

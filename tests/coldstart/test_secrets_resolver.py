@@ -122,6 +122,24 @@ def test_litellm_database_url_reuses_generated_age_password() -> None:
     assert dsn.value == f"postgresql://dopemux_age:{age_password.value}@dopemux-postgres-age:5432/litellm"
 
 
+def test_manual_value_wins_over_local_defaultable_secret() -> None:
+    result = resolve_secret_value(
+        "AGE_PASSWORD",
+        current=None,
+        env_file=None,
+        non_interactive=False,
+        env={},
+        source=SecretSource.MANUAL,
+        manual_value="operator-entered-password",
+    )
+
+    assert result == SecretResolution(
+        value="operator-entered-password",
+        source=SecretSource.MANUAL,
+        is_sensitive=True,
+    )
+
+
 def test_placeholder_detection_matches_installer_policy() -> None:
     assert is_placeholder_value("dev-key-456")
     assert is_placeholder_value("postgresql://dopemux_age:dopemux_age_dev_password@host/db")
