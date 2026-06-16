@@ -10,6 +10,10 @@ import ast
 import copy
 import inspect
 
+from dopemux.dcp.routing_classifier import (
+    RoutingClassificationInput,
+    classify_route,
+)
 from dopemux.dcp.routing_model import (
     AuditRequirement,
     AuthorityClass,
@@ -170,6 +174,31 @@ def test_safe_low_risk_code_route_prefers_codex_data() -> None:
     assert recommendation.blocked is False
     assert recommendation.preferred_backend is BackendKind.CODEX
     assert BackendKind.CLAUDE_CODE in recommendation.fallback_backends
+    assert "safe_low_risk_code_route" in recommendation.reason_codes
+
+
+def test_safe_classifier_code_route_ignores_baseline_guardrail_forbidden_actions() -> None:
+    decision = classify_route(
+        RoutingClassificationInput(
+            task_source=TaskSource.OPERATOR,
+            task_type=TaskType.CODE_CHANGE,
+            risk_class=RiskClass.R1_LOW,
+            complexity_class=ComplexityClass.LOW,
+            authority_class=AuthorityClass.OPERATOR,
+            runtime_impact=RuntimeImpact.LOCAL_ONLY,
+            touches_files=True,
+            touches_tests=True,
+            has_unknown_authority=False,
+            is_repo_changing=True,
+            is_non_trivial=True,
+        )
+    )
+
+    assert decision.is_runnable() is True
+    assert "call_connector" in decision.forbidden_actions
+    recommendation = _recommend(decision)
+    assert recommendation.blocked is False
+    assert recommendation.preferred_backend is BackendKind.CODEX
     assert "safe_low_risk_code_route" in recommendation.reason_codes
 
 
