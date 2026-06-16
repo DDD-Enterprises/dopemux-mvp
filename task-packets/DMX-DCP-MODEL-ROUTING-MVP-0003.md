@@ -1,3 +1,15 @@
+---
+id: DMX-DCP-MODEL-ROUTING-MVP-0003
+title: Dmx Dcp Model Routing Mvp 0003
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-15'
+last_review: '2026-06-15'
+next_review: '2026-09-13'
+prelude: Dmx Dcp Model Routing Mvp 0003 (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Task Packet — DMX-DCP-MODEL-ROUTING-MVP-0003 · DCP · Routing Backend Policy Map
 
 This task packet uses Markdown transport because the artifact path is `.md`.
