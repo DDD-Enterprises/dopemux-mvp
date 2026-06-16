@@ -152,6 +152,27 @@
             }
         ]
     },
+    "review_thread_refresh_5": {
+        "refreshed_at": "2026-06-16T16:20:00Z",
+        "head_before_refresh": "fca44f5698459235cd6913b997ea45ae05b4904a",
+        "changes": [
+            "Expanded the packet allowlist after supervisor continuation to include pyproject.toml.",
+            "Registered dopemux.coldstart in the explicit setuptools package list.",
+            "Validated that a built wheel contains dopemux/coldstart/__init__.py."
+        ],
+        "local_validation_rerun": [
+            {
+                "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json && python -m pip wheel . --no-deps -w \"$tmpdir\" && python - \"$tmpdir\" <zipfile check>",
+                "exit_code": 0,
+                "result": "built dopemux-0.1.0 wheel and found dopemux/coldstart/__init__.py"
+            },
+            {
+                "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json && python -m compileall -q src/dopemux/coldstart/ && python -m compileall -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py && pytest -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py && pytest -q tests/scripts/test_install_sh_secrets.py tests/scripts/test_shell_installer.py && PYTHONPATH=src python -c \"from dopemux.coldstart import platform, secrets_resolver, network, compose_orchestrator, update_manager, rollback_manager; print('imports OK')\" && rg -n \"CHANGE_ME|dev_password|sk-dev\" src/dopemux/coldstart; test $? -eq 1",
+                "exit_code": 0,
+                "result": "23 coldstart tests passed; 7 installer tests passed; imports OK; no banned secret placeholders matched"
+            }
+        ]
+    },
     "commands": [
     {
       "cmd": "pytest -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py",
@@ -211,9 +232,10 @@
     "src/dopemux/coldstart/secrets_resolver.py",
     "src/dopemux/coldstart/network.py",
     "src/dopemux/coldstart/compose_orchestrator.py",
-    "src/dopemux/coldstart/update_manager.py",
-    "src/dopemux/coldstart/rollback_manager.py",
-    "tests/coldstart/__init__.py",
+        "src/dopemux/coldstart/update_manager.py",
+        "src/dopemux/coldstart/rollback_manager.py",
+        "pyproject.toml",
+        "tests/coldstart/__init__.py",
     "tests/coldstart/test_platform.py",
     "tests/coldstart/test_secrets_resolver.py",
     "tests/coldstart/test_network.py",
@@ -228,7 +250,7 @@
     "No macOS Keychain, 1Password, or arbitrary secret command execution against real credentials.",
     "No live install.sh full-stack execution.",
     "No provider calls.",
-    "No package build/install validation beyond local editable install with --no-deps."
+        "No package install validation from the built wheel; wheel contents were inspected without installing dependencies."
   ],
   "residual_risks": [
     "The Python extraction is not wired back into install.sh in this packet; behavior parity is tested at the helper level only.",
