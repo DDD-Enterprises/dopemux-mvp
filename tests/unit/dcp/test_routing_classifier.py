@@ -1221,7 +1221,7 @@ def test_live_write_without_contract_blocks() -> None:
 
 
 def test_unresolved_review_threads_block_readiness() -> None:
-    """Lock: has_stale_proof=True blocks the route (status=BLOCKED) when authority is known.
+    """Lock: has_stale_proof=True blocks the route (status=BLOCKED) regardless of authority.
 
     Note: "unresolved review threads" as a PR-Steward concern is a HIGHER-LAYER
     readiness check that lives outside this classifier.  The stale-proof gate
@@ -1229,31 +1229,70 @@ def test_unresolved_review_threads_block_readiness() -> None:
     gate: a route with stale or invalidated evidence is not actionable until proof
     is refreshed.
 
-    IMPORTANT — precedence finding (surfaced during 0002R reconciliation):
-    With all-default inputs (has_unknown_authority=True), the classifier returns
-    RouteStatus.UNKNOWN instead of RouteStatus.BLOCKED for has_stale_proof=True,
-    because _derive_route_status checks has_unknown_authority BEFORE has_stale_proof.
-    The BLOCKED status is only reachable after the unknown-authority guard passes.
-    This test therefore supplies has_unknown_authority=False to reach the
-    stale-proof BLOCKED path, which is the behaviour this invariant is meant to lock.
-
-    This ordering is NOT a security regression (unknown authority is non-runnable
-    regardless) but is a latent discoverability gap: stale_proof is recorded in
-    stop_conditions even when status=UNKNOWN, so the gate signal is present.
-    A future classifier refactor should ensure has_stale_proof → BLOCKED
-    regardless of authority-gate ordering.
+    PRECEDENCE (fixed in 0003 status-precedence work, was a latent gap in 0002R):
+    A hard-BLOCKED reason such as stale proof MUST be reported in ``status`` even
+    when authority is also unknown.  ``_derive_route_status`` now applies the
+    hard-BLOCKED checks (authority BLOCKED, missing proof, stale proof) BEFORE the
+    UNKNOWN-authority guard — a most-severe-first ordering (BLOCKED > UNKNOWN).
+    The default ``has_unknown_authority=True`` therefore no longer masks the
+    stale-proof BLOCKED status.
     """
     inp = RoutingClassificationInput(
         has_stale_proof=True,
-        # Must bypass the unknown-authority guard to reach the stale-proof BLOCKED path.
-        has_unknown_authority=False,
-        authority_class=AuthorityClass.OPERATOR,
+        # Default authority is UNKNOWN: the stale-proof BLOCKED reason must still
+        # surface in ``status`` (this is the precedence fix being locked).
     )
     decision = classify_route(inp)
 
     assert decision.status is RouteStatus.BLOCKED, (
         f"expected BLOCKED for stale proof input, got {decision.status}"
     )
+    assert not decision.is_runnable()
+    # The stale-proof reason is surfaced in both status and stop_conditions.
+    assert "stale_proof" in decision.stop_conditions
+
+
+def test_hard_blocked_reason_wins_over_unknown_authority() -> None:
+    """Lock: status precedence is most-severe-first — BLOCKED beats UNKNOWN.
+
+    Each hard-BLOCKED reason must be reported in ``status`` even when authority is
+    also unknown (the default).  Before the 0003 precedence fix the UNKNOWN-authority
+    guard returned first and masked these reasons as RouteStatus.UNKNOWN.
+    """
+    # Stale proof + default unknown authority → BLOCKED (not UNKNOWN).
+    stale = classify_route(RoutingClassificationInput(has_stale_proof=True))
+    assert stale.status is RouteStatus.BLOCKED
+
+    # Explicitly BLOCKED authority + default unknown-authority flag → BLOCKED.
+    blocked_auth = classify_route(
+        RoutingClassificationInput(authority_class=AuthorityClass.BLOCKED)
+    )
+    assert blocked_auth.status is RouteStatus.BLOCKED
+
+    # Missing proof on a mutating/non-trivial route + unknown authority → BLOCKED.
+    missing = classify_route(
+        RoutingClassificationInput(
+            has_missing_proof=True,
+            is_repo_changing=True,
+            is_non_trivial=True,
+        )
+    )
+    assert missing.status is RouteStatus.BLOCKED
+
+
+def test_unknown_authority_alone_still_reports_unknown() -> None:
+    """Lock: with no hard-BLOCKED reason, unknown authority still yields UNKNOWN.
+
+    The precedence fix must not over-block: a route whose only defect is unknown
+    authority (no stale/missing proof, not red-lane) remains RouteStatus.UNKNOWN.
+    """
+    decision = classify_route(
+        RoutingClassificationInput(
+            has_unknown_authority=True,
+            authority_class=AuthorityClass.UNKNOWN,
+        )
+    )
+    assert decision.status is RouteStatus.UNKNOWN
     assert not decision.is_runnable()
 
 
