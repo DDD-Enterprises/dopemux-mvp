@@ -1,14 +1,16 @@
 {
   "id": "DMX-DCP-MODEL-ROUTING-MVP-0006",
   "project": "dopemux-mvp",
-  "target": "Harden the DCP routing classifier against provenance laundering by adding explicit provenance signals that can only lower trust and by blocking unproven OPENCODE/GROK backend mutation while preserving existing classifications by default.",
+  "target": "Harden the DCP routing classifier and read-only CLI input adapter against provenance laundering by adding explicit provenance signals that can only lower trust, while declaring the 0007 trusted input-provenance contract as a blocking co-requisite before any execution surface may consume runnable classifier output.",
   "invariants": [
     "Provenance signals can only lower trust; they must never raise authority, confidence, or execution eligibility.",
     "New fields default to the safe no-op value for existing non-risky inputs.",
     "Bridge/proxy authority, retrieval-derived evidence without exact source fetch, ECC external intake, and unproven OPENCODE/GROK backend provenance override caller-claimed authority.",
     "requires_mcp_call continues to route to RED_LANE.",
     "Classifier logic remains deterministic and pure with no I/O, network, shell, runner, connector, MCP, or dopetask calls.",
-    "This packet is a blocking prerequisite before execution surfaces, but it does not gate the execution-inert 0005 lane-engine MVP."
+    "This packet is necessary but not sufficient: 0007 trusted input-provenance contract is a blocking co-requisite before execution surfaces.",
+    "The read-only CLI adapter may carry provenance fields for inspection, but it must not become an execution surface.",
+    "This packet does not gate the execution-inert 0005 lane-engine MVP."
   ],
   "depends_on": [
     "DMX-DCP-MODEL-ROUTING-MVP-0005",
@@ -36,19 +38,21 @@
     "message": "feat(dcp): harden routing classifier provenance",
     "allowlist": [
       "src/dopemux/dcp/routing_classifier.py",
+      "src/dopemux/commands/dcp_commands.py",
       "tests/unit/dcp/test_routing_classifier.py",
+      "tests/unit/dcp/test_dcp_cli.py",
       "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0006.json"
     ],
     "verify": [
       "python -m compileall -q src/dopemux/dcp",
       "python -m pytest -q tests/unit/dcp/",
-      "ruff check src/dopemux/dcp tests/unit/dcp",
+      "ruff check src/dopemux/dcp src/dopemux/commands tests/unit/dcp",
       "git diff --check"
     ]
   },
   "pr": {
     "title": "feat(dcp): harden routing classifier provenance",
-    "body": "Implements DMX-DCP-MODEL-ROUTING-MVP-0006. Provenance signals can only lower trust, bridge/proxy and retrieval-derived advisory evidence fail closed for mutation, ECC external intake is static/read-only only, and unproven OPENCODE/GROK backend mutation is blocked. No execution, connector, runner, MCP, or live-write surface is added.",
+    "body": "Implements DMX-DCP-MODEL-ROUTING-MVP-0006. Provenance signals can only lower trust, bridge/proxy and retrieval-derived advisory evidence fail closed for mutation, ECC external intake is static/read-only only, and unproven OPENCODE/GROK backend mutation is blocked. The read-only CLI adapter carries the new provenance fields for inspection, but 0007 remains a blocking co-requisite before any execution surface may consume runnable classifier output. No execution, connector, runner, MCP, or live-write surface is added.",
     "base": "main"
   },
   "pal_chain": {
@@ -71,6 +75,7 @@
       "task": "Inspect routing classifier runtime flow, routing model types, existing tests, CLI consumers, and DCP lane-engine consumers before changing code.",
       "requirements": [
         "Identify where RoutingClassificationInput is constructed and where classify_route output is consumed.",
+        "Inspect src/dopemux/commands/dcp_commands.py::_input_from_dict and verify whether read-only CLI input carries all provenance fields.",
         "Confirm no executor currently reads LaneDecision.is_executable.",
         "Confirm requires_mcp_call currently remains RED_LANE."
       ],
@@ -89,28 +94,32 @@
       "task": "Add provenance fields and classifier coercion rules so risky provenance overrides caller-claimed authority and blocks mutation deterministically.",
       "requirements": [
         "Add authority_via_bridge_proxy, evidence_is_retrieval_derived, exact_source_fetched, is_ecc_external_intake, and has_backend_wrapper_proof fields only if runtime inspection confirms they belong on RoutingClassificationInput.",
+        "Wire the five provenance fields through the read-only CLI input adapter so classify output reflects caller-supplied provenance evidence.",
         "Derive backend-wrapper risk from backend_kind for OPENCODE and GROK rather than trusting a separate caller boolean alone.",
         "Keep has_backend_wrapper_proof default false without regressing existing non-OPENCODE and non-GROK inputs.",
-        "Do not change lane-engine behavior, connector behavior, runner behavior, MCP calls, or live-write surfaces."
+        "Do not change lane-engine behavior, connector behavior, runner behavior, MCP calls, live-write surfaces, or execution eligibility."
       ],
       "validation": [
         "Bridge/proxy authority with claimed AUTOMATED_SAFE no longer returns runnable ALLOWED.",
         "Retrieval-derived evidence without exact source fetch blocks mutation but exact_source_fetched preserves the non-derived behavior.",
+        "CLI JSON carrying provenance fields reaches classify_route and produces the same fail-closed decision as in-memory input.",
         "ECC external intake blocks runner execution, live writes, destructive paths, copy, and import.",
         "OPENCODE and GROK backend mutation requires wrapper proof while other backend kinds preserve existing defaults."
       ],
       "expected_files": [
         "src/dopemux/dcp/routing_classifier.py",
-        "tests/unit/dcp/test_routing_classifier.py"
+        "src/dopemux/commands/dcp_commands.py",
+        "tests/unit/dcp/test_routing_classifier.py",
+        "tests/unit/dcp/test_dcp_cli.py"
       ]
     },
     {
       "id": "validate-and-audit",
       "task": "Run focused DCP validation, diff hygiene, and independent embedded audit before merge.",
       "commands": [
-        "python -m compileall -q src/dopemux/dcp",
+        "python -m compileall -q src/dopemux/dcp src/dopemux/commands",
         "python -m pytest -q tests/unit/dcp/",
-        "ruff check src/dopemux/dcp tests/unit/dcp",
+        "ruff check src/dopemux/dcp src/dopemux/commands tests/unit/dcp",
         "python -m json.tool task-packets/DMX-DCP-MODEL-ROUTING-MVP-0006.json",
         "git diff --check"
       ],
