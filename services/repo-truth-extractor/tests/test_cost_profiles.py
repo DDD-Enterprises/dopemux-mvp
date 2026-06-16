@@ -107,10 +107,11 @@ def test_each_profile_has_required_fields() -> None:
 
 
 def test_new_profiles_set_a_cost_cap() -> None:
-    # value-default and quality are intentionally uncapped (operator explicitly
-    # accepts cost for the default + production go/no-go lanes). Every other
-    # profile — including all Plan B additions — MUST carry a numeric cap so we
-    # don't repeat the audit's uncapped-profile finding.
+    # value-default and quality carry their own caps but are excluded from this
+    # enforcement gate (the operator explicitly owns cost for the default and
+    # production go/no-go lanes). Every other profile — including all Plan B
+    # additions — MUST carry a numeric cap so we don't repeat the audit's
+    # uncapped-profile finding.
     uncapped_by_design = {"value-default", "quality"}
     for name, profile in runner.COST_PROFILES.items():
         if name in uncapped_by_design:
@@ -416,6 +417,9 @@ def test_cli_help_lists_new_flags() -> None:
     # Cost profile choices (dynamic from COST_PROFILES.keys()).
     for name in EXPECTED_PROFILES:
         assert name in help_text, f"--cost-profile choice {name} missing from --help"
+    # Logical rte-cost-* aliases must also appear in --help choices.
+    for alias in runner.COST_PROFILE_ALIASES:
+        assert alias in help_text, f"--cost-profile alias {alias} missing from --help"
 
 
 # ---------------------------------------------------------------------------
