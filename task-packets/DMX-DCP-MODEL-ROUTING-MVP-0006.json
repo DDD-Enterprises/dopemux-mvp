@@ -13,7 +13,6 @@
     "This packet does not gate the execution-inert 0005 lane-engine MVP."
   ],
   "depends_on": [
-    "DMX-DCP-MODEL-ROUTING-MVP-0005",
     "PR #904 precedence fix on main"
   ],
   "repo_binding": {
@@ -25,7 +24,7 @@
   "series": {
     "id": "DMX-DCP-MODEL-ROUTING-MVP",
     "base_branch": "main",
-    "parent_tp_id": "DMX-DCP-MODEL-ROUTING-MVP-0005",
+    "parent_tp_id": null,
     "final_packet": false
   },
   "execution": {
@@ -76,7 +75,7 @@
       "requirements": [
         "Identify where RoutingClassificationInput is constructed and where classify_route output is consumed.",
         "Inspect src/dopemux/commands/dcp_commands.py::_input_from_dict and verify whether read-only CLI input carries all provenance fields.",
-        "Confirm no executor currently reads LaneDecision.is_executable.",
+        "Confirm no executor currently reads LaneDecision.is_executable and that this packet may merge before the execution-inert 0005 lane-engine MVP.",
         "Confirm requires_mcp_call currently remains RED_LANE."
       ],
       "validation": [
