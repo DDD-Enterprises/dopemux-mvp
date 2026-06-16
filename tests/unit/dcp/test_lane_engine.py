@@ -178,6 +178,23 @@ def test_executability_gate_mirrors_is_runnable_on_forged_decision() -> None:
         )
 
 
+def test_lane_assignment_uses_normalized_enums_for_string_inputs() -> None:
+    """Audit P2 (codex thread): decide_lane must classify the lane from the
+    decision's NORMALIZED enums. classify_route tolerates string enum inputs;
+    the lane KIND must still be correct (not fall through to the fallback).
+    """
+    inp = RoutingClassificationInput(
+        task_type="AUDIT",  # string, not TaskType.AUDIT — classifier normalizes it
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    decision = classify_route(inp)
+    assert decision.task_type is TaskType.AUDIT  # classifier normalized it
+
+    lane_decision = decide_lane(decision, inp)
+    assert lane_decision.lane is LaneKind.EMBEDDED_AUDIT
+
+
 # ─────────────────────────────────────────────
 # Test 3 — requires_live_write → BLOCKED, not executable
 # ─────────────────────────────────────────────

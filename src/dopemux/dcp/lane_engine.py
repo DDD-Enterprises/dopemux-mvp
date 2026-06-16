@@ -114,7 +114,7 @@ def _assign_lane(
         return LaneKind.BLOCKED
 
     # Row 2: audit task
-    if inp.task_type is TaskType.AUDIT:
+    if decision.task_type is TaskType.AUDIT:
         return LaneKind.EMBEDDED_AUDIT
 
     # Row 3: PR steward readiness
@@ -123,8 +123,8 @@ def _assign_lane(
 
     # Row 4: external intake — external agent, READ_ONLY, evidence refs, no scope mutations
     if (
-        inp.task_source in _EXTERNAL_TASK_SOURCES
-        and inp.task_type is TaskType.READ_ONLY
+        decision.task_source in _EXTERNAL_TASK_SOURCES
+        and decision.task_type is TaskType.READ_ONLY
         and bool(inp.evidence_refs)
         and not inp.touches_files
         and not inp.touches_tests
@@ -133,7 +133,7 @@ def _assign_lane(
         return LaneKind.EXTERNAL_INTAKE
 
     # Row 5: proof bundle
-    if inp.task_type is TaskType.PROOF_BUNDLE:
+    if decision.task_type is TaskType.PROOF_BUNDLE:
         return LaneKind.PROOF_ONLY
 
     # Row 6: test-only scope
@@ -145,18 +145,18 @@ def _assign_lane(
         inp.touches_docs
         and not inp.touches_files
         and not inp.touches_tests
-        and inp.task_type not in (TaskType.CODE_CHANGE, TaskType.SCHEMA_ONLY)
+        and decision.task_type not in (TaskType.CODE_CHANGE, TaskType.SCHEMA_ONLY)
     ):
         return LaneKind.DOCS_ONLY
 
     # Row 8: code / schema implementation
-    if inp.task_type in (TaskType.CODE_CHANGE, TaskType.SCHEMA_ONLY) or (
+    if decision.task_type in (TaskType.CODE_CHANGE, TaskType.SCHEMA_ONLY) or (
         inp.is_repo_changing and inp.touches_files
     ):
         return LaneKind.LOCAL_CODE_IMPLEMENTATION
 
     # Row 9: design/routing classification
-    if inp.task_type is TaskType.DESIGN_ONLY:
+    if decision.task_type is TaskType.DESIGN_ONLY:
         return LaneKind.CLASSIFIER_ROUTING
 
     # Row 10: fallback
@@ -188,13 +188,13 @@ def _build_rationale(
 
     labels.append(f"status_{decision.status.value.lower()}")
 
-    if inp.task_type is TaskType.AUDIT:
+    if decision.task_type is TaskType.AUDIT:
         labels.append("task_type_audit")
     elif "pr_steward_readiness" in inp.requested_actions:
         labels.append("requested_pr_steward_readiness")
     elif lane is LaneKind.EXTERNAL_INTAKE:
         labels.append("external_agent_read_only_intake")
-    elif inp.task_type is TaskType.PROOF_BUNDLE:
+    elif decision.task_type is TaskType.PROOF_BUNDLE:
         labels.append("task_type_proof_bundle")
     elif lane is LaneKind.TEST_VALIDATION:
         labels.append("touches_tests_only")
