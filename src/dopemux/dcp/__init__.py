@@ -37,6 +37,12 @@ from dopemux.dcp.routing_classifier import (
     RoutingClassificationInput,
     classify_route,
 )
+from dopemux.dcp.routing_backend_policy import (
+    BackendPolicyRecommendation,
+    BackendPolicyRule,
+    explain_backend_policy,
+    select_backend_policy,
+)
 
 __all__ = [
     # Proof artifact readers (pre-existing)
@@ -71,4 +77,9 @@ __all__ = [
     # Routing classification engine (DMX-DCP-MODEL-ROUTING-MVP-0002)
     "RoutingClassificationInput",
     "classify_route",
+    # Backend policy recommendations (DMX-DCP-MODEL-ROUTING-MVP-0003)
+    "BackendPolicyRecommendation",
+    "BackendPolicyRule",
+    "explain_backend_policy",
+    "select_backend_policy",
 ]
