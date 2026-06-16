@@ -59,3 +59,8 @@ The following artifacts are stored under [artifacts/](file:///Users/hue/code/dop
 | [DCP_ADVERSARIAL_ARCHITECTURE_AUDIT.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/artifacts/DCP_ADVERSARIAL_ARCHITECTURE_AUDIT.md) | Adversarial Architecture Audit (Opus) | `EXTERNAL_PROPOSED` |
 | [DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md) | Architecture Synthesis - Revised Delta (REV1) | `SYNTHESIS_INVENTED` |
 | [DCP_DR_EXTERNAL_CONSTRAINTS_LEDGER.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/artifacts/DCP_DR_EXTERNAL_CONSTRAINTS_LEDGER.md) | External Constraints Ledger | `EXTERNAL_PROPOSED` |
+| [DCP_PROMPT5_CHAT_HISTORY_EXTRACT.md](artifacts/DCP_PROMPT5_CHAT_HISTORY_EXTRACT.md) | Prompt 5 / pre-Prompt 6 chat-history extraction | `EXTERNAL_CHAT_HISTORY_EXTRACT` |
+
+## Current Runway Reconciliation
+
+[DCP_PROMPT5_TASK_ORCHESTRATOR_RECONCILIATION.md](DCP_PROMPT5_TASK_ORCHESTRATOR_RECONCILIATION.md) records the live-state reconciliation for the Prompt 5 chat-history extract, including stale PR claims, #906 review blockers, and the Task Orchestrator MCP transport blocker observed during extraction.
