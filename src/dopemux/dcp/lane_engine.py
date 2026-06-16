@@ -123,7 +123,7 @@ def _assign_lane(
     5. task_type is PROOF_BUNDLE → PROOF_ONLY
     6. touches_tests and not touches_files → TEST_VALIDATION
     7. touches_docs and not (touches_files or touches_tests) and task_type not in {CODE_CHANGE, SCHEMA_ONLY} → DOCS_ONLY
-    8. task_type in {CODE_CHANGE, SCHEMA_ONLY} or (is_repo_changing and touches_files) → LOCAL_CODE_IMPLEMENTATION
+    8. task_type in {CODE_CHANGE, SCHEMA_ONLY} or is_repo_changing or touches_files → LOCAL_CODE_IMPLEMENTATION
     9. task_type is DESIGN_ONLY → CLASSIFIER_ROUTING
     10. fallback → READ_ONLY_EVIDENCE
     """
@@ -171,8 +171,10 @@ def _assign_lane(
         return LaneKind.DOCS_ONLY
 
     # Row 8: code / schema implementation
-    if decision.task_type in (TaskType.CODE_CHANGE, TaskType.SCHEMA_ONLY) or (
-        inp.is_repo_changing and inp.touches_files
+    if (
+        decision.task_type in (TaskType.CODE_CHANGE, TaskType.SCHEMA_ONLY)
+        or inp.is_repo_changing
+        or inp.touches_files
     ):
         return LaneKind.LOCAL_CODE_IMPLEMENTATION
 

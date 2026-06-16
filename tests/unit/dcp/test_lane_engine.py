@@ -478,6 +478,48 @@ def test_local_code_implementation_preserves_audit() -> None:
     )
 
 
+def test_repo_changing_read_only_without_file_touch_maps_to_implementation() -> None:
+    """Repo-changing scope must not fall through to READ_ONLY_EVIDENCE."""
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.READ_ONLY,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        is_repo_changing=True,
+        touches_files=False,
+    )
+    decision = classify_route(inp)
+
+    lane_decision = decide_lane(decision, inp)
+
+    assert lane_decision.lane is LaneKind.LOCAL_CODE_IMPLEMENTATION
+    assert "fallback_read_only_evidence" not in lane_decision.rationale
+
+
+def test_file_touching_read_only_maps_to_implementation() -> None:
+    """File-touching scope must not be classified as evidence-only work."""
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.READ_ONLY,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        is_repo_changing=False,
+        touches_files=True,
+    )
+    decision = classify_route(inp)
+
+    lane_decision = decide_lane(decision, inp)
+
+    assert lane_decision.lane is LaneKind.LOCAL_CODE_IMPLEMENTATION
+    assert "fallback_read_only_evidence" not in lane_decision.rationale
+
+
 # ─────────────────────────────────────────────
 # Test 11 — External intake READ_ONLY evidence → EXTERNAL_INTAKE, not executable
 # ─────────────────────────────────────────────
