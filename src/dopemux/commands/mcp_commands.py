@@ -458,7 +458,13 @@ def _backup_path(path: Path) -> Path:
     return path.with_suffix(path.suffix + f".backup-{stamp}")
 
 
-def _allocate_ports(worktree: str, names: List[str], catalog: Dict[str, Any]) -> Dict[str, int]:
+def _allocate_ports(
+    worktree: str,
+    names: List[str],
+    catalog: Dict[str, Any],
+    *,
+    project_root: str | None = None,
+) -> Dict[str, int]:
     """
     Compute ports for each per-worktree server, including any `extra_port_vars`
     declared by the spec (e.g. conport exposes three host ports for one service).
@@ -467,8 +473,8 @@ def _allocate_ports(worktree: str, names: List[str], catalog: Dict[str, Any]) ->
     assignments: Dict[str, int] = {}
     seen_ports: Dict[int, str] = {}
 
-    def _claim(var: str, base: int, owner: str) -> None:
-        port = _port_for(worktree, base)
+    def _claim(var: str, base: int, owner: str, key_path: str) -> None:
+        port = _port_for(key_path, base)
         if port in seen_ports:
             raise click.ClickException(
                 f"Internal port collision: {owner}.{var} and {seen_ports[port]} both hashed to :{port}. "
@@ -481,11 +487,12 @@ def _allocate_ports(worktree: str, names: List[str], catalog: Dict[str, Any]) ->
         spec = catalog["servers"].get(name)
         if not spec or spec.get("scope") != "per-worktree":
             continue
+        key_path = project_root if spec.get("state_scope") == "per-repo" and project_root else worktree
         base = spec.get("default_port_base")
         if base:
-            _claim(spec["port_var"], base, name)
+            _claim(spec["port_var"], base, name, key_path)
         for extra in spec.get("extra_port_vars", []) or []:
-            _claim(extra["var"], extra["base"], name)
+            _claim(extra["var"], extra["base"], name, key_path)
     return assignments
 
 
@@ -605,7 +612,7 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...]):
     mcp_json_path = repo_path / PROJECT_MCP_FILENAME
     envrc_path = repo_path / ENVRC_FILENAME
 
-    port_vars = _allocate_ports(repo, ordered, catalog)
+    port_vars = _allocate_ports(repo, ordered, catalog, project_root=str(identity.project_root))
     config = _build_local_mcp_json(ordered, catalog)
 
     if envrc_path.exists() and not force:
@@ -691,7 +698,7 @@ def mcp_add_cmd(name: str):
     envrc_path = Path(repo) / ENVRC_FILENAME
     env_exports: Dict[str, Any] = {
         **_project_env_exports(repo, str(identity.project_root)),
-        **_allocate_ports(repo, [name], catalog),
+        **_allocate_ports(repo, [name], catalog, project_root=str(identity.project_root)),
     }
     appended = _append_missing_env_exports(envrc_path, env_exports)
     for var in appended:

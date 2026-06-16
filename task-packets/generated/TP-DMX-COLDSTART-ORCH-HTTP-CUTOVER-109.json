@@ -1,0 +1,162 @@
+{
+    "id": "TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109",
+    "project": "dopemux-mvp",
+    "target": "Cut the task-orchestrator MCP transport from per-client stdio launcher (scripts/mcp-wrappers/task-orchestrator-current-stdio.sh) to a single HTTP singleton server per workspace (MCP_TRANSPORT=http, one docker run -d --restart unless-stopped mounting the existing data_dir). Update .mcp.json task-orchestrator entry from stdio to http. Provide a tested rollback path (stdio + periodic docker kill prune). Verify two concurrent Claude sessions coexist without SQLite contention and loaded task trees carry over after cutover.",
+    "invariants": [
+        "Runtime/source truth outranks this packet and the load plan.",
+        "Preserve the hard invariants: DCP-RED-MERGE-SEAM-0001 stays blocked; LIVE_WRITE_READY stays undefined/blocking; no auto-merge.",
+        "Preserve fail-closed behavior on missing secrets, stale SHAs, or unknown authority.",
+        "Do not expose secrets/tokens/keys in code, logs, receipts, or proof artifacts.",
+        "Do not modify files outside the packet allowlist without stopping for supervisor review.",
+        "The tracer stage MUST be run first on the stdio launcher's workspace-root resolution and singleton-enforcement logic before any transport change is coded \u2014 do not patch state-flow logic from intuition.",
+        "HTTP cutover replaces stdio entirely for the task-orchestrator \u2014 do NOT keep both transports active simultaneously (shared-SQLite contention root cause).",
+        "The existing data_dir at ~/.local/share/dopemux-mission-control/task-orchestrator/<workspace_id> must be mounted read-write so loaded task trees carry over without re-import."
+    ],
+    "depends_on": [],
+    "repo_binding": {
+        "project_id": "dopemux-mvp",
+        "repo_marker": ".dopetaskroot",
+        "origin_hint": "DDD-Enterprises/dopemux-mvp",
+        "require_identity_match": true
+    },
+    "series": {
+        "id": "DMX-COLDSTART",
+        "base_branch": "main",
+        "parent_tp_id": null,
+        "final_packet": false
+    },
+    "execution": {
+        "agent": "codex",
+        "branch": "codex/tp-dmx-coldstart-orch-http-cutover-109",
+        "base_branch": "main",
+        "stacked_because": "Contract-sensitive MCP transport change; zero DAG dependencies so can proceed in parallel with other CS-* packets. Must be its own branch for isolated supervisor review. POC was verified (MCP_TRANSPORT=http, POST /mcp returns HTTP 200 + 14-tool serverInfo), but production cutover requires its own analyze->tracer->planner->codereview chain per design doc \u00a711/A11."
+    },
+    "pal_chain": {
+        "enabled": true,
+        "steps": [
+            "analyze",
+            "thinkdeep",
+            "challenge",
+            "planner",
+            "challenge",
+            "implement",
+            "codereview",
+            "precommit",
+            "challenge"
+        ]
+    },
+    "commit": {
+        "message": "feat(coldstart): task-orchestrator HTTP-singleton MCP cutover (.mcp.json + launcher script + rollback docs)",
+        "allowlist": [
+            ".mcp.json",
+            "mcp_catalog.yaml",
+            "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+            "scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh",
+            "docs/03-reference/orchestrator-integration/http-singleton-cutover.md",
+            "tests/mcp_wrappers/test_orchestrator_http_singleton.sh",
+            "src/dopemux/commands/mcp_commands.py",
+            ".claude/hooks/mcp_health_probe.py",
+            "tests/unit/test_mcp_commands_catalog.py",
+            "tests/test_mcp_health_probe.py",
+            "task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json",
+            "proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/**"
+        ],
+        "verify": [
+            "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+            "python -m json.tool .mcp.json",
+            "bash -n scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+            "bash -n scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh",
+            "bash tests/mcp_wrappers/test_orchestrator_http_singleton.sh --dry-run",
+            "git diff --check"
+        ]
+    },
+    "pr": {
+        "title": "feat(coldstart): task-orchestrator HTTP-singleton MCP cutover + rollback docs",
+        "body": "## Summary\n- Replaces the per-client stdio launcher with a single HTTP singleton server per workspace.\n- Updates `.mcp.json` task-orchestrator entry from `type: stdio` to `type: http`.\n- Adds `scripts/mcp-wrappers/task-orchestrator-http-singleton.sh` \u2014 starts ONE `docker run -d --restart unless-stopped` container per workspace, exposing `MCP_TRANSPORT=http` on a deterministic port; idempotent (no-op if already running at correct SHA).\n- Adds `scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh` \u2014 documented rollback path (stop HTTP container, revert .mcp.json to stdio, periodic `docker kill` prune advice).\n- Adds `docs/03-reference/orchestrator-integration/http-singleton-cutover.md` \u2014 migration guide, port selection, rollback procedure, and the 2-session coexistence proof.\n\n## Scope\nSeries: DMX-COLDSTART. Risk: HIGH. Layer: L2. Contract-sensitive transport change. Supervisor review required.\n\n## Background\nPOC verified 2026-05-31: `MCP_TRANSPORT=http` + `MCP_PORT=<port>`, `POST http://localhost:<port>/mcp` returns HTTP 200 + 14-tool serverInfo (Streamable HTTP, `mcp-session-id` header). HTTP clients spawn ZERO launcher containers. Root cause of SQLite contention: stdio launcher spawns one `--rm` container per MCP client; under multi-client/retry churn, blocked-alive containers contend on shared WAL. HTTP singleton is ONE server/workspace \u2014 no contention.\n\n## Tracer note\nThe PAL tracer stage must trace the stdio launcher's workspace-root resolution (lines 55-80 of task-orchestrator-current-stdio.sh), singleton-enforcement logic (lines 128-160), and data_dir derivation (line 107) before any implementation begins. Transport change must carry over the same workspace_id computation and data_dir mount path.\n\n## Validation\n- Two concurrent mock sessions connect to HTTP endpoint; neither kills the other.\n- `docker ps` shows exactly ONE task-orchestrator container per workspace after cutover.\n- `docker kill` of the HTTP singleton causes .mcp.json clients to reconnect on next invocation.\n- Rollback: revert .mcp.json + run rollback script \u2192 stdio behavior restored.\nCapture proof under proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json.\n\n## NOT_RUN\n- Live multi-session test with real Claude Code sessions (requires operator to run manually; script test covers the container lifecycle).\n- Port selection for team environments (documented as UNKNOWN pending CS-08 port policy).",
+        "base": "main"
+    },
+    "steps": [
+        {
+            "id": "S1",
+            "task": "Inspect current repo truth before ANY transport change: read `scripts/mcp-wrappers/task-orchestrator-current-stdio.sh` in full \u2014 trace the workspace_root resolution logic (lines 55-80), data_dir derivation (line 107), container naming (line 141), singleton-enforcement kill logic (lines 143-160), and docker run args (lines 162-188). Read `.mcp.json` (line 25: type=stdio, command, env vars). Read `.claude/hooks/mcp_health_probe.py` to understand how the health probe detects the transport type. Read `docs/03-reference/orchestrator-integration/plugin-hooks-port.md` for prior HTTP context. Identify the exact IMAGE SHA pinned in the stdio script (v3.8.0 at line 4) \u2014 confirm it supports http transport (POC-verified). Run PAL tracer on the stdio flow before coding.",
+            "context_files": [
+                "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
+                ".mcp.json",
+                ".claude/hooks/mcp_health_probe.py",
+                "docs/03-reference/orchestrator-integration/plugin-hooks-port.md",
+                "claudedocs/cold-start-distribution/01-cold-start-distribution-design.md",
+                "AGENTS.md"
+            ],
+            "validation": [
+                "workspace_id derivation algorithm is fully understood and documented (hash input = project_root; workspace_name = basename(project_root) lowercased/sanitized).",
+                "data_dir path formula is confirmed: ${XDG_DATA_HOME:-~/.local/share}/dopemux-mission-control/task-orchestrator/<workspace_id>.",
+                "IMAGE SHA (ghcr.io/jpicklyk/task-orchestrator@sha256:e47ed00aa...) is confirmed to support MCP_TRANSPORT=http per POC.",
+                "mcp_health_probe.py transport-detection logic is noted \u2014 ensure probe works with http transport.",
+                "Any UNKNOWN authority gaps (e.g., port assignment policy, multi-host scenarios) are recorded explicitly.",
+                "PAL tracer invoked on the stdio singleton-enforcement block before proceeding to S2."
+            ]
+        },
+        {
+            "id": "S2",
+            "task": "Implement the HTTP singleton cutover: (1) Author `scripts/mcp-wrappers/task-orchestrator-http-singleton.sh` \u2014 derives workspace_id using the SAME algorithm as the stdio script (ensure exact parity); selects a deterministic port (default 7890, overridable via TASK_ORCHESTRATOR_HTTP_PORT env); checks if a container with the correct name AND image SHA is already running (idempotent, no-op if healthy); otherwise removes any stale container by name or data_dir mount, then runs `docker run -d --restart unless-stopped --name <container_name> -p 127.0.0.1:<port>:<port> -v <data_dir>:/app/data -e MCP_TRANSPORT=http -e MCP_PORT=<port> -e DATABASE_PATH=/app/data/current-tasks.db -e USE_FLYWAY=true -v <config>:/project/.taskorchestrator:ro <IMAGE> java ...`. Mounts logback.xml. (2) Author `scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh` \u2014 documented rollback: kill HTTP container, guidance to revert .mcp.json entry to stdio. (3) Update `.mcp.json` task-orchestrator entry: change `type` from `stdio` to `http`, set `url` to `http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp`, remove `command` and `args` (not valid for http type), preserve `env` block. (4) Author migration runbook `docs/03-reference/orchestrator-integration/http-singleton-cutover.md` with: pre-cutover checklist, cutover steps, rollback steps, 2-session coexistence test procedure.",
+            "requirements": [
+                "HTTP singleton script must derive workspace_id identically to the stdio script \u2014 share the derivation logic, do not re-implement it divergently.",
+                "Port must be 127.0.0.1-bound (loopback-only) \u2014 no 0.0.0.0 exposure.",
+                "Script must be idempotent: running it twice when a healthy container already exists is a no-op.",
+                "data_dir mount path must be IDENTICAL to what the stdio script would use for the same workspace.",
+                "Rollback script must be executable and tested as a dry-run.",
+                "Proof path: proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json",
+                "Stop condition: if workspace_id derivation diverges from stdio script in any edge case, STOP and record UNKNOWN."
+            ],
+            "expected_files": [
+                "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+                "scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh",
+                ".mcp.json",
+                "docs/03-reference/orchestrator-integration/http-singleton-cutover.md",
+                "proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/**"
+            ],
+            "validation": [
+                "bash -n scripts/mcp-wrappers/task-orchestrator-http-singleton.sh (syntax check passes).",
+                "bash -n scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh (syntax check passes).",
+                "python -m json.tool .mcp.json (valid JSON; task-orchestrator entry has type=http, url field, no command/args).",
+                "grep -n '127\\.0\\.0\\.1' scripts/mcp-wrappers/task-orchestrator-http-singleton.sh confirms loopback bind.",
+                "No file outside commit.allowlist was modified.",
+                "Supervisor stop: if mcp_health_probe.py breaks with http transport, STOP and record the gap."
+            ]
+        },
+        {
+            "id": "S3",
+            "task": "Write the 2-session CI test and capture proof artifacts: author `tests/mcp_wrappers/test_orchestrator_http_singleton.sh` \u2014 a bash test that (a) calls the singleton script twice and asserts exactly ONE container is running, (b) uses `curl -s -X POST http://127.0.0.1:<port>/mcp -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{}}}' | grep -q serverInfo` to confirm the HTTP endpoint responds correctly (skip if Docker not present in CI). Capture proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json with commands, exit codes, rollback procedure reference, residual risks, and UNKNOWNs.",
+            "expected_files": [
+                "tests/mcp_wrappers/test_orchestrator_http_singleton.sh",
+                "proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/**"
+            ],
+            "validation": [
+                "bash tests/mcp_wrappers/test_orchestrator_http_singleton.sh --dry-run (structure check, skips docker ops if absent).",
+                "Proof artifact includes: commands with exit codes, diff scope, rollback procedure, residual risks (live multi-session NOT_RUN), UNKNOWNs (port policy, multi-host).",
+                "Docs describe implemented behavior only \u2014 no aspirational claims about SQLite contention under all failure modes.",
+                "Rollback procedure is concrete and tested as a dry-run."
+            ]
+        },
+        {
+            "id": "S4",
+            "task": "Run focused validation, inspect git diff, run codereview/precommit, and prepare truthful completion summary.",
+            "commands": [
+                "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+                "python -m json.tool .mcp.json",
+                "bash -n scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+                "bash -n scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh",
+                "bash tests/mcp_wrappers/test_orchestrator_http_singleton.sh --dry-run",
+                "git diff --check",
+                "git diff --stat HEAD"
+            ],
+            "validation": [
+                "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+                "python -m json.tool .mcp.json",
+                "bash -n scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+                "bash -n scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh",
+                "git diff --check"
+            ]
+        }
+    ]
+}

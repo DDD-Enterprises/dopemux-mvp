@@ -71,6 +71,17 @@ def test_down_server_emits_problem_line():
     assert "docker compose up -d conport" in result
 
 
+def test_task_orchestrator_down_points_to_http_singleton_wrapper():
+    health = {
+        "servers": {"task-orchestrator": {"up": False, "port": 7890}},
+        "leaked_containers": 0,
+    }
+    result = _format_health(health)
+    assert result is not None
+    assert "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh" in result
+    assert "docker compose up -d task-orchestrator" not in result
+
+
 def test_stdio_server_shown_as_gear():
     health = {
         "servers": {"task-orchestrator": {"up": None}},
