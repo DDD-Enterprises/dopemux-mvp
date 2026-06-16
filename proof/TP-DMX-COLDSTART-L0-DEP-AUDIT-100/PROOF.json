@@ -1,0 +1,196 @@
+{
+  "task_packet": {
+    "id": "TP-DMX-COLDSTART-L0-DEP-AUDIT-100",
+    "path": "task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json"
+  },
+  "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-coldstart-l0-dep-audit-100",
+  "branch": "codex/tp-dmx-coldstart-l0-dep-audit-100",
+  "review_refresh": {
+    "refreshed_at": "2026-06-14T10:17:35-07:00",
+    "head_before_refresh": "2051d4b0c9b7d2b1d6c0208b800a6426dff57c03",
+    "pull_request": {
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/886",
+      "number": 886,
+      "state": "OPEN",
+      "draft": false,
+      "head": "codex/tp-dmx-coldstart-l0-dep-audit-100",
+      "base": "main",
+      "status_rollup": "Observed via gh pr view: required visible checks succeeded; Gemini Dispatch jobs and installer/integration/coverage jobs were skipped."
+    },
+    "orchestrator": {
+      "item_state_update": "NOT_RUN",
+      "reason": "task-orchestrator MCP get_context failed with Transport closed during review refresh; item transition was not advanced from Codex."
+    },
+    "local_validation_rerun": [
+      {
+        "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0
+      },
+      {
+        "cmd": "python -m json.tool templates/plugin/l0_membership.json",
+        "exit_code": 0
+      },
+      {
+        "cmd": "python -m compileall -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0
+      },
+      {
+        "cmd": "pytest -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0,
+        "result": "3 passed"
+      },
+      {
+        "cmd": "git diff --check",
+        "exit_code": 0
+      },
+      {
+        "cmd": "pre-commit run --files task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json templates/plugin/l0_membership.json tests/coldstart/__init__.py tests/coldstart/test_l0_membership.py docs/02-how-to/l0-dependency-audit.md proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/PROOF.json proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/AUDITOR_REPORT.md",
+        "exit_code": 0
+      }
+    ],
+    "review_result": "PASS: proof, manifest, docs, and focused test are consistent with the packet allowlist and packet validation commands; no runtime-fleet behavior was exercised."
+  },
+  "main_sync_refresh": {
+    "refreshed_at": "2026-06-14T10:41:20-07:00",
+    "origin_main_head": "a2396a92279d44f14992611be72d05b9d8136c0c",
+    "merge_commit": "3e2ec5c38748b60f84bbc79f4e5dd3b67a51a049",
+    "merge_result": "PASS: origin/main merged into codex/tp-dmx-coldstart-l0-dep-audit-100 with no conflicts.",
+    "local_validation_rerun": [
+      {
+        "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0
+      },
+      {
+        "cmd": "python -m json.tool templates/plugin/l0_membership.json",
+        "exit_code": 0
+      },
+      {
+        "cmd": "python -m compileall -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0
+      },
+      {
+        "cmd": "pytest -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0,
+        "result": "3 passed"
+      },
+      {
+        "cmd": "pytest -q tests/unit/dcp/test_routing_classifier.py",
+        "exit_code": 0,
+        "result": "70 passed"
+      },
+      {
+        "cmd": "git diff --check",
+        "exit_code": 0
+      }
+    ],
+    "not_run": [
+      "No live fleet startup.",
+      "No Docker container startup.",
+      "No provider calls.",
+      "No task-orchestrator item transition because MCP transport remained unavailable earlier in this session."
+    ]
+  },
+  "review_thread_refresh": {
+    "refreshed_at": "2026-06-16T06:16:33Z",
+    "head_before_refresh": "b27b55b2365fd23c1e40dde00ef2d6996d51edd3",
+    "changes": [
+      "Added .claude/commands/research.md to the closed coverage set and manifest.",
+      "Broadened the L0 guard to catch generic mcp__<server>__ and /mcp <server> references.",
+      "Recorded Serena, PAL, and Zen MCP dependencies for dx/implement.",
+      "Reclassified registered PreToolUse/PostToolUse hook helpers as L0.5 when native_hooks.py dispatch adds Redis-backed hook activity.",
+      "Reclassified orchestrator_post_edit_nudge.py as L0.5 because its useful path depends on cached task-orchestrator context."
+    ],
+    "local_validation_rerun": [
+      {
+        "cmd": "python -m json.tool templates/plugin/l0_membership.json",
+        "exit_code": 0
+      },
+      {
+        "cmd": "python -m compileall -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0
+      },
+      {
+        "cmd": "pytest -q tests/coldstart/test_l0_membership.py",
+        "exit_code": 0,
+        "result": "3 passed"
+      }
+    ]
+  },
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Static L0 membership audit only; runtime behavior of L0.5 surfaces remains out of scope."
+    ],
+    "skip_reason": "Packet risk is MEDIUM and implementation is a static manifest, focused test, docs, and proof artifact; no separate embedded auditor was invoked."
+  },
+  "repo": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "base": "origin/main"
+  },
+  "summary": {
+    "surfaces_audited": 40,
+    "l0_count": 2,
+    "l0_5_count": 38,
+    "manifest": "templates/plugin/l0_membership.json",
+    "test": "tests/coldstart/test_l0_membership.py",
+    "documentation": "docs/02-how-to/l0-dependency-audit.md"
+  },
+  "commands": [
+    {
+      "cmd": "pytest -q tests/coldstart/test_l0_membership.py",
+      "exit_code": 1,
+      "result": "RED: tests failed because templates/plugin/l0_membership.json was missing"
+    },
+    {
+      "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool templates/plugin/l0_membership.json",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m compileall -q tests/coldstart/test_l0_membership.py",
+      "exit_code": 0
+    },
+    {
+      "cmd": "pytest -q tests/coldstart/test_l0_membership.py",
+      "exit_code": 0,
+      "result": "3 passed"
+    },
+    {
+      "cmd": "python -m json.tool proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/PROOF.json",
+      "exit_code": 0
+    },
+    {
+      "cmd": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "cmd": "pre-commit run --files task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json templates/plugin/l0_membership.json tests/coldstart/__init__.py tests/coldstart/test_l0_membership.py docs/02-how-to/l0-dependency-audit.md proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/PROOF.json proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/AUDITOR_REPORT.md",
+      "exit_code": 0
+    }
+  ],
+  "not_run": [
+    "No live fleet startup.",
+    "No Docker container startup.",
+    "No provider calls.",
+    "No verification of L0.5 commands against running MCP services."
+  ],
+  "residual_risks": [
+    "The audit is static and conservative; future command/hook edits require re-running the manifest test.",
+    "L0.5 items may have fail-open behavior, but this packet does not prove them standalone.",
+    "The L0 plugin packet must consume only L0 entries unless it adds separate hard-degrade tests."
+  ],
+  "unknowns": [
+    "Runtime behavior of L0.5 items without a local fleet remains out of scope for this packet."
+  ]
+}
