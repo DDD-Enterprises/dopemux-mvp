@@ -1,0 +1,130 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-100-migration-foundation-gate",
+  "project": "dopemux-mvp",
+  "target": "Establish an explicit ConPort migration foundation gate before server bringup by proving migration file availability, deterministic apply or verify behavior, drift detection, and fail-closed handling before downstream DMX-CONPORT-OPTIMAL packets execute.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must not silently auto-apply migrations during normal ConPort startup.",
+    "This packet must not mutate production data without explicit operator approval.",
+    "This packet must fail closed if migration files are unavailable in the execution context.",
+    "This packet must fail closed on missing migration ledger, checksum mismatch, partial migration, or drifted database state.",
+    "This packet must mark live database introspection as NOT_RUN if no live ConPort database is available.",
+    "This packet must run real PAL gates; if PAL is unavailable, report NOT_RUN with the exact tool error.",
+    "This packet updates repo artifacts only; it does not mutate the already-loaded task-orchestrator root."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-100-migration-foundation-gate",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): add migration foundation gate",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/Dockerfile",
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/schema.sql",
+      "docker/mcp-servers-source/conport/migrations/**",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json",
+      "proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 - <<'PY'\nfrom pathlib import Path\nrequired = [Path('docker/mcp-servers-source/conport/Dockerfile'), Path('docker/mcp-servers-source/conport/schema.sql'), Path('docker/mcp-servers-source/conport/migrations/001_enhanced_decision_model.sql'), Path('docker/mcp-servers-source/conport/migrations/003_multi_tenancy_foundation.sql')]\nmissing = [str(p) for p in required if not p.exists()]\nprint({'missing': missing})\nraise SystemExit(1 if missing else 0)\nPY",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): add migration foundation gate",
+    "body": "Adds the Tier-0 ConPort migration foundation gate for DMX-CONPORT-OPTIMAL. The packet proves migration file availability, deterministic migration apply or verification behavior, drift detection, live DB introspection where available, and fail-closed handling before packet 101 or downstream schema-dependent feature packets execute. This packet does not mutate live task-orchestrator state.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "consensus",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, clean status, and that this packet is the first intended repo-load-plan gate before packet 101.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Repo load-plan evidence is captured without claiming live task-orchestrator mutation."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/ops/load-plans/load_plan-DMX-CONPORT-OPTIMAL.json",
+        "task-packets/generated/DMX-CONPORT-OPTIMAL/_AUTHORING_KIT.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run PAL analyze, thinkdeep, challenge, planner, and consensus before any runtime or schema implementation. Stop if PAL is unavailable.",
+      "validation": [
+        "PAL outputs are saved to proof.",
+        "If any PAL tool is unavailable, proof records NOT_RUN with the exact error and execution stops."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Verify ConPort Docker/image migration behavior from source. Confirm whether the Dockerfile copies schema.sql and whether it copies migrations into /app.",
+      "commands": [
+        "sed -n '1,120p' docker/mcp-servers-source/conport/Dockerfile",
+        "sed -n '408,485p' docker/mcp-servers-source/conport/enhanced_server.py"
+      ],
+      "validation": [
+        "Proof states whether migrations are present in the image build context.",
+        "Proof states that current _ensure_schema applies schema.sql only when workspace_contexts is absent, unless implementation changes this behavior."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Design or implement the deterministic migration runner/verifier. It must include ledger/checksum or equivalent drift detection, explicit operator gating, and fail-closed behavior for missing files, partial apply, checksum mismatch, and drift.",
+      "validation": [
+        "Migration runner/verifier behavior is documented with exact commands.",
+        "Silent normal-startup auto-apply is not introduced.",
+        "Rollback or recovery behavior is documented for partial migration and drift."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run read-only live database introspection if a live ConPort database is available. Check baseline tables, enhanced migration tables, constraints, ag_catalog availability, and migration ledger state.",
+      "validation": [
+        "Live DB introspection results are saved to proof when available.",
+        "If no live DB is available, proof records NOT_RUN and downstream schema-dependent work remains blocked."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run packet validation, source evidence checks, PAL codereview, PAL precommit, final PAL challenge, and precommit diff review.",
+      "validation": [
+        "TP JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Source evidence checks pass or are explicitly marked FAIL/NOT_RUN.",
+        "PAL codereview, precommit, and final challenge outputs are saved to proof.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

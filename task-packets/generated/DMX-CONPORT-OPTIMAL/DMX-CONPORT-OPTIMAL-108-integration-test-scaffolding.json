@@ -4,12 +4,13 @@
   "target": "Create a real integration test suite for ConPort using pytest and testcontainers, covering context CRUD, decision log/get, progress lifecycle, search, and migration correctness.",
   "invariants": [
     "This packet must run from a fresh dedicated worktree based on origin/main.",
-    "Tests must use testcontainers (PostgreSQL + Redis) — no mocking of database or cache layers.",
+    "Tests must use testcontainers (PostgreSQL + Redis) \u2014 no mocking of database or cache layers.",
     "schema.sql and migrations 001-004 and 007 must be applied in test setup in order.",
-    "Tests must not depend on a running docker compose stack — testcontainers spin up isolated instances.",
-    "Target handler coverage is >60% — measure with pytest-cov and record in proof.",
-    "Do not alter production source files — this packet touches only the tests directory.",
-    "All tests must be isolated — no shared state between test functions."
+    "Tests must not depend on a running docker compose stack \u2014 testcontainers spin up isolated instances.",
+    "Target handler coverage is >60% \u2014 measure with pytest-cov and record in proof.",
+    "Do not alter production source files \u2014 this packet touches only the tests directory.",
+    "All tests must be isolated \u2014 no shared state between test functions.",
+    "Integration tests must use the migration ordering and drift expectations proven or specified by DMX-CONPORT-OPTIMAL-100-migration-foundation-gate."
   ],
   "depends_on": [
     "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
@@ -78,7 +79,8 @@
       "validation": [
         "Migration file order confirmed: 001-004 and 007 identified by direct read.",
         "Existing test import patterns documented for consistency.",
-        "testcontainers availability confirmed (pip show testcontainers) or noted as needing install."
+        "testcontainers availability confirmed (pip show testcontainers) or noted as needing install.",
+        "Proof references DMX-CONPORT-OPTIMAL-100-migration-foundation-gate outcome before this packet proceeds."
       ]
     },
     {
@@ -107,7 +109,7 @@
       "validation": [
         "Each test file has at least 2 test functions.",
         "No test function shares state with another (no module-level mutable globals).",
-        "All assertions are concrete — no assert True without checking real values."
+        "All assertions are concrete \u2014 no assert True without checking real values."
       ]
     },
     {
@@ -117,8 +119,8 @@
         "python3 -m pytest docker/mcp-servers-source/conport/tests/integration/ -q --tb=short --cov=docker/mcp-servers-source/conport --cov-report=term-missing"
       ],
       "validation": [
-        "pytest exits 0 — all integration tests PASS.",
-        "Coverage report shows >60% handler coverage — exact percentage recorded in proof.",
+        "pytest exits 0 \u2014 all integration tests PASS.",
+        "Coverage report shows >60% handler coverage \u2014 exact percentage recorded in proof.",
         "Coverage report captured in proof bundle.",
         "Only allowlisted files staged and committed."
       ]

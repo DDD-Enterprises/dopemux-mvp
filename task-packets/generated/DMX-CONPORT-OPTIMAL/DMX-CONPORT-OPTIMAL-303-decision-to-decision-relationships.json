@@ -9,7 +9,8 @@
     "This packet must reject relationship_type values not in the allowed enum (builds_upon, supersedes, conflicts_with, validates, implements, questions) with 400.",
     "This packet must not modify existing decisions data or the entity_relationships table.",
     "This packet must not touch files outside the allowlist.",
-    "This packet must classify unresolved schema ambiguity as UNKNOWN and stop."
+    "This packet must classify unresolved schema ambiguity as UNKNOWN and stop.",
+    "This packet must cite DMX-CONPORT-OPTIMAL-100-migration-foundation-gate proof before relying on decision_relationships from migration 001 or adding fallback SQL."
   ],
   "depends_on": [
     "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api"
@@ -70,12 +71,13 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Preflight: create a fresh dedicated worktree from origin/main. Verify repo marker, origin identity, branch, and clean baseline. Inspect schema.sql and all migration files to determine whether decision_relationships is already defined. Also confirm that entity_relationships exists (it should, per DMX-CONPORT-OPTIMAL-202 dependency). Record both findings in proof. Note: do NOT attempt to merge or alias these tables — they are intentionally separate.",
+      "task": "Preflight: create a fresh dedicated worktree from origin/main. Verify repo marker, origin identity, branch, and clean baseline. Inspect schema.sql and all migration files to determine whether decision_relationships is already defined. Also confirm that entity_relationships exists (it should, per DMX-CONPORT-OPTIMAL-202 dependency). Record both findings in proof. Note: do NOT attempt to merge or alias these tables \u2014 they are intentionally separate.",
       "validation": [
         "Worktree verified and recorded in proof.",
         "decision_relationships table existence classified as EXISTS, ABSENT, or UNKNOWN.",
         "entity_relationships confirmed present (or recorded as UNKNOWN if not found).",
-        "No merger of the two tables performed or planned."
+        "No merger of the two tables performed or planned.",
+        "Proof references DMX-CONPORT-OPTIMAL-100-migration-foundation-gate outcome before this packet proceeds."
       ],
       "context_files": [
         "docker/mcp-servers-source/conport/schema.sql",
@@ -107,7 +109,7 @@
       "task": "Implement two REST routes in enhanced_server.py: POST /api/decisions/{decision_id}/relationships (body: target_decision_id required, relationship_type required from enum, notes optional) and GET /api/decisions/{decision_id}/relationships (returns all edges where decision_id is source or target, each edge includes both decision ids, type, notes, created_at). Validate relationship_type against the enum; fail-closed on invalid type, unknown ids, and duplicate edges.",
       "validation": [
         "All six tests from S3 pass (green).",
-        "relationship_type enum validation is exhaustive — unknown types return 400, not 500.",
+        "relationship_type enum validation is exhaustive \u2014 unknown types return 400, not 500.",
         "Duplicate edge returns 409 (not a silent no-op).",
         "No regression in other enhanced_server.py routes."
       ],

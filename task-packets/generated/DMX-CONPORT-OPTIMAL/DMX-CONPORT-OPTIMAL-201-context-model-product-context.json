@@ -1,17 +1,18 @@
 {
   "id": "DMX-CONPORT-OPTIMAL-201-context-model-product-context",
   "project": "dopemux-mvp",
-  "target": "Give ConPort an intentional product-vs-active context model by adding a product_context column to workspace_contexts via migration 008, exposing GET/POST REST endpoints, and adding get_product_context/update_product_context MCP tools — gated on Operator Decision 1 (Option B default; Option A = convention-via-custom_data fallback with no code change).",
+  "target": "Give ConPort an intentional product-vs-active context model by adding a product_context column to workspace_contexts via migration 008, exposing GET/POST REST endpoints, and adding get_product_context/update_product_context MCP tools \u2014 gated on Operator Decision 1 (Option B default; Option A = convention-via-custom_data fallback with no code change).",
   "invariants": [
     "This packet MUST NOT execute unless Operator Decision Gate 1 is explicitly set to Option B.",
     "Option A (no-code fallback via custom_data convention) is the safe default if the operator has not confirmed Option B.",
     "This packet must not modify any table other than workspace_contexts.",
-    "Migration 008 must be additive only — no column drops, no renames, no data loss.",
+    "Migration 008 must be additive only \u2014 no column drops, no renames, no data loss.",
     "The new product_context column must be TEXT NULLABLE so existing rows are unaffected.",
     "product_context and active_context must remain independently readable and writable.",
     "All new MCP tools must be registered in both server.py and conport_mcp_stdio.py.",
     "This packet must not alter existing get_active_context or update_active_context behavior.",
-    "Classify missing operator decision as UNKNOWN; fail closed."
+    "Classify missing operator decision as UNKNOWN; fail closed.",
+    "This packet must cite DMX-CONPORT-OPTIMAL-100-migration-foundation-gate proof before relying on migration 008 or workspace_contexts schema evolution."
   ],
   "depends_on": [
     "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
@@ -53,7 +54,7 @@
     ]
   },
   "pr": {
-    "title": "feat(conport): product context model — migration 008 + REST + MCP tools",
+    "title": "feat(conport): product context model \u2014 migration 008 + REST + MCP tools",
     "body": "Implements Operator Decision Gate 1, Option B: adds product_context TEXT column to workspace_contexts via migration 008_product_context.sql, exposes GET/POST /api/context/{workspace_id}/product REST endpoints, registers get_product_context and update_product_context MCP tools in server.py and conport_mcp_stdio.py, and updates _ensure_schema for live systems. Product context round-trips independently of active context.",
     "base": "main"
   },
@@ -74,11 +75,12 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Preflight: confirm Operator Decision Gate 1 is set to Option B. Read AGENTS.md, schema.sql, enhanced_server.py, server.py, conport_mcp_stdio.py, and the existing migrations 001–007 to understand current schema and MCP tool registration patterns. Record baseline commit SHA and clean worktree status in proof.",
+      "task": "Preflight: confirm Operator Decision Gate 1 is set to Option B. Read AGENTS.md, schema.sql, enhanced_server.py, server.py, conport_mcp_stdio.py, and the existing migrations 001\u2013007 to understand current schema and MCP tool registration patterns. Record baseline commit SHA and clean worktree status in proof.",
       "validation": [
         "Operator Decision 1 Option B is explicitly confirmed; if absent, abort and record UNKNOWN.",
-        "Migration numbering 001–007 is confirmed; 008 does not yet exist.",
-        "Existing get_active_context / update_active_context tool signatures are captured for non-regression reference."
+        "Migration numbering 001\u2013007 is confirmed; 008 does not yet exist.",
+        "Existing get_active_context / update_active_context tool signatures are captured for non-regression reference.",
+        "Proof references DMX-CONPORT-OPTIMAL-100-migration-foundation-gate outcome before this packet proceeds."
       ],
       "context_files": [
         "AGENTS.md",
