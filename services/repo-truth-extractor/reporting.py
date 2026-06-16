@@ -501,6 +501,12 @@ def write_run_manifest(
     disabled_providers = list(
         getattr(args, "_resolved_disabled_providers", ()) or ()
     )
+    cost_profile_metadata: Dict[str, Any] = dict(
+        getattr(args, "_cost_profile_metadata", None) or {}
+    )
+    provider_surface_summary: str = str(
+        getattr(args, "_provider_surface_summary", None) or ""
+    )
     manifest = {
         "run_id": run_id,
         "generated_at": deps.now_iso(),
@@ -605,6 +611,8 @@ def write_run_manifest(
         "blocked_promptset": run_blocked,
         "cost_profile": cost_profile or None,
         "cost_profile_input": cost_profile_input,
+        "cost_profile_metadata": cost_profile_metadata or None,
+        "provider_surface_summary": provider_surface_summary or None,
         "routing_policy": routing_policy,
         "routing_policy_version": deps.routing_policy_version,
         "model_aliases": model_alias_overrides,

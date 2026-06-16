@@ -88,6 +88,10 @@ def test_each_profile_has_required_fields() -> None:
         "cost_cap_mode",
         "notes",
         "cell_aliases",
+        "workload_class",
+        "governance_posture",
+        "provider_surface",
+        "allowed_payload_sensitivity",
     }
     for name, profile in runner.COST_PROFILES.items():
         missing = required - set(profile.keys())
