@@ -43,6 +43,13 @@ from dopemux.dcp.routing_backend_policy import (
     explain_backend_policy,
     select_backend_policy,
 )
+from dopemux.dcp.lane_model import (
+    LaneDecision,
+    LaneKind,
+)
+from dopemux.dcp.lane_engine import (
+    decide_lane,
+)
 
 __all__ = [
     # Proof artifact readers (pre-existing)
@@ -82,4 +89,8 @@ __all__ = [
     "BackendPolicyRule",
     "explain_backend_policy",
     "select_backend_policy",
+    # Lane model + engine (DMX-DCP-MODEL-ROUTING-MVP-0005)
+    "LaneDecision",
+    "LaneKind",
+    "decide_lane",
 ]
