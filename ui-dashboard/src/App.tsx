@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
+  Button,
   Chip,
   CircularProgress,
   Collapse,
@@ -206,6 +207,7 @@ function App() {
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [lastSignalTime, setLastSignalTime] = useState<Date | null>(null);
+  const [retryTrigger, setRetryTrigger] = useState(0);
 
   const handleDismissNotification = useCallback((id: string) => {
     setNotifications((current) => current.filter((n) => n.id !== id));
@@ -233,6 +235,12 @@ function App() {
       setErrorMessage(`Failed to copy recommendation: ${errorMsg}`);
     }
   }, [cognitiveState.recommendation]);
+
+  const handleReconnect = useCallback(() => {
+    setErrorMessage(null);
+    setConnectionStatus('connecting');
+    setRetryTrigger((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -270,7 +278,7 @@ function App() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [retryTrigger]);
 
   useEffect(() => {
     const socket = new WebSocket(`${dashboardWsUrl}/ws/state`);
@@ -316,6 +324,11 @@ function App() {
 
     return () => {
       socket.close();
+    };
+  }, [retryTrigger]);
+
+  useEffect(() => {
+    return () => {
       if (clearConfirmTimeoutRef.current) {
         clearTimeout(clearConfirmTimeoutRef.current);
         clearConfirmTimeoutRef.current = null;
@@ -430,7 +443,7 @@ function App() {
           }}
         >
           <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Tooltip title="Real-time connection to the ADHD dashboard surface" arrow>
+            <Tooltip title={connectionStatus === 'degraded' ? 'Click to retry connection' : 'Real-time connection to the ADHD dashboard surface'} arrow>
               <Chip
                 icon={
                   <Box
@@ -451,8 +464,9 @@ function App() {
                   />
                 }
                 label={`${connectionLabel} DØPEMÜX Ritual Daemon`}
-                aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}
+                aria-label={connectionStatus === 'degraded' ? 'Connection degraded. Click to attempt reconnection.' : `System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}
                 className="dopemux-chip"
+                onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}
                 color={
                   connectionStatus === 'live'
                     ? 'primary'
@@ -461,6 +475,15 @@ function App() {
                       : 'error'
                 }
                 tabIndex={0}
+                sx={{
+                  cursor: connectionStatus === 'degraded' ? 'pointer' : 'default',
+                  transition: 'all 0.2s ease',
+                  '&:hover': connectionStatus === 'degraded' ? {
+                    transform: 'translateY(-1px)',
+                    boxShadow: `0 0 12px ${alpha(brandTokens.colors.saintGold, 0.4)}`,
+                    borderColor: brandTokens.colors.saintGold,
+                  } : {},
+                }}
               />
             </Tooltip>
             <Tooltip title="User consent verified for cognitive monitoring" arrow>
@@ -552,6 +575,13 @@ function App() {
             severity="error"
             icon={<AlertTriangle size={20} />}
             onClose={() => setErrorMessage(null)}
+            action={
+              connectionStatus === 'degraded' && (
+                <Button color="inherit" size="small" onClick={handleReconnect} sx={{ fontWeight: 'bold', letterSpacing: '0.05em' }}>
+                  RECONNECT
+                </Button>
+              )
+            }
             sx={{
               mb: 3,
               borderRadius: 3,
