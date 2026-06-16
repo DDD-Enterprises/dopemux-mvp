@@ -1,7 +1,7 @@
 {
   "id": "DMX-DCP-TOOLING-108",
   "project": "dopemux-mvp",
-  "target": "Implement dcp evidence-pack subcommand and receipt hash-locking: PROOF.json gains receipt_refs[{path,sha256}], verify-proof validates those hashes, tamper detection demonstrated, old proof bundles verified backward-compatible against both proof.py and scripts/audit/validate_audit_proof.py.",
+  "target": "Implement dcp evidence-pack subcommand and receipt hash-locking: PROOF.json gains receipt_refs[{path,sha256}], verify-proof validates those hashes, tamper detection demonstrated, old proof bundles verified backward-compatible against both dopemux.orchestrator.validation.proof and scripts/audit/validate_audit_proof.py.",
   "invariants": [
     "Never wire or import the merge seam (the queue drain or any live lane-merge path).",
     "Never compute live SHAs for static fixtures — only allowed for runtime git reads explicitly carved out in design D-E.",
@@ -31,6 +31,7 @@
     "allowlist": [
       "src/dopemux/dcp/cli_dcp.py",
       "src/dopemux/dcp/evidence_pack.py",
+      "src/dopemux/orchestrator/validation/proof.py",
       "schemas/proof/proof_schema.json",
       "tests/dcp/test_evidence_pack.py",
       "proof/DMX-DCP-TOOLING-108/PROOF.json"
@@ -38,7 +39,7 @@
   },
   "pr": {
     "title": "feat(dcp): evidence-pack + receipt hash-locking (DMX-DCP-TOOLING-108)",
-    "body": "## Summary\n- Adds `dopemux dcp evidence-pack <tp>` subcommand: assembles proof/<tp>/, collects receipts from .dcp/ store into proof/<tp>/receipts/, emits a DCP snapshot, and produces a red-lane report.\n- PROOF.json schema gains additive optional `receipt_refs[]` field — array of `{path, sha256}` anchoring each collected receipt into the committed proof bundle.\n- `dcp verify-proof` updated to validate receipt hashes from `receipt_refs` when present.\n- Tamper test: modifying a collected receipt after hash-lock causes verify-proof to report TAMPERED.\n- Backward compatibility: existing 30+ committed proof bundles verified against both proof.py and scripts/audit/validate_audit_proof.py — all must pass.\n\n## Validation\n- Pack → verify round-trip passes.\n- Tamper test confirms modified receipt is detected.\n- Old bundles green on both validator paths.\n\n## NOT_RUN\n- L3 completeness gate requiring receipts in evidence (Wave 4).",
+    "body": "## Summary\n- Adds `dopemux dcp evidence-pack <tp>` subcommand: assembles proof/<tp>/, collects receipts from .dcp/ store into proof/<tp>/receipts/, emits a DCP snapshot, and produces a red-lane report.\n- PROOF.json schema gains additive optional `receipt_refs[]` field — array of `{path, sha256}` anchoring each collected receipt into the committed proof bundle.\n- `dcp verify-proof` updated to validate receipt hashes from `receipt_refs` when present.\n- Tamper test: modifying a collected receipt after hash-lock causes verify-proof to report TAMPERED.\n- Backward compatibility: existing 30+ committed proof bundles verified against both dopemux.orchestrator.validation.proof and scripts/audit/validate_audit_proof.py — all must pass.\n\n## Validation\n- Pack → verify round-trip passes.\n- Tamper test confirms modified receipt is detected.\n- Old bundles green on both validator paths.\n\n## NOT_RUN\n- L3 completeness gate requiring receipts in evidence (Wave 4).",
     "base": "main"
   },
   "steps": [
@@ -47,7 +48,7 @@
       "task": "Preflight: enumerate existing committed proof bundles under proof/, verify both validator paths are importable, confirm PROOF.json schema does not currently have receipt_refs, and read scripts/audit/validate_audit_proof.py to understand its validation contract.",
       "commands": [
         "find proof -name 'PROOF.json' | sort",
-        "python -c \"import dopemux.dcp.proof\" && echo 'proof.py ok' || echo 'MISSING'",
+        "python -c \"from dopemux.orchestrator.validation.proof import validate_proof_file\" && echo 'proof validator ok' || echo 'MISSING'",
         "python -m py_compile scripts/audit/validate_audit_proof.py && echo 'validate_audit_proof ok' || echo 'MISSING'",
         "python -m json.tool schemas/proof/proof_schema.json | grep -c 'receipt_refs' || echo '0 - field absent as expected'"
       ],
@@ -58,14 +59,14 @@
       ],
       "context_files": [
         "schemas/proof/proof_schema.json",
-        "src/dopemux/dcp/proof.py",
+        "src/dopemux/orchestrator/validation/proof.py",
         "scripts/audit/validate_audit_proof.py",
         "claudedocs/dcp-tooling-system/30-design.md"
       ]
     },
     {
       "id": "S2",
-      "task": "Extend PROOF.json schema (schemas/proof/proof_schema.json) with an additive optional receipt_refs field: array of objects {path: string, sha256: string}. The field is optional so all existing bundles without it remain valid. Update proof.py to populate and validate this field when present.",
+      "task": "Extend PROOF.json schema (schemas/proof/proof_schema.json) with an additive optional receipt_refs field: array of objects {path: string, sha256: string}. The field is optional so all existing bundles without it remain valid. Update dopemux.orchestrator.validation.proof to populate and validate this field when present.",
       "validation": [
         "python -m json.tool schemas/proof/proof_schema.json exits 0.",
         "python -m jsonschema --check-metaschema schemas/proof/proof_schema.json exits 0.",
@@ -91,13 +92,13 @@
     },
     {
       "id": "S5",
-      "task": "Backward-compatibility sweep: run both validators against all existing committed proof bundles. Use both proof.py validate_proof_file() and scripts/audit/validate_audit_proof.py — all 30+ bundles must pass both paths with the updated schema.",
+      "task": "Backward-compatibility sweep: run both validators against all existing committed proof bundles. Use both dopemux.orchestrator.validation.proof.validate_proof_file() and scripts/audit/validate_audit_proof.py — all 30+ bundles must pass both paths with the updated schema.",
       "commands": [
-        "find proof -name 'PROOF.json' -exec python -c \"import sys; from dopemux.dcp.proof import validate_proof_file; validate_proof_file(sys.argv[1]); print('PASS', sys.argv[1])\" {} \\;",
+        "find proof -name 'PROOF.json' -exec python -c \"import sys; from dopemux.orchestrator.validation.proof import validate_proof_file; validate_proof_file(sys.argv[1]); print('PASS', sys.argv[1])\" {} \\;",
         "find proof -name 'PROOF.json' -exec python scripts/audit/validate_audit_proof.py {} \\;"
       ],
       "validation": [
-        "All existing PROOF.json bundles PASS proof.py validate_proof_file().",
+        "All existing PROOF.json bundles PASS dopemux.orchestrator.validation.proof.validate_proof_file().",
         "All existing PROOF.json bundles PASS scripts/audit/validate_audit_proof.py.",
         "Zero regressions on old bundles."
       ]

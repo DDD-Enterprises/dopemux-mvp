@@ -31,6 +31,8 @@
     "allowlist": [
       "schemas/dcp/dcp_helper_receipt.schema.json",
       "src/dopemux/dcp/receipts.py",
+      "src/dopemux/dcp/red_lane_rules.py",
+      "schemas/dcp/manifest.json",
       ".gitignore",
       "tests/dcp/test_receipts.py",
       "proof/DMX-DCP-TOOLING-106/PROOF.json",
