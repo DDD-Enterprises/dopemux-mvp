@@ -8,7 +8,7 @@
     "Do not change the REST route shapes or response envelopes.",
     "info_server.py SSE URL fix must change :3004 to :3005 only for the advertised SSE endpoint.",
     "Dockerfile EXPOSE 3005 must be additive — do not remove existing EXPOSE directives.",
-    "tools/list must advertise exactly 12 tools after this packet (verify count)."
+    "tools/list must advertise exactly 13 tools after this packet (verify count)."
   ],
   "depends_on": [
     "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
@@ -50,7 +50,7 @@
   },
   "pr": {
     "title": "feat(conport): close JSON-RPC discovery gaps and fix SSE transport URL",
-    "body": "Closes three JSON-RPC discovery gaps and one transport mis-advertisement:\n1. Adds `conport_workspace_summary` to enhanced_server.py dispatch_map so the tool is reachable via JSON-RPC.\n2. Adds schema entries for `fork_instance`, `promote`, and `promote_all` to _get_tool_schemas (documented admin-only, schemas only).\n3. Fixes info_server.py advertised SSE URL from :3004 to :3005.\n4. Adds `EXPOSE 3005` to Dockerfile.\n\nDepends on DMX-CONPORT-OPTIMAL-104 and DMX-CONPORT-OPTIMAL-105 (all 12 tools must exist before parity can be verified).\n\nAcceptance: tools/list advertises 12 tools including workspace_summary.",
+    "body": "Closes three JSON-RPC discovery gaps and one transport mis-advertisement:\n1. Adds `conport_workspace_summary` to enhanced_server.py dispatch_map so the tool is reachable via JSON-RPC.\n2. Adds schema entries for `fork_instance`, `promote`, and `promote_all` to _get_tool_schemas (documented admin-only, schemas only).\n3. Fixes info_server.py advertised SSE URL from :3004 to :3005.\n4. Adds `EXPOSE 3005` to Dockerfile.\n\nDepends on DMX-CONPORT-OPTIMAL-104 and DMX-CONPORT-OPTIMAL-105 (all 13 tools must exist before parity can be verified).\n\nAcceptance: tools/list advertises 13 tools including workspace_summary.",
     "base": "main"
   },
   "pal_chain": {
@@ -83,13 +83,13 @@
     },
     {
       "id": "S2",
-      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_jsonrpc_parity.py covering: (a) tools/list response contains exactly 12 tools; (b) conport_workspace_summary is in tools/list; (c) fork_instance schema is present in tools/list; (d) GET /info SSE URL contains :3005.",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_jsonrpc_parity.py covering: (a) tools/list response contains exactly 13 tools; (b) conport_workspace_summary is in tools/list; (c) fork_instance schema is present in tools/list; (d) GET /info SSE URL contains :3005.",
       "expected_files": [
         "docker/mcp-servers-source/conport/tests/test_jsonrpc_parity.py"
       ],
       "validation": [
         "Tests exist and fail before production code changes.",
-        "12-tool count assertion is explicit."
+        "13-tool count assertion is explicit."
       ]
     },
     {
@@ -104,13 +104,13 @@
     },
     {
       "id": "S4",
-      "task": "Run tests against live container. Verify tools/list count is 12. Run PAL codereview and precommit. Commit, push, open PR, file proof bundle.",
+      "task": "Run tests against live container. Verify tools/list count is 13. Run PAL codereview and precommit. Commit, push, open PR, file proof bundle.",
       "commands": [
         "python3 -m pytest docker/mcp-servers-source/conport/tests/test_jsonrpc_parity.py -q"
       ],
       "validation": [
         "All parity tests PASS with exit code 0.",
-        "tools/list JSON response captured in proof with tool count verified at 12.",
+        "tools/list JSON response captured in proof with tool count verified at 13.",
         "Only allowlisted files staged and committed."
       ]
     }

@@ -35,7 +35,7 @@
     "message": "fix(conport): rewrite workspace_relationships traversal with UUID-safe recursive CTE, depth 1-3",
     "allowlist": [
       "docker/mcp-servers-source/conport/enhanced_server.py",
-      "services/conport_kg/unified_queries.py",
+      "docker/mcp-servers-source/conport/unified_queries.py",
       "docker/mcp-servers-source/conport/tests/test_relationships_traversal.py",
       "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-203-fix-workspace-relationships-traversal.json",
       "proof/conport-optimal-203/**"
@@ -79,7 +79,7 @@
       "context_files": [
         "AGENTS.md",
         "docker/mcp-servers-source/conport/enhanced_server.py",
-        "services/conport_kg/unified_queries.py",
+        "docker/mcp-servers-source/conport/unified_queries.py",
         "docker/mcp-servers-source/conport/schema.sql"
       ]
     },

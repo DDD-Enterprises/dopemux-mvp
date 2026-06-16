@@ -13,7 +13,7 @@
   ],
   "depends_on": [
     "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s",
-    "DMX-CONPORT-OPTIMAL-107-redis-cache-invalidation",
+    "DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get",
     "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api"
   ],
   "repo_binding": {
@@ -26,7 +26,7 @@
     "id": "dmx-conport-optimal",
     "base_branch": "origin/main",
     "parent_tp_id": "DMX-CONPORT-OPTIMAL-205-search-delegation-docs",
-    "final_packet": true
+    "final_packet": false
   },
   "execution": {
     "agent": "codex",

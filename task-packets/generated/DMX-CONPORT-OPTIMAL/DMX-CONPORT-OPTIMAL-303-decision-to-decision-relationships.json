@@ -12,7 +12,7 @@
     "This packet must classify unresolved schema ambiguity as UNKNOWN and stop."
   ],
   "depends_on": [
-    "DMX-CONPORT-OPTIMAL-202-entity-relationships"
+    "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api"
   ],
   "repo_binding": {
     "project_id": "dopemux-mvp",
@@ -21,10 +21,10 @@
     "require_identity_match": true
   },
   "series": {
-    "id": "DMX-CONPORT-OPTIMAL",
+    "id": "dmx-conport-optimal",
     "base_branch": "origin/main",
     "parent_tp_id": null,
-    "final_packet": false
+    "final_packet": true
   },
   "execution": {
     "agent": "codex",

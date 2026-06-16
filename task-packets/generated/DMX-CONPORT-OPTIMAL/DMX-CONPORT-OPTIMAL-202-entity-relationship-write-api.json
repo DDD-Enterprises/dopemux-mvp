@@ -13,7 +13,7 @@
     "Classify missing or undecided operator input as UNKNOWN; fail closed."
   ],
   "depends_on": [
-    "DMX-CONPORT-OPTIMAL-109-surface-parity-tests"
+    "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
   ],
   "repo_binding": {
     "project_id": "dopemux-mvp",

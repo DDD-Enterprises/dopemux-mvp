@@ -10,7 +10,7 @@
     "Classify any undocumented search_type behavior observed in runtime as UNKNOWN until verified."
   ],
   "depends_on": [
-    "DMX-CONPORT-OPTIMAL-105-search-and-fts"
+    "DMX-CONPORT-OPTIMAL-105-mcp-surface-search"
   ],
   "repo_binding": {
     "project_id": "dopemux-mvp",

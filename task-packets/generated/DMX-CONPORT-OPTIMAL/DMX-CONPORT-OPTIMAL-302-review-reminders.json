@@ -11,7 +11,7 @@
     "This packet must classify unresolved ambiguity about table existence as UNKNOWN and stop."
   ],
   "depends_on": [
-    "DMX-CONPORT-OPTIMAL-109-mcp-server-baseline"
+    "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
   ],
   "repo_binding": {
     "project_id": "dopemux-mvp",
@@ -20,7 +20,7 @@
     "require_identity_match": true
   },
   "series": {
-    "id": "DMX-CONPORT-OPTIMAL",
+    "id": "dmx-conport-optimal",
     "base_branch": "origin/main",
     "parent_tp_id": null,
     "final_packet": false
