@@ -66,9 +66,10 @@ This ADR does not authorize silent migration auto-apply on normal ConPort
 startup. Any runtime migration runner must be explicit, operator-gated,
 auditable, and fail closed on drift.
 
-This ADR also does not mutate live task-orchestrator state. Synchronizing the
-already-loaded root is a separate operator action and must not be claimed from
-repo artifact changes alone.
+This ADR did not mutate live task-orchestrator state when authored.
+Synchronizing the already-loaded root is a separate operator action and must not
+be claimed from repo artifact changes alone. That separate sync was later
+authorized on 2026-06-16 and recorded in the load-plan artifact.
 
 ## Consequences
 

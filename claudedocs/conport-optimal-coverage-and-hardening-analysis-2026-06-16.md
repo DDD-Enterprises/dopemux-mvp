@@ -84,11 +84,16 @@ IDs and orchestrator UUID mappings are preserved.
 
 ## Live orchestrator caveat
 
-This repo change does not mutate the already-loaded task-orchestrator root
-`44452f53-615d-4519-b21a-4a9cbc8774a4`. Live orchestrator synchronization is a
-separate operational step and is intentionally not performed by this artifact
-update. Until that sync occurs, live queue state may still show packet 101 as the
-first unblocked packet.
+The initial repo change did not mutate the already-loaded task-orchestrator root
+`44452f53-615d-4519-b21a-4a9cbc8774a4`.
+
+After separate user authorization on 2026-06-16, live synchronization created
+packet 100 as `dcf66b56-8fbf-426f-a6d6-826f0caa5822`. At sync time, live packet
+101 was already terminal and packet 102 was already in review, so a literal
+`100 -> 101` edge would not enforce the gate. The live sync therefore created
+packet 100 blockers to packet 101 and the current non-terminal descendants as
+live-state reconciliation. A fresh repo replay remains the cleaner 19-node /
+22-edge graph with packet 100 blocking packet 101.
 
 ## PAL review summary
 
