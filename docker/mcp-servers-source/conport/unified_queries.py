@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class UnifiedSearchResult:
     """Cross-workspace search result with metadata."""
-    decision_id: int
+    decision_id: str
     workspace_id: str
     summary: str
     rationale: str
@@ -60,7 +60,7 @@ class UnifiedQueryAPI:
         self,
         db_pool: asyncpg.Pool,
         redis_client: redis.Redis,
-        schema: str = "ag_catalog"
+        schema: str = "public"
     ):
         self.db_pool = db_pool
         self.redis = redis_client
@@ -107,7 +107,7 @@ class UnifiedQueryAPI:
         # Full-text search across workspaces
         sql = f"""
             SELECT
-                id as decision_id,
+                id::text as decision_id,
                 workspace_id,
                 summary,
                 rationale,
@@ -116,19 +116,17 @@ class UnifiedQueryAPI:
                     to_tsvector('english', summary || ' ' || COALESCE(rationale, '')),
                     plainto_tsquery('english', $1)
                 ) as relevance_score,
-                user_id,
                 tags
             FROM {self.schema}.decisions
-            WHERE user_id = $2
-              AND workspace_id = ANY($3)
+            WHERE workspace_id = ANY($2)
               AND to_tsvector('english', summary || ' ' || COALESCE(rationale, ''))
                   @@ plainto_tsquery('english', $1)
             ORDER BY relevance_score DESC, created_at DESC
-            LIMIT $4
+            LIMIT $3
         """
 
         async with self.db_pool.acquire() as conn:
-            rows = await conn.fetch(sql, query, user_id, workspaces, limit)
+            rows = await conn.fetch(sql, query, workspaces, limit)
 
         results = [
             UnifiedSearchResult(
@@ -138,7 +136,7 @@ class UnifiedQueryAPI:
                 rationale=row['rationale'] or '',
                 created_at=row['created_at'],
                 relevance_score=float(row['relevance_score']),
-                user_id=row['user_id'],
+                user_id=user_id,
                 tags=row['tags'] or []
             )
             for row in rows
@@ -169,7 +167,7 @@ class UnifiedQueryAPI:
 
     async def get_related_decisions(
         self,
-        decision_id: int,
+        decision_id: str,
         user_id: str,
         include_workspaces: bool = True,
         max_depth: int = 3
@@ -199,26 +197,28 @@ class UnifiedQueryAPI:
             WITH RECURSIVE decision_graph AS (
                 -- Base case: starting decision
                 SELECT
-                    id, workspace_id, summary, user_id, 0 as depth,
-                    ARRAY[id] as path
+                    id::text as id, workspace_id, summary, 0 as depth,
+                    ARRAY[id::text] as path
                 FROM {self.schema}.decisions
-                WHERE id = $1 AND user_id = $2
+                WHERE id::text = $1
 
                 UNION
 
                 -- Recursive case: follow relationships
                 SELECT
-                    d.id, d.workspace_id, d.summary, d.user_id, dg.depth + 1,
-                    dg.path || d.id
-                FROM {self.schema}.decisions d
+                    d.id::text as id, d.workspace_id, d.summary, dg.depth + 1,
+                    dg.path || d.id::text
+                FROM decision_graph dg
                 INNER JOIN {self.schema}.entity_relationships r
-                    ON (r.target_item_id::int = d.id OR r.source_item_id::int = d.id)
-                INNER JOIN decision_graph dg
-                    ON (dg.id::text = r.source_item_id OR dg.id::text = r.target_item_id)
-                WHERE d.user_id = $2
-                  AND dg.depth < $3
-                  AND NOT (d.id = ANY(dg.path))
-                  {'AND (d.workspace_id = dg.workspace_id OR $4 = true)' if include_workspaces else ''}
+                    ON (dg.id = r.source_id::text OR dg.id = r.target_id::text)
+                INNER JOIN {self.schema}.decisions d
+                    ON (
+                        (r.target_id::text = d.id::text AND r.source_id::text = dg.id)
+                        OR (r.source_id::text = d.id::text AND r.target_id::text = dg.id)
+                    )
+                WHERE dg.depth < $2
+                  AND NOT (d.id::text = ANY(dg.path))
+                  {'AND (d.workspace_id = dg.workspace_id OR $3 = true)' if include_workspaces else ''}
             )
             SELECT DISTINCT id, workspace_id, summary, depth
             FROM decision_graph
@@ -226,10 +226,10 @@ class UnifiedQueryAPI:
         """
 
         async with self.db_pool.acquire() as conn:
-            rows = await conn.fetch(sql, decision_id, user_id, max_depth, include_workspaces)
+            rows = await conn.fetch(sql, str(decision_id), max_depth, include_workspaces)
 
         graph = {
-            'root': decision_id,
+            'root': str(decision_id),
             'nodes': [
                 {
                     'id': row['id'],
@@ -287,14 +287,13 @@ class UnifiedQueryAPI:
                 MAX(GREATEST(d.created_at, p.created_at)) as last_activity
             FROM {self.schema}.decisions d
             LEFT JOIN {self.schema}.progress_entries p
-                ON p.workspace_id = d.workspace_id AND p.user_id = d.user_id
-            WHERE d.user_id = $1
+                ON p.workspace_id = d.workspace_id
             GROUP BY d.workspace_id
             ORDER BY last_activity DESC NULLS LAST
         """
 
         async with self.db_pool.acquire() as conn:
-            rows = await conn.fetch(sql, user_id)
+            rows = await conn.fetch(sql)
 
         summaries = [
             WorkspaceSummary(
@@ -341,12 +340,11 @@ class UnifiedQueryAPI:
         sql = f"""
             SELECT DISTINCT workspace_id
             FROM {self.schema}.decisions
-            WHERE user_id = $1
             ORDER BY workspace_id
         """
 
         async with self.db_pool.acquire() as conn:
-            rows = await conn.fetch(sql, user_id)
+            rows = await conn.fetch(sql)
 
         workspaces = [row['workspace_id'] for row in rows]
 
