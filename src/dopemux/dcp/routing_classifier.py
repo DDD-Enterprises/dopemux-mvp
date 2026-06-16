@@ -201,12 +201,18 @@ def _derive_route_status(
     inp: RoutingClassificationInput,
     red_lane: RedLaneState,
 ) -> RouteStatus:
-    """Derive conservative route status from attributes and red-lane state."""
+    """Derive conservative route status from attributes and red-lane state.
+
+    Status precedence is most-severe-first: a hard-BLOCKED reason outranks an
+    UNKNOWN one. The hard-BLOCKED checks (red-lane, BLOCKED authority, missing
+    proof on a mutating/non-trivial route, stale proof) are evaluated BEFORE the
+    UNKNOWN-authority guard so that a caller inspecting ``status`` learns *why* a
+    route is blocked even when authority is also unknown. An unknown-authority
+    route is non-runnable regardless, so this ordering strengthens
+    discoverability without weakening any fail-closed guarantee.
+    """
     if red_lane is RedLaneState.RED_LANE:
         return RouteStatus.BLOCKED
-
-    if inp.has_unknown_authority or inp.authority_class is AuthorityClass.UNKNOWN:
-        return RouteStatus.UNKNOWN
 
     if inp.authority_class is AuthorityClass.BLOCKED:
         return RouteStatus.BLOCKED
@@ -216,6 +222,9 @@ def _derive_route_status(
 
     if inp.has_stale_proof:
         return RouteStatus.BLOCKED
+
+    if inp.has_unknown_authority or inp.authority_class is AuthorityClass.UNKNOWN:
+        return RouteStatus.UNKNOWN
 
     if inp.task_source is TaskSource.UNKNOWN:
         return RouteStatus.UNKNOWN

@@ -29,6 +29,7 @@ COPY docker/mcp-servers-source/conport/shared_monitoring_init.py /app/shared/mon
 # Copy the enhanced server with PostgreSQL + Redis persistence (relative to root)
 COPY docker/mcp-servers-source/conport/server.py .
 COPY docker/mcp-servers-source/conport/enhanced_server.py .
+COPY docker/mcp-servers-source/conport/unified_queries.py .
 COPY docker/mcp-servers-source/conport/instance_detector.py .
 COPY docker/mcp-servers-source/conport/integration_bridge_client.py .
 COPY docker/mcp-servers-source/conport/conport_mcp_stdio.py .
