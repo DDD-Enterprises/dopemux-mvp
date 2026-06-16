@@ -5137,6 +5137,32 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     show_default=False,
     help="LLM routing policy for extraction. Defaults to the model-map policy.",
 )
+@click.option(
+    "--cost-profile",
+    type=str,
+    default=None,
+    help="RTE cost profile or logical rte-cost-* alias (preferred over --routing-policy).",
+)
+@click.option(
+    "--model-alias",
+    "model_aliases",
+    multiple=True,
+    metavar="KEY=ROUTE",
+    help="Override a cell alias (e.g. SYNTH_MODEL=openai/gpt-5.5). Repeatable.",
+)
+@click.option(
+    "--disable-provider",
+    "disabled_providers",
+    multiple=True,
+    metavar="PROVIDER",
+    help="Disable a provider for this run (openai, gemini, xai, openrouter, anthropic).",
+)
+@click.option(
+    "--max-cost-usd",
+    type=float,
+    default=None,
+    help="Maximum spend in USD for this run (profile default applied when unset).",
+)
 @click.option("--disable-escalation", is_flag=True, default=False, show_default=True)
 @click.option("--escalation-max-hops", type=int, default=2, show_default=True)
 @click.option("--batch-mode", is_flag=True, default=False, show_default=True)
@@ -5191,6 +5217,10 @@ def extractor_run(
     partition_workers: int,
     max_partitions_per_step: Optional[int],
     routing_policy: Optional[str],
+    cost_profile: Optional[str],
+    model_aliases: tuple[str, ...],
+    disabled_providers: tuple[str, ...],
+    max_cost_usd: Optional[float],
     disable_escalation: bool,
     escalation_max_hops: int,
     batch_mode: bool,
@@ -5261,6 +5291,14 @@ def extractor_run(
     if max_partitions_per_step is not None:
         args.extend(["--max-partitions-per-step", str(max(0, int(max_partitions_per_step)))])
     args.extend(["--routing-policy", effective_routing_policy])
+    if cost_profile:
+        args.extend(["--cost-profile", cost_profile])
+    for model_alias in model_aliases:
+        args.extend(["--model-alias", model_alias])
+    for disabled_provider in disabled_providers:
+        args.extend(["--disable-provider", disabled_provider])
+    if max_cost_usd is not None:
+        args.extend(["--max-cost-usd", str(max_cost_usd)])
     if disable_escalation:
         args.append("--disable-escalation")
     args.extend(["--escalation-max-hops", str(max(0, int(escalation_max_hops)))])

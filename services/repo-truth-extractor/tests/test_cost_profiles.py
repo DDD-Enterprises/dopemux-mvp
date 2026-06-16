@@ -15,6 +15,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[3]
 SERVICE_ROOT = ROOT / "services" / "repo-truth-extractor"
 if str(SERVICE_ROOT) not in sys.path:
@@ -159,6 +161,49 @@ def test_resolve_cost_profile_handles_all_inputs() -> None:
     assert runner.resolve_cost_profile("does_not_exist")[0] == "value-default"
     # Case insensitivity
     assert runner.resolve_cost_profile("Quality")[0] == "quality"
+
+
+@pytest.mark.parametrize(
+    ("alias", "expected"),
+    [
+        ("rte-cost-prescan-cheap", "economy"),
+        ("rte-cost-balanced", "value-default"),
+        ("rte-cost-structured", "openai-heavy"),
+        ("rte-cost-batch-backfill", "economy"),
+        ("rte-cost-high-reliability", "quality"),
+        ("rte-cost-governance-safe-direct", "openai-heavy"),
+        ("rte-cost-aggregator-benchmark", "openrouter-resilient"),
+    ],
+)
+def test_logical_cost_profile_aliases_resolve_to_canonical(alias: str, expected: str) -> None:
+    name, profile = runner.resolve_cost_profile(alias)
+    assert name == expected
+    assert profile is runner.COST_PROFILES[expected]
+
+
+def test_logical_alias_metadata_is_present_for_each_alias() -> None:
+    required = {
+        "workload_class",
+        "governance_posture",
+        "allowed_payload_sensitivity",
+        "provider_surface",
+        "fail_closed_if",
+        "profile_notes",
+    }
+    for alias in runner.COST_PROFILE_ALIASES:
+        metadata = runner.COST_PROFILE_ALIAS_METADATA[alias]
+        assert required <= set(metadata.keys())
+        assert metadata["profile_notes"] == runner._OBSERVED_PROFILE_NOTES
+
+
+def test_unknown_rte_cost_alias_fails_closed() -> None:
+    with pytest.raises(ValueError, match="Unknown logical cost profile alias"):
+        runner.resolve_cost_profile("rte-cost-not-real")
+
+
+def test_sandbox_free_alias_is_blocked() -> None:
+    with pytest.raises(ValueError, match="BLOCKED"):
+        runner.resolve_cost_profile("rte-cost-sandbox-free")
 
 
 def test_resolve_cell_alias_resolves_from_profile_defaults() -> None:

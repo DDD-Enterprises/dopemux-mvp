@@ -656,6 +656,10 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "escalation_max_hops": 1,
         "max_cost_usd_default": 5.00,
         "cost_cap_mode": "preventive",
+        "workload_class": "prescan_intake",
+        "governance_posture": "LOW_COST_INTAKE_ONLY",
+        "provider_surface": "direct",
+        "allowed_payload_sensitivity": ["non_sensitive", "repo_public_or_sanitized"],
         "notes": (
             "Minimum spend; aggressive flex tier + cheapest capable models. "
             "Quality degraded on SYNTH-critical cells; review PROOF_PACK before "
@@ -678,6 +682,10 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "escalation_max_hops": 2,
         "max_cost_usd_default": 5.00,
         "cost_cap_mode": "preventive",
+        "workload_class": "standard_extraction",
+        "governance_posture": "STANDARD_PROD",
+        "provider_surface": "mixed",
+        "allowed_payload_sensitivity": ["standard_repo"],
         "notes": (
             "Best cost/quality ratio. Flex tier on EXTRACT/AGG bulk lanes; "
             "standard for CE/SYNTH. Cached input on globally. Batch enabled "
@@ -703,6 +711,10 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "escalation_max_hops": 3,
         "max_cost_usd_default": 25.00,
         "cost_cap_mode": "preventive",
+        "workload_class": "high_reliability_synthesis",
+        "governance_posture": "HIGH_RELIABILITY",
+        "provider_surface": "direct",
+        "allowed_payload_sensitivity": ["standard_repo"],
         "notes": (
             "Premium models with priority service tier where available. "
             "Estimated 3-5x cost of value-default. Use for production go/no-go. "
@@ -723,6 +735,10 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "escalation_max_hops": 2,
         "max_cost_usd_default": 25.00,
         "cost_cap_mode": "preventive",
+        "workload_class": "benchmark_experimental",
+        "governance_posture": "EXPERIMENTAL_ONLY",
+        "provider_surface": "mixed",
+        "allowed_payload_sensitivity": ["non_sensitive"],
         "notes": (
             "Bleed-edge frontier models (gpt-5.5, gemini-3.5-flash on bulk). "
             "Bypasses some validators; operator must inspect PROOF_PACK. Strict "
@@ -747,6 +763,10 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "escalation_max_hops": 2,
         "max_cost_usd_default": 8.00,
         "cost_cap_mode": "preventive",
+        "workload_class": "standard_extraction",
+        "governance_posture": "STANDARD_PROD",
+        "provider_surface": "mixed",
+        "allowed_payload_sensitivity": ["standard_repo"],
         "notes": (
             "Cheap Gemini lean on non-code bulk/docs; strict CE/SYNTH stay on "
             "OpenAI (Gemini is not strict-JSON-passthrough capable here). Never "
@@ -768,6 +788,10 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "escalation_max_hops": 2,
         "max_cost_usd_default": 6.00,
         "cost_cap_mode": "preventive",
+        "workload_class": "standard_extraction",
+        "governance_posture": "STANDARD_PROD",
+        "provider_surface": "mixed",
+        "allowed_payload_sensitivity": ["standard_repo"],
         "notes": (
             "Cheapest code-extract lean using xAI Grok on non-strict bulk/code "
             "lanes. STRICT CE/SYNTH stay on OpenAI (xAI is not strict-JSON "
@@ -788,6 +812,10 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "escalation_max_hops": 3,
         "max_cost_usd_default": 20.00,
         "cost_cap_mode": "preventive",
+        "workload_class": "aggregator_benchmark",
+        "governance_posture": "BENCHMARK_ONLY",
+        "provider_surface": "openrouter",
+        "allowed_payload_sensitivity": ["non_sensitive"],
         "notes": (
             "Single-key, multi-upstream resilience: every cell routed through "
             "OpenRouter (one OPENROUTER_API_KEY). Strict cells use "
@@ -809,6 +837,10 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "escalation_max_hops": 2,
         "max_cost_usd_default": 15.00,
         "cost_cap_mode": "preventive",
+        "workload_class": "governance_safe_direct",
+        "governance_posture": "SENSITIVE_DIRECT_ONLY",
+        "provider_surface": "direct",
+        "allowed_payload_sensitivity": ["standard_repo", "sensitive_repo"],
         "notes": (
             "OpenAI-direct across all cells (single OPENAI_API_KEY, no aggregator "
             "latency). SYNTH on gpt-5.5 for an all-OpenAI lane."
@@ -829,6 +861,10 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "escalation_max_hops": 2,
         "max_cost_usd_default": 12.00,
         "cost_cap_mode": "preventive",
+        "workload_class": "standard_extraction",
+        "governance_posture": "STANDARD_PROD",
+        "provider_surface": "mixed",
+        "allowed_payload_sensitivity": ["standard_repo"],
         "notes": (
             "Best-of-each-provider on the non-strict lanes: Gemini on docs bulk, "
             "xAI on code bulk; strict CE/SYNTH on OpenAI gpt-5.x."
@@ -894,23 +930,184 @@ LEGACY_ROUTING_POLICY_TO_COST_PROFILE: Dict[str, str] = {
     "optimal": "quality",
 }
 
+# Logical workload-intent aliases → canonical cost profile names.
+# These are operator-facing names that map 1:1 to existing COST_PROFILES entries.
+# They do NOT appear in COST_PROFILES itself so existing strict-equality tests pass.
+# resolve_cost_profile() checks these after COST_PROFILES and before LEGACY names.
+COST_PROFILE_ALIASES: Dict[str, str] = {
+    "rte-cost-prescan-cheap": "economy",
+    "rte-cost-balanced": "value-default",
+    "rte-cost-structured": "openai-heavy",
+    "rte-cost-batch-backfill": "economy",
+    "rte-cost-high-reliability": "quality",
+    "rte-cost-governance-safe-direct": "openai-heavy",
+    "rte-cost-aggregator-benchmark": "openrouter-resilient",
+}
+
+BLOCKED_COST_PROFILE_ALIASES: frozenset[str] = frozenset({"rte-cost-sandbox-free"})
+
+_OBSERVED_PROFILE_NOTES = "observed repo config only; vendor facts not verified"
+
+COST_PROFILE_ALIAS_METADATA: Dict[str, Dict[str, Any]] = {
+    "rte-cost-prescan-cheap": {
+        "workload_class": "prescan_intake",
+        "governance_posture": "LOW_COST_INTAKE_ONLY",
+        "allowed_payload_sensitivity": ["non_sensitive", "repo_public_or_sanitized"],
+        "provider_surface": "direct",
+        "fail_closed_if": [
+            "unknown_pricing_with_cost_cap",
+            "sensitive_payload_on_aggregator",
+        ],
+        "profile_notes": _OBSERVED_PROFILE_NOTES,
+    },
+    "rte-cost-balanced": {
+        "workload_class": "default_extraction",
+        "governance_posture": "STANDARD_PROD",
+        "allowed_payload_sensitivity": ["standard_repo"],
+        "provider_surface": "mixed",
+        "fail_closed_if": ["unknown_profile", "broken_alias"],
+        "profile_notes": _OBSERVED_PROFILE_NOTES,
+    },
+    "rte-cost-structured": {
+        "workload_class": "structured_extraction",
+        "governance_posture": "STRUCTURED_EXTRACTION",
+        "allowed_payload_sensitivity": ["standard_repo"],
+        "provider_surface": "direct",
+        "fail_closed_if": ["unknown_pricing_with_cost_cap"],
+        "profile_notes": _OBSERVED_PROFILE_NOTES,
+    },
+    "rte-cost-batch-backfill": {
+        "workload_class": "batch_backfill",
+        "governance_posture": "BATCH_BACKFILL",
+        "allowed_payload_sensitivity": ["standard_repo"],
+        "provider_surface": "direct",
+        "fail_closed_if": [
+            "batch_on_unsupported_provider",
+            "unknown_pricing_with_cost_cap",
+        ],
+        "profile_notes": _OBSERVED_PROFILE_NOTES,
+    },
+    "rte-cost-high-reliability": {
+        "workload_class": "synthesis",
+        "governance_posture": "HIGH_RELIABILITY",
+        "allowed_payload_sensitivity": ["standard_repo"],
+        "provider_surface": "direct",
+        "fail_closed_if": [
+            "free_or_aggregator_route",
+            "unknown_pricing_with_cost_cap",
+        ],
+        "profile_notes": _OBSERVED_PROFILE_NOTES,
+    },
+    "rte-cost-governance-safe-direct": {
+        "workload_class": "sensitive_extraction",
+        "governance_posture": "SENSITIVE_DIRECT_ONLY",
+        "allowed_payload_sensitivity": ["sensitive_repo"],
+        "provider_surface": "direct",
+        "fail_closed_if": [
+            "aggregator_or_free_route",
+            "unknown_pricing_with_cost_cap",
+        ],
+        "profile_notes": _OBSERVED_PROFILE_NOTES,
+    },
+    "rte-cost-aggregator-benchmark": {
+        "workload_class": "benchmark",
+        "governance_posture": "BENCHMARK_ONLY",
+        "allowed_payload_sensitivity": ["non_sensitive"],
+        "provider_surface": "openrouter",
+        "fail_closed_if": [
+            "sensitive_payload",
+            "direct_provider_guarantee_inherited",
+        ],
+        "profile_notes": _OBSERVED_PROFILE_NOTES,
+    },
+}
+
 
 def resolve_cost_profile(name: Optional[str]) -> Tuple[str, Dict[str, Any]]:
     """Return (canonical_profile_name, profile_dict).
 
     Accepts: a cost profile name (economy/value-default/quality/experimental),
+    a logical alias (mapped via COST_PROFILE_ALIASES),
     a legacy routing-policy name (mapped via LEGACY_ROUTING_POLICY_TO_COST_PROFILE),
     or None (returns DEFAULT_COST_PROFILE).
     """
     if not name:
         return DEFAULT_COST_PROFILE, COST_PROFILES[DEFAULT_COST_PROFILE]
     token = str(name).strip().lower()
+    if token in BLOCKED_COST_PROFILE_ALIASES:
+        raise ValueError(
+            f"Cost profile {token!r} is BLOCKED: sandbox/free lanes require "
+            "non-sensitive payload gating that is not implemented in runtime."
+        )
     if token in COST_PROFILES:
         return token, COST_PROFILES[token]
+    if token in COST_PROFILE_ALIASES:
+        target = COST_PROFILE_ALIASES[token]
+        return target, COST_PROFILES[target]
+    if token.startswith("rte-cost-"):
+        raise ValueError(
+            f"Unknown logical cost profile alias {token!r}. "
+            f"Valid aliases: {', '.join(sorted(COST_PROFILE_ALIASES))}."
+        )
     if token in LEGACY_ROUTING_POLICY_TO_COST_PROFILE:
         mapped = LEGACY_ROUTING_POLICY_TO_COST_PROFILE[token]
         return mapped, COST_PROFILES[mapped]
     return DEFAULT_COST_PROFILE, COST_PROFILES[DEFAULT_COST_PROFILE]
+
+
+def cost_profile_alias_metadata(input_name: Optional[str]) -> Dict[str, Any]:
+    token = str(input_name or "").strip().lower()
+    if not token:
+        return {}
+    return dict(COST_PROFILE_ALIAS_METADATA.get(token, {}))
+
+
+def effective_cell_aliases_payload(cfg: "RunnerConfig") -> Dict[str, str]:
+    profile = COST_PROFILES.get(cfg.cost_profile) or COST_PROFILES[DEFAULT_COST_PROFILE]
+    aliases = dict(profile.get("cell_aliases", {}))
+    for key, value in cfg.model_alias_overrides or ():
+        aliases[str(key)] = str(value)
+    return aliases
+
+
+def provider_surface_summary_from_aliases(aliases: Dict[str, str]) -> Dict[str, bool]:
+    summary = {
+        "direct": False,
+        "openrouter": False,
+        "free": False,
+        "unknown": False,
+    }
+    for route in aliases.values():
+        provider, model_id = _parse_alias_provider_model(str(route))
+        if provider == "openrouter":
+            summary["openrouter"] = True
+            if str(model_id).endswith(":free"):
+                summary["free"] = True
+        elif provider in {"openai", "gemini", "xai"}:
+            summary["direct"] = True
+        elif provider:
+            summary["unknown"] = True
+        else:
+            summary["unknown"] = True
+    return summary
+
+
+def cost_profile_introspection_payload(
+    cfg: "RunnerConfig",
+    *,
+    cost_profile_input: Optional[str] = None,
+) -> Dict[str, Any]:
+    aliases = effective_cell_aliases_payload(cfg)
+    return {
+        "cost_profile": cfg.cost_profile,
+        "cost_profile_input": cost_profile_input,
+        "routing_policy": cfg.routing_policy,
+        "model_aliases": aliases,
+        "disabled_providers": list(cfg.disabled_providers or ()),
+        "provider_surface_summary": provider_surface_summary_from_aliases(aliases),
+        "cost_profile_metadata": cost_profile_alias_metadata(cost_profile_input),
+        "effective_model_routing": effective_model_routing_payload(cfg),
+    }
 
 
 def resolve_cell_alias(
@@ -2142,6 +2339,7 @@ class RunnerConfig:
     fl_int_f0_batch_timeout_seconds: int = 210
     # Cost-profile + optimizer fields (May 2026 Phase E6).
     cost_profile: str = DEFAULT_COST_PROFILE
+    cost_profile_input: Optional[str] = None
     default_service_tier: str = "default"  # default | flex | priority | auto
     enable_cached_input: bool = True
     enable_batch_when_supported: bool = True
@@ -7289,8 +7487,15 @@ def write_run_routing_fingerprint(
             "returned_model_id_is_response_metadata_only_and_does_not_rewrite_requested_route_identity"
         ),
         "config": {
+            "cost_profile": cfg.cost_profile,
+            "cost_profile_input": cfg.cost_profile_input,
             "routing_policy": cfg.routing_policy,
             "routing_policy_version": ROUTING_POLICY_VERSION,
+            "model_alias_overrides": [
+                {"key": key, "value": value}
+                for key, value in (cfg.model_alias_overrides or ())
+            ],
+            "disabled_providers": list(cfg.disabled_providers or ()),
             "gemini_auth_mode_requested": cfg.gemini_auth_mode,
             "gemini_model_id_requested": next(
                 (
@@ -19170,18 +19375,35 @@ def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
     payload: Dict[str, Any] = {
         "generated_at": now_iso(),
         "runner_script_path": str(RUNNER_SCRIPT.resolve()),
+        "cost_profile": cfg.cost_profile,
+        "cost_profile_input": cfg.cost_profile_input,
         "routing_policy": cfg.routing_policy,
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "phase_defaults": {},
         "phases": {},
+        "phase_defaults_resolution": (
+            "resolved_under_active_cost_profile; per-step routes in phases are authoritative"
+        ),
     }
+    cli_overrides = _model_alias_overrides_dict(cfg.model_alias_overrides)
     for phase in phases:
         provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("", "", ""))
+        if _is_alias_placeholder(model_id):
+            alias_value = resolve_cell_alias(
+                model_id,
+                cfg.cost_profile,
+                cli_overrides=cli_overrides,
+                env=os.environ,
+            )
+            if not _is_alias_placeholder(str(alias_value)):
+                provider, model_id = _parse_alias_provider_model(str(alias_value))
+                api_key_env = PROVIDER_API_KEY_ENV.get(provider, api_key_env)
         payload["phase_defaults"][phase] = {
             "provider": provider,
             "model_id": model_id,
             "model": f"{provider}/{model_id}" if provider and model_id else "",
             "api_key_env": api_key_env,
+            "resolved": True,
         }
         entries: List[Dict[str, Any]] = []
         for spec in get_phase_prompts(phase):
@@ -19789,6 +20011,11 @@ def print_config(
         phases,
         cfg.routing_policy,
         cost_profile=cfg.cost_profile,
+        model_alias_overrides=cfg.model_alias_overrides,
+    )
+    cost_introspection = cost_profile_introspection_payload(
+        cfg,
+        cost_profile_input=getattr(args, "_cost_profile_input", None),
     )
     config_payload = {
         "run_id": run_id,
@@ -19801,6 +20028,11 @@ def print_config(
         "cwd": str(Path.cwd().resolve()),
         "phases": phases,
         "cost_profile": cfg.cost_profile,
+        "cost_profile_input": cost_introspection.get("cost_profile_input"),
+        "model_aliases": cost_introspection.get("model_aliases"),
+        "disabled_providers": cost_introspection.get("disabled_providers"),
+        "provider_surface_summary": cost_introspection.get("provider_surface_summary"),
+        "cost_profile_metadata": cost_introspection.get("cost_profile_metadata"),
         "cli": {
             "phase_argument": args.phase,
             "preset": getattr(args, "preset", None),
@@ -19901,7 +20133,7 @@ def print_config(
         "dirs": {phase: str(dirs[phase]) for phase in phases},
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "routing_ladders": routing_ladders_payload(),
-        "effective_model_routing": effective_model_routing_payload(),
+        "effective_model_routing": cost_introspection.get("effective_model_routing"),
         "route_readiness_summary": route_readiness_summary,
         "dpmx_env_routing": dpmx_env_routing_payload(validate=True),
         "benchmark_route_ownership": benchmark_route_ownership_payload(validate=False),
@@ -22195,7 +22427,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--cost-profile",
-        choices=sorted(COST_PROFILES.keys()),
+        choices=sorted(list(COST_PROFILES.keys()) + list(COST_PROFILE_ALIASES.keys())),
         default=None,
         help=(
             f"Cost profile selecting model tier + service_tier + cached-input + "
@@ -22779,6 +23011,15 @@ def main() -> None:
         )
     else:
         cost_profile_name, cost_profile_cfg = resolve_cost_profile(None)
+    args._cost_profile_input = (
+        str(requested_cost_profile).strip()
+        if requested_cost_profile
+        else (
+            str(requested_routing_policy).strip()
+            if requested_routing_policy
+            else None
+        )
+    )
     # Backfill args.routing_policy from the resolved profile so all
     # downstream code (which still reads args.routing_policy) continues to work.
     args.routing_policy = cost_profile_cfg.get("routing_policy", DEFAULT_ROUTING_POLICY)
@@ -23198,6 +23439,7 @@ def main() -> None:
         router=router,
         # Cost-profile + optimizer fields (May 2026 Phase E6).
         cost_profile=getattr(args, "cost_profile", DEFAULT_COST_PROFILE),
+        cost_profile_input=getattr(args, "_cost_profile_input", None),
         default_service_tier=str(
             (COST_PROFILES.get(getattr(args, "cost_profile", DEFAULT_COST_PROFILE))
              or COST_PROFILES[DEFAULT_COST_PROFILE]).get("default_service_tier", "default")
