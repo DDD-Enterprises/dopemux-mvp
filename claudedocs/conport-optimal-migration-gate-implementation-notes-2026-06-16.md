@@ -84,14 +84,20 @@ PASS:
 - `python3 -m json.tool docs/ops/load-plans/load_plan-DMX-CONPORT-OPTIMAL.json`.
 - `git diff --check`.
 
+PASS:
+
+- Separate live task-orchestrator sync after user authorization:
+  - created packet 100 as `dcf66b56-8fbf-426f-a6d6-826f0caa5822`,
+  - created 18 live `BLOCKS` dependencies from packet 100 to packet 101 and
+    current non-terminal descendants,
+  - added audit notes to the live root and packet 100.
+
 NOT_RUN:
 
-- Live task-orchestrator graph mutation or synchronization. This repo artifact
-  update does not mutate root `44452f53-615d-4519-b21a-4a9cbc8774a4`.
 - GitHub PR, branch push, or merge.
 
 ## Residual risk
 
-The repo load plan now expresses packet 100 as the intended first gate, but the
-already-loaded live task-orchestrator root may still show packet 101 as
-unblocked until a separate sync operation is authorized and performed.
+The repo load plan expresses packet 100 as the intended first gate. The live
+root required reconciliation because packet 101 was already terminal at sync
+time, so packet 100 was also wired directly to current non-terminal descendants.
