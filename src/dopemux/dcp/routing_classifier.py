@@ -196,7 +196,7 @@ def _apply_provenance_coercion(
     enforced as hard-BLOCK checks in :func:`_derive_route_status`. All signals
     default to a no-op → zero regression. Does not mutate the caller's input.
     """
-    if inp.authority_via_bridge_proxy and (
+    if inp.authority_via_bridge_proxy and inp.authority_class is not AuthorityClass.BLOCKED and (
         inp.authority_class is not AuthorityClass.UNKNOWN
         or not inp.has_unknown_authority
     ):

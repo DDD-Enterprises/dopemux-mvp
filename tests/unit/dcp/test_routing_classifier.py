@@ -1374,6 +1374,19 @@ def test_bridge_proxy_authority_coerced_to_unknown() -> None:
     assert not decision.is_runnable()
 
 
+def test_bridge_proxy_preserves_blocked_authority() -> None:
+    """Bridge/proxy coercion must not weaken an explicit BLOCKED authority."""
+    decision = classify_route(
+        _allowed_baseline(
+            authority_class=AuthorityClass.BLOCKED,
+            authority_via_bridge_proxy=True,
+        )
+    )
+    assert decision.authority_class is AuthorityClass.BLOCKED
+    assert decision.status is RouteStatus.BLOCKED
+    assert not decision.is_runnable()
+
+
 def test_retrieval_derived_without_source_blocks_mutation() -> None:
     """Retrieval-derived evidence without the exact source fetched cannot back mutation."""
     decision = classify_route(
