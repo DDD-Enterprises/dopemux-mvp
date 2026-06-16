@@ -21,13 +21,10 @@ Structural guards:
 
 from __future__ import annotations
 
-import copy
 import inspect
 
-import pytest
-
 from dopemux.dcp.lane_engine import decide_lane
-from dopemux.dcp.lane_model import LaneDecision, LaneKind
+from dopemux.dcp.lane_model import LaneKind
 from dopemux.dcp.routing_classifier import (
     RoutingClassificationInput,
     classify_route,
@@ -520,6 +517,39 @@ def test_file_touching_read_only_maps_to_implementation() -> None:
     assert "fallback_read_only_evidence" not in lane_decision.rationale
 
 
+def test_pr_steward_readiness_does_not_override_mutating_scope() -> None:
+    """PR readiness must not inherit mutating scope or mutating requested actions."""
+    inp = _safe_code_change_input(
+        requested_actions=["pr_steward_readiness", "open_pr"],
+    )
+    decision = classify_route(inp)
+    assert decision.is_runnable()
+
+    lane_decision = decide_lane(decision, inp)
+
+    assert lane_decision.lane is LaneKind.LOCAL_CODE_IMPLEMENTATION
+    assert lane_decision.lane is not LaneKind.PR_STEWARD_READINESS
+
+
+def test_restored_decision_with_unknown_contract_fields_not_executable() -> None:
+    """Restored ALLOWED decisions with UNKNOWN defaults must fail closed."""
+    inp = _safe_code_change_input()
+    restored = RouteDecision.from_dict(
+        {
+            "status": "ALLOWED",
+            "red_lane_state": "CLEAR",
+            "authority_class": "OPERATOR",
+            "allowed_actions": ["edit_allowlisted_files"],
+        }
+    )
+    assert restored.is_runnable()
+
+    lane_decision = decide_lane(restored, inp)
+
+    assert lane_decision.is_executable is False
+    assert "edit_allowlisted_files" not in lane_decision.allowed_actions
+
+
 # ─────────────────────────────────────────────
 # Test 11 — External intake READ_ONLY evidence → EXTERNAL_INTAKE, not executable
 # ─────────────────────────────────────────────
@@ -527,24 +557,6 @@ def test_file_touching_read_only_maps_to_implementation() -> None:
 
 def test_external_intake_no_execution() -> None:
     """External-agent READ_ONLY with evidence_refs → LaneKind.EXTERNAL_INTAKE, not executable."""
-    inp = RoutingClassificationInput(
-        task_source=TaskSource.CODEX,
-        task_type=TaskType.READ_ONLY,
-        risk_class=RiskClass.R0_READ,
-        runtime_impact=RuntimeImpact.READ_ONLY,
-        complexity_class=ComplexityClass.LOW,
-        authority_class=AuthorityClass.OPERATOR,
-        has_unknown_authority=False,
-        has_conflicting_evidence=False,
-        has_stale_proof=False,
-        has_missing_proof=False,
-        evidence_refs=["proof/abc.json"],
-        touches_files=False,
-        touches_tests=False,
-        touches_docs=False,
-        is_repo_changing=False,
-        requested_actions=["pr_steward_readiness"],  # NOT present → skip row 3
-    )
     # Build an input that truly hits EXTERNAL_INTAKE row: external agent, READ_ONLY, evidence, no scope
     inp_external = RoutingClassificationInput(
         task_source=TaskSource.CODEX,

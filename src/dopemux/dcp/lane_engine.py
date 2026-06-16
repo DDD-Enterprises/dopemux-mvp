@@ -19,9 +19,14 @@ from __future__ import annotations
 from dopemux.dcp.lane_model import LaneDecision, LaneKind
 from dopemux.dcp.routing_classifier import RoutingClassificationInput
 from dopemux.dcp.routing_model import (
+    AuditRequirement,
+    ComplexityClass,
+    EscalationRequirement,
     RedLaneState,
+    RiskClass,
     RouteDecision,
     RouteStatus,
+    RuntimeImpact,
     TaskSource,
     TaskType,
 )
@@ -75,6 +80,28 @@ _READ_ONLY_PROOF_SAFE_ACTIONS: frozenset[str] = frozenset({
 })
 
 
+def _has_mutating_intent(inp: RoutingClassificationInput) -> bool:
+    """Return True for repo-changing scope or explicitly mutating requested actions."""
+    return (
+        inp.is_repo_changing
+        or inp.touches_files
+        or any(action in _MUTATING_ACTIONS for action in inp.requested_actions)
+    )
+
+
+def _has_unknown_decision_contract(decision: RouteDecision) -> bool:
+    """Fail closed on restored/incomplete decisions with UNKNOWN contract fields."""
+    return (
+        decision.task_source is TaskSource.UNKNOWN
+        or decision.task_type is TaskType.UNKNOWN
+        or decision.risk_class is RiskClass.UNKNOWN
+        or decision.complexity_class is ComplexityClass.UNKNOWN
+        or decision.runtime_impact is RuntimeImpact.UNKNOWN
+        or decision.audit_requirement is AuditRequirement.UNKNOWN
+        or decision.escalation_requirement is EscalationRequirement.UNKNOWN
+    )
+
+
 # ─────────────────────────────────────────────
 # Gate helper
 # ─────────────────────────────────────────────
@@ -90,6 +117,8 @@ def _compute_is_executable(decision: RouteDecision, lane: LaneKind) -> bool:
     ``from_dict``). BLOCKED and EXTERNAL_INTAKE are never in ``_EXECUTABLE_LANES``.
     """
     if lane not in _EXECUTABLE_LANES:
+        return False
+    if _has_unknown_decision_contract(decision):
         return False
     return decision.is_runnable()
 
@@ -118,7 +147,7 @@ def _assign_lane(
     Precedence order (spec table rows 1–10):
     1. RED_LANE or BLOCKED → BLOCKED
     2. task_type is AUDIT → EMBEDDED_AUDIT
-    3. "pr_steward_readiness" in requested_actions → PR_STEWARD_READINESS
+    3. "pr_steward_readiness" in requested_actions with no mutating intent → PR_STEWARD_READINESS
     4. External agent + READ_ONLY + evidence_refs + no code/test/docs scope → EXTERNAL_INTAKE
     5. task_type is PROOF_BUNDLE → PROOF_ONLY
     6. touches_tests and not touches_files → TEST_VALIDATION
@@ -139,7 +168,7 @@ def _assign_lane(
         return LaneKind.EMBEDDED_AUDIT
 
     # Row 3: PR steward readiness
-    if "pr_steward_readiness" in inp.requested_actions:
+    if "pr_steward_readiness" in inp.requested_actions and not _has_mutating_intent(inp):
         return LaneKind.PR_STEWARD_READINESS
 
     # Row 4: external intake — external agent, READ_ONLY, evidence refs, no scope mutations
