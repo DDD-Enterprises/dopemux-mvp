@@ -129,3 +129,7 @@
 ## 2025-05-27 - [Tactile Feedback for Task Persistence]
 **Learning:** Extending the "Tactile Confirmation" pattern (icon swap + tooltip update + pulse animation) to the current ritual task allows users to confidently capture and share their focus without breaking ritual flow. Additionally, ensuring "destructive" actions like 'Reset' have high-visibility focus states (using color-coordinated glows) prevents "lost focus" frustration for keyboard users during high-stress ritual management.
 **Action:** Apply the three-tier tactile confirmation loop to task-level actions and use status-coordinated glows for high-priority focus states to support both confidence and orientation.
+
+## 2025-05-28 - [Adaptive Reconnection Bridge]
+**Learning:** In real-time dashboards, a lost connection or API failure can be a major source of anxiety and friction. A static "Degraded" status is a dead-end. Providing an "Adaptive Reconnection Bridge"—making the status indicator itself interactive and adding recovery actions to error alerts—empowers users to resolve failures without a full page refresh, maintaining their ritual context and flow.
+**Action:** Always provide explicit, accessible "Retry" or "Reconnect" mechanisms in both status indicators and error messages for real-time service failures.
