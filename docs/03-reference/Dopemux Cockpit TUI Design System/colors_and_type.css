@@ -10,18 +10,98 @@
    ========================================================================== */
 
 @font-face {
-    font-family: "Dopemux Term";
-    src: url("fonts/DopemuxTerm-Regular.ttf") format("truetype");
+    font-family: "Dopemux Term Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxTermNerdFont-Regular.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
-    font-family: "Dopemux Term";
-    src: url("fonts/DopemuxTerm-Medium.ttf") format("truetype");
+    font-family: "Dopemux Term Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxTermNerdFont-Italic.ttf") format("truetype");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Dopemux Term Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxTermNerdFont-Oblique.ttf") format("truetype");
+    font-weight: 400;
+    font-style: oblique;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Dopemux Term Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxTermNerdFont-Medium.ttf") format("truetype");
     font-weight: 500 700;
     font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Dopemux Term Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxTermNerdFont-MediumItalic.ttf") format("truetype");
+    font-weight: 500 700;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Dopemux Term Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxTermNerdFont-MediumOblique.ttf") format("truetype");
+    font-weight: 500 700;
+    font-style: oblique;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Dopemux Editor Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxEditorNerdFont-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Dopemux Editor Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxEditorNerdFont-Italic.ttf") format("truetype");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Dopemux Editor Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxEditorNerdFont-Oblique.ttf") format("truetype");
+    font-weight: 400;
+    font-style: oblique;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Dopemux Editor Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxEditorNerdFont-Medium.ttf") format("truetype");
+    font-weight: 500 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Dopemux Editor Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxEditorNerdFont-MediumItalic.ttf") format("truetype");
+    font-weight: 500 700;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Dopemux Editor Nerd Font";
+    src: url("fonts/out/nerd-font/DopemuxEditorNerdFont-MediumOblique.ttf") format("truetype");
+    font-weight: 500 700;
+    font-style: oblique;
     font-display: swap;
 }
 
@@ -66,9 +146,10 @@
        closed chip set, it doesn't exist. */
 
     /* --- Type system --------------------------------------------------- */
-    --font-mono:            "DopemuxTerm Nerd Font Mono", "Dopemux Term",
+    --font-mono:            "Dopemux Term Nerd Font", "Dopemux Term",
                             ui-monospace, monospace;
-    --font-editor:          "Dopemux Editor", ui-monospace, monospace;
+    --font-editor:          "Dopemux Editor Nerd Font", "Dopemux Editor",
+                            ui-monospace, monospace;
     --font-display:         var(--font-mono);   /* TUI is mono-only           */
 
     /* Cell metrics. The cockpit renders char-by-char on a fixed grid,
