@@ -25,20 +25,71 @@
     "base": "origin/main",
     "base_head": "a2396a922"
   },
-  "summary": {
-    "created_package": "src/dopemux/coldstart",
-    "source_modules": [
+    "summary": {
+        "created_package": "src/dopemux/coldstart",
+        "source_modules": [
       "platform.py",
       "secrets_resolver.py",
       "network.py",
       "compose_orchestrator.py",
       "update_manager.py",
       "rollback_manager.py"
-    ],
-    "test_count": 15,
-    "existing_installer_tests_count": 7
-  },
-  "commands": [
+        ],
+        "test_count": 15,
+        "existing_installer_tests_count": 7
+    },
+    "review_thread_refresh": {
+        "refreshed_at": "2026-06-16T11:19:18Z",
+        "head_before_refresh": "5c2cfad7c17463f7c9bfb581d91471a2ac28b618",
+        "changes": [
+            "Filtered docker compose ps health checks to requested service rows so table headers do not force timeout.",
+            "Treated missing Keychain and 1Password CLIs as secret lookup misses instead of uncaught FileNotFoundError.",
+            "Cached generated local-defaultable secrets into a mutable env map so LITELLM_DATABASE_URL can reuse a freshly generated AGE_PASSWORD."
+        ],
+        "local_validation_rerun": [
+            {
+                "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+                "exit_code": 0
+            },
+            {
+                "cmd": "python -m compileall -q src/dopemux/coldstart/ && python -m compileall -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py",
+                "exit_code": 0
+            },
+            {
+                "cmd": "pytest -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py",
+                "exit_code": 0,
+                "result": "18 passed"
+            },
+            {
+                "cmd": "pytest -q tests/scripts/test_install_sh_secrets.py tests/scripts/test_shell_installer.py",
+                "exit_code": 0,
+                "result": "7 passed"
+            },
+            {
+                "cmd": "PYTHONPATH=src python -c \"from dopemux.coldstart import platform, secrets_resolver, network, compose_orchestrator, update_manager, rollback_manager; print('imports OK')\"",
+                "exit_code": 0,
+                "result": "imports OK"
+            },
+            {
+                "cmd": "rg -n \"CHANGE_ME|dev_password|sk-dev\" src/dopemux/coldstart",
+                "exit_code": 1,
+                "result": "No matches"
+            },
+            {
+                "cmd": "python -m json.tool proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/PROOF.json",
+                "exit_code": 0
+            },
+            {
+                "cmd": "git diff --check origin/main...HEAD",
+                "exit_code": 0
+            },
+            {
+                "cmd": "pre-commit run --files proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/AUDITOR_REPORT.md proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/PROOF.json src/dopemux/coldstart/__init__.py src/dopemux/coldstart/compose_orchestrator.py src/dopemux/coldstart/network.py src/dopemux/coldstart/platform.py src/dopemux/coldstart/rollback_manager.py src/dopemux/coldstart/secrets_resolver.py src/dopemux/coldstart/update_manager.py task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_network.py tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_update_manager.py",
+                "exit_code": 0
+            }
+        ]
+    },
+    "commands": [
     {
       "cmd": "pytest -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py",
       "exit_code": 2,

@@ -122,7 +122,10 @@ def _policy(var: str) -> str:
 
 
 def _run_secret_command(args: Sequence[str], runner: Runner) -> str | None:
-    result = runner(list(args), capture_output=True, text=True, check=False)
+    try:
+        result = runner(list(args), capture_output=True, text=True, check=False)
+    except OSError:
+        return None
     if result.returncode != 0:
         return None
     value = result.stdout.strip()
@@ -181,6 +184,8 @@ def resolve_secret_value(
     policy = _policy(var)
     if policy == "local-defaultable":
         default = _default_value(var, env_map)
+        if default is not None and isinstance(env_map, dict):
+            env_map[var] = default
         return SecretResolution(value=default, source=SecretSource.DEFAULT, is_sensitive=sensitive)
 
     if non_interactive:

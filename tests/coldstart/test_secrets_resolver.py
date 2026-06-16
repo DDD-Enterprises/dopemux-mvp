@@ -92,6 +92,36 @@ def test_1password_reader_requires_reference() -> None:
     assert read_secret_from_1password("", runner=lambda args, **kwargs: completed("unused")) is None
 
 
+def test_missing_secret_provider_cli_is_lookup_miss() -> None:
+    def missing_cli(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        raise FileNotFoundError(args[0])
+
+    assert read_secret_from_keychain("OPENAI_API_KEY", runner=missing_cli) is None
+    assert read_secret_from_1password("op://vault/item/field", runner=missing_cli) is None
+
+
+def test_litellm_database_url_reuses_generated_age_password() -> None:
+    env: dict[str, str] = {}
+    age_password = resolve_secret_value(
+        "AGE_PASSWORD",
+        current=None,
+        env_file=None,
+        non_interactive=True,
+        env=env,
+    )
+    dsn = resolve_secret_value(
+        "LITELLM_DATABASE_URL",
+        current=None,
+        env_file=None,
+        non_interactive=True,
+        env=env,
+    )
+
+    assert age_password.value
+    assert env["AGE_PASSWORD"] == age_password.value
+    assert dsn.value == f"postgresql://dopemux_age:{age_password.value}@dopemux-postgres-age:5432/litellm"
+
+
 def test_placeholder_detection_matches_installer_policy() -> None:
     assert is_placeholder_value("dev-key-456")
     assert is_placeholder_value("postgresql://dopemux_age:dopemux_age_dev_password@host/db")

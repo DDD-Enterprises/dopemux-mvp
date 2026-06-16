@@ -85,10 +85,26 @@ class ComposeOrchestrator:
                 return False
 
             output = result.stdout
+            services_lower = [service.lower() for service in services]
             lines = [line.lower() for line in output.splitlines() if line.strip()]
-            all_services_present = all(service in output for service in services)
-            all_healthy = bool(lines) and all("healthy" in line and "unhealthy" not in line for line in lines)
-            running_without_healthchecks = "healthy" not in output.lower() and "running" in output.lower()
+            service_lines = [
+                line
+                for line in lines
+                if any(service in line for service in services_lower)
+            ]
+            all_services_present = all(
+                any(service in line for line in service_lines)
+                for service in services_lower
+            )
+            all_healthy = bool(service_lines) and all(
+                "healthy" in line and "unhealthy" not in line
+                for line in service_lines
+            )
+            running_without_healthchecks = (
+                bool(service_lines)
+                and all("healthy" not in line for line in service_lines)
+                and all(("running" in line or "up" in line) for line in service_lines)
+            )
             if all_services_present and (all_healthy or running_without_healthchecks):
                 return True
             self.sleeper(interval_s)

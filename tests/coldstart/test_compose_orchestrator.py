@@ -51,3 +51,18 @@ def test_wait_healthy_returns_false_on_timeout() -> None:
 
     assert orchestrator.wait_healthy(["svc"], timeout_s=2, interval_s=1) is False
     assert calls >= 1
+
+
+def test_wait_healthy_ignores_compose_ps_header() -> None:
+    output = (
+        "NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS                 PORTS\n"
+        "api       image     cmd       api       now       Up 3 seconds (healthy) 8080/tcp\n"
+        "worker    image     cmd       worker    now       Up 3 seconds (healthy)\n"
+    )
+
+    def runner(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        return completed(output)
+
+    orchestrator = ComposeOrchestrator(runner=runner, sleeper=lambda _: None, monotonic_values=iter([0, 1]))
+
+    assert orchestrator.wait_healthy(["api", "worker"], timeout_s=2, interval_s=1) is True
