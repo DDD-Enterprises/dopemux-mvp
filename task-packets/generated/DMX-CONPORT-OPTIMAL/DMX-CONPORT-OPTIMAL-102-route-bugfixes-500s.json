@@ -31,6 +31,7 @@
     "allowlist": [
       "docker/mcp-servers-source/conport/enhanced_server.py",
       "docker/mcp-servers-source/conport/unified_queries.py",
+      "docker/mcp-servers-source/conport/Dockerfile",
       "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s.json",
       "proof/conport-optimal-102/**"
     ],
