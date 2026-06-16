@@ -59,6 +59,10 @@ _UNKNOWN_RUNTIME_IMPACTS = {
     RuntimeImpact.UNKNOWN,
 }
 
+_UNKNOWN_AUDIT_REQUIREMENTS = {
+    AuditRequirement.UNKNOWN,
+}
+
 _LIVE_TASK_TYPES = {
     TaskType.MERGE,
     TaskType.LIVE_WRITE,
@@ -73,6 +77,10 @@ _SUPERVISOR_RISKS = {
     RiskClass.R3_HIGH,
     RiskClass.RED_LANE,
     RiskClass.UNKNOWN,
+}
+
+_SUPERVISOR_AUDIT_REQUIREMENTS = {
+    AuditRequirement.SUPERVISOR_AUDIT,
 }
 
 _BLOCKING_FORBIDDEN_ACTIONS = frozenset(
@@ -309,6 +317,7 @@ def _requires_supervisor(decision: RouteDecision) -> bool:
     return (
         decision.status is RouteStatus.NEEDS_SUPERVISOR
         or decision.risk_class in _SUPERVISOR_RISKS
+        or decision.audit_requirement in _SUPERVISOR_AUDIT_REQUIREMENTS
         or decision.escalation_requirement
         is not EscalationRequirement.NONE
     )
@@ -325,6 +334,7 @@ def _has_unknown_dimension(decision: RouteDecision) -> bool:
         or decision.risk_class in _UNKNOWN_RISK_CLASSES
         or decision.complexity_class in _UNKNOWN_COMPLEXITY_CLASSES
         or decision.runtime_impact in _UNKNOWN_RUNTIME_IMPACTS
+        or decision.audit_requirement in _UNKNOWN_AUDIT_REQUIREMENTS
     )
 
 
