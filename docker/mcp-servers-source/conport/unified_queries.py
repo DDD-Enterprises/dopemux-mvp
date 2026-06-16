@@ -98,6 +98,8 @@ class UnifiedQueryAPI:
         if cached:
             logger.debug(f"Cache hit for unified search: {user_id}")
             results_data = json.loads(cached)
+            for result in results_data:
+                result['created_at'] = self._parse_cached_datetime(result.get('created_at'))
             return [UnifiedSearchResult(**r) for r in results_data]
 
         # Get user's workspaces if not specified
@@ -343,6 +345,8 @@ class UnifiedQueryAPI:
         cached = await self.redis.get(cache_key)
         if cached:
             summaries_data = json.loads(cached)
+            for summary in summaries_data:
+                summary['last_activity'] = self._parse_cached_datetime(summary.get('last_activity'))
             return [WorkspaceSummary(**s) for s in summaries_data]
 
         async with self.db_pool.acquire() as conn:
@@ -458,3 +462,9 @@ class UnifiedQueryAPI:
             )
         """
         return bool(await conn.fetchval(sql, self.schema, table_name, column_name))
+
+    @staticmethod
+    def _parse_cached_datetime(value: Optional[Any]) -> Optional[datetime]:
+        if value is None or isinstance(value, datetime):
+            return value
+        return datetime.fromisoformat(value)

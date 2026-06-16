@@ -23,6 +23,8 @@ class FakeRedis:
         self.values = {}
 
     async def get(self, key):
+        if key in self.values:
+            return self.values[key]["value"]
         return None
 
     async def setex(self, key, ttl, value):
@@ -196,6 +198,38 @@ def test_unified_search_preserves_user_scope_when_user_id_column_exists():
     assert search_args == ("test", "alice", ["bob-ws"], 50)
 
 
+def test_unified_search_rehydrates_cached_created_at_timestamp():
+    fake_redis = FakeRedis()
+    fake_redis.values["unified_search:alice:test:ws-1"] = {
+        "ttl": 60,
+        "value": json.dumps(
+            [
+                {
+                    "decision_id": "decision-1",
+                    "workspace_id": "ws-1",
+                    "summary": "Cached decision",
+                    "rationale": "cached",
+                    "created_at": "2026-06-16T06:00:00+00:00",
+                    "relevance_score": 0.75,
+                    "user_id": "alice",
+                    "tags": [],
+                }
+            ]
+        ),
+    }
+    api = unified_queries.UnifiedQueryAPI(db_pool=FakePool(RecordingConn()), redis_client=fake_redis)
+
+    results = asyncio.run(
+        api.search_across_workspaces(
+            user_id="alice",
+            query="test",
+            workspaces=["ws-1"],
+        )
+    )
+
+    assert results[0].created_at.isoformat() == "2026-06-16T06:00:00+00:00"
+
+
 def test_get_user_workspaces_preserves_user_scope_when_user_id_column_exists():
     conn = RecordingMigratedConn()
     api = unified_queries.UnifiedQueryAPI(db_pool=FakePool(conn), redis_client=FakeRedis())
@@ -303,3 +337,28 @@ def test_workspace_summary_preserves_user_scope_when_user_id_columns_exist():
     assert "ON p.workspace_id = d.workspace_id AND p.user_id = d.user_id" in summary_sql
     assert "WHERE d.user_id = $1" in summary_sql
     assert summary_args == ("alice",)
+
+
+def test_workspace_summary_rehydrates_cached_last_activity_timestamp():
+    fake_redis = FakeRedis()
+    fake_redis.values["workspace_summary:alice"] = {
+        "ttl": 300,
+        "value": json.dumps(
+            [
+                {
+                    "workspace_id": "ws-1",
+                    "name": "ws-1",
+                    "total_decisions": 2,
+                    "recent_decisions_7d": 1,
+                    "total_progress": 3,
+                    "in_progress_count": 1,
+                    "last_activity": "2026-06-16T06:00:00+00:00",
+                }
+            ]
+        ),
+    }
+    api = unified_queries.UnifiedQueryAPI(db_pool=FakePool(RecordingConn()), redis_client=fake_redis)
+
+    summaries = asyncio.run(api.get_workspace_summary("alice"))
+
+    assert summaries[0].last_activity.isoformat() == "2026-06-16T06:00:00+00:00"
