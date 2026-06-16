@@ -242,10 +242,13 @@
       "validation_state": "REPO_CROSS_CHECKED",
       "level": "L1",
       "instance_files": [
-        "tests/dcp/fixtures/dcp_core_fixture.json"
+        "schemas/dcp/dcp_red_lane_taxonomy.instance.json"
       ],
       "runtime_producers": [],
-      "runtime_consumers": [],
+      "runtime_consumers": [
+        "src/dopemux/dcp/red_lane_scanner.py",
+        "src/dopemux/dcp/red_lane_taxonomy.py"
+      ],
       "ci_gates": [
         "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
       ],

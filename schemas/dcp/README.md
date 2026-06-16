@@ -152,6 +152,8 @@ Both fields bump together at L2→L3: `schema_version` moves from `.v0` to `.v1`
 
 **Do not edit `manifest.json` without updating the corresponding promotion-ladder entry.** Promote a contract's `level` only when all exit criteria for the target level are met (see table above).
 
+DMX-DCP-TOOLING-102 promotes the red-lane taxonomy seed from the aggregate test fixture into the standalone instance file `schemas/dcp/dcp_red_lane_taxonomy.instance.json`. The local scanner reads that instance for report metadata only; it does not gain live-write, external API, or PR mutation authority.
+
 ### Deterministic vs LLM Enforcement Boundary
 
 Enforcement surfaces are classified in [ADR-222](../../docs/90-adr/adr-222-deterministic-vs-llm-boundary.md). The short rule:
