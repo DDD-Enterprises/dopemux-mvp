@@ -26,7 +26,7 @@ Branch/PR: existing `fix/conport-coldstart-grant` branch for PR #894, bundled wi
 PASS:
 - RED/GREEN proof regression:
   - `python -m pytest -q proof/conport-optimal-102/test_conport_102_regression.py`
-  - Final result: `10 passed`.
+  - Final result: `12 passed`.
 - Syntax:
   - `python -m py_compile docker/mcp-servers-source/conport/enhanced_server.py docker/mcp-servers-source/conport/unified_queries.py`
 - Task packet JSON parse:
@@ -61,5 +61,5 @@ PASS:
 
 ## Residual Risk
 
-- This verifies empty-result route behavior, the serialization/schema failure modes, cold-start no-`user_id` compatibility, and migrated-schema user predicates. It does not seed live decision/relationship rows for non-empty graph traversal.
+- This verifies empty-result route behavior, the serialization/schema failure modes, cold-start no-`user_id` compatibility, migrated-schema user predicates, and same-workspace relationship filtering when cross-workspace traversal is disabled. It does not seed live decision/relationship rows for non-empty graph traversal.
 - The public schema is the active runtime schema observed in the local container. Migration 003 user-column compatibility is covered by SQL-shape regression tests, not by a live migrated database smoke.

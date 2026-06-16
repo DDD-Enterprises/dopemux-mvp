@@ -220,7 +220,7 @@ class UnifiedQueryAPI:
             if has_user_id:
                 cross_workspace_clause = (
                     "AND (d.workspace_id = dg.workspace_id OR $4 = true)"
-                    if include_workspaces else ""
+                    if include_workspaces else "AND d.workspace_id = dg.workspace_id"
                 )
                 sql = f"""
                     WITH RECURSIVE decision_graph AS (
@@ -261,7 +261,7 @@ class UnifiedQueryAPI:
             else:
                 cross_workspace_clause = (
                     "AND (d.workspace_id = dg.workspace_id OR $3 = true)"
-                    if include_workspaces else ""
+                    if include_workspaces else "AND d.workspace_id = dg.workspace_id"
                 )
                 sql = f"""
                     WITH RECURSIVE decision_graph AS (

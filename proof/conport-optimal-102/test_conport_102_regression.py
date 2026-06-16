@@ -227,6 +227,25 @@ def test_relationship_traversal_uses_uuid_relationship_columns():
     }
 
 
+def test_relationship_traversal_restricts_to_same_workspace_when_cross_workspace_disabled():
+    conn = RecordingConn()
+    api = unified_queries.UnifiedQueryAPI(db_pool=FakePool(conn), redis_client=FakeRedis())
+
+    graph = asyncio.run(
+        api.get_related_decisions(
+            decision_id="00000000-0000-0000-0000-000000000001",
+            user_id="ignored-by-active-schema",
+            include_workspaces=False,
+        )
+    )
+
+    assert graph["total_nodes"] == 0
+    relationship_sql, relationship_args = conn.calls[-1]
+    assert "AND d.workspace_id = dg.workspace_id" in relationship_sql
+    assert "OR $3 = true" not in relationship_sql
+    assert relationship_args == ("00000000-0000-0000-0000-000000000001", 3)
+
+
 def test_relationship_traversal_preserves_user_scope_when_user_id_column_exists():
     conn = RecordingMigratedConn()
     api = unified_queries.UnifiedQueryAPI(db_pool=FakePool(conn), redis_client=FakeRedis())
@@ -247,6 +266,29 @@ def test_relationship_traversal_preserves_user_scope_when_user_id_column_exists(
         "alice",
         3,
         True,
+    )
+
+
+def test_migrated_relationship_traversal_restricts_to_same_workspace_when_cross_workspace_disabled():
+    conn = RecordingMigratedConn()
+    api = unified_queries.UnifiedQueryAPI(db_pool=FakePool(conn), redis_client=FakeRedis())
+
+    graph = asyncio.run(
+        api.get_related_decisions(
+            decision_id="00000000-0000-0000-0000-000000000001",
+            user_id="alice",
+            include_workspaces=False,
+        )
+    )
+
+    assert graph["total_nodes"] == 0
+    relationship_sql, relationship_args = conn.calls[-1]
+    assert "AND d.workspace_id = dg.workspace_id" in relationship_sql
+    assert "OR $4 = true" not in relationship_sql
+    assert relationship_args == (
+        "00000000-0000-0000-0000-000000000001",
+        "alice",
+        3,
     )
 
 
