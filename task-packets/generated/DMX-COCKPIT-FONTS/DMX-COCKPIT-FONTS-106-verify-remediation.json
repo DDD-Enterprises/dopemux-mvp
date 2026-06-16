@@ -1,0 +1,85 @@
+{
+  "id": "DMX-COCKPIT-FONTS-106-verify-remediation",
+  "project": "dopemux-mvp",
+  "target": "Lightweight end-to-end verification of the DMX-COCKPIT-FONTS series: author fonts/verify-remediation.sh with toolchain-free, CI-able asserts (zero case-collisions, zero stale refs, complete @font-face matrix, all --font-mono/--font-editor consumers resolve) and a VERIFICATION.md documenting the manual full-toolchain build+patch gate (name tables, advance widths, 7/7 glyph coverage, clean filenames, clean git status).",
+  "invariants": [
+    "verify-remediation.sh MUST NOT require the font toolchain (no Iosevka/FontForge/Node) so it runs in CI.",
+    "verify-remediation.sh MUST assert: zero design-system case-collisions; zero BUILD.md / IosevkaHue / no-space-family / forbidden-font references; @font-face matrix complete; every var(--font-mono)/--font-editor consumer resolves to a declared face.",
+    "The manual full build+patch gate MUST be documented (not executed in CI) with explicit pass criteria.",
+    "This packet MUST run only after packets 101-105 are complete (fan-in).",
+    "verify-remediation.sh MUST exit non-zero on any failed assert (fail-closed)."
+  ],
+  "depends_on": [
+    "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
+    "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name",
+    "DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile",
+    "DMX-COCKPIT-FONTS-104-resolve-case-collisions",
+    "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-cockpit-fonts",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "commit": {
+    "message": "test(cockpit-fonts): toolchain-free remediation verify + manual gate doc (DMX-COCKPIT-FONTS-106)",
+    "allowlist": [
+      "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/verify-remediation.sh",
+      "claudedocs/cockpit-fonts-remediation/VERIFICATION.md",
+      "task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-106-verify-remediation.json",
+      "proof/cockpit-fonts-106/**"
+    ],
+    "verify": [
+      "python -m json.tool 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-106-verify-remediation.json' >/dev/null",
+      "python -m jsonschema -i 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-106-verify-remediation.json' docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "bash 'docs/03-reference/Dopemux Cockpit TUI Design System/fonts/verify-remediation.sh'",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "test(cockpit-fonts): series verification + manual gate (DMX-COCKPIT-FONTS-106)",
+    "body": "Final packet of DMX-COCKPIT-FONTS. Adds fonts/verify-remediation.sh — a toolchain-free, CI-runnable checker asserting zero case-collisions, zero stale/legacy refs, a complete @font-face matrix, and that every --font-mono/--font-editor consumer resolves. Adds VERIFICATION.md documenting the manual full-toolchain build+patch gate (name tables, advance widths, 7/7 glyph coverage, clean filenames, clean git status), which CI cannot run because nothing in CI builds fonts. Depends on 101-105 (fan-in).",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Author fonts/verify-remediation.sh (bash-3.2, fail-closed). Asserts: (a) `git ls-files <design-system dir> | tr A-Z a-z | sort | uniq -d` is empty; (b) rg finds zero 'fonts/BUILD.md', 'IosevkaHue', no-space 'DopemuxTerm Nerd Font', and forbidden-font names; (c) colors_and_type.css declares the full face matrix (Term+Editor x Regular/Medium x Upright/Italic/Oblique, or documents omissions); (d) every var(--font-mono)/--font-editor consumer across preview/surfaces/ui_kits resolves to a face declared in colors_and_type.css.",
+      "validation": [
+        "Script exists, is bash-3.2 portable, and exits non-zero on any failed assert.",
+        "All four assert groups are present and require no font toolchain."
+      ],
+      "expected_files": ["docs/03-reference/Dopemux Cockpit TUI Design System/fonts/verify-remediation.sh"]
+    },
+    {
+      "id": "S2",
+      "task": "Author claudedocs/cockpit-fonts-remediation/VERIFICATION.md documenting the manual full-toolchain gate: how to run build-dopemux-fonts.sh + patch-nerd-font.sh, and the pass criteria (clean DopemuxTerm-*/DopemuxEditor-* filenames; Term single-width + Editor proportional advances; name tables share one typographic family per spacing; 7/7 documented PUA codepoints present; git status clean).",
+      "validation": [
+        "VERIFICATION.md lists the manual gate steps and explicit pass criteria.",
+        "It cross-references the per-TP gates in packets 101 and 102."
+      ],
+      "expected_files": ["claudedocs/cockpit-fonts-remediation/VERIFICATION.md"]
+    },
+    {
+      "id": "S3",
+      "task": "Run verify-remediation.sh; confirm every assert passes (the series is complete). Record the manual-gate status (PASS with toolchain evidence, or NOT_RUN with the missing dependency). Validate the TP JSON, commit allowlisted files only, open PR, write the final proof bundle.",
+      "validation": [
+        "verify-remediation.sh exits 0 (all toolchain-free asserts pass).",
+        "Manual-gate status recorded (PASS+evidence or NOT_RUN+dependency).",
+        "python -m jsonschema exits 0; only allowlisted files staged; git diff --check clean.",
+        "Final proof bundle summarizes the whole series outcome."
+      ]
+    }
+  ]
+}

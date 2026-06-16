@@ -1,0 +1,123 @@
+{
+  "id": "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
+  "project": "dopemux-mvp",
+  "target": "Rename the Iosevka build-plan keys IosevkaDopemux{Term,Editor} to Dopemux{Term,Editor} across the TOML, build script, AND patch script — the rename is load-bearing because patch-nerd-font.sh gates --mono on family=='DopemuxTerm' but family derives from the IosevkaDopemux* filename, so Term is currently patched WITHOUT --mono. Also harden build-dopemux-fonts.sh (mkdir -p OUT_DIR instead of hard error; back up/restore Iosevka's private-build-plans.toml instead of clobbering; close the stale-manifest window on mid-build failure) and the no-binary-commit guarantee (ignore the build manifest dotfile and the documented OUT_DIR).",
+  "invariants": [
+    "The rename MUST cover all call sites: TOML [buildPlans.*] headers, build-dopemux-fonts.sh PLANS array + dist path + pre-clean glob, and patch-nerd-font.sh pre-clean glob + the --mono family guard.",
+    "After rename, the patch-nerd-font.sh --mono guard MUST fire for Term faces (family == 'DopemuxTerm') so Term is patched single-width; Editor MUST remain non-mono.",
+    "internal family names in private-build-plans.toml (family = 'Dopemux Term' / 'Dopemux Editor') MUST be unchanged by the plan-key rename.",
+    "No font binaries (*.ttf/*.otf/*.woff*) and no build manifest dotfile may become committable from the documented build workflow.",
+    "The build script MUST NOT leave a final manifest pointing at deleted TTFs if a build fails midway.",
+    "Scripts MUST remain bash-3.2 portable and pass shellcheck.",
+    "Changes are confined to the fonts/ tooling + its two readme/build docs; case-collision and CSS work are separate packets.",
+    "Classify a missing build toolchain as NOT_RUN with static substitute evidence; never fabricate a build result."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-cockpit-fonts",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "fix(cockpit-fonts): rename plan keys Dopemux{Term,Editor} + harden build/patch scripts (DMX-COCKPIT-FONTS-101)",
+    "allowlist": [
+      "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/private-build-plans.toml",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/build-dopemux-fonts.sh",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/.gitignore",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/build.md",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md",
+      "task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts.json",
+      "proof/cockpit-fonts-101/**"
+    ],
+    "verify": [
+      "python -m json.tool 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts.json' >/dev/null",
+      "python -m jsonschema -i 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts.json' docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "! grep -rq 'IosevkaDopemux' 'docs/03-reference/Dopemux Cockpit TUI Design System/fonts/'",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(cockpit-fonts): rename plan keys + harden build/patch scripts (DMX-COCKPIT-FONTS-101)",
+    "body": "Foundation packet of the DMX-COCKPIT-FONTS remediation series (follow-on to merged PR #879). Renames the Iosevka build-plan keys IosevkaDopemux{Term,Editor} -> Dopemux{Term,Editor} across the TOML, build-dopemux-fonts.sh, and patch-nerd-font.sh. This is load-bearing: the patch script's --mono guard keys on family=='DopemuxTerm' but family derives from the IosevkaDopemux* filename, so Term is currently patched WITHOUT --mono; the rename makes the guard fire. Also hardens the build script (mkdir -p OUT_DIR, backup/restore Iosevka's plan, stale-manifest guard) and the no-binary-commit guarantee. Internal family names ('Dopemux Term'/'Dopemux Editor') are unchanged.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "thinkdeep", "challenge", "planner", "challenge", "implement", "codereview", "precommit", "challenge"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight from a clean branch off origin/main. Read the three font scripts + the TOML. Confirm patch-nerd-font.sh derives `family` from the IosevkaDopemux* filename stem and that the --mono guard string is literally 'DopemuxTerm' (proving Term is NOT currently --mono'd). Capture the dist filename pattern, the manifest dotfile name, and the documented OUT_DIR in build.md. Record baseline SHA + clean worktree in proof.",
+      "validation": [
+        "Confirmed: family is computed from the filename stem and the --mono guard token is 'DopemuxTerm'.",
+        "Confirmed current build-plan keys are IosevkaDopemuxTerm / IosevkaDopemuxEditor.",
+        "Baseline SHA and clean status recorded in proof/cockpit-fonts-101/."
+      ],
+      "context_files": [
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/private-build-plans.toml",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/build-dopemux-fonts.sh",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/build.md",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/.gitignore"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Rename build-plan keys IosevkaDopemuxTerm->DopemuxTerm and IosevkaDopemuxEditor->DopemuxEditor in private-build-plans.toml (the [buildPlans.X] headers and all [buildPlans.X.sub] tables). Do NOT change the `family = 'Dopemux Term'` / `family = 'Dopemux Editor'` values.",
+      "validation": [
+        "Zero occurrences of 'IosevkaDopemux' remain in private-build-plans.toml.",
+        "The two `family =` lines are byte-unchanged.",
+        "The TOML still parses (python tomllib or equivalent)."
+      ],
+      "expected_files": ["docs/03-reference/Dopemux Cockpit TUI Design System/fonts/private-build-plans.toml"]
+    },
+    {
+      "id": "S3",
+      "task": "Update build-dopemux-fonts.sh: PLANS=(DopemuxTerm DopemuxEditor); the dist path dist/$plan/TTF now resolves to the renamed key; the existing pre-clean glob DopemuxTerm-*/DopemuxEditor-*.ttf now matches actual Iosevka output. Update patch-nerd-font.sh: rename the pre-clean glob and the --mono family guard token so the guard fires for Term (family=='DopemuxTerm') and Editor stays non-mono. Run shellcheck on both scripts.",
+      "validation": [
+        "Zero 'IosevkaDopemux' occurrences remain in build-dopemux-fonts.sh or patch-nerd-font.sh.",
+        "patch-nerd-font.sh --mono guard now matches the renamed Term family token.",
+        "shellcheck passes on both scripts (or NOT_RUN if shellcheck absent, noted)."
+      ],
+      "expected_files": [
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/build-dopemux-fonts.sh",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Harden build-dopemux-fonts.sh: replace the hard-error OUT_DIR check with `mkdir -p \"$OUT_DIR\"`; back up an existing $IOSEVKA_REPO/private-build-plans.toml before the cp and restore it via trap on exit; ensure a mid-build failure does not leave a stale final manifest (only remove old TTFs after a successful build, or trap-clean). Update fonts/.gitignore to also ignore the build manifest dotfile (.dopemux-built-fonts.txt*) and the patched output dir; reconcile build.md/readme.md so the documented OUT_DIR sits inside an ignored path.",
+      "validation": [
+        "Running with a non-existent OUT_DIR now creates it instead of erroring.",
+        "An existing Iosevka private-build-plans.toml is restored after the script exits (success OR failure).",
+        "git status is clean after a build run — no TTF or manifest dotfile is committable.",
+        "build.md and readme.md OUT_DIR guidance matches the ignore rules."
+      ],
+      "expected_files": [
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/build-dopemux-fonts.sh",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/.gitignore",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/build.md",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "MANUAL GATE (full toolchain): with Iosevka + nerd-fonts + FontForge + Node available, run build-dopemux-fonts.sh then patch-nerd-font.sh. Confirm clean output filenames DopemuxTerm-*.ttf / DopemuxEditor-*.ttf, that patched Term faces are single-width (cmap advance) proving --mono now fires, and that git status is clean. If the toolchain is unavailable, record NOT_RUN with the exact missing dependency plus the static substitute evidence (greps + shellcheck). Then validate the TP JSON, commit allowlisted files only, open the PR, and write the proof bundle.",
+      "validation": [
+        "Either real build+patch produced DopemuxTerm-*.ttf with single-width Term faces (PASS), or NOT_RUN recorded with the missing dependency + static substitute evidence.",
+        "python -m jsonschema exits 0 for this TP JSON.",
+        "Only allowlisted files staged; git diff --check clean.",
+        "Proof bundle records TP id, worktree, branch, files changed, command exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks, UNKNOWNs."
+      ]
+    }
+  ]
+}
