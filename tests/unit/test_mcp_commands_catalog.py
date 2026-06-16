@@ -141,6 +141,36 @@ def test_allocate_ports_raises_on_cross_server_collision():
     assert "beta" in msg
 
 
+def test_allocate_ports_uses_project_root_for_per_repo_state():
+    catalog = {
+        "version": 1,
+        "servers": {
+            "task-orchestrator": {
+                "scope": "per-worktree",
+                "state_scope": "per-repo",
+                "transport": "http",
+                "port_var": "TASK_ORCHESTRATOR_HTTP_PORT",
+                "default_port_base": 7890,
+            },
+        },
+    }
+
+    main = mcp_commands._allocate_ports(
+        "/tmp/repo",
+        ["task-orchestrator"],
+        catalog,
+        project_root="/tmp/shared-project",
+    )
+    linked = mcp_commands._allocate_ports(
+        "/tmp/repo-linked",
+        ["task-orchestrator"],
+        catalog,
+        project_root="/tmp/shared-project",
+    )
+
+    assert linked == main
+
+
 def test_project_identity_is_shared_across_linked_worktrees(tmp_path):
     repo = tmp_path / "repo"
     linked = tmp_path / "repo-linked"

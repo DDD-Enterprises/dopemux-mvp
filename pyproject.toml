@@ -153,6 +153,7 @@ packages = [
     "dopemux.analysis",
     "dopemux.claude",
     "dopemux.claude_tools",
+    "dopemux.coldstart",
     "dopemux.commands",
     "dopemux.config",
     "dopemux.conport",
