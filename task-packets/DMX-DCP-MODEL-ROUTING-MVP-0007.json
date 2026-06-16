@@ -9,11 +9,11 @@
     "Read-only classify behavior remains unchanged.",
     "Trusted adapters derive provenance from authoritative signals and never accept caller assertions that raise trust.",
     "The runtime gate in this checkout is RouteDecision.is_runnable(); do not target a non-existent LaneDecision.is_executable API.",
-    "Classifier logic remains deterministic and pure; no connector, runner, live-write, MCP, network, shell, or dopetask execution is introduced."
+    "Classifier logic remains deterministic and pure; no connector, runner, live-write, MCP, network, shell, or dopetask execution is introduced.",
+    "DMX-DCP-MODEL-ROUTING-MVP-0005 remains advisory design context only until present on main; it is not a blocking depends_on entry for this packet."
   ],
   "depends_on": [
-    "DMX-DCP-MODEL-ROUTING-MVP-0006",
-    "DMX-DCP-MODEL-ROUTING-MVP-0005"
+    "DMX-DCP-MODEL-ROUTING-MVP-0006"
   ],
   "repo_binding": {
     "project_id": "DDD-Enterprises/dopemux-mvp",
@@ -41,13 +41,16 @@
       "src/dopemux/dcp/__init__.py",
       "src/dopemux/commands/dcp_commands.py",
       "tests/unit/dcp/test_routing_classifier.py",
+      "tests/unit/dcp/test_routing_backend_policy.py",
       "tests/unit/dcp/test_dcp_cli.py",
-      "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007.json"
+      "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007.json",
+      "task-packets/INDEX.md"
     ],
     "verify": [
       "python -m compileall -q src/dopemux/dcp src/dopemux/commands",
       "python -m pytest -q tests/unit/dcp/",
-      "ruff check src/dopemux/dcp src/dopemux/commands tests/unit/dcp",
+      "ruff check src/dopemux/dcp/input_adapters.py src/dopemux/dcp/routing_classifier.py src/dopemux/dcp/__init__.py src/dopemux/commands/dcp_commands.py tests/unit/dcp/test_routing_classifier.py tests/unit/dcp/test_routing_backend_policy.py tests/unit/dcp/test_dcp_cli.py",
+      "python -m jsonschema -i task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
       "git diff --check"
     ]
   },
@@ -124,8 +127,9 @@
       "commands": [
         "python -m compileall -q src/dopemux/dcp src/dopemux/commands",
         "python -m pytest -q tests/unit/dcp/",
-        "ruff check src/dopemux/dcp src/dopemux/commands tests/unit/dcp",
+        "ruff check src/dopemux/dcp/input_adapters.py src/dopemux/dcp/routing_classifier.py src/dopemux/dcp/__init__.py src/dopemux/commands/dcp_commands.py tests/unit/dcp/test_routing_classifier.py tests/unit/dcp/test_routing_backend_policy.py tests/unit/dcp/test_dcp_cli.py",
         "python -m json.tool task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007.json",
+        "python -m jsonschema -i task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
         "git diff --check"
       ],
       "validation": [
