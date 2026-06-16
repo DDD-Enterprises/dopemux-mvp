@@ -884,6 +884,10 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "escalation_max_hops": 3,
         "max_cost_usd_default": 30.00,
         "cost_cap_mode": "preventive",
+        "workload_class": "high_reliability_synthesis",
+        "governance_posture": "HIGH_RELIABILITY",
+        "provider_surface": "direct",
+        "allowed_payload_sensitivity": ["standard_repo"],
         "notes": (
             "Premium: OpenAI flagship on bulk/CE/synthesis. Highest cost ceiling "
             "of the mix profiles. Strict cells OpenAI (gpt-5.5)."
@@ -904,6 +908,10 @@ COST_PROFILES: Dict[str, Dict[str, Any]] = {
         "escalation_max_hops": 1,
         "max_cost_usd_default": 6.00,
         "cost_cap_mode": "preventive",
+        "workload_class": "standard_extraction",
+        "governance_posture": "STANDARD_PROD",
+        "provider_surface": "mixed",
+        "allowed_payload_sensitivity": ["standard_repo"],
         "notes": (
             "Cheapest multi-provider blend: Gemini docs bulk + xAI code bulk for "
             "minimum spend, but strict CE/SYNTH still on capable OpenAI models."
@@ -23056,6 +23064,17 @@ def main() -> None:
             continue
         _disabled_providers.append(token)
     args._resolved_disabled_providers = tuple(sorted(set(_disabled_providers)))
+    # Stash resolved profile metadata for reporting.py (avoids circular import).
+    _meta_keys = (
+        "workload_class",
+        "governance_posture",
+        "provider_surface",
+        "allowed_payload_sensitivity",
+    )
+    args._cost_profile_metadata = {
+        k: cost_profile_cfg[k] for k in _meta_keys if k in cost_profile_cfg
+    }
+    args._provider_surface_summary = cost_profile_cfg.get("provider_surface", "")
     # If operator didn't set --max-cost-usd but the cost profile has a default,
     # apply it now so the spend ledger respects the profile's intent.
     if getattr(args, "max_cost_usd", None) is None:
