@@ -154,3 +154,54 @@ No source code was modified. All changes are ops-level (container restart).
 
 - Branch: `feat/conport-optimal-series`
 - Working tree: clean (proof file only added)
+
+---
+
+## Addendum — 2026-06-15: operator-directed durable source fix (SUPERSEDES ops-only framing)
+
+The original bundle above (commit `c398cf397`) deliberately scoped TP-101 as **ops-only**
+and recorded `schema.sql unmodified` as a PASS invariant, deferring the root-cause fix.
+That green smoke passed **only because a prior partial apply had already left the tables
+behind**, so `_ensure_schema()` skipped re-apply. On a genuinely fresh database, bring-up
+would still fail at `schema.sql:289`. The operator therefore directed the **durable source
+fix under TP-101** (chosen path: "Source fix + rebuild"). The following supersedes the
+ops-only conclusion.
+
+### Change made
+- `docker/mcp-servers-source/conport/schema.sql:289-291` — retargeted the three
+  `GRANT ALL PRIVILEGES ... TO dopemux` statements to the actual runtime role
+  **`dopemux_age`** (the role the server connects as; the bare `dopemux` role is never
+  created). Commit `0ee782030`.
+
+### Rebuild + re-validation (against the rebuilt image, not the skip-path)
+- `docker compose -f compose.yml build conport` → image `dopemux-conport:latest` rebuilt
+  (step #26 baked the corrected `schema.sql`).
+- `docker compose -f compose.yml up -d conport` → recreated; container reports **healthy**.
+- Startup log: `✅ Database schema present` (no schema-apply error), `✅ Enhanced ConPort
+  API available at http://0.0.0.0:3004`.
+- `GET http://localhost:3004/health` → **HTTP 200** `{"status":"healthy","database":"healthy","redis":"healthy"}` — **PASS**
+- `GET http://localhost:3005/sse` → **HTTP 200** `text/event-stream` — **PASS**
+- Direct execution of the corrected GRANT statements as `dopemux_age` → **exit 0** (the
+  exact statement that previously aborted apply now succeeds) — **PASS**
+
+### Invariant retraction
+- ~~`schema.sql unmodified` (PASS)~~ — **RETRACTED.** `schema.sql` is now intentionally
+  modified per operator direction. The fix is no longer deferred to TP-203.
+
+### Residual / NOT_RUN
+- **Full from-scratch apply of the entire `schema.sql` on an empty AGE database**: NOT_RUN.
+  Rationale: `psql -v ON_ERROR_STOP=1` halts at the first error, which was line 289;
+  statements 1–288 were already proven to apply (all tables present), and 289–291 are now
+  validated to execute. A scratch-DB full apply was skipped to avoid false negatives from
+  missing AGE/extension bootstrap unrelated to this fix.
+- **`/api/context` → 500 `column "instance_id" does not exist`**: still present. Out of
+  TP-101 scope — belongs to the route-500 bugfix packet (TP-102 `route-bugfixes-500s`;
+  the original bundle pointed at TP-203). Not addressed here.
+
+### Files Touched (addendum)
+- `docker/mcp-servers-source/conport/schema.sql` (grant role fix)
+- `claudedocs/proof/DMX-CONPORT-OPTIMAL-101/DMX-CONPORT-OPTIMAL-101-PROOF.md` (this addendum)
+
+### Git State (addendum)
+- HEAD `0ee782030` on `feat/conport-optimal-series` (branch ahead of origin by 2:
+  `c398cf397` proof + `0ee782030` fix). Not pushed.
