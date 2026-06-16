@@ -67,18 +67,17 @@ _EXTERNAL_INTAKE_EXTRA_FORBIDDEN: tuple[str, ...] = (
 
 
 def _compute_is_executable(decision: RouteDecision, lane: LaneKind) -> bool:
-    """Return True only when all gate conditions are met.
+    """Return True only when the lane is executable AND the decision is runnable.
 
-    Mirrors RouteDecision.is_runnable() — a non-ALLOWED status yields False.
-    BLOCKED and EXTERNAL_INTAKE are never executable regardless.
+    Delegates the safety gate to ``RouteDecision.is_runnable()`` (status ALLOWED,
+    red-lane CLEAR, authority not UNKNOWN/BLOCKED) so the lane engine can never
+    report executable for a route the classifier deems non-runnable — even for a
+    ``RouteDecision`` constructed outside ``classify_route`` (e.g. via
+    ``from_dict``). BLOCKED and EXTERNAL_INTAKE are never in ``_EXECUTABLE_LANES``.
     """
     if lane not in _EXECUTABLE_LANES:
         return False
-    if decision.status is not RouteStatus.ALLOWED:
-        return False
-    if decision.red_lane_state is not RedLaneState.CLEAR:
-        return False
-    return True
+    return decision.is_runnable()
 
 
 # ─────────────────────────────────────────────

@@ -38,6 +38,7 @@ from dopemux.dcp.routing_model import (
     ComplexityClass,
     RedLaneState,
     RiskClass,
+    RouteDecision,
     RouteStatus,
     RuntimeImpact,
     TaskSource,
@@ -143,11 +144,38 @@ def test_red_lane_mcp_route_blocked_no_facade_bypass() -> None:
 
     assert lane_decision.lane is LaneKind.BLOCKED
     assert lane_decision.is_executable is False
-    # Must not be the Secure-MCP-Facade lane — it is never produced
-    assert lane_decision.lane is not LaneKind.BLOCKED or True  # always blocked, never facade
+    # Must not be the Secure-MCP-Facade lane — that lane is never even defined.
+    assert not hasattr(LaneKind, "SECURE_MCP_FACADE")
     # The MCP tokens must appear somewhere in forbidden_actions
     forbidden_str = " ".join(lane_decision.forbidden_actions)
     assert "mcp" in forbidden_str or "call_mcp" in forbidden_str
+
+
+def test_executability_gate_mirrors_is_runnable_on_forged_decision() -> None:
+    """Defense-in-depth (audit RISK-1): a RouteDecision with ALLOWED status +
+    CLEAR red-lane but BLOCKED/UNKNOWN authority — constructible via from_dict,
+    never emitted by classify_route — must NOT be executable. The lane gate
+    delegates to RouteDecision.is_runnable(), which fail-closes on authority.
+    """
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    for bad_authority in (AuthorityClass.BLOCKED, AuthorityClass.UNKNOWN):
+        forged = RouteDecision.from_dict(
+            {
+                "status": "ALLOWED",
+                "red_lane_state": "CLEAR",
+                "authority_class": bad_authority.value,
+                "allowed_actions": ["edit_allowlisted_files"],
+            }
+        )
+        assert forged.is_runnable() is False  # is_runnable already fail-closes
+        lane_decision = decide_lane(forged, inp)
+        assert lane_decision.is_executable is False, (
+            f"forged ALLOWED + {bad_authority.value} authority must not be executable"
+        )
 
 
 # ─────────────────────────────────────────────
