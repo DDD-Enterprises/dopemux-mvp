@@ -285,7 +285,10 @@ VALUES ('dopemux-mvp',
         'high')
 ON CONFLICT DO NOTHING;
 
--- Grant permissions to dopemux user
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO dopemux;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO dopemux;
-GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO dopemux;
+-- Grant permissions to the ConPort runtime role (the role the server connects as).
+-- Historically this granted to a bare "dopemux" role that is never created; the
+-- actual runtime role is "dopemux_age", so granting to a non-existent role made
+-- psql exit non-zero and aborted schema apply (REST bringup on :3004 never bound).
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO dopemux_age;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO dopemux_age;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO dopemux_age;
