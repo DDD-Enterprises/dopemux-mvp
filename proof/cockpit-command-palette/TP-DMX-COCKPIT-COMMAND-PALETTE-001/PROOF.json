@@ -127,6 +127,85 @@
       "staging_note": "proof/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json is ignored by .gitignore proof/* and must be force-added intentionally."
     }
   },
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/cockpit-command-palette/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "This 2026-06-16 reconciliation is proof-shape repair only; no independent auditor tool was run in the current session.",
+      "The command-palette broker primitive is already present on current origin/main; no runtime behavior was changed by this proof repair."
+    ],
+    "skip_reason": "No independent auditor was run for the proof-shape reconciliation. Current validation was run by Codex and recorded under reconciliation_2026_06_16."
+  },
+  "reconciliation_2026_06_16": {
+    "purpose": "Repair proof shape so scripts/audit/validate_audit_proof.py accepts the existing command-palette proof bundle on current origin/main.",
+    "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/cockpit-command-palette-reconcile-001",
+    "branch": "codex/cockpit-command-palette-reconcile-001",
+    "base_head": "e24039b537f053536f096c36b7d62f0a6ef7bb1f",
+    "runtime_changes": false,
+    "validation": [
+      {
+        "command": "python -m json.tool task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-COMMAND-PALETTE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0,
+        "result": "PASS",
+        "summary": "jsonschema CLI emitted only a deprecation warning."
+      },
+      {
+        "command": "python -m pytest tests/unit/dopemux/ui/cockpit/test_runtime_contract.py -q",
+        "exit_code": 0,
+        "result": "PASS",
+        "summary": "53 passed."
+      },
+      {
+        "command": "python -m pytest tests/unit/dopemux/ui/cockpit/ -q",
+        "exit_code": 0,
+        "result": "PASS",
+        "summary": "110 passed."
+      },
+      {
+        "command": "python scripts/brand_lint.py",
+        "exit_code": 0,
+        "result": "PASS",
+        "summary": "0 errors, 0 warnings."
+      },
+      {
+        "command": "python scripts/sync_brand_tokens.py",
+        "exit_code": 0,
+        "result": "PASS",
+        "summary": "All brand tokens in sync."
+      },
+      {
+        "command": "shasum -a 256 -c sha256sums.txt",
+        "cwd": "out/cockpit-inventory-regen/TP-DMX-COCKPIT-INVENTORY-REGEN-001",
+        "exit_code": 0,
+        "result": "PASS",
+        "summary": "All listed inventory artifacts verified OK."
+      },
+      {
+        "command": "python scripts/audit/validate_audit_proof.py proof/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json",
+        "exit_code": 1,
+        "result": "PASS_RED",
+        "summary": "Initial current-run validation failed because embedded_audit was missing; this reconciliation adds it."
+      },
+      {
+        "command": "python scripts/audit/validate_audit_proof.py proof/cockpit-command-palette/TP-DMX-COCKPIT-COMMAND-PALETTE-001/PROOF.json",
+        "exit_code": 0,
+        "result": "PASS",
+        "summary": "1/1 proof bundle passed after embedded_audit repair."
+      }
+    ]
+  },
   "proof_artifact_hashes": [
     {
       "path": "src/dopemux/ui/cockpit/runtime_contract.py",
