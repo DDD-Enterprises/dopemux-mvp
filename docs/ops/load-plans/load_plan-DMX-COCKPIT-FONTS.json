@@ -4,19 +4,19 @@
   "title": "Cockpit font build/patch remediation — audit findings + research refinements on merged PR #879",
   "description": "6-packet remediation series for the Dopemux cockpit font build/patch pipeline (follow-on to merged PR #879). Clears the codex+grok REQUEST-CHANGES audit findings plus 3 research refinements. 101 renames the Iosevka plan keys + hardens the build/patch scripts (foundation; also fixes Term --mono, which is silently off today). 102 patches Editor with --variable-width-glyphs + sets a stable family via explicit per-face --name. 103 completes + reconciles the colors_and_type.css @font-face matrix. 104 resolves the 6 design-system case-collisions. 105 purges legacy IosevkaHue/BUILD.md doc refs + reconciles examples. 106 adds a toolchain-free verify + documents the manual build+patch gate.",
   "authority": "Task packets at task-packets/generated/DMX-COCKPIT-FONTS/ + design spec at claudedocs/cockpit-fonts-remediation/DESIGN.md. Runtime repo truth (origin/main) outranks this document. Verify paths before edit.",
-  "live_task_orchestrator_load": "PENDING",
+  "live_task_orchestrator_load": "LOADED",
   "offline_artifact": "CREATED",
-  "loaded": false,
+  "loaded": true,
   "load_mechanism_classified_as": "OBSERVED_MCP_TASK_ORCHESTRATOR_V3",
   "load_mechanism_evidence": "Per sibling load plans (DMX-CONPORT-OPTIMAL): task-orchestrator MCP v3 uses create_work_tree for the root, manage_items(operation=create) per node, manage_dependencies for the BLOCKS DAG, manage_notes for gate briefs. Per-packet TP JSONs conform to docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (validated PASS, Draft7).",
-  "task_orchestrator_root_id": "PENDING_LOAD",
+  "task_orchestrator_root_id": "7890cbc1-3c2f-40a4-bacb-61eb705f3a6f",
   "task_orchestrator_leaf_ids": {
-    "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts": "PENDING_LOAD",
-    "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name": "PENDING_LOAD",
-    "DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile": "PENDING_LOAD",
-    "DMX-COCKPIT-FONTS-104-resolve-case-collisions": "PENDING_LOAD",
-    "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs": "PENDING_LOAD",
-    "DMX-COCKPIT-FONTS-106-verify-remediation": "PENDING_LOAD"
+    "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts": "f2c374cd-abd8-4c59-bbd2-e9c5d8e6ce3d",
+    "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name": "cd11b6c7-372b-4f95-84e4-5253ed6bb17a",
+    "DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile": "6a538831-770e-45fe-bc60-bddc12da1a3a",
+    "DMX-COCKPIT-FONTS-104-resolve-case-collisions": "04f9d15d-a5d3-4e81-b652-133bb3991fed",
+    "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs": "9010543e-f0a0-469e-8bb5-9b4698ff59f6",
+    "DMX-COCKPIT-FONTS-106-verify-remediation": "cf9a4c16-fd0b-4fae-9a72-7f28258d7164"
   },
   "workspace_id": "/Users/hue/code/dopemux-mvp",
   "authoring_branch": "feat/cockpit-fonts-series",
@@ -47,17 +47,50 @@
     "description": "11 BLOCKS edges. Predecessor must complete before successor. 101 and 104 are initially unblocked.",
     "edge_count": 11,
     "edges": [
-      { "predecessor": "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts", "successor": "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name" },
-      { "predecessor": "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts", "successor": "DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile" },
-      { "predecessor": "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts", "successor": "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs" },
-      { "predecessor": "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts", "successor": "DMX-COCKPIT-FONTS-106-verify-remediation" },
-      { "predecessor": "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name", "successor": "DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile" },
-      { "predecessor": "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name", "successor": "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs" },
-      { "predecessor": "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name", "successor": "DMX-COCKPIT-FONTS-106-verify-remediation" },
-      { "predecessor": "DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile", "successor": "DMX-COCKPIT-FONTS-106-verify-remediation" },
-      { "predecessor": "DMX-COCKPIT-FONTS-104-resolve-case-collisions", "successor": "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs" },
-      { "predecessor": "DMX-COCKPIT-FONTS-104-resolve-case-collisions", "successor": "DMX-COCKPIT-FONTS-106-verify-remediation" },
-      { "predecessor": "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs", "successor": "DMX-COCKPIT-FONTS-106-verify-remediation" }
+      {
+        "predecessor": "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
+        "successor": "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name"
+      },
+      {
+        "predecessor": "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
+        "successor": "DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile"
+      },
+      {
+        "predecessor": "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
+        "successor": "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs"
+      },
+      {
+        "predecessor": "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
+        "successor": "DMX-COCKPIT-FONTS-106-verify-remediation"
+      },
+      {
+        "predecessor": "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name",
+        "successor": "DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile"
+      },
+      {
+        "predecessor": "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name",
+        "successor": "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs"
+      },
+      {
+        "predecessor": "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name",
+        "successor": "DMX-COCKPIT-FONTS-106-verify-remediation"
+      },
+      {
+        "predecessor": "DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile",
+        "successor": "DMX-COCKPIT-FONTS-106-verify-remediation"
+      },
+      {
+        "predecessor": "DMX-COCKPIT-FONTS-104-resolve-case-collisions",
+        "successor": "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs"
+      },
+      {
+        "predecessor": "DMX-COCKPIT-FONTS-104-resolve-case-collisions",
+        "successor": "DMX-COCKPIT-FONTS-106-verify-remediation"
+      },
+      {
+        "predecessor": "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs",
+        "successor": "DMX-COCKPIT-FONTS-106-verify-remediation"
+      }
     ]
   },
   "nodes": [
@@ -66,7 +99,7 @@
       "role": "queue",
       "status": "READY",
       "redlane": true,
-      "orchestrator_uuid": "PENDING_LOAD",
+      "orchestrator_uuid": "f2c374cd-abd8-4c59-bbd2-e9c5d8e6ce3d",
       "objective": "Rename Iosevka plan keys IosevkaDopemux{Term,Editor}->Dopemux{Term,Editor} across TOML + build + patch scripts (fixes Term --mono, which the guard never fires today) and harden build-dopemux-fonts.sh + the no-binary-commit guarantee.",
       "depends_on": [],
       "blocks": [
@@ -81,9 +114,11 @@
       "role": "queue",
       "status": "READY_AFTER_DEPENDENCY",
       "redlane": true,
-      "orchestrator_uuid": "PENDING_LOAD",
+      "orchestrator_uuid": "cd11b6c7-372b-4f95-84e4-5253ed6bb17a",
       "objective": "Patch Editor faces with --variable-width-glyphs (Term keeps --mono) and set a stable family via explicit per-face --name '<Family> Nerd Font' (not --name full); add a fontTools name-table + advance-width test.",
-      "depends_on": ["DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts"],
+      "depends_on": [
+        "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts"
+      ],
       "blocks": [
         "DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile",
         "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs",
@@ -95,20 +130,22 @@
       "role": "queue",
       "status": "READY_AFTER_DEPENDENCY",
       "redlane": false,
-      "orchestrator_uuid": "PENDING_LOAD",
+      "orchestrator_uuid": "6a538831-770e-45fe-bc60-bddc12da1a3a",
       "objective": "Complete colors_and_type.css @font-face to the full 12-face matrix (Term+Editor x Regular/Medium x Upright/Italic/Oblique) and align --font-mono/--font-editor to the packet-102 spaced families.",
       "depends_on": [
         "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
         "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name"
       ],
-      "blocks": ["DMX-COCKPIT-FONTS-106-verify-remediation"]
+      "blocks": [
+        "DMX-COCKPIT-FONTS-106-verify-remediation"
+      ]
     },
     {
       "id": "DMX-COCKPIT-FONTS-104-resolve-case-collisions",
       "role": "queue",
       "status": "READY",
       "redlane": true,
-      "orchestrator_uuid": "PENDING_LOAD",
+      "orchestrator_uuid": "04f9d15d-a5d3-4e81-b652-133bb3991fed",
       "objective": "Resolve the 6 design-system case-collision pairs via git rm --cached the redundant casing (byte-identical on origin/main; git mv no-ops under core.ignorecase=true).",
       "depends_on": [],
       "blocks": [
@@ -121,21 +158,23 @@
       "role": "queue",
       "status": "READY_AFTER_DEPENDENCY",
       "redlane": false,
-      "orchestrator_uuid": "PENDING_LOAD",
+      "orchestrator_uuid": "9010543e-f0a0-469e-8bb5-9b4698ff59f6",
       "objective": "Fix review-pack.md BUILD.md->build.md, purge IosevkaHueTerm canonical claims, and reconcile doc-embedded @font-face/family/filename examples to packet 101/102 outputs (on the post-104 canonical-cased files).",
       "depends_on": [
         "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
         "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name",
         "DMX-COCKPIT-FONTS-104-resolve-case-collisions"
       ],
-      "blocks": ["DMX-COCKPIT-FONTS-106-verify-remediation"]
+      "blocks": [
+        "DMX-COCKPIT-FONTS-106-verify-remediation"
+      ]
     },
     {
       "id": "DMX-COCKPIT-FONTS-106-verify-remediation",
       "role": "queue",
       "status": "READY_AFTER_DEPENDENCY",
       "redlane": false,
-      "orchestrator_uuid": "PENDING_LOAD",
+      "orchestrator_uuid": "cf9a4c16-fd0b-4fae-9a72-7f28258d7164",
       "objective": "Toolchain-free verify-remediation.sh (zero collisions, zero stale refs, complete @font-face, tokens resolve) + VERIFICATION.md documenting the manual full-toolchain build+patch gate.",
       "depends_on": [
         "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
@@ -148,11 +187,18 @@
     }
   ],
   "verification": {
-    "status": "PENDING",
-    "expected_leaf_count": 6,
-    "expected_edge_count": 11,
-    "expected_unblocked": ["DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts", "DMX-COCKPIT-FONTS-104-resolve-case-collisions"],
-    "offline_schema_validation": "PASS (Draft7, all 6 packets, 2026-06-15)"
+    "status": "PASS",
+    "verified_at": "2026-06-16T03:43:50Z",
+    "leaf_count": 6,
+    "edge_count": 11,
+    "unblocked_count": 2,
+    "unblocked": [
+      "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
+      "DMX-COCKPIT-FONTS-104-resolve-case-collisions"
+    ],
+    "offline_schema_validation": "PASS (Draft7, all 6 packets, 2026-06-15)",
+    "evidence": "create_work_tree atomic one-shot (root + 6 children + 11 BLOCKS deps + execution-context note, 0 failures). query_items overview on root 7890cbc1 -> childCounts.queue=6. query_dependencies: tp101 incoming=0/outgoing=4, tp104 incoming=0/outgoing=2 (both unblocked), tp106 incoming=5 (fan-in from 101,102,103,104,105). Workspace schema auto-attached required proof-bundle note (AGENTS.md §9) to every item."
   },
-  "replay_instructions": "1) Ensure task-orchestrator MCP is connected (prefer one HTTP singleton; if stdio, prune leaked containers first to avoid SQLite contention). 2) create_work_tree title='DMX-COCKPIT-FONTS' with description above. 3) manage_items(operation=create) for each of the 6 nodes, role=queue. 4) manage_dependencies for all 11 BLOCKS edges. 5) manage_notes for the decisions_applied brief on the root. 6) Update task_orchestrator_root_id + task_orchestrator_leaf_ids with real UUIDs. 7) query_items overview on root (expect childCounts.queue=6) + query_dependencies on 101/104 (expect 0 incoming) to confirm 6 leaves / 11 edges / 2 unblocked."
+  "replay_instructions": "1) Ensure task-orchestrator MCP is connected (prefer one HTTP singleton; if stdio, prune leaked containers first to avoid SQLite contention). 2) create_work_tree title='DMX-COCKPIT-FONTS' with description above. 3) manage_items(operation=create) for each of the 6 nodes, role=queue. 4) manage_dependencies for all 11 BLOCKS edges. 5) manage_notes for the decisions_applied brief on the root. 6) Update task_orchestrator_root_id + task_orchestrator_leaf_ids with real UUIDs. 7) query_items overview on root (expect childCounts.queue=6) + query_dependencies on 101/104 (expect 0 incoming) to confirm 6 leaves / 11 edges / 2 unblocked.",
+  "loaded_at": "2026-06-16T03:43:50Z"
 }
