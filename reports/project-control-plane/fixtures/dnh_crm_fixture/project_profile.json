@@ -1,0 +1,67 @@
+{
+  "schema_version": "pcp.project_profile.v0",
+  "project_id": "dnh-crm-fixture",
+  "project_kind": "DNH_CRM",
+  "repo": {
+    "name": "dNh_CRM",
+    "root_marker": "AGENTS.md",
+    "allowed_worktrees": [
+      "/Users/hue/.codex/worktrees/*/dNh_CRM"
+    ],
+    "forbidden_worktrees": [
+      "/Users/hue/code/dNh_CRM"
+    ],
+    "runtime_imports_allowed": false
+  },
+  "authority_docs": [
+    {
+      "path": "AGENTS.md",
+      "required": true,
+      "state": "PRESENT"
+    },
+    {
+      "path": "docs/governance/macro-packet-operating-model.md",
+      "required": true,
+      "state": "PRESENT"
+    }
+  ],
+  "packet": {
+    "active_packet_paths": [
+      "task-packets/TP-DNH-RDCP-FIXTURE-0000.json"
+    ],
+    "required": true,
+    "unknown_code": "BLOCKED_UNKNOWN_ACTIVE_PACKET"
+  },
+  "proof": {
+    "proof_roots": [
+      "proof/TP-DNH-RDCP-FIXTURE-0000"
+    ],
+    "freshness_required": true,
+    "unknown_code": "NEEDS_EVIDENCE_REFRESH"
+  },
+  "red_lane_policy": {
+    "policy_ref": "fixture/red-lanes.json",
+    "default_on_unknown": "BLOCK",
+    "lanes": [
+      "crm-write",
+      "telegram-send",
+      "calendar-write",
+      "runtime-db",
+      "forbidden-worktree"
+    ]
+  },
+  "forbidden_paths": [
+    {
+      "glob": "data/*.sqlite3",
+      "reason": "runtime database file",
+      "result": "BLOCKED_RUNTIME_DB"
+    },
+    {
+      "glob": "src/dnh_crm/runtime/**",
+      "reason": "runtime plane not authorized",
+      "result": "NEEDS_SUPERVISOR"
+    }
+  ],
+  "export_mode": "ARTIFACT_ONLY",
+  "unknown_policy": "FAIL_CLOSED"
+}

@@ -1,0 +1,198 @@
+{
+  "schema_version": "pcp.e2e_dry_run_result.v0",
+  "tp_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
+  "generated_from_fixture": true,
+  "live_writes_performed": false,
+  "github_mutated": false,
+  "dopetask_executed": false,
+  "task_orchestrator_mcp_written": false,
+  "runtime_imports_used": false,
+  "generic_exporter_claim": "The dry-run chain is represented with profile-shaped inputs for three fixtures; no live exporter implementation is claimed.",
+  "chain": [
+    "project profile",
+    "project evidence export",
+    "red-lane classification",
+    "Dopetask packet mapping dry-run",
+    "proof pointer",
+    "Task Orchestrator note item dry-run",
+    "audit request",
+    "supervisor decision draft"
+  ],
+  "fixtures": [
+    "reports/project-control-plane/fixtures/dnh_crm_fixture",
+    "reports/project-control-plane/fixtures/dopemux_fixture",
+    "reports/project-control-plane/fixtures/minimal_fixture"
+  ],
+  "contract_instances": {
+    "dopetask_packet_mapping": {
+      "schema_version": "pcp.dopetask_packet_mapping.v0",
+      "mapping_id": "mapping-dry-run-001",
+      "source_packet_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
+      "target_executor": "DOPETASK",
+      "dry_run_only": true,
+      "mapped_fields": {
+        "packet_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
+        "lane": "PLANNING_GOVERNANCE",
+        "mode": "fixture-only"
+      },
+      "blocked_reason": null
+    },
+    "proof_pointer": {
+      "schema_version": "pcp.proof_pointer.v0",
+      "pointer_id": "proof-pointer-dry-run-001",
+      "project_id": "dopemux-mvp-fixture",
+      "packet_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
+      "path": "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json",
+      "freshness_state": "CURRENT",
+      "validation_status": "PASS",
+      "auditor_verdict": "NEEDS_SUPERVISOR",
+      "unknowns": [
+        "Read-only Opus audit returned NEEDS_SUPERVISOR; Supervisor acceptance is pending",
+        "No live exporter implementation exercised"
+      ]
+    },
+    "orchestrator_item": {
+      "schema_version": "pcp.orchestrator_item.v0",
+      "item_id": "orchestrator-dry-run-001",
+      "project_id": "dopemux-mvp-fixture",
+      "title": "Universal Project Control Plane Architecture Validation",
+      "status": "review",
+      "dry_run_only": true,
+      "notes": [
+        {
+          "name": "ownership",
+          "body": "Task Orchestrator displays workflow status only; Supervisor owns acceptance."
+        }
+      ],
+      "handoff_contract": "No MCP write performed; this is render-only."
+    },
+    "executor_run_request": {
+      "schema_version": "pcp.executor_run_request.v0",
+      "request_id": "executor-request-dry-run-001",
+      "executor": "CODEX",
+      "packet_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
+      "mode": "ARTIFACT_ONLY",
+      "allow_live_writes": false,
+      "inputs": [
+        "reports/project-control-plane/fixtures/dopemux_fixture/evidence_export.json"
+      ]
+    },
+    "executor_run_result": {
+      "schema_version": "pcp.executor_run_result.v0",
+      "request_id": "executor-request-dry-run-001",
+      "status": "DRY_RUN_COMPLETE",
+      "mutation_performed": false,
+      "outputs": [
+        "reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json"
+      ],
+      "unknowns": [
+        "No live exporter implementation exercised"
+      ]
+    },
+    "audit_request": {
+      "schema_version": "pcp.audit_request.v0",
+      "audit_id": "audit-request-dry-run-001",
+      "auditor_role": "OPUS",
+      "target_artifacts": [
+        "docs/ops/project-control-plane/architecture-validation.md",
+        "reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json"
+      ],
+      "mutation_allowed": false,
+      "questions": [
+        "Does the PCP core remain generic?",
+        "Does any component own acceptance except Supervisor?"
+      ]
+    },
+    "audit_result": {
+      "schema_version": "pcp.audit_result.v0",
+      "audit_id": "audit-request-dry-run-001",
+      "verdict": "NEEDS_SUPERVISOR",
+      "findings": [
+        {
+          "severity": "BLOCKER",
+          "summary": "Read-only Opus audit is the audit of record and requires Supervisor adjudication before acceptance."
+        },
+        {
+          "severity": "WARNING",
+          "summary": "Negative cases are asserted fixture expectations, not executed classifier results."
+        }
+      ],
+      "unknowns": [
+        "Supervisor decision",
+        "Generic exporter implementation behavior"
+      ]
+    },
+    "supervisor_decision": {
+      "schema_version": "pcp.supervisor_decision.v0",
+      "decision_id": "supervisor-decision-draft-001",
+      "packet_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
+      "decision": "DEFER",
+      "accepted_by_supervisor": false,
+      "mutation_authorized": false,
+      "rationale": "Draft artifact only. Supervisor acceptance remains outside Codex."
+    }
+  },
+  "negative_tests": [
+    {
+      "fixture": "missing active packet",
+      "expected_result": "BLOCKED_UNKNOWN_ACTIVE_PACKET",
+      "asserted_result": "BLOCKED_UNKNOWN_ACTIVE_PACKET",
+      "pass": true
+    },
+    {
+      "fixture": "dirty old dNh checkout",
+      "expected_result": "BLOCKED_FORBIDDEN_WORKTREE",
+      "asserted_result": "BLOCKED_FORBIDDEN_WORKTREE",
+      "pass": true
+    },
+    {
+      "fixture": "runtime file touched",
+      "expected_result": "NEEDS_SUPERVISOR",
+      "asserted_result": "NEEDS_SUPERVISOR",
+      "pass": true
+    },
+    {
+      "fixture": "data/*.sqlite3 included",
+      "expected_result": "BLOCKED_RUNTIME_DB",
+      "asserted_result": "BLOCKED_RUNTIME_DB",
+      "pass": true
+    },
+    {
+      "fixture": "CRM write surface detected",
+      "expected_result": "NEEDS_SUPERVISOR",
+      "asserted_result": "NEEDS_SUPERVISOR",
+      "pass": true
+    },
+    {
+      "fixture": "Task Orchestrator live write requested too early",
+      "expected_result": "BLOCKED_NO_WRITE_CONTRACT",
+      "asserted_result": "BLOCKED_NO_WRITE_CONTRACT",
+      "pass": true
+    },
+    {
+      "fixture": "invalid schema",
+      "expected_result": "BLOCKED_SCHEMA_INVALID",
+      "asserted_result": "BLOCKED_SCHEMA_INVALID",
+      "pass": true
+    },
+    {
+      "fixture": "unknown proof freshness",
+      "expected_result": "NEEDS_EVIDENCE_REFRESH",
+      "asserted_result": "NEEDS_EVIDENCE_REFRESH",
+      "pass": true
+    },
+    {
+      "fixture": "open Dopemux PR used as authority",
+      "expected_result": "BLOCKED_UNACCEPTED_AUTHORITY",
+      "asserted_result": "BLOCKED_UNACCEPTED_AUTHORITY",
+      "pass": true
+    }
+  ],
+  "architecture_verdict": "ARCHITECTURE_CONFIRMED_WITH_CORRECTIONS",
+  "corrections_required": [
+    "Implement a real generic exporter in a later packet before dNh live artifact export.",
+    "Run independent Opus audit before Supervisor acceptance.",
+    "Keep Task Orchestrator writes and Dopetask execution blocked until explicit write contracts exist."
+  ],
+  "verdict_scope": "contract-shape-only; behavior remains fixture asserted and Supervisor acceptance is pending"
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/audit_result.schema.json",
+  "title": "Audit Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "audit_id",
+    "verdict",
+    "findings",
+    "unknowns"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.audit_result.v0"
+    },
+    "audit_id": {
+      "type": "string"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "PASS_WITH_RISKS",
+        "FAIL",
+        "NEEDS_SUPERVISOR",
+        "NOT_RUN",
+        "UNKNOWN"
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "severity",
+          "summary"
+        ],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "INFO",
+              "WARNING",
+              "BLOCKER",
+              "UNKNOWN"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

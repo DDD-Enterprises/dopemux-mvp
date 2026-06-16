@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/dopetask_packet_mapping.schema.json",
+  "title": "Dopetask Packet Mapping Dry Run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "mapping_id",
+    "source_packet_id",
+    "target_executor",
+    "dry_run_only",
+    "mapped_fields",
+    "blocked_reason"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.dopetask_packet_mapping.v0"
+    },
+    "mapping_id": {
+      "type": "string"
+    },
+    "source_packet_id": {
+      "type": "string"
+    },
+    "target_executor": {
+      "type": "string",
+      "enum": [
+        "DOPETASK",
+        "CODEX",
+        "UNKNOWN"
+      ]
+    },
+    "dry_run_only": {
+      "type": "boolean",
+      "const": true
+    },
+    "mapped_fields": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "blocked_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
