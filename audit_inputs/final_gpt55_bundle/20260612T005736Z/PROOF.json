@@ -1,0 +1,44 @@
+{
+  "copied_evidence_files": [
+    "audit_inputs/gpt55_recon_source/CODEX_RECON_PACKS_SOURCE.md",
+    "audit_inputs/gpt55_recon_source/CODEX_RECON_PACKS_SOURCE.sha256",
+    "audit_inputs/gpt55_recon_source/CODEX_RECON_PACKS_SOURCE.linecount",
+    "audit_inputs/gpt55_recon_source/README.md"
+  ],
+  "generated_at_utc": "2026-06-16T06:14:59Z",
+  "manifest_only": false,
+  "missing_blocking_inputs": [],
+  "missing_nonblocking_inputs": [
+    "RULES.md",
+    "SYSTEM_BOUNDARIES.md",
+    "04_system-boundaries.md",
+    "TRUTH_*.md",
+    "SYSTEM_*.md",
+    "PAL_*.md",
+    "proof/handoff/**",
+    "dopetask-cannonical-spec.json",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "MODEL_PROVIDER_CAPABILITY_LEDGER.md",
+    "RUNNER_CLI_INTEGRATION_LEDGER.md",
+    "OPENROUTER_CODING_MODEL_EXPANSION.md",
+    "DCP_BUILD_RECON.md",
+    "DCP_BUILD_RECON.json"
+  ],
+  "mode": "READ_ONLY_PLUS_ARCHIVE",
+  "network_stop_condition_preserved": true,
+  "output_dir": "audit_inputs/final_gpt55_bundle/20260612T005736Z",
+  "packet_id": "TP-DMX-GPT55-ATTACHMENT-ASSEMBLER-001",
+  "review_fix_updated_at_utc": "2026-06-16T06:14:59Z",
+  "repo_wide_pytest_rerun": false,
+  "run_id": "20260612T005736Z",
+  "status": "COMPLETE_WITH_MISSING_INPUTS",
+  "zip_path": "audit_inputs/final_gpt55_bundle/20260612T005736Z-final-gpt55-manifest.zip",
+  "zip_validation": {
+    "unzip_test": "PASS",
+    "sha256": "ed65b5a65bea330c139ceab146588682ad6fcc13d25c98c6e972647ce6e3bffa",
+    "entry_count": 15,
+    "scope": "manifest_plus_source_packet_only",
+    "validated_at_utc": "2026-06-16T06:14:59Z",
+    "report_path": "audit_inputs/final_gpt55_bundle/20260612T005736Z/ZIP_VALIDATION.md"
+  }
+}
