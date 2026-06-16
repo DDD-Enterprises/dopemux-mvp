@@ -8,7 +8,8 @@
     "This packet must not modify existing decisions data or the decisions table schema.",
     "This packet must fail-closed on unknown reminder_id (404) and unknown decision_id (400/404).",
     "This packet must not touch files outside the allowlist.",
-    "This packet must classify unresolved ambiguity about table existence as UNKNOWN and stop."
+    "This packet must classify unresolved ambiguity about table existence as UNKNOWN and stop.",
+    "This packet must cite DMX-CONPORT-OPTIMAL-100-migration-foundation-gate proof before relying on review_reminders from migration 001 or adding fallback SQL."
   ],
   "depends_on": [
     "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
@@ -72,7 +73,8 @@
       "task": "Preflight: create a fresh dedicated worktree from origin/main. Verify repo marker, origin identity, branch, and clean baseline. Inspect docker/mcp-servers-source/conport/schema.sql and all migration files under migrations/ to determine whether a review_reminders table is already defined. Record finding (EXISTS / ABSENT / UNKNOWN) in proof.",
       "validation": [
         "Worktree path, branch, origin, marker verified and recorded in proof.",
-        "Table existence classified as EXISTS, ABSENT, or UNKNOWN — not assumed."
+        "Table existence classified as EXISTS, ABSENT, or UNKNOWN \u2014 not assumed.",
+        "Proof references DMX-CONPORT-OPTIMAL-100-migration-foundation-gate outcome before this packet proceeds."
       ],
       "context_files": [
         "docker/mcp-servers-source/conport/schema.sql",

@@ -1,16 +1,17 @@
 {
   "id": "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api",
   "project": "dopemux-mvp",
-  "target": "Make the ConPort knowledge graph real by implementing POST/GET/DELETE REST endpoints for entity_relationships, adding link_items and get_linked_items MCP tools in server.py and conport_mcp_stdio.py, and adding Redis cache invalidation for relationship keys — with relationship_type enum defaulting to builds_upon, validates, extends, implements, depends_on, supersedes (Operator Decision Gate 2 default).",
+  "target": "Make the ConPort knowledge graph real by implementing POST/GET/DELETE REST endpoints for entity_relationships, adding link_items and get_linked_items MCP tools in server.py and conport_mcp_stdio.py, and adding Redis cache invalidation for relationship keys \u2014 with relationship_type enum defaulting to builds_upon, validates, extends, implements, depends_on, supersedes (Operator Decision Gate 2 default).",
   "invariants": [
-    "This packet must not modify entity_relationships table structure — only add REST and MCP write paths to the existing table.",
+    "This packet must not modify entity_relationships table structure \u2014 only add REST and MCP write paths to the existing table.",
     "relationship_type must be validated against the Decision-2 enum: builds_upon, validates, extends, implements, depends_on, supersedes.",
     "Unknown relationship_type values must be rejected with 422, not silently accepted.",
     "DELETE must be soft-checked: return 404 if the relationship does not exist rather than silently no-op.",
     "Redis cache invalidation must target only relationship-keyed entries; it must not flush unrelated workspace keys.",
     "All new MCP tools must be registered in both server.py and conport_mcp_stdio.py.",
     "Operator Decision Gate 2 default enum is locked; do not expand or contract it without a new TP.",
-    "Classify missing or undecided operator input as UNKNOWN; fail closed."
+    "Classify missing or undecided operator input as UNKNOWN; fail closed.",
+    "This packet must cite DMX-CONPORT-OPTIMAL-100-migration-foundation-gate proof before relying on entity_relationships schema constraints or migration state."
   ],
   "depends_on": [
     "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
@@ -33,7 +34,7 @@
     "base_branch": "origin/main"
   },
   "commit": {
-    "message": "feat(conport): entity-relationship write API — POST/GET/DELETE REST + link_items/get_linked_items MCP tools",
+    "message": "feat(conport): entity-relationship write API \u2014 POST/GET/DELETE REST + link_items/get_linked_items MCP tools",
     "allowlist": [
       "docker/mcp-servers-source/conport/enhanced_server.py",
       "docker/mcp-servers-source/conport/server.py",
@@ -75,7 +76,8 @@
       "validation": [
         "entity_relationships table columns (id, workspace_id, source_id, source_type, target_id, target_type, relationship_type, metadata, created_at) are confirmed from schema.sql.",
         "Existing relationship read paths are identified and their signatures captured for non-regression reference.",
-        "Redis cache key pattern for relationships is documented in proof."
+        "Redis cache key pattern for relationships is documented in proof.",
+        "Proof references DMX-CONPORT-OPTIMAL-100-migration-foundation-gate outcome before this packet proceeds."
       ],
       "context_files": [
         "AGENTS.md",

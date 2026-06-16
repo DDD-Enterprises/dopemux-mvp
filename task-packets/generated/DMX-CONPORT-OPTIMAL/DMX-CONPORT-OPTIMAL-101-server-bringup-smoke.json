@@ -1,15 +1,18 @@
 {
   "id": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
   "project": "dopemux-mvp",
-  "target": "Bring the ConPort service up via docker compose and verify REST health endpoint and SSE wrapper reachability.",
+  "target": "Bring the ConPort service up via docker compose and verify REST health endpoint and SSE wrapper reachability. This packet is now gated by the Tier-0 ConPort migration foundation packet.",
   "invariants": [
     "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must not execute until DMX-CONPORT-OPTIMAL-100-migration-foundation-gate has recorded migration foundation proof or an explicit NOT_RUN blocker for unavailable live DB introspection.",
     "This packet must not modify production data or workspace state.",
     "This packet must not alter schema.sql or migration files.",
     "Smoke output must be captured and included in the proof bundle.",
-    "Failure to reach health endpoint is a hard FAIL — do not mark PASS with inference."
+    "Failure to reach health endpoint is a hard FAIL \u2014 do not mark PASS with inference."
   ],
-  "depends_on": [],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-100-migration-foundation-gate"
+  ],
   "repo_binding": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
@@ -19,7 +22,7 @@
   "series": {
     "id": "dmx-conport-optimal",
     "base_branch": "origin/main",
-    "parent_tp_id": null,
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-100-migration-foundation-gate",
     "final_packet": false
   },
   "execution": {
@@ -62,7 +65,8 @@
       "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean status.",
       "validation": [
         "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
-        "Primary checkout remains untouched."
+        "Primary checkout remains untouched.",
+        "Proof references DMX-CONPORT-OPTIMAL-100-migration-foundation-gate outcome before this packet proceeds."
       ],
       "context_files": [
         "AGENTS.md",

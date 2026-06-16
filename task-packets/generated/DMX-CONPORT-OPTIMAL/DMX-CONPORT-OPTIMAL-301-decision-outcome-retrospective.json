@@ -8,7 +8,8 @@
     "This packet must not add a new migration if migration 001 already defines the outcome columns; verify before adding SQL.",
     "This packet must fail-closed on unknown decision_id (404) and on attempts to write immutable fields (400).",
     "This packet must classify any unresolved schema ambiguity as UNKNOWN and stop rather than guess.",
-    "This packet must not touch files outside the allowlist."
+    "This packet must not touch files outside the allowlist.",
+    "This packet must cite DMX-CONPORT-OPTIMAL-100-migration-foundation-gate proof before relying on migration 001 decision outcome columns."
   ],
   "depends_on": [
     "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
@@ -72,7 +73,8 @@
       "task": "Preflight: create a fresh dedicated worktree from origin/main. Verify repo marker (.dopetaskroot), origin identity, branch name, and clean baseline. Read docker/mcp-servers-source/conport/schema.sql and migrations/001*.sql to confirm that outcome_status, outcome_notes, outcome_date, and lessons_learned columns already exist on the decisions table. Record findings in proof.",
       "validation": [
         "Worktree path, branch, origin, marker verified and recorded in proof.",
-        "Confirmed (or UNKNOWN) whether outcome columns exist in migration 001 — no guessing."
+        "Confirmed (or UNKNOWN) whether outcome columns exist in migration 001 \u2014 no guessing.",
+        "Proof references DMX-CONPORT-OPTIMAL-100-migration-foundation-gate outcome before this packet proceeds."
       ],
       "context_files": [
         "docker/mcp-servers-source/conport/schema.sql",
@@ -99,10 +101,10 @@
     },
     {
       "id": "S4",
-      "task": "Implement PATCH /api/decisions/{decision_id}/outcome in enhanced_server.py. Accept a JSON body with only outcome_status, outcome_notes, outcome_date, lessons_learned. Reject (400) any body that includes summary or rationale. Return 404 for unknown decision_id. Use a targeted UPDATE that names each outcome column explicitly — never a wildcard UPDATE.",
+      "task": "Implement PATCH /api/decisions/{decision_id}/outcome in enhanced_server.py. Accept a JSON body with only outcome_status, outcome_notes, outcome_date, lessons_learned. Reject (400) any body that includes summary or rationale. Return 404 for unknown decision_id. Use a targeted UPDATE that names each outcome column explicitly \u2014 never a wildcard UPDATE.",
       "validation": [
         "All four tests from S3 pass (green).",
-        "The UPDATE statement names only outcome columns — summary and rationale are not in the SET clause.",
+        "The UPDATE statement names only outcome columns \u2014 summary and rationale are not in the SET clause.",
         "No regression in existing enhanced_server.py routes (run full test suite if available)."
       ],
       "expected_files": [
@@ -128,7 +130,7 @@
       "validation": [
         "TP JSON validates with exit 0 against dopetask-canonical-spec.json.",
         "All targeted tests pass; any NOT_RUN items are recorded with reason.",
-        "Only allowlisted files are staged — git diff --staged lists no extras.",
+        "Only allowlisted files are staged \u2014 git diff --staged lists no extras.",
         "PR URL recorded in proof bundle."
       ]
     }

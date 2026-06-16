@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0.0",
   "series_id": "DMX-CONPORT-OPTIMAL",
-  "title": "ConPort optimal-version rebuild \u2014 Tier 1 stabilize/consolidate, Tier 2 knowledge-graph+context, Tier 3 ADHD retrospective",
-  "description": "18-packet series to rebuild ConPort to production quality. Tier 1 (101-109): stabilize server bringup, fix runtime 500s, retire dead codebases, expose missing MCP surfaces (custom_data, search), close JSON-RPC gaps, gate auto-fork side-effect, add integration tests, reconcile docs. Tier 2 (201-206): intentional product-vs-active context model, entity-relationship write API, workspace relationships traversal fix, linked progress on decisions, search delegation docs, DCP facade search re-enable. Tier 3 (301-303): decision outcome retrospective, review reminders, decision-to-decision relationships.",
-  "authority": "Task packets at task-packets/generated/DMX-CONPORT-OPTIMAL/ + plan at ~/.claude/plans/conport-is-now-top-valiant-dewdrop.md. Runtime repo truth outranks this document. Verify paths before edit.",
+  "title": "ConPort optimal-version rebuild - Tier 0 migration foundation, Tier 1 stabilize/consolidate, Tier 2 knowledge-graph+context, Tier 3 ADHD retrospective",
+  "description": "19-packet series to rebuild ConPort to production quality. Tier 0 (100): explicit migration foundation gate proving migration file availability, deterministic apply/verify behavior, drift detection, and fail-closed handling before server bringup. Tier 1 (101-109): stabilize server bringup, fix runtime 500s, retire dead codebases, expose missing MCP surfaces, close JSON-RPC gaps, gate auto-fork side-effect, add integration tests, reconcile docs. Tier 2 (201-206): intentional product-vs-active context model, entity-relationship write API, workspace relationships traversal fix, linked progress on decisions, search delegation docs, DCP facade search re-enable. Tier 3 (301-303): decision outcome retrospective, review reminders, decision-to-decision relationships.",
+  "authority": "Task packets at task-packets/generated/DMX-CONPORT-OPTIMAL/ + plan at ~/.claude/plans/conport-is-now-top-valiant-dewdrop.md. Runtime repo truth outranks this document. Verify paths before edit. Replan 2026-06-16 adds repo artifact packet 100 as a migration foundation gate; this does not mutate the already-loaded live task-orchestrator root.",
   "live_task_orchestrator_load": "LOADED",
-  "live_load_evidence": "Loaded 2026-06-14 via create_work_tree (one-shot: root + 18 children + 21 BLOCKS deps + 3 gate notes). Verified: 18 leaves (childCounts.queue=18), 21 edges confirmed via create_work_tree response, tp101 has 0 incoming deps (sole unblocked entry). All gate notes upserted (upserted=3, failed=0).",
+  "live_load_evidence": "Loaded 2026-06-14 via create_work_tree (one-shot: root + 18 children + 21 BLOCKS deps + 3 gate notes). Verified: 18 leaves (childCounts.queue=18), 21 edges confirmed via create_work_tree response, tp101 has 0 incoming deps (sole unblocked entry). All gate notes upserted (upserted=3, failed=0). NOTE: This live load evidence predates packet 100; live task-orchestrator sync for the new gate is NOT_RUN in this artifact update.",
   "offline_artifact": "CREATED",
   "loaded_at": "2026-06-14T17:17:31Z",
   "loaded": true,
@@ -30,7 +30,8 @@
     "DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search": "21fc45ff-9afd-4360-949e-940a1003d250",
     "DMX-CONPORT-OPTIMAL-301-decision-outcome-retrospective": "4405d10f-b59a-4e3d-8baa-cf177b1cf2a8",
     "DMX-CONPORT-OPTIMAL-302-review-reminders": "d1a525c9-4396-4b58-b482-2f00f8707438",
-    "DMX-CONPORT-OPTIMAL-303-decision-to-decision-relationships": "709f17fc-fc88-4be7-b4f7-3d62c14940b2"
+    "DMX-CONPORT-OPTIMAL-303-decision-to-decision-relationships": "709f17fc-fc88-4be7-b4f7-3d62c14940b2",
+    "DMX-CONPORT-OPTIMAL-100-migration-foundation-gate": "PENDING_LIVE_SYNC"
   },
   "workspace_id": "/Users/hue/code/dopemux-mvp",
   "generated_by": "claude-sonnet-4-6 subagent on feat/conport-optimal-series, 2026-06-14. Orchestrator MCP NOT available at generation time \u2014 root and leaf UUIDs are PENDING_LOAD. Update this file with real UUIDs after replay load.",
@@ -40,7 +41,7 @@
     "fallback_auditor": "gemini-cli"
   },
   "first_unblocked_wave": [
-    "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+    "DMX-CONPORT-OPTIMAL-100-migration-foundation-gate"
   ],
   "second_wave_after_101": [
     "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s",
@@ -53,11 +54,16 @@
   "operator_decision_gates": {
     "gate_1_leaf_201": "GATE Operator Decision 1 \u2014 context model. DEFAULT applied = Option B (add product_context column + routes/tools). Alternative = Option A (convention via custom_data). Confirm before execution.",
     "gate_2_leaf_202": "GATE Operator Decision 2 \u2014 relationship vocabulary. DEFAULT applied = upstream set {builds_upon,validates,extends,implements,depends_on,supersedes}. Alternative = current {implements,blocks,relates_to,caused_by}. Confirm before execution.",
-    "gate_root_pickup_protocol": "Execution-context / pickup protocol: each leaf is a self-contained TP at task-packets/generated/DMX-CONPORT-OPTIMAL/<id>.json. RED-LANE (contract-sensitive) packets = 102,104,105,106,107,201,202,203,301,302,303 \u2192 run risky PAL chain (analyze\u2192thinkdeep\u2192challenge\u2192planner\u2192codereview\u2192precommit) + proof bundle per AGENTS.md \u00a78. Others run minimum chain. First unblocked wave = 101, then 102/103/104/106/107/108. Decisions 3 (auth=compose-only) and 4 (session-metrics tables stay FROZEN per Memory Trinity) are defaulted; revisit before Tier 2."
+    "gate_root_pickup_protocol": "Execution-context / pickup protocol: each leaf is a self-contained TP at task-packets/generated/DMX-CONPORT-OPTIMAL/<id>.json. RED-LANE (contract-sensitive) packets = 100,102,104,105,106,107,201,202,203,301,302,303 -> run risky PAL chain (analyze->thinkdeep->challenge->planner->codereview->precommit) + proof bundle per AGENTS.md section 8. Others run minimum chain. Intended repo first unblocked wave = 100, then 101, then 102/103/104/106/107/108. Live task-orchestrator sync for packet 100 is NOT_RUN by this repo artifact update. Decisions 3 (auth=compose-only) and 4 (session-metrics tables stay FROZEN per Memory Trinity) are defaulted; revisit before Tier 2.",
+    "gate_0_leaf_100": "GATE Migration Foundation - packet 100 must prove migration file availability, deterministic apply/verify behavior, drift detection, and fail-closed handling before packet 101. Repo artifact update only; live orchestrator sync is separate and NOT_RUN."
   },
   "blocks_dag": {
-    "description": "21 BLOCKS edges. Predecessor must complete before successor. Only 101 is initially unblocked.",
+    "description": "22 BLOCKS edges. Predecessor must complete before successor. Packet 100 is the intended repo-load-plan entry gate; live task-orchestrator sync is NOT_RUN by this artifact update.",
     "edges": [
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-100-migration-foundation-gate",
+        "successor": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+      },
       {
         "predecessor": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
         "successor": "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s"
@@ -143,18 +149,33 @@
         "successor": "DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search"
       }
     ],
-    "edge_count": 21
+    "edge_count": 22
   },
   "nodes": [
+    {
+      "id": "DMX-CONPORT-OPTIMAL-100-migration-foundation-gate",
+      "tier": 0,
+      "role": "queue",
+      "status": "READY_REPO_ONLY_NOT_LIVE_LOADED",
+      "redlane": true,
+      "orchestrator_uuid": "PENDING_LIVE_SYNC",
+      "objective": "Establish explicit ConPort migration foundation proof before packet 101 by verifying migration file availability, deterministic apply/verify behavior, drift detection, and fail-closed handling.",
+      "depends_on": [],
+      "blocks": [
+        "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+      ]
+    },
     {
       "id": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
       "tier": 1,
       "role": "queue",
-      "status": "READY",
+      "status": "READY_AFTER_PACKET_100_REPO_ONLY",
       "redlane": false,
       "orchestrator_uuid": "4983abdb-0891-491b-acbb-22500fdb8872",
-      "objective": "Bring the ConPort service up via docker compose and verify REST health endpoint and SSE wrapper reachability.",
-      "depends_on": [],
+      "objective": "Bring the ConPort service up via docker compose and verify REST health endpoint and SSE wrapper reachability. This packet is gated by packet 100 migration foundation proof.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-100-migration-foundation-gate"
+      ],
       "blocks": [
         "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s",
         "DMX-CONPORT-OPTIMAL-103-retire-dead-codebases",
@@ -420,13 +441,33 @@
   ],
   "verification": {
     "status": "PASS",
-    "verified_at": "2026-06-14T17:17:31Z",
-    "leaf_count": 18,
-    "edge_count": 21,
-    "unblocked_count": 1,
-    "first_unblocked": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
-    "first_unblocked_uuid": "4983abdb-0891-491b-acbb-22500fdb8872",
-    "evidence": "query_items overview on root 44452f53 returned childCounts.queue=18. create_work_tree response listed all 21 BLOCKS edges. query_dependencies on tp101 confirmed 0 incoming edges (sole unblocked entry). gate notes upserted=3 failed=0."
+    "verified_at": "2026-06-16",
+    "node_count": 19,
+    "edge_count": 22,
+    "first_unblocked_repo_artifact": "DMX-CONPORT-OPTIMAL-100-migration-foundation-gate",
+    "live_task_orchestrator_sync": "NOT_RUN",
+    "checks": [
+      "Packet 100 exists in task-packets/generated/DMX-CONPORT-OPTIMAL/.",
+      "Packet 100 blocks packet 101 in blocks_dag.edges.",
+      "Existing packet IDs remain unchanged.",
+      "Existing orchestrator UUID mappings remain unchanged.",
+      "Packet 100 orchestrator UUID is PENDING_LIVE_SYNC until a separate live sync occurs."
+    ]
   },
-  "replay_instructions": "1) Ensure task-orchestrator MCP is connected (one HTTP singleton, not stdio). 2) create_work_tree with title='DMX-CONPORT-OPTIMAL' and description from nodes. 3) manage_items(operation=create) for each of the 18 nodes with role=queue. 4) manage_dependencies for all 21 edges. 5) manage_notes for gate briefs on 201, 202, and root. 6) Update this file with real orchestrator UUIDs. 7) query_items + query_dependencies to confirm 18 leaves and 21 edges."
+  "replay_instructions": "1) Ensure task-orchestrator MCP is connected (one HTTP singleton, not stdio). 2) For a fresh replay, create_work_tree with title='DMX-CONPORT-OPTIMAL' and description from nodes. 3) manage_items(operation=create) for each of the 19 nodes with role=queue. 4) manage_dependencies for all 22 edges, including packet 100 blocking packet 101. 5) manage_notes for gate briefs on 100, 201, 202, and root. 6) Update this file with real orchestrator UUIDs, replacing PENDING_LIVE_SYNC for packet 100. 7) query_items + query_dependencies to confirm 19 leaves and 22 edges. For the already-loaded root 44452f53, this repo artifact does not perform live graph mutation; sync is a separate operator action.",
+  "repo_replan_status": "REPO_ARTIFACT_REPLANNED_WITH_PACKET_100; LIVE_TASK_ORCHESTRATOR_SYNC_NOT_RUN",
+  "second_wave_after_100": [
+    "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+  ],
+  "node_count": 19,
+  "live_load_verification_before_replan": {
+    "status": "PASS",
+    "first_unblocked_uuid": "4983abdb-0891-491b-acbb-22500fdb8872",
+    "verified_at": "2026-06-14T17:17:31Z",
+    "edge_count": 21,
+    "first_unblocked": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
+    "evidence": "query_items overview on root 44452f53 returned childCounts.queue=18. create_work_tree response listed all 21 BLOCKS edges. query_dependencies on tp101 confirmed 0 incoming edges (sole unblocked entry). gate notes upserted=3 failed=0.",
+    "unblocked_count": 1,
+    "leaf_count": 18
+  }
 }
