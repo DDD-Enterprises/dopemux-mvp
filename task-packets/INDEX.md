@@ -113,6 +113,7 @@ A packet is superseded by another packet
 | TP-DMX-ADHD-INTERACTIVE-PROMPTS-001 | ADHD UX | Wire interactive prompts into launch and profile flows | Active | N/A |
 | TP-DMX-ORCH-AUDIT-FIX-001 | Task Orchestrator | Close DMX-ORCH integration audit gaps | Active | N/A |
 | DMX-DCP-MODEL-ROUTING-MVP-0006 | DCP / Model Routing | Classifier provenance hardening for trust-lowering signals | Active | N/A |
+| DMX-DCP-MODEL-ROUTING-MVP-0007 | DCP / Model Routing | Trusted input-provenance contract for execution eligibility | Active | N/A |
 | TP-DCP-MCP-RO-0002 | DCP / MCP | Architecture Doc And Multi Project Contract | Active | N/A |
 | TP-DCP-MCP-RO-0003 | DCP / MCP | Inspect Dopemux Init Registry Contract | Active | N/A |
 | TP-DCP-MCP-RO-0004 | DCP / MCP | Facade Scaffold Registry Resolver Repo Proof Tools | Active | N/A |
