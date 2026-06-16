@@ -1,0 +1,136 @@
+{
+  "id": "TP-DMX-CODEX-SUBAGENTS-CONFIG-001",
+  "project": "dopemux-mvp",
+  "target": "Add repo-local Codex supervisor defaults and bounded Dopemux subagent definitions for evidence gathering, housekeeping, scoped implementation, and review.",
+  "invariants": [
+    "Do not modify runtime code, service code, tests, compose files, dependency files, or provider secrets.",
+    "Do not extend or modify the canonical dopeTask schema.",
+    "Do not claim Codex model availability or subagent runtime behavior beyond local config parseability.",
+    "Preserve Dopemux authority boundaries: subagents do not own PM truth, architecture decisions, security decisions, or final readiness.",
+    "Keep the change additive and repo-local under .codex/ plus this task packet and the explicit root hygiene allowlist entry."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CODEX-SUBAGENTS-CONFIG",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-codex-subagents-config",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "chore(codex): add repo-local subagent config",
+    "allowlist": [
+      ".codex/config.toml",
+      ".codex/agents/dmx-explorer.toml",
+      ".codex/agents/dmx-housekeeper.toml",
+      ".codex/agents/dmx-worker.toml",
+      ".codex/agents/dmx-reviewer.toml",
+      "config/repo_hygiene/root_hygiene_policy.json",
+      "task-packets/generated/TP-DMX-CODEX-SUBAGENTS-CONFIG-001.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-CODEX-SUBAGENTS-CONFIG-001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-CODEX-SUBAGENTS-CONFIG-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python - <<'PY'\nimport tomllib\nfrom pathlib import Path\nfor path in [Path('.codex/config.toml'), *sorted(Path('.codex/agents').glob('*.toml'))]:\n    tomllib.loads(path.read_text())\nprint('PASS toml parse')\nPY",
+      "git diff --check",
+      "pre-commit run --files .codex/config.toml .codex/agents/dmx-explorer.toml .codex/agents/dmx-housekeeper.toml .codex/agents/dmx-worker.toml .codex/agents/dmx-reviewer.toml config/repo_hygiene/root_hygiene_policy.json task-packets/generated/TP-DMX-CODEX-SUBAGENTS-CONFIG-001.json"
+    ]
+  },
+  "pr": {
+    "title": "chore(codex): add repo-local subagent config",
+    "body": "## Summary\n- Adds repo-local Codex supervisor defaults under .codex/config.toml.\n- Adds four bounded Dopemux subagent definitions for explorer, housekeeper, worker, and reviewer lanes.\n- Adds a schema-valid task packet for replayable scope and validation.\n- Explicitly allowlists the intentional .codex root directory in repo hygiene policy.\n\n## Scope\nConfig and packet metadata only; no runtime code, service code, compose, dependency, schema, or provider-secret changes.\n\n## Validation\n- python -m json.tool task-packets/generated/TP-DMX-CODEX-SUBAGENTS-CONFIG-001.json >/dev/null\n- python -m jsonschema -i task-packets/generated/TP-DMX-CODEX-SUBAGENTS-CONFIG-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python TOML parse snippet for .codex files\n- git diff --check\n- pre-commit run --files <changed files>\n\n## NOT_RUN\n- Runtime Codex subagent launch: local config parseability is validated, but Codex runtime loading is environment-dependent.\n- Provider/model availability checks: model names are operator-requested config values, not verified provider availability.\n- Docker/service startup: out of scope for config-only change.\n\n## Residual Risks / UNKNOWNs\n- Exact repo-local .codex loading precedence is Codex-runtime dependent.\n- Actual model availability for gpt-5.5 and gpt-5.4-mini must be verified at execution time.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, worktree state, existing .codex files, and authority files.",
+      "commands": [
+        "git remote -v",
+        "git status --short --branch",
+        "git rev-parse --show-toplevel",
+        "git worktree list --porcelain",
+        "git ls-files .codex",
+        "test -f AGENTS.md",
+        "test -f docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "SERVICE_CATALOG.md",
+        "docs/03-reference/governance/codex-authority-refresh.md",
+        "docs/03-reference/fast-dev-os/task-packet-template.json",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ],
+      "validation": [
+        "Repo remote identifies DDD-Enterprises/dopemux-mvp.",
+        "Worktree is clean before edits.",
+        "No pre-existing tracked .codex files are overwritten."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create this task packet and validate it against the canonical schema.",
+      "expected_files": [
+        "task-packets/generated/TP-DMX-CODEX-SUBAGENTS-CONFIG-001.json"
+      ],
+      "validation": [
+        "python -m json.tool task-packets/generated/TP-DMX-CODEX-SUBAGENTS-CONFIG-001.json >/dev/null",
+        "python -m jsonschema -i task-packets/generated/TP-DMX-CODEX-SUBAGENTS-CONFIG-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add repo-local Codex supervisor defaults and four bounded project subagent definitions.",
+      "expected_files": [
+        ".codex/config.toml",
+        ".codex/agents/dmx-explorer.toml",
+        ".codex/agents/dmx-housekeeper.toml",
+        ".codex/agents/dmx-worker.toml",
+        ".codex/agents/dmx-reviewer.toml",
+        "config/repo_hygiene/root_hygiene_policy.json"
+      ],
+      "requirements": [
+        "Explorer and housekeeper must be read-only.",
+        "Worker must be limited to supervisor-approved files.",
+        "Reviewer must be read-only and return a verdict.",
+        "All subagents must keep authority and final readiness with the main supervisor.",
+        "Root hygiene policy must explicitly allow .codex because this packet intentionally adds that top-level config directory."
+      ],
+      "validation": [
+        "python TOML parse snippet for .codex/config.toml and .codex/agents/*.toml",
+        "rg -n \"read-only|Only edit files explicitly allowed|Do not edit files|PASS_WITH_RISKS|Subagent findings are CLAIMED\" .codex"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run codereview and precommit gates before final summary.",
+      "validation": [
+        "git diff --check",
+        "pre-commit run --files .codex/config.toml .codex/agents/dmx-explorer.toml .codex/agents/dmx-housekeeper.toml .codex/agents/dmx-worker.toml .codex/agents/dmx-reviewer.toml config/repo_hygiene/root_hygiene_policy.json task-packets/generated/TP-DMX-CODEX-SUBAGENTS-CONFIG-001.json",
+        "git diff --stat",
+        "git status --short --branch"
+      ]
+    }
+  ]
+}
