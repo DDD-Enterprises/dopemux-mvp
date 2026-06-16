@@ -22,6 +22,7 @@ from dopemux.dcp.routing_model import (
     AuditRequirement,
     ComplexityClass,
     EscalationRequirement,
+    ProofRequirement,
     RedLaneState,
     RiskClass,
     RouteDecision,
@@ -97,6 +98,7 @@ def _has_unknown_decision_contract(decision: RouteDecision) -> bool:
         or decision.risk_class is RiskClass.UNKNOWN
         or decision.complexity_class is ComplexityClass.UNKNOWN
         or decision.runtime_impact is RuntimeImpact.UNKNOWN
+        or any(req is ProofRequirement.UNKNOWN for req in decision.proof_requirements)
         or decision.audit_requirement is AuditRequirement.UNKNOWN
         or decision.escalation_requirement is EscalationRequirement.UNKNOWN
     )

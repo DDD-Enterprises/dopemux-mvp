@@ -550,6 +550,33 @@ def test_restored_decision_with_unknown_contract_fields_not_executable() -> None
     assert "edit_allowlisted_files" not in lane_decision.allowed_actions
 
 
+def test_restored_decision_with_unknown_proof_requirement_not_executable() -> None:
+    """UNKNOWN proof requirements from restored decisions must fail closed."""
+    inp = _safe_code_change_input()
+    restored = RouteDecision.from_dict(
+        {
+            "status": "ALLOWED",
+            "red_lane_state": "CLEAR",
+            "authority_class": "OPERATOR",
+            "task_source": "OPERATOR",
+            "task_type": "CODE_CHANGE",
+            "risk_class": "R1_LOW",
+            "complexity_class": "LOW",
+            "runtime_impact": "LOCAL_ONLY",
+            "proof_requirements": ["UNKNOWN"],
+            "audit_requirement": "SELF_CHECK",
+            "escalation_requirement": "NONE",
+            "allowed_actions": ["edit_allowlisted_files"],
+        }
+    )
+    assert restored.is_runnable()
+
+    lane_decision = decide_lane(restored, inp)
+
+    assert lane_decision.is_executable is False
+    assert "edit_allowlisted_files" not in lane_decision.allowed_actions
+
+
 # ─────────────────────────────────────────────
 # Test 11 — External intake READ_ONLY evidence → EXTERNAL_INTAKE, not executable
 # ─────────────────────────────────────────────
