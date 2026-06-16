@@ -1,0 +1,141 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-001-migration-apply-foundation",
+  "project": "dopemux-mvp",
+  "target": "Give ConPort a gated, operator-invoked, idempotent, ordered migration-apply path plus a fail-closed health gate so that the migration files under docker/mcp-servers-source/conport/migrations/ actually reach the live DB — today the server applies only schema.sql and never runs migrations, leaving the live DB with only the base tables and none of the tables/columns targeted by Tier-2 and Tier-3 feature packets.",
+  "invariants": [
+    "Process-start (server startup) MUST NOT auto-apply migrations. Migration apply is an explicit operator-invoked action only.",
+    "Migrations must be applied in strictly ascending numeric order (001, 002, 003, ...). Out-of-order apply is an error.",
+    "Every migration must be idempotent: re-running against an already-migrated DB must be a no-op with zero side effects.",
+    "A schema_migrations table must be created in the DB (append-only): columns version (integer), checksum (text — SHA-256 of migration file contents), applied_at (timestamptz), applied_by (text). Rows are never updated or deleted.",
+    "Checksum integrity: if a previously-applied migration file's content has changed (checksum mismatch), the runner must refuse to proceed and report the discrepancy — never silently re-apply.",
+    "Fail-closed health gate: when the server starts and expected migrations are absent or only partially applied relative to the migration files present in /app/migrations/, the /health endpoint must report status=degraded and the server must refuse all write operations (reads allowed, writes refused). The server must NOT refuse reads in degraded mode (OPERATOR-DECISION Q2 — CONFIRMED by operator 2026-06-16: read-only-when-degraded; refuse-all rejected).",
+    "Migration history is stored in-DB in schema_migrations (OPERATOR-DECISION Q1 — CONFIRMED by operator 2026-06-16: append-only in-DB; external-log-only rejected).",
+    "The runner module (migrate.py) must be importable standalone and invocable as: python migrate.py --database-url <DSN> [--dry-run] [--target-version N].",
+    "dry-run mode must report what would be applied without mutating the DB.",
+    "No feature packet — including DMX-CONPORT-OPTIMAL-202 — may run until this packet is complete and the health gate reports healthy.",
+    "Classify any operator input that is absent, ambiguous, or undecided as UNKNOWN and fail closed.",
+    "The acceptance proof must demonstrate rebuild-from-zero determinism: drop DB, re-apply schema.sql + invoke migrate.py, assert identical schema + schema_migrations rows.",
+    "Do not modify existing migration SQL files. The runner reads them; it does not rewrite them.",
+    "Do not silently swallow migration errors. Any SQL error during migration must abort the run and report the failing migration version and error."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-001-migration-apply-foundation",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): gated idempotent migration runner + checksummed schema_migrations + fail-closed health gate",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/migrate.py",
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/tests/test_migration_runner.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-001-migration-apply-foundation.json",
+      "proof/conport-optimal-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-001-migration-apply-foundation.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-001-migration-apply-foundation.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_migration_runner.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): gated migration runner, checksummed schema_migrations, fail-closed /health gate",
+    "body": "Adds an explicit operator-invoked migration runner (docker/mcp-servers-source/conport/migrate.py) so the migration SQL files under migrations/ actually reach the live DB.\n\nToday enhanced_server.py::_ensure_schema applies only schema.sql; the migrations/ directory is never executed. The live DB therefore contains only the base tables (decisions, entity_relationships, etc.) and none of the tables/columns targeted by Tier-2/Tier-3 packets (decision_relationships, review_reminders, adhd_metrics, enhanced decision columns).\n\nThis packet ships:\n- migrate.py: standalone runner; applies migrations in numeric order; idempotent (re-runs are no-ops); records version + SHA-256 checksum + applied_at + applied_by in a schema_migrations table; refuses to continue on checksum mismatch; supports --dry-run and --target-version; never called from server startup.\n- enhanced_server.py: /health gate extended to compare expected migration count against schema_migrations rows; reports status=degraded when migrations are absent or partial; refuses write operations when degraded (reads allowed).\n- tests/test_migration_runner.py: idempotency, ordering, checksum-mismatch refusal, dry-run no-op, rebuild-from-zero determinism, degraded-mode write refusal.\n\nOPERATOR-DECISION defaults encoded as invariants: Q1 = in-DB append-only history; Q2 = read-only-when-degraded (writes refused, reads allowed).",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify the worktree is on a fresh branch from origin/main. Confirm repo identity (repo_marker .dopetaskroot, origin DDD-Enterprises/dopemux-mvp). Read AGENTS.md, this TP JSON, the dossier (claudedocs/conport-optimal-coverage-and-hardening-analysis-2026-06-16.md §1 §4), the ADR (docs/90-adr/adr-conport-hardening-scope-and-trinity-boundaries.md D1 §4), enhanced_server.py::_ensure_schema, migrations/ directory listing, schema.sql, and migrations/001_enhanced_decision_model.sql. Record current state of live DB if accessible (table list). Identify all migration files and their numeric order. Record any UNKNOWN or ambiguity as UNKNOWN in the proof.",
+      "validation": [
+        "Branch is clean and based on origin/main; repo identity verified.",
+        "The full list of migration files (numeric order, filenames) is recorded in proof.",
+        "_ensure_schema behavior confirmed: applies schema.sql only, never migrations.",
+        "UNKNOWN items (e.g. live DB state if inaccessible) are explicitly recorded."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/schema.sql",
+        "docker/mcp-servers-source/conport/migrations/001_enhanced_decision_model.sql",
+        "claudedocs/conport-optimal-coverage-and-hardening-analysis-2026-06-16.md",
+        "docs/90-adr/adr-conport-hardening-scope-and-trinity-boundaries.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_migration_runner.py BEFORE writing production code (TDD). Test cases required: (a) migrate.py applies migrations in numeric order; (b) re-running migrate.py on an already-migrated DB is a no-op (idempotent); (c) checksum mismatch on a previously-applied migration causes refusal with a non-zero exit code and an error message naming the version; (d) --dry-run reports what would be applied without mutating schema_migrations; (e) after applying all migrations, schema_migrations has one row per migration with correct version + checksum + applied_at; (f) a server with missing migrations reports /health degraded; (g) write operations are refused (return error) when the server is in degraded mode; (h) read operations succeed when the server is in degraded mode; (i) rebuild-from-zero: drop schema_migrations, rerun migrate.py, assert identical row count and checksums.",
+      "validation": [
+        "All 9 test cases are present and fail (no production code exists yet).",
+        "Tests use a real or mocked asyncpg connection; they do not mock away the SQL execution logic.",
+        "No test is skipped or marked xfail without a recorded justification in proof."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement docker/mcp-servers-source/conport/migrate.py. Requirements: (1) Create schema_migrations table if absent (version INTEGER NOT NULL, checksum TEXT NOT NULL, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), applied_by TEXT NOT NULL DEFAULT 'migrate.py', PRIMARY KEY(version)); (2) Scan /app/migrations/*.sql (or a configurable migrations_dir), sort by numeric prefix, skip non-numeric-prefixed files; (3) For each migration: if already in schema_migrations, verify checksum matches — mismatch = abort with error; if not yet applied, execute SQL in a single transaction, then INSERT into schema_migrations; (4) --dry-run flag: report plan without executing; (5) --target-version N: apply up to version N only; (6) --database-url: accept DSN or fall back to DATABASE_URL env var; (7) exit 0 on success, non-zero on any error. The module must be importable as a library (if __name__ == '__main__' guard).",
+      "validation": [
+        "migrate.py is importable without side effects.",
+        "All test cases (a)-(i) from S2 pass.",
+        "No migration SQL file is modified by the runner.",
+        "schema_migrations rows are immutable after insert (no UPDATE/DELETE issued by runner)."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/migrate.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Extend enhanced_server.py to add the fail-closed health gate. In the startup path (init_connections or a new _check_migration_status coroutine), connect to DB and compare the count of applied migrations in schema_migrations against the count of numeric migration files in /app/migrations/. If schema_migrations is absent or count(applied) < count(files): set an internal flag self._migration_degraded = True. In the /health handler: if _migration_degraded, return JSON {status: 'degraded', reason: 'migrations_pending', pending_count: N} with HTTP 200 (health checks must not 500). In every write-path handler (log_decision, log_progress, update_active_context, update_product_context, log_system_pattern, log_custom_data, link_conport_items, delete_*, batch_log_items, and any other mutation endpoint): if _migration_degraded, return HTTP 503 with {error: 'service_degraded', reason: 'migrations_pending'}. Read endpoints must continue to serve normally. Do not call migrate.py automatically; the gate is read-only (it checks, never applies).",
+      "validation": [
+        "When schema_migrations is absent, /health returns {status: degraded} (HTTP 200).",
+        "Write endpoints return 503 when _migration_degraded is True.",
+        "Read endpoints return normal responses when _migration_degraded is True.",
+        "When all migrations are applied, /health returns {status: healthy} (or the existing healthy shape).",
+        "The server startup does not invoke migrate.py."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run the full test suite (test_migration_runner.py + existing conport tests), validate the TP JSON against the canonical schema, commit only allowlisted files, push the branch, open a PR against main, and assemble the proof bundle. Proof bundle must include: TP id, worktree absolute path, branch, repo origin identity, files changed with line counts, test exit codes (pytest -v output), codereview status (PAL codereview invoked), precommit status, commit SHA, PR URL or exact blocker, residual risks including any UNKNOWN items from S1, rebuild-from-zero test result, cleanup status.",
+      "validation": [
+        "pytest docker/mcp-servers-source/conport/tests/test_migration_runner.py exits 0; all 9 cases pass.",
+        "python -m jsonschema exits 0 for this TP JSON.",
+        "Only allowlisted files are staged and committed.",
+        "Proof bundle is written to proof/conport-optimal-001/ and included in the commit.",
+        "Residual risks and any UNKNOWN items are explicitly listed; none are collapsed to PASS."
+      ]
+    }
+  ]
+}

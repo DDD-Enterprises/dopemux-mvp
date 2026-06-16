@@ -7,7 +7,8 @@
     "This packet must not modify production data or workspace state.",
     "This packet must not alter schema.sql or migration files.",
     "Smoke output must be captured and included in the proof bundle.",
-    "Failure to reach health endpoint is a hard FAIL — do not mark PASS with inference."
+    "Failure to reach health endpoint is a hard FAIL — do not mark PASS with inference.",
+    "The smoke test MUST fail if /health reports healthy while ag_catalog schema is absent from the database OR expected schema_migrations rows are absent — a healthy status over a broken graph or un-migrated DB is a lie and must be surfaced as FAIL, not silently passed."
   ],
   "depends_on": [],
   "repo_binding": {
@@ -99,6 +100,20 @@
     },
     {
       "id": "S4",
+      "task": "Validate graph and migration state: query the live DB (via docker exec psql) to confirm (a) ag_catalog schema is present (SELECT schema_name FROM information_schema.schemata WHERE schema_name='ag_catalog'), and (b) expected schema_migrations rows exist (SELECT COUNT(*) FROM schema_migrations where applied = true, or equivalent). If either check returns absent/zero, the smoke MUST be marked FAIL regardless of /health HTTP 200 — record this as health-lies-over-broken-state. Capture query output in proof bundle.",
+      "commands": [
+        "docker exec dopemux-postgres-age psql -U dopemux_age -d dopemux_knowledge_graph -c \"SELECT schema_name FROM information_schema.schemata WHERE schema_name='ag_catalog';\"",
+        "docker exec dopemux-postgres-age psql -U dopemux_age -d dopemux_knowledge_graph -c \"SELECT COUNT(*) FROM schema_migrations;\" 2>/dev/null || echo 'schema_migrations_absent'"
+      ],
+      "validation": [
+        "ag_catalog schema presence confirmed by direct DB query — if absent, result is FAIL even if /health returned 200.",
+        "schema_migrations table existence and applied-row count confirmed by direct DB query — if absent or zero rows, result is FAIL.",
+        "Both query outputs captured in proof bundle.",
+        "If either check fails, proof bundle records 'health-lies-over-broken-state' and the overall smoke result is FAIL."
+      ]
+    },
+    {
+      "id": "S5",
       "task": "Commit proof bundle, validate packet JSON against canonical spec, and open PR.",
       "validation": [
         "TP JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",

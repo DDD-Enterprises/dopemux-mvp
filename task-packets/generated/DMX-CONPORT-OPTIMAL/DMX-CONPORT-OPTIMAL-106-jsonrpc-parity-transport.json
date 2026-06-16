@@ -8,7 +8,8 @@
     "Do not change the REST route shapes or response envelopes.",
     "info_server.py SSE URL fix must change :3004 to :3005 only for the advertised SSE endpoint.",
     "Dockerfile EXPOSE 3005 must be additive — do not remove existing EXPOSE directives.",
-    "tools/list must advertise exactly 13 tools after this packet (verify count)."
+    "tools/list must advertise exactly 13 tools after this packet (verify count).",
+    "The /health sub-check added by this packet must probe ag_catalog schema availability and the applied schema_version from schema_migrations; when either is absent the health response MUST surface 'graph: degraded' — a healthy status over a missing AGE graph or un-migrated DB is classified as a lie and must not pass."
   ],
   "depends_on": [
     "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
@@ -104,6 +105,17 @@
     },
     {
       "id": "S4",
+      "task": "Extend /health to include a graph sub-check: query the DB for ag_catalog schema presence (SELECT schema_name FROM information_schema.schemata WHERE schema_name='ag_catalog') and the highest applied schema_version from schema_migrations. When ag_catalog is absent OR schema_migrations is absent or empty, the /health JSON response MUST include a 'graph' key set to 'degraded'. When both checks pass, 'graph' should be 'ok'. The HTTP status code may remain 200 but the 'graph' field must distinguish the two states. Add a corresponding test in test_jsonrpc_parity.py that asserts 'graph' key is present in /health response.",
+      "validation": [
+        "GET /health response JSON contains a 'graph' key.",
+        "When ag_catalog schema is absent, 'graph' equals 'degraded'.",
+        "When schema_migrations is absent or has zero applied rows, 'graph' equals 'degraded'.",
+        "When both checks pass, 'graph' equals 'ok'.",
+        "Test for 'graph' key presence added to test_jsonrpc_parity.py."
+      ]
+    },
+    {
+      "id": "S5",
       "task": "Run tests against live container. Verify tools/list count is 13. Run PAL codereview and precommit. Commit, push, open PR, file proof bundle.",
       "commands": [
         "python3 -m pytest docker/mcp-servers-source/conport/tests/test_jsonrpc_parity.py -q"
@@ -111,6 +123,7 @@
       "validation": [
         "All parity tests PASS with exit code 0.",
         "tools/list JSON response captured in proof with tool count verified at 13.",
+        "/health response captured in proof showing 'graph' key present.",
         "Only allowlisted files staged and committed."
       ]
     }

@@ -3,7 +3,8 @@
   "project": "dopemux-mvp",
   "target": "Make the ConPort knowledge graph real by implementing POST/GET/DELETE REST endpoints for entity_relationships, adding link_items and get_linked_items MCP tools in server.py and conport_mcp_stdio.py, and adding Redis cache invalidation for relationship keys — with relationship_type enum defaulting to builds_upon, validates, extends, implements, depends_on, supersedes (Operator Decision Gate 2 default).",
   "invariants": [
-    "This packet must not modify entity_relationships table structure — only add REST and MCP write paths to the existing table.",
+    "This packet must not execute until the Tier-0 migration foundation (DMX-CONPORT-OPTIMAL-001) is applied and the schema_version health gate is green — writing entity_relationships rows before the foundation is applied risks irreversible schema-drift poisoning of canonical memory.",
+    "This packet must not modify entity_relationships table structure — only add REST and MCP write paths to the existing table. Adding DB-level FK and CHECK constraints is an OPERATOR_DECISION explicitly out of this packet's mandatory scope; app-layer enum enforcement is the in-scope default.",
     "relationship_type must be validated against the Decision-2 enum: builds_upon, validates, extends, implements, depends_on, supersedes.",
     "Unknown relationship_type values must be rejected with 422, not silently accepted.",
     "DELETE must be soft-checked: return 404 if the relationship does not exist rather than silently no-op.",
@@ -73,7 +74,7 @@
       "id": "S1",
       "task": "Preflight: read AGENTS.md, enhanced_server.py, server.py, conport_mcp_stdio.py, and schema.sql to map the existing entity_relationships table structure and any existing read-only relationship code. Identify Redis cache key patterns used for relationships. Record baseline SHA and worktree status.",
       "validation": [
-        "entity_relationships table columns (id, workspace_id, source_id, source_type, target_id, target_type, relationship_type, metadata, created_at) are confirmed from schema.sql.",
+        "entity_relationships table columns are confirmed by direct DB inspection: RUNTIME-VERIFIED columns are (id, workspace_id, source_type, source_id, target_type, target_id, relationship_type, strength, created_at) — NOTE: the column is 'strength' NOT 'metadata'; any prior reference to a 'metadata' column was incorrect and must not be used in queries or INSERT statements.",
         "Existing relationship read paths are identified and their signatures captured for non-regression reference.",
         "Redis cache key pattern for relationships is documented in proof."
       ],

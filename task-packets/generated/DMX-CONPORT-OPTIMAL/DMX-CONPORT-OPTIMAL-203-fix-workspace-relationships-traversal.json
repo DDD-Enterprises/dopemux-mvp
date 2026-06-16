@@ -1,11 +1,13 @@
 {
   "id": "DMX-CONPORT-OPTIMAL-203-fix-workspace-relationships-traversal",
   "project": "dopemux-mvp",
-  "target": "Fix the workspace_relationships graph read traversal in enhanced_server.py so it queries public.entity_relationships via a UUID-safe recursive CTE, removes the int(decision_id) coercion that causes ValueError on UUID IDs, and supports traversal depth 1–3.",
+  "target": "Harden the workspace_relationships graph read traversal in enhanced_server.py: clamp the unclamped max_depth (approximately line 2023) to 1–3 with 422 on out-of-range, and add UUID-safe regression tests. RECONCILIATION (git-verified at HEAD a3c2e61ac): PR #894 already removed the int(decision_id) coercion and made the recursive CTE UUID-safe — verify absent at HEAD and record VERIFIED-NO-OP rather than re-fixing.",
   "invariants": [
+    "This packet must not execute until the Tier-0 migration foundation (DMX-CONPORT-OPTIMAL-001) is applied and the schema_version health gate is green — the traversal fix targets entity_relationships which is foundational to Tier-2 correctness.",
+    "This packet is scoped to HANDLER-LAYER hardening in enhanced_server.py only. RECONCILIATION (git-verified at HEAD a3c2e61ac): PR #894 ALREADY removed the int(decision_id) cast (now decision_id=decision_id) AND repaired the unified_queries.py CTE column names/uuid casts (source_id/target_id::text). The SURVIVING handler bug is the UNCLAMPED max_depth at approximately line 2023 — clamp it to 1–3 with 422 on out-of-range. The executing agent must VERIFY at HEAD: if int(decision_id) is already absent, record VERIFIED-NO-OP and do NOT fabricate a fix; the unified_queries.py CTE repair is owned by DMX-CONPORT-OPTIMAL-002 (also expected VERIFIED-NO-OP post-#894).",
     "This packet must not alter the entity_relationships table schema.",
-    "The recursive CTE must be UUID-safe — no integer coercion on any ID column.",
-    "Depth parameter must be clamped to 1–3; requests outside this range must be rejected, not silently clamped.",
+    "The recursive CTE, if touched, must be UUID-safe — no integer coercion on any ID column.",
+    "Depth parameter must be clamped to 1–3; requests outside this range must be rejected with 422, not silently clamped.",
     "The traversal must traverse public.entity_relationships only — not any legacy relationships table.",
     "Existing callers of workspace_relationships must continue to receive the same response shape.",
     "Do not remove or alias unified_queries.py without updating all callers.",
@@ -49,7 +51,7 @@
   },
   "pr": {
     "title": "fix(conport): UUID-safe recursive CTE traversal for workspace_relationships, depth 1-3",
-    "body": "Rewrites the workspace_relationships handler in enhanced_server.py (~lines 1993-2038) to traverse public.entity_relationships via a recursive CTE without int() coercion on UUID decision IDs. Removes the ValueError-causing int(decision_id) cast at approximately line 2024. Adds depth parameter (1-3) with 422 on out-of-range. Updates unified_queries.py if the CTE logic is factored there. Adds regression tests for depth-1, depth-2, depth-3 traversal and confirms no ValueError or 500 on UUID IDs.",
+    "body": "Hardens the workspace_relationships handler in enhanced_server.py (~lines 1993-2038). RECONCILIATION (git-verified at HEAD a3c2e61ac): PR #894 already removed the int(decision_id) cast and made the unified_queries.py CTE UUID-safe (source_id/target_id::text). The surviving fix here is clamping the unclamped max_depth (approximately line 2023) to 1-3 with 422 on out-of-range; the int-cast removal and CTE repair are recorded as VERIFIED-NO-OP unless still present at HEAD. Adds regression tests for depth-1/2/3 traversal confirming no ValueError or 500 on UUID IDs.",
     "base": "main"
   },
   "pal_chain": {
@@ -69,12 +71,13 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Trace the existing workspace_relationships handler in enhanced_server.py lines ~1993-2038. Locate the int(decision_id) coercion and document the exact line number. Identify which table (public.entity_relationships vs any legacy table) is currently queried. Read unified_queries.py to determine if the query logic is already factored out. Record the current response shape so it can be preserved.",
+      "task": "Trace the existing workspace_relationships handler in enhanced_server.py lines ~1993-2038. VERIFY whether the int(decision_id) coercion is present — PR #894 removed it, so expect ABSENT (decision_id=decision_id); record presence/absence with the exact line. Locate the max_depth parameter (approximately line 2023) and document the exact line — this is the surviving unclamped bug this packet fixes. Identify which table (public.entity_relationships vs any legacy table) is currently queried. Read unified_queries.py to confirm the CTE column-name/uuid repair is already applied (owned by DMX-CONPORT-OPTIMAL-002; expect VERIFIED-NO-OP post-#894) and record OUT_OF_SCOPE here. Record the current response shape so it can be preserved.",
       "validation": [
-        "The exact line of int(decision_id) coercion is identified and recorded in proof.",
+        "The presence or absence of the int(decision_id) coercion is recorded with the exact line (expected ABSENT post-#894 → VERIFIED-NO-OP).",
+        "The exact line of max_depth parsing is identified and recorded in proof.",
         "The current query target table is confirmed (legacy vs entity_relationships).",
         "The response shape (keys, types) for workspace_relationships is captured.",
-        "unified_queries.py relationship query functions are enumerated."
+        "unified_queries.py CTE column-name repairs are noted as OUT_OF_SCOPE — owned by DMX-CONPORT-OPTIMAL-002."
       ],
       "context_files": [
         "AGENTS.md",
@@ -93,7 +96,7 @@
     },
     {
       "id": "S3",
-      "task": "Rewrite the workspace_relationships handler: replace the legacy query with a recursive CTE over public.entity_relationships (WITH RECURSIVE traversal(id, source_id, target_id, relationship_type, depth) AS (base UNION ALL recursive step WHERE depth < ?)); remove int() coercion; validate depth parameter (1-3, return 422 otherwise); return edges in the existing response shape. If the CTE is better placed in unified_queries.py, factor it there and call from enhanced_server.py.",
+      "task": "Apply the surviving handler fix: clamp/validate the max_depth parameter (1-3, return 422 otherwise). If S1 found the int(decision_id) coercion already removed by #894, record VERIFIED-NO-OP and do not re-touch it; only if a coercion is still present should it be removed. Keep the recursive CTE UUID-safe (post-#894 it already references public.entity_relationships with source_id/target_id::text). Return edges in the existing response shape. Do not duplicate the unified_queries.py CTE repair (owned by DMX-CONPORT-OPTIMAL-002).",
       "validation": [
         "No int() or integer coercion on any ID field remains in the handler.",
         "Recursive CTE references public.entity_relationships explicitly.",

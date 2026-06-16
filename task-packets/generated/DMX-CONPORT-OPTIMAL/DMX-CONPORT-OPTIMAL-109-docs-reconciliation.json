@@ -38,6 +38,7 @@
     "allowlist": [
       ".claude/modules/cognitive-plane/conport-memory.md",
       "docs/systems/conport/TRINITY_BOUNDS.md",
+      "docs/systems/conport/relationship-vocab-reconciliation.md",
       "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md",
       "docs/systems/conport/surface-equivalence-and-drift.md",
       "docker/mcp-servers-source/conport/schema.sql",
@@ -114,6 +115,17 @@
     },
     {
       "id": "S5",
+      "task": "Add a relationship-vocabulary reconciliation section to TRINITY_BOUNDS.md (or as a standalone doc/systems/conport/relationship-vocab-reconciliation.md if TRINITY_BOUNDS.md is already complete). The section MUST include a table documenting that the two relationship vocabularies are INTENTIONALLY DISTINCT and must NOT be merged: entity_relationships vocab = {builds_upon, validates, extends, implements, depends_on, supersedes} (6 terms, all cross-type entity edges); decision_relationships vocab = {builds_upon, supersedes, conflicts_with, validates, implements, questions} (6 terms, decision-to-decision semantic links). The table must call out the 3 shared terms (builds_upon, validates, implements) and note they carry the same surface meaning but operate on different subject types. The section must explicitly state: 'These vocabularies are intentionally separate by ADR-conport-hardening-scope-and-trinity-boundaries D3. Do not merge them.'",
+      "validation": [
+        "Relationship vocabulary reconciliation table is present in TRINITY_BOUNDS.md or the dedicated vocab doc.",
+        "Table lists all 6 terms of entity_relationships vocab and all 6 terms of decision_relationships vocab.",
+        "3 shared terms (builds_upon, validates, implements) are explicitly called out.",
+        "Text explicitly states the split is intentional per ADR-D3 and must not be merged.",
+        "No merger of the two vocabularies is performed or implied by any other change in this packet."
+      ]
+    },
+    {
+      "id": "S6",
       "task": "Run verify commands. Confirm grep for FROZEN returns exactly 3. Run PAL codereview and precommit. Commit, push, open PR, file proof bundle.",
       "commands": [
         "grep -c 'FROZEN: belongs in dope-memory' docker/mcp-servers-source/conport/schema.sql"
@@ -121,6 +133,7 @@
       "validation": [
         "grep command returns exactly 3.",
         "All docs reference only existing tools — no aspirational tool names remain.",
+        "Relationship vocabulary reconciliation table exists and is accurate.",
         "PR opened with proof bundle capturing pre/post diff of each doc file.",
         "Only allowlisted files staged and committed."
       ]

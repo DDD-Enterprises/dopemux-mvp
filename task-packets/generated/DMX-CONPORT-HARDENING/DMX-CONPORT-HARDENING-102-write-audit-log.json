@@ -1,0 +1,130 @@
+{
+  "id": "DMX-CONPORT-HARDENING-102-write-audit-log",
+  "project": "dopemux-mvp",
+  "target": "Append an append-only structured audit row (handler/route, workspace_id, identity-or-anon, timestamp) on every write handler in the ConPort :3005 FastMCP surface (server.py) and :3004 enhanced_server.py write routes; always-on-safe with no behavior change beyond logging.",
+  "invariants": [
+    "This seam must default to OFF / no-op when its env flag is unset; it must not change runtime behavior unless explicitly enabled by the operator.",
+    "The audit log must be append-only; existing rows must never be modified or deleted by this code path.",
+    "An audit log write failure must NOT cause the primary write operation to fail; log errors are swallowed with a logger.error and the original response is returned.",
+    "The audit row must capture at minimum: timestamp (UTC ISO-8601), surface (server.py tool name or enhanced_server.py route), workspace_id (from request payload or path), identity (bearer token subject or literal string 'anon'), and http_method or tool_name.",
+    "The audit log must not capture the full request payload, decision text, rationale, or any user content — only the routing metadata listed above.",
+    "This packet must not modify schema.sql or any migration file.",
+    "This packet must not alter the :3005 SSE transport binding or tool signatures."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-HARDENING-101-auth-write-seam"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-hardening",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-HARDENING-101-auth-write-seam",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-hardening-102-write-audit-log",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): append-only write audit log on all write handlers",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/server.py",
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/audit_log.py",
+      "docker/mcp-servers-source/conport/tests/test_write_audit_log.py",
+      "task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-102-write-audit-log.json",
+      "proof/conport-hardening-102/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-102-write-audit-log.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-102-write-audit-log.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_write_audit_log.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): append-only write audit log on all ConPort write handlers",
+    "body": "Adds an append-only structured audit record to every write handler in ConPort. The audit module (audit_log.py) writes one JSON-lines row per successful write call to a configurable append-only sink (default: stderr / logger; extensible to a file or DB table via CONPORT_AUDIT_SINK env var). Audit failures are swallowed and never block the primary operation.\n\nAudit row fields: timestamp (UTC ISO-8601), surface (tool name or HTTP route), workspace_id, identity ('anon' or bearer subject), tool_name or http_method. Full request payloads are never captured (privacy).\n\nAlways-on-safe: no behavior change beyond an extra log line per write. Depends on DMX-CONPORT-HARDENING-101 for the auth.py identity extraction helper.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify fresh worktree from origin/main (stacked on or rebased to include 101 changes). Confirm auth.py is present (from 101). Read server.py and enhanced_server.py to enumerate all write handlers. Record the identity-extraction pattern from auth.py (check_auth_token) to reuse for audit identity field.",
+      "validation": [
+        "auth.py from TP-101 is present (dependency is satisfied).",
+        "All write tool functions in server.py are re-enumerated and match the 101 enumeration.",
+        "Proof preflight note is filed."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/auth.py",
+        "task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-101-auth-write-seam.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Author docker/mcp-servers-source/conport/audit_log.py implementing: (a) audit_write(surface: str, workspace_id: str, identity: str, tool_or_method: str) -> None that constructs a structured row dict with timestamp/surface/workspace_id/identity/tool_or_method and emits it; (b) a configurable sink: when CONPORT_AUDIT_SINK env is 'logger' (default) or unset, emit via logger.info(json.dumps(row)); when set to a file path, open in append mode and write; (c) all errors in the sink are caught and logged to logger.error without re-raising. Write failing tests in test_write_audit_log.py covering: row structure and required fields, sink=logger path, sink=file path, sink error is swallowed, payload content is never captured.",
+      "validation": [
+        "audit_log.py exists with no hardcoded file paths.",
+        "All required fields (timestamp, surface, workspace_id, identity, tool_or_method) appear in the emitted row.",
+        "Tests fail because the audit calls are not yet wired into server.py / enhanced_server.py."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/audit_log.py",
+        "docker/mcp-servers-source/conport/tests/test_write_audit_log.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Wire audit_write into server.py: after the auth check (if any) and after the primary write returns successfully, call audit_write with surface='server.py:<tool_name>', workspace_id extracted from the tool arguments, identity derived from the authorization context (reuse auth.py helper; 'anon' when no token configured), tool_or_method=<tool_name>. The call is wrapped in try/except so any audit failure is silent. Read-only tools are not touched.",
+      "validation": [
+        "Every write @mcp.tool() function in server.py calls audit_write after the primary write, wrapped in try/except.",
+        "Read-only tools are unmodified.",
+        "Tests for server.py audit wiring pass (mock audit_write to capture calls)."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Wire audit_write into enhanced_server.py :3004 surface: add an audit post-processing step in the write middleware or in each write route handler. After a successful write response (status 2xx), call audit_write with surface='enhanced_server.py:<route>', workspace_id extracted from request body or path, identity from Authorization header (or 'anon'), tool_or_method=request.method. Wrap in try/except; errors are silent.",
+      "validation": [
+        "All POST/PUT/DELETE routes in enhanced_server.py emit an audit row on success.",
+        "GET routes do not emit audit rows.",
+        "Audit errors do not change the HTTP response code or body.",
+        "Tests for enhanced_server.py middleware audit pass."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run all tests, validate the TP JSON, commit only allowlisted files, push the branch, open a PR against main, and file the proof bundle at proof/conport-hardening-102/ including: TP path+ID, worktree path, branch, repo identity, slices completed, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL, residual risks, UNKNOWNs, and cleanup status.",
+      "validation": [
+        "python -m pytest docker/mcp-servers-source/conport/tests/test_write_audit_log.py -q exits 0.",
+        "python -m jsonschema -i task-packets/generated/DMX-CONPORT-HARDENING/DMX-CONPORT-HARDENING-102-write-audit-log.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "git diff --check exits 0.",
+        "Only allowlisted files are staged.",
+        "PR is open against main with proof bundle committed."
+      ]
+    }
+  ]
+}

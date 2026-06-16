@@ -1,0 +1,46 @@
+{
+  "program": "DMX-CONPORT-HARDENING",
+  "date": "2026-06-16",
+  "source_plan": "claudedocs/conport-optimal-coverage-and-hardening-analysis-2026-06-16.md",
+  "validation": "PAL risky/architecture chain (analyze,thinkdeep,challenge,planner,challenge,implement,codereview,precommit,challenge) per packet; verdicts: H-AUTH=OPERATOR_DECISION, H-AUDIT=always-on-safe, H-RATELIMIT=OPERATOR_DECISION (dossier §3.3)",
+  "tag": "dmx-conport-hardening,series,supervised-only",
+  "root": {
+    "ref": "root",
+    "title": "ConPort Hardening — default-off security seams (H-101/102/103)",
+    "summary": "Three companion default-off seams for the ConPort :3005 FastMCP surface and :3004 enhanced_server.py, sequenced logically after the DMX-CONPORT-OPTIMAL Stabilize tier (TP-109). All seams are no-ops unless an operator explicitly sets the controlling env var. 101 = write-path auth (CONPORT_AUTH_TOKEN); 102 = append-only write audit log (always-on-safe); 103 = per-caller write rate-limit (CONPORT_RATE_LIMIT_WRITES_PER_MINUTE). This series loads as a SEPARATE orchestrator root from DMX-CONPORT-OPTIMAL (root 44452f53) and must not perturb that DAG. Targets the :3005 surface that agents actually bind (per .mcp.json), with :3004 middleware also addressed where relevant."
+  },
+  "epics": [
+    {"ref": "E1", "title": "ConPort write-path security seams", "phase": 1}
+  ],
+  "leaves": [
+    {
+      "ref": "L101",
+      "parent": "E1",
+      "title": "DMX-CONPORT-HARDENING-101 — default-off write-path auth seam (CONPORT_AUTH_TOKEN)",
+      "disp": "HARDEN",
+      "targets": "docker/mcp-servers-source/conport/server.py, docker/mcp-servers-source/conport/enhanced_server.py",
+      "accept": "When CONPORT_AUTH_TOKEN is unset: zero behavior change. When set: write tools return 401/MCP-error on missing or invalid bearer; read tools unaffected. Tests pass."
+    },
+    {
+      "ref": "L102",
+      "parent": "E1",
+      "title": "DMX-CONPORT-HARDENING-102 — append-only write audit log on all write handlers",
+      "disp": "HARDEN",
+      "targets": "docker/mcp-servers-source/conport/server.py, docker/mcp-servers-source/conport/enhanced_server.py",
+      "accept": "Every write handler emits one structured audit row (timestamp, surface, workspace_id, identity, tool_or_method) per call. Audit failure never blocks the primary write. Full payload content is never captured. Tests pass."
+    },
+    {
+      "ref": "L103",
+      "parent": "E1",
+      "title": "DMX-CONPORT-HARDENING-103 — default-off per-caller write rate-limit (CONPORT_RATE_LIMIT_*)",
+      "disp": "HARDEN",
+      "targets": "docker/mcp-servers-source/conport/server.py, docker/mcp-servers-source/conport/enhanced_server.py",
+      "accept": "When CONPORT_RATE_LIMIT_WRITES_PER_MINUTE is unset: zero behavior change. When set: write calls exceeding the limit return 429/MCP-error with Retry-After; reads unaffected. Redis backend optional and degrades gracefully. Tests pass (in-memory path)."
+    }
+  ],
+  "blocks": [
+    ["L101", "L102"],
+    ["L101", "L103"]
+  ],
+  "notes": "SEPARATE orchestrator root — do NOT merge into DMX-CONPORT-OPTIMAL root (44452f53). Load only after DMX-CONPORT-OPTIMAL TP-109 (Stabilize tier complete) per §6 of the dossier. All three seams are default-off; committing them is safe and does not change runtime behavior. L102 (audit log) is always-on-safe (no behavior change beyond logging) but depends on L101 for the identity-extraction helper in auth.py. L103 depends on L101 for the same reason. Execution agent: codex on dedicated worktrees per AGENTS.md; PAL risky/architecture chain per packet. Proof bundle per AGENTS.md §8 required before each PR merge. The :3005 FastMCP SSE surface (server.py) is the primary target; :3004 enhanced_server.py write routes are also addressed. Confirm the 3005/3004 production binding before finalizing security verdicts (residual UNKNOWN per dossier §3.6)."
+}
