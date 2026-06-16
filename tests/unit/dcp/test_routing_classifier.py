@@ -1320,3 +1320,164 @@ def test_secret_pattern_routes_to_supervisor() -> None:
     assert decision.escalation_requirement is EscalationRequirement.ALWAYS, (
         f"expected ALWAYS escalation, got {decision.escalation_requirement}"
     )
+
+
+# ─────────────────────────────────────────────
+# DMX-DCP-MODEL-ROUTING-MVP-0006 — Classifier Provenance Hardening
+#
+# Provenance signals can only LOWER trust, never raise it, and override a
+# claimed-but-laundered authority_class. All new fields default to a no-op
+# (zero regression). Composes with the #904 most-severe-first ordering.
+# ─────────────────────────────────────────────
+
+
+def _allowed_baseline(**overrides) -> RoutingClassificationInput:
+    """A fully-specified input that classifies to ALLOWED + runnable.
+
+    Mutating scope (task_type=CODE_CHANGE). Used to prove a provenance vector
+    DOWNGRADES an otherwise-executable route.
+    """
+    base = dict(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.CODE_CHANGE,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    base.update(overrides)
+    return RoutingClassificationInput(**base)
+
+
+def test_allowed_baseline_is_runnable_sanity() -> None:
+    """Guard: the baseline really is ALLOWED + runnable (so downgrades are meaningful)."""
+    decision = classify_route(_allowed_baseline())
+    assert decision.status is RouteStatus.ALLOWED
+    assert decision.is_runnable()
+
+
+def test_bridge_proxy_authority_coerced_to_unknown() -> None:
+    """Lane case: bridge/proxy authority is never trusted (the laundering exploit).
+
+    A caller claims authority_class=AUTOMATED_SAFE + has_unknown_authority=False
+    for a task whose TRUE authority is a bridge/proxy. authority_via_bridge_proxy
+    MUST coerce effective authority -> UNKNOWN -> not ALLOWED / not runnable.
+    """
+    decision = classify_route(
+        _allowed_baseline(
+            authority_class=AuthorityClass.AUTOMATED_SAFE,
+            authority_via_bridge_proxy=True,
+        )
+    )
+    assert decision.status is not RouteStatus.ALLOWED
+    assert not decision.is_runnable()
+
+
+def test_retrieval_derived_without_source_blocks_mutation() -> None:
+    """Retrieval-derived evidence without the exact source fetched cannot back mutation."""
+    decision = classify_route(
+        _allowed_baseline(evidence_is_retrieval_derived=True)
+    )
+    assert decision.status is RouteStatus.BLOCKED
+    assert not decision.is_runnable()
+
+
+def test_retrieval_derived_with_source_fetched_permits() -> None:
+    """With exact_source_fetched=True the retrieval-derived block clears (no regression)."""
+    decision = classify_route(
+        _allowed_baseline(
+            evidence_is_retrieval_derived=True,
+            exact_source_fetched=True,
+        )
+    )
+    assert decision.status is RouteStatus.ALLOWED
+    assert decision.is_runnable()
+
+
+def test_ecc_intake_static_only() -> None:
+    """ECC external intake may only do read-only/static work; any mutation -> BLOCKED."""
+    decision = classify_route(_allowed_baseline(is_ecc_external_intake=True))
+    assert decision.status is RouteStatus.BLOCKED
+    assert not decision.is_runnable()
+
+
+def test_ecc_intake_read_only_not_blocked_by_provenance() -> None:
+    """ECC intake on a pure read-only route is not blocked by the ECC provenance guard."""
+    decision = classify_route(
+        RoutingClassificationInput(
+            task_source=TaskSource.OPERATOR,
+            task_type=TaskType.READ_ONLY,
+            risk_class=RiskClass.R0_READ,
+            runtime_impact=RuntimeImpact.READ_ONLY,
+            complexity_class=ComplexityClass.LOW,
+            authority_class=AuthorityClass.OPERATOR,
+            has_unknown_authority=False,
+            is_ecc_external_intake=True,
+        )
+    )
+    assert decision.status is RouteStatus.ALLOWED
+
+
+def test_opencode_backend_requires_wrapper_proof() -> None:
+    """OPENCODE backend without wrapper proof blocks mutation; proof clears it."""
+    blocked = classify_route(_allowed_baseline(backend_kind=BackendKind.OPENCODE))
+    assert blocked.status is RouteStatus.BLOCKED
+    assert not blocked.is_runnable()
+
+    proven = classify_route(
+        _allowed_baseline(
+            backend_kind=BackendKind.OPENCODE,
+            has_backend_wrapper_proof=True,
+        )
+    )
+    assert proven.status is RouteStatus.ALLOWED
+    assert proven.is_runnable()
+
+
+def test_grok_backend_requires_wrapper_proof() -> None:
+    """GROK backend without wrapper proof blocks mutation; proof clears it."""
+    blocked = classify_route(_allowed_baseline(backend_kind=BackendKind.GROK))
+    assert blocked.status is RouteStatus.BLOCKED
+    assert not blocked.is_runnable()
+
+    proven = classify_route(
+        _allowed_baseline(
+            backend_kind=BackendKind.GROK,
+            has_backend_wrapper_proof=True,
+        )
+    )
+    assert proven.status is RouteStatus.ALLOWED
+
+
+def test_secure_mcp_readonly_still_red_lane() -> None:
+    """Case-6 boundary: requires_mcp_call stays RED_LANE (ACL is a facade concern)."""
+    decision = classify_route(_allowed_baseline(requires_mcp_call=True))
+    assert decision.red_lane_state is RedLaneState.RED_LANE
+    assert not decision.is_runnable()
+
+
+def test_provenance_defaults_are_noop_regression() -> None:
+    """All five provenance fields defaulting False must not change a known classification."""
+    decision = classify_route(_allowed_baseline())
+    assert decision.status is RouteStatus.ALLOWED
+    assert decision.is_runnable()
+
+
+@pytest.mark.parametrize(
+    "vector",
+    [
+        {"authority_via_bridge_proxy": True},
+        {"evidence_is_retrieval_derived": True},
+        {"is_ecc_external_intake": True},
+        {"backend_kind": BackendKind.OPENCODE},
+        {"backend_kind": BackendKind.GROK},
+    ],
+)
+def test_provenance_coercion_overrides_claimed_authority(vector: dict) -> None:
+    """Generalization: any provenance vector overrides a claimed AUTOMATED_SAFE authority."""
+    decision = classify_route(
+        _allowed_baseline(authority_class=AuthorityClass.AUTOMATED_SAFE, **vector)
+    )
+    assert decision.status is not RouteStatus.ALLOWED
+    assert not decision.is_runnable()

@@ -40,6 +40,10 @@ from dopemux.dcp.routing_model import (
 
 _HIGH_RISK_CLASSES = {RiskClass.R3_HIGH}
 
+# Backends whose execution wrapper is unproven until an explicit proof is
+# supplied. Derived from the authoritative backend_kind signal, not a bool.
+_UNPROVEN_WRAPPER_BACKENDS = {BackendKind.OPENCODE, BackendKind.GROK}
+
 
 @dataclass
 class RoutingClassificationInput:
@@ -90,6 +94,15 @@ class RoutingClassificationInput:
     has_conflicting_evidence: bool = False
     has_stale_proof: bool = False
     has_missing_proof: bool = False
+
+    # Provenance hardening (DMX-DCP-MODEL-ROUTING-MVP-0006).
+    # All default to the safe value → zero regression. Each can only LOWER
+    # trust, never raise it, and overrides a claimed-but-laundered authority.
+    authority_via_bridge_proxy: bool = False
+    evidence_is_retrieval_derived: bool = False
+    exact_source_fetched: bool = False
+    is_ecc_external_intake: bool = False
+    has_backend_wrapper_proof: bool = False
 
     # Scope flags
     is_repo_changing: bool = False
@@ -171,6 +184,54 @@ def _normalize_input(inp: RoutingClassificationInput) -> RoutingClassificationIn
     )
 
 
+def _apply_provenance_coercion(
+    inp: RoutingClassificationInput,
+) -> RoutingClassificationInput:
+    """Lower trust based on provenance signals (DMX-DCP-MODEL-ROUTING-MVP-0006).
+
+    Provenance can only LOWER trust, never raise it. Bridge/proxy-derived
+    authority is never authority: coerce the effective ``authority_class`` to
+    ``UNKNOWN``, overriding any claimed value. The other provenance vectors
+    (retrieval-derived evidence, ECC intake, unproven backend wrapper) are
+    enforced as hard-BLOCK checks in :func:`_derive_route_status`. All signals
+    default to a no-op → zero regression. Does not mutate the caller's input.
+    """
+    if inp.authority_via_bridge_proxy and (
+        inp.authority_class is not AuthorityClass.UNKNOWN
+        or not inp.has_unknown_authority
+    ):
+        return replace(
+            inp,
+            authority_class=AuthorityClass.UNKNOWN,
+            has_unknown_authority=True,
+        )
+    return inp
+
+
+def _provenance_blocks_executable(inp: RoutingClassificationInput) -> bool:
+    """Return True when a provenance vector hard-blocks a mutating/executable route.
+
+    Read-only routes (no mutating scope) are unaffected. Each vector derives
+    from an authoritative signal where possible (e.g. ``backend_kind``).
+    """
+    mutating = _has_mutating_scope(inp) or inp.is_non_trivial
+    if not mutating:
+        return False
+    # Retrieval-derived evidence is advisory until the exact source is fetched.
+    if inp.evidence_is_retrieval_derived and not inp.exact_source_fetched:
+        return True
+    # ECC external intake may only perform read-only/static work.
+    if inp.is_ecc_external_intake:
+        return True
+    # Unproven OpenCode/Grok backend wrapper cannot back mutation.
+    if (
+        inp.backend_kind in _UNPROVEN_WRAPPER_BACKENDS
+        and not inp.has_backend_wrapper_proof
+    ):
+        return True
+    return False
+
+
 def _derive_red_lane_state(inp: RoutingClassificationInput) -> RedLaneState:
     """Return RED_LANE when any hard-block flag is set; CLEAR otherwise."""
     red_flags = (
@@ -221,6 +282,9 @@ def _derive_route_status(
         return RouteStatus.BLOCKED
 
     if inp.has_stale_proof:
+        return RouteStatus.BLOCKED
+
+    if _provenance_blocks_executable(inp):
         return RouteStatus.BLOCKED
 
     if inp.has_unknown_authority or inp.authority_class is AuthorityClass.UNKNOWN:
@@ -329,6 +393,7 @@ def _derive_escalation_requirement(
         or inp.requires_mcp_call
         or inp.has_missing_proof
         or inp.has_stale_proof
+        or _provenance_blocks_executable(inp)
     ):
         return EscalationRequirement.ALWAYS
 
@@ -418,6 +483,17 @@ def _derive_stop_conditions(
         conditions.append("missing_proof")
     if inp.has_stale_proof:
         conditions.append("stale_proof")
+    if inp.authority_via_bridge_proxy:
+        conditions.append("authority_via_bridge_proxy")
+    if inp.evidence_is_retrieval_derived and not inp.exact_source_fetched:
+        conditions.append("retrieval_derived_evidence_unverified")
+    if inp.is_ecc_external_intake:
+        conditions.append("ecc_external_intake")
+    if (
+        inp.backend_kind in _UNPROVEN_WRAPPER_BACKENDS
+        and not inp.has_backend_wrapper_proof
+    ):
+        conditions.append("backend_wrapper_proof_missing")
     if inp.touches_secrets:
         conditions.append("secrets_surface_in_scope")
     if inp.touches_auth:
@@ -529,6 +605,11 @@ def _stable_route_id(inp: RoutingClassificationInput) -> str:
         inp.has_conflicting_evidence,
         inp.has_stale_proof,
         inp.has_missing_proof,
+        inp.authority_via_bridge_proxy,
+        inp.evidence_is_retrieval_derived,
+        inp.exact_source_fetched,
+        inp.is_ecc_external_intake,
+        inp.has_backend_wrapper_proof,
         inp.is_repo_changing,
         inp.is_non_trivial,
     )
@@ -545,7 +626,7 @@ def classify_route(inp: RoutingClassificationInput) -> RouteDecision:
 
     Pure function: no I/O, no mutation of *inp*, no external calls.
     """
-    normalized = _normalize_input(inp)
+    normalized = _apply_provenance_coercion(_normalize_input(inp))
 
     red_lane = _derive_red_lane_state(normalized)
     status = _derive_route_status(normalized, red_lane)
