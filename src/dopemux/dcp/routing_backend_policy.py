@@ -11,9 +11,11 @@ from typing import Any
 
 from dopemux.dcp.routing_model import (
     AuditRequirement,
+    AuthorityClass,
     BackendKind,
     ComplexityClass,
     EscalationRequirement,
+    ProofRequirement,
     RedLaneState,
     RiskClass,
     RouteDecision,
@@ -63,6 +65,10 @@ _UNKNOWN_AUDIT_REQUIREMENTS = {
     AuditRequirement.UNKNOWN,
 }
 
+_UNKNOWN_PROOF_REQUIREMENTS = {
+    ProofRequirement.UNKNOWN,
+}
+
 _LIVE_TASK_TYPES = {
     TaskType.MERGE,
     TaskType.LIVE_WRITE,
@@ -77,6 +83,11 @@ _SUPERVISOR_RISKS = {
     RiskClass.R3_HIGH,
     RiskClass.RED_LANE,
     RiskClass.UNKNOWN,
+}
+
+_SUPERVISOR_AUTHORITY_CLASSES = {
+    AuthorityClass.SUPERVISOR,
+    AuthorityClass.DUAL,
 }
 
 _SUPERVISOR_AUDIT_REQUIREMENTS = {
@@ -317,6 +328,7 @@ def _requires_supervisor(decision: RouteDecision) -> bool:
     return (
         decision.status is RouteStatus.NEEDS_SUPERVISOR
         or decision.risk_class in _SUPERVISOR_RISKS
+        or decision.authority_class in _SUPERVISOR_AUTHORITY_CLASSES
         or decision.audit_requirement in _SUPERVISOR_AUDIT_REQUIREMENTS
         or decision.escalation_requirement
         is not EscalationRequirement.NONE
@@ -335,6 +347,10 @@ def _has_unknown_dimension(decision: RouteDecision) -> bool:
         or decision.complexity_class in _UNKNOWN_COMPLEXITY_CLASSES
         or decision.runtime_impact in _UNKNOWN_RUNTIME_IMPACTS
         or decision.audit_requirement in _UNKNOWN_AUDIT_REQUIREMENTS
+        or any(
+            requirement in _UNKNOWN_PROOF_REQUIREMENTS
+            for requirement in decision.proof_requirements
+        )
     )
 
 
