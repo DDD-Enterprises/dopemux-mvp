@@ -178,6 +178,44 @@ def test_executability_gate_mirrors_is_runnable_on_forged_decision() -> None:
         )
 
 
+def test_non_runnable_lane_strips_mutating_allowed_actions_from_forged_decision() -> None:
+    """P2 regression: forged/restored RouteDecision with ALLOWED + CLEAR red-lane
+    but UNKNOWN/BLOCKED authority must not expose mutating allowed_actions even when
+    those actions are present on the source decision.
+    """
+    inp = RoutingClassificationInput(
+        task_type=TaskType.CODE_CHANGE,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+    )
+    mutating_actions = [
+        "edit_allowlisted_files",
+        "open_pr",
+        "run_embedded_audit",
+        "run_targeted_tests",
+        "capture_proof",
+    ]
+    mutating_tokens = {"edit_allowlisted_files", "open_pr", "run_embedded_audit"}
+
+    for bad_authority in (AuthorityClass.BLOCKED, AuthorityClass.UNKNOWN):
+        forged = RouteDecision.from_dict(
+            {
+                "status": "ALLOWED",
+                "red_lane_state": "CLEAR",
+                "authority_class": bad_authority.value,
+                "allowed_actions": mutating_actions,
+            }
+        )
+        lane_decision = decide_lane(forged, inp)
+
+        assert lane_decision.is_executable is False
+        for action in lane_decision.allowed_actions:
+            assert action not in mutating_tokens, (
+                f"non-runnable lane must not expose mutating action '{action}' "
+                f"for authority={bad_authority.value}"
+            )
+
+
 def test_lane_assignment_uses_normalized_enums_for_string_inputs() -> None:
     """Audit P2 (codex thread): decide_lane must classify the lane from the
     decision's NORMALIZED enums. classify_route tolerates string enum inputs;

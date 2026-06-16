@@ -60,6 +60,20 @@ _EXTERNAL_INTAKE_EXTRA_FORBIDDEN: tuple[str, ...] = (
     "install",
 )
 
+# Mutating actions that must never appear on non-runnable lane decisions.
+_MUTATING_ACTIONS: frozenset[str] = frozenset({
+    "edit_allowlisted_files",
+    "run_embedded_audit",
+    "open_pr",
+})
+
+# Read-only / proof-safe actions permitted when the lane is not executable.
+_READ_ONLY_PROOF_SAFE_ACTIONS: frozenset[str] = frozenset({
+    "inspect_runtime_code",
+    "run_targeted_tests",
+    "capture_proof",
+})
+
 
 # ─────────────────────────────────────────────
 # Gate helper
@@ -78,6 +92,13 @@ def _compute_is_executable(decision: RouteDecision, lane: LaneKind) -> bool:
     if lane not in _EXECUTABLE_LANES:
         return False
     return decision.is_runnable()
+
+
+def _narrow_allowed_actions_for_non_runnable(
+    actions: tuple[str, ...],
+) -> tuple[str, ...]:
+    """Fail-closed: strip mutating actions from non-executable lane decisions."""
+    return tuple(a for a in actions if a in _READ_ONLY_PROOF_SAFE_ACTIONS)
 
 
 # ─────────────────────────────────────────────
@@ -247,10 +268,14 @@ def decide_lane(
     is_exec = _compute_is_executable(decision, lane)
 
     # allowed_actions: inherit from decision; never widen.
-    # BLOCKED → always ()
-    # EXTERNAL_INTAKE → always ()
+    # BLOCKED / EXTERNAL_INTAKE → always ()
+    # Non-executable → read-only/proof-safe only (mutating actions stripped)
     if lane is LaneKind.BLOCKED or lane is LaneKind.EXTERNAL_INTAKE:
         allowed_actions: tuple[str, ...] = ()
+    elif not is_exec:
+        allowed_actions = _narrow_allowed_actions_for_non_runnable(
+            tuple(decision.allowed_actions)
+        )
     else:
         allowed_actions = tuple(decision.allowed_actions)
 
