@@ -1,0 +1,100 @@
+{
+  "id": "DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs",
+  "project": "dopemux-mvp",
+  "target": "Purge stale/legacy documentation references and reconcile doc-embedded font examples across the design-system docs: fix review-pack.md 'fonts/BUILD.md' -> 'build.md', remove the IosevkaHueTerm 'canonical brand mono' claims (README, build.md), and align doc-embedded @font-face/family/filename examples to packet 101 filenames + packet 102 family names.",
+  "invariants": [
+    "review-pack.md MUST reference build.md (lowercase), not BUILD.md.",
+    "No 'IosevkaHue*' canonical-font claim may remain in README or build.md.",
+    "Doc-embedded family-name examples MUST use the spaced 'Dopemux Term Nerd Font' form (no no-space 'DopemuxTerm Nerd Font') matching packet 102.",
+    "Doc filename examples MUST use the renamed DopemuxTerm-*/DopemuxEditor-* form from packet 101.",
+    "Edits target the post-104 canonical-cased files only; no removed casing is reintroduced.",
+    "No font scripts, the TOML, or colors_and_type.css are modified here (owned by 101/102/103)."
+  ],
+  "depends_on": [
+    "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
+    "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name",
+    "DMX-COCKPIT-FONTS-104-resolve-case-collisions"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-cockpit-fonts",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "docs(cockpit-fonts): purge legacy IosevkaHue refs + reconcile font examples (DMX-COCKPIT-FONTS-105)",
+    "allowlist": [
+      "docs/03-reference/Dopemux Cockpit TUI Design System/review-pack.md",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/README.md",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/build.md",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/preview/04b-brand-font.html",
+      "task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs.json",
+      "proof/cockpit-fonts-105/**"
+    ],
+    "verify": [
+      "python -m json.tool 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs.json' >/dev/null",
+      "python -m jsonschema -i 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-105-purge-legacy-doc-refs.json' docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "! grep -rqI 'IosevkaHue' 'docs/03-reference/Dopemux Cockpit TUI Design System'",
+      "! grep -rqI 'fonts/BUILD.md' 'docs/03-reference/Dopemux Cockpit TUI Design System'",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(cockpit-fonts): purge legacy refs + reconcile font examples (DMX-COCKPIT-FONTS-105)",
+    "body": "Fixes review-pack.md's dangling fonts/BUILD.md reference (real file build.md), removes the README/build.md claims that legacy IosevkaHueTerm is the 'canonical brand mono', and reconciles doc-embedded @font-face/family/filename examples to the renamed filenames (packet 101) and the spaced 'Dopemux Term Nerd Font' family (packet 102). Operates on the post-104 canonical-cased files. Depends on 101, 102, 104.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: rg the design-system docs for 'BUILD.md', 'IosevkaHue', the no-space 'DopemuxTerm Nerd Font', the legacy 'IosevkaDopemux' filenames, and any forbidden font names listed in fonts/build.md. Produce a file:line hit list. Confirm packet 104 landed so edits target the surviving casings.",
+      "validation": [
+        "Hit list of every stale reference (file:line) produced.",
+        "Packet 104 confirmed landed (canonical casings in place).",
+        "Packet 102 pinned family strings confirmed for the reconciliation target."
+      ],
+      "context_files": [
+        "docs/03-reference/Dopemux Cockpit TUI Design System/review-pack.md",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/README.md",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/build.md",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Apply fixes: review-pack.md 'fonts/BUILD.md' -> 'build.md'; remove/replace IosevkaHueTerm 'canonical brand mono' claims (README, build.md) with the Dopemux Term canonical naming; update doc-embedded @font-face/family examples to the spaced 'Dopemux Term Nerd Font' / 'Dopemux Editor Nerd Font'; update filename examples to DopemuxTerm-*/DopemuxEditor-*.",
+      "validation": [
+        "review-pack.md references build.md; no fonts/BUILD.md remains.",
+        "No IosevkaHue* canonical claim remains in README or build.md.",
+        "Doc family/filename examples match packet 101/102 outputs."
+      ],
+      "expected_files": [
+        "docs/03-reference/Dopemux Cockpit TUI Design System/review-pack.md",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/README.md",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/build.md",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/readme.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Validate: the rg sweep returns zero 'BUILD.md', zero 'IosevkaHue', zero no-space 'DopemuxTerm Nerd Font', zero forbidden-font hits across the design-system docs. Validate the TP JSON, commit allowlisted files only, open PR, write proof bundle.",
+      "validation": [
+        "rg sweep returns zero stale/legacy hits for all four patterns.",
+        "python -m jsonschema exits 0; only allowlisted files staged; git diff --check clean.",
+        "Proof bundle records before/after hit counts per pattern."
+      ]
+    }
+  ]
+}

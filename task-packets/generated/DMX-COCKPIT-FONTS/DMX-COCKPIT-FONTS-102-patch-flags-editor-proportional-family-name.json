@@ -1,0 +1,95 @@
+{
+  "id": "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name",
+  "project": "dopemux-mvp",
+  "target": "Fix patch-nerd-font.sh so Editor faces patch with --variable-width-glyphs (proportional Nerd-glyph advances) while Term keeps --mono, and set a stable family name via explicit per-face --name '<Family> Nerd Font' (NOT --name full, which fragments the family because Medium faces export as 'Dopemux Term Medium'). Add a name-table test asserting all patched faces of a spacing family share one typographic family and have the expected advance-width behavior.",
+  "invariants": [
+    "Editor faces MUST be patched with --variable-width-glyphs; Term faces MUST keep --mono (relies on packet 101's restored guard).",
+    "The patched family name MUST be set via an explicit per-face --name string; --name full is forbidden.",
+    "All patched faces of one spacing family (Term Regular+Medium, Editor Regular+Medium) MUST report an identical typographic family (name ID 16, or ID 1 if 16 absent): 'Dopemux Term Nerd Font' / 'Dopemux Editor Nerd Font'.",
+    "The Editor patched family MUST match what colors_and_type.css --font-editor expects (no ' Propo' fork).",
+    "This packet MUST NOT modify the plan-key rename or the build script (owned by 101); it only changes patch flags + adds a name-table test.",
+    "Classify a missing FontForge/fontTools toolchain as NOT_RUN with static substitute evidence; never fabricate name-table or advance-width results."
+  ],
+  "depends_on": ["DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts"],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-cockpit-fonts",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "fix(cockpit-fonts): Editor --variable-width-glyphs + explicit per-face --name (DMX-COCKPIT-FONTS-102)",
+    "allowlist": [
+      "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/test-name-tables.sh",
+      "task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name.json",
+      "proof/cockpit-fonts-102/**"
+    ],
+    "verify": [
+      "python -m json.tool 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name.json' >/dev/null",
+      "python -m jsonschema -i 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name.json' docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "! grep -q 'name full' 'docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh'",
+      "grep -q 'variable-width-glyphs' 'docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh'",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(cockpit-fonts): Editor proportional Nerd glyphs + stable family name (DMX-COCKPIT-FONTS-102)",
+    "body": "Adds --variable-width-glyphs to the Editor patch branch (proportional Nerd-glyph advances) while Term keeps --mono. Sets the patched family via explicit per-face --name '<Family> Nerd Font' instead of --name full, which would fragment the family across weights because Medium faces export as 'Dopemux Term Medium' and break the colors_and_type.css single-family weight-range. Adds test-name-tables.sh asserting one typographic family per spacing and correct advance widths. Depends on DMX-COCKPIT-FONTS-101 (the rename that makes Term's --mono guard fire).",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "thinkdeep", "challenge", "planner", "challenge", "implement", "codereview", "precommit", "challenge"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: confirm packet 101 landed (keys renamed, Term --mono guard fires). Read the patch_args construction in patch-nerd-font.sh. Empirically determine how font-patcher honors an explicit free-string --name together with --variable-width-glyphs: does a free-string --name suppress the automatic 'Nerd Font'/' Propo'/' Mono' suffixing? Record the finding (cite the font-patcher behavior) in proof.",
+      "validation": [
+        "Packet 101 confirmed merged/landed (rename + guard).",
+        "Documented whether free-string --name suppresses the auto suffix, with evidence.",
+        "Decision recorded: exact --name string per family."
+      ],
+      "context_files": [
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/colors_and_type.css"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "In patch-nerd-font.sh: add --variable-width-glyphs to the Editor branch of patch_args (keep --mono for Term). Add an explicit per-face --name derived from the family token, pinned to 'Dopemux Term Nerd Font' for Term faces and 'Dopemux Editor Nerd Font' for Editor faces. Do NOT use --name full.",
+      "validation": [
+        "Editor patch path includes --variable-width-glyphs; Term path includes --mono and not --variable-width-glyphs.",
+        "patch_args includes an explicit --name '<Family> Nerd Font' per face; the string 'name full' does not appear.",
+        "shellcheck passes (or NOT_RUN noted)."
+      ],
+      "expected_files": ["docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh"]
+    },
+    {
+      "id": "S3",
+      "task": "Author test-name-tables.sh using fontTools (ttx/TTFont) to assert, across all patched faces: (a) name ID 16 (typographic family; fall back to ID 1) is identical across Regular+Medium of each spacing family and equals 'Dopemux Term Nerd Font' / 'Dopemux Editor Nerd Font'; (b) Term faces have single-width advances; (c) Editor faces have proportional (variable) advances. The script must skip gracefully (exit documented) when no patched faces or fontTools are present.",
+      "validation": [
+        "test-name-tables.sh exists and asserts identical typographic family per spacing + advance-width expectations.",
+        "Script degrades to a clear NOT_RUN message when fonts/fontTools are absent (no false PASS)."
+      ],
+      "expected_files": ["docs/03-reference/Dopemux Cockpit TUI Design System/fonts/test-name-tables.sh"]
+    },
+    {
+      "id": "S4",
+      "task": "MANUAL GATE: run patch-nerd-font.sh on the built faces, then run test-name-tables.sh. Record PASS (with the actual name-table dump + advance-width sample) or NOT_RUN with the missing dependency and static substitute evidence. Validate the TP JSON, commit allowlisted files only, open PR, write proof bundle including the name-table evidence.",
+      "validation": [
+        "Either name-table + advance-width assertions PASS on real patched faces, or NOT_RUN with missing dependency + static evidence.",
+        "python -m jsonschema exits 0 for this TP JSON.",
+        "Only allowlisted files staged; git diff --check clean.",
+        "Proof bundle records the pinned family strings actually emitted and the advance-width verdict."
+      ]
+    }
+  ]
+}
