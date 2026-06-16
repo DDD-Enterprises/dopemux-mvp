@@ -4,9 +4,9 @@
   "created_at": "2026-06-14T10:14:19Z",
   "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-coldstart-orch-http-cutover-109",
   "branch": "codex/tp-dmx-coldstart-orch-http-cutover-109",
-  "base": {
-    "branch": "origin/main",
-    "commit": "a2396a92279d44f14992611be72d05b9d8136c0c"
+    "base": {
+        "branch": "origin/main",
+        "commit": "b24f0154bce42fa669f1ff50ff7bf36fcf9560ae"
   },
   "authority_used": [
     "AGENTS.md",
@@ -22,7 +22,8 @@
     "data_dir_formula": "${XDG_DATA_HOME:-${HOME}/.local/share}/dopemux-mission-control/task-orchestrator/<workspace_id>",
     "image_ref": "Parsed from scripts/mcp-wrappers/task-orchestrator-current-stdio.sh IMAGE assignment at runtime.",
     "health_probe": "mcp_health_probe.py already probes http/sse URL ports. Its generic remediation wording remains unchanged because the file is outside the packet allowlist.",
-    "canonical_writer_repair": "CI test_mcp_commands_catalog proved .mcp.json is generated from repo-local mcp_catalog.yaml defaults. The packet allowlist was expanded to include mcp_catalog.yaml so committed config and the repo-local canonical writer do not drift. The bundled fallback catalog intentionally remains stdio because tests assert that fallback contract."
+        "canonical_writer_repair": "CI test_mcp_commands_catalog proved .mcp.json is generated from repo-local mcp_catalog.yaml defaults. The packet allowlist was expanded to include mcp_catalog.yaml so committed config and the repo-local canonical writer do not drift. The bundled fallback catalog intentionally remains stdio because tests assert that fallback contract.",
+        "post_main_merge": "Merged origin/main at b24f0154bce42fa669f1ff50ff7bf36fcf9560ae after PR #886 and PR #887 landed. The merge had no file overlap with the #888 packet files."
   },
   "validation": {
     "pass": [
@@ -64,26 +65,36 @@
         "exit_code": 0,
         "summary": "9 changed files, 0 allowlist violations"
       },
-      {
-        "command": "pre-commit run --files .mcp.json docs/03-reference/orchestrator-integration/http-singleton-cutover.md proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/AUDITOR_REPORT.md scripts/mcp-wrappers/task-orchestrator-http-singleton.sh scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json tests/mcp_wrappers/test_orchestrator_http_singleton.sh",
-        "exit_code": 0
-      },
+            {
+                "command": "pre-commit run --files .mcp.json docs/03-reference/orchestrator-integration/http-singleton-cutover.md mcp_catalog.yaml proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/AUDITOR_REPORT.md scripts/mcp-wrappers/task-orchestrator-http-singleton.sh scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json tests/mcp_wrappers/test_orchestrator_http_singleton.sh",
+                "exit_code": 0
+            },
       {
         "command": "uv run --frozen pytest tests/unit/test_mcp_commands_catalog.py::test_committed_mcp_json_matches_root_catalog_defaults --no-cov",
         "exit_code": 0,
         "summary": "Targeted repair for PR #888 Unit Tests failure"
       },
-      {
-        "command": "uv run --frozen pytest tests/unit/test_mcp_commands_catalog.py --no-cov",
-        "exit_code": 0,
-        "summary": "13 passed"
-      }
-    ],
+            {
+                "command": "uv run --frozen pytest tests/unit/test_mcp_commands_catalog.py --no-cov",
+                "exit_code": 0,
+                "summary": "13 passed"
+            },
+            {
+                "command": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json && python -m json.tool .mcp.json >/dev/null && python -m json.tool proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json >/dev/null && bash -n scripts/mcp-wrappers/task-orchestrator-http-singleton.sh && bash -n scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh && bash tests/mcp_wrappers/test_orchestrator_http_singleton.sh --dry-run && pytest -q tests/test_mcp_health_probe.py && git diff --check origin/main...HEAD",
+                "exit_code": 0,
+                "summary": "post-main-merge validation: 17 mcp health probe tests passed"
+            },
+            {
+                "command": "pytest -q tests/unit/test_mcp_commands_catalog.py",
+                "exit_code": 0,
+                "summary": "post-main-merge catalog validation: 13 passed"
+            }
+        ],
     "fail": [
       {
         "command": "GitHub PR #888 Unit Tests / Run fast unit gate",
         "exit_code": 2,
-        "summary": "Initial CI failure: test_committed_mcp_json_matches_root_catalog_defaults showed .mcp.json changed without updating mcp_catalog.yaml. Repaired by updating root and bundled catalogs and packet allowlist."
+                "summary": "Initial CI failure: test_committed_mcp_json_matches_root_catalog_defaults showed .mcp.json changed without updating mcp_catalog.yaml. Repaired by updating the repo-local catalog and packet allowlist."
       }
     ],
     "not_run": [
