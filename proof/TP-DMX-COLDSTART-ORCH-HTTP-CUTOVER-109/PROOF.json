@@ -1,80 +1,81 @@
 {
-  "packet_id": "TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109",
-  "status": "READY_FOR_REVIEW",
-  "created_at": "2026-06-14T10:14:19Z",
-  "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-coldstart-orch-http-cutover-109",
-  "branch": "codex/tp-dmx-coldstart-orch-http-cutover-109",
+    "packet_id": "TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109",
+    "status": "READY_FOR_REVIEW",
+    "created_at": "2026-06-14T10:14:19Z",
+    "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-coldstart-orch-http-cutover-109",
+    "branch": "codex/tp-dmx-coldstart-orch-http-cutover-109",
     "base": {
         "branch": "origin/main",
         "commit": "b24f0154bce42fa669f1ff50ff7bf36fcf9560ae"
-  },
-  "authority_used": [
-    "AGENTS.md",
-    "task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json",
-    "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
-    ".mcp.json",
-    "mcp_catalog.yaml",
-    ".claude/hooks/mcp_health_probe.py",
-    "docs/03-reference/orchestrator-integration/plugin-hooks-port.md"
-  ],
-  "analysis": {
-    "workspace_id_derivation": "Existing stdio wrapper uses sanitized basename(project_root) plus first 16 chars of sha256(project_root). HTTP script shells out to stdio --print-resolution instead of duplicating this logic.",
-    "data_dir_formula": "${XDG_DATA_HOME:-${HOME}/.local/share}/dopemux-mission-control/task-orchestrator/<workspace_id>",
-    "image_ref": "Parsed from scripts/mcp-wrappers/task-orchestrator-current-stdio.sh IMAGE assignment at runtime.",
-    "health_probe": "mcp_health_probe.py already probes http/sse URL ports. Its generic remediation wording remains unchanged because the file is outside the packet allowlist.",
+    },
+    "authority_used": [
+        "AGENTS.md",
+        "task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json",
+        "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
+        ".mcp.json",
+        "mcp_catalog.yaml",
+        ".claude/hooks/mcp_health_probe.py",
+        "docs/03-reference/orchestrator-integration/plugin-hooks-port.md"
+    ],
+    "analysis": {
+        "workspace_id_derivation": "Existing stdio wrapper uses sanitized basename(project_root) plus first 16 chars of sha256(project_root). HTTP script shells out to stdio --print-resolution instead of duplicating this logic.",
+        "data_dir_formula": "${XDG_DATA_HOME:-${HOME}/.local/share}/dopemux-mission-control/task-orchestrator/<workspace_id>",
+        "image_ref": "Parsed from scripts/mcp-wrappers/task-orchestrator-current-stdio.sh IMAGE assignment at runtime.",
+        "health_probe": "mcp_health_probe.py probes http/sse URL ports and now routes down task-orchestrator remediation to scripts/mcp-wrappers/task-orchestrator-http-singleton.sh instead of docker compose.",
         "canonical_writer_repair": "CI test_mcp_commands_catalog proved .mcp.json is generated from repo-local mcp_catalog.yaml defaults. The packet allowlist was expanded to include mcp_catalog.yaml so committed config and the repo-local canonical writer do not drift. The bundled fallback catalog intentionally remains stdio because tests assert that fallback contract.",
         "post_main_merge": "Merged origin/main at b24f0154bce42fa669f1ff50ff7bf36fcf9560ae after PR #886 and PR #887 landed. The merge had no file overlap with the #888 packet files.",
-        "review_thread_refresh": "Added TASK_ORCHESTRATOR_HTTP_PORT as the catalog port_var/default_port_base for doctor/init compatibility. Added live-test rollback cleanup and a bounded readiness loop before the initialize probe."
-  },
-  "validation": {
-    "pass": [
-      {
-        "command": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
-        "exit_code": 0
-      },
-      {
-        "command": "python -m json.tool .mcp.json",
-        "exit_code": 0
-      },
-      {
-        "command": "python -m json.tool proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json",
-        "exit_code": 0
-      },
-      {
-        "command": "bash -n scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
-        "exit_code": 0
-      },
-      {
-        "command": "bash -n scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh",
-        "exit_code": 0
-      },
-      {
-        "command": "bash tests/mcp_wrappers/test_orchestrator_http_singleton.sh --dry-run",
-        "exit_code": 0
-      },
-      {
-        "command": "pytest -q tests/test_mcp_health_probe.py",
-        "exit_code": 0,
-        "summary": "17 passed"
-      },
-      {
-        "command": "git diff --check",
-        "exit_code": 0
-      },
-      {
-        "command": "packet allowlist verification script",
-        "exit_code": 0,
-        "summary": "9 changed files, 0 allowlist violations"
-      },
+        "review_thread_refresh": "Added TASK_ORCHESTRATOR_HTTP_PORT as the catalog port_var/default_port_base for doctor/init compatibility. Added live-test rollback cleanup and a bounded readiness loop before the initialize probe.",
+        "review_thread_refresh_2": "Updated mcp_commands port allocation so state_scope: per-repo servers use the resolved project root for deterministic ports across linked worktrees. Updated SessionStart health-probe remediation so down task-orchestrator HTTP points at the singleton wrapper."
+    },
+    "validation": {
+        "pass": [
+            {
+                "command": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+                "exit_code": 0
+            },
+            {
+                "command": "python -m json.tool .mcp.json",
+                "exit_code": 0
+            },
+            {
+                "command": "python -m json.tool proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json",
+                "exit_code": 0
+            },
+            {
+                "command": "bash -n scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+                "exit_code": 0
+            },
+            {
+                "command": "bash -n scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh",
+                "exit_code": 0
+            },
+            {
+                "command": "bash tests/mcp_wrappers/test_orchestrator_http_singleton.sh --dry-run",
+                "exit_code": 0
+            },
+            {
+                "command": "pytest -q tests/test_mcp_health_probe.py",
+                "exit_code": 0,
+                "summary": "17 passed"
+            },
+            {
+                "command": "git diff --check",
+                "exit_code": 0
+            },
+            {
+                "command": "packet allowlist verification script",
+                "exit_code": 0,
+                "summary": "9 changed files, 0 allowlist violations"
+            },
             {
                 "command": "pre-commit run --files .mcp.json docs/03-reference/orchestrator-integration/http-singleton-cutover.md mcp_catalog.yaml proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/AUDITOR_REPORT.md scripts/mcp-wrappers/task-orchestrator-http-singleton.sh scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json tests/mcp_wrappers/test_orchestrator_http_singleton.sh",
                 "exit_code": 0
             },
-      {
-        "command": "uv run --frozen pytest tests/unit/test_mcp_commands_catalog.py::test_committed_mcp_json_matches_root_catalog_defaults --no-cov",
-        "exit_code": 0,
-        "summary": "Targeted repair for PR #888 Unit Tests failure"
-      },
+            {
+                "command": "uv run --frozen pytest tests/unit/test_mcp_commands_catalog.py::test_committed_mcp_json_matches_root_catalog_defaults --no-cov",
+                "exit_code": 0,
+                "summary": "Targeted repair for PR #888 Unit Tests failure"
+            },
             {
                 "command": "uv run --frozen pytest tests/unit/test_mcp_commands_catalog.py --no-cov",
                 "exit_code": 0,
@@ -94,46 +95,51 @@
                 "command": "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json && python -m json.tool .mcp.json >/dev/null && python -m json.tool proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json >/dev/null && bash -n scripts/mcp-wrappers/task-orchestrator-http-singleton.sh && bash -n scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh && bash tests/mcp_wrappers/test_orchestrator_http_singleton.sh --dry-run && pytest -q tests/test_mcp_health_probe.py && pytest -q tests/unit/test_mcp_commands_catalog.py && git diff --check origin/main...HEAD",
                 "exit_code": 0,
                 "summary": "review-thread refresh validation: 17 mcp health probe tests and 13 catalog tests passed"
+            },
+            {
+                "command": "pytest -q tests/unit/test_mcp_commands_catalog.py tests/test_mcp_health_probe.py",
+                "exit_code": 0,
+                "summary": "second review-thread refresh validation: 32 passed"
             }
         ],
-    "fail": [
-      {
-        "command": "GitHub PR #888 Unit Tests / Run fast unit gate",
-        "exit_code": 2,
+        "fail": [
+            {
+                "command": "GitHub PR #888 Unit Tests / Run fast unit gate",
+                "exit_code": 2,
                 "summary": "Initial CI failure: test_committed_mcp_json_matches_root_catalog_defaults showed .mcp.json changed without updating mcp_catalog.yaml. Repaired by updating the repo-local catalog and packet allowlist."
-      }
+            }
+        ],
+        "not_run": [
+            "Live Docker singleton startup and endpoint probe",
+            "Two concurrent real Claude/Codex client sessions",
+            "Task Orchestrator MCP proof-note update, because the current MCP transport was observed closed before this packet",
+            "shellcheck, because shellcheck is not installed in this environment"
+        ]
+    },
+    "residual_risks": [
+        "TASK_ORCHESTRATOR_HTTP_PORT is now project-root-keyed for state_scope: per-repo servers; simultaneous independent repos can still collide by hash slot and should use explicit env overrides if needed.",
+        "Changing .mcp.json to http requires starting scripts/mcp-wrappers/task-orchestrator-http-singleton.sh before reconnecting the MCP client.",
+        "SessionStart health-probe remediation covers task-orchestrator specifically, but only probes TCP listen state, not a full MCP initialize exchange."
     ],
-    "not_run": [
-      "Live Docker singleton startup and endpoint probe",
-      "Two concurrent real Claude/Codex client sessions",
-      "Task Orchestrator MCP proof-note update, because the current MCP transport was observed closed before this packet",
-      "shellcheck, because shellcheck is not installed in this environment"
+    "embedded_audit": {
+        "required": true,
+        "status": "SKIPPED",
+        "auditor_tool": "none",
+        "auditor_model": "unknown",
+        "invocation": null,
+        "exit_code": null,
+        "report_path": "proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/AUDITOR_REPORT.md",
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [
+            "No external embedded-audit route was available because the task-orchestrator MCP transport was observed closed in this session.",
+            "Local review, focused validation, dry-run lifecycle tests, and pre-commit are recorded but do not replace an independent external audit verdict."
+        ],
+        "skip_reason": "Task Orchestrator transport returned Transport closed during packet execution, and no external embedded-auditor invocation was available. The audit is recorded as SKIPPED instead of inferred as PASS."
+    },
+    "rollback": [
+        "Run scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh.",
+        "Revert .mcp.json task-orchestrator entry to stdio command scripts/mcp-wrappers/task-orchestrator-current-stdio.sh with args [].",
+        "Reconnect the MCP client session."
     ]
-  },
-  "residual_risks": [
-    "TASK_ORCHESTRATOR_HTTP_PORT must be managed explicitly when multiple workspaces need simultaneous singleton servers.",
-    "Changing .mcp.json to http requires starting scripts/mcp-wrappers/task-orchestrator-http-singleton.sh before reconnecting the MCP client.",
-    "SessionStart health-probe remediation text for a down HTTP task-orchestrator remains generic."
-  ],
-  "embedded_audit": {
-    "required": true,
-    "status": "SKIPPED",
-    "auditor_tool": "none",
-    "auditor_model": "unknown",
-    "invocation": null,
-    "exit_code": null,
-    "report_path": "proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/AUDITOR_REPORT.md",
-    "findings": [],
-    "fixes_applied": [],
-    "remaining_risks": [
-      "No external embedded-audit route was available because the task-orchestrator MCP transport was observed closed in this session.",
-      "Local review, focused validation, dry-run lifecycle tests, and pre-commit are recorded but do not replace an independent external audit verdict."
-    ],
-    "skip_reason": "Task Orchestrator transport returned Transport closed during packet execution, and no external embedded-auditor invocation was available. The audit is recorded as SKIPPED instead of inferred as PASS."
-  },
-  "rollback": [
-    "Run scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh.",
-    "Revert .mcp.json task-orchestrator entry to stdio command scripts/mcp-wrappers/task-orchestrator-current-stdio.sh with args [].",
-    "Reconnect the MCP client session."
-  ]
 }
