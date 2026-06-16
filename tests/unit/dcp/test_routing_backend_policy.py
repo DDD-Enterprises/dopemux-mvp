@@ -20,6 +20,7 @@ from dopemux.dcp.routing_model import (
     BackendKind,
     ComplexityClass,
     EscalationRequirement,
+    ProofRequirement,
     RedLaneState,
     RiskClass,
     RouteDecision,
@@ -302,6 +303,29 @@ def test_supervisor_audit_requirement_requires_supervisor_and_no_backend() -> No
     assert recommendation.preferred_backend is BackendKind.NONE
     assert recommendation.is_executable_recommendation() is False
     assert "risk_requires_supervisor" in recommendation.reason_codes
+
+
+def test_supervisor_authority_requires_supervisor_and_no_backend() -> None:
+    decision = _safe_decision(authority_class=AuthorityClass.SUPERVISOR)
+    recommendation = _recommend(decision)
+    assert recommendation.requires_supervisor is True
+    assert recommendation.preferred_backend is BackendKind.NONE
+    assert recommendation.is_executable_recommendation() is False
+    assert "risk_requires_supervisor" in recommendation.reason_codes
+
+
+def test_dual_authority_requires_supervisor_and_no_backend() -> None:
+    decision = _safe_decision(authority_class=AuthorityClass.DUAL)
+    recommendation = _recommend(decision)
+    assert recommendation.requires_supervisor is True
+    assert recommendation.preferred_backend is BackendKind.NONE
+    assert recommendation.is_executable_recommendation() is False
+    assert "risk_requires_supervisor" in recommendation.reason_codes
+
+
+def test_unknown_proof_requirement_blocks_backend() -> None:
+    decision = _safe_decision(proof_requirements=[ProofRequirement.UNKNOWN])
+    _assert_no_backend(decision, "unknowns_present")
 
 
 def test_unknown_backend_kind_on_safe_route_does_not_crash() -> None:

@@ -24,7 +24,7 @@ against `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`.
   "invariants": [
     "The backend policy map returns inert recommendation data only; it must not call, import, shell out to, or wire any backend runner, connector, MCP tool, GitHub API, queue, scheduler, or service integration.",
     "RouteDecision runtime/source truth is authoritative for implemented behavior; task packet prose cannot authorize unsupported runtime behavior.",
-    "Blocked, unknown, unknown-audit, supervisor-audit, red-lane, escalation-required, stale-proof, missing-proof, stop-condition, live-write, service-mutation, merge, and dynamic forbidden-action decisions fail closed to BackendKind.NONE.",
+    "Blocked, unknown, unknown-proof, unknown-audit, supervisor-authority, supervisor-audit, red-lane, escalation-required, stale-proof, missing-proof, stop-condition, live-write, service-mutation, merge, and dynamic forbidden-action decisions fail closed to BackendKind.NONE.",
     "Classifier baseline guardrail prohibitions are not themselves backend blockers for otherwise safe runnable decisions.",
     "Backend preference data is not authorization; any future caller must preserve separate approval, proof, runtime, and operator gates.",
     "Validation must include focused unit coverage, DCP unit coverage, syntax checks, diff hygiene, static no-go scanning, and pre-commit on changed files."
