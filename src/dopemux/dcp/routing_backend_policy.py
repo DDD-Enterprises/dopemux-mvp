@@ -43,17 +43,18 @@ _SUPERVISOR_RISKS = {
     RiskClass.UNKNOWN,
 }
 
-_FORBIDDEN_ACTION_MARKERS = (
-    "live_write",
-    "connector",
-    "mcp",
-    "dopetask",
-    "runner",
-    "github",
-    "merge",
-    "task_orchestrator",
-    "network",
-    "external_service",
+_BLOCKING_FORBIDDEN_ACTIONS = frozenset(
+    {
+        "network_access",
+        "external_service_access",
+        "merge_task",
+        "live_write_to_service",
+        "call_connector_live",
+        "call_mcp_live",
+        "execute_dopetask_live",
+        "write_task_orchestrator",
+        "execute_runner_live",
+    }
 )
 
 
@@ -286,9 +287,8 @@ def _has_stop_condition(decision: RouteDecision, marker: str) -> bool:
 
 def _has_forbidden_action_marker(decision: RouteDecision) -> bool:
     return any(
-        marker in action
+        action in _BLOCKING_FORBIDDEN_ACTIONS
         for action in decision.forbidden_actions
-        for marker in _FORBIDDEN_ACTION_MARKERS
     )
 
 
