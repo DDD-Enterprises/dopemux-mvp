@@ -1,0 +1,49 @@
+# GIT_RECON
+/Users/hue/code/dopemux-mvp/.worktrees/gpt55-recon-chain
+/Users/hue/code/dopemux-mvp/.worktrees/gpt55-recon-chain
+mvp	https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)
+mvp	https://github.com/DDD-Enterprises/dopemux-mvp.git (push)
+origin	https://github.com/DDD-Enterprises/dopemux-mvp.git (fetch)
+origin	https://github.com/DDD-Enterprises/dopemux-mvp.git (push)
+codex/gpt55-recon-chain
+ac3a26f746e472feb8a31f1b634d8c0432e08db6
+## codex/gpt55-recon-chain...mvp/main
+?? audit_inputs/
+/Users/hue/code/dopemux-mvp                                                 ac3a26f74 [main]
+/private/tmp/dopemux-851                                                    0e65b17b7 (detached HEAD) prunable
+/Users/hue/code/dopemux-mvp-0001-carve                                      a83f8e252 [dcp/model-routing-0001]
+/Users/hue/code/dopemux-mvp-pr-merge                                        55a713be4 (detached HEAD)
+/Users/hue/code/dopemux-mvp-wt-cockpit-design-system                        c836e3410 [codex/cockpit-design-system]
+/Users/hue/code/dopemux-mvp-wt-cockpit-pm-textual                           c90ed07c0 [test/pm-authority-ports]
+/Users/hue/code/dopemux-mvp-wt-dcp-build                                    522891efe [dcp/contract-derivation-tp-0002]
+/Users/hue/code/dopemux-mvp-wt-dcp-evidence                                 be01a36e3 [dcp/evidence-campaign]
+/Users/hue/code/dopemux-mvp-wt-skills-hooks                                 5071fe6d7 [claude/dcp-mcp-skills-hooks-2026-06-10]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/agent-a16c5fcc97349b17e       755bf3846 [claude/rte-rem-tp2-mcp-internal] locked
+/Users/hue/code/dopemux-mvp/.claude/worktrees/agent-a636b271306ace01b       755bf3846 [claude/rte-rem-tp4-install] locked
+/Users/hue/code/dopemux-mvp/.claude/worktrees/distracted-kare-249400        4f14d6298 [claude/distracted-kare-249400]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/gallant-hellman-f8f6d4        ac3a26f74 [claude/gallant-hellman-f8f6d4]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/gracious-snyder-c3e244        701db5c83 [claude/gracious-snyder-c3e244]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/intelligent-banach-8426ff     ac3a26f74 [claude/intelligent-banach-8426ff]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/magical-grothendieck-28dd50   f36ff1788 [claude/magical-grothendieck-28dd50]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/modest-cartwright-340c04      6f8f94482 [claude/modest-cartwright-340c04]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/nervous-bohr-df533b           ac3a26f74 [claude/nervous-bohr-df533b]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/practical-wing-a0a4e5         ac3a26f74 [claude/practical-wing-a0a4e5]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/romantic-bardeen-8f51a4       ac3a26f74 [claude/romantic-bardeen-8f51a4]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/trusting-shockley-c12535      755bf3846 [claude/trusting-shockley-c12535]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/wf_90d2d1f9-4b5-1             41d1e5b3c [fix/mcp-server-configs]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/wf_90d2d1f9-4b5-2             969659e98 [fix/docker-copy-security]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/wf_90d2d1f9-4b5-3             b6d3b8aa6 [fix/cli-orchestrator-startup]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/wf_90d2d1f9-4b5-4             06ed907dd [feat/opencode-pal-integration]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/wf_90d2d1f9-4b5-5             54b7226c0 [feat/dcp-mcp-ro-0007-proofs-docs]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/wf_90d2d1f9-4b5-6             4ca876ea8 [feat/dcp-predecessor-packets]
+/Users/hue/code/dopemux-mvp/.claude/worktrees/wf_90d2d1f9-4b5-7             9471f8556 [feat/proof-artifacts-misc]
+/Users/hue/code/dopemux-mvp/.worktrees/chatgpt-mcp-ro-0002                  3e9a3a1e3 [dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje]
+/Users/hue/code/dopemux-mvp/.worktrees/chatgpt-mcp-ro-0003                  ba349f4cb [dcp/chatgpt-mcp-ro-0003-inspect-dopemux-init-registry-co]
+/Users/hue/code/dopemux-mvp/.worktrees/cockpit-safe-actions-task-packet-001 c010dc08d [codex/cockpit-safe-actions-task-packet-001]
+/Users/hue/code/dopemux-mvp/.worktrees/dcp-local-control-snapshot-tp-0004   593a31d24 [dcp/local-control-snapshot-tp-0004]
+/Users/hue/code/dopemux-mvp/.worktrees/dcp-proof-family-dispatch-tp-0003    99160bd6d [dcp/proof-family-dispatch-tp-0003]
+/Users/hue/code/dopemux-mvp/.worktrees/gpt55-recon-chain                    ac3a26f74 [codex/gpt55-recon-chain]
+/Users/hue/code/dopemux-mvp/.worktrees/gptr-mcp-container-update-20260604   74540c1af [codex/gptr-mcp-container-update-20260604]
+/Users/hue/code/dopemux-mvp/.worktrees/pr854-b-proof                        0f1844ac2 [dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat]
+/Users/hue/code/dopemux-mvp/.worktrees/rte-golive-remediation-001           adf97ad33 [codex/rte-golive-remediation-001]
+/Users/hue/code/dopemux-mvp/.worktrees/rte-golive-remediation-002           c4c86c17f [codex/rte-golive-remediation-002]
