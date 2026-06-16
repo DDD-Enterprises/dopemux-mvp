@@ -77,6 +77,13 @@ def _input_from_dict(data: dict[str, Any]) -> RoutingClassificationInput:
         has_conflicting_evidence=bool(data.get("has_conflicting_evidence", False)),
         has_stale_proof=bool(data.get("has_stale_proof", False)),
         has_missing_proof=bool(data.get("has_missing_proof", False)),
+        authority_via_bridge_proxy=bool(data.get("authority_via_bridge_proxy", False)),
+        evidence_is_retrieval_derived=bool(
+            data.get("evidence_is_retrieval_derived", False)
+        ),
+        exact_source_fetched=bool(data.get("exact_source_fetched", False)),
+        is_ecc_external_intake=bool(data.get("is_ecc_external_intake", False)),
+        has_backend_wrapper_proof=bool(data.get("has_backend_wrapper_proof", False)),
         is_repo_changing=bool(data.get("is_repo_changing", False)),
         is_non_trivial=bool(data.get("is_non_trivial", False)),
     )

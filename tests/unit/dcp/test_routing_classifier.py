@@ -1417,6 +1417,26 @@ def test_ecc_intake_read_only_not_blocked_by_provenance() -> None:
         )
     )
     assert decision.status is RouteStatus.ALLOWED
+    assert "ecc_external_intake" not in decision.stop_conditions
+
+
+def test_retrieval_derived_read_only_does_not_emit_stop_condition() -> None:
+    """Retrieval-derived evidence is advisory on read-only routes, not a stop condition."""
+    decision = classify_route(
+        RoutingClassificationInput(
+            task_source=TaskSource.OPERATOR,
+            task_type=TaskType.READ_ONLY,
+            risk_class=RiskClass.R0_READ,
+            runtime_impact=RuntimeImpact.READ_ONLY,
+            complexity_class=ComplexityClass.LOW,
+            authority_class=AuthorityClass.OPERATOR,
+            has_unknown_authority=False,
+            evidence_is_retrieval_derived=True,
+            exact_source_fetched=False,
+        )
+    )
+    assert decision.status is RouteStatus.ALLOWED
+    assert "retrieval_derived_evidence_unverified" not in decision.stop_conditions
 
 
 def test_opencode_backend_requires_wrapper_proof() -> None:

@@ -49,6 +49,27 @@ def test_classify_unknown_authority_fails_closed() -> None:
     assert data["status"] != RouteStatus.ALLOWED.value
 
 
+def test_classify_provenance_fields_flow_through_cli_input() -> None:
+    runner = CliRunner()
+    payload = {
+        "task_source": "OPERATOR",
+        "task_type": "CODE_CHANGE",
+        "risk_class": "R1_LOW",
+        "runtime_impact": "LOCAL_ONLY",
+        "complexity_class": "LOW",
+        "authority_class": "OPERATOR",
+        "has_unknown_authority": False,
+        "is_repo_changing": True,
+        "evidence_is_retrieval_derived": True,
+        "exact_source_fetched": False,
+    }
+    result = runner.invoke(dcp, ["classify"], input=json.dumps(payload))
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data["status"] == RouteStatus.BLOCKED.value
+    assert "retrieval_derived_evidence_unverified" in data["stop_conditions"]
+
+
 def test_recommend_backend_for_classified_route() -> None:
     runner = CliRunner()
     classify_payload = {
