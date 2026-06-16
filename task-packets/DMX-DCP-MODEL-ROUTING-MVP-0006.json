@@ -13,6 +13,7 @@
     "This packet does not gate the execution-inert 0005 lane-engine MVP."
   ],
   "depends_on": [
+    "DMX-DCP-MODEL-ROUTING-MVP-0004",
     "PR #904 precedence fix on main"
   ],
   "repo_binding": {
@@ -24,7 +25,7 @@
   "series": {
     "id": "DMX-DCP-MODEL-ROUTING-MVP",
     "base_branch": "main",
-    "parent_tp_id": null,
+    "parent_tp_id": "DMX-DCP-MODEL-ROUTING-MVP-0004",
     "final_packet": false
   },
   "execution": {
@@ -96,12 +97,14 @@
         "Wire the five provenance fields through the read-only CLI input adapter so classify output reflects caller-supplied provenance evidence.",
         "Derive backend-wrapper risk from backend_kind for OPENCODE and GROK rather than trusting a separate caller boolean alone.",
         "Keep has_backend_wrapper_proof default false without regressing existing non-OPENCODE and non-GROK inputs.",
+        "Include all new provenance fields in route-id stability inputs so provenance changes produce distinct route IDs.",
         "Do not change lane-engine behavior, connector behavior, runner behavior, MCP calls, live-write surfaces, or execution eligibility."
       ],
       "validation": [
         "Bridge/proxy authority with claimed AUTOMATED_SAFE no longer returns runnable ALLOWED.",
         "Retrieval-derived evidence without exact source fetch blocks mutation but exact_source_fetched preserves the non-derived behavior.",
         "CLI JSON carrying provenance fields reaches classify_route and produces the same fail-closed decision as in-memory input.",
+        "Route IDs remain deterministic for identical inputs and differ when trust-lowering provenance fields differ.",
         "ECC external intake blocks runner execution, live writes, destructive paths, copy, and import.",
         "OPENCODE and GROK backend mutation requires wrapper proof while other backend kinds preserve existing defaults."
       ],
