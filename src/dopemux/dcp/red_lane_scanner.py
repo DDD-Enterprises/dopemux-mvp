@@ -7,6 +7,7 @@ from dopemux.dcp.red_lane import (
     RedLaneReport, Finding, ScannerInfo, RepoInfo, InputsInfo, GuardsInfo, SummaryInfo,
     Severity, Status, AuthorityLabel
 )
+from dopemux.dcp.red_lane_taxonomy import load_red_lane_taxonomy_info
 from dopemux.dcp.red_lane_rules import FORBIDDEN_PATHS, TEXT_RULES, is_safe_false_positive, redact_secret_like
 
 class RedLaneScanner:
@@ -28,6 +29,7 @@ class RedLaneScanner:
         proof_paths = proof_paths or []
         audit_paths = audit_paths or []
         merge_readiness_paths = merge_readiness_paths or []
+        taxonomy_info = load_red_lane_taxonomy_info(self.repo_root)
         
         findings = []
         
@@ -120,7 +122,11 @@ class RedLaneScanner:
         return RedLaneReport(
             generated_at=datetime.utcnow().isoformat() + "Z",
             packet_id="TP-DCP-0005",
-            scanner=ScannerInfo(),
+            scanner=ScannerInfo(
+                taxonomy_id=taxonomy_info.taxonomy_id,
+                taxonomy_path=taxonomy_info.taxonomy_path,
+                taxonomy_lane_ids=taxonomy_info.taxonomy_lane_ids,
+            ),
             repo=RepoInfo(head_sha=expected_head_sha),
             inputs=InputsInfo(
                 changed_files=changed_files,
