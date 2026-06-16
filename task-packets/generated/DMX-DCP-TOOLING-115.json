@@ -32,6 +32,7 @@
     "message": "feat(dcp): governance-metadata manifest for commands/skills, CI unlabeled-addition gate",
     "allowlist": [
       "schemas/dcp/commands_registry.schema.json",
+      "schemas/dcp/manifest.json",
       "config/dcp/commands_registry.json",
       "tests/dcp/test_commands_registry.py",
       ".github/workflows/ci-complete.yml",

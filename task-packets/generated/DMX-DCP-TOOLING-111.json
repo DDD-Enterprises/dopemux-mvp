@@ -34,6 +34,7 @@
       "src/dopemux/dcp/resource_map.py",
       "src/dopemux/dcp/cli_dcp.py",
       "config/dcp/project_resource_map.json",
+      "scripts/verify_runtime_authority.py",
       ".github/workflows/ci-complete.yml",
       "tests/dcp/test_resource_map.py",
       "proof/DMX-DCP-TOOLING-111/PROOF.json"

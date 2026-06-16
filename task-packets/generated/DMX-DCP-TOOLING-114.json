@@ -40,6 +40,7 @@
       "packaging/dcp-plugin/build.py",
       ".claude-plugin/plugin.json",
       ".claude-plugin/hooks/hooks.json",
+      ".claude-plugin/.mcp.json",
       "tests/dcp/test_plugin_build.py",
       ".github/workflows/ci-complete.yml",
       "proof/DMX-DCP-TOOLING-114/PROOF.json"

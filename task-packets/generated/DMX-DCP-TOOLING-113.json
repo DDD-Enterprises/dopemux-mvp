@@ -81,7 +81,7 @@
         "grep -n 'dmx-dcp-tooling-102\\|TP-102\\|red-lane taxonomy' git log 2>/dev/null || git log --oneline | grep -i '102\\|taxonomy' || true",
         "test -f .dopetaskroot",
         "find . -name 'mcp_catalog.yaml' | head -5",
-        "head -60 config/mcp_catalog.yaml 2>/dev/null || find . -name 'mcp_catalog.yaml' -exec head -60 {} \\; || true",
+        "head -60 mcp_catalog.yaml",
         "grep -n 'job\\|step\\|name:' .github/workflows/ci-complete.yml | head -60"
       ],
       "validation": [
