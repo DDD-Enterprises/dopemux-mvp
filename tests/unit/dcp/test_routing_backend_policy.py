@@ -155,6 +155,27 @@ def test_reloaded_unknown_runtime_field_blocks_backend_without_unknowns_list() -
     _assert_no_backend(decision, "unknowns_present")
 
 
+def test_reloaded_unknown_audit_requirement_blocks_backend_without_unknowns_list() -> None:
+    decision = RouteDecision.from_dict(
+        {
+            "route_id": "partial-safe-looking-audit-route",
+            "task_source": TaskSource.OPERATOR.value,
+            "task_type": TaskType.CODE_CHANGE.value,
+            "risk_class": RiskClass.R1_LOW.value,
+            "complexity_class": ComplexityClass.LOW.value,
+            "authority_class": AuthorityClass.OPERATOR.value,
+            "runtime_impact": RuntimeImpact.LOCAL_ONLY.value,
+            "red_lane_state": RedLaneState.CLEAR.value,
+            "escalation_requirement": EscalationRequirement.NONE.value,
+            "status": RouteStatus.ALLOWED.value,
+        }
+    )
+
+    assert decision.unknowns == []
+    assert decision.audit_requirement is AuditRequirement.UNKNOWN
+    _assert_no_backend(decision, "unknowns_present")
+
+
 def test_non_empty_stop_conditions_block_backend() -> None:
     decision = _safe_decision(stop_conditions=["operator_stop"])
     _assert_no_backend(decision, "stop_conditions_present")
@@ -267,6 +288,15 @@ def test_high_risk_route_requires_supervisor_and_no_backend() -> None:
         status=RouteStatus.NEEDS_SUPERVISOR,
         escalation_requirement=EscalationRequirement.ON_RISK,
     )
+    recommendation = _recommend(decision)
+    assert recommendation.requires_supervisor is True
+    assert recommendation.preferred_backend is BackendKind.NONE
+    assert recommendation.is_executable_recommendation() is False
+    assert "risk_requires_supervisor" in recommendation.reason_codes
+
+
+def test_supervisor_audit_requirement_requires_supervisor_and_no_backend() -> None:
+    decision = _safe_decision(audit_requirement=AuditRequirement.SUPERVISOR_AUDIT)
     recommendation = _recommend(decision)
     assert recommendation.requires_supervisor is True
     assert recommendation.preferred_backend is BackendKind.NONE
