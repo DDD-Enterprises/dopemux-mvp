@@ -323,9 +323,27 @@ def test_dual_authority_requires_supervisor_and_no_backend() -> None:
     assert "risk_requires_supervisor" in recommendation.reason_codes
 
 
+def test_architectural_complexity_requires_supervisor_and_no_backend() -> None:
+    decision = _safe_decision(complexity_class=ComplexityClass.ARCHITECTURAL)
+    recommendation = _recommend(decision)
+    assert recommendation.requires_supervisor is True
+    assert recommendation.preferred_backend is BackendKind.NONE
+    assert recommendation.is_executable_recommendation() is False
+    assert "risk_requires_supervisor" in recommendation.reason_codes
+
+
 def test_unknown_proof_requirement_blocks_backend() -> None:
     decision = _safe_decision(proof_requirements=[ProofRequirement.UNKNOWN])
     _assert_no_backend(decision, "unknowns_present")
+
+
+def test_supervisor_proof_requirement_requires_supervisor_and_no_backend() -> None:
+    decision = _safe_decision(proof_requirements=[ProofRequirement.SUPERVISOR_REVIEW])
+    recommendation = _recommend(decision)
+    assert recommendation.requires_supervisor is True
+    assert recommendation.preferred_backend is BackendKind.NONE
+    assert recommendation.is_executable_recommendation() is False
+    assert "risk_requires_supervisor" in recommendation.reason_codes
 
 
 def test_unknown_backend_kind_on_safe_route_does_not_crash() -> None:

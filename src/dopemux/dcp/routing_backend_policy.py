@@ -90,8 +90,16 @@ _SUPERVISOR_AUTHORITY_CLASSES = {
     AuthorityClass.DUAL,
 }
 
+_SUPERVISOR_COMPLEXITY_CLASSES = {
+    ComplexityClass.ARCHITECTURAL,
+}
+
 _SUPERVISOR_AUDIT_REQUIREMENTS = {
     AuditRequirement.SUPERVISOR_AUDIT,
+}
+
+_SUPERVISOR_PROOF_REQUIREMENTS = {
+    ProofRequirement.SUPERVISOR_REVIEW,
 }
 
 _BLOCKING_FORBIDDEN_ACTIONS = frozenset(
@@ -329,7 +337,12 @@ def _requires_supervisor(decision: RouteDecision) -> bool:
         decision.status is RouteStatus.NEEDS_SUPERVISOR
         or decision.risk_class in _SUPERVISOR_RISKS
         or decision.authority_class in _SUPERVISOR_AUTHORITY_CLASSES
+        or decision.complexity_class in _SUPERVISOR_COMPLEXITY_CLASSES
         or decision.audit_requirement in _SUPERVISOR_AUDIT_REQUIREMENTS
+        or any(
+            requirement in _SUPERVISOR_PROOF_REQUIREMENTS
+            for requirement in decision.proof_requirements
+        )
         or decision.escalation_requirement
         is not EscalationRequirement.NONE
     )
