@@ -1,0 +1,116 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-105-mcp-surface-search",
+  "project": "dopemux-mvp",
+  "target": "Expose search_content via MCP by adding a search_content FastMCP tool in server.py and conport_mcp_stdio.py proxying GET /api/search/{ws}, and registering it in enhanced_server.py JSON-RPC dispatch.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet depends on DMX-CONPORT-OPTIMAL-102 — the 500 bugs in search_content must be fixed first.",
+    "FastMCP tool must proxy the existing REST GET /api/search/{ws}?q=... handler — do not duplicate logic.",
+    "Tool signature must accept workspace_id and query as parameters.",
+    "Do not alter the REST route shape or response envelope.",
+    "Classify any ambiguous schema authority as UNKNOWN."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-105-mcp-surface-search",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): expose search_content via MCP surface",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/server.py",
+      "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/tests/test_mcp_search.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-105-mcp-surface-search.json",
+      "proof/conport-optimal-105-mcp-surface-search/DMX-CONPORT-OPTIMAL-105-mcp-surface-search/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-105-mcp-surface-search.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-105-mcp-surface-search.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m pytest docker/mcp-servers-source/conport/tests/test_mcp_search.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): expose search_content via MCP surface",
+    "body": "Adds a `search_content(workspace_id, query)` FastMCP tool to server.py and conport_mcp_stdio.py, proxying the existing `GET /api/search/{ws}?q=...` REST handler. Registers JSON-RPC dispatch_map entry and _get_tool_schemas entry in enhanced_server.py.\n\nDepends on DMX-CONPORT-OPTIMAL-102 (500 bugs in search_content route must be fixed before this can be verified end-to-end).\n\nAcceptance: search_content MCP call returns results for a known keyword seeded in the test workspace.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight worktree. Read server.py and conport_mcp_stdio.py for existing tool registration patterns. Read enhanced_server.py search_content handler and dispatch_map to understand the integration seam. Confirm 102 fix is present (ag_catalog gone, UUID/Decimal stringified).",
+      "context_files": [
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "AGENTS.md"
+      ],
+      "validation": [
+        "search_content REST handler located in enhanced_server.py and documented in proof.",
+        "102 bugfixes confirmed present (grep for ag_catalog returns zero matches, UUID/Decimal str() calls present).",
+        "Existing tool registration pattern documented for consistency."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_mcp_search.py covering: (a) search_content tool is advertised in tools/list; (b) search_content MCP call with a known keyword returns a non-empty results list.",
+      "expected_files": [
+        "docker/mcp-servers-source/conport/tests/test_mcp_search.py"
+      ],
+      "validation": [
+        "Tests exist and fail before production code changes.",
+        "Test seeds at least one searchable entity before querying."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add search_content FastMCP tool to server.py and conport_mcp_stdio.py. Tool accepts workspace_id (str) and query (str) and proxies GET /api/search/{workspace_id}?q={query} via aiohttp.",
+      "validation": [
+        "search_content function present in server.py with correct decorator.",
+        "Matching proxy function present in conport_mcp_stdio.py.",
+        "No search logic duplicated — tool delegates entirely to REST handler."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Register search_content in enhanced_server.py dispatch_map and _get_tool_schemas. Run tests and verify MCP call returns results for a seeded keyword. Run PAL codereview and precommit. Commit, push, open PR, file proof bundle.",
+      "commands": [
+        "python3 -m pytest docker/mcp-servers-source/conport/tests/test_mcp_search.py -q"
+      ],
+      "validation": [
+        "All tests PASS with exit code 0.",
+        "search_content MCP call response with known keyword captured in proof.",
+        "tools/list shows search_content advertised.",
+        "Only allowlisted files staged and committed."
+      ]
+    }
+  ]
+}

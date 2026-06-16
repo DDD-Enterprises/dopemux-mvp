@@ -1,0 +1,110 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
+  "project": "dopemux-mvp",
+  "target": "Bring the ConPort service up via docker compose and verify REST health endpoint and SSE wrapper reachability.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must not modify production data or workspace state.",
+    "This packet must not alter schema.sql or migration files.",
+    "Smoke output must be captured and included in the proof bundle.",
+    "Failure to reach health endpoint is a hard FAIL — do not mark PASS with inference."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-101-server-bringup-smoke",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): verify server bringup and smoke health checks",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/Dockerfile",
+      "docker/mcp-servers-source/conport/start_with_info.sh",
+      "compose.yml",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-101-server-bringup-smoke.json",
+      "proof/conport-optimal-101-server-bringup-smoke/DMX-CONPORT-OPTIMAL-101-server-bringup-smoke/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-101-server-bringup-smoke.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-101-server-bringup-smoke.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): server bringup smoke verification",
+    "body": "Verifies ConPort service starts cleanly via `docker compose up -d conport`. Confirms `GET /health` returns 200 on :3004 and SSE wrapper is reachable on :3005. Captures smoke output in proof bundle. Prerequisite for all subsequent DMX-CONPORT-OPTIMAL packets.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean status.",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "Primary checkout remains untouched."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "compose.yml",
+        "docker/mcp-servers-source/conport/Dockerfile"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run `docker compose up -d conport` and wait for the container to reach healthy state. Capture full docker compose logs output.",
+      "commands": [
+        "docker compose up -d conport",
+        "docker compose ps conport",
+        "docker compose logs conport --tail=50"
+      ],
+      "validation": [
+        "Container starts without exit code errors.",
+        "docker compose ps shows conport in running/healthy state.",
+        "Compose logs captured and saved to proof directory."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Verify REST health endpoint on :3004 returns HTTP 200 and SSE wrapper on :3005 is reachable.",
+      "commands": [
+        "curl -sf http://localhost:3004/health",
+        "curl -sf --max-time 5 http://localhost:3005/ || true"
+      ],
+      "validation": [
+        "GET http://localhost:3004/health returns HTTP 200.",
+        "SSE wrapper on :3005 responds (any HTTP response or connection accepted).",
+        "Both curl outputs captured in proof bundle."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Commit proof bundle, validate packet JSON against canonical spec, and open PR.",
+      "validation": [
+        "TP JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed.",
+        "PR opened with proof bundle included."
+      ]
+    }
+  ]
+}

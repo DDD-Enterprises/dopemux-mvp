@@ -1,0 +1,127 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-108-integration-test-scaffolding",
+  "project": "dopemux-mvp",
+  "target": "Create a real integration test suite for ConPort using pytest and testcontainers, covering context CRUD, decision log/get, progress lifecycle, search, and migration correctness.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "Tests must use testcontainers (PostgreSQL + Redis) — no mocking of database or cache layers.",
+    "schema.sql and migrations 001-004 and 007 must be applied in test setup in order.",
+    "Tests must not depend on a running docker compose stack — testcontainers spin up isolated instances.",
+    "Target handler coverage is >60% — measure with pytest-cov and record in proof.",
+    "Do not alter production source files — this packet touches only the tests directory.",
+    "All tests must be isolated — no shared state between test functions."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-108-integration-test-scaffolding",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "test(conport): add integration test suite with testcontainers for real DB coverage",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/tests/integration/conftest.py",
+      "docker/mcp-servers-source/conport/tests/integration/test_context_crud.py",
+      "docker/mcp-servers-source/conport/tests/integration/test_decisions.py",
+      "docker/mcp-servers-source/conport/tests/integration/test_progress_lifecycle.py",
+      "docker/mcp-servers-source/conport/tests/integration/test_search.py",
+      "docker/mcp-servers-source/conport/tests/integration/test_migrations.py",
+      "docker/mcp-servers-source/conport/tests/integration/__init__.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-108-integration-test-scaffolding.json",
+      "proof/conport-optimal-108-integration-test-scaffolding/DMX-CONPORT-OPTIMAL-108-integration-test-scaffolding/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-108-integration-test-scaffolding.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-108-integration-test-scaffolding.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m pytest docker/mcp-servers-source/conport/tests/integration/ -q --tb=short",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "test(conport): integration test suite with testcontainers (PostgreSQL + Redis)",
+    "body": "Adds a real integration test suite at `docker/mcp-servers-source/conport/tests/integration/` using pytest + testcontainers. Tests spin up isolated PostgreSQL and Redis containers, apply schema.sql and migrations 001-004 + 007, then exercise:\n- Context CRUD (get_active_context, update_active_context)\n- Decision log and retrieval\n- Progress lifecycle (log, update status, get by status)\n- Full-text search (with known keywords)\n- Migration correctness (schema.sql + migration files applied in order, tables exist)\n\nTargets >60% handler coverage measured via pytest-cov. Does not modify any production source files.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight worktree. Read schema.sql and docker/mcp-servers-source/conport/migrations/ to understand schema version sequence. Read existing tests (test_instance_detector.py, test_worktree_routing.py) to understand test conventions and imports. Check whether testcontainers and pytest-cov are in requirements.",
+      "context_files": [
+        "docker/mcp-servers-source/conport/schema.sql",
+        "docker/mcp-servers-source/conport/migrations/",
+        "docker/mcp-servers-source/conport/tests/test_instance_detector.py",
+        "AGENTS.md"
+      ],
+      "validation": [
+        "Migration file order confirmed: 001-004 and 007 identified by direct read.",
+        "Existing test import patterns documented for consistency.",
+        "testcontainers availability confirmed (pip show testcontainers) or noted as needing install."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create docker/mcp-servers-source/conport/tests/integration/conftest.py with pytest fixtures: (a) pg_container fixture spinning up PostgreSQL testcontainer; (b) redis_container fixture for Redis; (c) db_conn fixture applying schema.sql then migrations 001-004 and 007 in order; (d) app_client fixture creating an aiohttp test client against the ConPort app.",
+      "expected_files": [
+        "docker/mcp-servers-source/conport/tests/integration/__init__.py",
+        "docker/mcp-servers-source/conport/tests/integration/conftest.py"
+      ],
+      "validation": [
+        "conftest.py imports testcontainers.postgres.PostgresContainer.",
+        "schema.sql and migration files applied in deterministic order in db_conn fixture.",
+        "Fixtures use pytest scope=session or scope=function as appropriate for isolation."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Write five integration test files: test_context_crud.py (get+update active/product context), test_decisions.py (log_decision + get_decisions round-trip), test_progress_lifecycle.py (log_progress, update to DONE, filter by status), test_search.py (seed a decision then search for keyword), test_migrations.py (apply schema.sql + all migrations, assert expected tables exist).",
+      "expected_files": [
+        "docker/mcp-servers-source/conport/tests/integration/test_context_crud.py",
+        "docker/mcp-servers-source/conport/tests/integration/test_decisions.py",
+        "docker/mcp-servers-source/conport/tests/integration/test_progress_lifecycle.py",
+        "docker/mcp-servers-source/conport/tests/integration/test_search.py",
+        "docker/mcp-servers-source/conport/tests/integration/test_migrations.py"
+      ],
+      "validation": [
+        "Each test file has at least 2 test functions.",
+        "No test function shares state with another (no module-level mutable globals).",
+        "All assertions are concrete — no assert True without checking real values."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run the full integration suite with pytest-cov. Verify >60% handler coverage. Run PAL codereview and precommit. Commit, push, open PR, file proof bundle with coverage report.",
+      "commands": [
+        "python3 -m pytest docker/mcp-servers-source/conport/tests/integration/ -q --tb=short --cov=docker/mcp-servers-source/conport --cov-report=term-missing"
+      ],
+      "validation": [
+        "pytest exits 0 — all integration tests PASS.",
+        "Coverage report shows >60% handler coverage — exact percentage recorded in proof.",
+        "Coverage report captured in proof bundle.",
+        "Only allowlisted files staged and committed."
+      ]
+    }
+  ]
+}

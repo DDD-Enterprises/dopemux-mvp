@@ -1,0 +1,115 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-204-linked-progress-on-decisions",
+  "project": "dopemux-mvp",
+  "target": "Enable traversal from a decision to its linked progress entries by adding GET /api/decisions/{decision_id}/progress REST endpoint and get_linked_progress MCP tool, so callers can retrieve all progress entries that are linked to a specific decision.",
+  "invariants": [
+    "This packet must not modify the decisions or progress_entries table schemas.",
+    "The endpoint must query the entity_relationships table using linked_decision_id or the equivalent relationship edge — not perform a full scan.",
+    "Return only progress entries belonging to the same workspace as the decision; never leak cross-workspace data.",
+    "get_linked_progress MCP tool must be registered in both server.py and conport_mcp_stdio.py.",
+    "The endpoint must return 404 if the decision_id does not exist.",
+    "An empty list is a valid response (200) when no linked progress entries exist.",
+    "Do not alter existing get_decisions or get_progress endpoint signatures.",
+    "Classify ambiguous join strategy as UNKNOWN until verified against schema.sql."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-204-linked-progress-on-decisions",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): GET /api/decisions/{decision_id}/progress + get_linked_progress MCP tool",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/server.py",
+      "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+      "docker/mcp-servers-source/conport/tests/test_linked_progress_on_decisions.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-204-linked-progress-on-decisions.json",
+      "proof/conport-optimal-204/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-204-linked-progress-on-decisions.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-204-linked-progress-on-decisions.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_linked_progress_on_decisions.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): decision-to-progress traversal endpoint and MCP tool",
+    "body": "Adds GET /api/decisions/{decision_id}/progress to enhanced_server.py, returning the list of progress entries linked to the given decision via the entity_relationships join. Returns 404 when the decision does not exist, 200 with an empty list when no linked progress exists. Registers get_linked_progress in server.py (tool definition + handler) and conport_mcp_stdio.py (JSON-RPC dispatch). Mirrors the registration pattern of existing get_linked_items. Depends on 202 (entity-relationship write API) being in scope.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read AGENTS.md, schema.sql, enhanced_server.py, server.py, and conport_mcp_stdio.py. Identify the decisions table primary key type (UUID vs integer), the progress_entries table foreign key to decisions (linked_decision_id column or entity_relationships edge), and the existing MCP tool registration pattern. Record baseline SHA and clean worktree status in proof.",
+      "validation": [
+        "The join strategy (direct linked_decision_id FK vs entity_relationships table lookup) is determined and recorded with the specific column names used.",
+        "The decisions primary key type is confirmed from schema.sql.",
+        "The response shape for existing progress list endpoints is captured for parity reference."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docker/mcp-servers-source/conport/schema.sql",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+        "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_linked_progress_on_decisions.py covering: (a) GET /api/decisions/{decision_id}/progress returns 200 with empty list when no progress is linked, (b) after linking a progress entry to the decision the endpoint returns that entry, (c) GET returns 404 when the decision_id does not exist, (d) cross-workspace data is not leaked (progress from another workspace is not returned), (e) get_linked_progress MCP tool round-trips.",
+      "validation": [
+        "All 5 test cases exist and fail before implementation.",
+        "Tests use realistic workspace_id and decision_id values.",
+        "No test imports non-existent symbols."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement GET /api/decisions/{decision_id}/progress in enhanced_server.py: verify the decision exists in the workspace (404 if not); query progress_entries WHERE linked_decision_id = decision_id AND workspace_id = workspace_id (or equivalent entity_relationships join if no direct FK); return list of progress entry objects. Add get_linked_progress tool definition in server.py (inputs: workspace_id, decision_id) and JSON-RPC dispatch handler in conport_mcp_stdio.py.",
+      "validation": [
+        "GET returns 200 + [] for a decision with no linked progress.",
+        "GET returns 200 + [entry] after a progress entry is linked.",
+        "GET returns 404 for a non-existent decision_id.",
+        "get_linked_progress appears in server.py tool list and conport_mcp_stdio.py dispatch.",
+        "No existing endpoint signatures altered."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run all linked-progress tests, validate TP JSON against canonical schema, commit allowlisted files, push, open PR, and record proof bundle.",
+      "validation": [
+        "pytest test_linked_progress_on_decisions.py exits 0 with all 5 tests passing.",
+        "python -m jsonschema exits 0 for the TP JSON.",
+        "Only allowlisted files are staged.",
+        "Proof bundle records: TP id, worktree, branch, files changed, test exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks."
+      ]
+    }
+  ]
+}

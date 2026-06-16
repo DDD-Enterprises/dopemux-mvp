@@ -1,0 +1,128 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api",
+  "project": "dopemux-mvp",
+  "target": "Make the ConPort knowledge graph real by implementing POST/GET/DELETE REST endpoints for entity_relationships, adding link_items and get_linked_items MCP tools in server.py and conport_mcp_stdio.py, and adding Redis cache invalidation for relationship keys — with relationship_type enum defaulting to builds_upon, validates, extends, implements, depends_on, supersedes (Operator Decision Gate 2 default).",
+  "invariants": [
+    "This packet must not modify entity_relationships table structure — only add REST and MCP write paths to the existing table.",
+    "relationship_type must be validated against the Decision-2 enum: builds_upon, validates, extends, implements, depends_on, supersedes.",
+    "Unknown relationship_type values must be rejected with 422, not silently accepted.",
+    "DELETE must be soft-checked: return 404 if the relationship does not exist rather than silently no-op.",
+    "Redis cache invalidation must target only relationship-keyed entries; it must not flush unrelated workspace keys.",
+    "All new MCP tools must be registered in both server.py and conport_mcp_stdio.py.",
+    "Operator Decision Gate 2 default enum is locked; do not expand or contract it without a new TP.",
+    "Classify missing or undecided operator input as UNKNOWN; fail closed."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-202-relationship-write-api",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): entity-relationship write API — POST/GET/DELETE REST + link_items/get_linked_items MCP tools",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/server.py",
+      "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+      "docker/mcp-servers-source/conport/tests/test_entity_relationships.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api.json",
+      "proof/conport-optimal-202/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_entity_relationships.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): entity-relationship write API with link_items/get_linked_items MCP tools",
+    "body": "Implements the entity_relationships write surface: POST /api/relationships creates a relationship between two items with a validated relationship_type; GET /api/relationships?workspace_id&source_id&source_type retrieves edges; DELETE /api/relationships/{id} removes an edge with 404 on miss. Adds link_items and get_linked_items MCP tools registered in both server.py and conport_mcp_stdio.py. Redis cache invalidation clears relationship-keyed entries on write/delete. relationship_type enum = builds_upon, validates, extends, implements, depends_on, supersedes per Decision Gate 2 default.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: read AGENTS.md, enhanced_server.py, server.py, conport_mcp_stdio.py, and schema.sql to map the existing entity_relationships table structure and any existing read-only relationship code. Identify Redis cache key patterns used for relationships. Record baseline SHA and worktree status.",
+      "validation": [
+        "entity_relationships table columns (id, workspace_id, source_id, source_type, target_id, target_type, relationship_type, metadata, created_at) are confirmed from schema.sql.",
+        "Existing relationship read paths are identified and their signatures captured for non-regression reference.",
+        "Redis cache key pattern for relationships is documented in proof."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docker/mcp-servers-source/conport/schema.sql",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+        "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_entity_relationships.py covering: (a) POST /api/relationships with valid type creates edge and returns 201 + id, (b) POST with invalid type returns 422, (c) GET /api/relationships?workspace_id=X&source_id=Y returns created edges, (d) DELETE /api/relationships/{id} returns 204, (e) DELETE on missing id returns 404, (f) link_items MCP tool round-trips, (g) get_linked_items MCP tool returns edges, (h) Redis invalidation key is cleared on write.",
+      "validation": [
+        "All 8 test cases exist and fail (target code absent).",
+        "Tests reference the Decision-2 enum values explicitly."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement REST endpoints in enhanced_server.py: POST /api/relationships (validate relationship_type against enum, INSERT into entity_relationships, invalidate Redis cache, return 201 + {id}); GET /api/relationships (SELECT WHERE workspace_id=? AND source_id=? AND source_type=?); DELETE /api/relationships/{id} (DELETE WHERE id=?, 404 if rowcount==0, invalidate cache). Use UUID for id if not provided by the database.",
+      "validation": [
+        "POST with valid type returns 201 JSON with id field.",
+        "POST with out-of-enum type returns 422.",
+        "GET returns list of edge objects.",
+        "DELETE returns 204 on success and 404 on miss.",
+        "Redis invalidation call is present in POST and DELETE handlers."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add link_items and get_linked_items MCP tools: register tool definitions in server.py (input schema with workspace_id, source_id, source_type, target_id, target_type, relationship_type for link_items; workspace_id, source_id, source_type for get_linked_items) and add JSON-RPC dispatch handlers in conport_mcp_stdio.py. Mirror the registration pattern of existing write tools.",
+      "validation": [
+        "link_items and get_linked_items appear in server.py tool definitions list.",
+        "conport_mcp_stdio.py dispatch table includes both new methods.",
+        "No existing tool signatures altered."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run full test suite, validate TP JSON against schema, commit allowlisted files, push, open PR, and record proof bundle.",
+      "validation": [
+        "pytest test_entity_relationships.py exits 0 with all 8 tests passing.",
+        "python -m jsonschema exits 0 for the TP JSON.",
+        "Only allowlisted files are staged.",
+        "Proof bundle records TP id, worktree, branch, files changed, test exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks."
+      ]
+    }
+  ]
+}

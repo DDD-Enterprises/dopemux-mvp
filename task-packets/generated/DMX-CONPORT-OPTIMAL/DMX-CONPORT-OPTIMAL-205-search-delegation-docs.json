@@ -1,0 +1,108 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-205-search-delegation-docs",
+  "project": "dopemux-mvp",
+  "target": "Document and harden the structured-vs-semantic search boundary in ConPort: clarify the search_content endpoint's search_type parameter (decisions/progress/all), add a docstring recording the Memory Trinity delegation rule (semantic search goes to dope-context), and verify the search_type filter actually honors its value at runtime.",
+  "invariants": [
+    "This packet must not introduce a semantic/vector search engine into ConPort — that boundary is owned by dope-context per the Memory Trinity ADR.",
+    "The search_type parameter must be validated; unknown values must return 422, not silently fall back to 'all'.",
+    "Documentation changes must not contradict the Memory Trinity ADR; reference the ADR by path.",
+    "Do not alter existing full-text-search behavior — only add documentation and parameter enforcement.",
+    "Classify any undocumented search_type behavior observed in runtime as UNKNOWN until verified."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-105-mcp-surface-search"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-204-linked-progress-on-decisions",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-205-search-delegation-docs",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(conport): document search delegation boundary, enforce search_type param validation",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docs/systems/conport/surface-equivalence-and-drift.md",
+      "docker/mcp-servers-source/conport/tests/test_search_type_param.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-205-search-delegation-docs.json",
+      "proof/conport-optimal-205/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-205-search-delegation-docs.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-205-search-delegation-docs.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_search_type_param.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(conport): search delegation boundary — search_type enforcement + Memory Trinity note",
+    "body": "Documents the ConPort structured-vs-semantic search boundary per Memory Trinity ADR. Adds docstring to search_content in enhanced_server.py explaining that search_type=decisions searches decisions only, search_type=progress searches progress_entries only, search_type=all searches both, and that semantic/vector search is delegated to dope-context (not ConPort). Enforces search_type validation (422 on unknown values). Updates docs/systems/conport/surface-equivalence-and-drift.md with the delegation note. Adds regression tests confirming search_type=decisions returns no progress rows and vice versa. Depends on 105 (search and FTS) having established the baseline search surface.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read enhanced_server.py search_content handler, docs/systems/conport/surface-equivalence-and-drift.md, and any Memory Trinity ADR under docs/. Identify the current search_type parameter handling: does it validate values, does it silently fall back to 'all', and does it actually filter by type? Record all observed behavior as OBSERVED or UNKNOWN in proof.",
+      "validation": [
+        "The current search_type code path is traced and its behavior (validate vs. silent fallback) is documented.",
+        "The Memory Trinity ADR path is identified and its delegation rule for semantic search is quoted.",
+        "Any gap between documented and implemented behavior is recorded as UNKNOWN."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docs/systems/conport/surface-equivalence-and-drift.md",
+        "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_search_type_param.py: (a) search_type=decisions returns only decision rows (no progress rows), (b) search_type=progress returns only progress rows (no decision rows), (c) search_type=all returns rows from both tables, (d) search_type=unknown_value returns 422, (e) search_type omitted defaults to 'all' (not 422).",
+      "validation": [
+        "All 5 test cases exist and at least tests (a), (b), and (d) fail before the fix if the current code does not enforce search_type.",
+        "Tests assert on the row types present in the response, not just status codes."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "In enhanced_server.py search_content handler: add search_type enum validation (422 on unknown value, default 'all' when omitted); ensure the WHERE clause filters by entity type when search_type is 'decisions' or 'progress'. Add a docstring block above the handler explaining: (1) search_type values and behavior, (2) Memory Trinity delegation rule referencing the ADR path. Update docs/systems/conport/surface-equivalence-and-drift.md with a 'Search Delegation' subsection.",
+      "validation": [
+        "search_type=decisions never returns progress_entries rows.",
+        "search_type=progress never returns decisions rows.",
+        "search_type=unknown_value returns 422.",
+        "Docstring is present and references the Memory Trinity ADR by path.",
+        "docs/systems/conport/surface-equivalence-and-drift.md contains the delegation note."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run all search_type tests, validate TP JSON against canonical schema, commit allowlisted files, push, open PR, and record proof bundle.",
+      "validation": [
+        "pytest test_search_type_param.py exits 0 with all 5 tests passing.",
+        "python -m jsonschema exits 0 for the TP JSON.",
+        "Only allowlisted files are staged.",
+        "Proof bundle records: TP id, worktree, branch, files changed, test exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks."
+      ]
+    }
+  ]
+}

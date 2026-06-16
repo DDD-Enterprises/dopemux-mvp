@@ -1,0 +1,432 @@
+{
+  "schema_version": "1.0.0",
+  "series_id": "DMX-CONPORT-OPTIMAL",
+  "title": "ConPort optimal-version rebuild \u2014 Tier 1 stabilize/consolidate, Tier 2 knowledge-graph+context, Tier 3 ADHD retrospective",
+  "description": "18-packet series to rebuild ConPort to production quality. Tier 1 (101-109): stabilize server bringup, fix runtime 500s, retire dead codebases, expose missing MCP surfaces (custom_data, search), close JSON-RPC gaps, gate auto-fork side-effect, add integration tests, reconcile docs. Tier 2 (201-206): intentional product-vs-active context model, entity-relationship write API, workspace relationships traversal fix, linked progress on decisions, search delegation docs, DCP facade search re-enable. Tier 3 (301-303): decision outcome retrospective, review reminders, decision-to-decision relationships.",
+  "authority": "Task packets at task-packets/generated/DMX-CONPORT-OPTIMAL/ + plan at ~/.claude/plans/conport-is-now-top-valiant-dewdrop.md. Runtime repo truth outranks this document. Verify paths before edit.",
+  "live_task_orchestrator_load": "LOADED",
+  "live_load_evidence": "Loaded 2026-06-14 via create_work_tree (one-shot: root + 18 children + 21 BLOCKS deps + 3 gate notes). Verified: 18 leaves (childCounts.queue=18), 21 edges confirmed via create_work_tree response, tp101 has 0 incoming deps (sole unblocked entry). All gate notes upserted (upserted=3, failed=0).",
+  "offline_artifact": "CREATED",
+  "loaded_at": "2026-06-14T17:17:31Z",
+  "loaded": true,
+  "load_mechanism_classified_as": "OBSERVED_MCP_TASK_ORCHESTRATOR_V3",
+  "load_mechanism_evidence": "Based on sibling load plans (DMX-AUTOREVIEW-PLATFORM, DMX-ADHD-COGNITIVE-REMEDIATION): task-orchestrator MCP v3 uses create_work_tree for root, manage_items(operation=create) per node, manage_dependencies for BLOCKS DAG, manage_notes for gate briefs. Per-packet TP JSONs in task-packets/generated/ conform to docs/03-reference/spec/dopetask/dopetask-canonical-spec.json.",
+  "task_orchestrator_root_id": "44452f53-615d-4519-b21a-4a9cbc8774a4",
+  "task_orchestrator_leaf_ids": {
+    "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke": "4983abdb-0891-491b-acbb-22500fdb8872",
+    "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s": "6ab52ae5-23da-43fd-b132-4d85749f0ecf",
+    "DMX-CONPORT-OPTIMAL-103-retire-dead-codebases": "87b20599-2e4e-441b-8aba-50abef59a0fd",
+    "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data": "307ba6e2-b1a3-42a8-9b1c-3401ac8b9836",
+    "DMX-CONPORT-OPTIMAL-105-mcp-surface-search": "a947dc3b-b6c9-4912-b191-0f27d6736f66",
+    "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport": "72337cac-25db-4f96-be56-eea8f3e32d06",
+    "DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get": "e821bd41-0668-4d21-a8bf-8ec10d61375c",
+    "DMX-CONPORT-OPTIMAL-108-integration-test-scaffolding": "fe2b3476-2d2d-4dc3-b14d-c255a0d2e7bd",
+    "DMX-CONPORT-OPTIMAL-109-docs-reconciliation": "0771afe0-2378-49dd-ae4a-f06d64bc149b",
+    "DMX-CONPORT-OPTIMAL-201-context-model-product-context": "33f9a3bc-e595-47ea-b0ed-f3095f912a9d",
+    "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api": "902d8301-d375-4e33-a150-25a8c1897505",
+    "DMX-CONPORT-OPTIMAL-203-fix-workspace-relationships-traversal": "5647b330-f176-43ed-b89d-e4e2e79f2e58",
+    "DMX-CONPORT-OPTIMAL-204-linked-progress-on-decisions": "78c55460-a36d-43cf-9f1a-1f17a1e75b4e",
+    "DMX-CONPORT-OPTIMAL-205-search-delegation-docs": "6cdb0fbd-afbe-46f3-92af-b4b88278be14",
+    "DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search": "21fc45ff-9afd-4360-949e-940a1003d250",
+    "DMX-CONPORT-OPTIMAL-301-decision-outcome-retrospective": "4405d10f-b59a-4e3d-8baa-cf177b1cf2a8",
+    "DMX-CONPORT-OPTIMAL-302-review-reminders": "d1a525c9-4396-4b58-b482-2f00f8707438",
+    "DMX-CONPORT-OPTIMAL-303-decision-to-decision-relationships": "709f17fc-fc88-4be7-b4f7-3d62c14940b2"
+  },
+  "workspace_id": "/Users/hue/code/dopemux-mvp",
+  "generated_by": "claude-sonnet-4-6 subagent on feat/conport-optimal-series, 2026-06-14. Orchestrator MCP NOT available at generation time \u2014 root and leaf UUIDs are PENDING_LOAD. Update this file with real UUIDs after replay load.",
+  "executor_defaults": {
+    "primary": "claude-code-sonnet",
+    "auditor": "claude-code-opus",
+    "fallback_auditor": "gemini-cli"
+  },
+  "first_unblocked_wave": [
+    "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+  ],
+  "second_wave_after_101": [
+    "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s",
+    "DMX-CONPORT-OPTIMAL-103-retire-dead-codebases",
+    "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
+    "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport",
+    "DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get",
+    "DMX-CONPORT-OPTIMAL-108-integration-test-scaffolding"
+  ],
+  "operator_decision_gates": {
+    "gate_1_leaf_201": "GATE Operator Decision 1 \u2014 context model. DEFAULT applied = Option B (add product_context column + routes/tools). Alternative = Option A (convention via custom_data). Confirm before execution.",
+    "gate_2_leaf_202": "GATE Operator Decision 2 \u2014 relationship vocabulary. DEFAULT applied = upstream set {builds_upon,validates,extends,implements,depends_on,supersedes}. Alternative = current {implements,blocks,relates_to,caused_by}. Confirm before execution.",
+    "gate_root_pickup_protocol": "Execution-context / pickup protocol: each leaf is a self-contained TP at task-packets/generated/DMX-CONPORT-OPTIMAL/<id>.json. RED-LANE (contract-sensitive) packets = 102,104,105,106,107,201,202,203,301,302,303 \u2192 run risky PAL chain (analyze\u2192thinkdeep\u2192challenge\u2192planner\u2192codereview\u2192precommit) + proof bundle per AGENTS.md \u00a78. Others run minimum chain. First unblocked wave = 101, then 102/103/104/106/107/108. Decisions 3 (auth=compose-only) and 4 (session-metrics tables stay FROZEN per Memory Trinity) are defaulted; revisit before Tier 2."
+  },
+  "blocks_dag": {
+    "description": "21 BLOCKS edges. Predecessor must complete before successor. Only 101 is initially unblocked.",
+    "edges": [
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
+        "successor": "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
+        "successor": "DMX-CONPORT-OPTIMAL-103-retire-dead-codebases"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
+        "successor": "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
+        "successor": "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
+        "successor": "DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
+        "successor": "DMX-CONPORT-OPTIMAL-108-integration-test-scaffolding"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s",
+        "successor": "DMX-CONPORT-OPTIMAL-105-mcp-surface-search"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s",
+        "successor": "DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
+        "successor": "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-105-mcp-surface-search",
+        "successor": "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-105-mcp-surface-search",
+        "successor": "DMX-CONPORT-OPTIMAL-205-search-delegation-docs"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport",
+        "successor": "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get",
+        "successor": "DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-109-docs-reconciliation",
+        "successor": "DMX-CONPORT-OPTIMAL-201-context-model-product-context"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-109-docs-reconciliation",
+        "successor": "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-109-docs-reconciliation",
+        "successor": "DMX-CONPORT-OPTIMAL-204-linked-progress-on-decisions"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-109-docs-reconciliation",
+        "successor": "DMX-CONPORT-OPTIMAL-301-decision-outcome-retrospective"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-109-docs-reconciliation",
+        "successor": "DMX-CONPORT-OPTIMAL-302-review-reminders"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api",
+        "successor": "DMX-CONPORT-OPTIMAL-203-fix-workspace-relationships-traversal"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api",
+        "successor": "DMX-CONPORT-OPTIMAL-303-decision-to-decision-relationships"
+      },
+      {
+        "predecessor": "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api",
+        "successor": "DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search"
+      }
+    ],
+    "edge_count": 21
+  },
+  "nodes": [
+    {
+      "id": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
+      "tier": 1,
+      "role": "queue",
+      "status": "READY",
+      "redlane": false,
+      "orchestrator_uuid": "4983abdb-0891-491b-acbb-22500fdb8872",
+      "objective": "Bring the ConPort service up via docker compose and verify REST health endpoint and SSE wrapper reachability.",
+      "depends_on": [],
+      "blocks": [
+        "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s",
+        "DMX-CONPORT-OPTIMAL-103-retire-dead-codebases",
+        "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
+        "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport",
+        "DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get",
+        "DMX-CONPORT-OPTIMAL-108-integration-test-scaffolding"
+      ]
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s",
+      "tier": 1,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "6ab52ae5-23da-43fd-b132-4d85749f0ecf",
+      "objective": "Eliminate three certain runtime 500s in enhanced_server.py: fix ag_catalog schema reference, stringify UUID/Decimal in search_content JSON serialization, and resolve the SQLAlchemy session lifecycle mismatch.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+      ],
+      "blocks": [
+        "DMX-CONPORT-OPTIMAL-105-mcp-surface-search",
+        "DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search"
+      ]
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-103-retire-dead-codebases",
+      "tier": 1,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": false,
+      "orchestrator_uuid": "87b20599-2e4e-441b-8aba-50abef59a0fd",
+      "objective": "Consolidate to one canonical conport codebase: add deprecation docstring to src/conport/memory_server.py, add QUARANTINE.md to services/conport_kg/, and update ARCHITECTURE.md to name docker/mcp-servers-source/conport/ as canonical.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
+      "tier": 1,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "307ba6e2-b1a3-42a8-9b1c-3401ac8b9836",
+      "objective": "Expose custom_data CRUD via MCP by adding get_custom_data, save_custom_data, and delete_custom_data FastMCP tools in server.py and conport_mcp_stdio.py proxying the existing REST endpoints.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+      ],
+      "blocks": [
+        "DMX-CONPORT-OPTIMAL-109-docs-reconciliation",
+        "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport"
+      ]
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-105-mcp-surface-search",
+      "tier": 1,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "a947dc3b-b6c9-4912-b191-0f27d6736f66",
+      "objective": "Expose search_content via MCP by adding a search_content FastMCP tool in server.py and conport_mcp_stdio.py proxying GET /api/search/{ws}, and register it in the MCP tool schema.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s"
+      ],
+      "blocks": [
+        "DMX-CONPORT-OPTIMAL-109-docs-reconciliation",
+        "DMX-CONPORT-OPTIMAL-205-search-delegation-docs",
+        "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport"
+      ]
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport",
+      "tier": 1,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "72337cac-25db-4f96-be56-eea8f3e32d06",
+      "objective": "Close JSON-RPC discovery gaps by adding conport_workspace_summary to dispatch_map, adding admin tool schemas for fork_instance/promote/promote_all to the MCP manifest, and verifying SSE transport parity with REST.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
+        "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
+        "DMX-CONPORT-OPTIMAL-105-mcp-surface-search"
+      ],
+      "blocks": [
+        "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
+      ]
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get",
+      "tier": 1,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "e821bd41-0668-4d21-a8bf-8ec10d61375c",
+      "objective": "Remove the auto-fork write side-effect from GET /api/progress by gating it behind an explicit ?auto_fork=true query param, and update the DCP readonly facade to confirm the route is now safe for read-only agents.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+      ],
+      "blocks": [
+        "DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search"
+      ]
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-108-integration-test-scaffolding",
+      "tier": 1,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": false,
+      "orchestrator_uuid": "fe2b3476-2d2d-4dc3-b14d-c255a0d2e7bd",
+      "objective": "Create a real integration test suite for ConPort using pytest and testcontainers, covering context CRUD, decision log/get, progress lifecycle, search, and MCP tool dispatch via a live container.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-109-docs-reconciliation",
+      "tier": 1,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": false,
+      "orchestrator_uuid": "0771afe0-2378-49dd-ae4a-f06d64bc149b",
+      "objective": "Reconcile ConPort documentation to match the real 13-tool MCP surface, create TRINITY_BOUNDS.md, add FROZEN comments to out-of-scope schema tables, and update all references from the deprecated codebases.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
+        "DMX-CONPORT-OPTIMAL-105-mcp-surface-search",
+        "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport"
+      ],
+      "blocks": [
+        "DMX-CONPORT-OPTIMAL-201-context-model-product-context",
+        "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api",
+        "DMX-CONPORT-OPTIMAL-204-linked-progress-on-decisions",
+        "DMX-CONPORT-OPTIMAL-301-decision-outcome-retrospective",
+        "DMX-CONPORT-OPTIMAL-302-review-reminders"
+      ]
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-201-context-model-product-context",
+      "tier": 2,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "33f9a3bc-e595-47ea-b0ed-f3095f912a9d",
+      "objective": "Give ConPort an intentional product-vs-active context model by adding a product_context column to workspace_contexts via migration 008, exposing GET/PATCH /api/product-context/{ws} REST endpoints, and adding get_product_context / update_product_context MCP tools.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
+      ],
+      "blocks": [],
+      "gate_note": "GATE Operator Decision 1 \u2014 context model. DEFAULT applied = Option B (add product_context column + routes/tools). Alternative = Option A (convention via custom_data). Confirm before execution."
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api",
+      "tier": 2,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "902d8301-d375-4e33-a150-25a8c1897505",
+      "objective": "Make the ConPort knowledge graph real by implementing POST/GET/DELETE REST endpoints for entity_relationships, adding link_items and get_linked_items MCP tools, and validating the vocabulary {builds_upon,validates,extends,implements,depends_on,supersedes}.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
+      ],
+      "blocks": [
+        "DMX-CONPORT-OPTIMAL-203-fix-workspace-relationships-traversal",
+        "DMX-CONPORT-OPTIMAL-303-decision-to-decision-relationships",
+        "DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search"
+      ],
+      "gate_note": "GATE Operator Decision 2 \u2014 relationship vocabulary. DEFAULT applied = upstream set {builds_upon,validates,extends,implements,depends_on,supersedes}. Alternative = current {implements,blocks,relates_to,caused_by}. Confirm before execution."
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-203-fix-workspace-relationships-traversal",
+      "tier": 2,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "5647b330-f176-43ed-b89d-e4e2e79f2e58",
+      "objective": "Fix the workspace_relationships graph read traversal in enhanced_server.py so it queries public.entity_relationships via a UUID-safe recursive CTE, replacing the broken ag_catalog query that causes 500s.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-204-linked-progress-on-decisions",
+      "tier": 2,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": false,
+      "orchestrator_uuid": "78c55460-a36d-43cf-9f1a-1f17a1e75b4e",
+      "objective": "Enable traversal from a decision to its linked progress entries by adding GET /api/decisions/{decision_id}/progress REST endpoint and get_linked_progress MCP tool.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-205-search-delegation-docs",
+      "tier": 2,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": false,
+      "orchestrator_uuid": "6cdb0fbd-afbe-46f3-92af-b4b88278be14",
+      "objective": "Document and harden the structured-vs-semantic search boundary in ConPort: clarify the search_content endpoint's search_type parameter (decisions/progress/patterns/custom), add inline docstrings, and update MCP_ConPort.md to accurately describe the delegation model.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-105-mcp-surface-search"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search",
+      "tier": 2,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "21fc45ff-9afd-4360-949e-940a1003d250",
+      "objective": "Re-enable search_decisions and search_progress in the DCP read-only facade now that ConPort's underlying search and relationship surfaces are stable, and add a regression test confirming the facade passes through correctly.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s",
+        "DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get",
+        "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-301-decision-outcome-retrospective",
+      "tier": 3,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "4405d10f-b59a-4e3d-8baa-cf177b1cf2a8",
+      "objective": "Add PATCH /api/decisions/{decision_id}/outcome REST endpoint and update_decision_outcome MCP tool so agents can record retrospective outcomes on existing decisions.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-302-review-reminders",
+      "tier": 3,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "d1a525c9-4396-4b58-b482-2f00f8707438",
+      "objective": "Activate the review_reminders table and expose REST + MCP interfaces to create, list, and complete decision-review reminders, giving ADHD practitioners a structured way to revisit past decisions.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "DMX-CONPORT-OPTIMAL-303-decision-to-decision-relationships",
+      "tier": 3,
+      "role": "queue",
+      "status": "READY_AFTER_DEPENDENCY",
+      "redlane": true,
+      "orchestrator_uuid": "709f17fc-fc88-4be7-b4f7-3d62c14940b2",
+      "objective": "Activate the decision_relationships table and expose REST + MCP interfaces to create and list typed decision-to-decision links (builds_upon, supersedes, validates, caused_by) for knowledge-graph traversal.",
+      "depends_on": [
+        "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api"
+      ],
+      "blocks": []
+    }
+  ],
+  "verification": {
+    "status": "PASS",
+    "verified_at": "2026-06-14T17:17:31Z",
+    "leaf_count": 18,
+    "edge_count": 21,
+    "unblocked_count": 1,
+    "first_unblocked": "DMX-CONPORT-OPTIMAL-101-server-bringup-smoke",
+    "first_unblocked_uuid": "4983abdb-0891-491b-acbb-22500fdb8872",
+    "evidence": "query_items overview on root 44452f53 returned childCounts.queue=18. create_work_tree response listed all 21 BLOCKS edges. query_dependencies on tp101 confirmed 0 incoming edges (sole unblocked entry). gate notes upserted=3 failed=0."
+  },
+  "replay_instructions": "1) Ensure task-orchestrator MCP is connected (one HTTP singleton, not stdio). 2) create_work_tree with title='DMX-CONPORT-OPTIMAL' and description from nodes. 3) manage_items(operation=create) for each of the 18 nodes with role=queue. 4) manage_dependencies for all 21 edges. 5) manage_notes for gate briefs on 201, 202, and root. 6) Update this file with real orchestrator UUIDs. 7) query_items + query_dependencies to confirm 18 leaves and 21 edges."
+}

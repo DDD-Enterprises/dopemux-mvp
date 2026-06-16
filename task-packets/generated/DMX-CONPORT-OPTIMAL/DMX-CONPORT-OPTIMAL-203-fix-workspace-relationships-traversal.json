@@ -1,0 +1,116 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-203-fix-workspace-relationships-traversal",
+  "project": "dopemux-mvp",
+  "target": "Fix the workspace_relationships graph read traversal in enhanced_server.py so it queries public.entity_relationships via a UUID-safe recursive CTE, removes the int(decision_id) coercion that causes ValueError on UUID IDs, and supports traversal depth 1–3.",
+  "invariants": [
+    "This packet must not alter the entity_relationships table schema.",
+    "The recursive CTE must be UUID-safe — no integer coercion on any ID column.",
+    "Depth parameter must be clamped to 1–3; requests outside this range must be rejected, not silently clamped.",
+    "The traversal must traverse public.entity_relationships only — not any legacy relationships table.",
+    "Existing callers of workspace_relationships must continue to receive the same response shape.",
+    "Do not remove or alias unified_queries.py without updating all callers.",
+    "Classify any ambiguous legacy table reference as UNKNOWN until verified."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-203-relationships-traversal",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(conport): rewrite workspace_relationships traversal with UUID-safe recursive CTE, depth 1-3",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/unified_queries.py",
+      "docker/mcp-servers-source/conport/tests/test_relationships_traversal.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-203-fix-workspace-relationships-traversal.json",
+      "proof/conport-optimal-203/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-203-fix-workspace-relationships-traversal.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-203-fix-workspace-relationships-traversal.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_relationships_traversal.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(conport): UUID-safe recursive CTE traversal for workspace_relationships, depth 1-3",
+    "body": "Rewrites the workspace_relationships handler in enhanced_server.py (~lines 1993-2038) to traverse public.entity_relationships via a recursive CTE without int() coercion on UUID decision IDs. Removes the ValueError-causing int(decision_id) cast at approximately line 2024. Adds depth parameter (1-3) with 422 on out-of-range. Updates unified_queries.py if the CTE logic is factored there. Adds regression tests for depth-1, depth-2, depth-3 traversal and confirms no ValueError or 500 on UUID IDs.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Trace the existing workspace_relationships handler in enhanced_server.py lines ~1993-2038. Locate the int(decision_id) coercion and document the exact line number. Identify which table (public.entity_relationships vs any legacy table) is currently queried. Read unified_queries.py to determine if the query logic is already factored out. Record the current response shape so it can be preserved.",
+      "validation": [
+        "The exact line of int(decision_id) coercion is identified and recorded in proof.",
+        "The current query target table is confirmed (legacy vs entity_relationships).",
+        "The response shape (keys, types) for workspace_relationships is captured.",
+        "unified_queries.py relationship query functions are enumerated."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/unified_queries.py",
+        "docker/mcp-servers-source/conport/schema.sql"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_relationships_traversal.py: (a) depth-1 traversal returns direct neighbors with UUID IDs without ValueError, (b) depth-2 traversal returns second-hop nodes, (c) depth-3 traversal returns third-hop nodes, (d) depth=0 returns 422, (e) depth=4 returns 422, (f) traversal on a UUID source_id does not raise ValueError or return 500.",
+      "validation": [
+        "All 6 test cases exist and fail before the fix.",
+        "Tests use UUID strings (not integers) for all entity IDs."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Rewrite the workspace_relationships handler: replace the legacy query with a recursive CTE over public.entity_relationships (WITH RECURSIVE traversal(id, source_id, target_id, relationship_type, depth) AS (base UNION ALL recursive step WHERE depth < ?)); remove int() coercion; validate depth parameter (1-3, return 422 otherwise); return edges in the existing response shape. If the CTE is better placed in unified_queries.py, factor it there and call from enhanced_server.py.",
+      "validation": [
+        "No int() or integer coercion on any ID field remains in the handler.",
+        "Recursive CTE references public.entity_relationships explicitly.",
+        "Depth validation returns 422 for values outside 1-3.",
+        "Response shape keys are unchanged from the pre-fix baseline."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run all traversal tests plus the full conport test suite, validate TP JSON, commit allowlisted files, push, open PR, record proof bundle.",
+      "validation": [
+        "pytest test_relationships_traversal.py exits 0, all 6 tests pass.",
+        "No ValueError or 500 is raised for UUID IDs at any depth.",
+        "python -m jsonschema exits 0 for the TP JSON.",
+        "Only allowlisted files are staged.",
+        "Proof bundle records TP id, worktree, branch, files changed, test exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks."
+      ]
+    }
+  ]
+}

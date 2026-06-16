@@ -1,0 +1,129 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-109-docs-reconciliation",
+  "project": "dopemux-mvp",
+  "target": "Reconcile ConPort documentation to match the real 13-tool MCP surface, create TRINITY_BOUNDS.md, add FROZEN comments to out-of-scope schema tables, and update surface inventory and drift docs.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet depends on DMX-CONPORT-OPTIMAL-104, 105, and 106 — tool surface must be finalized before docs can accurately reflect it.",
+    "Do not change any Python source files — this packet touches only documentation and schema comments.",
+    "FROZEN comments must be verbatim: '-- FROZEN: belongs in dope-memory per Memory Trinity ADR'.",
+    "Docs must reference only tools that exist in the real MCP surface — do not document aspirational tools.",
+    "TRINITY_BOUNDS.md must document ConPort non-goals, not scope expansions.",
+    "Classify any tool whose status is unclear as UNKNOWN in the docs."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-104-mcp-surface-custom-data",
+    "DMX-CONPORT-OPTIMAL-105-mcp-surface-search",
+    "DMX-CONPORT-OPTIMAL-106-jsonrpc-parity-transport"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-108-integration-test-scaffolding",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-109-docs-reconciliation",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(conport): reconcile surface docs to real 13-tool MCP, add TRINITY_BOUNDS, freeze out-of-scope schema tables",
+    "allowlist": [
+      ".claude/modules/cognitive-plane/conport-memory.md",
+      "docs/systems/conport/TRINITY_BOUNDS.md",
+      "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md",
+      "docs/systems/conport/surface-equivalence-and-drift.md",
+      "docker/mcp-servers-source/conport/schema.sql",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-109-docs-reconciliation.json",
+      "proof/conport-optimal-109-docs-reconciliation/DMX-CONPORT-OPTIMAL-109-docs-reconciliation/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-109-docs-reconciliation.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-109-docs-reconciliation.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "grep -c 'FROZEN: belongs in dope-memory' docker/mcp-servers-source/conport/schema.sql",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(conport): reconcile docs to real MCP surface and freeze out-of-scope schema tables",
+    "body": "Reconciles ConPort documentation to match the actual 13-tool MCP surface finalized by TPs 104-106:\n\n1. Rewrites `.claude/modules/cognitive-plane/conport-memory.md` to document the real 13-tool surface only — removes any tools not present in tools/list after TP-106.\n2. Creates `docs/systems/conport/TRINITY_BOUNDS.md` documenting ConPort non-goals per the Memory Trinity ADR (session_snapshots, adhd_metrics, and decision_patterns belong in dope-memory, not ConPort).\n3. Updates `docker/mcp-servers-source/conport/SURFACE_INVENTORY.md` to reflect current tools and remove stale entries.\n4. Updates `docs/systems/conport/surface-equivalence-and-drift.md` to reflect current state.\n5. Adds `-- FROZEN: belongs in dope-memory per Memory Trinity ADR` comments to session_snapshots, adhd_metrics, and decision_patterns table definitions in schema.sql.\n\nDepends on DMX-CONPORT-OPTIMAL-104, 105, 106 (tool surface must be finalized).",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight worktree. Read the current conport-memory.md, SURFACE_INVENTORY.md, surface-equivalence-and-drift.md, and schema.sql. Query tools/list from live container (or read from TP-106 proof) to get the authoritative 13-tool list.",
+      "context_files": [
+        ".claude/modules/cognitive-plane/conport-memory.md",
+        "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md",
+        "docs/systems/conport/surface-equivalence-and-drift.md",
+        "docker/mcp-servers-source/conport/schema.sql",
+        "AGENTS.md"
+      ],
+      "validation": [
+        "13-tool list confirmed from tools/list or TP-106 proof and recorded in proof.",
+        "Stale tool references in conport-memory.md identified and listed.",
+        "session_snapshots, adhd_metrics, decision_patterns table definitions located in schema.sql by direct read."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Rewrite .claude/modules/cognitive-plane/conport-memory.md to enumerate only the real 13 tools with accurate parameter descriptions. Remove any tools, capabilities, or endpoints that do not exist in the current surface. Mark UNKNOWN where status is unclear.",
+      "validation": [
+        "conport-memory.md references exactly 13 tools — count confirmed by grep.",
+        "No tool name in conport-memory.md fails to appear in the tools/list proof.",
+        "UNKNOWN markers used for any capability whose status was not directly verified."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Create docs/systems/conport/TRINITY_BOUNDS.md documenting ConPort non-goals per Memory Trinity ADR: session_snapshots, adhd_metrics, and decision_patterns belong in dope-memory. Document what ConPort IS responsible for (decisions, progress, context, patterns, custom_data, search, relationships).",
+      "expected_files": [
+        "docs/systems/conport/TRINITY_BOUNDS.md"
+      ],
+      "validation": [
+        "TRINITY_BOUNDS.md exists and is non-empty.",
+        "File explicitly lists session_snapshots, adhd_metrics, decision_patterns as dope-memory scope.",
+        "File explicitly lists ConPort's in-scope capabilities."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add FROZEN comments to schema.sql: insert '-- FROZEN: belongs in dope-memory per Memory Trinity ADR' on the line immediately before each of the session_snapshots, adhd_metrics, and decision_patterns CREATE TABLE statements. Update SURFACE_INVENTORY.md and surface-equivalence-and-drift.md to remove stale tool entries.",
+      "validation": [
+        "grep -c 'FROZEN: belongs in dope-memory' schema.sql returns 3.",
+        "SURFACE_INVENTORY.md tool list matches the 13-tool proof.",
+        "surface-equivalence-and-drift.md reflects current drift status."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run verify commands. Confirm grep for FROZEN returns exactly 3. Run PAL codereview and precommit. Commit, push, open PR, file proof bundle.",
+      "commands": [
+        "grep -c 'FROZEN: belongs in dope-memory' docker/mcp-servers-source/conport/schema.sql"
+      ],
+      "validation": [
+        "grep command returns exactly 3.",
+        "All docs reference only existing tools — no aspirational tool names remain.",
+        "PR opened with proof bundle capturing pre/post diff of each doc file.",
+        "Only allowlisted files staged and committed."
+      ]
+    }
+  ]
+}
