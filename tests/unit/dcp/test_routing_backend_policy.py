@@ -135,6 +135,26 @@ def test_non_empty_unknowns_block_backend() -> None:
     _assert_no_backend(decision, "unknowns_present")
 
 
+def test_reloaded_unknown_runtime_field_blocks_backend_without_unknowns_list() -> None:
+    decision = RouteDecision.from_dict(
+        {
+            "route_id": "partial-safe-looking-route",
+            "task_source": TaskSource.OPERATOR.value,
+            "task_type": TaskType.CODE_CHANGE.value,
+            "risk_class": RiskClass.R1_LOW.value,
+            "complexity_class": ComplexityClass.LOW.value,
+            "authority_class": AuthorityClass.OPERATOR.value,
+            "red_lane_state": RedLaneState.CLEAR.value,
+            "escalation_requirement": EscalationRequirement.NONE.value,
+            "status": RouteStatus.ALLOWED.value,
+        }
+    )
+
+    assert decision.unknowns == []
+    assert decision.runtime_impact is RuntimeImpact.UNKNOWN
+    _assert_no_backend(decision, "unknowns_present")
+
+
 def test_non_empty_stop_conditions_block_backend() -> None:
     decision = _safe_decision(stop_conditions=["operator_stop"])
     _assert_no_backend(decision, "stop_conditions_present")
@@ -157,6 +177,16 @@ def test_stale_proof_stop_condition_blocks_backend() -> None:
 def test_live_write_forbidden_action_blocks_backend() -> None:
     decision = _safe_decision(forbidden_actions=["live_write_to_service"])
     _assert_no_backend(decision, "forbidden_action_present")
+
+
+def test_live_write_runtime_impact_blocks_backend_without_forbidden_action() -> None:
+    decision = _safe_decision(runtime_impact=RuntimeImpact.LIVE_WRITE)
+    _assert_no_backend(decision, "live_runtime_present")
+
+
+def test_merge_task_type_blocks_backend_without_forbidden_action() -> None:
+    decision = _safe_decision(task_type=TaskType.MERGE)
+    _assert_no_backend(decision, "live_runtime_present")
 
 
 def test_connector_forbidden_action_blocks_backend() -> None:
