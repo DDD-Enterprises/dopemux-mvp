@@ -1439,6 +1439,26 @@ def test_retrieval_derived_read_only_does_not_emit_stop_condition() -> None:
     assert "retrieval_derived_evidence_unverified" not in decision.stop_conditions
 
 
+def test_retrieval_derived_nontrivial_audit_read_only_not_blocked() -> None:
+    """Non-trivial read-only audit work is not mutating provenance scope."""
+    decision = classify_route(
+        RoutingClassificationInput(
+            task_source=TaskSource.OPERATOR,
+            task_type=TaskType.AUDIT,
+            risk_class=RiskClass.R0_READ,
+            runtime_impact=RuntimeImpact.READ_ONLY,
+            complexity_class=ComplexityClass.LOW,
+            authority_class=AuthorityClass.OPERATOR,
+            has_unknown_authority=False,
+            is_non_trivial=True,
+            evidence_is_retrieval_derived=True,
+            exact_source_fetched=False,
+        )
+    )
+    assert decision.status is RouteStatus.ALLOWED
+    assert "retrieval_derived_evidence_unverified" not in decision.stop_conditions
+
+
 def test_opencode_backend_requires_wrapper_proof() -> None:
     """OPENCODE backend without wrapper proof blocks mutation; proof clears it."""
     blocked = classify_route(_allowed_baseline(backend_kind=BackendKind.OPENCODE))

@@ -214,7 +214,7 @@ def _provenance_blocks_executable(inp: RoutingClassificationInput) -> bool:
     Read-only routes (no mutating scope) are unaffected. Each vector derives
     from an authoritative signal where possible (e.g. ``backend_kind``).
     """
-    mutating = _has_mutating_scope(inp) or inp.is_non_trivial
+    mutating = _has_mutating_scope(inp)
     if not mutating:
         return False
     # Retrieval-derived evidence is advisory until the exact source is fetched.
