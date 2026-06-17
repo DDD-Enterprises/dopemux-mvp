@@ -209,6 +209,58 @@ run and verified:
 - rerun verify and confirm ledger/checksum/schema state,
 - update live task-orchestrator packet 100 proof and status.
 
+## Continuation evidence 2026-06-17
+
+Task-orchestrator remains unavailable from this Codex session:
+
+```text
+get_context(dcf66b56-8fbf-426f-a6d6-826f0caa5822) -> Transport closed
+get_next_status(dcf66b56-8fbf-426f-a6d6-826f0caa5822) -> Transport closed
+get_blocked_items(includeDetails=true, includeAncestors=true) -> Transport closed
+```
+
+PAL also remains unavailable from this Codex session:
+
+```text
+pal/listmodels -> Transport closed
+```
+
+Live ConPort verify was attempted in read-only mode only. The host environment
+did not expose `POSTGRES_URL` or `DATABASE_URL`, so the committed gate code was
+streamed into the running `mcp-conport` container and allowed to read the
+container-local database environment without printing credentials:
+
+```text
+docker exec -i -w /app mcp-conport python - --json --migrations-dir /app/migrations < docker/mcp-servers-source/conport/conport_migration_gate.py
+```
+
+Observed container packaging state:
+
+```text
+/app/conport_migration_gate.py: missing
+/app/migrations: present
+POSTGRES_URL: SET
+DATABASE_URL: SET
+```
+
+The first verify attempt reproduced a gate bug: the live database already has
+`public.conport_schema_migrations`, but with columns `version`, `filename`,
+`checksum_sha256`, `applied_at`, `execution_seconds`, and `success`. The gate
+expected `name`, `rank`, `checksum`, `status`, and `error`, so it raised an
+uncaught `UndefinedColumnError` while reading the ledger.
+
+The gate was hardened to treat incompatible ledger shape as fail-closed
+verification failure. After the fix, the same read-only live verify command
+returned:
+
+```json
+{"error": "migration ledger validation failed", "status": "failed"}
+```
+
+Live `--apply` remains NOT_RUN. Because the live ledger exists with an
+incompatible schema, applying is not just an ordinary missing-ledger case and
+requires explicit operator approval plus a ledger compatibility decision.
+
 ## Validation
 
 PASS:
@@ -216,6 +268,7 @@ PASS:
 - `python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json >/dev/null`
 - `python3 -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`
 - `PYTHONPATH=docker/mcp-servers-source/conport python3 -m pytest docker/mcp-servers-source/conport/tests/test_migration_gate.py -q`
+  - 2026-06-17 continuation: `6 passed`
 - `python3 -m py_compile docker/mcp-servers-source/conport/conport_migration_gate.py`
 - `python3 docker/mcp-servers-source/conport/conport_migration_gate.py --help >/dev/null`
 - source evidence check confirmed Dockerfile copies gate and migrations and the
@@ -227,9 +280,15 @@ FAIL:
 - `python3 docker/mcp-servers-source/conport/conport_migration_gate.py --json`
   returned exit code 1 with `{"error": "POSTGRES_URL or DATABASE_URL is required", "status": "failed"}`.
   This is expected fail-closed behavior when no DB URL is supplied.
+- Live verify-only execution against running `mcp-conport` returned exit code 1
+  with `{"error": "migration ledger validation failed", "status": "failed"}`.
+  This is expected fail-closed behavior for the observed incompatible live
+  ledger schema.
 
 NOT_RUN:
 
 - Live DB `--apply`: requires explicit operator approval for schema mutation.
 - Live task-orchestrator packet completion/update: task-orchestrator transport
   was unavailable during this pass.
+- Continuation PAL codereview/precommit: PAL transport was unavailable during
+  this pass.

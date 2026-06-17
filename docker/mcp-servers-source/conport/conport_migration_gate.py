@@ -166,10 +166,19 @@ async def fetch_ledger(conn) -> dict[str, dict]:
 
 
 async def validate_ledger(conn, migrations: Iterable[MigrationFile]) -> list[str]:
-    if not await ledger_exists(conn):
+    try:
+        exists = await ledger_exists(conn)
+    except Exception as exc:
+        raise MigrationGateError("migration ledger validation failed") from exc
+
+    if not exists:
         return [f"migration ledger missing: {LEDGER_TABLE}"]
 
-    rows = await fetch_ledger(conn)
+    try:
+        rows = await fetch_ledger(conn)
+    except Exception as exc:
+        raise MigrationGateError("migration ledger validation failed") from exc
+
     errors: list[str] = []
     for migration in migrations:
         row = rows.get(migration.name)
