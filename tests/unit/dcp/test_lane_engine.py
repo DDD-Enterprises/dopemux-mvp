@@ -918,3 +918,92 @@ def test_lane_engine_does_not_mutate_inputs() -> None:
     # inp not mutated
     assert inp.evidence_refs == original_refs
     assert inp.is_non_trivial == original_non_trivial
+
+
+# ─────────────────────────────────────────────
+# Post-merge hardening — PR #906 unresolved review threads
+# ─────────────────────────────────────────────
+
+
+def test_restored_decision_with_unknowns_marker_not_executable() -> None:
+    """Restored ALLOWED decision carrying unknowns=[...] must fail closed.
+
+    Regression for PR #906 thread lane_engine.py:128 — a restored decision can have
+    every enum field known plus a non-empty ``unknowns`` list, yet ``is_runnable()``
+    returns True. The lane engine must still refuse execution and strip mutating actions.
+    """
+    inp = _safe_code_change_input()
+    restored = RouteDecision.from_dict(
+        {
+            "status": "ALLOWED",
+            "red_lane_state": "CLEAR",
+            "authority_class": "OPERATOR",
+            "task_source": "OPERATOR",
+            "task_type": "CODE_CHANGE",
+            "risk_class": "R1_LOW",
+            "complexity_class": "LOW",
+            "runtime_impact": "LOCAL_ONLY",
+            "audit_requirement": "SELF_CHECK",
+            "escalation_requirement": "NONE",
+            "unknowns": ["authority_class"],
+            "allowed_actions": ["edit_allowlisted_files", "open_pr"],
+        }
+    )
+    assert restored.is_runnable()
+    assert restored.unknowns  # non-empty unknown markers survived the round-trip
+
+    lane_decision = decide_lane(restored, inp)
+
+    assert lane_decision.is_executable is False
+    assert "edit_allowlisted_files" not in lane_decision.allowed_actions
+    assert "open_pr" not in lane_decision.allowed_actions
+
+
+def test_passive_lane_strips_hard_forbidden_execute_and_write_actions() -> None:
+    """Passive executable lanes must strip hard-forbidden write/execute tokens.
+
+    Regression for PR #906 thread lane_engine.py:70 — a restored READ_ONLY decision
+    routed to the passive READ_ONLY_EVIDENCE lane while executable must not surface
+    classifier ``_ALWAYS_FORBIDDEN`` tokens such as ``execute_runner`` /
+    ``write_github_state``; only read-only/proof-safe actions may remain.
+    """
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.READ_ONLY,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        risk_class=RiskClass.R0_READ,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
+    )
+    restored = RouteDecision.from_dict(
+        {
+            "status": "ALLOWED",
+            "red_lane_state": "CLEAR",
+            "authority_class": "OPERATOR",
+            "task_source": "OPERATOR",
+            "task_type": "READ_ONLY",
+            "risk_class": "R0_READ",
+            "complexity_class": "LOW",
+            "runtime_impact": "READ_ONLY",
+            "audit_requirement": "SELF_CHECK",
+            "escalation_requirement": "NONE",
+            "allowed_actions": [
+                "execute_runner",
+                "write_github_state",
+                "inspect_runtime_code",
+            ],
+        }
+    )
+    assert restored.is_runnable()
+
+    lane_decision = decide_lane(restored, inp)
+
+    # The lane must be the passive evidence lane AND executable — otherwise this
+    # regression would be vacuously satisfied by the non-executable narrowing branch.
+    assert lane_decision.lane is LaneKind.READ_ONLY_EVIDENCE
+    assert lane_decision.is_executable is True
+    assert "execute_runner" not in lane_decision.allowed_actions
+    assert "write_github_state" not in lane_decision.allowed_actions
+    # Read-only/proof-safe action survives.
+    assert "inspect_runtime_code" in lane_decision.allowed_actions

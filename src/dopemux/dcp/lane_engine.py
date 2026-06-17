@@ -116,9 +116,16 @@ def _has_mutating_scope(inp: RoutingClassificationInput) -> bool:
 
 
 def _has_unknown_decision_contract(decision: RouteDecision) -> bool:
-    """Fail closed on restored/incomplete decisions with UNKNOWN contract fields."""
+    """Fail closed on restored/incomplete decisions with UNKNOWN contract fields.
+
+    Also fails closed when the decision carries any explicit ``unknowns`` markers:
+    a restored decision can have every enum field known yet still record unresolved
+    ``unknowns`` (e.g. forged ``status=ALLOWED`` with ``unknowns=[...]``), which the
+    sibling backend policy treats as ``unknowns_present`` and blocks.
+    """
     return (
-        decision.task_source is TaskSource.UNKNOWN
+        bool(decision.unknowns)
+        or decision.task_source is TaskSource.UNKNOWN
         or decision.task_type is TaskType.UNKNOWN
         or decision.risk_class is RiskClass.UNKNOWN
         or decision.complexity_class is ComplexityClass.UNKNOWN
@@ -170,6 +177,18 @@ def _narrow_allowed_actions_for_non_runnable(
     return _strip_mutating_actions(
         tuple(a for a in actions if a in _READ_ONLY_PROOF_SAFE_ACTIONS)
     )
+
+
+def _read_only_safe_actions(actions: tuple[str, ...]) -> tuple[str, ...]:
+    """Allowlist-filter passive-lane actions to read-only / proof-safe tokens.
+
+    Passive lanes (evidence, audit, PR-readiness) must never expose write/execute
+    tokens. A blocklist of mutating actions is not enough: a restored/forged decision
+    may carry hard-forbidden classifier tokens (e.g. ``execute_runner``,
+    ``write_github_state``) that are not in ``_MUTATING_ACTIONS``. Filtering to an
+    explicit read-only allowlist fails closed against those.
+    """
+    return tuple(a for a in actions if a in _READ_ONLY_PROOF_SAFE_ACTIONS)
 
 
 # ─────────────────────────────────────────────
@@ -349,7 +368,7 @@ def decide_lane(
             tuple(decision.allowed_actions)
         )
     elif lane in _PASSIVE_LANES:
-        allowed_actions = _strip_mutating_actions(tuple(decision.allowed_actions))
+        allowed_actions = _read_only_safe_actions(tuple(decision.allowed_actions))
     else:
         allowed_actions = tuple(decision.allowed_actions)
 
