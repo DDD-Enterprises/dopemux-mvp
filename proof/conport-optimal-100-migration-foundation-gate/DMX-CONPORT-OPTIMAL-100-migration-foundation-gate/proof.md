@@ -21,6 +21,8 @@ Scope: migration packaging, explicit migration gate runtime, idempotent migratio
 ## Changes
 
 - Added explicit ConPort migration gate: `docker/mcp-servers-source/conport/migrations/conport_migration_gate.py`.
+- Added base-schema preflight before ledger mutation so fresh databases fail closed without poisoned failed ledger rows.
+- Added adoption of already-applied legacy migrations into the ledger when schema evidence or legacy migration markers indicate prior application; final verification still requires expected schema objects and views.
 - Packaged migrations into the ConPort image via `Dockerfile`.
 - Removed hidden startup DDL from `enhanced_server.py`; startup now logs the explicit gate path.
 - Hardened migration SQL for replay/idempotency:
@@ -35,7 +37,7 @@ Scope: migration packaging, explicit migration gate runtime, idempotent migratio
 PASS:
 
 - `python3 -m pytest -q proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py`
-  - Result: `10 passed`
+  - Result: `13 passed`
 - `python3 -m py_compile docker/mcp-servers-source/conport/enhanced_server.py docker/mcp-servers-source/conport/migrations/conport_migration_gate.py`
   - Result: exit 0
 - `python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json`
@@ -50,14 +52,18 @@ PASS:
   - Result: exit 2 with fail-closed JSON: `refusing to mutate database without DPMX_CONPORT_MIGRATION_APPLY=1`
 - `docker compose build conport`
   - Result: exit 0; build log included `COPY docker/mcp-servers-source/conport/migrations /app/migrations`
+  - Re-run after review fix: exit 0
 - `docker compose up -d conport`
   - Result: exit 0; `mcp-conport` recreated and started
+  - Re-run after review fix: exit 0; `mcp-conport` recreated and started
 - `curl -sS -o /tmp/conport_health.out -w '%{http_code}' http://localhost:3004/health`
   - Result: `200`
-- `docker exec mcp-conport python /app/migrations/conport_migration_gate.py verify --database-url postgresql://dopemux_age:...@dopemux-postgres-age:5432/dopemux_knowledge_graph`
+- `docker exec mcp-conport sh -lc 'python /app/migrations/conport_migration_gate.py verify --database-url "$DATABASE_URL"'`
   - Result: pass; verified migrations `001`, `002`, `003`, `004`, and `007`
 - `pre-commit run --files <changed packet files>`
   - Result: exit 0; applicable hooks passed, unrelated file-pattern hooks skipped
+- PR CI after review fix:
+  - Result before review fix: all checks passed on head `19c1db99e752c1a58570d787db1ce6f435fde115`; GitHub still blocked merge because unresolved review conversations remained.
 
 Local-dev apply evidence:
 

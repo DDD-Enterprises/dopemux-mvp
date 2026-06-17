@@ -34,6 +34,16 @@ REQUIRED_MIGRATIONS = {
     "007_worktree_support_simple.sql",
 }
 
+BASE_SCHEMA_TABLES = (
+    "workspace_contexts",
+    "decisions",
+    "progress_entries",
+    "session_snapshots",
+    "custom_data",
+    "entity_relationships",
+    "search_cache",
+)
+BASE_SCHEMA_FUNCTIONS = ("update_modified_column",)
 REQUIRED_TABLES = (
     "workspace_contexts",
     "decisions",
@@ -70,6 +80,14 @@ REQUIRED_INDEXES = (
     "idx_progress_instance",
     "idx_progress_workspace_instance",
 )
+REQUIRED_VIEWS = (
+    "decisions_needing_review",
+    "pattern_statistics",
+)
+MIGRATION_MARKERS = {
+    1: "001_enhanced_decision_model",
+    2: "002_decision_patterns_table",
+}
 
 
 class GateError(RuntimeError):
@@ -285,43 +303,207 @@ def _exists_query(conn, query: str, args: tuple[Any, ...]) -> bool:
         return bool(cur.fetchone()[0])
 
 
+def table_exists(conn, schema: str, table: str) -> bool:
+    return _exists_query(
+        conn,
+        "SELECT to_regclass(%s) IS NOT NULL",
+        (f"{schema}.{table}",),
+    )
+
+
+def column_exists(conn, schema: str, table: str, column: str) -> bool:
+    return _exists_query(
+        conn,
+        """
+        SELECT EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = %s
+              AND table_name = %s
+              AND column_name = %s
+        )
+        """,
+        (schema, table, column),
+    )
+
+
+def index_exists(conn, schema: str, index: str) -> bool:
+    return _exists_query(
+        conn,
+        """
+        SELECT EXISTS (
+            SELECT 1
+            FROM pg_indexes
+            WHERE schemaname = %s
+              AND indexname = %s
+        )
+        """,
+        (schema, index),
+    )
+
+
+def view_exists(conn, schema: str, view: str) -> bool:
+    return _exists_query(
+        conn,
+        """
+        SELECT EXISTS (
+            SELECT 1
+            FROM information_schema.views
+            WHERE table_schema = %s
+              AND table_name = %s
+        )
+        """,
+        (schema, view),
+    )
+
+
+def function_exists(conn, schema: str, function: str) -> bool:
+    return _exists_query(
+        conn,
+        """
+        SELECT EXISTS (
+            SELECT 1
+            FROM pg_proc p
+            JOIN pg_namespace n ON n.oid = p.pronamespace
+            WHERE n.nspname = %s
+              AND p.proname = %s
+        )
+        """,
+        (schema, function),
+    )
+
+
+def migration_marker_exists(conn, schema: str, marker: str) -> bool:
+    if not table_exists(conn, schema, "custom_data"):
+        return False
+    return _exists_query(
+        conn,
+        f"""
+        SELECT EXISTS (
+            SELECT 1
+            FROM {schema}.custom_data
+            WHERE workspace_id = '_system'
+              AND category = 'migrations'
+              AND key = %s
+        )
+        """,
+        (marker,),
+    )
+
+
+def preflight_base_schema(conn, schema: str) -> list[str]:
+    errors: list[str] = []
+    for table in BASE_SCHEMA_TABLES:
+        if not table_exists(conn, schema, table):
+            errors.append(
+                f"missing base table {schema}.{table}; run schema.sql before gated migrations"
+            )
+    for function in BASE_SCHEMA_FUNCTIONS:
+        if not function_exists(conn, schema, function):
+            errors.append(
+                f"missing base function {schema}.{function}; "
+                "run schema.sql before gated migrations"
+            )
+    return errors
+
+
+def migration_schema_errors(conn, schema: str, version: int) -> list[str]:
+    checks: dict[int, tuple[str, ...]] = {
+        1: (
+            "column:decisions:impact_score",
+            "column:decisions:outcome_status",
+            "table:decision_relationships",
+            "table:adhd_metrics",
+            "table:review_reminders",
+            "view:decisions_needing_review",
+        ),
+        2: ("table:decision_patterns", "view:pattern_statistics"),
+        3: (
+            "column:decisions:user_id",
+            "column:progress_entries:user_id",
+            "column:workspace_contexts:user_id",
+            "column:session_snapshots:user_id",
+            "column:custom_data:user_id",
+            "table:users",
+            "table:workspaces",
+            "table:user_workspace_access",
+        ),
+        4: (
+            "index:idx_decisions_user_fts",
+            "index:idx_decisions_user_workspace_recent",
+            "index:idx_decisions_user_workspace",
+            "index:idx_progress_user_workspace_status",
+            "index:idx_progress_user_recent",
+            "index:idx_custom_data_user_category",
+        ),
+        7: (
+            "column:progress_entries:instance_id",
+            "column:decisions:created_by_instance",
+            "column:workspace_contexts:instance_id",
+            "index:idx_progress_instance",
+            "index:idx_progress_workspace_instance",
+        ),
+    }
+    errors: list[str] = []
+    for check in checks.get(version, ()):
+        kind, *parts = check.split(":")
+        if kind == "table" and not table_exists(conn, schema, parts[0]):
+            errors.append(f"missing table {schema}.{parts[0]}")
+        elif kind == "column" and not column_exists(conn, schema, parts[0], parts[1]):
+            errors.append(f"missing column {schema}.{parts[0]}.{parts[1]}")
+        elif kind == "index" and not index_exists(conn, schema, parts[0]):
+            errors.append(f"missing index {schema}.{parts[0]}")
+        elif kind == "view" and not view_exists(conn, schema, parts[0]):
+            errors.append(f"missing view {schema}.{parts[0]}")
+    return errors
+
+
+def migration_already_applied(conn, schema: str, migration: Migration) -> bool:
+    marker = MIGRATION_MARKERS.get(migration.version)
+    marker_exists = bool(marker and migration_marker_exists(conn, schema, marker))
+    schema_errors = migration_schema_errors(conn, schema, migration.version)
+    return not schema_errors or marker_exists
+
+
+def adopt_existing_migrations(
+    conn,
+    schema: str,
+    migrations: Sequence[Migration],
+    rows: dict[int, dict[str, Any]],
+) -> list[str]:
+    adopted: list[str] = []
+    for migration in migrations:
+        if migration.version in rows:
+            continue
+        if migration_already_applied(conn, schema, migration):
+            record_migration(conn, schema, migration, 0, True)
+            rows[migration.version] = {
+                "filename": migration.filename,
+                "checksum_sha256": migration.checksum,
+                "success": True,
+            }
+            adopted.append(migration.filename)
+    return adopted
+
+
 def verify_schema_objects(conn, schema: str) -> list[str]:
     errors: list[str] = []
 
     for table in REQUIRED_TABLES:
-        if not _exists_query(conn, "SELECT to_regclass(%s) IS NOT NULL", (f"{schema}.{table}",)):
+        if not table_exists(conn, schema, table):
             errors.append(f"missing table {schema}.{table}")
 
     for table, column in REQUIRED_COLUMNS:
-        if not _exists_query(
-            conn,
-            """
-            SELECT EXISTS (
-                SELECT 1
-                FROM information_schema.columns
-                WHERE table_schema = %s
-                  AND table_name = %s
-                  AND column_name = %s
-            )
-            """,
-            (schema, table, column),
-        ):
+        if not column_exists(conn, schema, table, column):
             errors.append(f"missing column {schema}.{table}.{column}")
 
     for index in REQUIRED_INDEXES:
-        if not _exists_query(
-            conn,
-            """
-            SELECT EXISTS (
-                SELECT 1
-                FROM pg_indexes
-                WHERE schemaname = %s
-                  AND indexname = %s
-            )
-            """,
-            (schema, index),
-        ):
+        if not index_exists(conn, schema, index):
             errors.append(f"missing index {schema}.{index}")
+
+    for view in REQUIRED_VIEWS:
+        if not view_exists(conn, schema, view):
+            errors.append(f"missing view {schema}.{view}")
 
     return errors
 
@@ -331,10 +513,15 @@ def apply_migrations(database_url: str, migrations: Sequence[Migration], schema:
         raise GateError(f"refusing to mutate database without {APPLY_ENV}=1")
 
     applied: list[str] = []
+    adopted: list[str] = []
     skipped: list[str] = []
     with connect(database_url) as conn:
+        base_errors = preflight_base_schema(conn, schema)
+        if base_errors:
+            raise GateError("; ".join(base_errors))
         ensure_ledger(conn, schema)
         ledger = load_ledger(conn, schema)
+        adopted = adopt_existing_migrations(conn, schema, migrations, ledger)
         for migration in migrations:
             row = ledger.get(migration.version)
             if row:
@@ -358,7 +545,7 @@ def apply_migrations(database_url: str, migrations: Sequence[Migration], schema:
         if ledger_errors or schema_errors:
             raise GateError("; ".join(ledger_errors + schema_errors))
 
-    return {"applied": applied, "skipped": skipped}
+    return {"adopted": adopted, "applied": applied, "skipped": skipped}
 
 
 def verify_migrations(database_url: str, migrations: Sequence[Migration], schema: str) -> dict[str, Any]:

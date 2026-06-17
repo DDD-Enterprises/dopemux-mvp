@@ -102,6 +102,98 @@ def test_ledger_validation_detects_checksum_mismatch(tmp_path):
     assert "checksum mismatch for 004_unified_query_indexes.sql" in errors
 
 
+def test_apply_preflights_base_schema_before_ledger_mutation(tmp_path, monkeypatch):
+    _write_required_migrations(tmp_path)
+    monkeypatch.setenv(gate.APPLY_ENV, "1")
+
+    class FakeConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+    def fail_if_called(*_args, **_kwargs):
+        raise AssertionError("ledger must not be touched before base schema preflight")
+
+    monkeypatch.setattr(gate, "connect", lambda _database_url: FakeConnection())
+    monkeypatch.setattr(
+        gate,
+        "preflight_base_schema",
+        lambda _conn, _schema: [
+            "missing base table public.decisions; run schema.sql before gated migrations"
+        ],
+    )
+    monkeypatch.setattr(gate, "ensure_ledger", fail_if_called)
+
+    code = gate.main(
+        [
+            "apply",
+            "--database-url",
+            "postgresql://user:pass@localhost/db",
+            "--migrations-dir",
+            str(tmp_path),
+        ]
+    )
+
+    assert code == 2
+
+
+def test_adopt_existing_migrations_records_verified_schema_without_replay(monkeypatch):
+    migration = gate.Migration(
+        version=1,
+        filename="001_enhanced_decision_model.sql",
+        path=Path("001_enhanced_decision_model.sql"),
+        checksum="abc",
+    )
+    recorded = []
+
+    monkeypatch.setattr(gate, "migration_already_applied", lambda *_args: True)
+    monkeypatch.setattr(
+        gate,
+        "record_migration",
+        lambda _conn, _schema, item, _seconds, success: recorded.append(
+            (item.filename, success)
+        ),
+    )
+
+    rows = {}
+    adopted = gate.adopt_existing_migrations(object(), "public", [migration], rows)
+
+    assert adopted == ["001_enhanced_decision_model.sql"]
+    assert recorded == [("001_enhanced_decision_model.sql", True)]
+    assert rows[1]["checksum_sha256"] == "abc"
+
+
+def test_marker_based_adoption_still_requires_final_view_verification(monkeypatch):
+    migration = gate.Migration(
+        version=2,
+        filename="002_decision_patterns_table.sql",
+        path=Path("002_decision_patterns_table.sql"),
+        checksum="def",
+    )
+
+    monkeypatch.setattr(
+        gate,
+        "migration_schema_errors",
+        lambda *_args: ["missing view public.pattern_statistics"],
+    )
+    monkeypatch.setattr(gate, "migration_marker_exists", lambda *_args: True)
+    monkeypatch.setattr(gate, "table_exists", lambda *_args: True)
+    monkeypatch.setattr(gate, "column_exists", lambda *_args: True)
+    monkeypatch.setattr(gate, "index_exists", lambda *_args: True)
+    monkeypatch.setattr(
+        gate,
+        "view_exists",
+        lambda _conn, _schema, view: view != "pattern_statistics",
+    )
+
+    assert gate.migration_already_applied(object(), "public", migration)
+    assert "missing view public.pattern_statistics" in gate.verify_schema_objects(
+        object(), "public"
+    )
+
+
 def test_psql_invocation_keeps_password_out_of_process_args(tmp_path):
     migration = gate.Migration(
         version=1,
