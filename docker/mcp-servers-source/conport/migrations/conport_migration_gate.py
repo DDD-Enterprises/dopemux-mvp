@@ -18,7 +18,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
-from urllib.parse import unquote, urlparse, urlsplit, urlunsplit
+from urllib.parse import unquote, unquote_plus, urlparse, urlsplit
 
 
 APPLY_ENV = "DPMX_CONPORT_MIGRATION_APPLY"
@@ -282,9 +282,26 @@ def build_psql_invocation(database_url: str, migration: Migration) -> tuple[list
         userinfo, hostinfo = safe_netloc.rsplit("@", 1)
         username = userinfo.split(":", 1)[0]
         safe_netloc = f"{username}@{hostinfo}" if username else hostinfo
-    safe_url = urlunsplit(
-        (split_url.scheme, safe_netloc, split_url.path, split_url.query, split_url.fragment)
-    )
+
+    safe_query_parts = []
+    for part in split_url.query.split("&"):
+        if not part:
+            continue
+        key, _, value = part.partition("=")
+        if unquote_plus(key).lower() == "password":
+            env["PGPASSWORD"] = unquote_plus(value)
+            continue
+        safe_query_parts.append(part)
+    safe_query = "&".join(safe_query_parts)
+
+    safe_url = f"{split_url.scheme}://"
+    if safe_netloc:
+        safe_url += safe_netloc
+    safe_url += split_url.path
+    if safe_query:
+        safe_url += f"?{safe_query}"
+    if split_url.fragment:
+        safe_url += f"#{split_url.fragment}"
 
     args = ["psql", "-v", "ON_ERROR_STOP=1", "-d", safe_url, "-f", str(migration.path)]
     return args, env
@@ -454,8 +471,11 @@ def migration_schema_errors(conn, schema: str, version: int) -> list[str]:
             "index:idx_progress_workspace_instance",
         ),
     }
+    if version not in checks:
+        return [f"missing schema adoption checks for migration version {version:03d}"]
+
     errors: list[str] = []
-    for check in checks.get(version, ()):
+    for check in checks[version]:
         kind, *parts = check.split(":")
         if kind == "table" and not table_exists(conn, schema, parts[0]):
             errors.append(f"missing table {schema}.{parts[0]}")

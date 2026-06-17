@@ -261,6 +261,59 @@ def test_psql_invocation_preserves_libpq_uri_options(tmp_path):
     )
 
 
+def test_psql_invocation_preserves_empty_host_libpq_uri(tmp_path):
+    migration = gate.Migration(
+        version=1,
+        filename="001_enhanced_decision_model.sql",
+        path=tmp_path / "001_enhanced_decision_model.sql",
+        checksum="abc",
+    )
+
+    args, _env = gate.build_psql_invocation(
+        "postgresql:///conport?host=/var/run/postgresql&connect_timeout=5",
+        migration,
+    )
+
+    database_arg = args[args.index("-d") + 1]
+    assert database_arg == (
+        "postgresql:///conport?host=/var/run/postgresql&connect_timeout=5"
+    )
+
+
+def test_psql_invocation_keeps_query_password_out_of_process_args(tmp_path):
+    migration = gate.Migration(
+        version=1,
+        filename="001_enhanced_decision_model.sql",
+        path=tmp_path / "001_enhanced_decision_model.sql",
+        checksum="abc",
+    )
+
+    args, env = gate.build_psql_invocation(
+        "postgresql:///conport?user=conport&password=secret%20value&sslmode=require",
+        migration,
+    )
+
+    command = " ".join(args)
+    assert "secret" not in command
+    assert "password=" not in command
+    assert env["PGPASSWORD"] == "secret value"
+    database_arg = args[args.index("-d") + 1]
+    assert database_arg == "postgresql:///conport?user=conport&sslmode=require"
+
+
+def test_unknown_migration_version_is_not_adopted_without_schema_checks(monkeypatch):
+    migration = gate.Migration(
+        version=99,
+        filename="099_future_migration.sql",
+        path=Path("099_future_migration.sql"),
+        checksum="future",
+    )
+
+    monkeypatch.setattr(gate, "migration_marker_exists", lambda *_args: True)
+
+    assert not gate.migration_already_applied(object(), "public", migration)
+
+
 def test_asyncpg_url_is_normalized_for_psycopg2_and_psql():
     assert (
         gate.normalize_database_url("postgresql+asyncpg://user:pass@db:5432/name")
