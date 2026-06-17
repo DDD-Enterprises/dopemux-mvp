@@ -34,15 +34,19 @@
     "message": "feat(conport): add migration foundation gate",
     "allowlist": [
       "docker/mcp-servers-source/conport/Dockerfile",
+      "docker/mcp-servers-source/conport/conport_migration_gate.py",
       "docker/mcp-servers-source/conport/enhanced_server.py",
       "docker/mcp-servers-source/conport/schema.sql",
       "docker/mcp-servers-source/conport/migrations/**",
+      "docker/mcp-servers-source/conport/tests/test_migration_gate.py",
       "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json",
       "proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/**"
     ],
     "verify": [
       "python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json >/dev/null",
       "python3 -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "PYTHONPATH=docker/mcp-servers-source/conport python3 -m pytest docker/mcp-servers-source/conport/tests/test_migration_gate.py -q",
+      "python3 docker/mcp-servers-source/conport/conport_migration_gate.py --help >/dev/null",
       "python3 - <<'PY'\nfrom pathlib import Path\nrequired = [Path('docker/mcp-servers-source/conport/Dockerfile'), Path('docker/mcp-servers-source/conport/schema.sql'), Path('docker/mcp-servers-source/conport/migrations/001_enhanced_decision_model.sql'), Path('docker/mcp-servers-source/conport/migrations/003_multi_tenancy_foundation.sql')]\nmissing = [str(p) for p in required if not p.exists()]\nprint({'missing': missing})\nraise SystemExit(1 if missing else 0)\nPY",
       "git diff --check"
     ]
