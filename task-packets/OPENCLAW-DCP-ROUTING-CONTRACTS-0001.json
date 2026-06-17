@@ -1,0 +1,113 @@
+{
+  "id": "OPENCLAW-DCP-ROUTING-CONTRACTS-0001",
+  "project": "dopemux-mvp",
+  "target": "OpenClaw DCP routing contract artifacts and validation tests",
+  "invariants": [
+    "Contracts are static proposed artifacts only.",
+    "No production routing behavior is wired.",
+    "No provider API calls are made.",
+    "OpenRouter free routes remain sandbox-only.",
+    "Release READY remains fail-closed when proof, checks, audit, threads, allowlist, or approval gates are unsafe."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "OPENCLAW-DCP-ROUTING-CONTRACTS",
+    "base_branch": "HEAD",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/openclaw-dcp-routing-contracts-0001",
+    "base_branch": "HEAD",
+    "stacked_because": "Existing Codex worktree was provided detached at the requested repo root."
+  },
+  "commit": {
+    "message": "feat(dcp): add OpenClaw routing contract validation",
+    "allowlist": [
+      "task-packets/OPENCLAW-DCP-ROUTING-CONTRACTS-0001.json",
+      "docs/03-reference/dcp/openclaw-routing/**",
+      "tests/dcp/test_openclaw_dcp_routing_contracts.py"
+    ],
+    "verify": [
+      "python -m pytest tests/dcp/test_openclaw_dcp_routing_contracts.py -q",
+      "python -m json.tool task-packets/OPENCLAW-DCP-ROUTING-CONTRACTS-0001.json >/dev/null",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "Add OpenClaw DCP routing contract validation",
+    "body": "Contracts-only Turn 5 slice. Adds static proposed OpenClaw DCP routing artifacts and validation tests. Does not wire production routing, provider calls, OpenClaw runtime behavior, benchmark execution, or credential handling.",
+    "base": "HEAD"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Add static OpenClaw DCP routing policy and contract artifacts under docs/03-reference/dcp/openclaw-routing.",
+      "requirements": [
+        "Use uploaded Turn 4 artifact content.",
+        "Preserve generated filenames from the artifact inventory.",
+        "Do not create runtime router code."
+      ],
+      "commands": [
+        "python -m pytest tests/dcp/test_openclaw_dcp_routing_contracts.py -q"
+      ],
+      "expected_files": [
+        "docs/03-reference/dcp/openclaw-routing/readme.md",
+        "docs/03-reference/dcp/openclaw-routing/openclaw_dcp_routing_policy.yaml",
+        "docs/03-reference/dcp/openclaw-routing/route_decision.schema.json",
+        "docs/03-reference/dcp/openclaw-routing/example_route_decisions/UNKNOWN.json"
+      ],
+      "validation": [
+        "Every JSON artifact parses.",
+        "Every YAML artifact parses.",
+        "Every JSON Schema checks as a schema.",
+        "Example route decisions validate against route_decision.schema.json."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "/Users/hue/.codex/attachments/ef05c516-fc01-4508-80b5-b880f31c17fe/pasted-text.txt"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add focused validation tests for fail-closed route and release-readiness constraints.",
+      "requirements": [
+        "UNKNOWN privacy or risk blocks or escalates.",
+        "OpenRouter free is forbidden for private, security, release, and schema-authority lanes.",
+        "Release READY is impossible with stale proof, failed checks, missing audit, unresolved blocking threads, escaped diff, or missing required approval."
+      ],
+      "commands": [
+        "python -m pytest tests/dcp/test_openclaw_dcp_routing_contracts.py -q",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "tests/dcp/test_openclaw_dcp_routing_contracts.py"
+      ],
+      "validation": [
+        "Focused pytest suite passes.",
+        "Diff whitespace check passes.",
+        "No files outside allowlist are changed."
+      ],
+      "context_files": [
+        "docs/03-reference/dcp/openclaw-routing/forbidden_routes.yaml",
+        "docs/03-reference/dcp/openclaw-routing/pr_steward_merge_readiness.schema.json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "route_decision_id": "rd_example_R1_DRAFT",
+  "task_id": "example-draft-plan",
+  "role": "planning",
+  "privacy_class": "PUBLIC_REPO",
+  "risk_class": "R1_DRAFT",
+  "selected_pool": "planner_default",
+  "selected_route": {
+    "route_name": "public-draft-planning",
+    "route_profile": "direct_api_standard",
+    "selection_reason": "Draft planning can use mid-tier direct API with standard proof.",
+    "fallback_allowed": true
+  },
+  "provider": "anthropic",
+  "requested_model": "anthropic/claude-sonnet-4.6",
+  "actual_model": "anthropic/claude-sonnet-4.6",
+  "runner": "direct_api",
+  "access_path": "direct_api",
+  "consumer_plan_used": false,
+  "api_route_used": true,
+  "openrouter_profile": null,
+  "structured_output_mode": "none",
+  "proof_requirement": "standard",
+  "audit_requirement": "light",
+  "human_gate_required": false,
+  "human_approval_ref": null,
+  "benchmark_certification_ref": "cert_planner_default_public_001",
+  "decision_status": "SELECTED",
+  "blocked_reasons": [],
+  "evidence_refs": ["model_pool:planner_default"],
+  "created_at": "2026-06-17T12:01:00Z"
+}

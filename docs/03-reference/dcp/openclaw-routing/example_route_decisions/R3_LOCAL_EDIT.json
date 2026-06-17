@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "route_decision_id": "rd_example_R3_LOCAL_EDIT",
+  "task_id": "example-local-patch",
+  "role": "narrow_patch_generation",
+  "privacy_class": "PRIVATE_REPO_NO_SECRETS",
+  "risk_class": "R3_LOCAL_EDIT",
+  "selected_pool": "implementer_default",
+  "selected_route": {
+    "route_name": "private-narrow-patch-direct",
+    "route_profile": "direct_api_standard",
+    "selection_reason": "Private repo edit requires direct route, git proof, and independent review.",
+    "fallback_allowed": false
+  },
+  "provider": "anthropic",
+  "requested_model": "anthropic/claude-sonnet-4.6",
+  "actual_model": "anthropic/claude-sonnet-4.6",
+  "runner": "claude_code",
+  "access_path": "claude_code",
+  "consumer_plan_used": false,
+  "api_route_used": true,
+  "openrouter_profile": null,
+  "structured_output_mode": "none",
+  "proof_requirement": "implementation",
+  "audit_requirement": "independent",
+  "human_gate_required": true,
+  "human_approval_ref": "approval_scope_private_edit_001",
+  "benchmark_certification_ref": "cert_implementer_default_private_001",
+  "decision_status": "SELECTED",
+  "blocked_reasons": [],
+  "evidence_refs": ["privacy_policy:PRIVATE_REPO_NO_SECRETS", "risk_policy:R3_LOCAL_EDIT"],
+  "created_at": "2026-06-17T12:03:00Z"
+}
