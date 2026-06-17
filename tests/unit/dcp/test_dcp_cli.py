@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 
+import pytest
 from click.testing import CliRunner
 
 from dopemux.commands.dcp_commands import dcp
@@ -47,6 +48,91 @@ def test_classify_unknown_authority_fails_closed() -> None:
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["status"] != RouteStatus.ALLOWED.value
+
+
+def test_classify_provenance_fields_flow_through_cli_input() -> None:
+    runner = CliRunner()
+    payload = {
+        "task_source": "OPERATOR",
+        "task_type": "CODE_CHANGE",
+        "risk_class": "R1_LOW",
+        "runtime_impact": "LOCAL_ONLY",
+        "complexity_class": "LOW",
+        "authority_class": "OPERATOR",
+        "has_unknown_authority": False,
+        "is_repo_changing": True,
+        "evidence_is_retrieval_derived": True,
+        "exact_source_fetched": False,
+    }
+    result = runner.invoke(dcp, ["classify"], input=json.dumps(payload))
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data["status"] == RouteStatus.BLOCKED.value
+    assert "retrieval_derived_evidence_unverified" in data["stop_conditions"]
+
+
+def test_classify_bridge_proxy_provenance_downgrades_cli_input() -> None:
+    runner = CliRunner()
+    payload = {
+        "task_source": "OPERATOR",
+        "task_type": "CODE_CHANGE",
+        "risk_class": "R1_LOW",
+        "runtime_impact": "LOCAL_ONLY",
+        "complexity_class": "LOW",
+        "authority_class": "AUTOMATED_SAFE",
+        "has_unknown_authority": False,
+        "authority_via_bridge_proxy": True,
+    }
+    result = runner.invoke(dcp, ["classify"], input=json.dumps(payload))
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data["status"] != RouteStatus.ALLOWED.value
+    assert "authority_via_bridge_proxy" in data["stop_conditions"]
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    ["exact_source_fetched", "has_backend_wrapper_proof"],
+)
+def test_classify_rejects_string_truthiness_for_trust_raising_fields(
+    field_name: str,
+) -> None:
+    runner = CliRunner()
+    payload = {
+        "task_source": "OPERATOR",
+        "task_type": "CODE_CHANGE",
+        "risk_class": "R1_LOW",
+        "runtime_impact": "LOCAL_ONLY",
+        "complexity_class": "LOW",
+        "authority_class": "OPERATOR",
+        "has_unknown_authority": False,
+        "is_repo_changing": True,
+        "evidence_is_retrieval_derived": True,
+        "backend_kind": "OPENCODE",
+        field_name: "false",
+    }
+    result = runner.invoke(dcp, ["classify"], input=json.dumps(payload))
+    assert result.exit_code != 0
+    assert field_name in result.output
+
+
+def test_classify_string_false_for_exact_source_does_not_clear_retrieval_block() -> None:
+    """Regression: string 'false' must not bypass retrieval-derived provenance block."""
+    runner = CliRunner()
+    payload = {
+        "task_source": "OPERATOR",
+        "task_type": "CODE_CHANGE",
+        "risk_class": "R1_LOW",
+        "runtime_impact": "LOCAL_ONLY",
+        "complexity_class": "LOW",
+        "authority_class": "OPERATOR",
+        "has_unknown_authority": False,
+        "is_repo_changing": True,
+        "evidence_is_retrieval_derived": True,
+        "exact_source_fetched": "false",
+    }
+    result = runner.invoke(dcp, ["classify"], input=json.dumps(payload))
+    assert result.exit_code != 0
 
 
 def test_recommend_backend_for_classified_route() -> None:
