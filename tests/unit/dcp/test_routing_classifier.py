@@ -1534,3 +1534,21 @@ def test_provenance_coercion_overrides_claimed_authority(vector: dict) -> None:
     )
     assert decision.status is not RouteStatus.ALLOWED
     assert not decision.is_runnable()
+
+
+@pytest.mark.parametrize(
+    "vector",
+    [
+        {"authority_via_bridge_proxy": True},
+        {"evidence_is_retrieval_derived": True},
+        {"exact_source_fetched": True},
+        {"is_ecc_external_intake": True},
+        {"has_backend_wrapper_proof": True},
+    ],
+)
+def test_provenance_fields_change_route_id(vector: dict) -> None:
+    """Each provenance/trust field must participate in route-id separation."""
+    baseline = _allowed_baseline()
+    baseline_id = classify_route(baseline).route_id
+    toggled_id = classify_route(_allowed_baseline(**vector)).route_id
+    assert toggled_id != baseline_id
