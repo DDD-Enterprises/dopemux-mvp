@@ -20,7 +20,6 @@ Coverage targets:
 
 import inspect
 
-import pytest
 
 from dopemux.dcp.routing_model import (
     AuditRequirement,

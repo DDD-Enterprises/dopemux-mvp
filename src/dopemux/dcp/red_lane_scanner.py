@@ -1,7 +1,7 @@
 import os
 import json
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 
 from dopemux.dcp.red_lane import (
     RedLaneReport, Finding, ScannerInfo, RepoInfo, InputsInfo, GuardsInfo, SummaryInfo,
