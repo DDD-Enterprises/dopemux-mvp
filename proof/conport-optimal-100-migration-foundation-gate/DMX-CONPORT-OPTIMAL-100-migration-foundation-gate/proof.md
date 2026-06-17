@@ -24,6 +24,9 @@ Scope: migration packaging, explicit migration gate runtime, idempotent migratio
 - Added base-schema preflight before ledger mutation so fresh databases fail closed without poisoned failed ledger rows.
 - Added adoption of already-applied legacy migrations into the ledger when schema evidence or legacy migration markers indicate prior application; final verification still requires expected schema objects and views.
 - Rejected non-`public` schemas explicitly because current ConPort SQL migrations are public-qualified or unqualified.
+- Preserved libpq URI options such as `sslmode` and `connect_timeout` for
+  migration execution by passing a password-sanitized connection URI to `psql`
+  and keeping the password in `PGPASSWORD`, not argv.
 - Packaged migrations into the ConPort image via `Dockerfile`.
 - Removed hidden startup DDL from `enhanced_server.py`; startup now logs the explicit gate path.
 - Hardened migration SQL for replay/idempotency:
@@ -38,7 +41,8 @@ Scope: migration packaging, explicit migration gate runtime, idempotent migratio
 PASS:
 
 - `python3 -m pytest -q proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py`
-  - Result: `14 passed`
+  - Result before review-thread URI fix: `14 passed`
+  - Result after review-thread URI fix: `15 passed`
 - `python3 -m py_compile docker/mcp-servers-source/conport/enhanced_server.py docker/mcp-servers-source/conport/migrations/conport_migration_gate.py`
   - Result: exit 0
 - `python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json`

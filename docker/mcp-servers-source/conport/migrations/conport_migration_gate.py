@@ -18,7 +18,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote, urlparse, urlsplit, urlunsplit
 
 
 APPLY_ENV = "DPMX_CONPORT_MIGRATION_APPLY"
@@ -267,25 +267,26 @@ def record_migration(
 
 
 def build_psql_invocation(database_url: str, migration: Migration) -> tuple[list[str], dict[str, str]]:
-    parsed = urlparse(normalize_database_url(database_url))
+    normalized_url = normalize_database_url(database_url)
+    parsed = urlparse(normalized_url)
     if parsed.scheme not in {"postgresql", "postgres"}:
         raise GateError(f"unsupported PostgreSQL URL scheme: {parsed.scheme}")
-
-    args = ["psql", "-v", "ON_ERROR_STOP=1"]
-    if parsed.hostname:
-        args.extend(["-h", parsed.hostname])
-    if parsed.port:
-        args.extend(["-p", str(parsed.port)])
-    if parsed.username:
-        args.extend(["-U", unquote(parsed.username)])
-    db_name = (parsed.path or "").lstrip("/")
-    if db_name:
-        args.extend(["-d", unquote(db_name)])
-    args.extend(["-f", str(migration.path)])
 
     env = os.environ.copy()
     if parsed.password:
         env["PGPASSWORD"] = unquote(parsed.password)
+
+    split_url = urlsplit(normalized_url)
+    safe_netloc = split_url.netloc
+    if "@" in safe_netloc:
+        userinfo, hostinfo = safe_netloc.rsplit("@", 1)
+        username = userinfo.split(":", 1)[0]
+        safe_netloc = f"{username}@{hostinfo}" if username else hostinfo
+    safe_url = urlunsplit(
+        (split_url.scheme, safe_netloc, split_url.path, split_url.query, split_url.fragment)
+    )
+
+    args = ["psql", "-v", "ON_ERROR_STOP=1", "-d", safe_url, "-f", str(migration.path)]
     return args, env
 
 

@@ -237,6 +237,30 @@ def test_psql_invocation_keeps_password_out_of_process_args(tmp_path):
     assert "-f" in args
 
 
+def test_psql_invocation_preserves_libpq_uri_options(tmp_path):
+    migration = gate.Migration(
+        version=1,
+        filename="001_enhanced_decision_model.sql",
+        path=tmp_path / "001_enhanced_decision_model.sql",
+        checksum="abc",
+    )
+
+    args, env = gate.build_psql_invocation(
+        "postgresql://user:secret@db.example.com:5432/conport?sslmode=require&connect_timeout=5",
+        migration,
+    )
+
+    command = " ".join(args)
+    assert "secret" not in command
+    assert env["PGPASSWORD"] == "secret"
+    assert "-d" in args
+    database_arg = args[args.index("-d") + 1]
+    assert database_arg == (
+        "postgresql://user@db.example.com:5432/conport"
+        "?sslmode=require&connect_timeout=5"
+    )
+
+
 def test_asyncpg_url_is_normalized_for_psycopg2_and_psql():
     assert (
         gate.normalize_database_url("postgresql+asyncpg://user:pass@db:5432/name")
