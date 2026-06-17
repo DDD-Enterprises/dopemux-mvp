@@ -1,0 +1,105 @@
+{
+  "id": "DMX-DCP-MODEL-ROUTING-MVP-0005-POSTMERGE-FIX",
+  "project": "dopemux-mvp",
+  "target": "Close the two unresolved, non-outdated PR #906 review threads on the DCP 0005 lane engine by hardening decide_lane against forged/restored RouteDecisions: passive lanes must drop hard-forbidden write/execute tokens via a read-only allowlist, and the executability gate must fail closed on any decision.unknowns markers. No new lane, no execution surface, no widened actions, no classifier or routing_model change.",
+  "invariants": [
+    "Reachable only via a forged/restored RouteDecision; the trusted classify_route path never emits these (allowed_actions never contains _ALWAYS_FORBIDDEN tokens, and unknowns non-empty implies status is never ALLOWED).",
+    "Passive lanes (READ_ONLY_EVIDENCE, EMBEDDED_AUDIT, PR_STEWARD_READINESS, EXTERNAL_INTAKE, BLOCKED) expose only read-only/proof-safe actions; an allowlist replaces the incomplete mutating-action blocklist.",
+    "A decision carrying any unknowns marker is non-executable, mirroring the classifier invariant that unknowns implies not ALLOWED.",
+    "allowed_actions remain a subset of decision.allowed_actions; actions are only ever narrowed, never widened.",
+    "decide_lane stays a pure function with no I/O, network, shell, runner, connector, MCP, or dopetask calls.",
+    "No change to classify_route output or routing_model.py; this is lane-engine hardening only.",
+    "decide_lane has no CLI entry point, so these gaps are latent until a lane-engine consumer/executor ships; closing them now is pre-execution-surface hardening.",
+    "The deeper unforgeable-provenance contract remains DMX-DCP-MODEL-ROUTING-MVP-0007 and is out of scope here."
+  ],
+  "depends_on": [
+    "DMX-DCP-MODEL-ROUTING-MVP-0005 (PR #906 merged on main)",
+    "DMX-DCP-MODEL-ROUTING-MVP-0006 (provenance hardening on main)"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-MODEL-ROUTING-MVP",
+    "base_branch": "main",
+    "parent_tp_id": "DMX-DCP-MODEL-ROUTING-MVP-0005",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "fix(dcp): fail-closed lane engine on forged unknowns + hard-forbidden passive actions",
+    "allowlist": [
+      "src/dopemux/dcp/lane_engine.py",
+      "tests/unit/dcp/test_lane_engine.py",
+      "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0005-POSTMERGE-FIX.json"
+    ],
+    "verify": [
+      "python -m compileall -q src/dopemux/dcp",
+      "python -m pytest -q tests/unit/dcp/test_lane_engine.py tests/unit/dcp/test_routing_classifier.py",
+      "ruff check src/dopemux/dcp tests/unit/dcp/test_lane_engine.py",
+      "python -m json.tool task-packets/DMX-DCP-MODEL-ROUTING-MVP-0005-POSTMERGE-FIX.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(dcp): fail-closed lane engine on forged unknowns + hard-forbidden passive actions (PR #906 threads)",
+    "body": "Closes the two unresolved, non-outdated PR #906 review threads on the DCP 0005 lane engine, verified against current main. F1 (lane_engine.py:70): passive executable lanes used a mutating-action blocklist that omitted 7 classifier _ALWAYS_FORBIDDEN tokens (execute_runner, write_github_state, call_connector, execute_dopetask, mutate_task_orchestrator, run_destructive_command, touch_secrets); passive lanes now filter through a read-only allowlist. F2 (lane_engine.py:128): the executability gate never checked decision.unknowns; it now fails closed on any unknowns marker. Both are reachable only via a forged/restored RouteDecision. No new lane, no execution surface, no widened actions, no classifier or routing_model change. TDD: two regression tests verified RED before and GREEN after.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "reproduce-forged-decision-gaps",
+      "task": "Write failing regression tests reproducing both PR #906 findings against current-main lane engine using forged RouteDecision.from_dict fixtures.",
+      "requirements": [
+        "F1 fixture: a restored READ_ONLY decision routed to the passive READ_ONLY_EVIDENCE lane while executable, carrying execute_runner and write_github_state in allowed_actions.",
+        "F2 fixture: a restored decision with all enum fields known plus unknowns=[...], status=ALLOWED, red_lane_state=CLEAR, mutating allowed_actions.",
+        "Each fixture asserts decision.is_runnable() is True so the test is not vacuous."
+      ],
+      "validation": [
+        "test_passive_lane_strips_hard_forbidden_execute_and_write_actions fails RED before the fix.",
+        "test_restored_decision_with_unknowns_marker_not_executable fails RED before the fix."
+      ],
+      "context_files": [
+        "src/dopemux/dcp/lane_engine.py",
+        "tests/unit/dcp/test_lane_engine.py",
+        "src/dopemux/dcp/routing_model.py"
+      ]
+    },
+    {
+      "id": "implement-fail-closed-hardening",
+      "task": "Apply the two minimal fail-closed fixes in lane_engine.py.",
+      "requirements": [
+        "Add bool(decision.unknowns) to _has_unknown_decision_contract so the executability gate fails closed on unknown markers.",
+        "Add a read-only allowlist filter (_read_only_safe_actions) and use it for passive lanes instead of _strip_mutating_actions.",
+        "Do not change classify_route, routing_model.py, lane KIND assignment, or add any new lane or execution path."
+      ],
+      "validation": [
+        "Both new regression tests pass GREEN after the fix.",
+        "Full tests/unit/dcp/ suite passes with no regression.",
+        "ruff check clean and git diff --check clean."
+      ],
+      "expected_files": [
+        "src/dopemux/dcp/lane_engine.py",
+        "tests/unit/dcp/test_lane_engine.py"
+      ]
+    },
+    {
+      "id": "validate-and-open-pr",
+      "task": "Run focused DCP validation, packet schema validation, and open the PR for operator merge.",
+      "commands": [
+        "python -m compileall -q src/dopemux/dcp",
+        "python -m pytest -q tests/unit/dcp/",
+        "ruff check src/dopemux/dcp tests/unit/dcp/test_lane_engine.py",
+        "python -m json.tool task-packets/DMX-DCP-MODEL-ROUTING-MVP-0005-POSTMERGE-FIX.json",
+        "git diff --check"
+      ],
+      "validation": [
+        "All listed commands pass or failures are reported with exact blocker evidence.",
+        "Packet validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json.",
+        "Merge remains operator-only."
+      ]
+    }
+  ]
+}
