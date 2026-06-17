@@ -33,6 +33,18 @@ def _enum_value(enum_cls: type, raw: object, default: Any) -> Any:
         return default
 
 
+def _parse_strict_bool(raw: object, field_name: str, *, default: bool = False) -> bool:
+    """Parse trust-raising provenance booleans without Python truthiness coercion."""
+    if raw is None:
+        return default
+    if isinstance(raw, bool):
+        return raw
+    raise click.ClickException(
+        f"{field_name} must be a JSON boolean (true/false), "
+        f"got {type(raw).__name__}: {raw!r}"
+    )
+
+
 def _input_from_dict(data: dict[str, Any]) -> RoutingClassificationInput:
     return RoutingClassificationInput(
         task_source=_enum_value(TaskSource, data.get("task_source"), TaskSource.UNKNOWN),
@@ -81,9 +93,13 @@ def _input_from_dict(data: dict[str, Any]) -> RoutingClassificationInput:
         evidence_is_retrieval_derived=bool(
             data.get("evidence_is_retrieval_derived", False)
         ),
-        exact_source_fetched=bool(data.get("exact_source_fetched", False)),
+        exact_source_fetched=_parse_strict_bool(
+            data.get("exact_source_fetched"), "exact_source_fetched"
+        ),
         is_ecc_external_intake=bool(data.get("is_ecc_external_intake", False)),
-        has_backend_wrapper_proof=bool(data.get("has_backend_wrapper_proof", False)),
+        has_backend_wrapper_proof=_parse_strict_bool(
+            data.get("has_backend_wrapper_proof"), "has_backend_wrapper_proof"
+        ),
         is_repo_changing=bool(data.get("is_repo_changing", False)),
         is_non_trivial=bool(data.get("is_non_trivial", False)),
     )
