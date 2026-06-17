@@ -1,14 +1,17 @@
+import asyncio
 from pathlib import Path
 
 import pytest
 
 from conport_migration_gate import (
     FOUNDATION_MIGRATIONS,
+    LEDGER_TABLE,
     MigrationGateError,
     checksum_sql,
     discover_foundation_migrations,
     normalize_database_url,
     required_schema_checks,
+    verify_gate,
 )
 
 
@@ -51,3 +54,15 @@ def test_required_schema_checks_include_downstream_foundation_objects():
     assert "user_workspace_access" in checks.tables
     assert "outcome_status" in checks.columns["decisions"]
     assert "user_id" in checks.columns["workspace_contexts"]
+
+
+def test_verify_gate_fails_closed_when_ledger_shape_is_incompatible():
+    class IncompatibleLedgerConnection:
+        async def fetchval(self, *_args):
+            return LEDGER_TABLE
+
+        async def fetch(self, *_args):
+            raise RuntimeError('column "name" does not exist')
+
+    with pytest.raises(MigrationGateError, match="migration ledger validation failed"):
+        asyncio.run(verify_gate(IncompatibleLedgerConnection(), []))
