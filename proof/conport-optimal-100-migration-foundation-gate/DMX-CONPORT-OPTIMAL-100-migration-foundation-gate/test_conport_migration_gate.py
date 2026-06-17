@@ -84,6 +84,30 @@ def test_schema_identifier_validation_fails_closed(tmp_path, monkeypatch):
     assert code == 2
 
 
+def test_non_public_schema_is_rejected_before_migration_execution(tmp_path, monkeypatch):
+    _write_required_migrations(tmp_path)
+    monkeypatch.setenv(gate.APPLY_ENV, "1")
+
+    def fail_if_called(*_args, **_kwargs):
+        raise AssertionError("non-public schema must fail before connecting")
+
+    monkeypatch.setattr(gate, "connect", fail_if_called)
+
+    code = gate.main(
+        [
+            "apply",
+            "--database-url",
+            "postgresql://user:pass@localhost/db",
+            "--migrations-dir",
+            str(tmp_path),
+            "--schema",
+            "tenant_a",
+        ]
+    )
+
+    assert code == 2
+
+
 def test_ledger_validation_detects_checksum_mismatch(tmp_path):
     _write_required_migrations(tmp_path)
     migrations = gate.discover_migrations(tmp_path)

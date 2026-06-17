@@ -113,6 +113,15 @@ def validate_identifier(value: str, label: str = "identifier") -> str:
     return value
 
 
+def validate_supported_schema(schema: str) -> str:
+    if schema != DEFAULT_SCHEMA:
+        raise GateError(
+            "unsupported schema: ConPort migrations contain public-qualified and "
+            f"unqualified SQL; only {DEFAULT_SCHEMA!r} is supported"
+        )
+    return schema
+
+
 def _checksum(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -577,7 +586,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path(__file__).resolve().parent,
         help="Directory containing ConPort SQL migrations.",
     )
-    parser.add_argument("--schema", default=DEFAULT_SCHEMA, help="Target schema name.")
+    parser.add_argument(
+        "--schema",
+        default=DEFAULT_SCHEMA,
+        help="Target schema name. Only public is supported by current ConPort SQL migrations.",
+    )
     return parser
 
 
@@ -588,7 +601,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if not args.database_url:
             raise GateError("database URL is required")
-        schema = validate_identifier(args.schema, "schema")
+        schema = validate_supported_schema(validate_identifier(args.schema, "schema"))
         migrations = discover_migrations(args.migrations_dir)
         if args.command == "apply":
             result = apply_migrations(args.database_url, migrations, schema)
