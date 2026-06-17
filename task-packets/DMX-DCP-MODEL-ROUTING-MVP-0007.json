@@ -1,11 +1,13 @@
 {
   "id": "DMX-DCP-MODEL-ROUTING-MVP-0007",
   "project": "dopemux-mvp",
-  "target": "Define and implement the DCP trusted input-provenance contract so serialized or caller-supplied data cannot confer execution eligibility; only trusted in-process adapters may mint attested classifier input, and untrusted mutating input is capped at non-runnable.",
+  "target": "Define and implement the DCP trusted input-provenance contract so serialized or caller-supplied data cannot confer execution eligibility across RoutingClassificationInput construction, RouteDecision.from_dict deserialization, and recommend_backend_cmd ingestion; only trusted in-process adapters may mint attested classifier input, and untrusted mutating input or deserialized RouteDecision data is capped at non-runnable.",
   "invariants": [
     "No value present in serialized or caller-supplied input can confer execution eligibility for mutating scope.",
     "Raw, from-dict, hand-constructed, and CLI JSON input remains untrusted by default.",
     "Untrusted mutating input must not produce a runnable RouteDecision.",
+    "Caller-supplied RouteDecision JSON deserialized via RouteDecision.from_dict must not confer execution eligibility; serialized status=ALLOWED, red_lane_state=CLEAR, and authority_class=OPERATOR cannot make is_runnable() true without trusted provenance.",
+    "recommend_backend_cmd and any future executor consuming RouteDecision.is_runnable() must treat from_dict output as untrusted unless minted by a trusted in-process path.",
     "Read-only classify behavior remains unchanged.",
     "Trusted adapters derive provenance from authoritative signals and never accept caller assertions that raise trust.",
     "The runtime gate in this checkout is RouteDecision.is_runnable(); do not target a non-existent LaneDecision.is_executable API.",
@@ -38,9 +40,11 @@
     "allowlist": [
       "src/dopemux/dcp/input_adapters.py",
       "src/dopemux/dcp/routing_classifier.py",
+      "src/dopemux/dcp/routing_model.py",
       "src/dopemux/dcp/__init__.py",
       "src/dopemux/commands/dcp_commands.py",
       "tests/unit/dcp/test_routing_classifier.py",
+      "tests/unit/dcp/test_routing_model.py",
       "tests/unit/dcp/test_routing_backend_policy.py",
       "tests/unit/dcp/test_dcp_cli.py",
       "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007.json",
@@ -49,14 +53,14 @@
     "verify": [
       "python -m compileall -q src/dopemux/dcp src/dopemux/commands",
       "python -m pytest -q tests/unit/dcp/",
-      "ruff check src/dopemux/dcp/input_adapters.py src/dopemux/dcp/routing_classifier.py src/dopemux/dcp/__init__.py src/dopemux/commands/dcp_commands.py tests/unit/dcp/test_routing_classifier.py tests/unit/dcp/test_routing_backend_policy.py tests/unit/dcp/test_dcp_cli.py",
+      "ruff check src/dopemux/dcp/input_adapters.py src/dopemux/dcp/routing_classifier.py src/dopemux/dcp/routing_model.py src/dopemux/dcp/__init__.py src/dopemux/commands/dcp_commands.py tests/unit/dcp/test_routing_classifier.py tests/unit/dcp/test_routing_model.py tests/unit/dcp/test_routing_backend_policy.py tests/unit/dcp/test_dcp_cli.py",
       "python -m jsonschema -i task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
       "git diff --check"
     ]
   },
   "pr": {
     "title": "feat(dcp): add trusted input provenance contract",
-    "body": "Implements DMX-DCP-MODEL-ROUTING-MVP-0007. Serialized/caller-supplied input cannot confer execution eligibility; raw CLI/from-dict input remains untrusted, trusted adapters mint attested input by construction, and untrusted mutating input is capped at non-runnable RouteDecision output. No execution, connector, runner, MCP, or live-write surface is added.",
+    "body": "Implements DMX-DCP-MODEL-ROUTING-MVP-0007. Serialized/caller-supplied input cannot confer execution eligibility across RoutingClassificationInput construction, RouteDecision.from_dict deserialization, and recommend_backend_cmd ingestion; raw CLI/from-dict input remains untrusted, trusted adapters mint attested input by construction, and untrusted mutating or deserialized RouteDecision data is capped at non-runnable output. No execution, connector, runner, MCP, or live-write surface is added.",
     "base": "main"
   },
   "pal_chain": {
@@ -81,6 +85,8 @@
         "Confirm the active execution/runnability gate is RouteDecision.is_runnable().",
         "Confirm no LaneDecision.is_executable API exists in the current checkout before referring to execution gating.",
         "Confirm _input_from_dict builds RoutingClassificationInput from arbitrary JSON and is therefore untrusted.",
+        "Confirm RouteDecision.from_dict accepts caller-supplied JSON and can currently yield is_runnable() true without trusted provenance.",
+        "Confirm recommend_backend_cmd deserializes RouteDecision via from_dict and is an existing ingestion path for serialized decisions.",
         "Confirm classify CLI remains read-only."
       ],
       "validation": [
@@ -122,19 +128,40 @@
       ]
     },
     {
+      "id": "harden-route-decision-deserialization",
+      "task": "Harden RouteDecision deserialization and serialized decision ingestion so caller-supplied JSON cannot confer execution eligibility.",
+      "requirements": [
+        "RouteDecision.from_dict must treat deserialized input as untrusted and must not allow serialized status, red_lane_state, or authority_class values alone to make is_runnable() true for mutating scope.",
+        "recommend_backend_cmd must consume only non-runnable RouteDecision output when the decision was deserialized from caller JSON rather than minted by a trusted in-process path.",
+        "Any future executor using RouteDecision.is_runnable() must inherit the same untrusted-from_dict cap.",
+        "Read-only inspection of deserialized decisions remains permitted; only execution eligibility is capped."
+      ],
+      "validation": [
+        "Forged RouteDecision JSON with status=ALLOWED, red_lane_state=CLEAR, and authority_class=OPERATOR is not runnable after from_dict.",
+        "recommend_backend_cmd on untrusted deserialized RouteDecision does not treat the decision as execution-eligible.",
+        "Trusted in-process RouteDecision minting remains runnable only when authoritative signals are safe."
+      ],
+      "expected_files": [
+        "src/dopemux/dcp/routing_model.py",
+        "src/dopemux/commands/dcp_commands.py",
+        "tests/unit/dcp/test_routing_model.py",
+        "tests/unit/dcp/test_dcp_cli.py"
+      ]
+    },
+    {
       "id": "validate-and-audit",
       "task": "Run focused DCP validation, schema validation, diff hygiene, and independent embedded audit before merge.",
       "commands": [
         "python -m compileall -q src/dopemux/dcp src/dopemux/commands",
         "python -m pytest -q tests/unit/dcp/",
-        "ruff check src/dopemux/dcp/input_adapters.py src/dopemux/dcp/routing_classifier.py src/dopemux/dcp/__init__.py src/dopemux/commands/dcp_commands.py tests/unit/dcp/test_routing_classifier.py tests/unit/dcp/test_routing_backend_policy.py tests/unit/dcp/test_dcp_cli.py",
+        "ruff check src/dopemux/dcp/input_adapters.py src/dopemux/dcp/routing_classifier.py src/dopemux/dcp/routing_model.py src/dopemux/dcp/__init__.py src/dopemux/commands/dcp_commands.py tests/unit/dcp/test_routing_classifier.py tests/unit/dcp/test_routing_model.py tests/unit/dcp/test_routing_backend_policy.py tests/unit/dcp/test_dcp_cli.py",
         "python -m json.tool task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007.json",
         "python -m jsonschema -i task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
         "git diff --check"
       ],
       "validation": [
         "All listed commands pass or failures are reported with exact blocker evidence.",
-        "Embedded audit confirms no serialized value confers execution eligibility, from-dict input is always untrusted, adapters derive rather than accept trust-raising overrides, RouteDecision.is_runnable is the implemented gate, and read-only classify behavior is unchanged.",
+        "Embedded audit confirms no serialized value confers execution eligibility across RoutingClassificationInput construction and RouteDecision.from_dict deserialization, from-dict input is always untrusted, adapters derive rather than accept trust-raising overrides, RouteDecision.is_runnable is the implemented gate, recommend_backend_cmd respects the untrusted deserialization cap, and read-only classify behavior is unchanged.",
         "Diff remains inside the packet allowlist."
       ]
     }
