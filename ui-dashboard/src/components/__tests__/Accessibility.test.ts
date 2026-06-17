@@ -156,12 +156,11 @@ test('App.tsx has accessible header chips and skip link', () => {
   const appContent = fs.readFileSync(path.resolve(__dirname, '../../App.tsx'), 'utf8');
   const themeContent = fs.readFileSync(path.resolve(__dirname, '../../theme.ts'), 'utf8');
   expect(appContent).toContain('href="#main-dashboard"');
-  expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
+  expect(appContent).toMatch(/aria-label=\{\s*connectionStatus === 'degraded'\s*\?\s*`System connection degraded: \$\{connectionLabel\} DØPEMÜX Ritual Daemon\. Click to retry connection\.`\s*:\s*`System is actively monitoring ritual state: \$\{connectionLabel\} DØPEMÜX Ritual Daemon`\s*\}/);
   expect(appContent).toContain('<Tooltip title="Current cognitive status and load percentage" arrow>');
   expect(appContent).toMatch(/<Tooltip title=\{isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>/);
   expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toMatch(/<Tooltip title=\{isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>[\s\S]*tabIndex=\{0\}/);
-  expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
   expect(appContent).toMatch(/aria-label=\{\s*isCopied\s*\?\s*`AI Recommendation: \$\{cognitiveState\.recommendation\} \(Copied\)`\s*:\s*`Copy AI Recommendation: \$\{cognitiveState\.recommendation\}`\s*\}/);
   expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications\' : \'Clear all notifications\'}');
   expect(appContent).toMatch(/<Tooltip title=\{isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\} arrow>/);
@@ -173,6 +172,17 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(themeContent).toContain('&:focus-visible');
   expect(appContent).toContain('ref={feedHeadingRef}');
   expect(appContent).toContain('tabIndex={-1}');
+
+  // Verify adaptive reconnection bridge
+  expect(appContent).toContain('const [retryTrigger, setRetryTrigger] = useState(0);');
+  expect(appContent).toContain('const handleReconnect = useCallback(() => {');
+  expect(appContent).toMatch(/connectionStatus === 'degraded'\s*\?\s*'Connection degraded\. Click to attempt manual reconnection\.'\s*:\s*'Real-time connection to the ADHD dashboard surface'/);
+  expect(appContent).toMatch(/connectionStatus === 'degraded'\s*\?\s*`System connection degraded: \$\{connectionLabel\} DØPEMÜX Ritual Daemon\. Click to retry connection\.`\s*:\s*`System is actively monitoring ritual state: \$\{connectionLabel\} DØPEMÜX Ritual Daemon`/);
+  expect(appContent).toContain("onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}");
+  expect(appContent).toContain('action={');
+  expect(appContent).toContain("connectionStatus === 'degraded' ? (");
+  expect(appContent).toContain('<Button color="inherit" size="small" onClick={handleReconnect}>');
+  expect(appContent).toContain('RECONNECT');
 
   // Verify notification chips are focusable
   expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
