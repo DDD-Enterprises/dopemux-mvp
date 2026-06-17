@@ -135,6 +135,53 @@ class TestTruthRunCommandRegistered(unittest.TestCase):
         self.assertNotEqual(result.exit_code, 0)
         self.assertIn("disabled by default", result.output)
 
+    def test_rte_run_forwards_cost_profile_controls(self):
+        """dopemux rte run must pass cost-profile controls to canonical v5."""
+        src_path = str(_REPO_ROOT / "src")
+        if src_path not in sys.path:
+            sys.path.insert(0, src_path)
+        try:
+            import dopemux.cli as cli_mod
+        except ImportError:
+            self.skipTest("dopemux.cli not importable in this test context")
+
+        calls = []
+
+        def fake_run_extractor_runner(*, pipeline_version, args):
+            calls.append((pipeline_version, args))
+
+        with patch.object(cli_mod, "_run_extractor_runner", fake_run_extractor_runner):
+            result = CliRunner().invoke(
+                cli_mod.cli,
+                [
+                    "rte",
+                    "run",
+                    "--phase",
+                    "A",
+                    "--dry-run",
+                    "--cost-profile",
+                    "rte-cost-grok-fast",
+                    "--model-alias",
+                    "BULK_DOCS_MODEL=xai/grok-4-fast",
+                    "--disable-provider",
+                    "gemini",
+                    "--max-cost-usd",
+                    "0.50",
+                ],
+            )
+
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertEqual(calls[0][0], "v5")
+        forwarded = calls[0][1]
+        self.assertIn("--cost-profile", forwarded)
+        self.assertIn("rte-cost-grok-fast", forwarded)
+        self.assertIn("--model-alias", forwarded)
+        self.assertIn("BULK_DOCS_MODEL=xai/grok-4-fast", forwarded)
+        self.assertIn("--disable-provider", forwarded)
+        self.assertIn("gemini", forwarded)
+        self.assertIn("--max-cost-usd", forwarded)
+        self.assertIn("0.5", forwarded)
+
 
 # ---------------------------------------------------------------------------
 # Test 2: partition_start_event adds to active dict

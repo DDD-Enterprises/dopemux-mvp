@@ -161,6 +161,20 @@ def test_resolve_cost_profile_handles_all_inputs() -> None:
     assert runner.resolve_cost_profile("Quality")[0] == "quality"
 
 
+def test_resolve_cost_profile_accepts_rte_cost_aliases() -> None:
+    assert runner.resolve_cost_profile("rte-cost-economy")[0] == "economy"
+    assert runner.resolve_cost_profile("rte-cost-value-default")[0] == "value-default"
+    assert runner.resolve_cost_profile("rte-cost-quality-mix")[0] == "quality-mix"
+
+
+def test_sandbox_free_profile_alias_is_blocked_until_enforceable() -> None:
+    import pytest
+
+    assert "rte-cost-sandbox-free" not in runner.COST_PROFILES
+    with pytest.raises(ValueError, match="rte-cost-sandbox-free"):
+        runner.resolve_cost_profile("rte-cost-sandbox-free")
+
+
 def test_resolve_cell_alias_resolves_from_profile_defaults() -> None:
     assert (
         runner.resolve_cell_alias("${SYNTH_MODEL}", "quality") == "openai/gpt-5.5"
