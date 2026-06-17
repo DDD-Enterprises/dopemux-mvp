@@ -218,6 +218,21 @@ def test_marker_based_adoption_still_requires_final_view_verification(monkeypatc
     )
 
 
+def test_migration_007_adoption_requires_workspace_instance_unique_index(monkeypatch):
+    monkeypatch.setattr(gate, "table_exists", lambda *_args: True)
+    monkeypatch.setattr(gate, "column_exists", lambda *_args: True)
+    monkeypatch.setattr(gate, "view_exists", lambda *_args: True)
+    monkeypatch.setattr(
+        gate,
+        "index_exists",
+        lambda _conn, _schema, index: index != "idx_workspace_contexts_workspace_instance",
+    )
+
+    errors = gate.migration_schema_errors(object(), "public", 7)
+
+    assert "missing index public.idx_workspace_contexts_workspace_instance" in errors
+
+
 def test_psql_invocation_keeps_password_out_of_process_args(tmp_path):
     migration = gate.Migration(
         version=1,
@@ -333,6 +348,16 @@ def test_startup_no_longer_runs_hidden_enhanced_schema_alters():
     assert "ADD COLUMN IF NOT EXISTS instance_id" not in source
     assert "ADD COLUMN IF NOT EXISTS created_by_instance" not in source
     assert "conport_migration_gate.py" in source
+
+
+def test_base_schema_matches_instance_route_contract():
+    source = (CONPORT_DIR / "schema.sql").read_text(encoding="utf-8")
+
+    assert "instance_id VARCHAR(255)" in source
+    assert "created_by_instance VARCHAR(255)" in source
+    assert "idx_workspace_contexts_workspace_instance" in source
+    assert "idx_progress_instance" in source
+    assert "idx_progress_workspace_instance" in source
 
 
 def test_migration_004_targets_public_schema_not_ag_catalog():

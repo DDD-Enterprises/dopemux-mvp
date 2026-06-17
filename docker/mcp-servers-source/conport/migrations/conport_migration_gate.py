@@ -79,6 +79,7 @@ REQUIRED_INDEXES = (
     "idx_custom_data_user_category",
     "idx_progress_instance",
     "idx_progress_workspace_instance",
+    "idx_workspace_contexts_workspace_instance",
 )
 REQUIRED_VIEWS = (
     "decisions_needing_review",
@@ -469,6 +470,7 @@ def migration_schema_errors(conn, schema: str, version: int) -> list[str]:
             "column:workspace_contexts:instance_id",
             "index:idx_progress_instance",
             "index:idx_progress_workspace_instance",
+            "index:idx_workspace_contexts_workspace_instance",
         ),
     }
     if version not in checks:

@@ -33,6 +33,12 @@ Scope: migration packaging, explicit migration gate runtime, idempotent migratio
   them into `PGPASSWORD`.
 - Rejected adoption of migration versions that lack explicit schema evidence
   checks.
+- Added the migration 007 workspace/instance unique index to gate evidence and
+  final schema verification.
+- Aligned fresh `schema.sql` with the active instance/worktree route contract so
+  startup-created databases include `instance_id`, `created_by_instance`, and
+  required worktree indexes before the operator-gated migration adoption path
+  runs.
 - Packaged migrations into the ConPort image via `Dockerfile`.
 - Removed hidden startup DDL from `enhanced_server.py`; startup now logs the explicit gate path.
 - Hardened migration SQL for replay/idempotency:
@@ -50,6 +56,7 @@ PASS:
   - Result before review-thread URI fix: `14 passed`
   - Result after review-thread URI fix: `15 passed`
   - Result after follow-up review fixes: `18 passed`
+  - Result after startup schema and 007 index fixes: `20 passed`
 - `python3 -m py_compile docker/mcp-servers-source/conport/enhanced_server.py docker/mcp-servers-source/conport/migrations/conport_migration_gate.py`
   - Result: exit 0
 - `python3 -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json`
