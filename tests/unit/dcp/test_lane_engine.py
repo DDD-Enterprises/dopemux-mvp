@@ -577,6 +577,211 @@ def test_restored_decision_with_unknown_proof_requirement_not_executable() -> No
     assert "edit_allowlisted_files" not in lane_decision.allowed_actions
 
 
+def test_stop_conditions_block_executable_lane() -> None:
+    """Routes with stop_conditions must not be executable even when is_runnable()."""
+    inp = RoutingClassificationInput(
+        task_type=TaskType.READ_ONLY,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        risk_class=RiskClass.R0_READ,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
+    )
+    restored = RouteDecision.from_dict(
+        {
+            "status": "ALLOWED",
+            "red_lane_state": "CLEAR",
+            "authority_class": "OPERATOR",
+            "task_source": "OPERATOR",
+            "task_type": "READ_ONLY",
+            "risk_class": "R0_READ",
+            "complexity_class": "LOW",
+            "runtime_impact": "READ_ONLY",
+            "audit_requirement": "SELF_CHECK",
+            "escalation_requirement": "ALWAYS",
+            "stop_conditions": ["missing_proof"],
+            "allowed_actions": ["edit_allowlisted_files", "open_pr"],
+        }
+    )
+    assert restored.is_runnable()
+
+    lane_decision = decide_lane(restored, inp)
+
+    assert lane_decision.is_executable is False
+    assert "edit_allowlisted_files" not in lane_decision.allowed_actions
+    assert "open_pr" not in lane_decision.allowed_actions
+
+
+def test_passive_audit_lane_strips_mutating_actions() -> None:
+    """EMBEDDED_AUDIT must not expose edit/open-pr actions even when runnable."""
+    inp = RoutingClassificationInput(
+        task_type=TaskType.AUDIT,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        touches_files=True,
+        is_repo_changing=True,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.LOCAL_ONLY,
+        complexity_class=ComplexityClass.LOW,
+    )
+    restored = RouteDecision.from_dict(
+        {
+            "status": "ALLOWED",
+            "red_lane_state": "CLEAR",
+            "authority_class": "OPERATOR",
+            "task_source": "OPERATOR",
+            "task_type": "AUDIT",
+            "risk_class": "R1_LOW",
+            "complexity_class": "LOW",
+            "runtime_impact": "LOCAL_ONLY",
+            "audit_requirement": "EMBEDDED_AUDITOR",
+            "escalation_requirement": "NONE",
+            "allowed_actions": [
+                "edit_allowlisted_files",
+                "open_pr",
+                "run_embedded_audit",
+                "inspect_runtime_code",
+            ],
+        }
+    )
+    assert restored.is_runnable()
+
+    lane_decision = decide_lane(restored, inp)
+
+    assert lane_decision.lane is LaneKind.EMBEDDED_AUDIT
+    assert "edit_allowlisted_files" not in lane_decision.allowed_actions
+    assert "open_pr" not in lane_decision.allowed_actions
+
+
+def test_public_behavior_routes_out_of_evidence_lane() -> None:
+    """Public-behavior scope must route to implementation, not evidence fallback."""
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.READ_ONLY,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        touches_public_behavior=True,
+        risk_class=RiskClass.R1_LOW,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
+    )
+    restored = RouteDecision.from_dict(
+        {
+            "status": "ALLOWED",
+            "red_lane_state": "CLEAR",
+            "authority_class": "OPERATOR",
+            "task_source": "OPERATOR",
+            "task_type": "READ_ONLY",
+            "risk_class": "R1_LOW",
+            "complexity_class": "LOW",
+            "runtime_impact": "READ_ONLY",
+            "audit_requirement": "SELF_CHECK",
+            "escalation_requirement": "NONE",
+            "allowed_actions": ["edit_allowlisted_files", "open_pr", "inspect_runtime_code"],
+        }
+    )
+    assert restored.is_runnable()
+
+    lane_decision = decide_lane(restored, inp)
+
+    assert lane_decision.lane is LaneKind.LOCAL_CODE_IMPLEMENTATION
+    assert lane_decision.lane is not LaneKind.READ_ONLY_EVIDENCE
+    assert "fallback_read_only_evidence" not in lane_decision.rationale
+
+
+def test_public_behavior_does_not_return_executable_evidence_with_mutating() -> None:
+    """READ_ONLY_EVIDENCE must never be executable with mutating actions."""
+    inp = RoutingClassificationInput(
+        task_type=TaskType.READ_ONLY,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        risk_class=RiskClass.R0_READ,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
+    )
+    restored = RouteDecision.from_dict(
+        {
+            "status": "ALLOWED",
+            "red_lane_state": "CLEAR",
+            "authority_class": "OPERATOR",
+            "task_source": "OPERATOR",
+            "task_type": "READ_ONLY",
+            "risk_class": "R0_READ",
+            "complexity_class": "LOW",
+            "runtime_impact": "READ_ONLY",
+            "audit_requirement": "SELF_CHECK",
+            "escalation_requirement": "NONE",
+            "allowed_actions": ["edit_allowlisted_files", "open_pr"],
+        }
+    )
+    lane_decision = decide_lane(restored, inp)
+
+    if lane_decision.lane is LaneKind.READ_ONLY_EVIDENCE:
+        assert lane_decision.is_executable is False or not {
+            "edit_allowlisted_files",
+            "open_pr",
+        } & set(lane_decision.allowed_actions)
+
+
+def test_restored_unknown_audit_requirement_not_executable() -> None:
+    """Restored decisions with omitted audit_requirement (UNKNOWN) must fail closed."""
+    inp = _safe_code_change_input()
+    restored = RouteDecision.from_dict(
+        {
+            "status": "ALLOWED",
+            "red_lane_state": "CLEAR",
+            "authority_class": "OPERATOR",
+            "task_source": "OPERATOR",
+            "task_type": "CODE_CHANGE",
+            "risk_class": "R1_LOW",
+            "complexity_class": "LOW",
+            "runtime_impact": "LOCAL_ONLY",
+            "escalation_requirement": "NONE",
+            "allowed_actions": ["edit_allowlisted_files", "open_pr"],
+        }
+    )
+    assert restored.audit_requirement is AuditRequirement.UNKNOWN
+    assert restored.is_runnable()
+
+    lane_decision = decide_lane(restored, inp)
+
+    assert lane_decision.is_executable is False
+    assert "edit_allowlisted_files" not in lane_decision.allowed_actions
+
+
+def test_pr_steward_readiness_strips_mutating_requested_actions() -> None:
+    """PR_STEWARD_READINESS must not expose open_pr even when inherited on decision."""
+    inp = RoutingClassificationInput(
+        task_source=TaskSource.OPERATOR,
+        task_type=TaskType.READ_ONLY,
+        risk_class=RiskClass.R0_READ,
+        runtime_impact=RuntimeImpact.READ_ONLY,
+        complexity_class=ComplexityClass.LOW,
+        authority_class=AuthorityClass.OPERATOR,
+        has_unknown_authority=False,
+        requested_actions=["pr_steward_readiness"],
+    )
+    restored = RouteDecision.from_dict(
+        {
+            "status": "ALLOWED",
+            "red_lane_state": "CLEAR",
+            "authority_class": "OPERATOR",
+            "task_source": "OPERATOR",
+            "task_type": "READ_ONLY",
+            "risk_class": "R0_READ",
+            "complexity_class": "LOW",
+            "runtime_impact": "READ_ONLY",
+            "audit_requirement": "SELF_CHECK",
+            "escalation_requirement": "NONE",
+            "allowed_actions": ["open_pr", "inspect_runtime_code"],
+        }
+    )
+    lane_decision = decide_lane(restored, inp)
+
+    assert lane_decision.lane is LaneKind.PR_STEWARD_READINESS
+    assert "open_pr" not in lane_decision.allowed_actions
+
+
 # ─────────────────────────────────────────────
 # Test 11 — External intake READ_ONLY evidence → EXTERNAL_INTAKE, not executable
 # ─────────────────────────────────────────────

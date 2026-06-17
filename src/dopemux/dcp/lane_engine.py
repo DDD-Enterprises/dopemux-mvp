@@ -9,7 +9,7 @@ Invariants enforced by design:
 - RED_LANE or BLOCKED status always → LaneKind.BLOCKED, is_executable=False, allowed_actions=().
 - allowed_actions ⊆ decision.allowed_actions (inherited; never widened).
 - EXTERNAL_INTAKE and BLOCKED are never executable.
-- is_executable mirrors RouteDecision.is_runnable() semantics.
+- is_executable is stricter than RouteDecision.is_runnable() when lane safety requires.
 - Proof, audit, escalation are surfaced (inherited), not flattened.
 - decide_lane() does not mutate its inputs.
 """
@@ -66,11 +66,26 @@ _EXTERNAL_INTAKE_EXTRA_FORBIDDEN: tuple[str, ...] = (
     "install",
 )
 
-# Mutating actions that must never appear on non-runnable lane decisions.
+# Mutating actions that must never appear on passive or blocked lane decisions.
 _MUTATING_ACTIONS: frozenset[str] = frozenset({
     "edit_allowlisted_files",
-    "run_embedded_audit",
     "open_pr",
+    "commit_changes",
+    "merge_pr",
+    "apply_patch",
+    "run_dopetask_execution",
+    "run_live_write",
+    "call_mcp",
+    "run_embedded_audit",
+})
+
+# Passive lanes must never expose mutating actions, even when otherwise executable.
+_PASSIVE_LANES: frozenset[LaneKind] = frozenset({
+    LaneKind.READ_ONLY_EVIDENCE,
+    LaneKind.EMBEDDED_AUDIT,
+    LaneKind.PR_STEWARD_READINESS,
+    LaneKind.EXTERNAL_INTAKE,
+    LaneKind.BLOCKED,
 })
 
 # Read-only / proof-safe actions permitted when the lane is not executable.
@@ -86,7 +101,17 @@ def _has_mutating_intent(inp: RoutingClassificationInput) -> bool:
     return (
         inp.is_repo_changing
         or inp.touches_files
+        or inp.touches_public_behavior
         or any(action in _MUTATING_ACTIONS for action in inp.requested_actions)
+    )
+
+
+def _has_mutating_scope(inp: RoutingClassificationInput) -> bool:
+    """Return True when classifier scope flags indicate mutation is in play."""
+    return (
+        inp.is_repo_changing
+        or inp.touches_files
+        or inp.touches_public_behavior
     )
 
 
@@ -109,27 +134,42 @@ def _has_unknown_decision_contract(decision: RouteDecision) -> bool:
 # ─────────────────────────────────────────────
 
 
+def _has_blocking_stop_or_escalation(decision: RouteDecision) -> bool:
+    """Return True when unresolved stop conditions or mandatory escalation block work."""
+    if decision.stop_conditions:
+        return True
+    return decision.escalation_requirement is not EscalationRequirement.NONE
+
+
 def _compute_is_executable(decision: RouteDecision, lane: LaneKind) -> bool:
     """Return True only when the lane is executable AND the decision is runnable.
 
-    Delegates the safety gate to ``RouteDecision.is_runnable()`` (status ALLOWED,
-    red-lane CLEAR, authority not UNKNOWN/BLOCKED) so the lane engine can never
-    report executable for a route the classifier deems non-runnable — even for a
-    ``RouteDecision`` constructed outside ``classify_route`` (e.g. via
-    ``from_dict``). BLOCKED and EXTERNAL_INTAKE are never in ``_EXECUTABLE_LANES``.
+    Stricter than raw ``RouteDecision.is_runnable()``: also fail-closes on restored
+    UNKNOWN contract fields, UNKNOWN proof requirements, stop conditions, and
+    mandatory escalation. BLOCKED and EXTERNAL_INTAKE are never in
+    ``_EXECUTABLE_LANES``.
     """
     if lane not in _EXECUTABLE_LANES:
         return False
     if _has_unknown_decision_contract(decision):
         return False
+    if _has_blocking_stop_or_escalation(decision):
+        return False
     return decision.is_runnable()
+
+
+def _strip_mutating_actions(actions: tuple[str, ...]) -> tuple[str, ...]:
+    """Remove mutating tokens from an allowed-action tuple."""
+    return tuple(a for a in actions if a not in _MUTATING_ACTIONS)
 
 
 def _narrow_allowed_actions_for_non_runnable(
     actions: tuple[str, ...],
 ) -> tuple[str, ...]:
     """Fail-closed: strip mutating actions from non-executable lane decisions."""
-    return tuple(a for a in actions if a in _READ_ONLY_PROOF_SAFE_ACTIONS)
+    return _strip_mutating_actions(
+        tuple(a for a in actions if a in _READ_ONLY_PROOF_SAFE_ACTIONS)
+    )
 
 
 # ─────────────────────────────────────────────
@@ -154,7 +194,7 @@ def _assign_lane(
     5. task_type is PROOF_BUNDLE → PROOF_ONLY
     6. touches_tests and not touches_files → TEST_VALIDATION
     7. touches_docs and not (touches_files or touches_tests) and task_type not in {CODE_CHANGE, SCHEMA_ONLY} → DOCS_ONLY
-    8. task_type in {CODE_CHANGE, SCHEMA_ONLY} or is_repo_changing or touches_files → LOCAL_CODE_IMPLEMENTATION
+    8. task_type in {CODE_CHANGE, SCHEMA_ONLY} or mutating scope → LOCAL_CODE_IMPLEMENTATION
     9. task_type is DESIGN_ONLY → CLASSIFIER_ROUTING
     10. fallback → READ_ONLY_EVIDENCE
     """
@@ -201,11 +241,10 @@ def _assign_lane(
     ):
         return LaneKind.DOCS_ONLY
 
-    # Row 8: code / schema implementation
+    # Row 8: code / schema implementation or any mutating scope
     if (
         decision.task_type in (TaskType.CODE_CHANGE, TaskType.SCHEMA_ONLY)
-        or inp.is_repo_changing
-        or inp.touches_files
+        or _has_mutating_scope(inp)
     ):
         return LaneKind.LOCAL_CODE_IMPLEMENTATION
 
@@ -309,6 +348,8 @@ def decide_lane(
         allowed_actions = _narrow_allowed_actions_for_non_runnable(
             tuple(decision.allowed_actions)
         )
+    elif lane in _PASSIVE_LANES:
+        allowed_actions = _strip_mutating_actions(tuple(decision.allowed_actions))
     else:
         allowed_actions = tuple(decision.allowed_actions)
 
