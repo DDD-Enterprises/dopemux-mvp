@@ -23,7 +23,7 @@ CREATE TABLE workspace_contexts (
 );
 
 CREATE UNIQUE INDEX idx_workspace_contexts_workspace_instance
-    ON workspace_contexts(workspace_id, COALESCE(instance_id, ''));
+    ON workspace_contexts(workspace_id, COALESCE(instance_id, ''::VARCHAR));
 CREATE INDEX idx_workspace_contexts_updated_at ON workspace_contexts(updated_at);
 
 -- =====================================================================
@@ -266,7 +266,7 @@ ORDER BY
 -- Insert initial context for existing workspace
 INSERT INTO workspace_contexts (workspace_id, active_context, last_activity, session_time, focus_state)
 VALUES ('dopemux-mvp', 'Unified Architecture - Implementation Phase', 'ConPort database persistence implementation', '90 minutes', 'deep work')
-ON CONFLICT (workspace_id) DO UPDATE SET
+ON CONFLICT (workspace_id, (COALESCE(instance_id, ''::VARCHAR))) DO UPDATE SET
     active_context = EXCLUDED.active_context,
     last_activity = EXCLUDED.last_activity,
     session_time = EXCLUDED.session_time,

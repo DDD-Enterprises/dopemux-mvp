@@ -358,6 +358,7 @@ def test_base_schema_matches_instance_route_contract():
     assert "idx_workspace_contexts_workspace_instance" in source
     assert "idx_progress_instance" in source
     assert "idx_progress_workspace_instance" in source
+    assert "ON CONFLICT (workspace_id, (COALESCE(instance_id, ''::VARCHAR)))" in source
 
 
 def test_migration_004_targets_public_schema_not_ag_catalog():
