@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcp.local/schemas/pr_steward_merge_readiness.schema.json",
+  "title": "PR Steward Merge Readiness",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pr_number",
+    "repo",
+    "branch",
+    "head_sha",
+    "base_branch",
+    "changed_files",
+    "commits",
+    "checks",
+    "review_comments",
+    "review_threads",
+    "issue_comments",
+    "bot_comments",
+    "proof_bundle_refs",
+    "audit_refs",
+    "review_item_classifications",
+    "unknown_reviewers_or_bots",
+    "unclassified_review_items",
+    "failed_checks",
+    "checks_stale_to_head",
+    "proof_stale",
+    "blocking_thread_unresolved",
+    "diff_escapes_packet_allowlist",
+    "security_release_gate_lacks_approval",
+    "unresolved_blockers",
+    "status",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "pr_number": { "type": "integer", "minimum": 1 },
+    "repo": { "type": "string", "minLength": 1 },
+    "branch": { "type": "string", "minLength": 1 },
+    "head_sha": { "type": "string", "pattern": "^[a-fA-F0-9]{7,40}$" },
+    "base_branch": { "type": "string", "minLength": 1 },
+    "changed_files": { "type": "array", "items": { "type": "string" } },
+    "commits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sha", "message"],
+        "properties": {
+          "sha": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status", "conclusion", "head_sha"],
+        "properties": {
+          "name": { "type": "string" },
+          "status": { "type": "string", "enum": ["queued", "in_progress", "completed", "unknown"] },
+          "conclusion": { "type": "string", "enum": ["success", "failure", "neutral", "cancelled", "skipped", "timed_out", "action_required", "pending", "unknown"] },
+          "head_sha": { "type": "string" }
+        }
+      }
+    },
+    "review_comments": { "type": "array", "items": { "$ref": "#/definitions/review_item" } },
+    "review_threads": { "type": "array", "items": { "$ref": "#/definitions/review_thread" } },
+    "issue_comments": { "type": "array", "items": { "$ref": "#/definitions/review_item" } },
+    "bot_comments": { "type": "array", "items": { "$ref": "#/definitions/review_item" } },
+    "proof_bundle_refs": { "type": "array", "items": { "type": "string" } },
+    "audit_refs": { "type": "array", "items": { "type": "string" } },
+    "review_item_classifications": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/review_classification" }
+    },
+    "unknown_reviewers_or_bots": { "type": "array", "items": { "type": "string" } },
+    "unclassified_review_items": { "type": "array", "items": { "type": "string" } },
+    "failed_checks": { "type": "array", "items": { "type": "string" } },
+    "checks_stale_to_head": { "type": "boolean" },
+    "proof_stale": { "type": "boolean" },
+    "blocking_thread_unresolved": { "type": "boolean" },
+    "diff_escapes_packet_allowlist": { "type": "boolean" },
+    "security_release_gate_lacks_approval": { "type": "boolean" },
+    "unresolved_blockers": { "type": "array", "items": { "type": "string" } },
+    "status": { "type": "string", "enum": ["READY", "BLOCKED", "NEEDS_SUPERVISOR"] },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "READY" } } },
+      "then": {
+        "properties": {
+          "unknown_reviewers_or_bots": { "maxItems": 0 },
+          "unclassified_review_items": { "maxItems": 0 },
+          "failed_checks": { "maxItems": 0 },
+          "checks_stale_to_head": { "const": false },
+          "proof_stale": { "const": false },
+          "blocking_thread_unresolved": { "const": false },
+          "diff_escapes_packet_allowlist": { "const": false },
+          "security_release_gate_lacks_approval": { "const": false },
+          "unresolved_blockers": { "maxItems": 0 }
+        },
+        "required": [
+          "unknown_reviewers_or_bots",
+          "unclassified_review_items",
+          "failed_checks",
+          "checks_stale_to_head",
+          "proof_stale",
+          "blocking_thread_unresolved",
+          "diff_escapes_packet_allowlist",
+          "security_release_gate_lacks_approval",
+          "unresolved_blockers"
+        ]
+      }
+    }
+  ],
+  "definitions": {
+    "review_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "author", "body_ref", "created_at"],
+      "properties": {
+        "id": { "type": "string" },
+        "author": { "type": "string" },
+        "body_ref": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "review_thread": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "resolved", "blocking", "items"],
+      "properties": {
+        "id": { "type": "string" },
+        "resolved": { "type": "boolean" },
+        "blocking": { "type": "boolean" },
+        "items": { "type": "array", "items": { "$ref": "#/definitions/review_item" } }
+      }
+    },
+    "review_classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item_id", "classification", "reason"],
+      "properties": {
+        "item_id": { "type": "string" },
+        "classification": {
+          "type": "string",
+          "enum": [
+            "AUTO_APPLIED",
+            "MUST_FIX",
+            "OPTIONAL_DEFERRED",
+            "OUT_OF_SCOPE_FOLLOWUP",
+            "REJECTED_WITH_REASON",
+            "NEEDS_SUPERVISOR",
+            "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
+          ]
+        },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

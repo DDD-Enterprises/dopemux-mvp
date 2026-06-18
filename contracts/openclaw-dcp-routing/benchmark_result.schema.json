@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcp.local/schemas/benchmark_result.schema.json",
+  "title": "DCP Route Benchmark Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "benchmark_result_id",
+    "fixture_id",
+    "route_tested",
+    "requested_model",
+    "actual_model",
+    "provider",
+    "runner",
+    "pass_fail",
+    "json_validity",
+    "schema_validity",
+    "evidence_grounding",
+    "unsupported_claims",
+    "hallucinated_files",
+    "contradiction_recall",
+    "core_field_stability",
+    "diff_applicability",
+    "tests_result",
+    "latency",
+    "cost",
+    "provider_drift",
+    "privacy_violation",
+    "certification_recommendation",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "benchmark_result_id": { "type": "string", "minLength": 1 },
+    "fixture_id": { "type": "string", "minLength": 1 },
+    "route_tested": { "type": "string", "minLength": 1 },
+    "requested_model": { "type": "string", "minLength": 1 },
+    "actual_model": { "type": "string", "minLength": 1 },
+    "provider": { "$ref": "#/definitions/provider" },
+    "runner": { "$ref": "#/definitions/runner" },
+    "pass_fail": { "type": "string", "enum": ["PASS", "FAIL", "PARTIAL", "BLOCKED_EXPECTED"] },
+    "json_validity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valid", "rate"],
+      "properties": {
+        "valid": { "type": "boolean" },
+        "rate": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "schema_validity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valid", "rate", "errors"],
+      "properties": {
+        "valid": { "type": "boolean" },
+        "rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "errors": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "evidence_grounding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["precision", "sample_count"],
+      "properties": {
+        "precision": { "type": "number", "minimum": 0, "maximum": 1 },
+        "sample_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "unsupported_claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "rate"],
+      "properties": {
+        "count": { "type": "integer", "minimum": 0 },
+        "rate": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "hallucinated_files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "paths"],
+      "properties": {
+        "count": { "type": "integer", "minimum": 0 },
+        "paths": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "contradiction_recall": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "core_field_stability": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "diff_applicability": {
+      "type": "string",
+      "enum": ["applies", "does_not_apply", "not_applicable", "unknown"]
+    },
+    "tests_result": {
+      "type": "string",
+      "enum": ["passed", "failed", "not_run", "not_applicable", "unknown"]
+    },
+    "latency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wall_ms", "ttfb_ms", "ttft_ms"],
+      "properties": {
+        "wall_ms": { "type": ["number", "null"], "minimum": 0 },
+        "ttfb_ms": { "type": ["number", "null"], "minimum": 0 },
+        "ttft_ms": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actual_usd", "estimated_usd"],
+      "properties": {
+        "actual_usd": { "type": ["number", "null"], "minimum": 0 },
+        "estimated_usd": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "provider_drift": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["detected", "details"],
+      "properties": {
+        "detected": { "type": "boolean" },
+        "details": { "type": "string" }
+      }
+    },
+    "privacy_violation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["detected", "details"],
+      "properties": {
+        "detected": { "type": "boolean" },
+        "details": { "type": "string" }
+      }
+    },
+    "certification_recommendation": {
+      "type": "string",
+      "enum": ["CERTIFY", "CERTIFY_WITH_LIMITS", "DO_NOT_CERTIFY", "NEEDS_MORE_DATA"]
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "definitions": {
+    "provider": {
+      "type": "string",
+      "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple", "unknown"]
+    },
+    "runner": {
+      "type": "string",
+      "enum": ["openclaw", "codex", "claude_code", "gemini_antigravity", "openrouter_generic", "direct_api", "manual_app", "shell_local", "dopetask", "unknown"]
+    }
+  }
+}
