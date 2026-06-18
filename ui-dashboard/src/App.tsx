@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
+  Button,
   Chip,
   CircularProgress,
   Collapse,
@@ -206,6 +207,13 @@ function App() {
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [lastSignalTime, setLastSignalTime] = useState<Date | null>(null);
+  const [retryTrigger, setRetryTrigger] = useState(0);
+
+  const handleReconnect = useCallback(() => {
+    setRetryTrigger((prev) => prev + 1);
+    setConnectionStatus('connecting');
+    setErrorMessage(null);
+  }, []);
 
   const handleDismissNotification = useCallback((id: string) => {
     setNotifications((current) => current.filter((n) => n.id !== id));
@@ -233,6 +241,19 @@ function App() {
       setErrorMessage(`Failed to copy recommendation: ${errorMsg}`);
     }
   }, [cognitiveState.recommendation]);
+
+  useEffect(() => {
+    return () => {
+      if (clearConfirmTimeoutRef.current) {
+        clearTimeout(clearConfirmTimeoutRef.current);
+        clearConfirmTimeoutRef.current = null;
+      }
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+        copyTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -270,7 +291,7 @@ function App() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [retryTrigger]);
 
   useEffect(() => {
     const socket = new WebSocket(`${dashboardWsUrl}/ws/state`);
@@ -316,16 +337,8 @@ function App() {
 
     return () => {
       socket.close();
-      if (clearConfirmTimeoutRef.current) {
-        clearTimeout(clearConfirmTimeoutRef.current);
-        clearConfirmTimeoutRef.current = null;
-      }
-      if (copyTimeoutRef.current) {
-        clearTimeout(copyTimeoutRef.current);
-        copyTimeoutRef.current = null;
-      }
     };
-  }, []);
+  }, [retryTrigger]);
 
   useEffect(() => {
     setIsCopied(false);
@@ -430,7 +443,14 @@ function App() {
           }}
         >
           <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Tooltip title="Real-time connection to the ADHD dashboard surface" arrow>
+            <Tooltip
+              title={
+                connectionStatus === 'degraded'
+                  ? 'Connection degraded. Click to attempt manual reconnection.'
+                  : 'Real-time connection to the ADHD dashboard surface'
+              }
+              arrow
+            >
               <Chip
                 icon={
                   <Box
@@ -451,7 +471,11 @@ function App() {
                   />
                 }
                 label={`${connectionLabel} DØPEMÜX Ritual Daemon`}
-                aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}
+                aria-label={
+                  connectionStatus === 'degraded'
+                    ? `System connection degraded: ${connectionLabel} DØPEMÜX Ritual Daemon. Click to retry connection.`
+                    : `System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`
+                }
                 className="dopemux-chip"
                 color={
                   connectionStatus === 'live'
@@ -460,7 +484,16 @@ function App() {
                       ? 'secondary'
                       : 'error'
                 }
+                onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}
                 tabIndex={0}
+                sx={{
+                  ...(connectionStatus === 'degraded' && {
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: alpha(brandTokens.colors.errorRed, 0.2),
+                    },
+                  }),
+                }}
               />
             </Tooltip>
             <Tooltip title="User consent verified for cognitive monitoring" arrow>
@@ -552,6 +585,13 @@ function App() {
             severity="error"
             icon={<AlertTriangle size={20} />}
             onClose={() => setErrorMessage(null)}
+            action={
+              connectionStatus === 'degraded' ? (
+                <Button color="inherit" size="small" onClick={handleReconnect}>
+                  RECONNECT
+                </Button>
+              ) : null
+            }
             sx={{
               mb: 3,
               borderRadius: 3,
