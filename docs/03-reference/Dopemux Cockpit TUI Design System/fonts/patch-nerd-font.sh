@@ -59,9 +59,17 @@ for input in "${INPUTS[@]}"; do
   face="${base#*-}"
 
   patch_args=(--complete --careful)
-  if [[ "$family" == "DopemuxTerm" ]]; then
-    patch_args+=(--mono)
-  fi
+  case "$family" in
+    DopemuxTerm)
+      patch_args+=(--mono)
+      ;;
+    DopemuxEditor)
+      ;;
+    *)
+      printf 'Unexpected built font family stem: %s (from %s)\n' "$family" "$(basename "$input")" >&2
+      exit 1
+      ;;
+  esac
 
   # --complete: all Nerd Font glyph sets (guarantees the codepoints documented in
   #             src/dopemux/ui/theme.py::Glyphs).
