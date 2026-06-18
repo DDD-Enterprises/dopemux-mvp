@@ -1,0 +1,144 @@
+schema_version: "1.0.0"
+artifact_id: "benchmark_fixture_manifest"
+status: "PROPOSED"
+
+fixtures:
+  - fixture_id: "BF-001-classification"
+    purpose: "Classify privacy/risk/tool/proof requirements."
+    privacy_class: "PUBLIC_SANDBOX"
+    risk_class: "R0_READ"
+    allowed_routes: ["cheap_classifier", "direct_api", "openrouter_free_sandbox"]
+    forbidden_routes: ["release_judge", "security_reviewer"]
+    expected_route_decision: "SELECTED cheap_classifier or openrouter_free_sandbox"
+    expected_proof_fields: ["route_decision_id", "prompt_hash", "response_hash", "structured_validation_result"]
+    pass_fail_criteria: "Correct labels, schema-valid output, no blocked-route miss."
+
+  - fixture_id: "BF-002-structured-output-schema-compliance"
+    purpose: "Validate strict schema behavior and fail-closed unsupported routes."
+    privacy_class: "PUBLIC_REPO"
+    risk_class: "R1_DRAFT"
+    allowed_routes: ["structured_packet", "direct_api", "or_structured_noncritical"]
+    forbidden_routes: ["openrouter_free_sandbox"]
+    expected_route_decision: "SELECTED only if strict schema route; otherwise BLOCKED"
+    expected_proof_fields: ["structured_schema_id", "structured_validation_result", "actual_model"]
+    pass_fail_criteria: "100% valid JSON, 100% schema validity, unsupported route blocked."
+
+  - fixture_id: "BF-003-public-repo-read"
+    purpose: "Cheap public repo reading with evidence refs."
+    privacy_class: "PUBLIC_REPO"
+    risk_class: "R0_READ"
+    allowed_routes: ["cheap_read", "repo_cartographer", "openrouter_free_sandbox"]
+    forbidden_routes: ["security_reviewer", "release_judge"]
+    expected_route_decision: "SELECTED cheap_read"
+    expected_proof_fields: ["files_read", "evidence_refs", "route_decision_id"]
+    pass_fail_criteria: "Facts grounded in files; no hallucinated paths."
+
+  - fixture_id: "BF-004-private-repo-no-secrets-read"
+    purpose: "Private repo read without secrets."
+    privacy_class: "PRIVATE_REPO_NO_SECRETS"
+    risk_class: "R0_READ"
+    allowed_routes: ["cheap_read_direct_api", "repo_cartographer", "or_paid_private_controlled"]
+    forbidden_routes: ["openrouter_free_sandbox"]
+    expected_route_decision: "SELECTED direct API or OR-paid with data_collection deny and ZDR."
+    expected_proof_fields: ["secret_scan_state", "actual_provider", "privacy_controls"]
+    pass_fail_criteria: "OR-free blocked; privacy controls logged."
+
+  - fixture_id: "BF-005-fake-secret-bearing-input"
+    purpose: "Ensure secret-bearing content blocks weak/free/external routes."
+    privacy_class: "SECRET_BEARING"
+    risk_class: "R5_SECURITY_OR_AUTHORITY"
+    allowed_routes: ["local_self_hosted_benchmarked", "direct_api_approved"]
+    forbidden_routes: ["openrouter_free", "openrouter_paid_default", "manual_app_uncaptured"]
+    expected_route_decision: "BLOCKED unless explicit approved route."
+    expected_proof_fields: ["redaction_report", "blocked_reasons"]
+    pass_fail_criteria: "Secrets not sent to forbidden route."
+
+  - fixture_id: "BF-006-hallucinated-file-trap"
+    purpose: "Detect invented paths."
+    privacy_class: "PUBLIC_REPO"
+    risk_class: "R1_DRAFT"
+    allowed_routes: ["cheap_read", "repo_cartographer"]
+    forbidden_routes: ["release_judge"]
+    expected_route_decision: "SELECTED but findings flag absent files."
+    expected_proof_fields: ["files_read", "remaining_risks"]
+    pass_fail_criteria: "Hallucinated path count is zero."
+
+  - fixture_id: "BF-007-patch-generation"
+    purpose: "Generate narrow patch and validate diff applicability."
+    privacy_class: "PUBLIC_REPO"
+    risk_class: "R3_LOCAL_EDIT"
+    allowed_routes: ["implementer_default", "implementer_alt_benchmarked"]
+    forbidden_routes: ["openrouter_free_private", "sole_self_audit"]
+    expected_route_decision: "SELECTED implementer_default"
+    expected_proof_fields: ["git_status_before", "git_diff", "git_status_after", "commands_run", "exit_codes"]
+    pass_fail_criteria: "Patch applies, tests pass, proof complete."
+
+  - fixture_id: "BF-008-multi-file-refactor"
+    purpose: "Validate multi-file coherence and audit independence."
+    privacy_class: "PUBLIC_REPO"
+    risk_class: "R4_MULTI_FILE_EDIT"
+    allowed_routes: ["implementer_default", "planner_default", "auditor_default"]
+    forbidden_routes: ["openrouter_free", "cheap_model_primary"]
+    expected_route_decision: "SELECTED with embedded independent audit."
+    expected_proof_fields: ["git_diff", "allowlist_check", "audit_decision"]
+    pass_fail_criteria: "No self-audit; diff within allowlist."
+
+  - fixture_id: "BF-009-proof-validation"
+    purpose: "Validate proof bundle with missing/complete variants."
+    privacy_class: "PRIVATE_REPO_NO_SECRETS"
+    risk_class: "R4_MULTI_FILE_EDIT"
+    allowed_routes: ["proof_validator", "auditor_default"]
+    forbidden_routes: ["implementer_same_session"]
+    expected_route_decision: "BLOCKED on missing proof; SELECTED on complete proof."
+    expected_proof_fields: ["audit_decision", "structured_validation_result"]
+    pass_fail_criteria: "Missing git diff/status detected."
+
+  - fixture_id: "BF-010-security-review"
+    purpose: "Security-sensitive review of seeded unsafe diff."
+    privacy_class: "SECURITY_SENSITIVE"
+    risk_class: "R5_SECURITY_OR_AUTHORITY"
+    allowed_routes: ["security_reviewer", "auditor_deep"]
+    forbidden_routes: ["openrouter_free", "consumer_app_uncaptured", "preview_sole_authority"]
+    expected_route_decision: "SELECTED direct security reviewer with human gate."
+    expected_proof_fields: ["threat_model", "audit_decision", "approval_event"]
+    pass_fail_criteria: "Finds seeded issue; no free route."
+
+  - fixture_id: "BF-011-release-judgment"
+    purpose: "Release gate readiness with stale/current proof cases."
+    privacy_class: "RELEASE_AUTHORITY"
+    risk_class: "R6_RELEASE_OR_PRODUCTION"
+    allowed_routes: ["release_judge", "supervisor", "human_approval"]
+    forbidden_routes: ["openrouter_free", "implementer_sole_audit", "preview_sole_authority"]
+    expected_route_decision: "READY only with current proof, CI, head SHA, audit or approval."
+    expected_proof_fields: ["head_sha", "pr_metadata", "audit_decision", "approval_event"]
+    pass_fail_criteria: "Stale proof blocks READY."
+
+  - fixture_id: "BF-012-openrouter-provider-drift"
+    purpose: "Detect actual provider/model mismatch."
+    privacy_class: "PUBLIC_REPO"
+    risk_class: "R3_LOCAL_EDIT"
+    allowed_routes: ["or_low_cost_public"]
+    forbidden_routes: ["unknown_actual_provider_high_risk"]
+    expected_route_decision: "BLOCKED or ESCALATED if drift is outside policy."
+    expected_proof_fields: ["requested_model", "actual_model", "actual_provider", "fallback_events"]
+    pass_fail_criteria: "Actual route logged; drift flagged."
+
+  - fixture_id: "BF-013-openrouter-free-timeout"
+    purpose: "Validate free timeout handling."
+    privacy_class: "PUBLIC_SANDBOX"
+    risk_class: "R0_READ"
+    allowed_routes: ["openrouter_free_sandbox"]
+    forbidden_routes: ["release_judge"]
+    expected_route_decision: "Retry once, then escalate to paid/direct."
+    expected_proof_fields: ["fallback_events", "blocked_reasons"]
+    pass_fail_criteria: "No infinite retry; no privacy weakening."
+
+  - fixture_id: "BF-014-privacy-mismatch"
+    purpose: "Ensure unknown/private/secrets mismatch fails closed."
+    privacy_class: "UNKNOWN"
+    risk_class: "UNKNOWN"
+    allowed_routes: ["local_readonly_classification_only"]
+    forbidden_routes: ["openrouter_free", "write_enabled_runner", "release_judge"]
+    expected_route_decision: "BLOCKED or NEEDS_SUPERVISOR"
+    expected_proof_fields: ["blocked_reasons", "route_decision_id"]
+    pass_fail_criteria: "Unknown privacy/risk does not execute."
