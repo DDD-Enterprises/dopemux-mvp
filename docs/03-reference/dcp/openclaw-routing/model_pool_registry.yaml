@@ -1,0 +1,247 @@
+schema_version: "1.0.0"
+artifact_id: "model_pool_registry"
+status: "PROPOSED"
+default_guards:
+  benchmark_required_for_high_trust: true
+  openrouter_free_private_forbidden: true
+  direct_api_preferred_for_authority: true
+  consumer_plan_requires_proof_capture: true
+
+pools:
+  cheap_read:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["openai/gpt-5.4-nano", "anthropic/claude-haiku-4.5", "google/gemini-3.5-flash"]
+      - route: openrouter_free
+        models: ["qwen/qwen3-coder:free", "moonshotai/kimi-k2.6:free"]
+      - route: openrouter_paid
+        models: ["deepseek/deepseek-v4-flash", "mistralai/codestral-2508"]
+    allowed_roles: ["cheap_file_reading", "issue_triage", "task_intake"]
+    forbidden_roles: ["security_review", "release_judgment", "proof_validation"]
+    primary_selection_rule: "Use cheapest route that satisfies privacy, schema, and benchmark guard."
+    cost_guard: "cheap_or_free_only"
+    privacy_guard: "OR-free public only; direct API for private."
+    risk_guard: "Allowed R0-R2 only unless escalated."
+    benchmark_requirement: "Required before private or production use."
+    escalation_path: "repo_cartographer"
+
+  cheap_classifier:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["openai/gpt-5.4-nano", "anthropic/claude-haiku-4.5", "google/gemini-3.5-flash"]
+      - route: openrouter_paid
+        models: ["deepseek/deepseek-v4-flash"]
+    allowed_roles: ["task_classification", "issue_triage", "task_intake"]
+    forbidden_roles: ["release_judgment", "security_review"]
+    primary_selection_rule: "Smallest schema-valid classifier."
+    cost_guard: "hard_low_output_cap"
+    privacy_guard: "No OR-free for private."
+    risk_guard: "Unknown risk escalates."
+    benchmark_requirement: "Required for schema authority."
+    escalation_path: "planner_default"
+
+  repo_cartographer:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["anthropic/claude-sonnet-4.6", "openai/gpt-5.4", "google/gemini-3.5-flash"]
+      - route: openrouter_paid
+        models: ["qwen/qwen3-coder", "deepseek/deepseek-v4-pro"]
+    allowed_roles: ["repo_cartography", "architecture_synthesis", "planning"]
+    forbidden_roles: ["release_judgment"]
+    primary_selection_rule: "Retrieval-first; use long context only when necessary."
+    cost_guard: "standard_cap; long-context approval if high token estimate."
+    privacy_guard: "Direct API for confidential repos; OR-paid requires data_collection deny."
+    risk_guard: "R0-R4 allowed; R5+ requires auditor/security pool."
+    benchmark_requirement: "Required for private or large-context route."
+    escalation_path: "planner_strong"
+
+  planner_default:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["anthropic/claude-sonnet-4.6", "openai/gpt-5.4"]
+      - route: openrouter_paid
+        models: ["qwen/qwen3-coder", "google/gemini-3.5-flash"]
+    allowed_roles: ["planning", "architecture_synthesis"]
+    forbidden_roles: ["release_judgment", "security_review"]
+    primary_selection_rule: "Use Sonnet/GPT cost-balanced planner unless provider diversity needed."
+    cost_guard: "standard"
+    privacy_guard: "Direct for private unless OR policy clean."
+    risk_guard: "R0-R4; R5+ escalates."
+    benchmark_requirement: "Required before high-trust planning."
+    escalation_path: "planner_strong"
+
+  planner_strong:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["openai/gpt-5.5", "openai/gpt-5.5-pro", "anthropic/claude-opus-4.8", "google/gemini-pro"]
+    allowed_roles: ["strong_planning", "architecture_synthesis", "final_supervisor_synthesis"]
+    forbidden_roles: ["cheap_file_reading", "bulk_classification"]
+    primary_selection_rule: "Use for ambiguity, high risk, cross-system architecture, or conflict."
+    cost_guard: "premium_requires_reason"
+    privacy_guard: "Direct API preferred."
+    risk_guard: "Allowed R4-R6 with proof and gates."
+    benchmark_requirement: "Required for release/security authority."
+    escalation_path: "supervisor"
+
+  implementer_default:
+    candidate_routes_models:
+      - route: claude_code
+        models: ["anthropic/claude-sonnet-4.6"]
+      - route: codex
+        models: ["openai/gpt-5.4", "openai/codex"]
+      - route: direct_api
+        models: ["anthropic/claude-sonnet-4.6", "openai/gpt-5.4"]
+    allowed_roles: ["implementation", "narrow_patch_generation", "multi_file_refactor"]
+    forbidden_roles: ["release_judgment", "sole_final_audit"]
+    primary_selection_rule: "Use benchmarked strong code runner with bounded worktree and allowlist."
+    cost_guard: "standard; avoid Opus/Pro for routine edits."
+    privacy_guard: "No OR-free; consumer runner requires proof capture."
+    risk_guard: "R3-R4 default; R5 requires security gate."
+    benchmark_requirement: "Required before production edits."
+    escalation_path: "implementer_alt_or_auditor_deep"
+
+  implementer_alt:
+    candidate_routes_models:
+      - route: openrouter_paid
+        models: ["qwen/qwen3-coder", "deepseek/deepseek-v4-flash", "moonshotai/kimi-k2.6", "mistralai/codestral-2508"]
+      - route: direct_api
+        models: ["google/gemini-3.5-flash"]
+    allowed_roles: ["narrow_patch_generation", "test_generation", "implementation"]
+    forbidden_roles: ["security_review", "release_judgment"]
+    primary_selection_rule: "Use after local benchmark or as fallback on patch failure."
+    cost_guard: "cheap_standard"
+    privacy_guard: "OR-paid only with privacy filters; no secrets."
+    risk_guard: "R2-R4 only."
+    benchmark_requirement: "Required before enabling."
+    escalation_path: "implementer_default"
+
+  test_builder:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["openai/gpt-5.4-mini", "anthropic/claude-haiku-4.5"]
+      - route: openrouter_paid
+        models: ["mistralai/codestral-2508", "deepseek/deepseek-v4-flash"]
+      - route: openrouter_free
+        models: ["qwen/qwen3-coder:free"]
+    allowed_roles: ["test_generation"]
+    forbidden_roles: ["release_judgment", "proof_validation"]
+    primary_selection_rule: "Favor cheap test scaffolding, never correctness signoff."
+    cost_guard: "cheap"
+    privacy_guard: "OR-free public only."
+    risk_guard: "R2 default."
+    benchmark_requirement: "Required for test pass usefulness."
+    escalation_path: "implementer_default"
+
+  structured_packet:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["openai/gpt-5.5", "openai/gpt-5.4", "anthropic/claude-sonnet-4.6", "google/gemini-3.5-flash"]
+      - route: openrouter_paid
+        models: ["openai/gpt-5.4-mini", "deepseek/deepseek-v4-flash"]
+    allowed_roles: ["structured_task_packet_generation", "task_classification", "proof_bundle_generation"]
+    forbidden_roles: ["openrouter_free_schema_authority"]
+    primary_selection_rule: "First route with strict local schema pass."
+    cost_guard: "standard"
+    privacy_guard: "Direct API for authority."
+    risk_guard: "All risks with correct audit/human gates."
+    benchmark_requirement: "Mandatory."
+    escalation_path: "supervisor"
+
+  proof_validator:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["openai/gpt-5.5-pro", "anthropic/claude-opus-4.8", "google/gemini-pro"]
+    allowed_roles: ["proof_validation", "pr_review", "final_supervisor_synthesis"]
+    forbidden_roles: ["implementation_same_session"]
+    primary_selection_rule: "Different provider from implementer when stakes are real."
+    cost_guard: "premium allowed for R5/R6."
+    privacy_guard: "Direct API preferred."
+    risk_guard: "R3-R6."
+    benchmark_requirement: "Mandatory for high-trust."
+    escalation_path: "human_gate"
+
+  auditor_default:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["openai/gpt-5.4", "anthropic/claude-sonnet-4.6", "google/gemini-3.5-flash"]
+      - route: openrouter_paid
+        models: ["deepseek/deepseek-v4-pro", "qwen/qwen3-coder"]
+    allowed_roles: ["challenger_review", "pr_review", "proof_validation"]
+    forbidden_roles: ["sole_release_judgment"]
+    primary_selection_rule: "Independent provider preferred; mid-tier for routine audit."
+    cost_guard: "standard"
+    privacy_guard: "No free routes."
+    risk_guard: "R3-R5; R6 escalates."
+    benchmark_requirement: "Mandatory for production."
+    escalation_path: "auditor_deep"
+
+  auditor_deep:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["openai/gpt-5.5-pro", "anthropic/claude-opus-4.8", "google/gemini-pro"]
+    allowed_roles: ["security_review", "release_judgment", "final_supervisor_synthesis"]
+    forbidden_roles: ["bulk_reading"]
+    primary_selection_rule: "Use for conflict, R5/R6, high blast radius."
+    cost_guard: "premium_requires_approval"
+    privacy_guard: "Direct API or approved private route."
+    risk_guard: "R5-R6."
+    benchmark_requirement: "Mandatory."
+    escalation_path: "human_gate"
+
+  security_reviewer:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["anthropic/claude-opus-4.8", "openai/gpt-5.5-pro", "google/gemini-pro"]
+      - route: openrouter_paid
+        models: ["deepseek/deepseek-v4-pro"]
+    allowed_roles: ["security_review"]
+    forbidden_roles: ["openrouter_free", "consumer_only_authority"]
+    primary_selection_rule: "Direct frontier route; OR only as challenger with approved privacy."
+    cost_guard: "premium_allowed"
+    privacy_guard: "No OR-free; secrets require approved route."
+    risk_guard: "R5."
+    benchmark_requirement: "Mandatory."
+    escalation_path: "release_judge_or_human"
+
+  release_judge:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["openai/gpt-5.5-pro", "anthropic/claude-opus-4.8"]
+      - route: human
+        models: ["explicit_human_approval"]
+    allowed_roles: ["release_judgment"]
+    forbidden_roles: ["openrouter_free", "preview_sole_authority", "implementer_sole_audit"]
+    primary_selection_rule: "Independent audit plus CI/proof/head SHA; human approval if uncertainty."
+    cost_guard: "premium_allowed_with_gate"
+    privacy_guard: "Direct API preferred."
+    risk_guard: "R6 only."
+    benchmark_requirement: "Mandatory."
+    escalation_path: "human_gate"
+
+  supervisor:
+    candidate_routes_models:
+      - route: direct_api
+        models: ["openai/gpt-5.5-pro", "anthropic/claude-opus-4.8", "google/gemini-pro"]
+      - route: manual
+        models: ["human_supervisor"]
+    allowed_roles: ["final_supervisor_synthesis", "strong_planning", "architecture_synthesis"]
+    forbidden_roles: ["bulk_low_risk_reading"]
+    primary_selection_rule: "Use for unresolved conflict, authority boundaries, or final synthesis."
+    cost_guard: "premium_with_reason"
+    privacy_guard: "No free routes."
+    risk_guard: "R4-R6."
+    benchmark_requirement: "Mandatory for automated authority."
+    escalation_path: "human_gate"
+
+  openrouter_free_sandbox:
+    candidate_routes_models:
+      - route: openrouter_free
+        models: ["qwen/qwen3-coder:free", "moonshotai/kimi-k2.6:free"]
+    allowed_roles: ["cheap_file_reading", "issue_triage", "test_generation"]
+    forbidden_roles: ["security_review", "release_judgment", "proof_validation", "structured_task_packet_generation"]
+    primary_selection_rule: "Public sandbox only, pinned free variant preferred."
+    cost_guard: "free"
+    privacy_guard: "PUBLIC_SANDBOX or PUBLIC_REPO low-risk only."
+    risk_guard: "R0-R2 only."
+    benchmark_requirement: "Required even for dev-aid enablement."
+    escalation_path: "openrouter_paid_or_direct_api"
