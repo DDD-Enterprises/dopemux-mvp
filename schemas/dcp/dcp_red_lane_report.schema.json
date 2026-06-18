@@ -23,13 +23,16 @@
     "packet_id": { "type": "string" },
     "scanner": {
       "type": "object",
-      "required": ["implementation", "live_adapters_used", "external_writes_used", "dopetask_execution_used", "github_api_used"],
+      "required": ["implementation", "live_adapters_used", "external_writes_used", "dopetask_execution_used", "github_api_used", "taxonomy_id", "taxonomy_path", "taxonomy_lane_ids"],
       "properties": {
         "implementation": { "const": "local" },
         "live_adapters_used": { "const": false },
         "external_writes_used": { "const": false },
         "dopetask_execution_used": { "const": false },
-        "github_api_used": { "const": false }
+        "github_api_used": { "const": false },
+        "taxonomy_id": { "type": "string" },
+        "taxonomy_path": { "type": "string" },
+        "taxonomy_lane_ids": { "type": "array", "items": { "type": "string" } }
       }
     },
     "repo": {
