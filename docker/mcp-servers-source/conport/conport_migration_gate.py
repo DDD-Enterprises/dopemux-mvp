@@ -44,6 +44,12 @@ class SchemaChecks:
     views: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class LedgerSnapshot:
+    format: str
+    rows: dict[str, dict]
+
+
 def normalize_database_url(raw_url: str) -> str:
     if raw_url.startswith("postgresql+asyncpg://"):
         return "postgresql://" + raw_url.removeprefix("postgresql+asyncpg://")
@@ -154,15 +160,56 @@ async def ensure_ledger(conn) -> None:
     )
 
 
-async def fetch_ledger(conn) -> dict[str, dict]:
+async def ledger_columns(conn) -> set[str]:
     rows = await conn.fetch(
-        f"""
-        SELECT name, rank, checksum, status, error
-        FROM {LEDGER_TABLE}
-        ORDER BY rank
         """
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = $1
+        """,
+        LEDGER_TABLE,
     )
-    return {row["name"]: dict(row) for row in rows}
+    return {row["column_name"] for row in rows}
+
+
+async def fetch_ledger(conn) -> LedgerSnapshot:
+    columns = await ledger_columns(conn)
+    canonical_columns = {"name", "rank", "checksum", "status", "error"}
+    legacy_columns = {"version", "filename", "checksum_sha256", "success"}
+
+    if canonical_columns.issubset(columns):
+        rows = await conn.fetch(
+            f"""
+            SELECT name, rank, checksum, status, error
+            FROM {LEDGER_TABLE}
+            ORDER BY rank
+            """
+        )
+        return LedgerSnapshot("canonical", {row["name"]: dict(row) for row in rows})
+
+    if legacy_columns.issubset(columns):
+        rows = await conn.fetch(
+            f"""
+            SELECT version, filename, checksum_sha256, success
+            FROM {LEDGER_TABLE}
+            ORDER BY version
+            """
+        )
+        return LedgerSnapshot(
+            "legacy",
+            {
+                row["filename"]: {
+                    "name": row["filename"],
+                    "rank": row["version"],
+                    "checksum": row["checksum_sha256"],
+                    "status": "applied" if row["success"] else "failed",
+                    "error": None,
+                }
+                for row in rows
+            },
+        )
+
+    raise MigrationGateError("migration ledger has unsupported schema")
 
 
 async def validate_ledger(conn, migrations: Iterable[MigrationFile]) -> list[str]:
@@ -175,13 +222,13 @@ async def validate_ledger(conn, migrations: Iterable[MigrationFile]) -> list[str
         return [f"migration ledger missing: {LEDGER_TABLE}"]
 
     try:
-        rows = await fetch_ledger(conn)
+        snapshot = await fetch_ledger(conn)
     except Exception as exc:
         raise MigrationGateError("migration ledger validation failed") from exc
 
     errors: list[str] = []
     for migration in migrations:
-        row = rows.get(migration.name)
+        row = snapshot.rows.get(migration.name)
         if not row:
             errors.append(f"missing ledger row: {migration.name}")
             continue
@@ -239,9 +286,9 @@ async def apply_gate(conn, migrations: list[MigrationFile]) -> None:
     await conn.execute("SELECT pg_advisory_lock($1)", LOCK_KEY)
     try:
         await ensure_ledger(conn)
-        rows = await fetch_ledger(conn)
+        snapshot = await fetch_ledger(conn)
         for migration in migrations:
-            row = rows.get(migration.name)
+            row = snapshot.rows.get(migration.name)
             if row:
                 if row["checksum"] != migration.checksum:
                     raise MigrationGateError(f"checksum mismatch: {migration.name}")
@@ -250,6 +297,11 @@ async def apply_gate(conn, migrations: list[MigrationFile]) -> None:
                 if row["status"] != "applied":
                     raise MigrationGateError(f"ledger row is not applied: {migration.name}")
                 continue
+
+            if snapshot.format != "canonical":
+                raise MigrationGateError(
+                    "legacy migration ledger cannot be mutated by this gate"
+                )
 
             try:
                 await conn.execute(migration.sql)
@@ -277,7 +329,7 @@ async def apply_gate(conn, migrations: list[MigrationFile]) -> None:
                 migration.rank,
                 migration.checksum,
             )
-            rows[migration.name] = {
+            snapshot.rows[migration.name] = {
                 "name": migration.name,
                 "rank": migration.rank,
                 "checksum": migration.checksum,
