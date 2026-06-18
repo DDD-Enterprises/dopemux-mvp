@@ -1,0 +1,89 @@
+{
+  "id": "DMX-COCKPIT-FONTS-104-resolve-case-collisions",
+  "project": "dopemux-mvp",
+  "target": "Resolve the 6 case-collision pairs in the Dopemux Cockpit TUI Design System dir (ACCEPTANCE/acceptance, PREIMPLEMENTATION/preimplementation, README/readme, SKILL/skill, assets/README+readme, ui_kits/cockpit/README+readme) by removing the redundant casing with git rm --cached after gating on byte-identity, keeping the casing inbound links use (default UPPER). git mv is forbidden because core.ignorecase=true makes it a no-op.",
+  "invariants": [
+    "Run from a clean origin/main branch; enumerate pairs via `git ls-tree -r origin/main` (NOT the working tree); expect exactly 6 pairs.",
+    "Ignore the working-tree-only fonts/README.md artifact (it does not exist on origin/main).",
+    "For each pair, confirm byte-identity (`git diff <UPPER> <lower>` empty) BEFORE removal; if divergent, reconcile content into the keeper first.",
+    "Removal MUST use `git rm --cached` on the redundant member; `git mv` is forbidden (no-op under core.ignorecase=true).",
+    "Canonical casing = the casing inbound links already reference; default README.md UPPER per GitHub convention.",
+    "Only the 6 redundant files are removed; inbound reference fixes are deferred to packet 105.",
+    "After completion, a case-insensitive scan of the design-system dir has zero duplicate paths."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-cockpit-fonts",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "fix(cockpit-design-system): resolve 6 case-collision pairs via git rm --cached (DMX-COCKPIT-FONTS-104)",
+    "allowlist": [
+      "docs/03-reference/Dopemux Cockpit TUI Design System/acceptance.md",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/preimplementation.md",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/readme.md",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/skill.md",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/assets/readme.md",
+      "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/readme.md",
+      "task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-104-resolve-case-collisions.json",
+      "proof/cockpit-fonts-104/**"
+    ],
+    "verify": [
+      "python -m json.tool 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-104-resolve-case-collisions.json' >/dev/null",
+      "python -m jsonschema -i 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-104-resolve-case-collisions.json' docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -z \"$(git ls-files 'docs/03-reference/Dopemux Cockpit TUI Design System' | tr 'A-Z' 'a-z' | sort | uniq -d)\"",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(cockpit-design-system): resolve 6 case-collision pairs (DMX-COCKPIT-FONTS-104)",
+    "body": "Resolves the audit's actual merge-blocker: 6 case-collision pairs (ACCEPTANCE/acceptance, PREIMPLEMENTATION/preimplementation, README/readme, SKILL/skill, assets/README, ui_kits/cockpit/README) where both casings are tracked. On a case-insensitive FS only one of each materializes. The pairs are byte-identical on origin/main, so removal is a clean `git rm --cached` of the redundant casing (git mv no-ops under core.ignorecase=true). Inbound reference fixes follow in packet 105.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "thinkdeep", "challenge", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "From a clean branch off origin/main, enumerate the case-collision pairs via `git ls-tree -r origin/main -- 'docs/03-reference/Dopemux Cockpit TUI Design System'` lowercased + uniq -d; confirm exactly 6. For each pair, run `git diff <UPPER> <lower>` to confirm byte-identity, and survey inbound links to decide the canonical casing (default UPPER). Record the per-pair keep/remove decision + identity verdict in proof.",
+      "validation": [
+        "Exactly 6 collision pairs enumerated from origin/main (not the working tree).",
+        "Each pair confirmed byte-identical (or a content-reconciliation note recorded if not).",
+        "Per-pair canonical-casing decision recorded with the inbound-link evidence."
+      ],
+      "context_files": [
+        "docs/03-reference/Dopemux Cockpit TUI Design System/README.md",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/ACCEPTANCE.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "For each pair, `git rm --cached` the redundant-casing member (default: the lowercase twin). Do NOT use git mv. Commit. Produce the inbound-reference handoff list (files that point at a removed casing) for packet 105.",
+      "validation": [
+        "Each redundant member removed via git rm --cached; no git mv used.",
+        "The surviving keeper for each pair is present in the index.",
+        "Handoff list of inbound references to the removed casings written to proof."
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "S3",
+      "task": "Validate: a case-insensitive scan (`git ls-files <dir> | tr A-Z a-z | sort | uniq -d`) of the design-system dir is empty; a fresh checkout on a case-insensitive FS materializes all keepers with no warnings. Validate the TP JSON, commit allowlisted files only, open PR, write proof bundle.",
+      "validation": [
+        "Case-insensitive duplicate scan is empty for the design-system dir.",
+        "python -m jsonschema exits 0; only allowlisted files staged; git diff --check clean.",
+        "Proof bundle records the 6 removals, the kept casing per pair, and the 105 handoff list."
+      ]
+    }
+  ]
+}
