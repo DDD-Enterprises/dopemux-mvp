@@ -14,7 +14,7 @@ prelude: Proof bundle for live packet 100 execution and repo-side migration gate
 
 ## Result
 
-**REPO-SIDE GATE IMPLEMENTED / LIVE APPLY NOT_RUN.**
+**REPO-SIDE GATE IMPLEMENTED / LIVE VERIFY PASS / LIVE APPLY NOT_RUN.**
 
 Packet 100 originally failed closed because evidence did not prove ConPort
 migration foundation readiness:
@@ -209,6 +209,12 @@ run and verified:
 - rerun verify and confirm ledger/checksum/schema state,
 - update live task-orchestrator packet 100 proof and status.
 
+Current 2026-06-17 continuation status: the live database path has now been
+verified in read-only mode through the legacy ledger compatibility path. Live
+`--apply` remains NOT_RUN because the live legacy ledger and foundation schema
+already verify. Remaining packet finality depends on task-orchestrator packet
+progression and PR/merge policy, not on a required live schema mutation.
+
 ## Continuation evidence 2026-06-17
 
 Task-orchestrator remains unavailable from this Codex session:
@@ -261,6 +267,60 @@ Live `--apply` remains NOT_RUN. Because the live ledger exists with an
 incompatible schema, applying is not just an ordinary missing-ledger case and
 requires explicit operator approval plus a ledger compatibility decision.
 
+## Ledger compatibility evidence 2026-06-17
+
+Read-only live introspection showed the existing ledger is a legacy successful
+ledger, not an empty or failed ledger. The live ledger columns are:
+
+```text
+version
+filename
+checksum_sha256
+applied_at
+execution_seconds
+success
+```
+
+Observed successful foundation ledger rows:
+
+```text
+1 001_enhanced_decision_model.sql f90baa9ffa40a1f10394381dfd0332c8d7b9779cfae8b472e5867921adb73666 success=true
+2 002_decision_patterns_table.sql 8c9c9988d2799e279fa19b1263b1d72809eea87ce0321813041ddfecc329ec57 success=true
+3 003_multi_tenancy_foundation.sql a4dbd6a53838fcc8b8cae88304d40a3c0ca21dfe6143b0f661452735e49c16a6 success=true
+```
+
+Those checksums match the committed migration files. Read-only object checks
+also found the required foundation tables and views:
+
+```text
+decision_relationships
+adhd_metrics
+review_reminders
+decision_patterns
+users
+workspaces
+user_workspace_access
+recent_activity
+decisions_needing_review
+pattern_statistics
+```
+
+The gate now supports both:
+
+- canonical gate ledger rows: `name`, `rank`, `checksum`, `status`, `error`
+- legacy live ledger rows: `version`, `filename`, `checksum_sha256`, `success`
+
+Legacy ledger support is read/verify compatible only. If a required migration
+row is missing from a legacy ledger, `--apply` fails closed rather than writing
+canonical rows into a legacy ledger shape.
+
+After this compatibility fix, live verify-only execution against the running
+`mcp-conport` container returned:
+
+```json
+{"migrations": ["001_enhanced_decision_model.sql", "002_decision_patterns_table.sql", "003_multi_tenancy_foundation.sql"], "status": "verified"}
+```
+
 ## Validation
 
 PASS:
@@ -269,11 +329,14 @@ PASS:
 - `python3 -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`
 - `PYTHONPATH=docker/mcp-servers-source/conport python3 -m pytest docker/mcp-servers-source/conport/tests/test_migration_gate.py -q`
   - 2026-06-17 continuation: `6 passed`
+  - 2026-06-17 ledger compatibility continuation: `9 passed`
 - `python3 -m py_compile docker/mcp-servers-source/conport/conport_migration_gate.py`
 - `python3 docker/mcp-servers-source/conport/conport_migration_gate.py --help >/dev/null`
 - source evidence check confirmed Dockerfile copies gate and migrations and the
   gate contains ledger and advisory lock code
 - `git diff --check`
+- Live verify-only execution against running `mcp-conport` returned exit code 0
+  with `{"migrations": ["001_enhanced_decision_model.sql", "002_decision_patterns_table.sql", "003_multi_tenancy_foundation.sql"], "status": "verified"}`.
 
 FAIL:
 
@@ -288,6 +351,8 @@ FAIL:
 NOT_RUN:
 
 - Live DB `--apply`: requires explicit operator approval for schema mutation.
+  The 2026-06-17 compatibility continuation did not require mutation because
+  the live legacy ledger and schema verified read-only.
 - Live task-orchestrator packet completion/update: task-orchestrator transport
   was unavailable during this pass.
 - Continuation PAL codereview/precommit: PAL transport was unavailable during

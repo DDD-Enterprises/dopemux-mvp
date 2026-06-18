@@ -6,11 +6,14 @@ import pytest
 from conport_migration_gate import (
     FOUNDATION_MIGRATIONS,
     LEDGER_TABLE,
+    MigrationFile,
     MigrationGateError,
+    apply_gate,
     checksum_sql,
     discover_foundation_migrations,
     normalize_database_url,
     required_schema_checks,
+    validate_ledger,
     verify_gate,
 )
 
@@ -66,3 +69,104 @@ def test_verify_gate_fails_closed_when_ledger_shape_is_incompatible():
 
     with pytest.raises(MigrationGateError, match="migration ledger validation failed"):
         asyncio.run(verify_gate(IncompatibleLedgerConnection(), []))
+
+
+def test_validate_ledger_accepts_legacy_success_rows_with_matching_checksums():
+    migrations = [
+        MigrationFile(
+            name="001_enhanced_decision_model.sql",
+            path=Path("001_enhanced_decision_model.sql"),
+            checksum="abc123",
+            sql="SELECT 1;",
+            rank=1,
+        )
+    ]
+
+    class LegacyLedgerConnection:
+        async def fetchval(self, *_args):
+            return LEDGER_TABLE
+
+        async def fetch(self, query, *_args):
+            if "information_schema.columns" in query:
+                return [
+                    {"column_name": "version"},
+                    {"column_name": "filename"},
+                    {"column_name": "checksum_sha256"},
+                    {"column_name": "success"},
+                ]
+            return [
+                {
+                    "version": 1,
+                    "filename": "001_enhanced_decision_model.sql",
+                    "checksum_sha256": "abc123",
+                    "success": True,
+                }
+            ]
+
+    assert asyncio.run(validate_ledger(LegacyLedgerConnection(), migrations)) == []
+
+
+def test_validate_ledger_rejects_legacy_failed_rows():
+    migrations = [
+        MigrationFile(
+            name="001_enhanced_decision_model.sql",
+            path=Path("001_enhanced_decision_model.sql"),
+            checksum="abc123",
+            sql="SELECT 1;",
+            rank=1,
+        )
+    ]
+
+    class LegacyLedgerConnection:
+        async def fetchval(self, *_args):
+            return LEDGER_TABLE
+
+        async def fetch(self, query, *_args):
+            if "information_schema.columns" in query:
+                return [
+                    {"column_name": "version"},
+                    {"column_name": "filename"},
+                    {"column_name": "checksum_sha256"},
+                    {"column_name": "success"},
+                ]
+            return [
+                {
+                    "version": 1,
+                    "filename": "001_enhanced_decision_model.sql",
+                    "checksum_sha256": "abc123",
+                    "success": False,
+                }
+            ]
+
+    errors = asyncio.run(validate_ledger(LegacyLedgerConnection(), migrations))
+
+    assert errors == ["ledger row is not applied: 001_enhanced_decision_model.sql"]
+
+
+def test_apply_gate_refuses_to_mutate_missing_rows_in_legacy_ledger():
+    migrations = [
+        MigrationFile(
+            name="001_enhanced_decision_model.sql",
+            path=Path("001_enhanced_decision_model.sql"),
+            checksum="abc123",
+            sql="SELECT 1;",
+            rank=1,
+        )
+    ]
+
+    class LegacyLedgerConnection:
+        async def execute(self, *_args):
+            return None
+
+        async def fetch(self, query, *_args):
+            if "information_schema.columns" in query:
+                return [
+                    {"column_name": "version"},
+                    {"column_name": "filename"},
+                    {"column_name": "checksum_sha256"},
+                    {"column_name": "success"},
+                ]
+            return []
+
+    with pytest.raises(MigrationGateError, match="legacy migration ledger"):
+        asyncio.run(apply_gate(LegacyLedgerConnection(), migrations))
