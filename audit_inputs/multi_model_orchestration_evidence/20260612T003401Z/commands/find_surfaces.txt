@@ -1,0 +1,848 @@
+## command: find surfaces
+## cwd: /Users/hue/code/dopemux-mvp/.worktrees/gpt55-recon-chain
+## started_at_utc: 2026-06-12T00:34:01Z
+./.claude/agents/python-mcp-expert.agent.md
+./.claude/commands/tm/workflows/command-pipeline.md
+./.claude/commands/tm/workflows/smart-workflow.md
+./.claude/hooks/orchestrator_subagent_protocol.py
+./.claude/mcp-system.md
+./.claude/modules/custom-commands.md
+./.claude/modules/shared/superclaude-workflows.md
+./.claude/personas/Ultimate-Transparent-Thinking-Beast-Mode.agent.md
+./.claude/personas/adr-generator.agent.md
+./.claude/personas/context7.agent.md
+./.claude/personas/critical-thinking.agent.md
+./.claude/personas/devils-advocate.agent.md
+./.claude/personas/devops-expert.agent.md
+./.claude/personas/gilfoyle.agent.md
+./.claude/personas/github-actions-expert.agent.md
+./.claude/personas/implementation-plan.agent.md
+./.claude/personas/janitor.agent.md
+./.claude/personas/mentor.agent.md
+./.claude/personas/meta-agentic-project-scaffold.agent.md
+./.claude/personas/modernization.agent.md
+./.claude/personas/plan.agent.md
+./.claude/personas/prd.agent.md
+./.claude/personas/principal-software-engineer.agent.md
+./.claude/personas/prompt-builder.agent.md
+./.claude/personas/prompt-engineer.agent.md
+./.claude/personas/python-mcp-expert.agent.md
+./.claude/personas/refine-issue.agent.md
+./.claude/personas/se-gitops-ci-specialist.agent.md
+./.claude/personas/se-product-manager-advisor.agent.md
+./.claude/personas/se-security-reviewer.agent.md
+./.claude/personas/se-system-architecture-reviewer.agent.md
+./.claude/personas/se-technical-writer.agent.md
+./.claude/personas/se-ux-ui-designer.agent.md
+./.claude/personas/search-ai-optimization-expert.agent.md
+./.claude/personas/specification.agent.md
+./.claude/personas/task-planner.agent.md
+./.claude/personas/task-researcher.agent.md
+./.claude/personas/tech-debt-remediation-plan.agent.md
+./.claude/personas/wg-code-alchemist.agent.md
+./.claude/personas/wg-code-sentinel.agent.md
+./.claude/personas/workflow-executor.agent.md
+./.claude/personas/workflow-manager.agent.md
+./.claude/task-master-mcp-config.json
+./.dopemux/mcp.instances.toml
+./.github/agents/dopemux-auditor.agent.md
+./.github/agents/dopemux-implementer.agent.md
+./.github/agents/dopemux-planner.agent.md
+./.github/agents/dopemux-reader.agent.md
+./.github/agents/dopemux-reviewer.agent.md
+./.github/agents/dopemux-testgen.agent.md
+./.mcp.json
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic/genetic_agent.py
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic_agent/genetic/enhanced_iterative_agent.py
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic_agent/genetic/genetic_agent.py
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic_agent/genetic_agent/backups/genetic-agent-20251107_150759.tar
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic_agent/genetic_agent/backups/genetic-agent-20251107_150903.tar
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic_agent/genetic_agent/backups/genetic-agent-20251107_151230.tar
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic_agent/genetic_agent/backups/genetic-agent-20251107_152239.tar
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic_agent/genetic_agent/backups/genetic-agent-20251107_152623.tar
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic_agent/genetic_agent/backups/genetic-agent-20251107_152642.tar
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic_agent/genetic_agent/docs/genetic_agent_api.md
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic_agent/tests/unit/test_base_agent.py
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/genetic_agent/vanilla/vanilla_agent.py
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/test_enhanced_agent.py
+./SYSTEM_ARCHIVE/genetic_agent_root_duplicate/vanilla/vanilla_agent.py
+./claudedocs/beta-mcp-02-compose-healthchecks-proof-2026-05-31.md
+./claudedocs/beta-mcp-03-adhd-redis-isolation-proof-2026-05-31.md
+./claudedocs/gptr-mcp-container-update-proof-2026-06-04.md
+./claudedocs/pr713-auditor-router-pal-clink-audit-2026-05-30.md
+./config/ai/model-routing.policy.yaml
+./config/ai/model-routing.schema.json
+./config/instructions/agent-skills.instructions.md
+./config/instructions/agents.instructions.md
+./config/instructions/python-mcp-server.instructions.md
+./config/profiles/workflow-executor.yaml
+./config/profiles/workflow-manager.yaml
+./docker/mcp-servers-source/conport/conport_mcp_stdio.py
+./docker/mcp-servers-source/conport/tests/test_worktree_routing.py
+./docker/mcp-servers-source/gpt-researcher/scripts/mcp_server.py
+./docker/mcp-servers-source/leantime-bridge/mcp_stdio.py
+./docker/mcp-servers-source/pal/pal-mcp-server/conf/openrouter_models.json
+./docker/mcp-servers-source/pal/pal-mcp-server/providers/openrouter.py
+./docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_consensus_workflow_accurate.py
+./docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_fallback.py
+./docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_models.py
+./docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_clink_claude_agent.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_clink_codex_agent.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_clink_gemini_agent.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_docker_mcp_validation.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_openrouter_provider.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_openrouter_registry.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_precommit_workflow.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_provider_routing_bugs.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_workflow_file_embedding.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_workflow_metadata.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_workflow_prompt_size_validation_simple.py
+./docker/mcp-servers-source/pal/pal-mcp-server/tests/test_workflow_utf8.py
+./docker/mcp-servers-source/services/mcp-client/test_desktop_commander.py
+./docker/mcp-servers-source/start-all-mcp-servers.sh
+./docs/01-tutorials/quick-launch-commands.md
+./docs/02-how-to/extraction/truth-run-command.md
+./docs/02-how-to/instance-slash-commands.md
+./docs/02-how-to/internal-workflow-kit.md
+./docs/02-how-to/manage-mcp-servers.md
+./docs/02-how-to/mcp-service-discovery-guide.md
+./docs/02-how-to/mcp-troubleshooting.md
+./docs/02-how-to/model-routing-usage.md
+./docs/02-how-to/multi-instance-workflow.md
+./docs/02-how-to/operations/workflow-idea-epic-lifecycle.md
+./docs/02-how-to/operator-workflows.md
+./docs/02-how-to/rollout/agent-enablement-guide.md
+./docs/03-reference/architecture/dopemux-multi-agent-ingress-architecture.md
+./docs/03-reference/best-practices/mcp-token-management-moved-2.md
+./docs/03-reference/best-practices/mcp-token-management-moved.md
+./docs/03-reference/best-practices/mcp-token-management.md
+./docs/03-reference/dcp/model-routing-domain.md
+./docs/03-reference/development-factory/model-routing.md
+./docs/03-reference/dopemux-architecture-research-multi-agent-gateway.md
+./docs/03-reference/dx-command-authoring.md
+./docs/03-reference/fast-dev-os/prompts/github-copilot-agent-prompt.md
+./docs/03-reference/fast-dev-os/validation-command-library.md
+./docs/03-reference/features/f-new-9-energy-task-router.md
+./docs/03-reference/governance/agent-workflow.md
+./docs/03-reference/governance/model-routing.md
+./docs/03-reference/instructions/agents-2.md
+./docs/03-reference/instructions/agents-3.md
+./docs/03-reference/instructions/agents.md
+./docs/03-reference/instructions/ai-agent-handoff-guide.md
+./docs/03-reference/internal-workflow-kit.md
+./docs/03-reference/mcp-tools-overview.md
+./docs/03-reference/orchestrator-integration/mcp-wrappers.md
+./docs/03-reference/planes/pm/_evidence/PM-INV-00.commands.txt
+./docs/03-reference/planes/pm/dopemux/04-routing-policy-and-cost.md
+./docs/03-reference/planes/pm/pm-metadata-vs-workflow.md
+./docs/03-reference/planes/pm/pm-workflows-derived.md
+./docs/03-reference/pr-pipeline/merge/workflow-sequence.md
+./docs/03-reference/pr-pipeline/prep/workflow-sequence.md
+./docs/03-reference/routing.md
+./docs/03-reference/serena-v2-mcp-tools.md
+./docs/03-reference/skills/pr-merge-specialist/gemini/custom-commands.md
+./docs/03-reference/spec/dope-memory/v1/07-mcp-contracts-2.md
+./docs/03-reference/spec/dope-memory/v1/07-mcp-contracts.md
+./docs/03-reference/task-packets/rte-04-fl-routing-and-benchmark-governance-evidence.md
+./docs/04-explanation/architecture/agent-integration-guide.md
+./docs/04-explanation/architecture/decisions/002-mcp-service-discovery.md
+./docs/04-explanation/generic-coding-agent-simplified.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-004-visual-workflow-ui (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-004-visual-workflow-ui.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-007-routing-logic-architecture (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-007-routing-logic-architecture.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-010-custom-agent-rnd-strategy (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-010-custom-agent-rnd-strategy.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-014-slice-based-development-workflow (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-014-slice-based-development-workflow.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__finaldocs__workflows__taskmaster__taskmaster_integration (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__finaldocs__workflows__taskmaster__taskmaster_integration.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__Architecture and Orchestration Research Claude Flow vs Vlaude code (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__Architecture and Orchestration Research Claude Flow vs Vlaude code.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__baseDataAndDesign (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__baseDataAndDesign.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__conport-strategy (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__conport-strategy.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__.claude__claude (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__.claude__claude.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__MCP_ORCHESTRATION_SUMMARY (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__MCP_ORCHESTRATION_SUMMARY.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__README-MULTI-INSTANCE (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__README-MULTI-INSTANCE.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__SERVER_REGISTRY (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__SERVER_REGISTRY.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__SLASH-COMMANDS-SETUP (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__SLASH-COMMANDS-SETUP.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__docrag-service__README (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__docrag-service__README.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__.claude__claude (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__.claude__claude.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__.venv__lib__python3.13__site-packages__docstring_parser-0.17.0.dist-info__licenses__LICENSE (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__.venv__lib__python3.13__site-packages__docstring_parser-0.17.0.dist-info__licenses__LICENSE.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CHANGELOG (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CHANGELOG.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CLAUDE (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CLAUDE.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__GEMINI (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__GEMINI.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__HEALTH_MONITORING (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__HEALTH_MONITORING.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README.zh-CN (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README.zh-CN.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__REFACTORING_SUMMARY (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__REFACTORING_SUMMARY.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__VALIDATION_FIX_DOCUMENTATION (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__VALIDATION_FIX_DOCUMENTATION.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__.github__pull_request_template (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__.github__pull_request_template.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CHANGELOG (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CHANGELOG.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CLAUDE (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CLAUDE.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__README (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__README.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docker__README (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docker__README.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_providers (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_providers.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_tools (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_tools.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__advanced-usage (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__advanced-usage.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai-collaboration (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai-collaboration.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai_banter (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai_banter.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__configuration (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__configuration.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__context-revival (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__context-revival.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__contributions (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__contributions.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__custom_models (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__custom_models.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__docker-deployment (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__docker-deployment.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__gemini-setup (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__gemini-setup.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__getting-started (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__getting-started.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__locale-configuration (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__locale-configuration.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__testing (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__testing.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__analyze (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__analyze.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__chat (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__chat.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__codereview (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__codereview.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__consensus (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__consensus.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__debug (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__debug.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__docgen (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__docgen.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__listmodels (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__listmodels.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__planner (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__planner.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__precommit (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__precommit.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__refactor (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__refactor.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__secaudit (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__secaudit.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__testgen (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__testgen.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__thinkdeep (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__thinkdeep.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__tracer (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__tracer.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__version (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__version.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__troubleshooting (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__troubleshooting.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__vcr-testing (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__vcr-testing.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__wsl-setup (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__wsl-setup.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__patch__README (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__patch__README.md
+./docs/04-explanation/history/sourceFiles/docs__02-how-to__how-to-use-mcp-system (1).md
+./docs/04-explanation/history/sourceFiles/docs__02-how-to__how-to-use-mcp-system.md
+./docs/04-explanation/history/sourceFiles/docs__03-reference__mcp__tools-inventory (1).md
+./docs/04-explanation/history/sourceFiles/docs__03-reference__mcp__tools-inventory.md
+./docs/04-explanation/history/sourceFiles/docs__03-reference__mcp__workflow-mapping (1).md
+./docs/04-explanation/history/sourceFiles/docs__03-reference__mcp__workflow-mapping.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__dynamic-discovery (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__dynamic-discovery.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__orchestration-roadmap (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__orchestration-roadmap.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__routing-matrix (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__routing-matrix.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__server-specifications (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__server-specifications.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__metamcp-context-lean-toolsets (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__metamcp-context-lean-toolsets.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__features__mcp-ecosystem (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__features__mcp-ecosystem.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__features__multi-instance-mcp (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__features__multi-instance-mcp.md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__035-mcp-system-integration-success (1).md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__035-mcp-system-integration-success.md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__040-sync-mechanism-polling-mcp (1).md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__040-sync-mechanism-polling-mcp.md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__adr-0034-metamcp-role-aware-tool-brokering (1).md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__adr-0034-metamcp-role-aware-tool-brokering.md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__adr-009-context-aware-routing (1).md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__adr-009-context-aware-routing.md
+./docs/04-explanation/history/sourceFiles/docs__91-rfc__rfc-0042-semantic-search-mcp (1).md
+./docs/04-explanation/history/sourceFiles/docs__91-rfc__rfc-0042-semantic-search-mcp.md
+./docs/04-explanation/history/sourceFiles/docs__91-rfc__rfc-0043-metamcp-orchestration-system (1).md
+./docs/04-explanation/history/sourceFiles/docs__91-rfc__rfc-0043-metamcp-orchestration-system.md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-mcp-http-transport-troubleshooting (1).md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-mcp-http-transport-troubleshooting.md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-mcp-system-integration (1).md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-mcp-system-integration.md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-metamcp-deployment-status (1).md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-metamcp-deployment-status.md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-004-visual-workflow-ui (1).md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-004-visual-workflow-ui.md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection (1).md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection.md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-007-routing-logic-architecture (1).md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-007-routing-logic-architecture.md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-010-custom-agent-rnd-strategy (1).md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-010-custom-agent-rnd-strategy.md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns (1).md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns.md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-014-slice-based-development-workflow (1).md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-014-slice-based-development-workflow.md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__finaldocs__workflows__taskmaster__taskmaster_integration (1).md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__finaldocs__workflows__taskmaster__taskmaster_integration.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-004-visual-workflow-ui (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-004-visual-workflow-ui.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-007-routing-logic-architecture (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-007-routing-logic-architecture.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-010-custom-agent-rnd-strategy (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-010-custom-agent-rnd-strategy.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-014-slice-based-development-workflow (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-014-slice-based-development-workflow.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__finaldocs__workflows__taskmaster__taskmaster_integration (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__finaldocs__workflows__taskmaster__taskmaster_integration.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__Architecture and Orchestration Research Claude Flow vs Vlaude code (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__Architecture and Orchestration Research Claude Flow vs Vlaude code.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__baseDataAndDesign (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__baseDataAndDesign.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__conport-strategy (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__conport-strategy.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__findings__multi-agent-coding-systems (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__findings__multi-agent-coding-systems.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__findings__superclaude and zen-mcp research (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__findings__superclaude and zen-mcp research.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__integrations__dopemux_routing_logic_design_doc_spec_v_0 (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__integrations__dopemux_routing_logic_design_doc_spec_v_0.md
+./docs/04-explanation/history/sourceFiles/docs__adr__ADR-006-keep-letta-agent-tier-memory (1).md
+./docs/04-explanation/history/sourceFiles/docs__adr__ADR-006-keep-letta-agent-tier-memory.md
+./docs/04-explanation/history/sourceFiles/docs__decisions__adr-017-mcp-proxy-integration (1).md
+./docs/04-explanation/history/sourceFiles/docs__decisions__adr-017-mcp-proxy-integration.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__ACTUAL_MCP_TOOLS_INVENTORY (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__ACTUAL_MCP_TOOLS_INVENTORY.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__Architecture and Orchestration Research Claude Flow vs Vlaude code (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__Architecture and Orchestration Research Claude Flow vs Vlaude code.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__COMPLETE_TOOL_WORKFLOW_MAPPING (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__COMPLETE_TOOL_WORKFLOW_MAPPING.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__baseDataAndDesign (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__baseDataAndDesign.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__conport-strategy (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__conport-strategy.md
+./docs/04-explanation/history/sourceFiles/integration__superclaude__superclaude-command-analysis (1).md
+./docs/04-explanation/history/sourceFiles/integration__superclaude__superclaude-command-analysis.md
+./docs/04-explanation/history/sourceFiles/output__individual_files__multi_agent_coding_systems_findings (1).md
+./docs/04-explanation/history/sourceFiles/output__individual_files__multi_agent_coding_systems_findings.md
+./docs/04-explanation/history/sourceFiles/output__individual_files__superclaude_and_zen_mcp_research_findings (1).md
+./docs/04-explanation/history/sourceFiles/output__individual_files__superclaude_and_zen_mcp_research_findings.md
+./docs/04-explanation/technical-deep-dives/desktop-commander-deep-dive-2.md
+./docs/04-explanation/technical-deep-dives/desktop-commander-deep-dive-3.md
+./docs/04-explanation/technical-deep-dives/desktop-commander-deep-dive.md
+./docs/04-explanation/technical-deep-dives/voice-commands-deep-dive-2.md
+./docs/04-explanation/technical-deep-dives/voice-commands-deep-dive-3.md
+./docs/04-explanation/technical-deep-dives/voice-commands-deep-dive.md
+./docs/04-explanation/workflow-kit-architecture.md
+./docs/05-audit-reports/mcp-customization/07-mcp-customization-synthesis-dr-report.md
+./docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md
+./docs/06-research/dopemux-agent-system-forensic-architectural-audit.md
+./docs/06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md
+./docs/06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md
+./docs/06-research/gemini-routing-fix-prompt.md
+./docs/06-research/investigations/designing-and-stress-testing-agent-systems.md
+./docs/06-research/investigations/multi-agent-ai-systems-research-2025-10-15.md
+./docs/06-research/investigations/multi-llm-routing-and-cost-optimization.md
+./docs/06-research/investigations/research-knowledge-graph-agent-memory-20251023.md
+./docs/06-research/multi-agent-ai-systems-research-2025-10-15.md
+./docs/06-research/research-knowledge-graph-agent-memory-20251023.md
+./docs/90-adr/adr-001-workflow-centric-ia-and-handoff-packet-model.md
+./docs/90-adr/adr-197-task-epic-workflow-system-2.md
+./docs/90-adr/adr-197-task-epic-workflow-system-3.md
+./docs/90-adr/adr-197-task-epic-workflow-system.md
+./docs/90-adr/adr-208-mcp-config-drift-prevention-2.md
+./docs/90-adr/adr-208-mcp-config-drift-prevention-3.md
+./docs/90-adr/adr-208-mcp-config-drift-prevention.md
+./docs/90-adr/adr-214-mcp-leantime-decoupling-2.md
+./docs/90-adr/adr-214-mcp-leantime-decoupling-3.md
+./docs/90-adr/adr-214-mcp-leantime-decoupling.md
+./docs/90-adr/adr-task-orchestrator-as-workflow-authority.md
+./docs/90-adr/global-mcp-configuration.md
+./docs/91-rfc/rfc-2026-03-26-workflow-kit-transfer.md
+./docs/91-rfc/workflow-kit-pickle-mechanics-transfer.md
+./docs/archive/claude-sessions/agent-deep-dive-analysis-20251024-2.md
+./docs/archive/claude-sessions/agent-deep-dive-analysis-20251024.md
+./docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md
+./docs/archive/claude-sessions/statusline-mcp-status-2025-10-24.md
+./docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md
+./docs/archive/claudedocs/mcp-config-fix-summary.md
+./docs/archive/completed-projects/leantime-mcp-integration-complete-2.md
+./docs/archive/completed-projects/leantime-mcp-integration-complete.md
+./docs/archive/completed-projects/mcp-token-limit-audit-2.md
+./docs/archive/completed-projects/mcp-token-limit-audit.md
+./docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md
+./docs/archive/completed-projects/mcp-token-limit-fix-summary.md
+./docs/archive/completed-projects/metamcp-complete-setup-2.md
+./docs/archive/completed-projects/metamcp-complete-setup.md
+./docs/archive/component-implementations/component-4-conport-mcp-wiring-2.md
+./docs/archive/component-implementations/component-4-conport-mcp-wiring.md
+./docs/archive/component-implementations/component-5-conport-mcp-queries-2.md
+./docs/archive/component-implementations/component-5-conport-mcp-queries.md
+./docs/archive/conport-sessions/mcp-system-development-2.md
+./docs/archive/conport-sessions/mcp-system-development.md
+./docs/archive/conport-sessions/mcp_system_development.md
+./docs/archive/deprecated/quick-start-alt-routing-2.md
+./docs/archive/deprecated/quick-start-alt-routing.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__.claude__claude.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__MCP_ORCHESTRATION_SUMMARY.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__README-MULTI-INSTANCE.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__SERVER_REGISTRY.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__SLASH-COMMANDS-SETUP.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__docrag-service__README.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__.venv__lib__python3.13__site-packages__docstring_parser-0.17.0.dist-info__licenses__LICENSE.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CHANGELOG.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CLAUDE.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__GEMINI.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__HEALTH_MONITORING.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README.zh-CN.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__REFACTORING_SUMMARY.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__VALIDATION_FIX_DOCUMENTATION.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__.github__pull_request_template.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CHANGELOG.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CLAUDE.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__README.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docker__README.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_providers.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_tools.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__advanced-usage.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai-collaboration.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai_banter.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__configuration.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__context-revival.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__contributions.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__custom_models.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__docker-deployment.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__gemini-setup.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__getting-started.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__locale-configuration.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__testing.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__analyze.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__chat.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__codereview.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__consensus.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__debug.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__docgen.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__listmodels.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__planner.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__precommit.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__refactor.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__secaudit.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__testgen.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__thinkdeep.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__tracer.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__version.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__troubleshooting.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__vcr-testing.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__wsl-setup.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__patch__README.md
+./docs/archive/history/sourceFiles/docs__02-how-to__how-to-use-mcp-system.md
+./docs/archive/history/sourceFiles/docs__03-reference__mcp__tools-inventory.md
+./docs/archive/history/sourceFiles/docs__03-reference__mcp__workflow-mapping.md
+./docs/archive/history/sourceFiles/docs__04-explanation__architecture__metamcp-context-lean-toolsets.md
+./docs/archive/history/sourceFiles/docs__04-explanation__features__mcp-ecosystem.md
+./docs/archive/history/sourceFiles/docs__04-explanation__features__multi-instance-mcp.md
+./docs/archive/history/sourceFiles/docs__90-adr__035-mcp-system-integration-success.md
+./docs/archive/history/sourceFiles/docs__90-adr__040-sync-mechanism-polling-mcp.md
+./docs/archive/history/sourceFiles/docs__90-adr__adr-0034-metamcp-role-aware-tool-brokering.md
+./docs/archive/history/sourceFiles/docs__90-adr__adr-009-context-aware-routing.md
+./docs/archive/history/sourceFiles/docs__91-rfc__rfc-0042-semantic-search-mcp.md
+./docs/archive/history/sourceFiles/docs__91-rfc__rfc-0043-metamcp-orchestration-system.md
+./docs/archive/history/sourceFiles/docs__92-runbooks__runbook-mcp-http-transport-troubleshooting.md
+./docs/archive/history/sourceFiles/docs__92-runbooks__runbook-mcp-system-integration.md
+./docs/archive/history/sourceFiles/docs__92-runbooks__runbook-metamcp-deployment-status.md
+./docs/archive/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-004-visual-workflow-ui.md
+./docs/archive/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection.md
+./docs/archive/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-007-routing-logic-architecture.md
+./docs/archive/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-010-custom-agent-rnd-strategy.md
+./docs/archive/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns.md
+./docs/archive/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-014-slice-based-development-workflow.md
+./docs/archive/history/sourceFiles/docs__DMPX IMPORT__finaldocs__workflows__taskmaster__taskmaster_integration.md
+./docs/archive/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__findings__multi-agent-coding-systems.md
+./docs/archive/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__findings__superclaude and zen-mcp research.md
+./docs/archive/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__integrations__dopemux_routing_logic_design_doc_spec_v_0.md
+./docs/archive/history/sourceFiles/docs__adr__ADR-006-keep-letta-agent-tier-memory.md
+./docs/archive/history/sourceFiles/docs__decisions__adr-017-mcp-proxy-integration.md
+./docs/archive/history/sourceFiles/docs__mcpOrchestratorTemp__ACTUAL_MCP_TOOLS_INVENTORY.md
+./docs/archive/history/sourceFiles/docs__mcpOrchestratorTemp__Architecture and Orchestration Research Claude Flow vs Vlaude code.md
+./docs/archive/history/sourceFiles/docs__mcpOrchestratorTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md
+./docs/archive/history/sourceFiles/docs__mcpOrchestratorTemp__baseDataAndDesign.md
+./docs/archive/history/sourceFiles/docs__mcpOrchestratorTemp__conport-strategy.md
+./docs/archive/history/sourceFiles/integration__superclaude__superclaude-command-analysis.md
+./docs/archive/history/sourceFiles/output__individual_files__multi_agent_coding_systems_findings.md
+./docs/archive/history/sourceFiles/output__individual_files__superclaude_and_zen_mcp_research_findings.md
+./docs/archive/implementation-plans/generic-coding-agent-methodology-2.md
+./docs/archive/implementation-plans/generic-coding-agent-methodology.md
+./docs/archive/integration-transient/claude-code/enhanced_metamcp_server.py
+./docs/archive/integration-transient/superclaude/superclaude-command-analysis.md
+./docs/archive/mcp-servers/desktop-commander-validation-2.md
+./docs/archive/mcp-servers/desktop-commander-validation.md
+./docs/archive/pipeline-v2/UPGRADE/exec-w1-ops-workflows-2.md
+./docs/archive/pipeline-v2/UPGRADE/exec-w1-ops-workflows.md
+./docs/archive/pipeline-v2/UPGRADE/prompt-w1-ops-workflow-surface-2.md
+./docs/archive/pipeline-v2/UPGRADE/prompt-w1-ops-workflow-surface.md
+./docs/archive/pipeline-v2/UPGRADE/prompt-w2-llm-workflow-cues-2.md
+./docs/archive/pipeline-v2/UPGRADE/prompt-w2-llm-workflow-cues.md
+./docs/archive/pipeline-v2/UPGRADE/prompt-w3-workflow-graph-2.md
+./docs/archive/pipeline-v2/UPGRADE/prompt-w3-workflow-graph.md
+./docs/archive/pipeline-v2/UPGRADE_legacy/exec-w1-ops-workflows-2.md
+./docs/archive/pipeline-v2/UPGRADE_legacy/exec-w1-ops-workflows.md
+./docs/archive/pipeline-v2/UPGRADE_legacy/prompt-w1-ops-workflow-surface-2.md
+./docs/archive/pipeline-v2/UPGRADE_legacy/prompt-w1-ops-workflow-surface.md
+./docs/archive/pipeline-v2/UPGRADE_legacy/prompt-w2-llm-workflow-cues-2.md
+./docs/archive/pipeline-v2/UPGRADE_legacy/prompt-w2-llm-workflow-cues.md
+./docs/archive/pipeline-v2/UPGRADE_legacy/prompt-w3-workflow-graph-2.md
+./docs/archive/pipeline-v2/UPGRADE_legacy/prompt-w3-workflow-graph.md
+./docs/archive/pm-plane-taskmaster-legacy/dopemux/03-mcp-lifecycle-and-reliability.md
+./docs/archive/session-notes/mcp-startup-fixes-2.md
+./docs/archive/session-notes/mcp-startup-fixes.md
+./docs/archive/sessions/conport/mcp-deep-dive.md
+./docs/archive/sessions/dope-context/mcp-token-limit-fix.md
+./docs/archive/sessions/task-orchestrator/week5-adhd-routing.md
+./docs/archive/unclassified-top-level/plans/pm-metadata-vs-workflow-separation.md
+./docs/archive/unclassified-top-level/pr_merge/workflow-sequence.md
+./docs/archive/unclassified-top-level/pr_prep/workflow-sequence.md
+./docs/archive/unclassified-top-level/rollout/agent-enablement-guide.md
+./docs/ops/tool-routing-matrix.md
+./docs/planes/execution/agent-leasing-contract.md
+./docs/planes/pm/_evidence/PM-ADHD-02.outputs/nl_src_dopemux_adhd_workflow_manager.py.txt
+./docs/planes/pm/_evidence/PM-AUTH-01.commands.txt
+./docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt
+./docs/planes/pm/_evidence/PM-INV-00.commands.txt
+./docs/planes/pm/_evidence/PM-INV-00.outputs/12_services_task-orchestrator_automation_workflows.py.nl.txt
+./docs/planes/pm/_evidence/PM-INV-00.outputs/12_services_task-orchestrator_conport_mcp_client.py.nl.txt
+./docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/workflow-and-gates.md
+./docs/planes/pm/_evidence/leantime-runtime-truth/workflow-and-gates.md
+./docs/planes/pm/_evidence/task-orchestrator-runtime-truth/workflow-and-gates.md
+./docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md
+./docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability.md
+./docs/planes/pm/dopemux/04-routing-policy-and-cost-2.md
+./docs/planes/pm/dopemux/04-routing-policy-and-cost.md
+./docs/planes/pm/pm-metadata-vs-workflow.md
+./docs/planes/pm/pm-workflows-derived-2.md
+./docs/planes/pm/pm-workflows-derived.md
+./docs/pr_merge/workflow-sequence.md
+./docs/pr_prep/adapters/vibe/agent-blueprint.md
+./docs/pr_prep/adapters/vibe/template-agent.md
+./docs/pr_prep/workflow-sequence.md
+./docs/rollout/agent-enablement-guide.md
+./docs/skills/pr-merge-specialist/gemini/custom-commands.md
+./dopemux_voice_branding_bundle/headers/header_agent.md
+./examples/mcp_event_integration_demo.py
+./examples/production_mcp_integration.py
+./mcp-proxy-config.copilot.yaml
+./mcp-proxy-config.json
+./mcp-proxy-config.yaml
+./mcp_catalog.yaml
+./mcp_server_health_report.sh
+./out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/THREAD_PRIMING_PROMPTS/05-dopetask-dopeagent-integration.md
+./out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.json
+./out/proofs/TP-DMX-PR-QUEUE-BLOCKERS-001/command-ledger.tsv
+./proof/TP-DOPMUX-AUTO-MCP-PROVISION-0001/INSTANCE_OVERLAY_A/mcp.compose.override.yml
+./proof/TP-DOPMUX-AUTO-MCP-PROVISION-0001/INSTANCE_OVERLAY_A/mcp.env
+./proof/epic-rte/TP-CODEX-RTE-PRELIVE-005A-PROOF-POLICY-COHERENCE/commands.txt
+./proof/repo-truth-extractor/TP-CODEX-RTE-MAIN-PR-001/verification_commands.txt
+./proof/repo-truth-extractor/TP-CODEX-RTE-MERGE-EXEC-001/verification_commands.txt
+./proof/repo-truth-extractor/TP-CODEX-RTE-PR-REVIEW-001/verification_commands.txt
+./proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-001A/verification_commands.txt
+./proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-005/verification_commands.txt
+./proof/repo-truth-extractor/TP-CODEX-RTE-PRELIVE-007/verification_commands.txt
+./proof/repo-truth-extractor/TP-CODEX-RTE-RECOVERY-UNCOMMITTED-001/verification_commands.txt
+./qa/scenarios/30_mcp_roundtrips.sh
+./qa/scenarios/60_rte_routing_safety.sh
+./reports/dopemux-cli-command-audit-2026-05-01.md
+./reports/dopemux-cli-command-reference-2026-05-01.md
+./reports/dopemux-cli-command-remediation-plan-2026-05-01.md
+./reports/leantime-pm-workflow-pack/02-workflow-and-transition-analysis.md
+./reports/task-orchestrator-pm-workflow-pack/02-workflow-legality-and-transition-analysis.md
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__ahead_behind.txt
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__commits_unique_to_branch.txt
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__diffstat_vs_main.txt
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0001-fix-routing-allow-aliases-to-reference-slots-or-mode.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0002-chore-gitignore-ignore-proof-bundles-and-router-arti.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0006-Revert-fix-routing-allow-aliases-to-reference-slots-.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0007-fix-routing-allow-aliases-to-reference-slots-or-mode.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0010-feat-routing-scaffold-launchd-services-and-routing-C.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0011-fix-routing-harden-launchd-services-no-docker-no-har.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0013-fix-routing-bind-local-services-to-127.0.0.1.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0015-fix-routing-status-health-read-ports-from-routing.ya.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0016-feat-routing-make-dopemux-start-respect-routing-mode.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0017-fix-routing-correct-cli-imports-and-avoid-stale-prox.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0018-fix-routing-define-env-consistency-helper-before-use.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0019-feat-claude-prepare-environment-from-routing-mode.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0020-fix-claude-set-CCR-env-from-routing-mode.patch
+./reports/work-recovery/2026-03-05/active-branches/fix-routing__format_patches/0026-chore-ci-update-workflow-for-dopetask.patch
+./reports/work-recovery/2026-03-05/worktrees/fix-routing__status.txt
+./schemas/dcp/dcp_routing_classification.schema.json
+./schemas/dcp/dcp_routing_decision.schema.json
+./schemas/dcp/dcp_routing_proof_extension.schema.json
+./scripts/audit/auditor_router.py
+./scripts/audit/pr_audit_router.py
+./scripts/deploy/deployment/start-mcp-servers.sh
+./scripts/deploy/setup/install-mcp-servers.sh
+./scripts/dev/testing/validate-mcp-setup.sh
+./scripts/discover_mcp_tools.sh
+./scripts/generate_mcp_proof.py
+./scripts/install-docker-mcp-servers.sh
+./scripts/manage-mcp-servers.sh
+./scripts/mcp-proxy-setup.sh
+./scripts/mcp/manage-mcp-servers.sh
+./scripts/mcp/mcp_event_wrapper.py
+./scripts/mcp/sync_mcp_env.sh
+./scripts/mcp/wire_claude_mcp.py
+./scripts/mcp_health_check.sh
+./scripts/mcp_service_info.py
+./scripts/mcp_smoke.sh
+./scripts/proof_conport_mcp.py
+./scripts/routing/start_here_routing.sh
+./scripts/slash_commands.py
+./scripts/start-all-mcp-servers.sh
+./scripts/ui/metamcp_status.py
+./scripts/ui/tmux_metamcp_controller.py
+./scripts/utilities/fix_mcp_config.py
+./services/adhd_engine/conport_mcp_client.py
+./services/adhd_engine/mcp_stdio.py
+./services/agents/memory_agent.py
+./services/agents/memory_agent_conport.py
+./services/agents/workflow_coordinator.py
+./services/dcp-readonly-facade/src/mcp/fastmcp_stub.py
+./services/dope-context/src/mcp/fastmcp_stub.py
+./services/dope-context/tests/test_mcp_server.py
+./services/dope-memory/mcp_stdio_adapter.py
+./services/dopecon-bridge/ddg_mcp_stdio.py
+./services/dopecon-bridge/integrations/desktop_commander.py
+./services/dopecon-bridge/mcp_client.py
+./services/dopecon-bridge/tests/test_desktop_commander_integration.py
+./services/dopemux-gpt-researcher/mcp-server/mcp-config.json
+./services/repo-truth-extractor/benchmarking/direct_model/adapters/openrouter.py
+./services/repo-truth-extractor/benchmarking/openrouter_structured_benchmark.py
+./services/repo-truth-extractor/benchmarking/registry/openrouter_discovery.py
+./services/repo-truth-extractor/benchmarking/synthesis/routing_diff.py
+./services/repo-truth-extractor/lib/intelligence_router.py
+./services/repo-truth-extractor/prompts/phase_fl_int/PROMPT_L3_feature_ledger_routing.md
+./services/repo-truth-extractor/prompts/phase_s_int/PROMPT_S16_mcp_split_validity.md
+./services/repo-truth-extractor/tests/fixtures/openrouter_models_sample.json
+./services/repo-truth-extractor/tests/fixtures/openrouter_structured_benchmark_fixtures.json
+./services/repo-truth-extractor/tests/test_intelligence_routing_integration.py
+./services/repo-truth-extractor/tests/test_openrouter_discovery.py
+./services/repo-truth-extractor/tests/test_openrouter_structured_benchmark.py
+./services/repo-truth-extractor/tests/test_openrouter_xai_route_identity.py
+./services/repo-truth-extractor/tests/test_provider_preflight_openrouter.py
+./services/repo-truth-extractor/tests/test_router_runtime_integration.py
+./services/repo-truth-extractor/tests/test_run_extraction_v3_model_routing.py
+./services/serena/mcp_client.py
+./services/serena/mcp_server.py
+./services/serena/tests/test_mcp_server_local.py
+./services/serena/v2/mcp_client.py
+./services/session-manager/src/agent_config_factory.py
+./services/session-manager/src/agent_spawner.py
+./services/session-manager/src/agent_spawner_pty.py
+./services/session-manager/src/command_parser.py
+./services/session-manager/src/router.py
+./services/session-manager/tui/command_history.py
+./services/session-manager/tui/command_router.py
+./services/session-manager/tui/command_router_enhanced.py
+./services/task-orchestrator/app/api/project_workflow.py
+./services/task-orchestrator/app/models/workflow.py
+./services/task-orchestrator/app/services/workflow_service.py
+./services/task-orchestrator/app/services/workflow_store.py
+./services/task-orchestrator/automation_workflows.py
+./services/task-orchestrator/conport_mcp_client.py
+./services/task-orchestrator/mcp_stdio.py
+./services/task-orchestrator/tests/test_workflow.py
+./services/task-router/router_api.py
+./src/dopemux/__pycache__/dev_commands.cpython-312.pyc
+./src/dopemux/__pycache__/dope_brainz_router.cpython-312.pyc
+./src/dopemux/__pycache__/profile_commands.cpython-312.pyc
+./src/dopemux/__pycache__/routing_cli.cpython-312.pyc
+./src/dopemux/__pycache__/routing_config.cpython-312.pyc
+./src/dopemux/__pycache__/worktree_commands.cpython-312.pyc
+./src/dopemux/adhd/workflow_manager.py
+./src/dopemux/agent_orchestrator.py
+./src/dopemux/agent_validator.py
+./src/dopemux/claude_tools/__pycache__/agent_communication.cpython-312.pyc
+./src/dopemux/claude_tools/__pycache__/command_interceptor.cpython-312.pyc
+./src/dopemux/claude_tools/agent_communication.py
+./src/dopemux/claude_tools/command_interceptor.py
+./src/dopemux/commands/__pycache__/audit_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/autoresponder_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/capture_group_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/cockpit_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/decisions_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/dev_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/extract_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/extractor_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/instances_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/kernel_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/mcp_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/memory_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/orchestrator_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/personas_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/profile_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/system_data_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/trigger_group_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/update_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/upgrades_commands.cpython-312.pyc
+./src/dopemux/commands/__pycache__/workflow_group_commands.cpython-312.pyc
+./src/dopemux/commands/audit_commands.py
+./src/dopemux/commands/autoresponder_commands.py
+./src/dopemux/commands/capture_group_commands.py
+./src/dopemux/commands/cockpit_commands.py
+./src/dopemux/commands/decisions_commands.py
+./src/dopemux/commands/dev_commands.py
+./src/dopemux/commands/extract_commands.py
+./src/dopemux/commands/extractor_commands.py
+./src/dopemux/commands/instances_commands.py
+./src/dopemux/commands/kernel_commands.py
+./src/dopemux/commands/mcp_commands.py
+./src/dopemux/commands/memory_commands.py
+./src/dopemux/commands/orchestrator_commands.py
+./src/dopemux/commands/personas_commands.py
+./src/dopemux/commands/profile_commands.py
+./src/dopemux/commands/system_data_commands.py
+./src/dopemux/commands/trigger_group_commands.py
+./src/dopemux/commands/update_commands.py
+./src/dopemux/commands/upgrades_commands.py
+./src/dopemux/commands/workflow_group_commands.py
+./src/dopemux/commands/worktrees_commands.py
+./src/dopemux/dev_commands.py
+./src/dopemux/dope_brainz_router.py
+./src/dopemux/mcp/conport_mcp_tools.py
+./src/dopemux/orchestrator/__pycache__/operator_workflows.cpython-312.pyc
+./src/dopemux/orchestrator/__pycache__/workflow_dsl.cpython-312.pyc
+./src/dopemux/orchestrator/mcp_wrappers.py
+./src/dopemux/orchestrator/operator_workflows.py
+./src/dopemux/orchestrator/workflow_dsl.py
+./src/dopemux/profile_commands.py
+./src/dopemux/routing_cli.py
+./src/dopemux/routing_config.py
+./src/dopemux/voice/__pycache__/agent_headers.cpython-312.pyc
+./src/dopemux/voice/agent_headers.py
+./src/dopemux/worktree_commands.py
+./task-packets/tp-dmx-freeflow-router-0001.md
+./templates/routing.yaml
+./templates/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py
+./templates/skills/testgen/scripts/testgen_workflow.py
+./tests/audit/test_auditor_router.py
+./tests/audit/test_pr_audit_router.py
+./tests/claude_tools/test_agent_communication.py
+./tests/dcp/test_dcp_model_routing_0001_domain.py
+./tests/docker/test_gptr_mcp_dockerfile.py
+./tests/extractor/test_extractor_routing_ladders.py
+./tests/fixtures/dcp/model_routing_0001/agent_authority_unknown.json
+./tests/fixtures/dcp/model_routing_0001/mcp_unknown_surface.json
+./tests/fixtures/dcp/model_routing_0001/workflow_red_lane_forbidden.json
+./tests/integration/task-orchestrator/mcp_wrapper.py
+./tests/integration/test_project_workflow.py
+./tests/integration/test_start_command.py
+./tests/integration/test_task_commands.py
+./tests/mcp/test_conport_mcp_real.py
+./tests/mcp/test_mcp_internal_lockdown.py
+./tests/pr_docgen_sync_skill/test_pr_docgen_workflow_contracts.py
+./tests/pr_docgen_sync_skill/test_pr_docgen_workflow_e2e.py
+./tests/pr_docgen_sync_skill/test_pr_docgen_workflow_integration.py
+./tests/pr_merge_specialist/test_agentic_fix_classification.py
+./tests/pr_merge_specialist/test_agentic_thread_remediation.py
+./tests/test_agent_orchestrator.py
+./tests/test_claude_code_router.py
+./tests/test_cli_mcp_startup.py
+./tests/test_freeflow_router.py
+./tests/test_local_workflow_commands.py
+./tests/test_mcp_config_generation.py
+./tests/test_mcp_registry.py
+./tests/test_model_routing_consistency.py
+./tests/test_model_routing_policy.py
+./tests/test_native_hooks_workflow.py
+./tests/test_navigation_workflow.py
+./tests/test_orchestrator_subagent_protocol.py
+./tests/test_routing_config.py
+./tests/test_session_commands.py
+./tests/test_workflow_assets.py
+./tests/test_workflow_models.py
+./tests/test_workflow_service.py
+./tests/testgen_skill/test_workflow_contracts.py
+./tests/testgen_skill/test_workflow_e2e.py
+./tests/testgen_skill/test_workflow_integration.py
+./tests/unit/dopemux/ui/cockpit/test_cockpit_command.py
+./tests/unit/orchestrator/test_mcp_wrappers.py
+./tests/unit/orchestrator/test_operator_workflows.py
+./tests/unit/orchestrator/test_workflow_dsl.py
+./tests/unit/test_alt_routing_config.py
+./tests/unit/test_altp_skips_openrouter_gate.py
+./tests/unit/test_cli_capture_commands.py
+./tests/unit/test_cli_kernel_commands.py
+./tests/unit/test_cli_orchestrator_commands.py
+./tests/unit/test_cli_orchestrator_validation_commands.py
+./tests/unit/test_cli_upgrades_commands.py
+./tests/unit/test_cli_workflow_commands.py
+./tests/unit/test_decisions_commands.py
+./tests/unit/test_desktop_commander_security.py
+./tests/unit/test_extractor_command_authority.py
+./tests/unit/test_mcp_commands_catalog.py
+./tests/unit/test_mcp_response_budget.py
+./tests/unit/test_profile_management_commands.py
+./tests/unit/test_profile_usage_analysis_command.py
+./tests/unit/test_profile_use_command.py
+./tests/unit/test_task_orchestrator_mcp_wrappers.py
+./tests/unit/test_task_orchestrator_project_workflow_contract.py
+./tests/unit/test_task_orchestrator_workflow_api.py
+./tests/unit/test_task_orchestrator_workflow_models.py
+./tests/unit/test_task_orchestrator_workflow_route_certification.py
+./tests/unit/test_task_orchestrator_workflow_service.py
+./tests/unit/test_task_orchestrator_workflow_store.py
+./tests/unit/test_task_orchestrator_workflow_write_serialization.py
+## exit_code: 0
+## ended_at_utc: 2026-06-12T00:34:02Z
