@@ -1,16 +1,16 @@
 {
   "packet_id": "TP-DCP-MCP-RO-0001",
   "repo": "DDD-Enterprises/dopemux-mvp",
-  "head_sha": "9667f5e2d7146c42f218ec4b092e27fd87883b5e",
-  "generated_at_utc": "2026-06-04T20:48:00Z",
+  "head_sha": "ac3a26f746e472feb8a31f1b634d8c0432e08db6",
+  "generated_at_utc": "2026-06-12T00:54:17Z",
   "summary": {
     "total_surfaces": 15,
     "confirmed_read_only": 11,
     "read_with_side_effect_risk": 1,
     "mutating": 3,
     "unknown": 0,
-    "recommended_for_phase_1": 8,
-    "deny_for_phase_1": 7
+    "recommended_for_phase_1": 10,
+    "deny_for_phase_1": 5
   },
   "surfaces": [
     {
@@ -298,8 +298,8 @@
       "operation_kind": "read",
       "read_only_classification": "READ_WITH_SIDE_EFFECT_RISK",
       "authority_label": "DERIVED",
-      "chatgpt_tunnel_suitability": "ALLOW_AFTER_WRAPPER",
-      "facade_recommendation": "Restrict decision integration to deny or isolate direct client requests.",
+      "chatgpt_tunnel_suitability": "DENY",
+      "facade_recommendation": "Deny in Phase 1; use separate scoped code and docs search tools until side-effect isolation is proven.",
       "security_notes": [
         "Fuses code, docs, and decisions. Calls a external HTTP client that sends network request to dopecon-bridge, which triggers Redis operations."
       ],
@@ -427,5 +427,9 @@
   ],
   "unresolved_questions": [
     "DCP/5.5 Decision: Should dope-memory be queried directly, or should all chronicle reads be multiplexed through a facade wrapper to normalize the output for ChatGPT?"
+  ],
+  "run_notes": [
+    "Recon run rebuilt from saved source audit_inputs/gpt55_recon_source/CODEX_RECON_PACKS_SOURCE.md.",
+    "No tunnel setup, local MCP invocation, service start, or implementation was performed."
   ]
 }
