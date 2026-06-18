@@ -837,6 +837,14 @@ def run_provider_preflight(
         "rerun_worthiness": rerun_worthiness,
         "routing_policy": cfg.routing_policy,
         "routing_policy_version": routing_policy_version,
+        "requested_cost_profile": getattr(cfg, "requested_cost_profile", None),
+        "resolved_cost_profile": getattr(cfg, "cost_profile", None),
+        "cost_profile": getattr(cfg, "cost_profile", None),
+        "model_aliases": {
+            str(key): str(value)
+            for key, value in tuple(getattr(cfg, "model_alias_overrides", ()) or ())
+        },
+        "disabled_providers": list(getattr(cfg, "disabled_providers", ()) or ()),
         "batch_capability": batch_capability,
     }
     doctor_dir = current_doctor_root(root)

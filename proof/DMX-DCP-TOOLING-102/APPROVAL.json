@@ -1,0 +1,49 @@
+{
+  "artifact_kind": "dcp_sanctioned_change_approval_v0",
+  "note": "Hand-authored sanctioned-change artifact per design B.6 until TP-110 ships the producer. This packet touches schema contract metadata and proof-contract surfaces.",
+  "tp_id": "DMX-DCP-TOOLING-102",
+  "decision": "gated",
+  "scope_paths": [
+    "schemas/dcp/dcp_red_lane_taxonomy.instance.json",
+    "schemas/dcp/dcp_red_lane_report.schema.json",
+    "schemas/dcp/manifest.json",
+    "schemas/dcp/README.md",
+    "src/dopemux/dcp/red_lane.py",
+    "src/dopemux/dcp/red_lane_scanner.py",
+    "src/dopemux/dcp/red_lane_taxonomy.py",
+    "tests/dcp/test_dcp_0102_red_lane_taxonomy.py",
+    "task-packets/generated/DMX-DCP-TOOLING-102.json"
+  ],
+  "head_sha": "637e145f40cbdf489fda3bf762d2329a9a77bcf0",
+  "requester": {
+    "id": "codex-implementation-agent",
+    "role": "implementer"
+  },
+  "approver": {
+    "id": "INDEPENDENT_AUDITOR_NOT_RUN",
+    "role": "not_available",
+    "recommendation": "LOCAL_SELF_REVIEW_ONLY"
+  },
+  "requester_neq_approver": false,
+  "supervisor_signoff": {
+    "required": true,
+    "provided": false,
+    "signoff_identity": null,
+    "notes": "Supervisor sign-off is not provided. Final approval boundary remains operator merge of PR #885. This artifact records local review evidence only."
+  },
+  "red_lanes_present": [
+    "DCP-RED-PROOF-CONTRACT-SCHEMA-MUTATION",
+    "DCP-RED-MERGE-SEAM-0001"
+  ],
+  "forbidden_paths_acknowledged": [
+    "merge seam untouched",
+    "CODEOWNERS untouched",
+    ".github/workflows untouched",
+    "external write surfaces untouched"
+  ],
+  "expiry_window": {
+    "bound_to_head_sha": "637e145f40cbdf489fda3bf762d2329a9a77bcf0",
+    "invalidated_if": "the implementation diff changes outside the TP-102 allowlist"
+  },
+  "rationale": "The change is deterministic and local: taxonomy metadata is now explicit in scanner reports, while live writes, external APIs, Dopetask execution, and PR mutation remain absent."
+}

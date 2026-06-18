@@ -894,6 +894,23 @@ LEGACY_ROUTING_POLICY_TO_COST_PROFILE: Dict[str, str] = {
     "optimal": "quality",
 }
 
+COST_PROFILE_ALIASES: Dict[str, str] = {
+    f"rte-cost-{name}": name for name in COST_PROFILES
+}
+COST_PROFILE_ALIASES.update(
+    {
+        "rte-cost-default": DEFAULT_COST_PROFILE,
+        "rte-cost-value": DEFAULT_COST_PROFILE,
+    }
+)
+
+BLOCKED_COST_PROFILE_ALIASES: Dict[str, str] = {
+    "rte-cost-sandbox-free": (
+        "BLOCKED/deferred: no observed runtime enforcement for non-sensitive "
+        "fail-closed sandbox-free routing."
+    )
+}
+
 
 def resolve_cost_profile(name: Optional[str]) -> Tuple[str, Dict[str, Any]]:
     """Return (canonical_profile_name, profile_dict).
@@ -905,8 +922,16 @@ def resolve_cost_profile(name: Optional[str]) -> Tuple[str, Dict[str, Any]]:
     if not name:
         return DEFAULT_COST_PROFILE, COST_PROFILES[DEFAULT_COST_PROFILE]
     token = str(name).strip().lower()
+    if token in BLOCKED_COST_PROFILE_ALIASES:
+        raise ValueError(
+            f"Cost profile alias {token!r} is blocked: "
+            f"{BLOCKED_COST_PROFILE_ALIASES[token]}"
+        )
     if token in COST_PROFILES:
         return token, COST_PROFILES[token]
+    if token in COST_PROFILE_ALIASES:
+        mapped = COST_PROFILE_ALIASES[token]
+        return mapped, COST_PROFILES[mapped]
     if token in LEGACY_ROUTING_POLICY_TO_COST_PROFILE:
         mapped = LEGACY_ROUTING_POLICY_TO_COST_PROFILE[token]
         return mapped, COST_PROFILES[mapped]
@@ -959,6 +984,18 @@ def _model_alias_overrides_dict(raw: Any) -> Dict[str, str]:
         if key_text and value_text:
             result[key_text] = value_text
     return result
+
+
+def _cost_profile_control_metadata(cfg: "RunnerConfig") -> Dict[str, Any]:
+    return {
+        "requested_cost_profile": getattr(cfg, "requested_cost_profile", None),
+        "resolved_cost_profile": getattr(cfg, "cost_profile", DEFAULT_COST_PROFILE),
+        "routing_policy": getattr(cfg, "routing_policy", DEFAULT_ROUTING_POLICY),
+        "model_aliases": _model_alias_overrides_dict(
+            getattr(cfg, "model_alias_overrides", ())
+        ),
+        "disabled_providers": list(getattr(cfg, "disabled_providers", ()) or ()),
+    }
 
 
 def _route_model_id_from_alias_value(provider: str, model_id: str) -> str:
@@ -2141,6 +2178,8 @@ class RunnerConfig:
     fl_int_provider_timeout_seconds: int = 180
     fl_int_f0_batch_timeout_seconds: int = 210
     # Cost-profile + optimizer fields (May 2026 Phase E6).
+    requested_cost_profile: Optional[str] = None
+    requested_routing_policy: Optional[str] = None
     cost_profile: str = DEFAULT_COST_PROFILE
     default_service_tier: str = "default"  # default | flex | priority | auto
     enable_cached_input: bool = True
@@ -7608,7 +7647,7 @@ def derive_route_readiness_summary(
             live_ok=False,
         )
 
-    return _derive_route_readiness_summary_impl(
+    summary = _derive_route_readiness_summary_impl(
         phases,
         routing_policy,
         selected_step_ids_by_phase=selected_step_ids_by_phase,
@@ -7624,6 +7663,11 @@ def derive_route_readiness_summary(
         resolve_effective_step_route=resolve_effective_step_route,
         provider_api_key_env=PROVIDER_API_KEY_ENV,
     )
+    summary["cost_profile"] = effective_cost_profile
+    summary["model_alias_overrides"] = _model_alias_overrides_dict(
+        tuple(model_alias_overrides)
+    )
+    return summary
 
 
 def run_provider_doctor_probe(
@@ -7744,6 +7788,7 @@ def run_provider_preflight(
             routing_policy=cfg.routing_policy,
             selected_step_ids_by_phase=selected_step_ids_by_phase or None,
             cost_profile=cfg.cost_profile,
+            model_alias_overrides=tuple(cfg.model_alias_overrides or ()),
         )
         provider_probes = [
             run_provider_doctor_probe(
@@ -7834,6 +7879,7 @@ def run_provider_preflight(
             "rerun_worthiness": "ready_now" if not failures else "not_until_root_caused",
             "routing_policy": cfg.routing_policy,
             "routing_policy_version": ROUTING_POLICY_VERSION,
+            **_cost_profile_control_metadata(cfg),
             "batch_capability": batch_capability,
         }
         return (not failures), payload
@@ -19789,7 +19835,9 @@ def print_config(
         phases,
         cfg.routing_policy,
         cost_profile=cfg.cost_profile,
+        model_alias_overrides=cfg.model_alias_overrides,
     )
+    cost_profile_controls = _cost_profile_control_metadata(cfg)
     config_payload = {
         "run_id": run_id,
         "repo_root": str(root.resolve()),
@@ -19801,6 +19849,13 @@ def print_config(
         "cwd": str(Path.cwd().resolve()),
         "phases": phases,
         "cost_profile": cfg.cost_profile,
+        "requested_cost_profile": cost_profile_controls["requested_cost_profile"],
+        "resolved_cost_profile": cost_profile_controls["resolved_cost_profile"],
+        "routing_policy": cost_profile_controls["routing_policy"],
+        "model_aliases": cost_profile_controls["model_aliases"],
+        "disabled_providers": cost_profile_controls["disabled_providers"],
+        "max_cost_usd": cfg.max_cost_usd,
+        "cost_profile_resolution": cost_profile_controls,
         "cli": {
             "phase_argument": args.phase,
             "preset": getattr(args, "preset", None),
@@ -19856,6 +19911,11 @@ def print_config(
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
             "partition_workers": args.partition_workers,
             "routing_policy": args.routing_policy,
+            "requested_cost_profile": cost_profile_controls["requested_cost_profile"],
+            "resolved_cost_profile": cost_profile_controls["resolved_cost_profile"],
+            "model_aliases": cost_profile_controls["model_aliases"],
+            "disabled_providers": cost_profile_controls["disabled_providers"],
+            "max_cost_usd": args.max_cost_usd,
             "dpmx_routing_enable": os.getenv(DPMX_ROUTING_ENABLE_ENV, ""),
             "dpmx_model_inventory": os.getenv(DPMX_MODEL_INVENTORY_ENV, ""),
             "dpmx_model_extract": os.getenv(DPMX_MODEL_EXTRACT_ENV, ""),
@@ -21995,11 +22055,13 @@ def write_confidence_ramp_artifacts(
         list(phase_sequence) if phase_sequence else [],
         cfg.routing_policy,
         cost_profile=cfg.cost_profile,
+        model_alias_overrides=cfg.model_alias_overrides,
     )
     batch_pilot = {
         "generated_at": now_iso(),
         "preset": preset_name or None,
         "routing_policy": cfg.routing_policy,
+        **_cost_profile_control_metadata(cfg),
         "phase_sequence": list(phase_sequence),
         "batch_mode": bool(cfg.batch_mode),
         "batch_provider": cfg.batch_provider,
@@ -22195,11 +22257,13 @@ def main() -> None:
     )
     parser.add_argument(
         "--cost-profile",
-        choices=sorted(COST_PROFILES.keys()),
         default=None,
+        metavar="PROFILE",
         help=(
             f"Cost profile selecting model tier + service_tier + cached-input + "
             f"batch behavior. Default: {DEFAULT_COST_PROFILE}. "
+            f"Known profiles: {', '.join(sorted(COST_PROFILES.keys()))}. "
+            "rte-cost-* aliases are normalized through the cost-profile resolver. "
             f"Replaces --routing-policy. See claudedocs/research/routing-design-2026-05.md."
         ),
     )
@@ -22758,30 +22822,35 @@ def main() -> None:
     # ------------------------------------------------------------------
     requested_cost_profile = getattr(args, "cost_profile", None)
     requested_routing_policy = getattr(args, "routing_policy", None)
-    if requested_cost_profile and requested_routing_policy:
-        logger.warning(
-            "Both --cost-profile=%s and --routing-policy=%s provided; "
-            "preferring --cost-profile and ignoring --routing-policy.",
-            requested_cost_profile,
-            requested_routing_policy,
-        )
-        cost_profile_name, cost_profile_cfg = resolve_cost_profile(requested_cost_profile)
-    elif requested_cost_profile:
-        cost_profile_name, cost_profile_cfg = resolve_cost_profile(requested_cost_profile)
-    elif requested_routing_policy:
-        cost_profile_name, cost_profile_cfg = resolve_cost_profile(requested_routing_policy)
-        logger.warning(
-            "DEPRECATION: --routing-policy=%s is deprecated. Migrate to "
-            "--cost-profile=%s. The legacy flag will be removed in a future release. "
-            "See claudedocs/research/routing-design-2026-05.md.",
-            requested_routing_policy,
-            cost_profile_name,
-        )
-    else:
-        cost_profile_name, cost_profile_cfg = resolve_cost_profile(None)
+    try:
+        if requested_cost_profile and requested_routing_policy:
+            logger.warning(
+                "Both --cost-profile=%s and --routing-policy=%s provided; "
+                "preferring --cost-profile and ignoring --routing-policy.",
+                requested_cost_profile,
+                requested_routing_policy,
+            )
+            cost_profile_name, cost_profile_cfg = resolve_cost_profile(requested_cost_profile)
+        elif requested_cost_profile:
+            cost_profile_name, cost_profile_cfg = resolve_cost_profile(requested_cost_profile)
+        elif requested_routing_policy:
+            cost_profile_name, cost_profile_cfg = resolve_cost_profile(requested_routing_policy)
+            logger.warning(
+                "DEPRECATION: --routing-policy=%s is deprecated. Migrate to "
+                "--cost-profile=%s. The legacy flag will be removed in a future release. "
+                "See claudedocs/research/routing-design-2026-05.md.",
+                requested_routing_policy,
+                cost_profile_name,
+            )
+        else:
+            cost_profile_name, cost_profile_cfg = resolve_cost_profile(None)
+    except ValueError as exc:
+        parser.error(str(exc))
     # Backfill args.routing_policy from the resolved profile so all
     # downstream code (which still reads args.routing_policy) continues to work.
     args.routing_policy = cost_profile_cfg.get("routing_policy", DEFAULT_ROUTING_POLICY)
+    args.requested_cost_profile = requested_cost_profile
+    args.requested_routing_policy = requested_routing_policy
     args.cost_profile = cost_profile_name
     # Parse --model-alias K=V pairs into a tuple of (key, value).
     _model_alias_overrides: List[Tuple[str, str]] = []
@@ -23197,6 +23266,8 @@ def main() -> None:
         allow_online_llm=bool(args.allow_online_llm),
         router=router,
         # Cost-profile + optimizer fields (May 2026 Phase E6).
+        requested_cost_profile=getattr(args, "requested_cost_profile", None),
+        requested_routing_policy=getattr(args, "requested_routing_policy", None),
         cost_profile=getattr(args, "cost_profile", DEFAULT_COST_PROFILE),
         default_service_tier=str(
             (COST_PROFILES.get(getattr(args, "cost_profile", DEFAULT_COST_PROFILE))
