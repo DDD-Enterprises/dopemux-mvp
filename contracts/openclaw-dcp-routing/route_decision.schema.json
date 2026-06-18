@@ -125,12 +125,26 @@
       "then": { "required": ["human_approval_ref"] }
     },
     {
+      "if": {
+        "properties": {
+          "human_gate_required": { "const": true },
+          "decision_status": { "const": "SELECTED" }
+        }
+      },
+      "then": {
+        "properties": {
+          "human_approval_ref": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    {
       "if": { "properties": { "access_path": { "const": "openrouter_free" } } },
       "then": {
         "not": {
           "anyOf": [
             { "properties": { "privacy_class": { "enum": ["PRIVATE_REPO_NO_SECRETS", "PRIVATE_REPO_POSSIBLE_SECRETS", "SECRET_BEARING", "CLIENT_DATA", "SECURITY_SENSITIVE", "RELEASE_AUTHORITY"] } } },
             { "properties": { "risk_class": { "enum": ["R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] } } },
+            { "properties": { "role": { "enum": ["security_review", "release_judgment", "proof_validation", "structured_task_packet_generation", "proof_bundle_generation"] } } },
             { "properties": { "structured_output_mode": { "enum": ["json_schema_strict", "tool_schema_strict"] } } }
           ]
         }

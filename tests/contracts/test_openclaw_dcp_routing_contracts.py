@@ -151,6 +151,11 @@ def test_openrouter_free_cannot_be_private_high_risk_or_schema_authority():
         {"privacy_class": "RELEASE_AUTHORITY"},
         {"risk_class": "R5_SECURITY_OR_AUTHORITY"},
         {"risk_class": "R6_RELEASE_OR_PRODUCTION"},
+        {"role": "proof_validation"},
+        {"role": "structured_task_packet_generation"},
+        {"role": "proof_bundle_generation"},
+        {"role": "security_review"},
+        {"role": "release_judgment"},
         {"structured_output_mode": "json_schema_strict"},
     ]
 
@@ -158,6 +163,26 @@ def test_openrouter_free_cannot_be_private_high_risk_or_schema_authority():
         candidate = {**example, **patch}
         with pytest.raises(ValidationError):
             validate(instance=candidate, schema=schema)
+
+
+def test_selected_gated_route_requires_non_empty_human_approval_ref():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    release = _json(EXAMPLE_ROOT / "R6_RELEASE_OR_PRODUCTION.json")
+
+    validate(instance=release, schema=schema)
+
+    for missing_ref in [None, ""]:
+        candidate = copy.deepcopy(release)
+        candidate["human_approval_ref"] = missing_ref
+
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+    blocked = copy.deepcopy(release)
+    blocked["decision_status"] = "BLOCKED"
+    blocked["human_approval_ref"] = None
+    blocked["blocked_reasons"] = ["MISSING_HUMAN_APPROVAL"]
+    validate(instance=blocked, schema=schema)
 
 
 def test_release_example_requires_human_gate_and_current_release_proof_posture():

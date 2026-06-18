@@ -65,6 +65,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
+    "jsonschema>=4.20.0",
     "pytest>=9.0.3",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.0.0",
@@ -72,6 +73,7 @@ test = [
     "pytest-xdist>=3.6.1",
 ]
 dev = [
+    "jsonschema>=4.20.0",
     "pytest>=9.0.3",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.0.0",
