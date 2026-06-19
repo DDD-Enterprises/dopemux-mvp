@@ -1,0 +1,101 @@
+{
+  "id": "TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002",
+  "project": "dopemux-mvp",
+  "target": "Repair PR #925 framing/proof posture only so it truthfully represents fixture-only PCP architecture direction with PCP Core as parent substrate and DCP/dNh as extensions.",
+  "invariants": [
+    "PR #925 remains draft and NEEDS_SUPERVISOR.",
+    "No runtime files, schema moves, exporter, extension contract, or live writes.",
+    "Do not redo after_sha orphan or dNh policy_ref repairs from 68b8fd17; verify only.",
+    "Runtime and GitHub truth outrank this packet."
+  ],
+  "depends_on": [
+    "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PCP-ARCHITECTURE-VALIDATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-pcp-architecture-validation-0001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(pcp-925): AIR + framing proof repair completion",
+    "allowlist": [
+      "docs/03-reference/architecture/AIR-DMX-PCP-DCP-ARCHITECTURE-0001.md",
+      "docs/05-audit-reports/project-control-plane/architecture-validation-report.md",
+      "docs/ops/project-control-plane/architecture-validation.md",
+      "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md",
+      "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json",
+      "reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json",
+      "task-packets/generated/TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json >/dev/null",
+      "python -m json.tool reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json >/dev/null",
+      "git diff --check",
+      "git diff --stat"
+    ]
+  },
+  "pr": {
+    "title": "docs(pcp): validate project control plane architecture",
+    "body": "Fixture-only PCP architecture validation. PCP Core is parent substrate; DCP and dNh are extensions. Draft / NEEDS_SUPERVISOR.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Re-pull live PR #925 head and verify 68b8fd17 repairs (after_sha orphan, dNh policy_ref) without redoing them.",
+      "validation": [
+        "git fetch origin codex/tp-dmx-pcp-architecture-validation-0001",
+        "gh pr view 925 --json headRefOid,isDraft",
+        "grep policy_ref reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Record AIR as governance anchor and downgrade overstrong architecture verdict labels in proof and human docs.",
+      "validation": [
+        "test -f docs/03-reference/architecture/AIR-DMX-PCP-DCP-ARCHITECTURE-0001.md",
+        "rg -n 'PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN|ARCHITECTURE_SHAPE_PLAUSIBLE_PENDING_EXPORTER' proof docs reports"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Classify outdated/unresolved review threads and record PAL codereview/precommit as NOT_RUN.",
+      "validation": [
+        "python -m json.tool proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json >/dev/null",
+        "rg -n 'review_thread_classification|pal_chain_evidence' proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run JSON validation, git diff --check, and preserve draft/NEEDS_SUPERVISOR posture.",
+      "validation": [
+        "python -m json.tool proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json >/dev/null",
+        "git diff --check",
+        "gh pr view 925 --json isDraft"
+      ]
+    }
+  ]
+}
