@@ -98,7 +98,8 @@ docker_args=(
   -v "${LOGBACK_CONFIG}:/tmp/logback.xml:ro"
   -e "DATABASE_PATH=/app/data/current-tasks.db"
   -e "MCP_TRANSPORT=http"
-  -e "MCP_PORT=${port}"
+  -e "MCP_HTTP_PORT=${port}"
+  -e "MCP_HTTP_HOST=0.0.0.0"
   -e "USE_FLYWAY=true"
   -e "AGENT_CONFIG_DIR=/project"
 )
