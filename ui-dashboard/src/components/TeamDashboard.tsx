@@ -32,20 +32,55 @@ export default function TeamDashboard() {
 
   return (
     <Paper
-      aria-label="Team dashboard signal summary"
+      tabIndex={0}
+      aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}.`}
       sx={{
         p: 3,
         borderRadius: 3,
         background: brandTokens.gradients.focusCard,
+        border: '1px solid transparent',
+        outline: 'none',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&:hover, &:focus-visible': {
+          transform: 'translateY(-4px)',
+          borderColor: teamStatusColor,
+          boxShadow: `0 0 20px ${alpha(teamStatusColor, 0.2)}`,
+        },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-        <Zap size={20} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
-        <Typography variant="h6">
-          Team Signal Board
-        </Typography>
-      </Box>
-      <Tooltip title={`Average cognitive load across all team members: ${teamAverageLoad}%`} arrow>
+      <Tooltip
+        title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. Insight: Sequence handoffs while average load is below escalation threshold.`}
+        arrow
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, cursor: 'help' }}>
+          <Zap size={20} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
+          <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
+            Team Signal Board
+          </Typography>
+          <Box
+            sx={{
+              ml: 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+            }}
+          >
+            <Typography variant="caption" sx={{ fontWeight: 'bold', color: teamStatusColor }}>
+              {teamAverageLoad}% AVG LOAD
+            </Typography>
+            <Chip
+              size="small"
+              label={statusStyles[teamStatus].label}
+              sx={{
+                bgcolor: alpha(teamStatusColor, 0.1),
+                color: teamStatusColor,
+                border: `1px solid ${teamStatusColor}`,
+                fontWeight: 'bold',
+                fontSize: '0.65rem',
+              }}
+            />
+          </Box>
+        </Box>
         <LinearProgress
           aria-label="Team Average Cognitive Load Percentage"
           aria-valuetext={`${teamAverageLoad}%`}
@@ -62,7 +97,6 @@ export default function TeamDashboard() {
             },
           }}
         />
-      </Tooltip>
       <Box sx={{ display: 'grid', gap: 1.5, mb: 2 }}>
         {teamMembers.map((member) => (
           <Box

@@ -12,20 +12,20 @@ BEGIN;
 -- Add instance_id to progress_entries
 -- NULL = shared across all worktrees (COMPLETED/BLOCKED tasks)
 -- Value = isolated to specific worktree (IN_PROGRESS/PLANNED tasks)
-ALTER TABLE progress_entries ADD COLUMN IF NOT EXISTS instance_id VARCHAR(255);
+ALTER TABLE progress_entries ADD COLUMN instance_id VARCHAR(255);
 
 -- Add created_by_instance to decisions for provenance tracking
-ALTER TABLE decisions ADD COLUMN IF NOT EXISTS created_by_instance VARCHAR(255);
+ALTER TABLE decisions ADD COLUMN created_by_instance VARCHAR(255);
 
 -- Add instance_id to workspace_contexts for per-instance active context
 -- Allows each worktree to have independent active_context
-ALTER TABLE workspace_contexts ADD COLUMN IF NOT EXISTS instance_id VARCHAR(255);
+ALTER TABLE workspace_contexts ADD COLUMN instance_id VARCHAR(255);
 
 -- Make (workspace_id, instance_id) unique
 -- Main worktree: instance_id = NULL
 -- Linked worktrees: instance_id = "worktree-name"
 DROP INDEX IF EXISTS idx_workspace_contexts_workspace_id;
-CREATE UNIQUE INDEX IF NOT EXISTS idx_workspace_contexts_workspace_instance
+CREATE UNIQUE INDEX idx_workspace_contexts_workspace_instance
     ON workspace_contexts(workspace_id, COALESCE(instance_id, ''));
 
 -- =====================================================================
@@ -40,10 +40,10 @@ ALTER TABLE progress_entries ALTER COLUMN workspace_id SET NOT NULL;
 -- =====================================================================
 
 -- Index for instance-based queries
-CREATE INDEX IF NOT EXISTS idx_progress_instance ON progress_entries(instance_id);
+CREATE INDEX idx_progress_instance ON progress_entries(instance_id);
 
 -- Composite index for common query pattern (workspace + instance)
-CREATE INDEX IF NOT EXISTS idx_progress_workspace_instance ON progress_entries(workspace_id, instance_id);
+CREATE INDEX idx_progress_workspace_instance ON progress_entries(workspace_id, instance_id);
 
 -- =====================================================================
 -- DATA MIGRATION
