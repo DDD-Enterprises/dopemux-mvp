@@ -1,7 +1,7 @@
 {
   "tp_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
   "before_sha": "a05ebf77578c3e163f90d2e194efd2441cebeac6",
-  "after_sha": "fe4f36e5769f5545be0e8a007c2d39d973cb24e4",
+  "after_sha": "84149bced3638ae806ded2b790ce1fde2991cab3",
   "branch": "codex/tp-dmx-pcp-architecture-validation-0001",
   "changed_files": [
     "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md",
@@ -301,7 +301,8 @@
     "Supervisor acceptance is not recorded in this packet.",
     "Task Orchestrator live writes and Dopetask execution remain blocked until later contracts exist.",
     "Read-only Opus audit returned NEEDS_SUPERVISOR; acceptance is blocked pending Supervisor adjudication.",
-    "Negative fail-closed cases are asserted fixture expectations, not executed classifier results."
+    "Negative fail-closed cases are asserted fixture expectations, not executed classifier results.",
+    "after_sha repaired to PR head by TP-DMX-PCP-925-REPAIR-0001; architecture acceptance remains NEEDS_SUPERVISOR."
   ],
   "not_run": [
     "GitHub mutation or PR creation",
@@ -426,5 +427,5 @@
     "reason": "PAL MCP/tool artifacts were not available in this session; local git pre-commit hooks were run separately and recorded under validation_results."
   },
   "proof_refresh_note": "Command outputs refreshed after rebasing onto origin/main and correcting audit verdict alignment.",
-  "after_sha_note": "Recorded after local rebase before final proof refresh/amend. Because PROOF.json is committed inside the commit, the final amended commit SHA cannot be embedded without changing the commit hash again."
+  "after_sha_note": "Repaired by TP-DMX-PCP-925-REPAIR-0001: updated to current PR branch HEAD for machine-linkable proof freshness. The original value (fe4f36e5...) was a pre-amend orphan that resolved but did not represent the reviewed PR head. Architecture acceptance remains NEEDS_SUPERVISOR."
 }

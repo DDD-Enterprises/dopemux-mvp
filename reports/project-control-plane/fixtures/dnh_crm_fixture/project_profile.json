@@ -40,7 +40,7 @@
     "unknown_code": "NEEDS_EVIDENCE_REFRESH"
   },
   "red_lane_policy": {
-    "policy_ref": "fixture/red-lanes.json",
+    "policy_ref": "red_lanes.json",
     "default_on_unknown": "BLOCK",
     "lanes": [
       "crm-write",
