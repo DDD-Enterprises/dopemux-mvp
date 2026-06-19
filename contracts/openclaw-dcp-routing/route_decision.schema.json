@@ -240,6 +240,25 @@
         },
         "anyOf": [
           { "properties": { "privacy_class": { "enum": ["PRIVATE_REPO_NO_SECRETS", "PRIVATE_REPO_POSSIBLE_SECRETS", "SECRET_BEARING", "CLIENT_DATA", "SECURITY_SENSITIVE", "RELEASE_AUTHORITY"] } } },
+          { "properties": { "risk_class": { "enum": ["R4_MULTI_FILE_EDIT", "R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] } } }
+        ]
+      },
+      "then": {
+        "properties": {
+          "provider": { "not": { "const": "unknown" } },
+          "runner": { "not": { "const": "unknown" } },
+          "requested_model": { "not": { "const": "unknown" } },
+          "actual_model": { "not": { "const": "unknown" } }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" }
+        },
+        "anyOf": [
+          { "properties": { "privacy_class": { "enum": ["PRIVATE_REPO_NO_SECRETS", "PRIVATE_REPO_POSSIBLE_SECRETS", "SECRET_BEARING", "CLIENT_DATA", "SECURITY_SENSITIVE", "RELEASE_AUTHORITY"] } } },
           { "properties": { "risk_class": { "enum": ["R4_MULTI_FILE_EDIT", "R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] } } },
           { "properties": { "role": { "enum": ["structured_task_packet_generation", "proof_bundle_generation", "proof_validation", "security_review", "release_judgment"] } } },
           { "properties": { "structured_output_mode": { "enum": ["json_schema_strict", "tool_schema_strict"] } } }
@@ -252,7 +271,12 @@
       }
     },
     {
-      "if": { "properties": { "access_path": { "const": "openrouter_free" } } },
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" },
+          "access_path": { "const": "openrouter_free" }
+        }
+      },
       "then": {
         "not": {
           "anyOf": [

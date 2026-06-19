@@ -147,19 +147,26 @@
           "pass_fail": { "const": "PASS" },
           "json_validity": {
             "properties": {
-              "valid": { "const": true }
+              "valid": { "const": true },
+              "rate": { "const": 1 }
             }
           },
           "schema_validity": {
             "properties": {
               "valid": { "const": true },
+              "rate": { "const": 1 },
               "errors": { "maxItems": 0 }
+            }
+          },
+          "evidence_grounding": {
+            "properties": {
+              "precision": { "minimum": 0.98 }
             }
           },
           "unsupported_claims": {
             "properties": {
               "count": { "const": 0 },
-              "rate": { "const": 0 }
+              "rate": { "maximum": 0.01 }
             }
           },
           "hallucinated_files": {
@@ -168,6 +175,8 @@
               "paths": { "maxItems": 0 }
             }
           },
+          "contradiction_recall": { "type": "number", "minimum": 0.9 },
+          "core_field_stability": { "type": "number", "minimum": 0.95 },
           "provider_drift": {
             "properties": {
               "detected": { "const": false }

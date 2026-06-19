@@ -303,6 +303,45 @@ def test_selected_sensitive_openrouter_routes_require_human_approval():
             validate(instance=candidate, schema=schema)
 
 
+def test_selected_private_or_high_risk_routes_reject_unknown_actual_route_identity():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+
+    for example_name in ["R3_LOCAL_EDIT.json", "R6_RELEASE_OR_PRODUCTION.json"]:
+        example = _json(EXAMPLE_ROOT / example_name)
+        validate(instance=example, schema=schema)
+
+        for field in ["provider", "runner", "requested_model", "actual_model"]:
+            candidate = copy.deepcopy(example)
+            candidate[field] = "unknown"
+            with pytest.raises(ValidationError):
+                validate(instance=candidate, schema=schema)
+
+
+def test_blocked_openrouter_free_attempt_can_record_forbidden_route_evidence():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    blocked = _json(EXAMPLE_ROOT / "R0_READ.json")
+    blocked.update(
+        {
+            "privacy_class": "PRIVATE_REPO_NO_SECRETS",
+            "decision_status": "BLOCKED",
+            "blocked_reasons": ["OPENROUTER_FREE_FORBIDDEN"],
+            "human_gate_required": True,
+            "human_approval_ref": None,
+            "benchmark_certification_ref": None,
+        }
+    )
+
+    validate(instance=blocked, schema=schema)
+
+    selected = copy.deepcopy(blocked)
+    selected["decision_status"] = "SELECTED"
+    selected["blocked_reasons"] = []
+    selected["human_approval_ref"] = "approval_openrouter_free_private_001"
+    selected["benchmark_certification_ref"] = "cert_openrouter_free_private_001"
+    with pytest.raises(ValidationError):
+        validate(instance=selected, schema=schema)
+
+
 def test_release_example_requires_human_gate_and_current_release_proof_posture():
     release = _json(EXAMPLE_ROOT / "R6_RELEASE_OR_PRODUCTION.json")
 
@@ -371,6 +410,17 @@ def test_pr_steward_ready_is_impossible_with_blocking_constraints():
         ("audit_refs", []),
         ("checks", []),
         (
+            "review_threads",
+            [
+                {
+                    "id": "thread-1",
+                    "resolved": False,
+                    "blocking": True,
+                    "items": [],
+                }
+            ],
+        ),
+        (
             "checks",
             [
                 {
@@ -423,9 +473,14 @@ def test_benchmark_result_certify_requires_no_blocking_signals():
     blocking_patches = [
         {"pass_fail": "FAIL"},
         {"json_validity": {"valid": False, "rate": 0.5}},
+        {"json_validity": {"valid": True, "rate": 0.99}},
         {"schema_validity": {"valid": False, "rate": 0.5, "errors": ["bad field"]}},
+        {"schema_validity": {"valid": True, "rate": 0.99, "errors": []}},
+        {"evidence_grounding": {"precision": 0.97, "sample_count": 3}},
         {"unsupported_claims": {"count": 1, "rate": 0.1}},
         {"hallucinated_files": {"count": 1, "paths": ["missing.py"]}},
+        {"contradiction_recall": 0.89},
+        {"core_field_stability": 0.94},
         {"provider_drift": {"detected": True, "details": "actual provider changed"}},
         {"privacy_violation": {"detected": True, "details": "secret observed"}},
     ]

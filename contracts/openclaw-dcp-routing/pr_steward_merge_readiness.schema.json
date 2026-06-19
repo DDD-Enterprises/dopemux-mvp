@@ -113,6 +113,16 @@
                 "conclusion": { "const": "success" }
               }
             }
+          },
+          "review_threads": {
+            "items": {
+              "not": {
+                "properties": {
+                  "resolved": { "const": false },
+                  "blocking": { "const": true }
+                }
+              }
+            }
           }
         },
         "required": [
