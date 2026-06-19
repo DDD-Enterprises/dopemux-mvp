@@ -63,6 +63,21 @@ container_has_expected_port() {
   printf '%s\n' "${binding}" | grep -qx "127.0.0.1:${expected_port}"
 }
 
+# A correctly-started singleton carries MCP_HTTP_PORT/MCP_HTTP_HOST (the env the
+# jar actually reads). Pre-fix containers were started with MCP_PORT, which the
+# jar ignores — so they publish the host port mapping but serve nothing on it.
+# The port mapping alone (container_has_expected_port) cannot tell them apart, so
+# a stale MCP_PORT container would otherwise be accepted as "already running" and
+# never recreated, leaving the endpoint dead. Require the HTTP env to match.
+container_has_http_env() {
+  local cid="$1"
+  local expected_port="$2"
+  local env_lines
+  env_lines="$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "${cid}" 2>/dev/null || true)"
+  grep -qx "MCP_HTTP_PORT=${expected_port}" <<<"${env_lines}" &&
+    grep -q '^MCP_HTTP_HOST=' <<<"${env_lines}"
+}
+
 [[ -x "${STDIO_SCRIPT}" ]] || die "missing executable stdio wrapper at ${STDIO_SCRIPT}"
 [[ -f "${LOGBACK_CONFIG}" ]] || die "missing logback config at ${LOGBACK_CONFIG}"
 
@@ -141,7 +156,9 @@ mkdir -p "${data_dir}"
 running_by_name="$(find_running_container_by_name "${container_name}")"
 if [[ -n "${running_by_name}" ]]; then
   running_image="$(docker inspect --format '{{.Config.Image}}' "${running_by_name}" 2>/dev/null || true)"
-  if [[ "${running_image}" == "${image}" ]] && container_has_expected_port "${running_by_name}" "${port}"; then
+  if [[ "${running_image}" == "${image}" ]] &&
+    container_has_expected_port "${running_by_name}" "${port}" &&
+    container_has_http_env "${running_by_name}" "${port}"; then
     printf 'task-orchestrator-http-singleton: already running %s at http://127.0.0.1:%s/mcp\n' "${container_name}" "${port}" >&2
     exit 0
   fi
