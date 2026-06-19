@@ -77,7 +77,10 @@ if [[ -z "${workspace_root}" ]]; then
   done
 fi
 
-[[ -n "${workspace_root}" ]] || die "could not derive workspace root from env or current git root"
+if [[ -z "${workspace_root}" ]]; then
+  printf 'task-orchestrator-current-stdio: no workspace detected (CWD not in a git repo and no *_WORKSPACE_ROOT/*_PROJECT_ROOT env set); skipping orchestrator for this session\n' >&2
+  exit 0
+fi
 [[ -f "${LOGBACK_CONFIG}" ]] || die "missing logback config at ${LOGBACK_CONFIG}"
 
 project_root=""
