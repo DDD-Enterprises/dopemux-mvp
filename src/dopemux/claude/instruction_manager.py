@@ -30,24 +30,84 @@ class InstructionManager:
             return []
         return [f.stem.replace(".agent", "") for f in self.personas_dir.glob("*.agent.md")]
         
+    # Canonical mapping from catalog role keys (and common aliases) to the best
+    # matching persona file stem (without the .agent.md suffix).  The alias table
+    # is checked first; if not present the name is used verbatim.  Entries added
+    # here cover every key in ROLE_CATALOG so catalog-default roles (developer,
+    # architect, reviewer, debugger, ops) are no longer silently unmapped.
+    ROLE_ALIASES: dict = {
+        # pre-existing aliases
+        "research": "task-researcher",
+        "plan": "task-planner",
+        "act": "principal-software-engineer",
+        "dev": "principal-software-engineer",
+        "quickfix": "janitor",
+        "workflow": "workflow-manager",
+        "manager": "workflow-manager",
+        "executor": "workflow-executor",
+        # catalog keys now covered (F1)
+        "developer": "principal-software-engineer",
+        "architect": "se-system-architecture-reviewer",
+        # "reviewer" maps to wg-code-sentinel (general code-review sentinel,
+        # broader than se-security-reviewer which is security-specialised).
+        "reviewer": "wg-code-sentinel",
+        "debugger": "principal-software-engineer",
+        "ops": "devops-expert",
+    }
+
+    # Packaged fallback personas directory (used when project .claude/personas/
+    # is absent or does not contain the resolved name).  Populated during install
+    # via pyproject.toml package-data.
+    _PACKAGED_PERSONAS_DIR: Optional[Path] = None
+
+    @classmethod
+    def _get_packaged_personas_dir(cls) -> Optional[Path]:
+        """Return the packaged personas directory, or None if not found."""
+        if cls._PACKAGED_PERSONAS_DIR is not None:
+            return cls._PACKAGED_PERSONAS_DIR
+        candidate = Path(__file__).parent.parent / "personas"
+        if candidate.is_dir():
+            cls._PACKAGED_PERSONAS_DIR = candidate
+            return candidate
+        return None
+
     def get_persona_content(self, persona_name: str) -> Optional[str]:
-        """Get the raw content of a specific persona guideline."""
-        # Common aliases
-        aliases = {
-            "research": "task-researcher",
-            "plan": "task-planner",
-            "act": "principal-software-engineer",
-            "dev": "principal-software-engineer",
-            "quickfix": "janitor",
-            "workflow": "workflow-manager",
-            "manager": "workflow-manager",
-            "executor": "workflow-executor",
-        }
-        target_name = aliases.get(persona_name.lower(), persona_name)
-        
-        persona_path = self.personas_dir / f"{target_name}.agent.md"
-        if persona_path.exists():
-            return persona_path.read_text(encoding='utf-8')
+        """Get the raw content of a specific persona guideline.
+
+        Resolution order:
+        1. Apply the alias table to map catalog keys and common shorthands to a
+           canonical persona file stem.
+        2. Look up ``<project>/.claude/personas/<stem>.agent.md``.
+        3. Fall back to the packaged personas bundled with the dopemux package
+           (F3), so ``dopemux init`` projects resolve personas without needing a
+           local personas directory.
+        """
+        normalized = persona_name.lower()
+        aliased_name = self.ROLE_ALIASES.get(normalized)
+        # Candidates in priority order:
+        # 1. Alias target (e.g. developer → principal-software-engineer)
+        # 2. Verbatim name (preserves local overrides like developer.agent.md)
+        candidates = [aliased_name, persona_name] if aliased_name else [persona_name]
+
+        # 1. Project-local personas directory (highest precedence for each candidate).
+        for name in candidates:
+            if name is None:
+                continue
+            persona_path = self.personas_dir / f"{name}.agent.md"
+            if persona_path.exists():
+                return persona_path.read_text(encoding="utf-8")
+
+        # 2. Packaged fallback (F3) — resolves for dopemux init projects that
+        #    have no local personas directory.
+        packaged_dir = self._get_packaged_personas_dir()
+        if packaged_dir is not None:
+            for name in candidates:
+                if name is None:
+                    continue
+                packaged_path = packaged_dir / f"{name}.agent.md"
+                if packaged_path.exists():
+                    return packaged_path.read_text(encoding="utf-8")
+
         return None
         
     def get_global_instructions(self) -> str:

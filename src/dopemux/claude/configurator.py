@@ -124,6 +124,9 @@ class ClaudeConfigurator:
                 f"[warning]⚠️  No guidelines found for role '{role}'; "
                 f"persona not injected.[/warning]"
             )
+            # F1: When a role resolves to no persona, clear any stale owned
+            # artifacts left by a prior activation so state stays honest.
+            self._clear_persona_artifacts(claude_dir)
             return False
 
         instructions = manager.assemble_instructions(
@@ -151,19 +154,39 @@ class ClaudeConfigurator:
     def _reference_persona_in_claude_md(self, claude_dir: Path, role: str) -> None:
         """Insert/replace the marker-bounded persona reference in claude.md.
 
-        No-op when claude.md does not exist (role activation must not create or
-        regenerate doctrine files).
+        F2: When claude.md does not exist, create a minimal one that imports the
+        persona file via ``@active-persona.md`` so Claude Code actually loads it.
+        The minimal file is only created when absent; an existing claude.md is
+        never overwritten (clobber-free guarantee).
+
+        F5: Use ``@active-persona.md`` import syntax (not a Markdown link) so the
+        Claude Code harness actually loads the persona content at session start.
         """
         claude_md = claude_dir / "claude.md"
         if not claude_md.exists():
+            # F2: create a minimal loader when no claude.md is present.
+            minimal = (
+                "# Project Instructions\n\n"
+                "> This file was created by `dopemux start --role` because no\n"
+                "> `.claude/claude.md` existed. Add project-specific doctrine here;\n"
+                "> the active-persona block below is managed automatically.\n\n"
+            )
+            block = (
+                f"{self.PERSONA_BLOCK_START}\n"
+                "## Active Persona & Guidelines\n\n"
+                f"Role **{role}** is active.\n\n"
+                f"@{self.ACTIVE_PERSONA_FILENAME}\n"
+                f"{self.PERSONA_BLOCK_END}\n"
+            )
+            claude_md.write_text(minimal + block)
             return
 
+        # F5: emit @import (not a Markdown link) so the harness loads the file.
         block = (
             f"{self.PERSONA_BLOCK_START}\n"
             "## Active Persona & Guidelines\n\n"
-            f"Role **{role}** is active. See "
-            f"[{self.ACTIVE_PERSONA_FILENAME}]({self.ACTIVE_PERSONA_FILENAME}) "
-            "for the assembled guidelines.\n"
+            f"Role **{role}** is active.\n\n"
+            f"@{self.ACTIVE_PERSONA_FILENAME}\n"
             f"{self.PERSONA_BLOCK_END}"
         )
 
@@ -186,6 +209,38 @@ class ClaudeConfigurator:
             updated = cleaned.rstrip() + "\n\n" + block + "\n"
 
         claude_md.write_text(updated)
+
+    def _clear_persona_artifacts(self, claude_dir: Path) -> None:
+        """Remove owned persona artifacts so stale state is never left behind.
+
+        Called when a role resolves to no persona (F1).  Only touches files that
+        ``_inject_persona`` owns; doctrine files (claude.md, session.md, etc.)
+        are never removed.
+        """
+        # Remove the fully-owned active-persona file if it exists.
+        persona_file = claude_dir / self.ACTIVE_PERSONA_FILENAME
+        if persona_file.exists():
+            persona_file.unlink()
+            logger.debug("Removed stale %s", self.ACTIVE_PERSONA_FILENAME)
+
+        # Scrub the managed block from claude.md (if present) so no reference
+        # to a non-existent persona file remains.
+        claude_md = claude_dir / "claude.md"
+        if claude_md.exists():
+            existing = claude_md.read_text()
+            start = existing.find(self.PERSONA_BLOCK_START)
+            end = existing.find(self.PERSONA_BLOCK_END)
+            if start != -1 and end != -1 and end > start:
+                end += len(self.PERSONA_BLOCK_END)
+                updated = existing[:start] + existing[end:]
+                claude_md.write_text(updated.rstrip() + "\n")
+            else:
+                # Strip any orphaned partial markers.
+                cleaned = existing.replace(self.PERSONA_BLOCK_START, "").replace(
+                    self.PERSONA_BLOCK_END, ""
+                )
+                if cleaned != existing:
+                    claude_md.write_text(cleaned)
 
     def _create_claude_md(self, claude_dir: Path, template: str) -> None:
         """Create project-specific claude.md file."""

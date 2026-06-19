@@ -2445,18 +2445,22 @@ def start(
                 "[warning]⚠️  Skipping MCP servers (reduced ADHD experience)[/warning]"
             )
 
-        # Configure role-based instructions
-        if role:
-            progress.update(task, description=f"Activating {role} persona...")
+        # Configure role-based instructions (F4).
+        # Use `requested_role` (the fully-resolved value that covers the raw
+        # Click option, DOPEMUX_AGENT_ROLE env, wizard selection, and the
+        # "developer" default) rather than the raw `role` Click option, so
+        # wizard/env/default paths also inject a persona.
+        if requested_role:
+            progress.update(task, description=f"Activating {requested_role} persona...")
             configurator = ClaudeConfigurator(config_manager)
             # project_path is the base directory for .claude/
-            injected = configurator.setup_project_config(project_path, role=role)
+            injected = configurator.setup_project_config(project_path, role=requested_role)
             if injected:
-                progress.update(task, description=f"Activated {role} persona")
+                progress.update(task, description=f"Activated {requested_role} persona")
             else:
                 progress.update(
                     task,
-                    description=f"No guidelines for role '{role}' — persona skipped",
+                    description=f"No guidelines for role '{requested_role}' — persona skipped",
                 )
 
         # Launch Claude Code
