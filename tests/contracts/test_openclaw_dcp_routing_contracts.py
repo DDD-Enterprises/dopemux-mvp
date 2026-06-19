@@ -258,6 +258,51 @@ def test_selected_openrouter_profiles_must_match_profile_lanes():
             validate(instance=candidate, schema=schema)
 
 
+def test_selected_openrouter_routes_require_named_matching_profile():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    example = _json(EXAMPLE_ROOT / "R2_TEST_ONLY.json")
+
+    validate(instance=example, schema=schema)
+
+    missing_profile = copy.deepcopy(example)
+    missing_profile["openrouter_profile"] = None
+    with pytest.raises(ValidationError):
+        validate(instance=missing_profile, schema=schema)
+
+    mismatched_profile = copy.deepcopy(example)
+    mismatched_profile["selected_route"]["route_profile"] = "or_challenger"
+    with pytest.raises(ValidationError):
+        validate(instance=mismatched_profile, schema=schema)
+
+
+def test_selected_sensitive_openrouter_routes_require_human_approval():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    example = _json(EXAMPLE_ROOT / "R2_TEST_ONLY.json")
+    private = copy.deepcopy(example)
+    private.update(
+        {
+            "privacy_class": "PRIVATE_REPO_NO_SECRETS",
+            "openrouter_profile": "or_paid_private_controlled",
+            "human_gate_required": True,
+            "human_approval_ref": "approval_openrouter_private_001",
+            "benchmark_certification_ref": "cert_openrouter_private_001",
+        }
+    )
+    private["selected_route"]["route_profile"] = "or_paid_private_controlled"
+
+    validate(instance=private, schema=schema)
+
+    for patch in [
+        {"human_gate_required": False},
+        {"human_gate_required": True, "human_approval_ref": None},
+        {"human_gate_required": True, "human_approval_ref": ""},
+    ]:
+        candidate = copy.deepcopy(private)
+        candidate.update(patch)
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+
 def test_release_example_requires_human_gate_and_current_release_proof_posture():
     release = _json(EXAMPLE_ROOT / "R6_RELEASE_OR_PRODUCTION.json")
 
@@ -324,6 +369,7 @@ def test_pr_steward_ready_is_impossible_with_blocking_constraints():
         ("unresolved_blockers", ["missing-security-approval"]),
         ("proof_bundle_refs", []),
         ("audit_refs", []),
+        ("checks", []),
         (
             "checks",
             [

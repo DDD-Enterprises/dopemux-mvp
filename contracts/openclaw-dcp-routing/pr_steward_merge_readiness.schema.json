@@ -106,6 +106,7 @@
           "proof_bundle_refs": { "minItems": 1 },
           "audit_refs": { "minItems": 1 },
           "checks": {
+            "minItems": 1,
             "items": {
               "properties": {
                 "status": { "const": "completed" },

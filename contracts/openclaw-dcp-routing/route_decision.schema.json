@@ -176,6 +176,66 @@
     {
       "if": {
         "properties": {
+          "decision_status": { "const": "SELECTED" },
+          "provider": { "const": "openrouter" }
+        }
+      },
+      "then": {
+        "properties": {
+          "openrouter_profile": {
+            "type": "string",
+            "enum": [
+              "or_free_sandbox",
+              "or_low_cost_public",
+              "or_paid_private_controlled",
+              "or_structured_noncritical",
+              "or_challenger",
+              "or_emergency_fallback"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" },
+          "openrouter_profile": { "type": "string" }
+        }
+      },
+      "then": {
+        "properties": {
+          "provider": { "const": "openrouter" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" },
+          "provider": { "const": "openrouter" },
+          "privacy_class": {
+            "enum": [
+              "PRIVATE_REPO_NO_SECRETS",
+              "PRIVATE_REPO_POSSIBLE_SECRETS",
+              "SECRET_BEARING",
+              "CLIENT_DATA",
+              "SECURITY_SENSITIVE",
+              "RELEASE_AUTHORITY"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "human_gate_required": { "const": true },
+          "human_approval_ref": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
           "decision_status": { "const": "SELECTED" }
         },
         "anyOf": [
@@ -210,6 +270,7 @@
         "properties": {
           "provider": { "const": "openrouter" },
           "access_path": { "const": "openrouter_free" },
+          "selected_route": { "properties": { "route_profile": { "const": "or_free_sandbox" } } },
           "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO"] },
           "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY"] },
           "role": { "enum": ["cheap_file_reading", "issue_triage", "test_generation", "task_intake"] }
@@ -222,6 +283,7 @@
         "properties": {
           "provider": { "const": "openrouter" },
           "access_path": { "const": "openrouter_paid" },
+          "selected_route": { "properties": { "route_profile": { "const": "or_low_cost_public" } } },
           "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO"] },
           "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT"] },
           "role": { "enum": ["cheap_file_reading", "issue_triage", "repo_cartography", "test_generation", "narrow_patch_generation", "challenger_review"] }
@@ -234,9 +296,12 @@
         "properties": {
           "provider": { "const": "openrouter" },
           "access_path": { "const": "openrouter_paid" },
+          "selected_route": { "properties": { "route_profile": { "const": "or_paid_private_controlled" } } },
           "privacy_class": { "enum": ["PRIVATE_REPO_NO_SECRETS"] },
           "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT"] },
-          "role": { "enum": ["repo_cartography", "issue_triage", "test_generation", "challenger_review"] }
+          "role": { "enum": ["repo_cartography", "issue_triage", "test_generation", "challenger_review"] },
+          "human_gate_required": { "const": true },
+          "human_approval_ref": { "type": "string", "minLength": 1 }
         }
       }
     },
@@ -246,6 +311,7 @@
         "properties": {
           "provider": { "const": "openrouter" },
           "access_path": { "const": "openrouter_paid" },
+          "selected_route": { "properties": { "route_profile": { "const": "or_structured_noncritical" } } },
           "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO", "PRIVATE_REPO_NO_SECRETS"] },
           "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT"] },
           "role": { "enum": ["task_classification", "issue_triage", "structured_task_packet_generation"] }
@@ -258,6 +324,7 @@
         "properties": {
           "provider": { "const": "openrouter" },
           "access_path": { "const": "openrouter_paid" },
+          "selected_route": { "properties": { "route_profile": { "const": "or_challenger" } } },
           "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO", "PRIVATE_REPO_NO_SECRETS", "SECURITY_SENSITIVE"] },
           "risk_class": { "enum": ["R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT", "R4_MULTI_FILE_EDIT", "R5_SECURITY_OR_AUTHORITY"] },
           "role": { "enum": ["challenger_review", "pr_review", "architecture_synthesis"] }
@@ -270,6 +337,7 @@
         "properties": {
           "provider": { "const": "openrouter" },
           "access_path": { "const": "openrouter_paid" },
+          "selected_route": { "properties": { "route_profile": { "const": "or_emergency_fallback" } } },
           "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO", "PRIVATE_REPO_NO_SECRETS"] },
           "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT", "R4_MULTI_FILE_EDIT"] },
           "role": { "enum": ["cheap_file_reading", "repo_cartography", "planning", "challenger_review"] }
