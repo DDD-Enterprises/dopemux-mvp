@@ -23,6 +23,11 @@ from scripts.audit.pr_audit_router import (
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "schemas" / "proof" / "multi_model_pr_audit.schema.json"
 PR_RISK_SCHEMA_PATH = ROOT / "schemas" / "audit" / "pr_risk.schema.json"
+AUDIT_EXTRA_CLINK_CONF_DIR = ROOT / "scripts" / "audit" / "fixtures" / "clink_clients"
+PAL_CLINK_CONF_DIR = (
+    ROOT / "docker" / "mcp-servers-source" / "pal" / "pal-mcp-server" / "conf" / "cli_clients"
+)
+PAL_SUPPORTED_CLINK_RUNNERS = frozenset({"gemini", "codex", "claude"})
 
 
 # ---------------------------------------------------------------------------
@@ -281,21 +286,30 @@ class TestSchemaFiles:
         assert "files_changed" in data["properties"]
 
     def test_xai_grok_clink_config_exists(self) -> None:
-        cfg = ROOT / "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/xai-grok-audit.json"
+        cfg = AUDIT_EXTRA_CLINK_CONF_DIR / "xai-grok-audit.json"
         assert cfg.exists()
 
     def test_openrouter_clink_config_exists(self) -> None:
-        cfg = ROOT / "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/openrouter-audit.json"
+        cfg = AUDIT_EXTRA_CLINK_CONF_DIR / "openrouter-audit.json"
         assert cfg.exists()
 
     def test_xai_grok_clink_config_name_not_forbidden(self) -> None:
         from scripts.audit.route_schema import FORBIDDEN_CLI_NAMES
-        cfg_path = ROOT / "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/xai-grok-audit.json"
+        cfg_path = AUDIT_EXTRA_CLINK_CONF_DIR / "xai-grok-audit.json"
         data = json.loads(cfg_path.read_text())
         assert data["name"] not in FORBIDDEN_CLI_NAMES
 
     def test_openrouter_clink_config_name_not_forbidden(self) -> None:
         from scripts.audit.route_schema import FORBIDDEN_CLI_NAMES
-        cfg_path = ROOT / "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/openrouter-audit.json"
+        cfg_path = AUDIT_EXTRA_CLINK_CONF_DIR / "openrouter-audit.json"
         data = json.loads(cfg_path.read_text())
         assert data["name"] not in FORBIDDEN_CLI_NAMES
+
+    def test_pal_cli_clients_exclude_unsupported_clink_runners(self) -> None:
+        for cfg_path in sorted(PAL_CLINK_CONF_DIR.glob("*.json")):
+            data = json.loads(cfg_path.read_text())
+            runner = (data.get("runner") or data.get("name", "")).strip().lower()
+            assert runner in PAL_SUPPORTED_CLINK_RUNNERS, (
+                f"{cfg_path.name} uses unsupported clink runner {runner!r}; "
+                "move planned audit routes to scripts/audit/fixtures/clink_clients/"
+            )

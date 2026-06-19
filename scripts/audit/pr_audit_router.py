@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Optional
 
 from scripts.audit.auditor_router import (
+    _AUDIT_EXTRA_CLINK_CONF_DIR,
     _CLINK_CONF_DIR,
     default_routes,
     load_route_from_clink_config,
@@ -118,9 +119,15 @@ class MultiModelAuditPlan:
 def _load_extra_routes(conf_dir: Path, names: tuple[str, ...]) -> dict[str, AuditRoute]:
     """Load named clink configs that are not in the default route set."""
     routes: dict[str, AuditRoute] = {}
+    search_dirs = (conf_dir, _AUDIT_EXTRA_CLINK_CONF_DIR)
     for name in names:
-        cfg = conf_dir / f"{name}.json"
-        if not cfg.exists():
+        cfg: Path | None = None
+        for directory in search_dirs:
+            candidate = directory / f"{name}.json"
+            if candidate.exists():
+                cfg = candidate
+                break
+        if cfg is None:
             continue
         try:
             route = load_route_from_clink_config(cfg, priority=99)
