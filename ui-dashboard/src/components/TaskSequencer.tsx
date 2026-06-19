@@ -478,6 +478,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 
       {currentTask ? (
         <Box
+          tabIndex={0}
           sx={{
             mb: 3,
             p: 2.5,
@@ -485,7 +486,16 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             border: `1px solid ${brandTokens.borders.gold}`,
             background: alpha(brandTokens.colors.saintGold, 0.08),
             boxShadow: brandTokens.shadows.goldBloom,
+            cursor: 'help',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            outline: 'none',
+            '&:hover, &:focus-visible': {
+              transform: 'translateY(-4px)',
+              borderColor: brandTokens.colors.saintGold,
+              boxShadow: `0 8px 32px ${alpha(brandTokens.colors.saintGold, 0.3)}`,
+            },
           }}
+          aria-label={`Current Ritual: ${currentTask.title}. Complexity: ${Math.round(currentTask.complexity * 100)}%, Energy: ${currentTask.energyRequired}. ${finishTimeLabel ? `Estimated finish: ${finishTimeLabel}` : ''}`}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
             <Typography variant="subtitle2" sx={{ letterSpacing: '0.08em' }}>
@@ -575,7 +585,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                       ? brandTokens.colors.gremlinPink
                       : progressPercent > 80
                         ? brandTokens.colors.giltEdge
-                        : brandTokens.colors.ritualCyan,
+                        : brandTokens.colors.saintGold,
                     0.1
                   ),
                   '& .MuiLinearProgress-bar': {
@@ -583,13 +593,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                       ? brandTokens.colors.gremlinPink
                       : progressPercent > 80
                         ? brandTokens.colors.giltEdge
-                        : brandTokens.colors.ritualCyan,
+                        : brandTokens.colors.saintGold,
                     borderRadius: 3,
                     boxShadow: isOvertime
                       ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.6)}`
                       : progressPercent > 80
                         ? `0 0 12px ${alpha(brandTokens.colors.giltEdge, 0.4)}`
-                        : `0 0 12px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
+                        : brandTokens.shadows.goldBloom,
                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   },
                 }}
@@ -606,6 +616,44 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               />
             </Box>
           </Tooltip>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2.5 }}>
+            <Tooltip title={`Complexity: ${Math.round(currentTask.complexity * 100)}%`} arrow>
+              <Chip
+                size="small"
+                icon={<Swords size={14} color={complexityColor(currentTask.complexity)} aria-hidden="true" />}
+                label={`${Math.round(currentTask.complexity * 100)}%`}
+                tabIndex={0}
+                aria-label={`Complexity: ${Math.round(currentTask.complexity * 100)}%`}
+                sx={{
+                  bgcolor: alpha(complexityColor(currentTask.complexity), 0.1),
+                  color: complexityColor(currentTask.complexity),
+                  border: `1px solid ${alpha(complexityColor(currentTask.complexity), 0.3)}`,
+                  cursor: 'help',
+                  '&:focus-visible': {
+                    boxShadow: `0 0 0 2px ${complexityColor(currentTask.complexity)}`,
+                  },
+                }}
+              />
+            </Tooltip>
+            <Tooltip title={`Energy: ${currentTask.energyRequired}`} arrow>
+              <Chip
+                size="small"
+                icon={<Zap size={14} color={energyColor(currentTask.energyRequired)} aria-hidden="true" />}
+                label={currentTask.energyRequired}
+                tabIndex={0}
+                aria-label={`Energy Requirement: ${currentTask.energyRequired}`}
+                sx={{
+                  bgcolor: alpha(energyColor(currentTask.energyRequired), 0.1),
+                  color: energyColor(currentTask.energyRequired),
+                  border: `1px solid ${alpha(energyColor(currentTask.energyRequired), 0.3)}`,
+                  cursor: 'help',
+                  '&:focus-visible': {
+                    boxShadow: `0 0 0 2px ${energyColor(currentTask.energyRequired)}`,
+                  },
+                }}
+              />
+            </Tooltip>
+          </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'} arrow>
               <Button

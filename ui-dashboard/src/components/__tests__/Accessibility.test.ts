@@ -121,8 +121,21 @@ test('TaskSequencer.tsx implements overtime visual cues and progressive urgency'
   expect(content).toContain('const isOvertime = progressPercent > 100;');
   expect(content).toContain('color: isOvertime ? brandTokens.colors.gremlinPink : \'inherit\'');
   expect(content).toContain('OVERTIME +{overtimeMinutes}M');
-  // Progressive urgency color logic
-  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*progressPercent\s*>\s*80\s*\?\s*brandTokens\.colors\.giltEdge\s*:\s*brandTokens\.colors\.ritualCyan,\s*0\.1\s*\)/);
+  // Progressive urgency color logic (saintGold baseline preserved per palette rules)
+  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*progressPercent\s*>\s*80\s*\?\s*brandTokens\.colors\.giltEdge\s*:\s*brandTokens\.colors\.saintGold,\s*0\.1\s*\)/);
+});
+
+test('TaskSequencer.tsx implements interactive current ritual card and metadata chips', () => {
+  const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
+  // Card-level interactive surface for active task
+  expect(content).toContain('tabIndex={0}');
+  expect(content).toContain("cursor: 'help'");
+  expect(content).toContain('aria-label={`Current Ritual: ${currentTask.title}.');
+  expect(content).toContain('transform: \'translateY(-4px)\'');
+
+  // Metadata chips
+  expect(content).toContain('aria-label={`Complexity: ${Math.round(currentTask.complexity * 100)}%`}');
+  expect(content).toContain('aria-label={`Energy Requirement: ${currentTask.energyRequired}`}');
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
