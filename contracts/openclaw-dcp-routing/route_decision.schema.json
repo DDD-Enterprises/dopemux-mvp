@@ -138,6 +138,60 @@
       }
     },
     {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" },
+          "risk_class": { "enum": ["R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] }
+        }
+      },
+      "then": {
+        "properties": {
+          "human_gate_required": { "const": true },
+          "human_approval_ref": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" },
+          "role": { "enum": ["security_review", "release_judgment"] }
+        }
+      },
+      "then": {
+        "properties": {
+          "human_gate_required": { "const": true },
+          "human_approval_ref": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" } } },
+      "then": {
+        "properties": {
+          "blocked_reasons": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" }
+        },
+        "anyOf": [
+          { "properties": { "privacy_class": { "enum": ["PRIVATE_REPO_NO_SECRETS", "PRIVATE_REPO_POSSIBLE_SECRETS", "SECRET_BEARING", "CLIENT_DATA", "SECURITY_SENSITIVE", "RELEASE_AUTHORITY"] } } },
+          { "properties": { "risk_class": { "enum": ["R4_MULTI_FILE_EDIT", "R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] } } },
+          { "properties": { "role": { "enum": ["structured_task_packet_generation", "proof_bundle_generation", "proof_validation", "security_review", "release_judgment"] } } },
+          { "properties": { "structured_output_mode": { "enum": ["json_schema_strict", "tool_schema_strict"] } } }
+        ]
+      },
+      "then": {
+        "properties": {
+          "benchmark_certification_ref": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    {
       "if": { "properties": { "access_path": { "const": "openrouter_free" } } },
       "then": {
         "not": {

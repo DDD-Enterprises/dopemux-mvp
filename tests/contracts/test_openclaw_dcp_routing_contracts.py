@@ -185,6 +185,55 @@ def test_selected_gated_route_requires_non_empty_human_approval_ref():
     validate(instance=blocked, schema=schema)
 
 
+def test_selected_high_risk_route_must_set_human_gate():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    security = _json(EXAMPLE_ROOT / "R5_SECURITY_OR_AUTHORITY.json")
+
+    validate(instance=security, schema=schema)
+
+    for patch in [
+        {"human_gate_required": False},
+        {"human_gate_required": True, "human_approval_ref": None},
+        {"human_gate_required": True, "human_approval_ref": ""},
+    ]:
+        candidate = {**security, **patch}
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+
+def test_selected_trust_or_certified_lanes_require_benchmark_certification():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+
+    certified_examples = [
+        _json(EXAMPLE_ROOT / "R3_LOCAL_EDIT.json"),
+        _json(EXAMPLE_ROOT / "R4_MULTI_FILE_EDIT.json"),
+        _json(EXAMPLE_ROOT / "R5_SECURITY_OR_AUTHORITY.json"),
+        _json(EXAMPLE_ROOT / "R6_RELEASE_OR_PRODUCTION.json"),
+    ]
+    for example in certified_examples:
+        validate(instance=example, schema=schema)
+
+        candidate = copy.deepcopy(example)
+        candidate["benchmark_certification_ref"] = None
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+        candidate["benchmark_certification_ref"] = ""
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+
+def test_selected_route_cannot_retain_blocked_reasons():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    example = _json(EXAMPLE_ROOT / "R0_READ.json")
+
+    candidate = copy.deepcopy(example)
+    candidate["blocked_reasons"] = ["MISSING_SCHEMA_VALIDATION"]
+
+    with pytest.raises(ValidationError):
+        validate(instance=candidate, schema=schema)
+
+
 def test_release_example_requires_human_gate_and_current_release_proof_posture():
     release = _json(EXAMPLE_ROOT / "R6_RELEASE_OR_PRODUCTION.json")
 
@@ -249,6 +298,8 @@ def test_pr_steward_ready_is_impossible_with_blocking_constraints():
         ("diff_escapes_packet_allowlist", True),
         ("security_release_gate_lacks_approval", True),
         ("unresolved_blockers", ["missing-security-approval"]),
+        ("proof_bundle_refs", []),
+        ("audit_refs", []),
     ]
 
     for field, value in blocking_variants:
