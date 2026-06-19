@@ -1,28 +1,5 @@
 # ConPort Database Migrations
 
-## Migration Foundation Gate
-
-`conport_migration_gate.py` is the explicit ConPort migration runner/verifier.
-Normal ConPort startup does not invoke it.
-
-Read-only verification:
-
-```bash
-python /app/migrations/conport_migration_gate.py verify --database-url "$DATABASE_URL"
-```
-
-Operator-gated apply:
-
-```bash
-DPMX_CONPORT_MIGRATION_APPLY=1 \
-python /app/migrations/conport_migration_gate.py apply --database-url "$DATABASE_URL"
-```
-
-The gate fails closed when migration files are missing, the migration ledger is
-missing during verify, a checksum drifts, a prior migration row is marked
-failed, or required enhanced schema objects are absent. Migration state is
-recorded in `public.conport_schema_migrations`.
-
 ## Migration 007: Worktree Multi-Instance Support
 
 **Purpose**: Add minimal worktree support for parallel task workflows.

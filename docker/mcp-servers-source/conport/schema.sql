@@ -17,13 +17,11 @@ CREATE TABLE workspace_contexts (
     session_time VARCHAR(50),
     focus_state VARCHAR(50),
     session_milestone TEXT,
-    instance_id VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE UNIQUE INDEX idx_workspace_contexts_workspace_instance
-    ON workspace_contexts(workspace_id, COALESCE(instance_id, ''::VARCHAR));
+CREATE UNIQUE INDEX idx_workspace_contexts_workspace_id ON workspace_contexts(workspace_id);
 CREATE INDEX idx_workspace_contexts_updated_at ON workspace_contexts(updated_at);
 
 -- =====================================================================
@@ -39,7 +37,6 @@ CREATE TABLE decisions (
     tags TEXT[] DEFAULT '{}',
     confidence_level VARCHAR(20) DEFAULT 'medium',
     decision_type VARCHAR(50) DEFAULT 'implementation',
-    created_by_instance VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -68,7 +65,6 @@ CREATE TABLE progress_entries (
     priority VARCHAR(10) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
     estimated_hours DECIMAL(5,2),
     actual_hours DECIMAL(5,2),
-    instance_id VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     completed_at TIMESTAMP WITH TIME ZONE
@@ -78,8 +74,6 @@ CREATE INDEX idx_progress_workspace_id ON progress_entries(workspace_id);
 CREATE INDEX idx_progress_status ON progress_entries(status);
 CREATE INDEX idx_progress_created_at ON progress_entries(created_at DESC);
 CREATE INDEX idx_progress_decision_link ON progress_entries(linked_decision_id);
-CREATE INDEX idx_progress_instance ON progress_entries(instance_id);
-CREATE INDEX idx_progress_workspace_instance ON progress_entries(workspace_id, instance_id);
 
 -- =====================================================================
 -- SESSION TRACKING (ADHD-specific)
@@ -266,7 +260,7 @@ ORDER BY
 -- Insert initial context for existing workspace
 INSERT INTO workspace_contexts (workspace_id, active_context, last_activity, session_time, focus_state)
 VALUES ('dopemux-mvp', 'Unified Architecture - Implementation Phase', 'ConPort database persistence implementation', '90 minutes', 'deep work')
-ON CONFLICT (workspace_id, (COALESCE(instance_id, ''::VARCHAR))) DO UPDATE SET
+ON CONFLICT (workspace_id) DO UPDATE SET
     active_context = EXCLUDED.active_context,
     last_activity = EXCLUDED.last_activity,
     session_time = EXCLUDED.session_time,

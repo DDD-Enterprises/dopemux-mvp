@@ -31,27 +31,27 @@ export default function TeamDashboard() {
   const teamStatusColor = statusStyles[teamStatus].color;
 
   return (
-      <Paper
-        tabIndex={0}
-        aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}.`}
-        sx={{
-          p: 3,
-          borderRadius: 3,
-          background: brandTokens.gradients.focusCard,
-          border: '1px solid transparent',
-          outline: 'none',
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover, &:focus-visible': {
-            transform: 'translateY(-4px)',
-            borderColor: teamStatusColor,
-            boxShadow: `0 0 20px ${alpha(teamStatusColor, 0.2)}`,
-          },
-        }}
+    <Paper
+      tabIndex={0}
+      aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}.`}
+      sx={{
+        p: 3,
+        borderRadius: 3,
+        background: brandTokens.gradients.focusCard,
+        border: '1px solid transparent',
+        outline: 'none',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&:hover, &:focus-visible': {
+          transform: 'translateY(-4px)',
+          borderColor: teamStatusColor,
+          boxShadow: `0 0 20px ${alpha(teamStatusColor, 0.2)}`,
+        },
+      }}
+    >
+      <Tooltip
+        title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. Insight: Sequence handoffs while average load is below escalation threshold.`}
+        arrow
       >
-        <Tooltip
-          title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. Insight: Sequence handoffs while average load is below escalation threshold.`}
-          arrow
-        >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, cursor: 'help' }}>
           <Zap size={20} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
           <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
@@ -81,7 +81,6 @@ export default function TeamDashboard() {
             />
           </Box>
         </Box>
-        </Tooltip>
         <LinearProgress
           aria-label="Team Average Cognitive Load Percentage"
           aria-valuetext={`${teamAverageLoad}%`}
@@ -218,6 +217,6 @@ export default function TeamDashboard() {
           </Tooltip>
         ))}
       </Box>
-      </Paper>
+    </Paper>
   );
 }
