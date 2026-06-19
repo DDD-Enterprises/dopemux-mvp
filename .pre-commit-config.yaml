@@ -136,6 +136,9 @@ repos:
               if [[ "$normalized" =~ ^\./(repo-truth-pack/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(tests/resources/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(src/dopemux/templates/) ]]; then continue; fi
+              # Packaged persona files are runtime prompt assets shipped as
+              # package-data (consumed by InstructionManager), not docs.
+              if [[ "$normalized" =~ ^\./(src/dopemux/personas/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(templates/skills/) ]]; then continue; fi
               if [[ "$normalized" =~ /\.pytest_cache/ ]]; then continue; fi
               # UPGRADES directory is allowed
