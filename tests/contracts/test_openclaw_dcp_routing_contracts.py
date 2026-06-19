@@ -234,6 +234,30 @@ def test_selected_route_cannot_retain_blocked_reasons():
         validate(instance=candidate, schema=schema)
 
 
+def test_selected_openrouter_profiles_must_match_profile_lanes():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    example = _json(EXAMPLE_ROOT / "R2_TEST_ONLY.json")
+
+    validate(instance=example, schema=schema)
+
+    forbidden_cases = [
+        {"openrouter_profile": "or_paid_private_controlled", "privacy_class": "SECRET_BEARING"},
+        {"openrouter_profile": "or_paid_private_controlled", "risk_class": "R5_SECURITY_OR_AUTHORITY"},
+        {"openrouter_profile": "or_paid_private_controlled", "role": "security_review"},
+        {"openrouter_profile": "or_structured_noncritical", "role": "proof_validation"},
+        {"openrouter_profile": "or_challenger", "privacy_class": "SECRET_BEARING"},
+        {"openrouter_profile": "or_emergency_fallback", "risk_class": "R5_SECURITY_OR_AUTHORITY"},
+    ]
+
+    for patch in forbidden_cases:
+        candidate = {**example, **patch}
+        candidate["provider"] = "openrouter"
+        candidate["access_path"] = "openrouter_paid"
+        candidate["benchmark_certification_ref"] = "cert_openrouter_profile_001"
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+
 def test_release_example_requires_human_gate_and_current_release_proof_posture():
     release = _json(EXAMPLE_ROOT / "R6_RELEASE_OR_PRODUCTION.json")
 
@@ -300,6 +324,17 @@ def test_pr_steward_ready_is_impossible_with_blocking_constraints():
         ("unresolved_blockers", ["missing-security-approval"]),
         ("proof_bundle_refs", []),
         ("audit_refs", []),
+        (
+            "checks",
+            [
+                {
+                    "name": "contract-tests",
+                    "status": "in_progress",
+                    "conclusion": "pending",
+                    "head_sha": "abcdef1234567890",
+                }
+            ],
+        ),
     ]
 
     for field, value in blocking_variants:
@@ -307,6 +342,97 @@ def test_pr_steward_ready_is_impossible_with_blocking_constraints():
         blocked[field] = value
         with pytest.raises(ValidationError):
             validate(instance=blocked, schema=schema)
+
+
+def test_benchmark_result_certify_requires_no_blocking_signals():
+    schema = _json(CONTRACT_ROOT / "benchmark_result.schema.json")
+    passing = {
+        "schema_version": "1.0.0",
+        "benchmark_result_id": "br_001",
+        "fixture_id": "BF-001-classification",
+        "route_tested": "or_low_cost_public",
+        "requested_model": "openrouter/model",
+        "actual_model": "openrouter/model",
+        "provider": "openrouter",
+        "runner": "openrouter_generic",
+        "pass_fail": "PASS",
+        "json_validity": {"valid": True, "rate": 1},
+        "schema_validity": {"valid": True, "rate": 1, "errors": []},
+        "evidence_grounding": {"precision": 1, "sample_count": 3},
+        "unsupported_claims": {"count": 0, "rate": 0},
+        "hallucinated_files": {"count": 0, "paths": []},
+        "contradiction_recall": 1,
+        "core_field_stability": 1,
+        "diff_applicability": "not_applicable",
+        "tests_result": "passed",
+        "latency": {"wall_ms": 100, "ttfb_ms": 10, "ttft_ms": 20},
+        "cost": {"actual_usd": 0.01, "estimated_usd": 0.01},
+        "provider_drift": {"detected": False, "details": ""},
+        "privacy_violation": {"detected": False, "details": ""},
+        "certification_recommendation": "CERTIFY",
+        "created_at": "2026-06-17T12:00:00Z",
+    }
+    validate(instance=passing, schema=schema)
+
+    blocking_patches = [
+        {"pass_fail": "FAIL"},
+        {"json_validity": {"valid": False, "rate": 0.5}},
+        {"schema_validity": {"valid": False, "rate": 0.5, "errors": ["bad field"]}},
+        {"unsupported_claims": {"count": 1, "rate": 0.1}},
+        {"hallucinated_files": {"count": 1, "paths": ["missing.py"]}},
+        {"provider_drift": {"detected": True, "details": "actual provider changed"}},
+        {"privacy_violation": {"detected": True, "details": "secret observed"}},
+    ]
+
+    for patch in blocking_patches:
+        candidate = copy.deepcopy(passing)
+        candidate.update(patch)
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+        candidate["certification_recommendation"] = "DO_NOT_CERTIFY"
+        validate(instance=candidate, schema=schema)
+
+
+def test_active_route_certification_cannot_have_revocation_reasons():
+    schema = _json(CONTRACT_ROOT / "route_certification_ledger.schema.json")
+    active = {
+        "schema_version": "1.0.0",
+        "certification_id": "cert_001",
+        "route_profile": "or_low_cost_public",
+        "pool": "test_builder",
+        "role": "test_generation",
+        "model_provider_runner": {
+            "model": "openrouter/model",
+            "provider": "openrouter",
+            "runner": "openrouter_generic",
+            "access_path": "openrouter_paid",
+        },
+        "benchmark_result_refs": ["br_001"],
+        "approved_privacy_classes": ["PUBLIC_REPO"],
+        "approved_risk_classes": ["R2_TEST_ONLY"],
+        "approved_roles": ["test_generation"],
+        "expiration": "2026-07-17T12:00:00Z",
+        "revocation_reasons": [],
+        "reviewer": "human",
+        "approval_event": {
+            "approval_id": "approval_001",
+            "approved_at": "2026-06-17T12:00:00Z",
+            "scope": "contract test",
+        },
+        "current_status": "ACTIVE",
+        "created_at": "2026-06-17T12:00:00Z",
+    }
+    validate(instance=active, schema=schema)
+
+    revoked_but_active = copy.deepcopy(active)
+    revoked_but_active["revocation_reasons"] = ["PROVIDER_DRIFT"]
+    with pytest.raises(ValidationError):
+        validate(instance=revoked_but_active, schema=schema)
+
+    revoked = copy.deepcopy(revoked_but_active)
+    revoked["current_status"] = "REVOKED"
+    validate(instance=revoked, schema=schema)
 
 
 def test_openrouter_profiles_preserve_required_fail_closed_controls():

@@ -90,6 +90,24 @@
     },
     "created_at": { "type": "string", "format": "date-time" }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "current_status": { "enum": ["ACTIVE", "ACTIVE_WITH_LIMITS"] } } },
+      "then": {
+        "properties": {
+          "revocation_reasons": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "revocation_reasons": { "minItems": 1 } } },
+      "then": {
+        "properties": {
+          "current_status": { "enum": ["EXPIRED", "REVOKED", "SUSPENDED"] }
+        }
+      }
+    }
+  ],
   "definitions": {
     "privacy_class": {
       "type": "string",

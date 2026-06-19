@@ -139,6 +139,49 @@
     },
     "created_at": { "type": "string", "format": "date-time" }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "certification_recommendation": { "const": "CERTIFY" } } },
+      "then": {
+        "properties": {
+          "pass_fail": { "const": "PASS" },
+          "json_validity": {
+            "properties": {
+              "valid": { "const": true }
+            }
+          },
+          "schema_validity": {
+            "properties": {
+              "valid": { "const": true },
+              "errors": { "maxItems": 0 }
+            }
+          },
+          "unsupported_claims": {
+            "properties": {
+              "count": { "const": 0 },
+              "rate": { "const": 0 }
+            }
+          },
+          "hallucinated_files": {
+            "properties": {
+              "count": { "const": 0 },
+              "paths": { "maxItems": 0 }
+            }
+          },
+          "provider_drift": {
+            "properties": {
+              "detected": { "const": false }
+            }
+          },
+          "privacy_violation": {
+            "properties": {
+              "detected": { "const": false }
+            }
+          }
+        }
+      }
+    }
+  ],
   "definitions": {
     "provider": {
       "type": "string",

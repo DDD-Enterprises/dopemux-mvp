@@ -203,6 +203,78 @@
           ]
         }
       }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "openrouter_profile": { "const": "or_free_sandbox" } } },
+      "then": {
+        "properties": {
+          "provider": { "const": "openrouter" },
+          "access_path": { "const": "openrouter_free" },
+          "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY"] },
+          "role": { "enum": ["cheap_file_reading", "issue_triage", "test_generation", "task_intake"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "openrouter_profile": { "const": "or_low_cost_public" } } },
+      "then": {
+        "properties": {
+          "provider": { "const": "openrouter" },
+          "access_path": { "const": "openrouter_paid" },
+          "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT"] },
+          "role": { "enum": ["cheap_file_reading", "issue_triage", "repo_cartography", "test_generation", "narrow_patch_generation", "challenger_review"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "openrouter_profile": { "const": "or_paid_private_controlled" } } },
+      "then": {
+        "properties": {
+          "provider": { "const": "openrouter" },
+          "access_path": { "const": "openrouter_paid" },
+          "privacy_class": { "enum": ["PRIVATE_REPO_NO_SECRETS"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT"] },
+          "role": { "enum": ["repo_cartography", "issue_triage", "test_generation", "challenger_review"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "openrouter_profile": { "const": "or_structured_noncritical" } } },
+      "then": {
+        "properties": {
+          "provider": { "const": "openrouter" },
+          "access_path": { "const": "openrouter_paid" },
+          "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO", "PRIVATE_REPO_NO_SECRETS"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT"] },
+          "role": { "enum": ["task_classification", "issue_triage", "structured_task_packet_generation"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "openrouter_profile": { "const": "or_challenger" } } },
+      "then": {
+        "properties": {
+          "provider": { "const": "openrouter" },
+          "access_path": { "const": "openrouter_paid" },
+          "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO", "PRIVATE_REPO_NO_SECRETS", "SECURITY_SENSITIVE"] },
+          "risk_class": { "enum": ["R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT", "R4_MULTI_FILE_EDIT", "R5_SECURITY_OR_AUTHORITY"] },
+          "role": { "enum": ["challenger_review", "pr_review", "architecture_synthesis"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "openrouter_profile": { "const": "or_emergency_fallback" } } },
+      "then": {
+        "properties": {
+          "provider": { "const": "openrouter" },
+          "access_path": { "const": "openrouter_paid" },
+          "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO", "PRIVATE_REPO_NO_SECRETS"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT", "R4_MULTI_FILE_EDIT"] },
+          "role": { "enum": ["cheap_file_reading", "repo_cartography", "planning", "challenger_review"] }
+        }
+      }
     }
   ],
   "definitions": {

@@ -104,11 +104,20 @@
           "security_release_gate_lacks_approval": { "const": false },
           "unresolved_blockers": { "maxItems": 0 },
           "proof_bundle_refs": { "minItems": 1 },
-          "audit_refs": { "minItems": 1 }
+          "audit_refs": { "minItems": 1 },
+          "checks": {
+            "items": {
+              "properties": {
+                "status": { "const": "completed" },
+                "conclusion": { "const": "success" }
+              }
+            }
+          }
         },
         "required": [
           "proof_bundle_refs",
           "audit_refs",
+          "checks",
           "unknown_reviewers_or_bots",
           "unclassified_review_items",
           "failed_checks",
