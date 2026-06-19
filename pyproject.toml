@@ -184,6 +184,7 @@ packages = [
     "dopemux.roles",
     "dopemux.service_base",
     "dopemux.system_data",
+    "dopemux.personas",
     "dopemux.templates",
     "dopemux.tools",
     "dopemux.tmux",
@@ -245,6 +246,7 @@ packages = [
     "init/task-packets/STATUS.md",
     "init/task-packets/TEMPLATE_TASK_PACKET.md",
 ]
+"dopemux.personas" = ["*.agent.md"]
 "dopemux_pr_steward" = ["config.schema.json"]
 "tools.pr_steward" = ["known_reviewers.json"]
 
