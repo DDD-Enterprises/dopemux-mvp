@@ -959,9 +959,6 @@ class TestF4WizardEnvPathInjects:
         # We verify here that setup_project_config with a valid role DOES write the
         # file (so the absence in dry-run is meaningful), and separately confirm the
         # CLI source has the correct guard.
-        from dopemux.claude.instruction_manager import InstructionManager
-
-        manager = InstructionManager(temp_project_dir)
         # If developer resolves (packaged fallback), calling setup does inject.
         configurator = ClaudeConfigurator(config_manager)
         result = configurator.setup_project_config(temp_project_dir, role="developer")
