@@ -1,0 +1,839 @@
+# GROK_BUILD_RECON
+## binaries
+/Users/hue/.local/bin/grok
+
+## versions
+grok 0.2.45 (e4661b89c04) [stable]
+
+## help
+Grok Build TUI
+
+Usage: grok [OPTIONS] [PROMPT] [COMMAND]
+
+Arguments:
+  [PROMPT]
+          Initial prompt for the interactive session, e.g. `grok "fix the bug"` or `grok --worktree=feat "create this feature"`
+
+Options:
+      --agent <NAME>
+          Agent name or definition file path
+
+      --agents <JSON>
+          Inline subagent definitions as JSON
+
+      --allow <RULE>
+          Permission allow rule (Claude Code: --allowedTools)
+
+      --always-approve
+          Auto-approve all tool executions
+
+      --best-of-n <N>
+          Run the task N ways in parallel and pick the best (headless only)
+
+  -c, --continue
+          Continue the most recent session for the current working directory
+
+      --check
+          Append a self-verification loop to the prompt (headless only)
+
+      --compaction-detail <DETAIL>
+          Segments verbatim detail [none|minimal|balanced|verbose] (default `verbose`). Only affects `--compaction-mode segments`. Sets `GROK_COMPACTION_DETAIL`
+
+      --compaction-mode <MODE>
+          Compaction mode [summary|transcript|segments]: `summary` (default) adds no pointer; `transcript` points at the raw transcript; `segments` persists per-segment markdown to grep. Sets `GROK_COMPACTION_MODE`
+
+      --cwd <CWD>
+          Working directory
+
+      --debug
+          Enable debug logging
+
+      --debug-file <FILE>
+          Write debug logs to FILE
+
+      --deny <RULE>
+          Permission deny rule (Claude Code: --disallowedTools)
+
+      --disable-web-search
+          Disable web search and web fetch tools
+
+      --disallowed-tools <TOOLS>
+          Built-in tools to remove (comma-separated)
+
+      --effort <LEVEL>
+          Effort level
+          
+          [possible values: low, medium, high, xhigh, max]
+
+      --experimental-memory
+          Enable cross-session memory
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+      --leader-socket <PATH>
+          Use a custom leader socket path instead of the default `~/.grok/leader.sock`.
+          
+          Both this client and the leader process it spawns bind this path (propagated via the `GROK_LEADER_SOCKET` env var), so a local/branch build can run an isolated leader without colliding with the default one already running on the machine. The lock file is the sibling `.lock` (e.g. `…/leader-branch.sock` → `…/leader-branch.lock`). Name it `~/.grok/leader-*.sock` to keep `grok leader list/kill` able to find it; any other location works but won't be auto-discovered.
+
+  -m, --model <MODEL>
+          Model ID to use
+
+      --max-turns <N>
+          Maximum number of agent turns
+
+      --no-alt-screen
+          Run inline instead of using the terminal alternate screen
+
+      --no-memory
+          Disable cross-session memory for this session
+
+      --no-plan
+          Disable plan mode
+
+      --no-subagents
+          Disable subagent spawning
+
+      --oauth
+          Use OAuth when the welcome screen starts authentication
+
+      --output-format <OUTPUT_FORMAT>
+          Output format for headless mode
+          
+          [default: plain]
+          [possible values: plain, json, streaming-json]
+
+  -p, --single <PROMPT>
+          Single-turn prompt. Prints the response to stdout and exits
+
+      --permission-mode <MODE>
+          Permission mode
+          
+          [possible values: default, acceptEdits, auto, dontAsk, bypassPermissions, plan]
+
+      --prompt-file <PATH>
+          Single-turn prompt from a file
+
+      --prompt-json <JSON>
+          Single-turn prompt as JSON content blocks
+
+  -r, --resume [<SESSION_ID>]
+          Resume a session by ID, or the most recent if omitted
+
+      --reasoning-effort <EFFORT>
+          Reasoning effort for reasoning models
+
+      --restore-code
+          Check out the original session's commit when resuming
+
+      --rules <RULES>
+          Extra rules to append to the system prompt
+
+      --sandbox <PROFILE>
+          Sandbox profile for filesystem and network access
+          
+          [env: GROK_SANDBOX=]
+
+      --system-prompt-override <PROMPT>
+          Override the agent's system prompt (Claude Code: --system-prompt)
+
+      --todo-gate
+          Enable the runtime turn-end TodoGate for this session.
+          
+          Session-scoped (not persisted). Highest precedence — overrides remote `todo_gate_enabled` and the built-in default (which is `false`).
+
+      --tools <TOOLS>
+          Built-in tools to allow (comma-separated)
+
+  -v, --version
+          Print version
+
+      --verbatim
+          Send the prompt exactly as given
+
+  -w, --worktree [<WORKTREE>]
+          Start the session in a new git worktree, optionally named
+
+Commands:
+  agent        Run Grok without the interactive UI
+  completions  Generate shell completion scripts (bash, zsh, fish, powershell, ...)
+  dashboard    Open the Agent Dashboard view at startup
+  export       Export a session transcript as Markdown
+  help         Print this message or the help of the given subcommand(s)
+  import       Import sessions into Grok
+  inspect      Show the configuration Grok discovers for this directory
+  leader       Manage running leader processes
+  login        Sign in to Grok
+  logout       Sign out and clear cached credentials
+  mcp          Manage MCP server configurations
+  memory       Manage cross-session memory
+  models       List available models and exit
+  plugin       Manage plugins and marketplace sources
+  sessions     List, search, or restore sessions
+  setup        Fetch and install managed deployment configuration
+  ssh          Run ssh with local clipboard support
+  trace        Export or upload session trace data
+  update       Check for updates or install a specific version
+  version      Print version information [aliases: v]
+  worktree     Manage git worktrees
+Run Grok without the interactive UI
+
+Usage: grok agent [OPTIONS] [COMMAND]
+
+Commands:
+  stdio     Run the agent over stdio
+  headless  Run the agent headlessly over the Grok WebSocket relay
+  serve     Run the agent as a WebSocket server
+  leader    Run as the shared leader process for other clients
+  help      Print this message or the help of the given subcommand(s)
+
+Options:
+      --reauth
+          Run authentication before starting the agent
+          
+          [aliases: ----reauthenticate]
+
+  -m, --model <MODEL>
+          Model ID to use
+
+      --reasoning-effort <EFFORT>
+          Reasoning effort for reasoning models
+
+      --always-approve
+          Auto-approve all tool executions
+
+      --agent-profile <PATH>
+          Path to an agent profile file
+
+      --leader
+          Connect to a shared leader process instead of starting a new agent. Allows multiple clients to share one backend. Defaults to [cli] use_leader in config.toml
+
+      --no-leader
+          Start a new agent even when config enables leader mode
+
+      --grok-ws-origin <GROK_WS_ORIGIN>
+          
+
+      --grok-ws-url <GROK_WS_URL>
+          
+
+      --cli-chat-proxy-base-url <CLI_CHAT_PROXY_BASE_URL>
+          Override the CLI chat proxy base URL
+
+      --xai-api-base-url <XAI_API_BASE_URL>
+          Override the public xAI API base URL
+
+      --debug
+          Enable debug logging
+
+      --debug-file <FILE>
+          Write debug logs to FILE
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+      --leader-socket <PATH>
+          Use a custom leader socket path instead of the default `~/.grok/leader.sock`.
+          
+          Both this client and the leader process it spawns bind this path (propagated via the `GROK_LEADER_SOCKET` env var), so a local/branch build can run an isolated leader without colliding with the default one already running on the machine. The lock file is the sibling `.lock` (e.g. `…/leader-branch.sock` → `…/leader-branch.lock`). Name it `~/.grok/leader-*.sock` to keep `grok leader list/kill` able to find it; any other location works but won't be auto-discovered.
+Manage MCP server configurations
+
+Usage: grok mcp [OPTIONS] <COMMAND>
+
+Commands:
+  list    List configured MCP servers
+  add     Add or update an MCP server configuration
+  remove  Remove an MCP server configuration
+  doctor  Diagnose MCP server configuration and connectivity
+  help    Print this message or the help of the given subcommand(s)
+
+Options:
+      --debug
+          Enable debug logging
+
+      --debug-file <FILE>
+          Write debug logs to FILE
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+      --leader-socket <PATH>
+          Use a custom leader socket path instead of the default `~/.grok/leader.sock`.
+          
+          Both this client and the leader process it spawns bind this path (propagated via the `GROK_LEADER_SOCKET` env var), so a local/branch build can run an isolated leader without colliding with the default one already running on the machine. The lock file is the sibling `.lock` (e.g. `…/leader-branch.sock` → `…/leader-branch.lock`). Name it `~/.grok/leader-*.sock` to keep `grok leader list/kill` able to find it; any other location works but won't be auto-discovered.
+Grok Build TUI
+
+Usage: grok [OPTIONS] [PROMPT] [COMMAND]
+
+Arguments:
+  [PROMPT]
+          Initial prompt for the interactive session, e.g. `grok "fix the bug"` or `grok --worktree=feat "create this feature"`
+
+Options:
+      --agent <NAME>
+          Agent name or definition file path
+
+      --agents <JSON>
+          Inline subagent definitions as JSON
+
+      --allow <RULE>
+          Permission allow rule (Claude Code: --allowedTools)
+
+      --always-approve
+          Auto-approve all tool executions
+
+      --best-of-n <N>
+          Run the task N ways in parallel and pick the best (headless only)
+
+  -c, --continue
+          Continue the most recent session for the current working directory
+
+      --check
+          Append a self-verification loop to the prompt (headless only)
+
+      --compaction-detail <DETAIL>
+          Segments verbatim detail [none|minimal|balanced|verbose] (default `verbose`). Only affects `--compaction-mode segments`. Sets `GROK_COMPACTION_DETAIL`
+
+      --compaction-mode <MODE>
+          Compaction mode [summary|transcript|segments]: `summary` (default) adds no pointer; `transcript` points at the raw transcript; `segments` persists per-segment markdown to grep. Sets `GROK_COMPACTION_MODE`
+
+      --cwd <CWD>
+          Working directory
+
+      --debug
+          Enable debug logging
+
+      --debug-file <FILE>
+          Write debug logs to FILE
+
+      --deny <RULE>
+          Permission deny rule (Claude Code: --disallowedTools)
+
+      --disable-web-search
+          Disable web search and web fetch tools
+
+      --disallowed-tools <TOOLS>
+          Built-in tools to remove (comma-separated)
+
+      --effort <LEVEL>
+          Effort level
+          
+          [possible values: low, medium, high, xhigh, max]
+
+      --experimental-memory
+          Enable cross-session memory
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+      --leader-socket <PATH>
+          Use a custom leader socket path instead of the default `~/.grok/leader.sock`.
+          
+          Both this client and the leader process it spawns bind this path (propagated via the `GROK_LEADER_SOCKET` env var), so a local/branch build can run an isolated leader without colliding with the default one already running on the machine. The lock file is the sibling `.lock` (e.g. `…/leader-branch.sock` → `…/leader-branch.lock`). Name it `~/.grok/leader-*.sock` to keep `grok leader list/kill` able to find it; any other location works but won't be auto-discovered.
+
+  -m, --model <MODEL>
+          Model ID to use
+
+      --max-turns <N>
+          Maximum number of agent turns
+
+      --no-alt-screen
+          Run inline instead of using the terminal alternate screen
+
+      --no-memory
+          Disable cross-session memory for this session
+
+      --no-plan
+          Disable plan mode
+
+      --no-subagents
+          Disable subagent spawning
+
+      --oauth
+          Use OAuth when the welcome screen starts authentication
+
+      --output-format <OUTPUT_FORMAT>
+          Output format for headless mode
+          
+          [default: plain]
+          [possible values: plain, json, streaming-json]
+
+  -p, --single <PROMPT>
+          Single-turn prompt. Prints the response to stdout and exits
+
+      --permission-mode <MODE>
+          Permission mode
+          
+          [possible values: default, acceptEdits, auto, dontAsk, bypassPermissions, plan]
+
+      --prompt-file <PATH>
+          Single-turn prompt from a file
+
+      --prompt-json <JSON>
+          Single-turn prompt as JSON content blocks
+
+  -r, --resume [<SESSION_ID>]
+          Resume a session by ID, or the most recent if omitted
+
+      --reasoning-effort <EFFORT>
+          Reasoning effort for reasoning models
+
+      --restore-code
+          Check out the original session's commit when resuming
+
+      --rules <RULES>
+          Extra rules to append to the system prompt
+
+      --sandbox <PROFILE>
+          Sandbox profile for filesystem and network access
+          
+          [env: GROK_SANDBOX=]
+
+      --system-prompt-override <PROMPT>
+          Override the agent's system prompt (Claude Code: --system-prompt)
+
+      --todo-gate
+          Enable the runtime turn-end TodoGate for this session.
+          
+          Session-scoped (not persisted). Highest precedence — overrides remote `todo_gate_enabled` and the built-in default (which is `false`).
+
+      --tools <TOOLS>
+          Built-in tools to allow (comma-separated)
+
+  -v, --version
+          Print version
+
+      --verbatim
+          Send the prompt exactly as given
+
+  -w, --worktree [<WORKTREE>]
+          Start the session in a new git worktree, optionally named
+
+Commands:
+  agent        Run Grok without the interactive UI
+  completions  Generate shell completion scripts (bash, zsh, fish, powershell, ...)
+  dashboard    Open the Agent Dashboard view at startup
+  export       Export a session transcript as Markdown
+  help         Print this message or the help of the given subcommand(s)
+  import       Import sessions into Grok
+  inspect      Show the configuration Grok discovers for this directory
+  leader       Manage running leader processes
+  login        Sign in to Grok
+  logout       Sign out and clear cached credentials
+  mcp          Manage MCP server configurations
+  memory       Manage cross-session memory
+  models       List available models and exit
+  plugin       Manage plugins and marketplace sources
+  sessions     List, search, or restore sessions
+  setup        Fetch and install managed deployment configuration
+  ssh          Run ssh with local clipboard support
+  trace        Export or upload session trace data
+  update       Check for updates or install a specific version
+  version      Print version information [aliases: v]
+  worktree     Manage git worktrees
+Export a session transcript as Markdown
+
+Usage: grok export [OPTIONS] <SESSION_ID> [OUTPUT]
+
+Arguments:
+  <SESSION_ID>
+          Session ID to export
+
+  [OUTPUT]
+          Output file path (default: stdout)
+
+Options:
+  -c, --clipboard
+          Copy to clipboard instead of writing to stdout
+
+      --debug
+          Enable debug logging
+
+      --debug-file <FILE>
+          Write debug logs to FILE
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+      --leader-socket <PATH>
+          Use a custom leader socket path instead of the default `~/.grok/leader.sock`.
+          
+          Both this client and the leader process it spawns bind this path (propagated via the `GROK_LEADER_SOCKET` env var), so a local/branch build can run an isolated leader without colliding with the default one already running on the machine. The lock file is the sibling `.lock` (e.g. `…/leader-branch.sock` → `…/leader-branch.lock`). Name it `~/.grok/leader-*.sock` to keep `grok leader list/kill` able to find it; any other location works but won't be auto-discovered.
+
+## config presence redacted
+~/.grok/.config-init.lock
+~/.grok/.metadata_version
+~/.grok/CHANGELOG.json
+~/.grok/CHANGELOG.md
+~/.grok/README.md
+~/.grok/active_sessions.json
+~/.grok/active_sessions.lock
+~/.grok/agent_id
+~/.grok/auth.json
+~/.grok/auth.json.lock
+~/.grok/bundled/agents/explore.md
+~/.grok/bundled/agents/general-purpose.md
+~/.grok/bundled/agents/plan.md
+~/.grok/bundled/manifest.json
+~/.grok/bundled/personas/design-doc-reviewer.toml
+~/.grok/bundled/personas/design-doc-writer.toml
+~/.grok/bundled/personas/implementer.toml
+~/.grok/bundled/personas/researcher.toml
+~/.grok/bundled/personas/reviewer.toml
+~/.grok/bundled/personas/security-auditor.toml
+~/.grok/bundled/personas/test-writer.toml
+~/.grok/bundled/roles/design-doc-reviewer.toml
+~/.grok/bundled/roles/design-doc-writer.toml
+~/.grok/bundled/roles/explore.toml
+~/.grok/bundled/roles/implementer.toml
+~/.grok/bundled/roles/plan.toml
+~/.grok/bundled/roles/quick-search.toml
+~/.grok/bundled/roles/reviewer.toml
+~/.grok/bundled/roles/security-auditor.toml
+~/.grok/bundled/roles/test-writer.toml
+~/.grok/completions/bash/grok.bash
+~/.grok/completions/zsh/_grok
+~/.grok/config.toml
+~/.grok/docs/user-guide/01-getting-started.md
+~/.grok/docs/user-guide/02-authentication.md
+~/.grok/docs/user-guide/03-keyboard-shortcuts.md
+~/.grok/docs/user-guide/04-slash-commands.md
+~/.grok/docs/user-guide/05-configuration.md
+~/.grok/docs/user-guide/06-theming.md
+~/.grok/docs/user-guide/07-mcp-servers.md
+~/.grok/docs/user-guide/08-skills.md
+~/.grok/docs/user-guide/09-plugins.md
+~/.grok/docs/user-guide/10-hooks.md
+~/.grok/docs/user-guide/11-custom-models.md
+~/.grok/docs/user-guide/12-project-rules.md
+~/.grok/docs/user-guide/13-memory.md
+~/.grok/docs/user-guide/14-headless-mode.md
+~/.grok/docs/user-guide/15-agent-mode.md
+~/.grok/docs/user-guide/16-subagents.md
+~/.grok/docs/user-guide/17-sessions.md
+~/.grok/docs/user-guide/18-sandbox.md
+~/.grok/docs/user-guide/19-plan-mode.md
+~/.grok/docs/user-guide/20-background-tasks.md
+~/.grok/docs/user-guide/21-terminal-support.md
+~/.grok/docs/user-guide/22-permissions-and-safety.md
+~/.grok/downloads/grok-0.2.45-macos-aarch64
+~/.grok/downloads/grok-macos-aarch64
+~/.grok/logs/mcp/MCP_DOCKER.stderr.log
+~/.grok/logs/mcp/gpt-researcher.stderr.log
+~/.grok/logs/mcp/task-orchestrator.stderr.log
+~/.grok/logs/unified.jsonl
+~/.grok/marketplace-cache/783232b622f8182e.lock
+~/.grok/marketplace-cache/783232b622f8182e/.gitignore
+~/.grok/marketplace-cache/783232b622f8182e/LICENSE
+~/.grok/marketplace-cache/783232b622f8182e/README.md
+~/.grok/marketplace-cache/b975999a270027c6.lock
+~/.grok/marketplace-cache/b975999a270027c6/.dockerignore
+~/.grok/marketplace-cache/b975999a270027c6/.gitattributes
+~/.grok/marketplace-cache/b975999a270027c6/.gitignore
+~/.grok/marketplace-cache/b975999a270027c6/.markdownlint.json
+~/.grok/marketplace-cache/b975999a270027c6/.npmignore
+~/.grok/marketplace-cache/b975999a270027c6/.npmrc
+~/.grok/marketplace-cache/b975999a270027c6/.translation-cache.json
+~/.grok/marketplace-cache/b975999a270027c6/CHANGELOG.md
+~/.grok/marketplace-cache/b975999a270027c6/CLAUDE.md
+~/.grok/marketplace-cache/b975999a270027c6/Dockerfile.test-installer
+~/.grok/marketplace-cache/b975999a270027c6/LICENSE
+~/.grok/marketplace-cache/b975999a270027c6/NOTICE
+~/.grok/marketplace-cache/b975999a270027c6/README.md
+~/.grok/marketplace-cache/b975999a270027c6/SECURITY.md
+~/.grok/marketplace-cache/b975999a270027c6/WARP.md
+~/.grok/marketplace-cache/b975999a270027c6/bunfig.toml
+~/.grok/marketplace-cache/b975999a270027c6/docker-compose.e2e.yml
+~/.grok/marketplace-cache/b975999a270027c6/docker-compose.yml
+~/.grok/marketplace-cache/b975999a270027c6/package.json
+~/.grok/marketplace-cache/b975999a270027c6/transcript-watch.example.json
+~/.grok/marketplace-cache/b975999a270027c6/tsconfig.json
+~/.grok/marketplace-cache/c6b314fa671daf8c.lock
+~/.grok/marketplace-cache/c6b314fa671daf8c/README.md
+~/.grok/models_cache.json
+~/.grok/sessions/%2FUsers%2Fhue%2Fcode%2FadOps%2F.claude%2Fworktrees%2Fwebui-shared-core/prompt_history.jsonl
+~/.grok/sessions/%2FUsers%2Fhue%2Fcode%2FadOps/prompt_history.jsonl
+~/.grok/sessions/%2FUsers%2Fhue%2Fcode%2Fdopemux-mvp/prompt_history.jsonl
+~/.grok/sessions/%2FUsers%2Fhue%2Fcode%2Fic-light/prompt_history.jsonl
+~/.grok/sessions/%2FUsers%2Fhue%2Ffirestick-control/prompt_history.jsonl
+~/.grok/sessions/%2FUsers%2Fhue/prompt_history.jsonl
+~/.grok/sessions/session_search.sqlite
+~/.grok/skills/best-of-n/SKILL.md
+~/.grok/skills/check-work/SKILL.md
+~/.grok/skills/create-skill/SKILL.md
+~/.grok/skills/docx/SKILL.md
+~/.grok/skills/help/SKILL.md
+~/.grok/skills/imagine/SKILL.md
+~/.grok/skills/pptx/SKILL.md
+~/.grok/skills/pptx/editing.md
+~/.grok/skills/pptx/pptxgenjs.md
+~/.grok/skills/xlsx/SKILL.md
+~/.grok/tip_cursor.json
+~/.grok/vendor/rg-15.0.0-override
+~/.grok/version.json
+~/.grok/worktrees.db
+
+## config non-secret preview
+[cli]
+installer = "internal"
+
+[ui]
+max_thoughts_width = 120
+fork_secondary_model = "grok-build"
+yolo = false
+compact_mode = false
+permission_mode = "always-approve"
+
+[marketplace]
+official_marketplace_auto_installed = true
+
+[[marketplace.sources]]
+name = "xAI Official"
+git = "https://github.com/xai-org/plugin-marketplace.git"
+
+## model/cache presence
+~/.grok/.config-init.lock
+~/.grok/bundled/skills/design/SKILL.md
+~/.grok/bundled/skills/execute-plan/SKILL.md
+~/.grok/bundled/skills/implement/SKILL.md
+~/.grok/bundled/skills/pr-babysit/SKILL.md
+~/.grok/bundled/skills/remove-wall-of-text/SKILL.md
+~/.grok/bundled/skills/review/SKILL.md
+~/.grok/config.toml
+~/.grok/docs/user-guide/05-configuration.md
+~/.grok/docs/user-guide/07-mcp-servers.md
+~/.grok/docs/user-guide/08-skills.md
+~/.grok/docs/user-guide/09-plugins.md
+~/.grok/docs/user-guide/11-custom-models.md
+~/.grok/logs/mcp/MCP_DOCKER.stderr.log
+~/.grok/logs/mcp/gpt-researcher.stderr.log
+~/.grok/logs/mcp/task-orchestrator.stderr.log
+~/.grok/marketplace-cache/783232b622f8182e.lock
+~/.grok/marketplace-cache/783232b622f8182e/.claude-plugin/marketplace.json
+~/.grok/marketplace-cache/783232b622f8182e/.git/FETCH_HEAD
+~/.grok/marketplace-cache/783232b622f8182e/.git/HEAD
+~/.grok/marketplace-cache/783232b622f8182e/.git/ORIG_HEAD
+~/.grok/marketplace-cache/783232b622f8182e/.git/config
+~/.grok/marketplace-cache/783232b622f8182e/.git/description
+~/.grok/marketplace-cache/783232b622f8182e/.git/index
+~/.grok/marketplace-cache/783232b622f8182e/.git/packed-refs
+~/.grok/marketplace-cache/783232b622f8182e/.git/shallow
+~/.grok/marketplace-cache/783232b622f8182e/.gitignore
+~/.grok/marketplace-cache/783232b622f8182e/LICENSE
+~/.grok/marketplace-cache/783232b622f8182e/README.md
+~/.grok/marketplace-cache/b975999a270027c6.lock
+~/.grok/marketplace-cache/b975999a270027c6/.claude-plugin/marketplace.json
+~/.grok/marketplace-cache/b975999a270027c6/.claude-plugin/plugin.json
+~/.grok/marketplace-cache/b975999a270027c6/.claude/settings.json
+~/.grok/marketplace-cache/b975999a270027c6/.codex-plugin/plugin.json
+~/.grok/marketplace-cache/b975999a270027c6/.dockerignore
+~/.grok/marketplace-cache/b975999a270027c6/.git/FETCH_HEAD
+~/.grok/marketplace-cache/b975999a270027c6/.git/HEAD
+~/.grok/marketplace-cache/b975999a270027c6/.git/ORIG_HEAD
+~/.grok/marketplace-cache/b975999a270027c6/.git/config
+~/.grok/marketplace-cache/b975999a270027c6/.git/description
+~/.grok/marketplace-cache/b975999a270027c6/.git/index
+~/.grok/marketplace-cache/b975999a270027c6/.git/packed-refs
+~/.grok/marketplace-cache/b975999a270027c6/.git/shallow
+~/.grok/marketplace-cache/b975999a270027c6/.gitattributes
+~/.grok/marketplace-cache/b975999a270027c6/.github/FUNDING.yml
+~/.grok/marketplace-cache/b975999a270027c6/.github/copilot-instructions.md
+~/.grok/marketplace-cache/b975999a270027c6/.gitignore
+~/.grok/marketplace-cache/b975999a270027c6/.markdownlint.json
+~/.grok/marketplace-cache/b975999a270027c6/.npmignore
+~/.grok/marketplace-cache/b975999a270027c6/.npmrc
+~/.grok/marketplace-cache/b975999a270027c6/.plan/issue-2341-reliability-slice.md
+~/.grok/marketplace-cache/b975999a270027c6/.plan/npx-distribution.md
+~/.grok/marketplace-cache/b975999a270027c6/.plan/subagent-summary-disable-and-labeling.md
+~/.grok/marketplace-cache/b975999a270027c6/.plan/worktree-adoption.md
+~/.grok/marketplace-cache/b975999a270027c6/.translation-cache.json
+~/.grok/marketplace-cache/b975999a270027c6/CHANGELOG.md
+~/.grok/marketplace-cache/b975999a270027c6/CLAUDE.md
+~/.grok/marketplace-cache/b975999a270027c6/Dockerfile.test-installer
+~/.grok/marketplace-cache/b975999a270027c6/LICENSE
+~/.grok/marketplace-cache/b975999a270027c6/NOTICE
+~/.grok/marketplace-cache/b975999a270027c6/README.md
+~/.grok/marketplace-cache/b975999a270027c6/SECURITY.md
+~/.grok/marketplace-cache/b975999a270027c6/WARP.md
+~/.grok/marketplace-cache/b975999a270027c6/bunfig.toml
+~/.grok/marketplace-cache/b975999a270027c6/cursor-hooks/.gitignore
+~/.grok/marketplace-cache/b975999a270027c6/cursor-hooks/CONTEXT-INJECTION.md
+~/.grok/marketplace-cache/b975999a270027c6/cursor-hooks/INTEGRATION.md
+~/.grok/marketplace-cache/b975999a270027c6/cursor-hooks/PARITY.md
+~/.grok/marketplace-cache/b975999a270027c6/cursor-hooks/QUICKSTART.md
+~/.grok/marketplace-cache/b975999a270027c6/cursor-hooks/README.md
+~/.grok/marketplace-cache/b975999a270027c6/cursor-hooks/REVIEW.md
+~/.grok/marketplace-cache/b975999a270027c6/cursor-hooks/STANDALONE-SETUP.md
+~/.grok/marketplace-cache/b975999a270027c6/cursor-hooks/cursorrules-template.md
+~/.grok/marketplace-cache/b975999a270027c6/cursor-hooks/hooks.json
+~/.grok/marketplace-cache/b975999a270027c6/docker-compose.e2e.yml
+~/.grok/marketplace-cache/b975999a270027c6/docker-compose.yml
+~/.grok/marketplace-cache/b975999a270027c6/docs/SESSION_ID_ARCHITECTURE.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/adapters.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/anti-pattern-cleanup-plan.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/api.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/architecture-overview.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/docker.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/ip-boundary.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/license.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/migration-worker-to-server.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/production-guide.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/security.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/server-beta-architecture-and-team-vision.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/server-beta-parity-map.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/server-beta-release-readiness.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/server-storage-boundary.md
+~/.grok/marketplace-cache/b975999a270027c6/docs/server.md
+~/.grok/marketplace-cache/b975999a270027c6/install/.gitignore
+~/.grok/marketplace-cache/b975999a270027c6/install/vercel.json
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/.gitignore
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/.npmignore
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/Dockerfile.e2e
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/SKILL.md
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/TESTING.md
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/e2e-verify.sh
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/install.sh
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/openclaw.plugin.json
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/package.json
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/test-e2e.sh
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/test-install.sh
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/test-sse-consumer.js
+~/.grok/marketplace-cache/b975999a270027c6/openclaw/tsconfig.json
+~/.grok/marketplace-cache/b975999a270027c6/package.json
+~/.grok/marketplace-cache/b975999a270027c6/plans/01-hook-io-discipline.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/02-spawn-contract-templating.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/03-worker-lifecycle.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/04-installer-transparency.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/05-observer-tool-enforcement.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/06-worker-env-isolation.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/07-server-runtime-ga.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/08-opencode-integration.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/09-data-pipeline-integrity.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/10-build-artifact-hygiene-EXECUTION.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/10-build-artifact-hygiene.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/11-observer-output-fidelity.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/12-provider-and-extensibility-roadmap.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/13-grammar-parser-fidelity.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/14-telemetry-reliability-signals.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-04-25-cynical-deletion.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-04-29-installer-streamline.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-04-30-onboarding-ux-overhaul.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-05-06-codex-plugin-version-mismatch.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-05-06-observation-queue-engine-deep-dive.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-05-06-redis-dependency-strategy.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-05-07-claude-mem-13-server-beta-full-worker-parity.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-05-07-claude-mem-server-apache-bullmq-team-auth.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-05-07-finish-bullmq-branch-ship-plan.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-05-07-server-beta-independent-bullmq-observation-runtime.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-06-09-opt-in-posthog-telemetry.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/2026-06-09-telemetry-metrics-spec.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/EXECUTION.md
+~/.grok/marketplace-cache/b975999a270027c6/plans/issue-2139-pending-messages-migration.md
+~/.grok/marketplace-cache/b975999a270027c6/plugin/.mcp.json
+~/.grok/marketplace-cache/b975999a270027c6/plugin/bun.lock
+~/.grok/marketplace-cache/b975999a270027c6/plugin/package.json
+~/.grok/marketplace-cache/b975999a270027c6/ragtime/LICENSE
+~/.grok/marketplace-cache/b975999a270027c6/ragtime/README.md
+~/.grok/marketplace-cache/b975999a270027c6/ragtime/ragtime.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/build-hooks.js
+~/.grok/marketplace-cache/b975999a270027c6/scripts/build-viewer.js
+~/.grok/marketplace-cache/b975999a270027c6/scripts/build-worker-binary.js
+~/.grok/marketplace-cache/b975999a270027c6/scripts/check-hook-io-discipline.cjs
+~/.grok/marketplace-cache/b975999a270027c6/scripts/check-pending-queue.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/check-postinstall-allowlist.js
+~/.grok/marketplace-cache/b975999a270027c6/scripts/check-spawn-env-discipline.cjs
+~/.grok/marketplace-cache/b975999a270027c6/scripts/claude-mem-sync
+~/.grok/marketplace-cache/b975999a270027c6/scripts/cleanup-duplicates.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/clear-pending-queue.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/cwd-remap.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/discord-release-notify.js
+~/.grok/marketplace-cache/b975999a270027c6/scripts/e2e-knowledge-agents.sh
+~/.grok/marketplace-cache/b975999a270027c6/scripts/e2e-server-beta-docker.sh
+~/.grok/marketplace-cache/b975999a270027c6/scripts/export-memories.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/fix-corrupted-timestamps.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/gen-plugin-lockfile.cjs
+~/.grok/marketplace-cache/b975999a270027c6/scripts/generate-banner-frames.mjs
+~/.grok/marketplace-cache/b975999a270027c6/scripts/generate-changelog.js
+~/.grok/marketplace-cache/b975999a270027c6/scripts/import-memories.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/investigate-timestamps.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/pr-babysit-status.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/publish.js
+~/.grok/marketplace-cache/b975999a270027c6/scripts/regenerate-claude-md.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/smoke-clean-room.cjs
+~/.grok/marketplace-cache/b975999a270027c6/scripts/strip-comments.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/sync-marketplace.cjs
+~/.grok/marketplace-cache/b975999a270027c6/scripts/sync-plugin-manifests.js
+~/.grok/marketplace-cache/b975999a270027c6/scripts/sync-to-marketplace.sh
+~/.grok/marketplace-cache/b975999a270027c6/scripts/validate-timestamp-logic.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/verify-timestamp-fix.ts
+~/.grok/marketplace-cache/b975999a270027c6/scripts/wipe-chroma.cjs
+~/.grok/marketplace-cache/b975999a270027c6/tests/bmp-safe.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/bun-runner.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/claude-provider-error-classifier.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/claude-provider-resume.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/codex-transcript-watcher-windows.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/context-injection.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/cursor-context-update.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/cursor-hooks-json-utils.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/cursor-mcp-config.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/cursor-registry.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/env-isolation.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/fk-constraint-fix.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/gemini-cli-compat.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/gemini_provider.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/hook-command.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/hook-constants.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/hook-lifecycle.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/install-disable-auto-memory.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/install-error-matrix.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/install-non-tty.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/json-utils.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/log-level-audit.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/logger-usage-standards.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/mcp-integrations.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/npx-cli-server-namespace.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/plugin-scripts-line-endings.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/plugin-version-check-ensure-deps.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/plugin-version-check.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/preload.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/session_id_usage_validation.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/session_store.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/setup-runtime.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/uninstall-clear-auto-memory.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/worker-spawn.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/tests/write-json-file-atomic.test.ts
+~/.grok/marketplace-cache/b975999a270027c6/transcript-watch.example.json
+~/.grok/marketplace-cache/b975999a270027c6/tsconfig.json
+~/.grok/marketplace-cache/c6b314fa671daf8c.lock
+~/.grok/marketplace-cache/c6b314fa671daf8c/.git/FETCH_HEAD
+~/.grok/marketplace-cache/c6b314fa671daf8c/.git/HEAD
+~/.grok/marketplace-cache/c6b314fa671daf8c/.git/ORIG_HEAD
+~/.grok/marketplace-cache/c6b314fa671daf8c/.git/config
+~/.grok/marketplace-cache/c6b314fa671daf8c/.git/description
+~/.grok/marketplace-cache/c6b314fa671daf8c/.git/index
+~/.grok/marketplace-cache/c6b314fa671daf8c/.git/packed-refs
+~/.grok/marketplace-cache/c6b314fa671daf8c/.git/shallow
+~/.grok/marketplace-cache/c6b314fa671daf8c/.grok-plugin/marketplace.json
+~/.grok/marketplace-cache/c6b314fa671daf8c/README.md
+~/.grok/marketplace-cache/c6b314fa671daf8c/external_plugins/.gitkeep
+~/.grok/marketplace-cache/c6b314fa671daf8c/plugins/.gitkeep
+~/.grok/marketplace-cache/c6b314fa671daf8c/scripts/validate-catalog.py
+~/.grok/models_cache.json
+~/.grok/skills/best-of-n/SKILL.md
+~/.grok/skills/check-work/SKILL.md
+~/.grok/skills/create-skill/SKILL.md
+~/.grok/skills/docx/SKILL.md
+~/.grok/skills/docx/scripts/__init__.py
+~/.grok/skills/docx/scripts/accept_changes.py
+~/.grok/skills/docx/scripts/comment.py
+~/.grok/skills/help/SKILL.md
+~/.grok/skills/imagine/SKILL.md
+~/.grok/skills/pptx/SKILL.md
+~/.grok/skills/pptx/editing.md
+~/.grok/skills/pptx/pptxgenjs.md
+~/.grok/skills/pptx/scripts/__init__.py
+~/.grok/skills/pptx/scripts/add_slide.py
+~/.grok/skills/pptx/scripts/clean.py
+~/.grok/skills/pptx/scripts/thumbnail.py
+~/.grok/skills/xlsx/SKILL.md
+~/.grok/skills/xlsx/scripts/recalc.py

@@ -1,0 +1,1309 @@
+./.claude/agents/python-mcp-expert.agent.md
+./.claude/mcp-system.md
+./.claude/personas/python-mcp-expert.agent.md
+./.claude/task-master-mcp-config.json
+./.dopemux/mcp.instances.toml
+./.mcp.json
+./audit_inputs/multi_model_orchestration_evidence/20260612T003401Z/commands/mcp_inventory_raw.txt
+./claudedocs/beta-mcp-02-compose-healthchecks-proof-2026-05-31.md
+./claudedocs/beta-mcp-03-adhd-redis-isolation-proof-2026-05-31.md
+./claudedocs/gptr-mcp-container-update-proof-2026-06-04.md
+./config/instructions/python-mcp-server.instructions.md
+./docker/mcp-servers-source/conport/conport_mcp_stdio.py
+./docker/mcp-servers-source/gpt-researcher/scripts/mcp_server.py
+./docker/mcp-servers-source/leantime-bridge/mcp_stdio.py
+./docker/mcp-servers-source/start-all-mcp-servers.sh
+./docs/02-how-to/manage-mcp-servers.md
+./docs/02-how-to/mcp-service-discovery-guide.md
+./docs/02-how-to/mcp-troubleshooting.md
+./docs/03-reference/best-practices/mcp-token-management-moved-2.md
+./docs/03-reference/best-practices/mcp-token-management-moved.md
+./docs/03-reference/best-practices/mcp-token-management.md
+./docs/03-reference/mcp-tools-overview.md
+./docs/03-reference/orchestrator-integration/mcp-wrappers.md
+./docs/03-reference/serena-v2-mcp-tools.md
+./docs/04-explanation/architecture/decisions/002-mcp-service-discovery.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__Architecture and Orchestration Research Claude Flow vs Vlaude code (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__Architecture and Orchestration Research Claude Flow vs Vlaude code.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__baseDataAndDesign (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__baseDataAndDesign.md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__conport-strategy (1).md
+./docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__mcpOrchestratorTemp__conport-strategy.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__.claude__claude (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__.claude__claude.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__MCP_ORCHESTRATION_SUMMARY (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__MCP_ORCHESTRATION_SUMMARY.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__README-MULTI-INSTANCE (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__README-MULTI-INSTANCE.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__SERVER_REGISTRY (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__SERVER_REGISTRY.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__SLASH-COMMANDS-SETUP (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__SLASH-COMMANDS-SETUP.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__docrag-service__README (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__docrag-service__README.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__.claude__claude (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__.claude__claude.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__.venv__lib__python3.13__site-packages__docstring_parser-0.17.0.dist-info__licenses__LICENSE (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__.venv__lib__python3.13__site-packages__docstring_parser-0.17.0.dist-info__licenses__LICENSE.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CHANGELOG (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CHANGELOG.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CLAUDE (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CLAUDE.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__GEMINI (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__GEMINI.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__HEALTH_MONITORING (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__HEALTH_MONITORING.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README.zh-CN (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README.zh-CN.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__REFACTORING_SUMMARY (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__REFACTORING_SUMMARY.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__VALIDATION_FIX_DOCUMENTATION (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__VALIDATION_FIX_DOCUMENTATION.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__.github__pull_request_template (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__.github__pull_request_template.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CHANGELOG (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CHANGELOG.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CLAUDE (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CLAUDE.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__README (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__README.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docker__README (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docker__README.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_providers (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_providers.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_tools (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_tools.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__advanced-usage (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__advanced-usage.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai-collaboration (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai-collaboration.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai_banter (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai_banter.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__configuration (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__configuration.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__context-revival (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__context-revival.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__contributions (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__contributions.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__custom_models (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__custom_models.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__docker-deployment (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__docker-deployment.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__gemini-setup (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__gemini-setup.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__getting-started (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__getting-started.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__locale-configuration (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__locale-configuration.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__testing (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__testing.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__analyze (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__analyze.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__chat (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__chat.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__codereview (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__codereview.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__consensus (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__consensus.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__debug (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__debug.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__docgen (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__docgen.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__listmodels (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__listmodels.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__planner (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__planner.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__precommit (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__precommit.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__refactor (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__refactor.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__secaudit (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__secaudit.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__testgen (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__testgen.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__thinkdeep (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__thinkdeep.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__tracer (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__tracer.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__version (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__version.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__troubleshooting (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__troubleshooting.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__vcr-testing (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__vcr-testing.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__wsl-setup (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__wsl-setup.md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__patch__README (1).md
+./docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__patch__README.md
+./docs/04-explanation/history/sourceFiles/docs__02-how-to__how-to-use-mcp-system (1).md
+./docs/04-explanation/history/sourceFiles/docs__02-how-to__how-to-use-mcp-system.md
+./docs/04-explanation/history/sourceFiles/docs__03-reference__mcp__tools-inventory (1).md
+./docs/04-explanation/history/sourceFiles/docs__03-reference__mcp__tools-inventory.md
+./docs/04-explanation/history/sourceFiles/docs__03-reference__mcp__workflow-mapping (1).md
+./docs/04-explanation/history/sourceFiles/docs__03-reference__mcp__workflow-mapping.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__dynamic-discovery (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__dynamic-discovery.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__orchestration-roadmap (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__orchestration-roadmap.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__routing-matrix (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__routing-matrix.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__server-specifications (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__mcp__server-specifications.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__metamcp-context-lean-toolsets (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__architecture__metamcp-context-lean-toolsets.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__features__mcp-ecosystem (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__features__mcp-ecosystem.md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__features__multi-instance-mcp (1).md
+./docs/04-explanation/history/sourceFiles/docs__04-explanation__features__multi-instance-mcp.md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__035-mcp-system-integration-success (1).md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__035-mcp-system-integration-success.md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__040-sync-mechanism-polling-mcp (1).md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__040-sync-mechanism-polling-mcp.md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__adr-0034-metamcp-role-aware-tool-brokering (1).md
+./docs/04-explanation/history/sourceFiles/docs__90-adr__adr-0034-metamcp-role-aware-tool-brokering.md
+./docs/04-explanation/history/sourceFiles/docs__91-rfc__rfc-0042-semantic-search-mcp (1).md
+./docs/04-explanation/history/sourceFiles/docs__91-rfc__rfc-0042-semantic-search-mcp.md
+./docs/04-explanation/history/sourceFiles/docs__91-rfc__rfc-0043-metamcp-orchestration-system (1).md
+./docs/04-explanation/history/sourceFiles/docs__91-rfc__rfc-0043-metamcp-orchestration-system.md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-mcp-http-transport-troubleshooting (1).md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-mcp-http-transport-troubleshooting.md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-mcp-system-integration (1).md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-mcp-system-integration.md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-metamcp-deployment-status (1).md
+./docs/04-explanation/history/sourceFiles/docs__92-runbooks__runbook-metamcp-deployment-status.md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection (1).md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection.md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns (1).md
+./docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__Architecture and Orchestration Research Claude Flow vs Vlaude code (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__Architecture and Orchestration Research Claude Flow vs Vlaude code.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__baseDataAndDesign (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__baseDataAndDesign.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__conport-strategy (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__mcp-orchestrator-research__conport-strategy.md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__findings__superclaude and zen-mcp research (1).md
+./docs/04-explanation/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__findings__superclaude and zen-mcp research.md
+./docs/04-explanation/history/sourceFiles/docs__decisions__adr-017-mcp-proxy-integration (1).md
+./docs/04-explanation/history/sourceFiles/docs__decisions__adr-017-mcp-proxy-integration.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__ACTUAL_MCP_TOOLS_INVENTORY (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__ACTUAL_MCP_TOOLS_INVENTORY.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__Architecture and Orchestration Research Claude Flow vs Vlaude code (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__Architecture and Orchestration Research Claude Flow vs Vlaude code.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__COMPLETE_TOOL_WORKFLOW_MAPPING (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__COMPLETE_TOOL_WORKFLOW_MAPPING.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__baseDataAndDesign (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__baseDataAndDesign.md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__conport-strategy (1).md
+./docs/04-explanation/history/sourceFiles/docs__mcpOrchestratorTemp__conport-strategy.md
+./docs/04-explanation/history/sourceFiles/output__individual_files__superclaude_and_zen_mcp_research_findings (1).md
+./docs/04-explanation/history/sourceFiles/output__individual_files__superclaude_and_zen_mcp_research_findings.md
+./docs/05-audit-reports/mcp-customization/07-mcp-customization-synthesis-dr-report.md
+./docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md
+./docs/90-adr/adr-208-mcp-config-drift-prevention-2.md
+./docs/90-adr/adr-208-mcp-config-drift-prevention-3.md
+./docs/90-adr/adr-208-mcp-config-drift-prevention.md
+./docs/90-adr/adr-214-mcp-leantime-decoupling-2.md
+./docs/90-adr/adr-214-mcp-leantime-decoupling-3.md
+./docs/90-adr/adr-214-mcp-leantime-decoupling.md
+./docs/90-adr/global-mcp-configuration.md
+./docs/archive/claude-sessions/statusline-mcp-status-2025-10-24-2.md
+./docs/archive/claude-sessions/statusline-mcp-status-2025-10-24.md
+./docs/archive/claude-sessions/statusline_mcp_status_2025-10-24.md
+./docs/archive/claudedocs/mcp-config-fix-summary.md
+./docs/archive/completed-projects/leantime-mcp-integration-complete-2.md
+./docs/archive/completed-projects/leantime-mcp-integration-complete.md
+./docs/archive/completed-projects/mcp-token-limit-audit-2.md
+./docs/archive/completed-projects/mcp-token-limit-audit.md
+./docs/archive/completed-projects/mcp-token-limit-fix-summary-2.md
+./docs/archive/completed-projects/mcp-token-limit-fix-summary.md
+./docs/archive/completed-projects/metamcp-complete-setup-2.md
+./docs/archive/completed-projects/metamcp-complete-setup.md
+./docs/archive/component-implementations/component-4-conport-mcp-wiring-2.md
+./docs/archive/component-implementations/component-4-conport-mcp-wiring.md
+./docs/archive/component-implementations/component-5-conport-mcp-queries-2.md
+./docs/archive/component-implementations/component-5-conport-mcp-queries.md
+./docs/archive/conport-sessions/mcp-system-development-2.md
+./docs/archive/conport-sessions/mcp-system-development.md
+./docs/archive/conport-sessions/mcp_system_development.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__.claude__claude.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__MCP_ORCHESTRATION_SUMMARY.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__README-MULTI-INSTANCE.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__SERVER_REGISTRY.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__SLASH-COMMANDS-SETUP.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__docrag-service__README.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__.venv__lib__python3.13__site-packages__docstring_parser-0.17.0.dist-info__licenses__LICENSE.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CHANGELOG.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CLAUDE.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__GEMINI.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__HEALTH_MONITORING.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__README.zh-CN.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__REFACTORING_SUMMARY.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__VALIDATION_FIX_DOCUMENTATION.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__.github__pull_request_template.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CHANGELOG.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CLAUDE.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__README.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docker__README.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_providers.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__adding_tools.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__advanced-usage.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai-collaboration.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__ai_banter.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__configuration.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__context-revival.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__contributions.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__custom_models.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__docker-deployment.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__gemini-setup.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__getting-started.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__locale-configuration.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__testing.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__analyze.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__chat.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__codereview.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__consensus.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__debug.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__docgen.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__listmodels.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__planner.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__precommit.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__refactor.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__secaudit.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__testgen.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__thinkdeep.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__tracer.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__tools__version.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__troubleshooting.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__vcr-testing.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__docs__wsl-setup.md
+./docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__patch__README.md
+./docs/archive/history/sourceFiles/docs__02-how-to__how-to-use-mcp-system.md
+./docs/archive/history/sourceFiles/docs__03-reference__mcp__tools-inventory.md
+./docs/archive/history/sourceFiles/docs__03-reference__mcp__workflow-mapping.md
+./docs/archive/history/sourceFiles/docs__04-explanation__architecture__metamcp-context-lean-toolsets.md
+./docs/archive/history/sourceFiles/docs__04-explanation__features__mcp-ecosystem.md
+./docs/archive/history/sourceFiles/docs__04-explanation__features__multi-instance-mcp.md
+./docs/archive/history/sourceFiles/docs__90-adr__035-mcp-system-integration-success.md
+./docs/archive/history/sourceFiles/docs__90-adr__040-sync-mechanism-polling-mcp.md
+./docs/archive/history/sourceFiles/docs__90-adr__adr-0034-metamcp-role-aware-tool-brokering.md
+./docs/archive/history/sourceFiles/docs__91-rfc__rfc-0042-semantic-search-mcp.md
+./docs/archive/history/sourceFiles/docs__91-rfc__rfc-0043-metamcp-orchestration-system.md
+./docs/archive/history/sourceFiles/docs__92-runbooks__runbook-mcp-http-transport-troubleshooting.md
+./docs/archive/history/sourceFiles/docs__92-runbooks__runbook-mcp-system-integration.md
+./docs/archive/history/sourceFiles/docs__92-runbooks__runbook-metamcp-deployment-status.md
+./docs/archive/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-006-mcp-server-selection.md
+./docs/archive/history/sourceFiles/docs__DMPX IMPORT__dopemux-docs__architecture__09-decisions__ADR-012-mcp-server-integration-patterns.md
+./docs/archive/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__findings__superclaude and zen-mcp research.md
+./docs/archive/history/sourceFiles/docs__decisions__adr-017-mcp-proxy-integration.md
+./docs/archive/history/sourceFiles/docs__mcpOrchestratorTemp__ACTUAL_MCP_TOOLS_INVENTORY.md
+./docs/archive/history/sourceFiles/docs__mcpOrchestratorTemp__Architecture and Orchestration Research Claude Flow vs Vlaude code.md
+./docs/archive/history/sourceFiles/docs__mcpOrchestratorTemp__IMPLEMENTATION_PLAN_MCP_ORCHESTRATION.md
+./docs/archive/history/sourceFiles/docs__mcpOrchestratorTemp__baseDataAndDesign.md
+./docs/archive/history/sourceFiles/docs__mcpOrchestratorTemp__conport-strategy.md
+./docs/archive/history/sourceFiles/output__individual_files__superclaude_and_zen_mcp_research_findings.md
+./docs/archive/integration-transient/claude-code/enhanced_metamcp_server.py
+./docs/archive/pm-plane-taskmaster-legacy/dopemux/03-mcp-lifecycle-and-reliability.md
+./docs/archive/session-notes/mcp-startup-fixes-2.md
+./docs/archive/session-notes/mcp-startup-fixes.md
+./docs/archive/sessions/conport/mcp-deep-dive.md
+./docs/archive/sessions/dope-context/mcp-token-limit-fix.md
+./docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md
+./docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability.md
+./examples/mcp_event_integration_demo.py
+./examples/production_mcp_integration.py
+./mcp-proxy-config.copilot.yaml
+./mcp-proxy-config.json
+./mcp-proxy-config.yaml
+./mcp_catalog.yaml
+./mcp_server_health_report.sh
+./proof/TP-DOPMUX-AUTO-MCP-PROVISION-0001/INSTANCE_OVERLAY_A/mcp.compose.override.yml
+./proof/TP-DOPMUX-AUTO-MCP-PROVISION-0001/INSTANCE_OVERLAY_A/mcp.env
+./qa/scenarios/30_mcp_roundtrips.sh
+./scripts/deploy/deployment/start-mcp-servers.sh
+./scripts/deploy/setup/install-mcp-servers.sh
+./scripts/dev/testing/validate-mcp-setup.sh
+./scripts/discover_mcp_tools.sh
+./scripts/generate_mcp_proof.py
+./scripts/install-docker-mcp-servers.sh
+./scripts/manage-mcp-servers.sh
+./scripts/mcp-proxy-setup.sh
+./scripts/mcp/manage-mcp-servers.sh
+./scripts/mcp/mcp_event_wrapper.py
+./scripts/mcp/sync_mcp_env.sh
+./scripts/mcp/wire_claude_mcp.py
+./scripts/mcp_health_check.sh
+./scripts/mcp_service_info.py
+./scripts/mcp_smoke.sh
+./scripts/proof_conport_mcp.py
+./scripts/start-all-mcp-servers.sh
+./scripts/ui/metamcp_status.py
+./scripts/ui/tmux_metamcp_controller.py
+./scripts/utilities/fix_mcp_config.py
+./services/adhd_engine/conport_mcp_client.py
+./services/adhd_engine/mcp_stdio.py
+./services/dcp-readonly-facade/src/mcp/fastmcp_stub.py
+./services/dope-context/src/mcp/fastmcp_stub.py
+./services/dope-context/tests/test_mcp_server.py
+./services/dope-memory/mcp_stdio_adapter.py
+./services/dopecon-bridge/ddg_mcp_stdio.py
+./services/dopecon-bridge/mcp_client.py
+./services/dopemux-gpt-researcher/mcp-server/mcp-config.json
+./services/repo-truth-extractor/prompts/phase_s_int/PROMPT_S16_mcp_split_validity.md
+./services/serena/mcp_client.py
+./services/serena/mcp_server.py
+./services/serena/tests/test_mcp_server_local.py
+./services/serena/v2/mcp_client.py
+./services/task-orchestrator/conport_mcp_client.py
+./services/task-orchestrator/mcp_stdio.py
+./src/dopemux/commands/__pycache__/mcp_commands.cpython-312.pyc
+./src/dopemux/commands/mcp_commands.py
+./src/dopemux/mcp/conport_mcp_tools.py
+./src/dopemux/orchestrator/mcp_wrappers.py
+./tests/docker/test_gptr_mcp_dockerfile.py
+./tests/fixtures/dcp/model_routing_0001/mcp_unknown_surface.json
+./tests/integration/task-orchestrator/mcp_wrapper.py
+./tests/mcp/test_conport_mcp_real.py
+./tests/mcp/test_mcp_internal_lockdown.py
+./tests/test_cli_mcp_startup.py
+./tests/test_mcp_config_generation.py
+./tests/test_mcp_registry.py
+./tests/unit/orchestrator/test_mcp_wrappers.py
+./tests/unit/test_mcp_commands_catalog.py
+./tests/unit/test_mcp_response_budget.py
+./tests/unit/test_task_orchestrator_mcp_wrappers.py
+
+.claude/agents/python-mcp-expert.agent.md:9:You are a world-class expert in building Model Context Protocol (MCP) servers using the Python SDK. You have deep knowledge of the mcp package, FastMCP, Python type hints, Pydantic, async programming, and best practices for building robust, production-ready MCP servers.
+.claude/agents/python-mcp-expert.agent.md:13:- **Python MCP SDK**: Complete mastery of mcp package, FastMCP, low-level Server, all transports, and utilities
+.claude/agents/python-mcp-expert.agent.md:26:- **FastMCP by Default**: Use FastMCP for most cases, only drop to low-level Server when needed
+.claude/agents/python-mcp-expert.agent.md:27:- **Decorator Pattern**: Leverage `@mcp.tool()`, `@mcp.resource()`, `@mcp.prompt()` decorators
+.claude/agents/python-mcp-expert.agent.md:44:- Define dynamic resources with URI templates: `@mcp.resource("resource://{param}")`
+.claude/agents/python-mcp-expert.agent.md:98:- **Multi-Server**: Mounting multiple FastMCP servers in single ASGI app
+.claude/hooks/orchestrator_post_edit_nudge.py:5:  on_edit_tool(project_root) -> str | None
+.claude/hooks/orchestrator_post_edit_nudge.py:80:def on_edit_tool(project_root: Path, session_id: Optional[str] = None) -> Optional[str]:
+.claude/personas/python-mcp-expert.agent.md:9:You are a world-class expert in building Model Context Protocol (MCP) servers using the Python SDK. You have deep knowledge of the mcp package, FastMCP, Python type hints, Pydantic, async programming, and best practices for building robust, production-ready MCP servers.
+.claude/personas/python-mcp-expert.agent.md:13:- **Python MCP SDK**: Complete mastery of mcp package, FastMCP, low-level Server, all transports, and utilities
+.claude/personas/python-mcp-expert.agent.md:26:- **FastMCP by Default**: Use FastMCP for most cases, only drop to low-level Server when needed
+.claude/personas/python-mcp-expert.agent.md:27:- **Decorator Pattern**: Leverage `@mcp.tool()`, `@mcp.resource()`, `@mcp.prompt()` decorators
+.claude/personas/python-mcp-expert.agent.md:44:- Define dynamic resources with URI templates: `@mcp.resource("resource://{param}")`
+.claude/personas/python-mcp-expert.agent.md:98:- **Multi-Server**: Mounting multiple FastMCP servers in single ASGI app
+.claude/hooks/session_lifecycle.py:11:async def call_tool(tool_name: str, args: dict):
+.claude/hooks/session_lifecycle.py:34:        result = await call_tool("start_session", {
+.claude/hooks/session_lifecycle.py:51:                    await call_tool("end_session", {
+config/instructions/python-mcp-server.instructions.md:11:- Import FastMCP from `mcp.server.fastmcp`: `from mcp.server.fastmcp import FastMCP`
+config/instructions/python-mcp-server.instructions.md:12:- Use `@mcp.tool()`, `@mcp.resource()`, and `@mcp.prompt()` decorators for registration
+config/instructions/python-mcp-server.instructions.md:25:- Define resource templates with URI patterns: `@mcp.resource("greeting://{name}")`
+config/instructions/python-mcp-server.instructions.md:29:- For stateless HTTP servers, set `stateless_http=True` in FastMCP initialization
+config/instructions/python-mcp-server.instructions.md:34:- Use low-level Server class for maximum control when FastMCP isn't sufficient
+config/instructions/python-mcp-server.instructions.md:58:from mcp.server.fastmcp import FastMCP
+config/instructions/python-mcp-server.instructions.md:60:mcp = FastMCP("My Server")
+config/instructions/python-mcp-server.instructions.md:62:@mcp.tool()
+config/instructions/python-mcp-server.instructions.md:75:from mcp.server.fastmcp import FastMCP
+config/instructions/python-mcp-server.instructions.md:77:mcp = FastMCP("My HTTP Server")
+config/instructions/python-mcp-server.instructions.md:79:@mcp.tool()
+config/instructions/python-mcp-server.instructions.md:97:@mcp.tool()
+config/instructions/python-mcp-server.instructions.md:109:@mcp.resource("users://{user_id}")
+config/instructions/python-mcp-server.instructions.md:120:@mcp.tool()
+config/instructions/python-mcp-server.instructions.md:137:@mcp.tool()
+config/instructions/python-mcp-server.instructions.md:157:from mcp.server.fastmcp import FastMCP, Context
+config/instructions/python-mcp-server.instructions.md:164:async def app_lifespan(server: FastMCP):
+config/instructions/python-mcp-server.instructions.md:171:mcp = FastMCP("My App", lifespan=app_lifespan)
+config/instructions/python-mcp-server.instructions.md:173:@mcp.tool()
+config/instructions/python-mcp-server.instructions.md:184:@mcp.prompt(title="Code Review")
+config/instructions/python-mcp-server.instructions.md:196:@mcp.tool()
+docker/mcp-servers-source/exa/exa_server.py:17:from fastmcp import FastMCP
+docker/mcp-servers-source/exa/exa_server.py:35:# FastMCP server setup
+docker/mcp-servers-source/exa/exa_server.py:44:mcp = FastMCP("Exa Research", lifespan=lifespan)
+docker/mcp-servers-source/exa/exa_server.py:47:@mcp.custom_route("/health", methods=["GET"])
+docker/mcp-servers-source/exa/exa_server.py:67:@mcp.custom_route("/info", methods=["GET"])
+docker/mcp-servers-source/exa/exa_server.py:95:@mcp.tool()
+docker/mcp-servers-source/exa/exa_server.py:181:@mcp.tool()
+docker/mcp-servers-source/exa/exa_server.py:238:@mcp.tool()
+docker/mcp-servers-source/exa/exa_server.py:316:@mcp.tool()
+services/working-memory-assistant/dope_memory_main.py:930:    mcp_server = DopeMemoryMCPServer(
+docker/mcp-servers-source/services/mcp-client/services/mcp-client/main.py:129:    async def call_tool(self, tool_name: str, arguments: Dict[str, Any] = None) -> Any:
+docker/mcp-servers-source/services/mcp-client/services/mcp-client/main.py:196:                    return await client.call_tool(tool_name, arguments)
+services/working-memory-assistant/runtime_smoke.py:127:        server = DopeMemoryMCPServer(workspace_id="runtime-smoke-local", instance_id="A")
+services/working-memory-assistant/conport_client.py:99:    async def _semantic_search_tool(**kwargs) -> List[Dict[str, Any]]:
+services/working-memory-assistant/conport_client.py:181:            result = await _semantic_search_tool(
+docker/mcp-servers-source/leantime-bridge/leantime_bridge/http_server.py:492:async def execute_tool(name: str, arguments: Dict[str, Any]) -> Any:
+docker/mcp-servers-source/leantime-bridge/leantime_bridge/http_server.py:516:app = Server("leantime-bridge")
+docker/mcp-servers-source/leantime-bridge/leantime_bridge/http_server.py:524:@app.call_tool()
+docker/mcp-servers-source/leantime-bridge/leantime_bridge/http_server.py:525:async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[types.TextContent]:
+docker/mcp-servers-source/leantime-bridge/leantime_bridge/http_server.py:528:        result = await execute_tool(name, arguments)
+docker/mcp-servers-source/leantime-bridge/leantime_bridge/http_server.py:683:        result = await execute_tool(tool_name, payload)
+docker/mcp-servers-source/leantime-bridge/leantime_bridge/http_server.py:719:    server = uvicorn.Server(config)
+services/working-memory-assistant/phase2_demo.py:32:    server = DopeMemoryMCPServer(
+docker/mcp-servers-source/services/mcp-client/main.py:170:    async def call_tool(self, tool_name: str, arguments: Dict[str, Any] = None) -> Any:
+docker/mcp-servers-source/services/mcp-client/main.py:241:                    return await client.call_tool(tool_name, arguments)
+docker/mcp-servers-source/leantime-bridge/leantime_bridge/server.py:138:app = Server("leantime-bridge")
+docker/mcp-servers-source/leantime-bridge/leantime_bridge/server.py:252:@app.call_tool()
+docker/mcp-servers-source/leantime-bridge/leantime_bridge/server.py:253:async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[types.TextContent]:
+services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py:29:        self.server = DopeMemoryMCPServer(
+services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py:225:        self.server = DopeMemoryMCPServer(
+services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py:320:        self.server = DopeMemoryMCPServer(
+docker/mcp-servers-source/leantime-bridge/test_contract_api_tools.py:31:    result = await hs.execute_tool("list_tickets", {"projectId": 1})
+docker/mcp-servers-source/leantime-bridge/test_contract_api_tools.py:53:        await hs.execute_tool("list_projects", {})
+docker/mcp-servers-source/pal/PAL_TOKEN_LIMIT_FIX.md:29:1. **Single Point of Control**: All tools funnel through `handle_call_tool()` → `tool.execute()` → return
+docker/mcp-servers-source/services/mcp-client-python/services/mcp-client-python/mcp_client/main.py:134:    async def call_tool(self, tool_name: str, arguments: Dict[str, Any] = None) -> Any:
+docker/mcp-servers-source/services/mcp-client-python/services/mcp-client-python/mcp_client/main.py:244:    async def call_tool(self, tool_name: str, arguments: Dict[str, Any] = None) -> Any:
+docker/mcp-servers-source/services/mcp-client-python/services/mcp-client-python/mcp_client/main.py:314:                    return await client.call_tool(tool_name, arguments)
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:7:from mcp.server.fastmcp import FastMCP
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:13:mcp = FastMCP("conport-admin")
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:36:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:47:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:55:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:66:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:82:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:91:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:100:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:109:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:120:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:127:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:134:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:143:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:151:@mcp.tool()
+docker/mcp-servers-source/conport/conport_mcp_stdio.py:169:    # Use FastMCP's native async stdio runner
+services/working-memory-assistant/tests/test_trajectory_boost_in_ranking.py:36:    return DopeMemoryMCPServer(
+docker/mcp-servers-source/gpt-researcher/scripts/mcp_server.py:61:        self.server = Server("gpt-researcher")
+docker/mcp-servers-source/gpt-researcher/scripts/mcp_server.py:66:        self._register_tools()
+docker/mcp-servers-source/gpt-researcher/scripts/mcp_server.py:71:    def _register_tools(self):
+docker/mcp-servers-source/gpt-researcher/scripts/mcp_server.py:210:        @self.server.call_tool()
+docker/mcp-servers-source/gpt-researcher/scripts/mcp_server.py:211:        async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+docker/mcp-servers-source/gpt-researcher/scripts/mcp_server.py:460:    server = GPTResearcherMCPServer()
+docker/mcp-servers-source/services/mcp-client-python/mcp_client/main.py:56:    async def call_tool(self, tool_name: str, arguments: Dict[str, Any] = None) -> Any:
+docker/mcp-servers-source/services/mcp-client-python/mcp_client/main.py:61:        result = await self.session.call_tool(tool_name, arguments)
+docker/mcp-servers-source/services/mcp-client-python/mcp_client/main.py:111:                    result = await client.call_tool("list_projects")
+docker/mcp-servers-source/conport/direct_server.py:250:    server = DirectConPortServer()
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:138:    server = DopeMemoryMCPServer()
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:175:    server = DopeMemoryMCPServer()
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:232:    server = DopeMemoryMCPServer()
+services/session_intelligence/coordinator.py:98:            self._serena_server = SerenaV2MCPServer(workspace=self.workspace)
+services/session_intelligence/coordinator.py:123:            result_json = await serena.get_session_info_tool()
+services/dopecon-bridge/ddg_mcp_stdio.py:27:server = Server("ddg-mcp")
+services/dopecon-bridge/ddg_mcp_stdio.py:36:@server.tool()
+services/dopecon-bridge/ddg_mcp_stdio.py:44:@server.tool()
+services/dopecon-bridge/ddg_mcp_stdio.py:55:@server.tool()
+services/dopecon-bridge/ddg_mcp_stdio.py:63:@server.tool()
+services/dopecon-bridge/ddg_mcp_stdio.py:74:@server.tool()
+services/dopecon-bridge/ddg_mcp_stdio.py:94:@server.tool()
+services/dopecon-bridge/ddg_mcp_stdio.py:106:@server.tool()
+services/dopecon-bridge/ddg_mcp_stdio.py:114:@server.tool()
+docker/mcp-servers-source/desktop-commander/server.py:3:FastMCP Server for Desktop Commander
+docker/mcp-servers-source/desktop-commander/server.py:12:from fastmcp import FastMCP
+docker/mcp-servers-source/desktop-commander/server.py:27:# Initialize FastMCP server
+docker/mcp-servers-source/desktop-commander/server.py:28:mcp = FastMCP(
+docker/mcp-servers-source/desktop-commander/server.py:38:@mcp.tool()
+docker/mcp-servers-source/desktop-commander/server.py:59:@mcp.tool()
+docker/mcp-servers-source/desktop-commander/server.py:73:@mcp.tool()
+docker/mcp-servers-source/desktop-commander/server.py:101:@mcp.tool()
+docker/mcp-servers-source/desktop-commander/server.py:130:    # FastMCP v3 removed mcp.sse_app(); use http_app(transport="sse") instead.
+services/dopecon-bridge/dopecon_bridge/routes.py:489:        result = await mcp_client.call_tool("leantime-bridge", tool_name, tool_payload)
+services/serena/mcp_server.py:396:        self.server = Server("serena-v2")
+services/serena/mcp_server.py:787:    def register_tools(self):
+services/serena/mcp_server.py:1765:        @self.server.call_tool()
+services/serena/mcp_server.py:1766:        async def call_tool(name: str, arguments: Dict[str, Any]) -> list[TextContent]:
+services/serena/mcp_server.py:1770:                    result = await self.get_workspace_status_tool()
+services/serena/mcp_server.py:1772:                    result = await self.find_symbol_tool(**arguments)
+services/serena/mcp_server.py:1774:                    result = await self.goto_definition_tool(**arguments)
+services/serena/mcp_server.py:1776:                    result = await self.get_context_tool(**arguments)
+services/serena/mcp_server.py:1778:                    result = await self.find_references_tool(**arguments)
+services/serena/mcp_server.py:1780:                    result = await self.analyze_complexity_tool(**arguments)
+services/serena/mcp_server.py:1782:                    result = await self.filter_by_focus_tool(**arguments)
+services/serena/mcp_server.py:1784:                    result = await self.suggest_next_step_tool(**arguments)
+services/serena/mcp_server.py:1786:                    result = await self.get_reading_order_tool(**arguments)
+services/serena/mcp_server.py:1788:                    result = await self.find_relationships_tool(**arguments)
+services/serena/mcp_server.py:1790:                    result = await self.get_navigation_patterns_tool(**arguments)
+services/serena/mcp_server.py:1792:                    result = await self.update_focus_mode_tool(**arguments)
+services/serena/mcp_server.py:1794:                    result = await self.detect_untracked_work_tool(**arguments)
+services/serena/mcp_server.py:1796:                    result = await self.track_untracked_work_tool(**arguments)
+services/serena/mcp_server.py:1798:                    result = await self.snooze_untracked_work_tool(**arguments)
+services/serena/mcp_server.py:1800:                    result = await self.ignore_untracked_work_tool(**arguments)
+services/serena/mcp_server.py:1802:                    result = await self.suggest_branch_organization_tool(**arguments)
+services/serena/mcp_server.py:1804:                    result = await self.get_pattern_stats_tool(**arguments)
+services/serena/mcp_server.py:1806:                    result = await self.get_top_patterns_tool(**arguments)
+services/serena/mcp_server.py:1808:                    result = await self.get_abandoned_work_tool(**arguments)
+services/serena/mcp_server.py:1810:                    result = await self.mark_abandoned_tool(**arguments)
+services/serena/mcp_server.py:1812:                    result = await self.get_abandonment_stats_tool(**arguments)
+services/serena/mcp_server.py:1814:                    result = await self.get_metrics_dashboard_tool(**arguments)
+services/serena/mcp_server.py:1816:                    result = await self.get_metric_history_tool(**arguments)
+services/serena/mcp_server.py:1818:                    result = await self.save_metrics_snapshot_tool(**arguments)
+services/serena/mcp_server.py:1820:                    result = await self.get_untracked_work_config_tool(**arguments)
+services/serena/mcp_server.py:1822:                    result = await self.update_untracked_work_config_tool(**arguments)
+services/serena/mcp_server.py:1824:                    result = await self.read_file_tool(**arguments)
+services/serena/mcp_server.py:1826:                    result = await self.list_dir_tool(**arguments)
+services/serena/mcp_server.py:1828:                    result = await self.find_similar_code_tool(**arguments)
+services/serena/mcp_server.py:1830:                    result = await self.predict_navigation_from_git_tool(**arguments)
+services/serena/mcp_server.py:1832:                    result = await self.find_test_file_tool(**arguments)
+services/serena/mcp_server.py:1834:                    result = await self.get_unified_complexity_tool(**arguments)
+services/serena/mcp_server.py:1879:    async def get_workspace_status_tool(self) -> str:
+services/serena/mcp_server.py:1944:    async def find_symbol_tool(
+services/serena/mcp_server.py:2110:    async def goto_definition_tool(
+services/serena/mcp_server.py:2283:    async def get_context_tool(
+services/serena/mcp_server.py:2400:    async def find_references_tool(
+services/serena/mcp_server.py:2629:    async def analyze_complexity_tool(
+services/serena/mcp_server.py:2797:    async def filter_by_focus_tool(
+services/serena/mcp_server.py:2845:    async def suggest_next_step_tool(
+services/serena/mcp_server.py:2930:    async def get_reading_order_tool(
+services/serena/mcp_server.py:2973:                complexity_result = await self.analyze_complexity_tool(file_path, None)
+services/serena/mcp_server.py:3027:    async def find_relationships_tool(
+services/serena/mcp_server.py:3147:    async def get_navigation_patterns_tool(
+services/serena/mcp_server.py:3249:    async def update_focus_mode_tool(
+services/serena/mcp_server.py:3338:    async def detect_untracked_work_tool(
+services/serena/mcp_server.py:3504:    async def detect_untracked_work_enhanced_tool(
+services/serena/mcp_server.py:3690:    async def initialize_session_tool(
+services/serena/mcp_server.py:3766:    async def get_multi_session_dashboard_tool(self) -> str:
+services/serena/mcp_server.py:3825:    async def get_session_info_tool(self) -> str:
+services/serena/mcp_server.py:3877:    async def suggest_branch_organization_tool(
+services/serena/mcp_server.py:3983:    async def get_pattern_stats_tool(self) -> str:
+services/serena/mcp_server.py:4063:    async def get_top_patterns_tool(
+services/serena/mcp_server.py:4125:    async def get_abandoned_work_tool(
+services/serena/mcp_server.py:4226:    async def mark_abandoned_tool(
+services/serena/mcp_server.py:4294:    async def get_abandonment_stats_tool(self) -> str:
+services/serena/mcp_server.py:4368:    async def get_metrics_dashboard_tool(
+services/serena/mcp_server.py:4445:    async def get_metric_history_tool(
+services/serena/mcp_server.py:4553:    async def save_metrics_snapshot_tool(self) -> str:
+services/serena/mcp_server.py:4645:    async def track_untracked_work_tool(
+services/serena/mcp_server.py:4747:    async def snooze_untracked_work_tool(
+services/serena/mcp_server.py:4829:    async def ignore_untracked_work_tool(
+services/serena/mcp_server.py:4892:    async def get_untracked_work_config_tool(self) -> str:
+services/serena/mcp_server.py:4950:    async def update_untracked_work_config_tool(
+services/serena/mcp_server.py:5244:    async def read_file_tool(
+services/serena/mcp_server.py:5320:    async def list_dir_tool(
+services/serena/mcp_server.py:5397:    async def find_similar_code_tool(
+services/serena/mcp_server.py:5497:    async def predict_navigation_from_git_tool(
+services/serena/mcp_server.py:5576:    async def find_test_file_tool(
+services/serena/mcp_server.py:5690:    async def get_unified_complexity_tool(
+services/serena/mcp_server.py:5763:    server_instance = SerenaV2MCPServer()
+services/serena/mcp_server.py:5769:    server_instance.register_tools()
+docker/mcp-servers-source/conport/enhanced_server.py:1701:                return await self._dispatch_tool(req_id, tool_name, arguments)
+docker/mcp-servers-source/conport/enhanced_server.py:1704:                return await self._dispatch_tool(req_id, method, params)
+docker/mcp-servers-source/conport/enhanced_server.py:1730:    async def _dispatch_tool(self, req_id: Any, tool_name: str, arguments: Dict[str, Any]):
+docker/mcp-servers-source/conport/enhanced_server.py:1766:    async def _get_context_tool(self, args):
+docker/mcp-servers-source/conport/enhanced_server.py:1769:    async def _update_context_tool(self, args):
+docker/mcp-servers-source/conport/enhanced_server.py:1772:    async def _get_decisions_tool(self, args):
+docker/mcp-servers-source/conport/enhanced_server.py:1775:    async def _get_progress_tool(self, args):
+docker/mcp-servers-source/conport/enhanced_server.py:1778:    async def _update_progress_tool(self, args):
+docker/mcp-servers-source/conport/enhanced_server.py:1781:    async def _get_recent_activity_tool(self, args):
+docker/mcp-servers-source/conport/enhanced_server.py:1784:    async def _get_active_work_tool(self, args):
+docker/mcp-servers-source/conport/enhanced_server.py:2128:    server = EnhancedConPortServer()
+services/mcp-client/main.py:159:    async def call_tool(
+services/mcp-client/main.py:250:                    return await client.call_tool(
+services/mcp-integration-bridge/main.py:275:    async def call_tool(
+services/mcp-integration-bridge/main.py:575:            dependency_result = await self.mcp_manager.call_tool(
+services/mcp-integration-bridge/main.py:608:                leantime_result = await self.mcp_manager.call_tool(
+services/mcp-integration-bridge/main.py:848:                    await self.mcp_manager.call_tool(
+services/dopecon-bridge/dopecon_bridge/services/task_integration.py:67:                self.mcp_manager.call_tool(
+services/dopecon-bridge/dopecon_bridge/services/task_integration.py:107:            result = await self.mcp_manager.call_tool(
+docker/mcp-servers-source/gptr-mcp/wrapper.py:146:        server = uvicorn.Server(config)
+services/dope-context/src/enrichment/code_graph_enricher.py:79:            self._serena_server = SerenaV2MCPServer(workspace=self.workspace)
+services/dope-context/src/enrichment/code_graph_enricher.py:169:                    result_json = await serena.find_references_tool(
+docker/mcp-servers-source/conport/server.py:7:from mcp.server.fastmcp import FastMCP
+docker/mcp-servers-source/conport/server.py:12:mcp = FastMCP("conport")
+docker/mcp-servers-source/conport/server.py:35:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:46:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:54:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:65:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:81:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:90:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:99:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:108:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:119:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:126:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:133:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:142:@mcp.tool()
+docker/mcp-servers-source/conport/server.py:150:@mcp.tool()
+services/dopecon-bridge/dopecon_bridge/clients.py:78:    async def call_tool(self, service: str, tool_name: str, arguments: Dict[str, Any]) -> Any:
+services/serena/tests/test_mcp_server_local.py:17:    server = SerenaV2MCPServer()
+services/serena/tests/test_mcp_server_local.py:33:    server = SerenaV2MCPServer()
+services/serena/tests/test_mcp_server_local.py:37:    payload = json.loads(await server.update_focus_mode_tool("scattered"))
+services/serena/tests/test_mcp_server_local.py:48:    server = SerenaV2MCPServer()
+services/serena/tests/test_mcp_server_local.py:52:    payload = json.loads(await server.get_navigation_patterns_tool(days_back=14))
+services/dopecon-bridge/tests/test_leantime_route_contract.py:79:    result = await manager.call_tool(
+services/dopecon-bridge/tests/test_leantime_route_contract.py:158:        await manager.call_tool("leantime-bridge", "list_tickets", {"projectId": 9})
+services/dopecon-bridge/tests/test_leantime_route_contract.py:172:        await manager.call_tool("task-orchestrator", "analyze_dependencies", {"tasks": []})
+services/dope-context/tests/test_mcp_server.py:2:Tests for FastMCP Server - Task 8
+services/dope-context/tests/test_mcp_server.py:214:async def test_index_workspace_tool(tmp_path):
+services/dope-context/tests/test_mcp_server.py:245:async def test_search_code_tool():
+services/dope-context/tests/test_mcp_server.py:394:async def test_get_index_status_tool(tmp_path, monkeypatch):
+services/dope-context/tests/test_mcp_server.py:501:async def test_clear_index_tool(tmp_path, monkeypatch):
+services/dope-context/src/mcp/simple_server.py:3:FastMCP Server for Dope-Context
+services/dope-context/src/mcp/simple_server.py:11:from fastmcp import FastMCP
+services/dope-context/src/mcp/simple_server.py:20:# Initialize FastMCP server
+services/dope-context/src/mcp/simple_server.py:21:mcp = FastMCP(name="Dope-Context")
+services/dope-context/src/mcp/simple_server.py:24:@mcp.tool()
+services/dope-context/src/mcp/simple_server.py:58:@mcp.tool()
+services/dope-context/src/mcp/simple_server.py:88:@mcp.tool()
+services/dope-context/src/mcp/simple_server.py:109:    # Run using FastMCP's built-in support
+services/dope-context/src/mcp/fastmcp_stub.py:2:Lightweight FastMCP stub for test environments without fastmcp installed.
+services/dope-context/src/mcp/fastmcp_stub.py:13:class FastMCP:
+services/dope-context/src/mcp/fastmcp_stub.py:19:    def tool(self, *dargs: Any, **dkwargs: Any) -> Callable:
+services/dope-context/src/mcp/fastmcp_stub.py:38:            "fastmcp not installed; FastMCP.run() stub invoked. "
+services/dope-context/Dockerfile:46:# Run the canonical FastMCP server
+docker/mcp-servers-source/pal/pal-mcp-server/pal_http_server.py:7:from mcp.server.fastmcp import FastMCP
+docker/mcp-servers-source/pal/pal-mcp-server/pal_http_server.py:18:async def lifespan(app: FastMCP):
+docker/mcp-servers-source/pal/pal-mcp-server/pal_http_server.py:27:app = FastMCP("zen-server")
+docker/mcp-servers-source/pal/pal-mcp-server/pal_http_server.py:31:# app.add_tool(...)
+services/serena/batch_track_tool.py:8:async def batch_track_untracked_work_tool(
+services/dope-context/src/mcp/server.py:2:FastMCP Server - Task 8
+services/dope-context/src/mcp/server.py:29:    from fastmcp import FastMCP
+services/dope-context/src/mcp/server.py:31:    from .fastmcp_stub import FastMCP
+services/dope-context/src/mcp/server.py:90:        "fastmcp package not installed; falling back to stub FastMCP. "
+services/dope-context/src/mcp/server.py:99:# Initialize FastMCP server
+services/dope-context/src/mcp/server.py:100:mcp = FastMCP("dope-context")
+services/dope-context/src/mcp/server.py:149:# # @mcp.custom_route("/health", methods=["GET"])
+services/dope-context/src/mcp/server.py:155:# # @mcp.custom_route("/info", methods=["GET"])
+services/dope-context/src/mcp/server.py:204:# # @mcp.custom_route("/autoindex/bootstrap", methods=["POST"])
+services/dope-context/src/mcp/server.py:261:# # @mcp.custom_route("/autoindex/status", methods=["GET"])
+services/dope-context/src/mcp/server.py:991:@mcp.tool()
+services/dope-context/src/mcp/server.py:1362:@mcp.tool()
+services/dope-context/src/mcp/server.py:1506:@mcp.tool()
+services/dope-context/src/mcp/server.py:1621:@mcp.tool()
+services/dope-context/src/mcp/server.py:1687:@mcp.tool()
+services/dope-context/src/mcp/server.py:1875:@mcp.tool()
+services/dope-context/src/mcp/server.py:2063:@mcp.tool()
+services/dope-context/src/mcp/server.py:2222:@mcp.tool()
+services/dope-context/src/mcp/server.py:2462:@mcp.tool()
+services/dope-context/src/mcp/server.py:2540:@mcp.tool()
+services/dope-context/src/mcp/server.py:2579:@mcp.tool()
+services/dope-context/src/mcp/server.py:2605:@mcp.tool()
+services/dope-context/src/mcp/server.py:2680:@mcp.tool()
+services/dope-context/src/mcp/server.py:2732:@mcp.tool()
+services/dope-context/src/mcp/server.py:2792:@mcp.tool()
+services/dope-context/src/mcp/server.py:2920:@mcp.tool()
+services/dope-context/src/mcp/server.py:2972:@mcp.tool()
+services/dope-context/src/mcp/server.py:3035:@mcp.tool()
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_token_allocation_validation.py:20:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_token_allocation_validation.py:177:            response1, continuation_id1 = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_token_allocation_validation.py:206:            response2, continuation_id2 = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_token_allocation_validation.py:247:            response3, continuation_id3 = self.call_mcp_tool(
+services/serena/mcp_client.py:132:    async def call_tool(
+services/serena/mcp_client.py:297:        return await self.call_tool(
+services/serena/mcp_client.py:325:        return await self.call_tool(
+services/serena/mcp_client.py:337:        return await self.call_tool(
+services/serena/mcp_client.py:349:        return await self.call_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_line_number_validation.py:63:            content, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_line_number_validation.py:84:            content, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_line_number_validation.py:105:            content, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_content_validation.py:67:            response1, thread_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_content_validation.py:86:                response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_content_validation.py:104:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_continuation.py:65:            chat_response, chat_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_continuation.py:79:            thinkdeep_response, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_continuation.py:98:            codereview_response, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_continuation.py:129:            analyze_response, analyze_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_continuation.py:147:            debug_response, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_continuation.py:166:            final_response, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_continuation.py:197:            multi_response, multi_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_continuation.py:211:            multi_review, _ = self.call_mcp_tool(
+services/serena/multi_workspace_wrapper.py:58:            instance = SerenaV2MCPServer()
+services/serena/multi_workspace_wrapper.py:99:            result = await instance.find_symbol_tool(
+services/serena/multi_workspace_wrapper.py:145:            result = await instance.get_context_tool(
+services/serena/multi_workspace_wrapper.py:186:            result = await instance.find_relationships_tool(
+services/serena/multi_workspace_wrapper.py:235:            result = await instance.find_references_tool(
+services/serena/multi_workspace_wrapper.py:281:            result = await instance.find_similar_code_tool(
+services/serena/multi_workspace_wrapper.py:344:            result = await instance.get_unified_complexity_tool(
+services/serena/multi_workspace_wrapper.py:406:            result = await instance.get_navigation_patterns_tool(
+services/serena/multi_workspace_wrapper.py:448:            result = await instance.analyze_complexity_tool(
+services/serena/multi_workspace_wrapper.py:514:            result = await instance.get_reading_order_tool(
+services/serena/multi_workspace_wrapper.py:574:            result = await instance.find_test_file_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_models.py:48:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_models.py:68:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_models.py:86:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_models.py:104:            response4, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_models.py:122:            response5, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_models.py:140:            response6, new_continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_models.py:154:            response7, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:446:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:478:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:540:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:561:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:584:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:630:                response0, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:651:            response_final, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:740:            response_final, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:802:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:843:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:907:            response_security, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:948:            response_quality, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:992:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:154:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:184:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:240:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:259:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:281:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:324:                response0, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:343:            response_final, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:429:            response_certain, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:477:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:597:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:636:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:682:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:790:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:823:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:863:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:897:            response4, _ = self.call_mcp_tool(
+src/dopemux/orchestrator/workflow_dsl.py:453:        _validate_step_tool(errors, path, step, policy)
+src/dopemux/orchestrator/workflow_dsl.py:526:def _validate_step_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_continuation_history.py:67:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_continuation_history.py:83:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_continuation_history.py:100:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_continuation_history.py:142:            response1, new_continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_continuation_history.py:173:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_continuation_history.py:211:            response1, new_continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_continuation_history.py:247:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_continuation_history.py:285:            response1, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_continuation_history.py:331:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_vision_capability.py:63:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_vision_capability.py:105:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_vision_capability.py:143:                response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:74:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:123:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:164:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:223:                response0, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:239:            response1, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:282:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:326:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:355:            response4, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:398:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:415:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:475:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:492:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:533:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:579:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:604:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation.py:636:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:178:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:211:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:273:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:293:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:314:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:359:                response0, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:380:            response_final, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:472:            response_certain, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:528:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:669:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:708:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:756:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:902:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:935:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:974:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:1009:            response4, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:148:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:179:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:230:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:250:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:286:                response0, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:305:            response_final, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:386:            response_certain, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:433:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:559:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:593:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:715:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:747:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:772:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_testgen_validation.py:796:            response4, _ = self.call_mcp_tool(
+services/task-orchestrator/conport_mcp_client.py:48:    def _resolve_semantic_search_tool(self) -> Any:
+services/task-orchestrator/conport_mcp_client.py:533:            tool, tool_name = self._resolve_semantic_search_tool()
+services/task-orchestrator/conport_mcp_client.py:534:            result = await tool(**params)
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:246:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:279:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:346:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:367:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:391:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:438:                response0, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:458:            response_final, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:554:            response_certain, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:655:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:694:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:763:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:797:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:834:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:875:            response4, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_codereview_validation.py:945:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_per_tool_deduplication.py:74:            response1, continuation_id = self.call_mcp_tool("precommit", precommit_params)
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_per_tool_deduplication.py:103:            response2, _ = self.call_mcp_tool("codereview", codereview_params)
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_per_tool_deduplication.py:137:            response3, _ = self.call_mcp_tool("precommit", continue_params)
+services/serena/v2/mcp_client.py:132:    async def call_tool(
+services/serena/v2/mcp_client.py:297:        return await self.call_tool(
+services/serena/v2/mcp_client.py:325:        return await self.call_tool(
+services/serena/v2/mcp_client.py:337:        return await self.call_tool(
+services/serena/v2/mcp_client.py:349:        return await self.call_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_comprehensive.py:22:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_comprehensive.py:27:            response_text, continuation_id = super().call_mcp_tool(tool_name, params)
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_comprehensive.py:92:            response1, continuation_id1 = self.call_mcp_tool("chat", chat_params)
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_comprehensive.py:114:            response2, continuation_id2 = self.call_mcp_tool("analyze", analyze_params)
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_comprehensive.py:134:            response3, _ = self.call_mcp_tool("chat", chat_continue_params)
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_comprehensive.py:155:            response4, continuation_id4 = self.call_mcp_tool("debug", debug_params)
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_comprehensive.py:180:                response5, _ = self.call_mcp_tool("debug", debug_continue_params)
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_comprehensive.py:198:            response6, continuation_id6 = self.call_mcp_tool("codereview", codereview_params)
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_cross_tool_comprehensive.py:236:            response7, continuation_id7 = self.call_mcp_tool("precommit", precommit_params)
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_conversation_chain_validation.py:71:            response_a1, continuation_id_a1 = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_conversation_chain_validation.py:91:            response_a2, continuation_id_a2 = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_conversation_chain_validation.py:115:            response_a3, continuation_id_a3 = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_conversation_chain_validation.py:138:            response_b1, continuation_id_b1 = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_conversation_chain_validation.py:157:            response_b2, continuation_id_b2 = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_conversation_chain_validation.py:184:            response_a1_branch, continuation_id_a1_branch = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_conversation_chain_validation.py:361:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple:
+services/dcp-readonly-facade/src/mcp/fastmcp_stub.py:1:"""Lightweight FastMCP stub for environments without fastmcp installed.
+services/dcp-readonly-facade/src/mcp/fastmcp_stub.py:15:class FastMCP:
+services/dcp-readonly-facade/src/mcp/fastmcp_stub.py:21:    def tool(self, *dargs: Any, **dkwargs: Any) -> Callable:
+services/dcp-readonly-facade/src/mcp/fastmcp_stub.py:29:            "fastmcp not installed; FastMCP.run() stub invoked. "
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_fallback.py:55:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_fallback.py:82:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_fallback.py:105:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_openrouter_fallback.py:128:            response4, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_ollama_custom_url.py:50:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_ollama_custom_url.py:105:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_ollama_custom_url.py:122:                response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_ollama_custom_url.py:138:            response4, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_ollama_custom_url.py:153:            response5, _ = self.call_mcp_tool(
+services/dcp-readonly-facade/src/mcp/__init__.py:1:"""MCP wiring for the DCP read-only facade (thin FastMCP layer)."""
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_model_thinking_config.py:29:            response, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_model_thinking_config.py:54:            response, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_model_thinking_config.py:90:                response, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_model_thinking_config.py:117:            response, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_consensus_three_models.py:27:            response, continuation_id = self.call_mcp_tool(
+services/dcp-readonly-facade/src/mcp/server.py:1:"""DCP read-only MCP evidence facade — FastMCP server (Phase 1 scaffold).
+services/dcp-readonly-facade/src/mcp/server.py:29:    from fastmcp import FastMCP
+services/dcp-readonly-facade/src/mcp/server.py:31:    from mcp.fastmcp_stub import FastMCP  # type: ignore
+services/dcp-readonly-facade/src/mcp/server.py:36:mcp = FastMCP("dcp-readonly-facade")
+services/dcp-readonly-facade/src/mcp/server.py:42:@mcp.tool()
+services/dcp-readonly-facade/src/mcp/server.py:48:@mcp.tool()
+services/dcp-readonly-facade/src/mcp/server.py:54:@mcp.tool()
+services/dcp-readonly-facade/src/mcp/server.py:60:@mcp.tool()
+services/dcp-readonly-facade/src/mcp/server.py:70:@mcp.tool()
+services/dcp-readonly-facade/src/mcp/server.py:76:@mcp.tool()
+services/dcp-readonly-facade/src/mcp/server.py:82:@mcp.tool()
+services/dcp-readonly-facade/src/mcp/server.py:88:@mcp.tool()
+services/dcp-readonly-facade/src/mcp/server.py:94:@mcp.tool()
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_o3_pro_expensive.py:41:            response, tool_result = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_xai_models.py:49:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_xai_models.py:69:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_xai_models.py:87:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_xai_models.py:105:            response4, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_xai_models.py:118:            response5, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_xai_models.py:136:            response6, new_continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_xai_models.py:150:            response7, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:164:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:198:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:253:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:274:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:300:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:342:                response0, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:361:            response_final, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:459:            response_certain, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:506:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:642:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:680:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:789:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:821:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:854:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_thinkdeep_validation.py:887:            response4, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_consensus_conversation.py:17:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_consensus_conversation.py:55:            initial_response, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_consensus_conversation.py:78:            consensus_response, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_consensus_conversation.py:211:            chat_response, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:286:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:321:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:399:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:420:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:441:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:497:                response0, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:518:            response_final, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:637:            response_certain, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:742:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:781:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:851:            response_decompose, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:897:            response_modernize, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_refactor_validation.py:949:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/base_test.py:127:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_basic_conversation.py:35:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_basic_conversation.py:52:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_basic_conversation.py:68:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal_http_wrapper.py:229:    server = ThreadingHTTPServer(('0.0.0.0', port), PalServerHandler)
+services/dcp-readonly-facade/src/dcp_facade/dope_context.py:6:# tools exclusively via FastMCP with @mcp.tool() decorators. When MCP_SERVER_PORT
+services/dcp-readonly-facade/src/dcp_facade/dope_context.py:7:# is set (as in the container), the FastMCP server binds HTTP but serves MCP
+services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py:90:        "from mcp.server.fastmcp import FastMCP\n"
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation_old.py:64:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation_old.py:91:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation_old.py:114:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation_old.py:150:            response1, new_continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation_old.py:184:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation_old.py:222:            response1, continuation_id = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation_old.py:238:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation_old.py:278:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_planner_validation_old.py:316:    def call_mcp_tool(self, tool_name: str, params: dict) -> tuple[Optional[str], Optional[str]]:
+docker/mcp-servers-source/serena/wrapper.py:115:    server = SerenaServer()
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_o3_model_selection.py:63:            response1, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_o3_model_selection.py:81:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_o3_model_selection.py:108:            response3, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_o3_model_selection.py:220:            response1, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_o3_model_selection.py:238:            response2, _ = self.call_mcp_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/simulator_tests/test_o3_model_selection.py:264:            response3, _ = self.call_mcp_tool(
+services/dcp-readonly-facade/README.md:15:- `src/mcp/server.py` — thin FastMCP wiring (delegates to `dcp_facade.tools`).
+docker/mcp-servers-source/pal/pal-mcp-server/server.py:396:server: Server = Server("zen-server")
+docker/mcp-servers-source/pal/pal-mcp-server/server.py:922:@server.call_tool()
+docker/mcp-servers-source/pal/pal-mcp-server/server.py:923:async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
+docker/mcp-servers-source/pal/pal-mcp-server/pal_http_wrapper.py:89:    server = HTTPServer(('0.0.0.0', port), ZenServerHandler)
+services/task-orchestrator/app/main.py:29:    from mcp.server.fastmcp import FastMCP
+services/task-orchestrator/app/main.py:31:    class FastMCP:  # type: ignore[override]
+services/task-orchestrator/app/main.py:38:        def tool(self, *, name: str, description: str):
+services/task-orchestrator/app/main.py:79:mcp = FastMCP("Task-Orchestrator")
+services/task-orchestrator/app/main.py:85:        @mcp.tool(name=tool_def["name"], description=tool_def["description"])
+services/task-orchestrator/app/main.py:93:            @mcp.tool(name=tool_def["name"], description=tool_def["description"])
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_consensus_integration.py:229:        step1_output = await server.handle_call_tool("consensus", step1_args)
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_consensus_integration.py:253:            step2_output = await server.handle_call_tool("consensus", step2_args)
+services/serena/server.py:244:                        await self._handle_navigation_tool(tool_name, params)
+services/serena/server.py:322:    async def _handle_navigation_tool(self, tool_name: str, params: Dict[str, Any]):
+services/adhd_engine/main.py:45:    from fastmcp import FastMCP
+services/adhd_engine/main.py:47:    class FastMCP:  # type: ignore[override]
+services/adhd_engine/main.py:48:        """Minimal FastMCP fallback so API can boot without MCP extras."""
+services/adhd_engine/main.py:54:        def tool(self):
+services/adhd_engine/main.py:60:# Initialize FastMCP
+services/adhd_engine/main.py:61:mcp = FastMCP("ADHD-Engine")
+services/adhd_engine/main.py:63:@mcp.tool()
+services/adhd_engine/main.py:83:@mcp.tool()
+services/adhd_engine/main.py:478:# Mount FastMCP HTTP app
+services/adhd_engine/event_emitter.py:308:async def emit_claude_tool(
+services/adhd_engine/hello_flow_implementation.py:84:        upcoming_result = await self.conport_session.call_tool(
+services/adhd_engine/hello_flow_implementation.py:111:        await self.conport_session.call_tool(
+services/adhd_engine/hello_flow_implementation.py:135:        plan_result = await self.task_orchestrator_session.call_tool(
+services/adhd_engine/hello_flow_implementation.py:150:            await self.task_orchestrator_session.call_tool(
+services/adhd_engine/hello_flow_implementation.py:206:                await self.conport_session.call_tool(
+services/adhd_engine/hello_flow_implementation.py:242:            await self.playwright_session.call_tool(
+services/adhd_engine/hello_flow_implementation.py:251:            screenshot_result = await self.playwright_session.call_tool(
+services/adhd_engine/hello_flow_implementation.py:295:        await self.conport_session.call_tool(
+services/adhd_engine/hello_flow_implementation.py:312:        await self.conport_session.call_tool(
+services/adhd_engine/hello_flow_implementation.py:340:        await self.conport_session.call_tool(
+services/task-orchestrator/server.py:219:                        await self._handle_orchestration_tool(tool_name, params)
+services/task-orchestrator/server.py:294:    async def _handle_orchestration_tool(self, tool_name: str, params: Dict[str, Any]):
+services/adhd_engine/api/routes.py:1880:                await emit_claude_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_auto_mode_model_listing.py:127:        server.handle_call_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_auto_mode_model_listing.py:212:        server.handle_call_tool(
+src/dopemux/commands/mcp_commands.py:94:@mcp.command("up")
+src/dopemux/commands/mcp_commands.py:122:@mcp.command("down")
+src/dopemux/commands/mcp_commands.py:145:@mcp.command("status")
+src/dopemux/commands/mcp_commands.py:159:@mcp.command("logs")
+src/dopemux/commands/mcp_commands.py:180:@mcp.command("start-all")
+src/dopemux/commands/mcp_commands.py:573:@mcp.command("init")
+src/dopemux/commands/mcp_commands.py:649:@mcp.command("add")
+src/dopemux/commands/mcp_commands.py:703:@mcp.command("remove")
+src/dopemux/commands/mcp_commands.py:731:@mcp.command("list")
+src/dopemux/commands/mcp_commands.py:814:@mcp.command("doctor")
+src/dopemux/commands/mcp_commands.py:882:@mcp.command("sync-globals")
+services/mcp-capture/server.py:50:        self.server = Server("dopemux-capture")
+services/mcp-capture/server.py:94:        @self.server.call_tool()
+services/mcp-capture/server.py:95:        async def call_tool(name: str, arguments: dict) -> list[TextContent]:
+services/mcp-capture/server.py:187:    server = CaptureMCPServer()
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_tools.py:18:    def tool(self):
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_tools.py:119:    def tool(self):
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_tools.py:212:    def tool(self):
+src/dopemux/commands/extractor_validation.py:911:    async def _call_pal_tool(self, tool_name: str, prompt: str) -> Dict[str, Any]:
+src/dopemux/commands/extractor_validation.py:967:            result = asyncio.run(self._call_pal_tool("apilookup", prompt))
+src/dopemux/commands/extractor_validation.py:1022:            result = asyncio.run(self._call_pal_tool("challenge", prompt))
+services/adhd_engine/event_listener.py:533:    async def _on_claude_tool(self, data: Dict[str, Any]):
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_directory_expansion_tracking.py:25:    def tool(self):
+services/adhd_engine/core/failure_playbook.py:138:                            await session.call_tool(spool_entry.operation, **spool_entry.args)
+services/adhd_engine/core/failure_playbook.py:179:            consensus_result = await zen_session.call_tool(
+services/adhd_engine/core/failure_playbook.py:238:                await playwright_session.call_tool(
+services/adhd_engine/core/failure_playbook.py:245:                await playwright_session.call_tool(
+services/adhd_engine/core/failure_playbook.py:328:                    await session.call_tool("conport_get_product_context", workspace_id=self.workspace_id)
+services/adhd_engine/core/failure_playbook.py:456:                result = await session.call_tool(
+services/adhd_engine/core/failure_playbook.py:481:                await session.call_tool(
+services/adhd_engine/core/failure_playbook.py:510:                await session.call_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_server.py:18:        result = await server.handle_call_tool("unknown_tool", {})
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_server.py:56:                result = await handle_call_tool("chat", {"prompt": "Hello Gemini", "model": "o3-mini"})
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_server.py:94:        result = await server.handle_call_tool("version", {})
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_server.py:135:        result = await server.handle_call_tool(
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_collaboration.py:21:    def analyze_tool(self):
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_collaboration.py:25:    def debug_tool(self):
+src/conport/memory_server.py:854:        self.server = Server("conport-memory")
+src/conport/memory_server.py:861:        self._register_tools()
+src/conport/memory_server.py:863:    def _register_tools(self):
+src/conport/memory_server.py:979:        @self.server.call_tool()
+src/conport/memory_server.py:980:        async def call_tool(
+src/conport/memory_server.py:1112:    server_instance = ConPortMemoryServer()
+services/repo-truth-extractor/tests/test_prescan_consumers.py:138:    (tmp_path / "mcp_tool.py").write_text("def placeholder_tool():\n    return None\n", encoding="utf-8")
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_refactor.py:17:    def refactor_tool(self):
+src/dopemux/tmux/controller.py:420:        self.server = libtmux.Server()  # type: ignore[attr-defined]
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_tracer.py:15:    def tracer_tool(self):
+docker/mcp-servers-source/pal/pal-mcp-server/tests/test_listmodels.py:17:    def tool(self):
+src/dopemux/mcp/broker.py:433:    async def call_tool(self, request: ToolCallRequest) -> ToolCallResponse:
+src/dopemux/mcp/broker.py:490:            result = await self.server_manager.call_tool(
+src/dopemux/mcp/gate.py:99:                            f"Non-mandatory server '{name}' is missing required tool(s): "
+src/dopemux/mcp/server_manager.py:288:    async def call_tool(
+src/dopemux/mcp/server_manager.py:307:                result = await self._call_stdio_tool(connection, method, args, timeout)
+src/dopemux/mcp/server_manager.py:309:                result = await self._call_http_tool(connection, method, args, timeout)
+src/dopemux/mcp/server_manager.py:311:                result = await self._call_websocket_tool(
+src/dopemux/mcp/server_manager.py:701:    async def _call_stdio_tool(
+src/dopemux/mcp/server_manager.py:756:    async def _call_http_tool(
+src/dopemux/mcp/server_manager.py:788:    async def _call_websocket_tool(
+src/dopemux/mcp/conport_mcp_tools.py:436:    mcp_server.register_tool(
+src/dopemux/mcp/conport_mcp_tools.py:456:    mcp_server.register_tool(
+src/dopemux/mcp/conport_mcp_tools.py:475:    mcp_server.register_tool(
+src/dopemux/mcp/conport_mcp_tools.py:497:    mcp_server.register_tool(
+src/dopemux/mcp/conport_mcp_tools.py:515:    mcp_server.register_tool(
+src/dopemux/mcp/conport_mcp_tools.py:536:    mcp_server.register_tool(
+src/dopemux/mcp/conport_mcp_tools.py:557:    mcp_server.register_tool(
+src/dopemux/claude/native_hooks.py:46:    def on_edit_tool(_root, _sid=None): return None  # type: ignore[misc]
+src/dopemux/claude/native_hooks.py:211:    def _deny_tool(self, message: str, additional_context: Optional[str] = None) -> Tuple[int, Dict[str, Any]]:
+src/dopemux/claude/native_hooks.py:345:            return self._deny_tool(block_reason)
+src/dopemux/claude/native_hooks.py:361:            return self._deny_tool("Workflow iteration limit reached (0/0).", _workflow_context_lines(state, include_gates=True))
+src/dopemux/claude/native_hooks.py:364:            return self._deny_tool(
+src/dopemux/claude/native_hooks.py:370:            return self._deny_tool(
+src/dopemux/claude/native_hooks.py:433:            nudge = on_edit_tool(self.project_root, self.session_id)
+services/dopemux-gpt-researcher/mcp-server/server.py:624:    server = MCPServer()
+services/webhook_receiver/test_server.py:146:    httpd = server_mod.WebhookServer("127.0.0.1", port, event_store)
+services/webhook_receiver/test_server.py:199:    httpd = server_mod.WebhookServer("127.0.0.1", port, event_store)
+services/webhook_receiver/server.py:239:class WebhookServer(ThreadingHTTPServer):
+services/webhook_receiver/server.py:257:    server = WebhookServer(host, port, event_store)
+
+services/task-router/router_api.py:107:            cognitive_state = await self._get_cognitive_state(user_id)
+services/task-router/router_api.py:195:            cognitive_state = await self._get_cognitive_state(user_id)
+services/task-router/router_api.py:266:            cognitive_state = await self._get_cognitive_state(user_id)
+services/task-router/router_api.py:293:    async def _get_cognitive_state(self, user_id: str) -> CognitiveState:
+services/claude_brain/dynamic_adaptation.py:113:    async def get_cognitive_state(self, user_id: str, session_id: Optional[str] = None) -> Optional[UserCognitiveState]:
+services/claude_brain/dynamic_adaptation.py:543:            cognitive_state = await self.adhd_integration.get_cognitive_state(user_id, session_id)
+services/adhd_engine/main.py:64:async def get_cognitive_state(user_id: str | None = None) -> dict:
+services/adhd_engine/main.py:84:async def assess_task_complexity(title: str, description: str = "") -> dict:
+src/dopemux/adhd/task_decomposer.py:234:            subtasks = self._decompose_task(task)
+src/dopemux/adhd/task_decomposer.py:556:    def _decompose_task(self, main_task: Task) -> List[Task]:
+services/adhd_engine/domains/task_enablement/task_decomposition_assistant.py:203:    def decompose_task(
+services/dcp-readonly-facade/src/dcp_facade/tools.py:371:# REST). The facade speaks REST only. search_code_docs and get_index_status are
+services/dcp-readonly-facade/src/dcp_facade/tools.py:377:# are CONFIRMED_READ_ONLY. get_workflow_status_snapshot fans out all three and
+services/dcp-readonly-facade/src/dcp_facade/tools.py:395:def search_code_docs(
+services/dcp-readonly-facade/src/dcp_facade/tools.py:442:            dope_context_adapter.docs_search(c, base_url, query, top_k, filter_doc_type)
+services/dcp-readonly-facade/src/dcp_facade/tools.py:444:            dope_context_adapter.search_code(c, base_url, query, top_k, profile)
+services/dcp-readonly-facade/src/dcp_facade/tools.py:505:def get_workflow_status_snapshot(
+services/adhd_engine/domains/task_enablement/decomposition_coordinator.py:259:            preview = self.decomposer.decompose_task(
+services/adhd_engine/domains/task_enablement/decomposition_coordinator.py:278:    async def decompose_task(
+services/adhd_engine/domains/task_enablement/decomposition_coordinator.py:465:                await self.decompose_task(task_id, method="ai", adhd_context=adhd_state)
+services/dcp-readonly-facade/src/dcp_facade/dope_context.py:32:  - index_workspace, index_docs, clear_index (mutating)
+services/dcp-readonly-facade/src/dcp_facade/dope_context.py:84:def search_code(
+services/dcp-readonly-facade/src/dcp_facade/dope_context.py:115:def docs_search(
+services/adhd_engine/pal_client.py:18:    async def assess_task_complexity(self, task_description: str, user_context: Dict[str, Any]) -> Dict[str, Any]:
+services/dcp-readonly-facade/tests/test_packet_0006.py:11:      - dope_context.py never references search_all, index_workspace, index_docs,
+services/dcp-readonly-facade/tests/test_packet_0006.py:63:# dope-context: search_code_docs
+services/dcp-readonly-facade/tests/test_packet_0006.py:68:        """Phase 1: search_code_docs always returns BLOCKED (transport not bridged)."""
+services/dcp-readonly-facade/tests/test_packet_0006.py:72:        env = tools.search_code_docs(reg, "p", query="oauth", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:86:        env = tools.search_code_docs(reg, "p", query="architecture", kind="docs", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:93:        env = tools.search_code_docs(reg, "ghost", query="foo", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:101:        env = tools.search_code_docs(reg, "p", query="foo", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:110:        env = tools.search_code_docs(reg, "p", query="anything", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:148:# task-orchestrator: get_workflow_status_snapshot
+services/dcp-readonly-facade/tests/test_packet_0006.py:185:        env = tools.get_workflow_status_snapshot(reg, "p", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:208:        env = tools.get_workflow_status_snapshot(reg, "p", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:219:        env = tools.get_workflow_status_snapshot(reg, "p", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:227:        env = tools.get_workflow_status_snapshot(reg, "p", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:234:        env = tools.get_workflow_status_snapshot(reg, "ghost", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:250:        env = tools.get_workflow_status_snapshot(reg, "p", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:260:        env = tools.get_workflow_status_snapshot(reg, "p", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:276:        tools.get_workflow_status_snapshot(reg, "p", client=client)
+services/dcp-readonly-facade/tests/test_packet_0006.py:304:            "index_workspace",
+services/dopecon-bridge/tests/test_leantime_route_contract.py:172:        await manager.call_tool("task-orchestrator", "analyze_dependencies", {"tasks": []})
+services/dopecon-bridge/tests/test_leantime_route_contract.py:175:    assert "task-orchestrator.analyze_dependencies" in exc.value.detail
+services/agents/tool_orchestrator.py:322:                    "method": "search_code",
+services/agents/task_decomposer.py:101:        result = await decomposer.decompose_task(task)
+services/agents/task_decomposer.py:157:    async def decompose_task(
+services/agents/task_decomposer.py:815:        result1 = await decomposer.decompose_task(
+services/agents/task_decomposer.py:852:        result2 = await decomposer.decompose_task(
+services/agents/workflow_coordinator.py:430:    async def get_workflow_status(self, workflow_id: str) -> Dict[str, Any]:
+services/agents/workflow_coordinator.py:465:        summary = await self.get_workflow_status(workflow_id)
+services/agents/workflow_coordinator.py:567:    status = await coordinator.get_workflow_status(execution.workflow_id)
+services/serena/mcp_server.py:5443:            # Call Dope-Context search_code via direct function call
+services/serena/mcp_server.py:5448:                from mcp.server import search_code_impl
+services/serena/mcp_server.py:5449:                results = await search_code_impl(query, top_k, workspace_path=str(self.workspace))
+services/serena/claude_context_integration.py:220:            search_response = await self.mcp_client.search_code(
+services/working-memory-assistant/services/working-memory-assistant/adhd_engine_client.py:120:    async def assess_task_complexity(self, task_description: str) -> Optional[Dict[str, Any]]:
+services/serena/code_structure_analyzer.py:480:                batch_tasks = [self._analyze_file_imports(file_path) for file_path in batch]
+services/serena/code_structure_analyzer.py:481:                batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
+services/working-memory-assistant/adhd_engine_client.py:92:    async def assess_task_complexity(self, task_description: str, user_id: str) -> Optional[Dict[str, Any]]:
+services/mcp-integration-bridge/main.py:577:                "analyze_dependencies",
+services/serena/indexing_pipeline.py:417:                batch_tasks = [
+services/serena/indexing_pipeline.py:422:                batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
+services/serena/mcp_client.py:280:    async def search_code(
+services/serena/mcp_client.py:298:            "search_code",
+services/serena/mcp_client.py:368:            self.search_code(workspace_path, query, limit_per_query)
+services/serena/mcp_client.py:382:                    tool_name="search_code",
+services/serena/v2/claude_context_integration.py:220:            search_response = await self.mcp_client.search_code(
+services/serena/v2/indexing_pipeline.py:418:                batch_tasks = [
+services/serena/v2/indexing_pipeline.py:423:                batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
+services/serena/server.py:312:            "search_code",
+services/serena/server.py:317:            "analyze_dependencies",
+services/serena/server.py:493:            "search_code": f"🔍 Searching code for: {params.get('query', 'unknown')}...",
+services/serena/v2/mcp_client.py:280:    async def search_code(
+services/serena/v2/mcp_client.py:298:            "search_code",
+services/serena/v2/mcp_client.py:368:            self.search_code(workspace_path, query, limit_per_query)
+services/serena/v2/mcp_client.py:382:                    tool_name="search_code",
+services/task-orchestrator/enhanced_orchestrator.py:755:                    await self._auto_decompose_task(task)
+services/task-orchestrator/enhanced_orchestrator.py:826:    async def _auto_decompose_task(self, task: OrchestrationTask) -> List[OrchestrationTask]:
+src/conport/memory_server.py:6:- mem.upsert/search tools for semantic memory operations
+src/conport/memory_server.py:7:- graph.link/neighbors tools for relationship management
+src/conport/memory_server.py:871:                    name="mem.upsert",
+src/conport/memory_server.py:905:                    name="mem.search",
+src/conport/memory_server.py:932:                    name="graph.link",
+src/conport/memory_server.py:958:                    name="graph.neighbors",
+src/conport/memory_server.py:985:                if name == "mem.upsert":
+src/conport/memory_server.py:987:                elif name == "mem.search":
+src/conport/memory_server.py:989:                elif name == "graph.link":
+src/conport/memory_server.py:991:                elif name == "graph.neighbors":
+src/conport/memory_server.py:1004:        """Handle mem.upsert tool call."""
+src/conport/memory_server.py:1035:        """Handle mem.search tool call."""
+src/conport/memory_server.py:1063:        """Handle graph.link tool call."""
+src/conport/memory_server.py:1086:        """Handle graph.neighbors tool call."""
+src/conport/memory_server.py:1151:                """HTTP endpoint for mem.search tool."""
+src/conport/memory_server.py:1173:                """HTTP endpoint for mem.upsert tool."""
+src/conport/memory_server.py:1202:                """HTTP endpoint for graph.link tool."""
+src/conport/memory_server.py:1227:                """HTTP endpoint for graph.neighbors tool."""
+services/task-orchestrator/predictive_risk_assessment.py:145:    async def assess_risk(
+services/serena/v2/code_structure_analyzer.py:462:                batch_tasks = [self._analyze_file_imports(file_path) for file_path in batch]
+services/serena/v2/code_structure_analyzer.py:463:                batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
+services/task-orchestrator/docs/tools-documentation.md:28:### 1. analyze_dependencies
+services/task-orchestrator/docs/tools-documentation.md:46:### 4. batch_tasks
+services/task-orchestrator/docs/tools-documentation.md:265:await orchestrator.analyze_dependencies(["task1", "task2", "task3"])
+services/task-orchestrator/docs/pm-plane-architecture.md:127:- **Taskmaster**: `analyze_complexity`, `decompose_task`, `generate_prd_analysis`
+services/ml-risk-assessment/engine.py:146:    async def assess_risk(
+services/ml-risk-assessment/engine.py:362:                    reassessment = await self.assess_risk(entity_id, profile.entity_type, context)
+services/ml-risk-assessment/README.md:71:risk_profile = await risk_engine.assess_risk(
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:28:        "name": "analyze_dependencies",
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:50:        "name": "batch_tasks",
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:126:        if tool_name == "analyze_dependencies":
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:127:            return await _analyze_dependencies(arguments.get("tasks", []))
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:129:        elif tool_name == "batch_tasks":
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:130:            return await _batch_tasks(
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:159:async def _analyze_dependencies(tasks: List[Dict[str, Any]]) -> Dict[str, Any]:
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:196:async def _batch_tasks(task_ids: List[str], session_minutes: int) -> Dict[str, Any]:
+services/dope-context/tests/test_docs_pipeline_invariants.py:144:        summary = await pipeline.index_workspace(include_patterns=["*.md"])
+services/dope-context/tests/test_docs_pipeline_invariants.py:182:        summary = await pipeline.index_workspace(include_patterns=["*.md"])
+services/dope-context/tests/test_docs_pipeline_invariants.py:212:        summary = await pipeline.index_workspace(include_patterns=["*.md"])
+services/voice-commands/voice_api.py:54:async def decompose_task(request: VoiceCommandRequest):
+services/dope-context/tests/test_mcp_server.py:154:    _docs_search_impl,
+services/dope-context/tests/test_mcp_server.py:156:    _index_workspace_impl,
+services/dope-context/tests/test_mcp_server.py:160:    _search_code_impl,
+services/dope-context/tests/test_mcp_server.py:162:    docs_search,
+services/dope-context/tests/test_mcp_server.py:164:    search_code,
+services/dope-context/tests/test_mcp_server.py:190:    pipeline.index_workspace = AsyncMock()
+services/dope-context/tests/test_mcp_server.py:214:async def test_index_workspace_tool(tmp_path):
+services/dope-context/tests/test_mcp_server.py:215:    """Test index_workspace MCP tool."""
+services/dope-context/tests/test_mcp_server.py:228:        mock_pipeline.index_workspace = AsyncMock(return_value=progress)
+services/dope-context/tests/test_mcp_server.py:232:        result = await _index_workspace_impl(
+services/dope-context/tests/test_mcp_server.py:245:async def test_search_code_tool():
+services/dope-context/tests/test_mcp_server.py:246:    """Test search_code MCP tool."""
+services/dope-context/tests/test_mcp_server.py:293:        results = await _search_code_impl(
+services/dope-context/tests/test_mcp_server.py:308:async def test_search_code_without_reranking():
+services/dope-context/tests/test_mcp_server.py:309:    """Test search_code without reranking."""
+services/dope-context/tests/test_mcp_server.py:338:        results = await _search_code_impl(
+services/dope-context/tests/test_mcp_server.py:351:async def test_search_code_with_language_filter():
+services/dope-context/tests/test_mcp_server.py:352:    """Test search_code with language filter."""
+services/dope-context/tests/test_mcp_server.py:380:        await _search_code_impl(
+services/dope-context/tests/test_mcp_server.py:549:async def test_search_code_multi_workspace(tmp_path, monkeypatch):
+services/dope-context/tests/test_mcp_server.py:550:    """search_code should aggregate results across workspace_paths."""
+services/dope-context/tests/test_mcp_server.py:558:    monkeypatch.setattr("src.mcp.server._search_code_impl", mock_impl)
+services/dope-context/tests/test_mcp_server.py:560:    result = await search_code(
+services/dope-context/tests/test_mcp_server.py:599:async def test_docs_search_multi_workspace(tmp_path, monkeypatch):
+services/dope-context/tests/test_mcp_server.py:600:    """docs_search should aggregate results across workspace_paths."""
+services/dope-context/tests/test_mcp_server.py:611:    monkeypatch.setattr("src.mcp.server._docs_search_impl", mock_impl)
+services/dope-context/tests/test_mcp_server.py:613:    result = await docs_search(
+services/dope-context/tests/test_mcp_server.py:659:        "src.mcp.server._search_code_impl",
+services/dope-context/tests/test_mcp_server.py:663:        "src.mcp.server._docs_search_impl",
+services/dope-context/tests/test_mcp_server.py:720:        "src.mcp.server._search_code_impl",
+services/dope-context/tests/test_mcp_server.py:724:        "src.mcp.server._docs_search_impl",
+services/dope-context/tests/test_mcp_server.py:751:async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeypatch):
+services/dope-context/tests/test_mcp_server.py:752:    """_docs_search_impl must embed queries with voyage-context-3 query mode."""
+services/dope-context/tests/test_mcp_server.py:794:    response = await _docs_search_impl(
+services/dope-context/tests/test_mcp_server.py:868:    monkeypatch.setattr("src.mcp.server._index_workspace_impl", index_code)
+services/dope-context/tests/test_mcp_server.py:911:    monkeypatch.setattr("src.mcp.server._index_workspace_impl", index_code)
+services/task-orchestrator/intelligence/task_batcher.py:229:                        batch_tasks = sorted_tasks[:batch_size]
+services/task-orchestrator/intelligence/task_batcher.py:233:                            batch_tasks, domain, tech, f"batch-{self._batch_count + len(batches) + 1}"
+services/task-orchestrator/intelligence/task_batcher.py:264:            batch_tasks = sorted_tasks[:batch_size]
+services/task-orchestrator/intelligence/task_batcher.py:268:            domain = self._get_primary_domain(batch_tasks)
+services/task-orchestrator/intelligence/task_batcher.py:269:            tech = self._get_primary_technology(batch_tasks)
+services/task-orchestrator/intelligence/task_batcher.py:272:                batch_tasks, domain, tech, f"batch-{self._batch_count + len(batches) + 1}"
+services/dope-context/src/attention_aware_search.py:183:        >>> results = await search_code(query, top_k=limit)
+services/dope-context/src/utils/metrics_tracker.py:23:    tool_name: str  # search_code, docs_search, search_all
+services/dope-context/src/utils/metrics_tracker.py:156:            tool_name: search_code, docs_search, or search_all
+services/task-orchestrator/app/services/predictive_risk_assessment.py:146:    async def assess_risk(
+services/task-orchestrator/app/services/predictive_risk_assessment.py:362:                    reassessment = await self.assess_risk(entity_id, profile.entity_type, context)
+services/dope-context/src/enrichment/claude_code_enricher.py:16:results = await mcp__dope-context__search_code(query="auth middleware")
+services/dope-context/src/enrichment/claude_code_enricher.py:52:        search_results: Results from mcp__dope-context__search_code
+services/dope-context/src/enrichment/claude_code_enricher.py:60:        results = await mcp__dope-context__search_code("auth")
+services/dope-context/src/enrichment/claude_code_enricher.py:185:results = await mcp__dope-context__search_code("authentication middleware")
+services/dope-context/README.md:27:### Code Search - `mcp__dope-context__search_code`
+services/dope-context/README.md:41:mcp__dope-context__search_code(
+services/dope-context/README.md:66:### Documentation Search - `mcp__dope-context__docs_search`
+services/dope-context/README.md:79:mcp__dope-context__docs_search(
+services/dope-context/README.md:160:### Code Indexing - `mcp__dope-context__index_workspace`
+services/dope-context/README.md:173:mcp__dope-context__index_workspace(
+services/dope-context/README.md:257:1. Batch bootstrap: `index_workspace` + `index_docs` (one-time per workspace snapshot by default)
+services/dope-context/README.md:511:    "mcp__dope-context__search_code": 0.67,
+services/dope-context/README.md:513:    "mcp__dope-context__docs_search": 0.11
+services/dope-context/src/pipeline/docs_pipeline.py:13:from ..search.docs_search import DocumentSearch
+services/dope-context/src/pipeline/docs_pipeline.py:272:    async def index_workspace(
+services/dope-context/src/pipeline/indexing_pipeline.py:358:    async def index_workspace(
+services/dope-context/src/pipeline/indexing_pipeline.py:619:        final_progress = await pipeline.index_workspace(
+services/dope-context/src/mcp/simple_server.py:25:async def search_code(
+services/dope-context/src/mcp/simple_server.py:59:async def docs_search(query: str, top_k: int = 5) -> Dict[str, Any]:
+services/dope-context/src/mcp/server.py:6:1. index_workspace - Index code files
+services/dope-context/src/mcp/server.py:7:2. search_code - Hybrid search (dense + sparse + rerank)
+services/dope-context/src/mcp/server.py:65:from ..search.docs_search import DocumentSearch
+services/dope-context/src/mcp/server.py:466:_docs_search: Optional[DocumentSearch] = None
+services/dope-context/src/mcp/server.py:714:            code_summary = await _index_workspace_impl(workspace_path=str(workspace))
+services/dope-context/src/mcp/server.py:813:    global _docs_pipeline, _docs_search, _docs_embedder
+services/dope-context/src/mcp/server.py:882:    _docs_search = DocumentSearch(
+services/dope-context/src/mcp/server.py:890:        doc_search=_docs_search,
+services/dope-context/src/mcp/server.py:898:async def _index_workspace_impl(
+services/dope-context/src/mcp/server.py:904:    """Implementation of index_workspace tool."""
+services/dope-context/src/mcp/server.py:956:    progress = await pipeline.index_workspace()
+services/dope-context/src/mcp/server.py:992:async def index_workspace(
+services/dope-context/src/mcp/server.py:1029:        summary = await _index_workspace_impl(
+services/dope-context/src/mcp/server.py:1046:async def _search_code_impl(
+services/dope-context/src/mcp/server.py:1057:    """Implementation of search_code tool (NOW WITH DYNAMIC TOP_K + GRAPH ENRICHMENT!)."""
+services/dope-context/src/mcp/server.py:1068:            tool_name="search_code", query=query, workspace=str(workspace), top_k=top_k
+services/dope-context/src/mcp/server.py:1105:                        "error": f"Collection '{code_collection}' is empty. Run index_workspace first.",
+services/dope-context/src/mcp/server.py:1108:                        "help": f"Run: mcp__dope-context__index_workspace(workspace_path='{workspace}')",
+services/dope-context/src/mcp/server.py:1119:                    "help": f"Run: mcp__dope-context__index_workspace(workspace_path='{workspace}')",
+services/dope-context/src/mcp/server.py:1363:async def search_code(
+services/dope-context/src/mcp/server.py:1424:        workspace_results = await _search_code_impl(
+services/dope-context/src/mcp/server.py:1662:    docs_search = DocumentSearch(
+services/dope-context/src/mcp/server.py:1675:        doc_search=docs_search,
+services/dope-context/src/mcp/server.py:1680:    result = await docs_pipeline.index_workspace(
+services/dope-context/src/mcp/server.py:1723:async def _docs_search_impl(
+services/dope-context/src/mcp/server.py:1732:    """Implementation of docs_search tool."""
+services/dope-context/src/mcp/server.py:1740:        tool_name="docs_search", query=query, workspace=str(workspace), top_k=top_k
+services/dope-context/src/mcp/server.py:1779:    docs_search = _get_cached_document_search(
+services/dope-context/src/mcp/server.py:1812:    results = await docs_search.search_documents(
+services/dope-context/src/mcp/server.py:1876:async def docs_search(
+services/dope-context/src/mcp/server.py:1919:        workspace_results = await _docs_search_impl(
+services/dope-context/src/mcp/server.py:2156:    code_results_task = _search_code_impl(
+services/dope-context/src/mcp/server.py:2163:    docs_results_task = _docs_search_impl(
+services/dope-context/src/mcp/server.py:2369:                await pipeline.index_workspace()
+services/dope-context/src/mcp/server.py:2446:                "message": f"Detected {changes.total_changes()} changes. Run index_workspace manually.",
+services/dope-context/src/mcp/server.py:2458:        "message": f"Detected {changes.total_changes()} changes. Run index_workspace to update or use auto_reindex=True.",
+services/dope-context/src/mcp/server.py:2651:        await _index_workspace_impl(
+services/task-orchestrator/server.py:282:            "analyze_dependencies",
+services/task-orchestrator/server.py:286:            "batch_tasks",
+services/task-orchestrator/server.py:296:        if tool_name == "analyze_dependencies":
+services/task-orchestrator/server.py:326:        if tool_name == "analyze_dependencies" and isinstance(result, dict):
+services/task-orchestrator/server.py:358:        elif tool_name == "batch_tasks" and isinstance(result, dict):
+services/task-orchestrator/server.py:369:            "analyze_dependencies": "🔍 Analyzing task dependencies...",
+services/task-orchestrator/server.py:373:            "batch_tasks": "📦 Creating task batches...",
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md:119:  "handler_symbol": "decompose_task",
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G5_AUTH_FLOW_SURFACE.md:108:  "protected_symbol": "decompose_task",
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G5_AUTH_FLOW_SURFACE.md:123:  "evidence": [{"path": "services/task-orchestrator/app/api/pm_tools.py", "line_range": [45, 46], "excerpt": "async def decompose_task(request: DecomposeRequest, user = Depends(get_current_user)):"}]

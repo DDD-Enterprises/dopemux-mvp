@@ -19,8 +19,8 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 
-from rich.console import Console
 from rich.table import Table
+from dopemux.console import console
 from dopemux.ui.prompts import dopemux_prompt, dopemux_confirm
 from rich import box
 
@@ -53,7 +53,7 @@ class SessionManager:
         """
         self.context_manager = context_manager
         self.workspace_id = workspace_id or os.getcwd()
-        self.console = Console()
+        self.console = console
         self.session_index = {}
         self.conport_available = self._check_conport_availability()
 

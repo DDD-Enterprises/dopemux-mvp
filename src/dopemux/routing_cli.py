@@ -7,6 +7,7 @@ from pathlib import Path
 
 import yaml
 
+from dopemux.console import console
 from dopemux.launchd_services import LaunchdServiceManager
 from dopemux.routing_config import RoutingConfig, RoutingConfigError
 from dopemux.freeflow import (
@@ -47,17 +48,17 @@ def freeflow_doctor(offline: bool, json_output: bool):
             click.echo(json.dumps(report, indent=2, sort_keys=True))
             return
 
-        click.echo("Freeflow Strict-Free Router Doctor")
-        click.echo("=" * 50)
-        click.echo(f"Enabled: {report['enabled']}")
-        click.echo(f"Mode: {report['mode']}")
-        click.echo(f"Ledger: {report['ledger_path']}")
+        console.print("Freeflow Strict-Free Router Doctor")
+        console.print("=" * 50)
+        console.print(f"Enabled: {report['enabled']}", markup=False)
+        console.print(f"Mode: {report['mode']}", markup=False)
+        console.print(f"Ledger: {report['ledger_path']}", markup=False)
         for key, value in report["summary"].items():
-            click.echo(f"{key}: {value}")
+            console.print(f"{key}: {value}", markup=False)
         if report["issues"]:
-            click.echo("\nIssues:")
+            console.print("\nIssues:")
             for issue in report["issues"]:
-                click.echo(f"  - {issue}")
+                console.print(f"  - {issue}", markup=False)
     except RoutingConfigError as e:
         click.echo(f"Error: {e}", err=True)
         raise SystemExit(2)
@@ -72,10 +73,10 @@ def freeflow_quota(json_output: bool):
     if json_output:
         click.echo(json.dumps(report, indent=2, sort_keys=True))
         return
-    click.echo(f"Ledger: {report['ledger_path']}")
-    click.echo(f"Generated: {report['generated_at']}")
-    click.echo(f"Buckets: {len(report['buckets'])}")
-    click.echo(f"Cooldowns: {len(report['cooldowns'])}")
+    console.print(f"Ledger: {report['ledger_path']}", markup=False)
+    console.print(f"Generated: {report['generated_at']}", markup=False)
+    console.print(f"Buckets: {len(report['buckets'])}")
+    console.print(f"Cooldowns: {len(report['cooldowns'])}")
 
 
 @freeflow.command("routes")
@@ -96,7 +97,7 @@ def freeflow_routes(json_output: bool):
             else:
                 reason = route["blocked_reason"] or route["paid_cap_blocked_reason"]
                 status = f"blocked:{reason}"
-            click.echo(f"{route['name']} -> {route['effective_provider']} ({status})")
+            console.print(f"{route['name']} -> {route['effective_provider']} ({status})", markup=False)
     except RoutingConfigError as e:
         click.echo(f"Error: {e}", err=True)
         raise SystemExit(2)
@@ -114,18 +115,18 @@ def install(force: bool):
             status = manager.get_service_status()
             if (status.get("litellm", {}).get("status") == "running" or 
                 status.get("ccr", {}).get("status") == "running"):
-                click.echo("⚠️  Services appear to be already installed. Use --force to reinstall.")
+                console.print("⚠️  Services appear to be already installed. Use --force to reinstall.")
                 return
 
-        click.echo("🛠️  Installing Dopemux launchd services...")
+        console.print("🛠️  Installing Dopemux launchd services...")
         manager.install_services()
-        click.echo("✅ Services installed successfully!")
+        console.print("✅ Services installed successfully!")
 
         # Show status
         status = manager.get_service_status()
-        click.echo("\n📊 Service Status:")
+        console.print("\n📊 Service Status:")
         for service, info in status.items():
-            click.echo(f"  {service}: {info['status']}")
+            console.print(f"  {service}: {info['status']}", markup=False)
 
     except Exception as e:
         logger.error(f"Failed to install services: {e}")
@@ -138,9 +139,9 @@ def start():
     """Start all launchd services."""
     try:
         manager = LaunchdServiceManager.get_instance()
-        click.echo("🚀 Starting Dopemux launchd services...")
+        console.print("🚀 Starting Dopemux launchd services...")
         manager.start_services()
-        click.echo("✅ Services started!")
+        console.print("✅ Services started!")
     except Exception as e:
         logger.error(f"Failed to start services: {e}")
         click.echo(f"❌ Error: {e}", err=True)
@@ -152,9 +153,9 @@ def stop():
     """Stop all launchd services."""
     try:
         manager = LaunchdServiceManager.get_instance()
-        click.echo("⏹️  Stopping Dopemux launchd services...")
+        console.print("⏹️  Stopping Dopemux launchd services...")
         manager.stop_services()
-        click.echo("✅ Services stopped!")
+        console.print("✅ Services stopped!")
     except Exception as e:
         logger.error(f"Failed to stop services: {e}")
         click.echo(f"❌ Error: {e}", err=True)
@@ -166,9 +167,9 @@ def reload():
     """Reload all launchd services."""
     try:
         manager = LaunchdServiceManager.get_instance()
-        click.echo("🔄 Reloading Dopemux launchd services...")
+        console.print("🔄 Reloading Dopemux launchd services...")
         manager.reload_services()
-        click.echo("✅ Services reloaded!")
+        console.print("✅ Services reloaded!")
     except Exception as e:
         logger.error(f"Failed to reload services: {e}")
         click.echo(f"❌ Error: {e}", err=True)
@@ -184,22 +185,22 @@ def api(restart: bool):
         config = manager.routing_config.load()
 
         if config.get("mode") == "api":
-            click.echo("ℹ️  Already in API mode")
+            console.print("ℹ️  Already in API mode")
             return
 
         _set_routing_mode(manager.routing_config.config_path, "api")
-        click.echo("✅ Switched to API mode (external models via LiteLLM)")
+        console.print("✅ Switched to API mode (external models via LiteLLM)")
 
         _set_claude_base_url("http://127.0.0.1:4010")
-        click.echo("✅ Updated Claude Code baseUrl → http://127.0.0.1:4010")
+        console.print("✅ Updated Claude Code baseUrl → http://127.0.0.1:4010")
 
         if restart:
-            click.echo("🔄 Restarting services...")
+            console.print("🔄 Restarting services...")
             manager.routing_config._loaded = False
             manager.routing_config.load()
             manager._regenerate_configs()
             manager.reload_services()
-            click.echo("✅ Services restarted!")
+            console.print("✅ Services restarted!")
 
     except Exception as e:
         logger.error(f"Failed to switch to API mode: {e}")
@@ -215,14 +216,14 @@ def direct():
         config = manager.routing_config.load()
 
         if config.get("mode") == "subscription":
-            click.echo("ℹ️  Already in subscription (direct) mode")
+            console.print("ℹ️  Already in subscription (direct) mode")
             return
 
         _set_routing_mode(manager.routing_config.config_path, "subscription")
-        click.echo("✅ Switched to subscription mode (direct to Anthropic)")
+        console.print("✅ Switched to subscription mode (direct to Anthropic)")
 
         _set_claude_base_url("https://api.anthropic.com")
-        click.echo("✅ Updated Claude Code baseUrl → https://api.anthropic.com")
+        console.print("✅ Updated Claude Code baseUrl → https://api.anthropic.com")
 
     except Exception as e:
         logger.error(f"Failed to switch to direct mode: {e}")
@@ -235,9 +236,9 @@ def uninstall():
     """Uninstall all launchd services."""
     try:
         manager = LaunchdServiceManager.get_instance()
-        click.echo("🗑️  Uninstalling Dopemux launchd services...")
+        console.print("🗑️  Uninstalling Dopemux launchd services...")
         manager.uninstall_services()
-        click.echo("✅ Services uninstalled!")
+        console.print("✅ Services uninstalled!")
     except Exception as e:
         logger.error(f"Failed to uninstall services: {e}")
         click.echo(f"❌ Error: {e}", err=True)
@@ -251,35 +252,35 @@ def status():
         manager = LaunchdServiceManager.get_instance()
         status = manager.get_service_status()
 
-        click.echo("📊 Dopemux Launchd Service Status:")
-        click.echo("=" * 50)
+        console.print("📊 Dopemux Launchd Service Status:")
+        console.print("=" * 50)
 
         for service_name, service_info in status.items():
-            click.echo(f"\n{service_name.upper()}:")
-            click.echo(f"  Status: {service_info['status']}")
+            console.print(f"\n{service_name.upper()}:", markup=False)
+            console.print(f"  Status: {service_info['status']}", markup=False)
             if service_info.get('details'):
-                click.echo(f"  Details: {service_info['details'][:100]}...")
+                console.print(f"  Details: {service_info['details'][:100]}...", markup=False)
 
         # Check health if services are running
         health = manager.check_health()
 
         # Check for config errors first
         if "config" in health:
-            click.echo("\n🏥 Service Health:")
-            click.echo("-" * 50)
-            click.echo(f"❌ config: {health['config']['status']}")
-            click.echo(f"   Error: {health['config']['error']}")
+            console.print("\n🏥 Service Health:")
+            console.print("-" * 50)
+            console.print(f"❌ config: {health['config']['status']}", markup=False)
+            console.print(f"   Error: {health['config']['error']}", markup=False)
             return
 
-        click.echo("\n🏥 Service Health:")
-        click.echo("-" * 50)
+        console.print("\n🏥 Service Health:")
+        console.print("-" * 50)
 
         for service_name, health_info in health.items():
             status_emoji = "✅" if health_info['status'] == 'healthy' else "❌"
             port_info = f" (127.0.0.1:{health_info.get('port', 'unknown')})" if health_info.get('port') else ""
-            click.echo(f"{status_emoji} {service_name}: {health_info['status']}{port_info}")
+            console.print(f"{status_emoji} {service_name}: {health_info['status']}{port_info}", markup=False)
             if health_info.get('error'):
-                click.echo(f"   Error: {health_info['error']}")
+                console.print(f"   Error: {health_info['error']}", markup=False)
 
     except Exception as e:
         logger.error(f"Failed to get service status: {e}")
@@ -303,7 +304,7 @@ def health():
         try:
             mode = manager.routing_config.config.get('mode', 'subscription')
             if mode == 'subscription':
-                click.echo("ℹ️  Routing mode is 'subscription' - service health checks not applicable")
+                console.print("ℹ️  Routing mode is 'subscription' - service health checks not applicable")
                 raise SystemExit(0)
         except Exception:
             # If we can't determine mode, assume we need to check services
@@ -319,7 +320,7 @@ def health():
         if unhealthy_services:
             raise SystemExit(1)
         else:
-            click.echo("✅ All services healthy")
+            console.print("✅ All services healthy")
             raise SystemExit(0)
 
     except Exception as e:
@@ -335,21 +336,21 @@ def config():
         manager = LaunchdServiceManager.get_instance()
         config = manager.routing_config.load()
 
-        click.echo("📋 Dopemux Routing Configuration:")
-        click.echo("=" * 50)
-        click.echo(f"Mode: {config.get('mode', 'N/A')}")
-        click.echo(f"LiteLLM Port: {config.get('ports', {}).get('litellm', 'N/A')}")
-        click.echo(f"CCR Port: {config.get('ports', {}).get('ccr', 'N/A')}")
+        console.print("📋 Dopemux Routing Configuration:")
+        console.print("=" * 50)
+        console.print(f"Mode: {config.get('mode', 'N/A')}", markup=False)
+        console.print(f"LiteLLM Port: {config.get('ports', {}).get('litellm', 'N/A')}", markup=False)
+        console.print(f"CCR Port: {config.get('ports', {}).get('ccr', 'N/A')}", markup=False)
 
         providers = config.get('providers', [])
-        click.echo(f"\nProviders ({len(providers)}):")
+        console.print(f"\nProviders ({len(providers)}):")
         for provider in providers:
-            click.echo(f"  - {provider['name']} ({provider.get('label', 'N/A')})")
+            console.print(f"  - {provider['name']} ({provider.get('label', 'N/A')})", markup=False)
 
         models = config.get('models', [])
-        click.echo(f"\nModels ({len(models)}):")
+        console.print(f"\nModels ({len(models)}):")
         for model in models:
-            click.echo(f"  - {model['name']} (via {model['provider']})")
+            console.print(f"  - {model['name']} (via {model['provider']})", markup=False)
 
     except Exception as e:
         logger.error(f"Failed to load routing config: {e}")
@@ -364,35 +365,35 @@ def doctor():
         manager = LaunchdServiceManager.get_instance()
         audit = manager.routing_config.audit_alias_contract()
 
-        click.echo("🩺 Routing Alias Contract Doctor")
-        click.echo("=" * 50)
-        click.echo(f"Config:   {audit['config_path']}")
-        click.echo(f"Template: {audit['template_path']}")
+        console.print("🩺 Routing Alias Contract Doctor")
+        console.print("=" * 50)
+        console.print(f"Config:   {audit['config_path']}", markup=False)
+        console.print(f"Template: {audit['template_path']}", markup=False)
 
         if not audit["stale"]:
-            click.echo("\n✅ Alias contract matches the repo-owned template.")
+            console.print("\n✅ Alias contract matches the repo-owned template.")
             return
 
-        click.echo("\n❌ Stale routing alias contract detected.")
+        console.print("\n❌ Stale routing alias contract detected.")
 
         missing = audit["missing_aliases"]
         if missing:
-            click.echo("\nMissing aliases:")
+            console.print("\nMissing aliases:")
             for alias, target in missing.items():
-                click.echo(f"  - {alias}: expected {target}")
+                console.print(f"  - {alias}: expected {target}", markup=False)
 
         mismatched = audit["mismatched_aliases"]
         if mismatched:
-            click.echo("\nMismatched aliases:")
+            console.print("\nMismatched aliases:")
             for alias, values in mismatched.items():
-                click.echo(
-                    f"  - {alias}: expected {values['expected']}, found {values['actual']}"
+                console.print(
+                    f"  - {alias}: expected {values['expected']}, found {values['actual']}", markup=False
                 )
 
-        click.echo("\nNext steps:")
-        click.echo("  • Preview repair: dopemux routing repair-aliases")
-        click.echo("  • Apply repair: dopemux routing repair-aliases --apply")
-        click.echo("  • Inspect config: dopemux routing config")
+        console.print("\nNext steps:")
+        console.print("  • Preview repair: dopemux routing repair-aliases")
+        console.print("  • Apply repair: dopemux routing repair-aliases --apply")
+        console.print("  • Inspect config: dopemux routing config")
         raise SystemExit(1)
     except RoutingConfigError as e:
         click.echo(f"❌ Error: {e}", err=True)
@@ -415,30 +416,30 @@ def repair_aliases(apply: bool):
         manager = LaunchdServiceManager.get_instance()
         audit = manager.routing_config.audit_alias_contract()
 
-        click.echo("🔧 Routing Alias Contract Repair")
-        click.echo("=" * 50)
+        console.print("🔧 Routing Alias Contract Repair")
+        console.print("=" * 50)
 
         if not audit["stale"]:
-            click.echo("✅ No alias repair needed.")
+            console.print("✅ No alias repair needed.")
             return
 
-        click.echo("Planned alias updates:")
+        console.print("Planned alias updates:")
         for alias, target in audit["missing_aliases"].items():
-            click.echo(f"  - add {alias}: {target}")
+            console.print(f"  - add {alias}: {target}", markup=False)
         for alias, values in audit["mismatched_aliases"].items():
-            click.echo(
-                f"  - set {alias}: {values['actual']} -> {values['expected']}"
+            console.print(
+                f"  - set {alias}: {values['actual']} -> {values['expected']}", markup=False
             )
 
         if not apply:
-            click.echo("\nDry run only. No files changed.")
-            click.echo("Run `dopemux routing repair-aliases --apply` to write the repair.")
+            console.print("\nDry run only. No files changed.")
+            console.print("Run `dopemux routing repair-aliases --apply` to write the repair.")
             return
 
         result = manager.routing_config.repair_alias_contract()
-        click.echo("\n✅ Alias contract repaired.")
-        click.echo(f"Backup: {result['backup_path']}")
-        click.echo(f"Updated: {manager.routing_config.config_path}")
+        console.print("\n✅ Alias contract repaired.")
+        console.print(f"Backup: {result['backup_path']}", markup=False)
+        console.print(f"Updated: {manager.routing_config.config_path}", markup=False)
     except RoutingConfigError as e:
         click.echo(f"❌ Error: {e}", err=True)
         raise SystemExit(2)
@@ -455,11 +456,11 @@ def docker():
         manager = LaunchdServiceManager.get_instance()
         snippets = manager.generate_docker_compose_snippets()
 
-        click.echo("🐳 Docker Compose Snippets:")
-        click.echo("=" * 50)
-        click.echo("\nLiteLLM Service:")
+        console.print("🐳 Docker Compose Snippets:")
+        console.print("=" * 50)
+        console.print("\nLiteLLM Service:")
         click.echo(snippets['litellm'])
-        click.echo("\nCCR Service:")
+        console.print("\nCCR Service:")
         click.echo(snippets['ccr'])
 
     except Exception as e:
@@ -473,15 +474,15 @@ def sync_keys():
     """Sync API keys from current environment to routing.env."""
     try:
         manager = LaunchdServiceManager.get_instance()
-        click.echo("🔑 Syncing API keys from environment...")
+        console.print("🔑 Syncing API keys from environment...")
         manager.sync_keys_from_environment()
-        click.echo("✅ API keys synced successfully!")
+        console.print("✅ API keys synced successfully!")
 
         # Show what was synced
         env_path = manager.DOPEMUX_DIR / "routing.env"
         if env_path.exists():
-            click.echo("\n📋 Synced keys in:")
-            click.echo(f"   {env_path}")
+            console.print("\n📋 Synced keys in:")
+            console.print(f"   {env_path}", markup=False)
 
     except Exception as e:
         logger.error(f"Failed to sync keys: {e}")
@@ -496,7 +497,7 @@ def repair(max_passes: int, allow_sync_keys: bool):
     """Attempt to repair routing services."""
     try:
         manager = LaunchdServiceManager.get_instance()
-        click.echo("🔧 Attempting to repair routing services...")
+        console.print("🔧 Attempting to repair routing services...")
 
         # Run repair
         repair_result = manager.repair(
@@ -506,36 +507,36 @@ def repair(max_passes: int, allow_sync_keys: bool):
 
         # Show results
         if repair_result.get("healthy", False):
-            click.echo("✅ Routing services repaired successfully!")
+            console.print("✅ Routing services repaired successfully!")
 
             # Show final health
             health = repair_result["health"]
-            click.echo("\n🏥 Final Health Status:")
+            console.print("\n🏥 Final Health Status:")
             for service, info in health.items():
                 if service == "mode":
                     continue
                 status_emoji = "✅" if info.get("status") == "healthy" else "❌"
-                click.echo(f"  {status_emoji} {service}: {info.get('status')}")
+                console.print(f"  {status_emoji} {service}: {info.get('status')}", markup=False)
         else:
-            click.echo("❌ Failed to repair routing services")
+            console.print("❌ Failed to repair routing services")
 
             # Show repair attempts
-            click.echo("\n📋 Repair Attempts:")
+            console.print("\n📋 Repair Attempts:")
             for attempt in repair_result.get("attempts", []):
                 status = "✅" if attempt.get("result", {}).get("ok") else "❌"
-                click.echo(f"  {status} Pass {attempt['pass']}: {attempt['action']}")
+                console.print(f"  {status} Pass {attempt['pass']}: {attempt['action']}", markup=False)
 
             # Show diagnostics
-            click.echo("\n🔍 Diagnostics:")
+            console.print("\n🔍 Diagnostics:")
             log_paths = manager._get_log_paths()
-            click.echo(f"  LiteLLM launchd log: {log_paths['litellm_launchd']}")
-            click.echo(f"  CCR launchd log: {log_paths['ccr_launchd']}")
-            click.echo(f"  Latest LiteLLM log: {log_paths['litellm_latest']}")
+            console.print(f"  LiteLLM launchd log: {log_paths['litellm_launchd']}", markup=False)
+            console.print(f"  CCR launchd log: {log_paths['ccr_launchd']}", markup=False)
+            console.print(f"  Latest LiteLLM log: {log_paths['litellm_latest']}", markup=False)
 
-            click.echo("\n💡 Next steps:")
-            click.echo("  • Check logs with: tail -f ~/.dopemux/logs/litellm_launchd.log")
-            click.echo("  • Run health check: dopemux routing health")
-            click.echo("  • Check service status: dopemux routing status")
+            console.print("\n💡 Next steps:")
+            console.print("  • Check logs with: tail -f ~/.dopemux/logs/litellm_launchd.log")
+            console.print("  • Run health check: dopemux routing health")
+            console.print("  • Check service status: dopemux routing status")
 
             raise SystemExit(1)
 

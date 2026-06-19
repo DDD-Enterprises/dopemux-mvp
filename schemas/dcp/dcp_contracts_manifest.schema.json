@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/DDD-Enterprises/dopemux-mvp/schemas/dcp/dcp_contracts_manifest.schema.json",
+  "title": "DcpContractsManifest",
+  "description": "Registry manifest for all DCP contract schemas — tracks promotion level, validation state, CI gates, and enforcement side for each contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest_version", "contracts"],
+  "properties": {
+    "manifest_version": {
+      "type": "string",
+      "description": "Semver version of this manifest file format."
+    },
+    "contracts": {
+      "type": "array",
+      "description": "One entry per .schema.json file in schemas/dcp/ (excluding this manifest schema itself).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contract_id",
+          "schema_file",
+          "schema_version",
+          "contract_version",
+          "validation_state",
+          "level",
+          "instance_files",
+          "runtime_producers",
+          "runtime_consumers",
+          "ci_gates",
+          "enforcement_side"
+        ],
+        "properties": {
+          "contract_id": {
+            "type": "string",
+            "description": "Canonical contract identifier, e.g. DCP_RED_LANE_TAXONOMY."
+          },
+          "schema_file": {
+            "type": "string",
+            "description": "Path relative to repo root of the .schema.json file."
+          },
+          "schema_version": {
+            "type": "string",
+            "description": "Value of the schema's own schema_version const (e.g. dcp-red-lane-taxonomy.v0). Use UNKNOWN if the schema has no const."
+          },
+          "contract_version": {
+            "type": "string",
+            "description": "Operational semver version of this contract entry.",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "validation_state": {
+            "type": "string",
+            "description": "Current promotion/validation state of this contract.",
+            "enum": [
+              "DESIGN_ONLY",
+              "REPO_CROSS_CHECKED",
+              "REPO_VALIDATED",
+              "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+              "LOCKED"
+            ]
+          },
+          "level": {
+            "type": "string",
+            "description": "L0–L3 promotion ladder level. L0=DRAFT, L1=RECONCILED, L2=WIRED, L3=LOCKED.",
+            "enum": ["L0", "L1", "L2", "L3"]
+          },
+          "instance_files": {
+            "type": "array",
+            "description": "Fixture/instance files in the repo that instantiate this schema.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "runtime_producers": {
+            "type": "array",
+            "description": "Source files that produce instances of this contract at runtime. Empty array when none known on this branch.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "runtime_consumers": {
+            "type": "array",
+            "description": "Source files that consume/validate instances of this contract at runtime. Empty array when none known on this branch.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ci_gates": {
+            "type": "array",
+            "description": "CI job or step names (from .github/workflows/) that exercise this contract. Only names that actually exist in CI. Empty if no real gate exists.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enforcement_side": {
+            "type": "string",
+            "description": "Which enforcement surface owns this contract: deterministic (hard-block capable), llm_advisory (never blocks), or human (approval gate).",
+            "enum": ["deterministic", "llm_advisory", "human"]
+          }
+        }
+      }
+    }
+  }
+}

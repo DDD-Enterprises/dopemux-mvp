@@ -1,0 +1,41 @@
+{
+  "artifact_kind": "dcp_sanctioned_change_approval_v0",
+  "note": "Hand-authored sanctioned-change artifact per design B.6 (the dcp_approval_artifact producer 'dcp accept' ships in TP-110). This touches contract-surface paths under schemas/dcp/ (the PROOF-CONTRACT-SCHEMA-MUTATION hard_block lane), so a sanctioning artifact is required. v1 trust model: identities are ASSERTED, not authenticated; the real approval boundary is operator repo write-access + human PR merge.",
+  "tp_id": "DMX-DCP-TOOLING-101",
+  "decision": "gated",
+  "scope_paths": [
+    "schemas/dcp/manifest.json",
+    "schemas/dcp/dcp_contracts_manifest.schema.json",
+    "schemas/dcp/README.md"
+  ],
+  "head_sha": "0b15d09e9349e9afced63d04856656fd8997f95f",
+  "requester": {
+    "id": "claude-sonnet-implementer",
+    "role": "implementer"
+  },
+  "approver": {
+    "id": "claude-opus-auditor",
+    "role": "auditor",
+    "recommendation": "ALLOW"
+  },
+  "requester_neq_approver": true,
+  "supervisor_signoff": {
+    "required": true,
+    "provided": false,
+    "signoff_identity": null,
+    "notes": "Supervisor (human) sign-off NOT provided. This artifact records the implementer→auditor separation and the auditor's ALLOW recommendation only. Final authority = operator merge of the TP-101 PR. No agent has approved a merge."
+  },
+  "red_lanes_present": [
+    "DCP-RED-PROOF-CONTRACT-SCHEMA-MUTATION (new manifest + README under schemas/dcp/)"
+  ],
+  "forbidden_paths_acknowledged": [
+    "merge seam (untouched)",
+    "CODEOWNERS (untouched — OP-0 is an operator action)",
+    ".github/workflows/** (untouched — existing pytest tests/dcp/ gate runs the new test)"
+  ],
+  "expiry_window": {
+    "bound_to_head_sha": "0b15d09e9349e9afced63d04856656fd8997f95f",
+    "invalidated_if": "the approved diff changes (any new commit altering scope_paths invalidates this approval)"
+  },
+  "rationale": "Additive contract registry (manifest) + ADR + consistency test + additive README. No runtime behavior change, no enforcement weakening. Auditor (opus) independently verified scope, tests, and honesty; distinct from implementer (sonnet). Recommended for operator merge after human review."
+}

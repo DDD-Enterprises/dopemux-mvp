@@ -4,3 +4,10 @@
 *.otf
 *.woff
 *.woff2
+
+# Local build outputs from build-dopemux-fonts.sh / patch-nerd-font.sh.
+/out/
+/nerd-font/
+/.dopemux-build-stage/
+/.dopemux-nerd-font-patch/
+.dopemux-built-fonts.txt*

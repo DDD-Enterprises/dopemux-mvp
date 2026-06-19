@@ -1,0 +1,86 @@
+{
+  "schema_version": "dcp-red-lane-taxonomy.v0",
+  "provenance": {
+    "tag": "REPO_VALIDATED",
+    "source_ref": "TP-DCP-0001 fixture plus PR #885 TP-101 manifest reconciliation"
+  },
+  "validation": {
+    "state": "REPO_CROSS_CHECKED",
+    "notes": "Repo-local seed instance for deterministic scanner metadata. It does not grant write authority."
+  },
+  "taxonomy_id": "dcp-red-lane-taxonomy-v0-seed",
+  "lanes": [
+    {
+      "id": "DCP-RED-MERGE-SEAM-0001",
+      "description": "DCP must never import, call, wrap, or wire the PR merge specialist queue drain execute seam or batch merge script.",
+      "gate": "hard_block",
+      "provenance_tag": "REPO_VALIDATED_BY_AUDIT",
+      "paths_forbidden": [
+        "src/dopemux_pr_merge_specialist/queue_drain.py",
+        "dopemux_pr_merge_specialist/queue_drain.py",
+        "scripts/batch_resolve_and_merge.py"
+      ],
+      "notes": "Universal hard block preserved from the TP-DCP-0001 taxonomy."
+    },
+    {
+      "id": "DCP-RED-BRANCH-PROTECTION-MUTATION",
+      "description": "Branch-protection mutation is forbidden.",
+      "gate": "hard_block",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "id": "DCP-RED-CODEOWNERS-MUTATION",
+      "description": "CODEOWNERS mutation is forbidden.",
+      "gate": "hard_block",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "id": "DCP-RED-WORKFLOW-PERMISSION-ESCALATION",
+      "description": "Workflow permission escalation is forbidden.",
+      "gate": "hard_block",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "id": "DCP-RED-SECRETS-IN-ARGV-CACHE-LOGS",
+      "description": "Secrets in argv, cache, or logs are forbidden.",
+      "gate": "hard_block",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "id": "DCP-RED-SELF-CERTIFYING-LOOP",
+      "description": "Self-certifying loops are forbidden; auditor and implementer must be distinct.",
+      "gate": "hard_block",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "id": "DCP-RED-PULL-REQUEST-TARGET-UNTRUSTED-CHECKOUT",
+      "description": "pull_request_target combined with untrusted checkout is forbidden.",
+      "gate": "hard_block",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "id": "DCP-RED-PROOF-CONTRACT-SCHEMA-MUTATION",
+      "description": "Proof contract/schema mutation is forbidden outside a sanctioned task packet with auditor approval.",
+      "gate": "hard_block",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "id": "DCP-RED-AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR",
+      "description": "Agent-approved merge without supervisor sign-off is forbidden.",
+      "gate": "hard_block",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "id": "DCP-RED-IDENTITY-CONTACT-MERGE-DESTRUCTIVE-EXTERNAL-WRITE",
+      "description": "Identity/contact merge or destructive external write requires explicit project gate approval.",
+      "gate": "project_gate",
+      "provenance_tag": "REPO_VALIDATED"
+    },
+    {
+      "id": "DCP-RED-AI-AGENT-AUTHORITY-COLLAPSE",
+      "description": "AI agent authority collapse is a hard block unless role separation is proven.",
+      "gate": "hard_block",
+      "provenance_tag": "REPO_VALIDATED"
+    }
+  ]
+}

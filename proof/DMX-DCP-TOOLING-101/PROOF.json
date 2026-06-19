@@ -1,0 +1,61 @@
+{
+  "tp_id": "DMX-DCP-TOOLING-101",
+  "tp_path": "task-packets/generated/DMX-DCP-TOOLING-101.json",
+  "series_id": "DMX-DCP-TOOLING",
+  "branch": "claude/dmx-dcp-tooling-101",
+  "base_branch": "main",
+  "base_sha": "cd6243721",
+  "head_sha": "0b15d09e9349e9afced63d04856656fd8997f95f",
+  "worktree_path": ".claude/worktrees/dcp-tooling-101",
+  "repo_identity": "DDD-Enterprises/dopemux-mvp",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "implementer_identity": "claude-sonnet-implementer",
+  "auditor_identity": "claude-opus-auditor",
+  "files_changed": [
+    "schemas/dcp/dcp_contracts_manifest.schema.json",
+    "schemas/dcp/manifest.json",
+    "schemas/dcp/README.md",
+    "docs/90-adr/adr-222-deterministic-vs-llm-boundary.md",
+    "tests/dcp/test_contracts_consistency.py"
+  ],
+  "validations": [
+    {"command": "pytest tests/dcp/test_contracts_consistency.py", "exit_code": 0, "bucket": "PASS", "detail": "11 passed (incl. 4 negative-path unit tests); re-run independently by auditor"},
+    {"command": "jsonschema -i schemas/dcp/manifest.json schemas/dcp/dcp_contracts_manifest.schema.json", "exit_code": 0, "bucket": "PASS"},
+    {"command": "manifest-enumeration: 19 schema files == 19 manifest entries", "exit_code": 0, "bucket": "PASS"},
+    {"command": "git diff scope ⊆ allowlist (no CODEOWNERS/.github/src)", "exit_code": 0, "bucket": "PASS"},
+    {"command": "full tests/dcp/ suite", "exit_code": null, "bucket": "NOT_RUN", "detail": "Only the new consistency test was run in isolation; full suite + CI deferred to PR CI."}
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "Independent audit: re-ran the consistency test, re-validated the manifest against its schema, verified diff scope ⊆ allowlist, checked core-contract levels/enforcement_side honesty, confirmed ADR required content + verbatim lines, confirmed README append is additive.",
+    "exit_code": 0,
+    "report_path": "proof/DMX-DCP-TOOLING-101/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "TP101-A1", "severity": "LOW", "title": "Per-contract CI-gate precision", "status": "ACCEPTED_RISK", "body": "Every contract entry lists the single DCP pytest gate as its ci_gate. The gate name is real and runs tests/dcp/, but is not a per-schema assertion. Refine to per-contract gate mapping after enforcement coupling (TP-103/104) lands."},
+      {"id": "TP101-A2", "severity": "INFO", "title": "Unused contract_id parameter in test helpers", "status": "ACCEPTED_RISK", "body": "validate_ci_gates/validate_l2_l3_runtime accept contract_id but do not use it (documents intent; Pyright flags it). Cosmetic."}
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Full tests/dcp/ suite and CI not run locally — relies on PR CI (the existing 'pytest tests/dcp/' DCP gate auto-runs the new test).",
+      "Per-contract ci_gate precision deferred."
+    ],
+    "skip_reason": null
+  },
+  "approval_ref": "proof/DMX-DCP-TOOLING-101/APPROVAL.json",
+  "codereview_status": "PASS_WITH_RISKS (auditor=opus, distinct from implementer=sonnet)",
+  "precommit_status": "PENDING_PR_CI",
+  "commit_sha": "0b15d09e9349e9afced63d04856656fd8997f95f",
+  "pr_url_or_blocker": "PENDING — PR opened after proof bundle commit",
+  "residual_risks": [
+    "Supervisor (human) sign-off not provided — final approval = operator merge of the TP-101 PR (v1 trust model, design B.6).",
+    "OP-0 CODEOWNERS for schemas/dcp/ not yet in place; recommended before this contract-surface change merges."
+  ],
+  "unknowns": [
+    "Whether ci_gates per-contract precision is desired now or deferred (auditor deferred it)."
+  ],
+  "cleanup_status": "worktree .claude/worktrees/dcp-tooling-101 retained until PR merges; remove with git worktree remove after merge."
+}
