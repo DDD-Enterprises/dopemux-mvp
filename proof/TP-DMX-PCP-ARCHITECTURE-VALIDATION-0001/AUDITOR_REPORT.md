@@ -71,3 +71,44 @@ The supplied text is the **post-amendment** working tree (`asserted_result`, cor
 
 # Final Recommendation
 Do **not** auto-accept HEAD `61d88aa35`. Route to Supervisor. The architecture/contract substance is sound; gate acceptance on Required Corrections 1–3 (BLOCKING/HIGH/MEDIUM), then accept-with-corrections. The next implementation packet should build the generic fixture-based exporter — and only then a dNh artifact-only exporter — after the corrections land.
+
+---
+
+# External Adversarial Audit Addendum
+
+**Auditor:** Claude Opus 4.8 (interactive Claude Code session) — a second, independent adversarial pass over the committed audit-of-record at HEAD `6f151ca9f`.
+**Verdict:** CONFIRMS `NEEDS_SUPERVISOR`. The audit-of-record holds up under adversarial scrutiny and is not upgraded.
+**Independence:** This pass modified only this audit report. It changed no audited content (schemas, fixtures, `E2E_DRY_RUN_RESULT.json`, `architecture_verdict`, SHAs, validation commands) and self-resolved nothing. The findings below are recorded OPEN for the implementer/Supervisor; they are not yet reflected in `PROOF.json#embedded_audit`.
+
+## Reproduced and confirmed (read-only, against `6f151ca9f`)
+
+- Schema meta-validation (11), fixture conformance (9), E2E instance conformance (8), embedded_audit schema: all pass (`meta=0 fixtures=0 e2e=0`, validator `1/1`).
+- `AUDIT-L2` DOPMUX→DOPEMUX consistent (enum + fixture); `AUDIT-M2` verdict alignment (`NEEDS_SUPERVISOR` across E2E + embedded_audit); `AUDIT-M1` allowlist includes `AUDITOR_REPORT.md`.
+- `AUDIT-B1` replay drift resolved: committed `PROOF.json` captured outputs leak no stale `observed_result` and no stale `61d88aa35`.
+- The audit-of-record is a genuine independent adversarial audit (it caught the prior auditor/implementer conflation as H1 and the `DOPMUX` typo as L2, and edited nothing).
+
+## Added findings (under-reported or unaddressed by the prior pass)
+
+### AAA-A — Declared PAL chain was never externally run [MEDIUM, OPEN]
+
+`pal_chain_evidence` records analyze/thinkdeep/challenge/planner/implement as "performed in-session by Codex; no separate PAL MCP transcript artifact exists," and codereview/precommit as `NOT_RUN`. The packet declares `pal_chain.enabled:true` with the 9-step risky/architecture chain (AGENTS.md §5 mandates exactly this for architecture-sensitive work, which this packet is). The declared chain therefore has zero external-model verification. The prior `AUDIT-M4` framed this narrowly as "codereview/precommit artifacts missing," understating that the whole chain lacked external evidence.
+
+### AAA-B — Verdict-scope fix is prose-only; the structured field still reads CONFIRMED [LOW, OPEN]
+
+`AUDIT-M3` is marked RESOLVED ("scoped ... in docs and proof"), but the machine-readable `architecture_verdict` field still literally reads `ARCHITECTURE_CONFIRMED_WITH_CORRECTIONS` in both `reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json` and `proof/.../PROOF.json`. Only the human prose was scoped. Low impact (the field has no schema/code consumer), but the multi-model consensus this session (below) asked for the overclaim to be neutralized everywhere it appears.
+
+### AAA-C — after_sha points at a dangling orphan commit [LOW, OPEN]
+
+`after_sha = fe4f36e5...` is a real but unreachable orphan (the pre-amend commit, superseded by HEAD `6f151ca9f`); it disappears on `git gc`. The self-reference paradox is honestly disclosed in `after_sha_note`, but a reachable value (HEAD plus the note, or omission) would be more durable.
+
+### AAA-D — Embedded headless-Opus audit provenance is asserted, not independently verifiable [INFO]
+
+`embedded_audit` records `auditor_model: opus`, `exit_code: 0`, and a `/tmp` prompt path that no longer exists. The report reads as genuinely Opus-authored (plan-mode, no-write, self-critical), so confidence is medium-high — and the `H1`-OPEN + `NEEDS_SUPERVISOR` posture correctly avoids resting acceptance on it. Recorded for completeness.
+
+## External multi-model verification performed (partially fills AAA-A)
+
+This session ran the external verification the packet's PAL chain lacked: a PAL `challenge` plus a 3-model `consensus` — gpt-5.5 (skeptic, REWORK), gemini-2.5-pro (neutral, ACCEPT_WITH_CHANGES), gpt-5.4 (advocate, ACCEPT_TO_SUPERVISOR); grok `NOT_RUN` (invalid provider key). All four perspectives (including this auditor) converged that the bare `ARCHITECTURE_CONFIRMED` label exceeds the executed evidence and should be neutralized — corroborating AAA-B and the prior `M3`.
+
+## Recommendation (unchanged ceiling)
+
+Route to Supervisor at `NEEDS_SUPERVISOR`. AAA-A (external PAL verification) and AAA-B (downgrade the structured `architecture_verdict` field) are the substantive items for the next packet or a coordinated implementer edit; AAA-C/AAA-D are minor. None are merge-risk; the change remains additive docs/schemas/fixtures.
