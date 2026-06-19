@@ -450,12 +450,12 @@
     "reason": "PAL MCP/tool artifacts were not available in this session; local git pre-commit hooks were run separately and recorded under validation_results."
   },
   "proof_freshness_model": "after_sha binds to substantive content commit (9e00d5aa7 framing repair); proof-only amend commits are recorded separately and do not self-certify.",
-  "authoritative_pr_tip_sha": "4b3feee140dd417b1399cdea30101f80023d875e",
+  "authoritative_pr_tip_sha": "29e0c1710ae4ea2594d373db67d34a797b81b115",
   "proof_refresh_note": "Framing/proof repair by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002; after_sha points to substantive repair commit 9e00d5aa7, not the proof-writing commit.",
   "after_sha_note": "Satisfiable freshness: after_sha=9e00d5aa7 (docs(pcp-925) framing repair). Prior repair by TP-DMX-PCP-925-REPAIR-0001 fixed orphan after_sha and dNh policy_ref at 68b8fd17 (verified, not redone). Architecture acceptance remains NEEDS_SUPERVISOR.",
   "review_thread_classification": {
     "pr_number": 925,
-    "classified_at_commit": "4b3feee140dd417b1399cdea30101f80023d875e",
+    "classified_at_commit": "29e0c1710ae4ea2594d373db67d34a797b81b115",
     "threads": [
       {
         "thread_id": "PRRT_kwDOPyIw986KJns5",
