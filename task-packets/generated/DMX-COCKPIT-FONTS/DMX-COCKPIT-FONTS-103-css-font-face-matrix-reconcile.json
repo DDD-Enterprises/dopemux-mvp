@@ -1,0 +1,87 @@
+{
+  "id": "DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile",
+  "project": "dopemux-mvp",
+  "target": "Complete and reconcile @font-face in colors_and_type.css: declare the full face matrix (Term + Editor x Regular/Medium x Upright/Italic/Oblique; Italic->font-style:italic, Oblique->font-style:oblique), point every src at the renamed/patched filenames from packet 101, and align the --font-mono/--font-editor tokens to packet 102's pinned family names (replacing the stale no-space 'DopemuxTerm Nerd Font Mono').",
+  "invariants": [
+    "@font-face MUST cover the full 12-face matrix (Term+Editor x Regular/Medium x Upright/Italic/Oblique) OR explicitly document any face deliberately not web-exposed.",
+    "font-family tokens (--font-mono, --font-editor) MUST equal packet 102's pinned families: 'Dopemux Term Nerd Font' / 'Dopemux Editor Nerd Font'.",
+    "Every @font-face src MUST reference a filename produced by packet 101's build/patch output.",
+    "Italic maps to font-style: italic and Oblique to font-style: oblique (operator-approved 2026-06-15).",
+    "The Medium weight MUST continue to be expressed within the single family via the existing font-weight range mechanism (no per-weight family fork).",
+    "Changes are confined to colors_and_type.css; doc-embedded @font-face copies are reconciled in packet 105."
+  ],
+  "depends_on": [
+    "DMX-COCKPIT-FONTS-101-rename-plan-keys-harden-scripts",
+    "DMX-COCKPIT-FONTS-102-patch-flags-editor-proportional-family-name"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-cockpit-fonts",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "fix(cockpit-fonts): complete @font-face matrix + reconcile family tokens (DMX-COCKPIT-FONTS-103)",
+    "allowlist": [
+      "docs/03-reference/Dopemux Cockpit TUI Design System/colors_and_type.css",
+      "task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile.json",
+      "proof/cockpit-fonts-103/**"
+    ],
+    "verify": [
+      "python -m json.tool 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile.json' >/dev/null",
+      "python -m jsonschema -i 'task-packets/generated/DMX-COCKPIT-FONTS/DMX-COCKPIT-FONTS-103-css-font-face-matrix-reconcile.json' docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "! grep -q 'DopemuxTerm Nerd Font' 'docs/03-reference/Dopemux Cockpit TUI Design System/colors_and_type.css'",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(cockpit-fonts): full @font-face matrix + family-token reconcile (DMX-COCKPIT-FONTS-103)",
+    "body": "Expands colors_and_type.css @font-face from Term Regular/Medium upright (2 faces) to the full matrix (Term + Editor x Regular/Medium x Upright/Italic/Oblique), with Italic->italic and Oblique->oblique. Repoints src filenames to packet 101's renamed output and aligns --font-mono/--font-editor to packet 102's spaced family names 'Dopemux Term Nerd Font' / 'Dopemux Editor Nerd Font', replacing the stale no-space 'DopemuxTerm Nerd Font Mono'. Depends on 101 (filenames) and 102 (pinned family names).",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: read the current @font-face blocks and the --font-mono/--font-editor token definitions in colors_and_type.css. Confirm packet 102's pinned family strings. Decide, and record, whether the CSS serves the plain Iosevka faces or the patched Nerd Font faces (Nerd glyphs in-browser require the patched faces) and therefore which filenames/family the src + font-family must reference.",
+      "validation": [
+        "Current @font-face coverage enumerated (which faces exist today).",
+        "Plain-vs-patched src decision recorded with rationale.",
+        "Packet 102 pinned families confirmed."
+      ],
+      "context_files": [
+        "docs/03-reference/Dopemux Cockpit TUI Design System/colors_and_type.css",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/fonts/patch-nerd-font.sh"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Declare the full face matrix in colors_and_type.css: Term + Editor x {Regular(400), Medium} x {Upright, Italic->font-style:italic, Oblique->font-style:oblique}. Preserve the existing single-family Medium weight-range mechanism. Point every src at the filename form produced by packet 101 (and patched per 102 if NF faces are served). If any face is intentionally not web-exposed, add a one-line CSS comment stating why.",
+      "validation": [
+        "Every Term+Editor x weight x slope face is present OR documented as intentionally omitted.",
+        "font-style values: italic for Italic, oblique for Oblique.",
+        "No per-weight family fork; Medium stays within the family via font-weight range."
+      ],
+      "expected_files": ["docs/03-reference/Dopemux Cockpit TUI Design System/colors_and_type.css"]
+    },
+    {
+      "id": "S3",
+      "task": "Set --font-mono to 'Dopemux Term Nerd Font' and --font-editor to 'Dopemux Editor Nerd Font' (packet 102 contract). Remove the stale no-space 'DopemuxTerm Nerd Font Mono'. Validate the TP JSON, commit allowlisted files only, open PR, write proof bundle.",
+      "validation": [
+        "--font-mono and --font-editor equal the packet-102 spaced families; the no-space 'DopemuxTerm Nerd Font' string is absent.",
+        "Every @font-face src references a filename listed in the documented build/patch output.",
+        "python -m jsonschema exits 0; only allowlisted files staged; git diff --check clean.",
+        "Proof bundle records the final face count and the src/family mapping."
+      ]
+    }
+  ]
+}

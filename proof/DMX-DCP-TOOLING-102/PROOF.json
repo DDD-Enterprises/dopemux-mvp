@@ -1,0 +1,112 @@
+{
+  "tp_id": "DMX-DCP-TOOLING-102",
+  "tp_path": "task-packets/generated/DMX-DCP-TOOLING-102.json",
+  "series_id": "DMX-DCP-TOOLING",
+  "branch": "claude/dmx-dcp-tooling-101",
+  "base_branch": "main",
+  "base_sha": "6f0de876363d5f99c529106fa2517624690978dd",
+  "head_sha": "637e145f40cbdf489fda3bf762d2329a9a77bcf0",
+  "worktree_path": ".claude/worktrees/dcp-tooling-101",
+  "repo_identity": "DDD-Enterprises/dopemux-mvp",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED_LOCAL",
+  "implementer_identity": "codex-implementation-agent",
+  "auditor_identity": "INDEPENDENT_AUDITOR_NOT_RUN",
+  "files_changed": [
+    "task-packets/generated/DMX-DCP-TOOLING-102.json",
+    "schemas/dcp/dcp_red_lane_taxonomy.instance.json",
+    "schemas/dcp/README.md",
+    "schemas/dcp/dcp_red_lane_report.schema.json",
+    "schemas/dcp/manifest.json",
+    "src/dopemux/dcp/red_lane.py",
+    "src/dopemux/dcp/red_lane_scanner.py",
+    "src/dopemux/dcp/red_lane_taxonomy.py",
+    "tests/dcp/test_dcp_0102_red_lane_taxonomy.py"
+  ],
+  "validations": [
+    {
+      "command": "python -m pytest -q tests/dcp/test_dcp_0102_red_lane_taxonomy.py",
+      "exit_code": 1,
+      "bucket": "PASS",
+      "detail": "Intentional RED run before implementation: 1 passed, 2 failed with AttributeError: ScannerInfo had no taxonomy_id."
+    },
+    {
+      "command": "python -m pytest -q tests/dcp/test_dcp_0102_red_lane_taxonomy.py tests/dcp/test_dcp_0005_red_lane_scanner.py tests/dcp/test_contracts_consistency.py",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "detail": "32 passed."
+    },
+    {
+      "command": "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-102.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "detail": "jsonschema CLI emitted only its deprecation warning."
+    },
+    {
+      "command": "python -m jsonschema -i schemas/dcp/dcp_red_lane_taxonomy.instance.json schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "detail": "jsonschema CLI emitted only its deprecation warning."
+    },
+    {
+      "command": "python -m py_compile src/dopemux/dcp/red_lane.py src/dopemux/dcp/red_lane_scanner.py src/dopemux/dcp/red_lane_taxonomy.py",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "remote PR checks after TP-102 push",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "detail": "Pending until the proof commit is pushed to PR #885."
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/DMX-DCP-TOOLING-102/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "TP102-A1",
+        "severity": "LOW",
+        "title": "Scanner metadata is not yet rule-generated",
+        "status": "ACCEPTED_RISK",
+        "body": "The scanner now exposes taxonomy_id/path/lane_ids, but blocking regex rules still live in red_lane_rules.py. This is intentional for TP-102 L1+ metadata coupling; schema-driven rule loading remains TP-103."
+      },
+      {
+        "id": "TP102-A2",
+        "severity": "INFO",
+        "title": "Remote checks pending after push",
+        "status": "ACCEPTED_RISK",
+        "body": "Local targeted validation passed. PR #885 remote checks must rerun after the proof commit is pushed."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "TP-103 must still remove hardcoded rule drift by loading scanner rules from the taxonomy/schema contract.",
+      "Gemini review on PR #885 previously failed from API quota, not a code finding; it may remain externally blocked."
+    ],
+    "skip_reason": "No independent auditor tool was available for this TP-102 follow-up in the current session. Codex performed local precommit review, but this is not an auditor != implementer proof."
+  },
+  "approval_ref": "proof/DMX-DCP-TOOLING-102/APPROVAL.json",
+  "codereview_status": "LOCAL_SELF_REVIEW_WITH_RISKS; INDEPENDENT_AUDIT_NOT_RUN",
+  "precommit_status": "PASS",
+  "commit_sha": "637e145f40cbdf489fda3bf762d2329a9a77bcf0",
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/885",
+  "residual_risks": [
+    "This packet adds scanner metadata coupling only; rule generation/loading remains deferred to TP-103.",
+    "Remote CI/Gemini status is not terminal until PR #885 reruns after push."
+  ],
+  "unknowns": [
+    "Whether the externally blocked Gemini review quota will be restored before PR merge."
+  ],
+  "cleanup_status": "worktree .claude/worktrees/dcp-tooling-101 retained until PR #885 reaches a terminal review gate."
+}

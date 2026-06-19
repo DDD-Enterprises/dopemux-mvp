@@ -1,0 +1,332 @@
+{
+  "manifest_version": "0.1.0",
+  "contracts": [
+    {
+      "contract_id": "DCP_APPROVAL_ARTIFACT",
+      "schema_file": "schemas/dcp/dcp_approval_artifact.schema.json",
+      "schema_version": "dcp-approval-artifact.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/dcp/fixtures/tp_dcp_0002_approval_artifact.fixture.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "human"
+    },
+    {
+      "contract_id": "DCP_AUDIT_ROUTE",
+      "schema_file": "schemas/dcp/dcp_audit_route.schema.json",
+      "schema_version": "UNKNOWN",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/model_routing_0001/auditor_verdict_distinct.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_AUTHORITY_SURFACE",
+      "schema_file": "schemas/dcp/dcp_authority_surface.schema.json",
+      "schema_version": "UNKNOWN",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/model_routing_0001/agent_authority_unknown.json",
+        "tests/fixtures/dcp/model_routing_0001/dopecode_legacy_serena_alias.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_BACKEND_RUNNER",
+      "schema_file": "schemas/dcp/dcp_backend_runner.schema.json",
+      "schema_version": "UNKNOWN",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/model_routing_0001/opencode_backend_only.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_CHRONICLE_RECEIPT",
+      "schema_file": "schemas/dcp/dcp_chronicle_receipt.schema.json",
+      "schema_version": "dcp-chronicle-receipt.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/dcp/fixtures/dcp_core_fixture.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_CONTROL_SNAPSHOT",
+      "schema_file": "schemas/dcp/dcp_control_snapshot.schema.json",
+      "schema_version": "dcp-control-snapshot.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/dcp/fixtures/dcp_core_fixture.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_EVIDENCE_HIT",
+      "schema_file": "schemas/dcp/dcp_evidence_hit.schema.json",
+      "schema_version": "dcp-evidence-hit.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/dcp/fixtures/dcp_core_fixture.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_EXECUTION_LANE",
+      "schema_file": "schemas/dcp/dcp_execution_lane.schema.json",
+      "schema_version": "UNKNOWN",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_HELPER_RECEIPT",
+      "schema_file": "schemas/dcp/dcp_helper_receipt.schema.json",
+      "schema_version": "dcp-helper-receipt.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/dcp/fixtures/dcp_core_fixture.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_MODEL_SLOT",
+      "schema_file": "schemas/dcp/dcp_model_slot.schema.json",
+      "schema_version": "UNKNOWN",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_MUTATION_CLASS",
+      "schema_file": "schemas/dcp/dcp_mutation_class.schema.json",
+      "schema_version": "dcp-mutation-class.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "REPO_CROSS_CHECKED",
+      "level": "L1",
+      "instance_files": [
+        "tests/dcp/fixtures/tp_dcp_0002_mutation_class.fixture.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_PROJECT_RESOURCE_MAP",
+      "schema_file": "schemas/dcp/dcp_project_resource_map.schema.json",
+      "schema_version": "dcp-project-resource-map.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "REPO_CROSS_CHECKED",
+      "level": "L1",
+      "instance_files": [
+        "tests/dcp/fixtures/tp_dcp_0002_project_resource_map.fixture.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_PROOF_POINTER",
+      "schema_file": "schemas/dcp/dcp_proof_pointer.schema.json",
+      "schema_version": "dcp-proof-pointer.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/dcp/fixtures/tp_dcp_0003_valid_proof_pointer.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_RED_LANE_REPORT",
+      "schema_file": "schemas/dcp/dcp_red_lane_report.schema.json",
+      "schema_version": "UNKNOWN",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_RED_LANE_TAXONOMY",
+      "schema_file": "schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+      "schema_version": "dcp-red-lane-taxonomy.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "REPO_CROSS_CHECKED",
+      "level": "L1",
+      "instance_files": [
+        "schemas/dcp/dcp_red_lane_taxonomy.instance.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [
+        "src/dopemux/dcp/red_lane_scanner.py",
+        "src/dopemux/dcp/red_lane_taxonomy.py"
+      ],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_ROUTING_CLASSIFICATION",
+      "schema_file": "schemas/dcp/dcp_routing_classification.schema.json",
+      "schema_version": "UNKNOWN",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/model_routing_0001/design_only_task.json",
+        "tests/fixtures/dcp/model_routing_0001/policy_advisory_not_runtime.json",
+        "tests/fixtures/dcp/model_routing_0001/safe_read_task.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_ROUTING_DECISION",
+      "schema_file": "schemas/dcp/dcp_routing_decision.schema.json",
+      "schema_version": "UNKNOWN",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_ROUTING_PROOF_EXTENSION",
+      "schema_file": "schemas/dcp/dcp_routing_proof_extension.schema.json",
+      "schema_version": "UNKNOWN",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/model_routing_0001/proof_extension_additive.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_STOP_CONDITION",
+      "schema_file": "schemas/dcp/dcp_stop_condition.schema.json",
+      "schema_version": "UNKNOWN",
+      "contract_version": "0.1.0",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/model_routing_0001/arbitrary_selector_rejected.json",
+        "tests/fixtures/dcp/model_routing_0001/dopetask_execution_forbidden.json",
+        "tests/fixtures/dcp/model_routing_0001/litellm_unhealthy_stop.json",
+        "tests/fixtures/dcp/model_routing_0001/mcp_unknown_surface.json",
+        "tests/fixtures/dcp/model_routing_0001/stale_alias_stop.json",
+        "tests/fixtures/dcp/model_routing_0001/task_orchestrator_write_forbidden.json",
+        "tests/fixtures/dcp/model_routing_0001/workflow_red_lane_forbidden.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "llm_advisory"
+    }
+  ]
+}

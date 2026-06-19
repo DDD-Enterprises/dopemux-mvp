@@ -103,6 +103,18 @@ OPERATIONAL_UI_FILES = [
     "src/dopemux/ux/wizard/prompts.py",
 ]
 
+START_PATH_UI_FILES = [
+    "src/dopemux/adhd/attention_monitor.py",
+    "src/dopemux/adhd/context_manager.py",
+    "src/dopemux/adhd/task_decomposer.py",
+    "src/dopemux/update/health.py",
+    "src/dopemux/update/rollback.py",
+    "src/dopemux/update/manager.py",
+    "src/dopemux/claude_tools/session_manager.py",
+    "src/dopemux/startup_hints.py",
+    "src/dopemux/ui/splash.py",
+]
+
 APPROVED_THEME_FILES = {
     "src/dopemux/ui/theme.py",
     "src/dopemux/ui/dopemux.tcss",
@@ -247,6 +259,23 @@ def _iter_palette_violations(path: Path) -> list[str]:
     ]
 
 
+def _iter_start_path_ui_violations(path: Path) -> list[str]:
+    """Fail closed on raw UI primitives in audited start-path surfaces."""
+    errors = _iter_palette_violations(path)
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func_name = _attr_name(node.func)
+        if func_name == "Console":
+            errors.append(f"{path}:{node.lineno} raw Console() must use dopemux.console.console")
+        elif func_name == "print":
+            errors.append(f"{path}:{node.lineno} raw print() must use dopemux.console.console")
+        elif func_name == "click.echo":
+            errors.append(f"{path}:{node.lineno} raw click.echo() must use dopemux.console.console")
+    return errors
+
+
 # Danger must read RED in every theme so "failed/blocked" never downsamples to
 # ANSI magenta/pink (the cutover fix must hold across opt-in aesthetic themes
 # too, not just the default). The theme set is sourced from theme.py.THEME_NAMES
@@ -376,6 +405,12 @@ def main() -> int:
             continue
         errors.extend(_iter_operational_ui_tone_violations(path))
         errors.extend(_iter_palette_violations(path))
+
+    for rel_path in START_PATH_UI_FILES:
+        path = _existing_path(rel_path, errors)
+        if path is None:
+            continue
+        errors.extend(_iter_start_path_ui_violations(path))
 
     if errors:
         print("Brand lint failed:")

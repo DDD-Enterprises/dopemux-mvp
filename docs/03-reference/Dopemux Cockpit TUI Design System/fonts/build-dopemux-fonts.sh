@@ -22,17 +22,41 @@ PLAN_SRC="$SCRIPT_DIR/private-build-plans.toml"
 IOSEVKA_TARGET="${IOSEVKA_TARGET:-ttf}"
 BUILD_MANIFEST="$OUT_DIR/.dopemux-built-fonts.txt"
 BUILD_MANIFEST_TMP="$OUT_DIR/.dopemux-built-fonts.txt.tmp"
+BUILD_STAGE="$OUT_DIR/.dopemux-build-stage"
+PLAN_DST="$IOSEVKA_REPO/private-build-plans.toml"
+PLAN_BACKUP=""
+PLAN_HAD_ORIGINAL=0
 
 # Build plans defined in private-build-plans.toml.
-PLANS=(IosevkaDopemuxTerm IosevkaDopemuxEditor)
+PLANS=(DopemuxTerm DopemuxEditor)
+
+cleanup() {
+  status=$?
+  rm -f "$BUILD_MANIFEST_TMP"
+  rm -rf "$BUILD_STAGE"
+  if [[ -n "$PLAN_BACKUP" ]]; then
+    if [[ "$PLAN_HAD_ORIGINAL" -eq 1 ]]; then
+      cp "$PLAN_BACKUP" "$PLAN_DST"
+    else
+      rm -f "$PLAN_DST"
+    fi
+    rm -f "$PLAN_BACKUP"
+  fi
+  exit "$status"
+}
+trap cleanup EXIT
 
 [[ -d "$IOSEVKA_REPO" ]] || { printf 'Missing IOSEVKA_REPO directory: %s\n' "$IOSEVKA_REPO" >&2; exit 1; }
-[[ -d "$OUT_DIR" ]]      || { printf 'Missing OUT_DIR directory: %s\n' "$OUT_DIR" >&2; exit 1; }
 [[ -f "$PLAN_SRC" ]]     || { printf 'Missing build plan: %s\n' "$PLAN_SRC" >&2; exit 1; }
 command -v npm >/dev/null || { printf 'npm not found; install Node.js to build Iosevka.\n' >&2; exit 1; }
+mkdir -p "$OUT_DIR"
 
-# Iosevka reads private-build-plans.toml from its repo root.
-cp "$PLAN_SRC" "$IOSEVKA_REPO/private-build-plans.toml"
+PLAN_BACKUP="$(mktemp "${TMPDIR:-/tmp}/dopemux-iosevka-plan.XXXXXX")"
+if [[ -f "$PLAN_DST" ]]; then
+  cp "$PLAN_DST" "$PLAN_BACKUP"
+  PLAN_HAD_ORIGINAL=1
+fi
+cp "$PLAN_SRC" "$PLAN_DST"
 
 if [[ ! -d "$IOSEVKA_REPO/node_modules" ]]; then
   printf 'Installing Iosevka build dependencies (npm ci)...\n'
@@ -40,7 +64,8 @@ if [[ ! -d "$IOSEVKA_REPO/node_modules" ]]; then
 fi
 
 : > "$BUILD_MANIFEST_TMP"
-rm -f "$OUT_DIR"/DopemuxTerm-*.ttf "$OUT_DIR"/DopemuxEditor-*.ttf
+rm -rf "$BUILD_STAGE"
+mkdir -p "$BUILD_STAGE"
 
 for plan in "${PLANS[@]}"; do
   printf 'Building %s (%s)...\n' "$plan" "$IOSEVKA_TARGET"
@@ -62,13 +87,22 @@ for plan in "${PLANS[@]}"; do
     exit 1
   fi
 
-  cp "${ttf_outputs[@]}" "$OUT_DIR"/
   for f in "${ttf_outputs[@]}"; do
-    basename "$f" >> "$BUILD_MANIFEST_TMP"
+    base="$(basename "$f")"
+    cp "$f" "$BUILD_STAGE/$base"
+    printf '%s\n' "$base" >> "$BUILD_MANIFEST_TMP"
   done
   printf '  copied %s TTF face(s) from %s\n' "$count" "$src"
 done
+
+rm -f "$BUILD_MANIFEST"
+rm -f "$OUT_DIR"/DopemuxTerm-*.ttf "$OUT_DIR"/DopemuxEditor-*.ttf
+while IFS= read -r f; do
+  [[ -n "$f" ]] || continue
+  cp "$BUILD_STAGE/$f" "$OUT_DIR/$f"
+done < "$BUILD_MANIFEST_TMP"
 mv "$BUILD_MANIFEST_TMP" "$BUILD_MANIFEST"
+rm -rf "$BUILD_STAGE"
 
 printf '\nBuilt faces in %s:\n' "$OUT_DIR"
 sed "s#^#$OUT_DIR/#" "$BUILD_MANIFEST"

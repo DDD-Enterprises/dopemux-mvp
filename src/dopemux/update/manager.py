@@ -18,7 +18,7 @@ from enum import Enum
 
 import click
 import yaml
-from rich.console import Console
+from dopemux.console import console
 from dopemux.ui.progress import branded_progress
 from rich.progress import Progress, TaskID
 
@@ -83,7 +83,7 @@ class UpdateManager:
                  project_root: Optional[Path] = None):
         self.config = config or UpdateConfig()
         self.project_root = project_root or Path.cwd()
-        self.console = Console()
+        self.console = console
 
         # Core components
         self.progress = ProgressTracker(self.console)

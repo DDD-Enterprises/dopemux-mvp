@@ -77,6 +77,8 @@ def _run_print_config(
     resume: bool,
     latest_run_id: str | None = None,
     cost_profile: str | None = None,
+    model_aliases: list[str] | None = None,
+    disabled_providers: list[str] | None = None,
 ):
     output_root = tmp_path / "artifact-root"
     if latest_run_id is not None:
@@ -99,6 +101,10 @@ def _run_print_config(
     ]
     if cost_profile is not None:
         cmd.extend(["--cost-profile", cost_profile])
+    for model_alias in model_aliases or []:
+        cmd.extend(["--model-alias", model_alias])
+    for provider in disabled_providers or []:
+        cmd.extend(["--disable-provider", provider])
     if resume:
         cmd.append("--resume")
 
@@ -290,8 +296,31 @@ def test_print_config_reports_selected_cost_profile(tmp_path: Path) -> None:
     )
 
     assert payload["cost_profile"] == "quality"
+    assert payload["requested_cost_profile"] == "quality"
+    assert payload["resolved_cost_profile"] == "quality"
     assert payload["cli"]["routing_policy"] == "quality"
     assert payload["route_readiness_summary"]["target_policy"] == "quality"
+
+
+def test_print_config_reports_cost_profile_resolution_and_route_controls(tmp_path: Path) -> None:
+    payload, _output_root = _run_print_config(
+        tmp_path,
+        resume=False,
+        cost_profile="rte-cost-grok-fast",
+        model_aliases=["BULK_DOCS_MODEL=xai/grok-4-fast"],
+        disabled_providers=["gemini"],
+    )
+
+    assert payload["requested_cost_profile"] == "rte-cost-grok-fast"
+    assert payload["resolved_cost_profile"] == "grok-fast"
+    assert payload["cost_profile"] == "grok-fast"
+    assert payload["routing_policy"] == "balanced_grok_openrouter"
+    assert payload["model_aliases"] == {"BULK_DOCS_MODEL": "xai/grok-4-fast"}
+    assert payload["disabled_providers"] == ["gemini"]
+    assert payload["route_readiness_summary"]["cost_profile"] == "grok-fast"
+    assert payload["route_readiness_summary"]["model_alias_overrides"] == {
+        "BULK_DOCS_MODEL": "xai/grok-4-fast"
+    }
 
 
 def test_print_config_resume_reads_latest_without_mutating_pointer(tmp_path: Path) -> None:

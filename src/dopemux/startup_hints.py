@@ -401,9 +401,8 @@ def create_feature_list_banner() -> Panel:
 
 if __name__ == "__main__":
     # Test the banner
-    from rich.console import Console
+    from dopemux.console import console
     
-    console = Console()
     console.print()
     console.print(create_hint_banner())
     console.print()

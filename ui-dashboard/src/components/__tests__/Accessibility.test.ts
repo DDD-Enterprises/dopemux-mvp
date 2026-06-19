@@ -48,7 +48,6 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('aria-label={`${member.name}\'s current energy level: ${member.energy}%`}');
   expect(content).toContain('aria-label={`${member.name}\'s current attention focus: ${member.attention}%`}');
   expect(content).toContain('<Tooltip title={statusStyles[member.status].label} arrow>');
-  expect(content).toMatch(/<Tooltip[^>]*title=\{`Average cognitive load across all team members: \$\{teamAverageLoad\}%`\}[^>]*arrow/);
   expect(content).toContain('<Tooltip title="Current energy level" arrow>');
   expect(content).toContain('<Tooltip title="Current attention focus" arrow>');
   expect(content).toContain('<Tooltip title="AI-generated team coordination insights" arrow>');
@@ -60,6 +59,15 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toMatch(/<Tooltip key=\{signal\.label\} title=\{`Team signal: \$\{signal\.label\} status`\} arrow>/);
   expect(content).toContain('aria-label={`Team signal: ${signal.label} is ${signal.value}`}');
   expect(content).toContain("cursor: 'help'");
+
+  // Verify TeamDashboard root interactive surface and summary Tooltip
+  expect(content).toContain('tabIndex={0}');
+  expect(content).toMatch(/<Tooltip[^>]*title=\{`Average Team Load: \$\{teamAverageLoad\}% • \$\{statusStyles\[teamStatus\]\.label\}\. Insight: Sequence handoffs while average load is below escalation threshold\.`\}[^>]*arrow/);
+  expect(content).toContain('aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}.`}');
+  expect(content).toContain("letterSpacing: '0.16em'");
+  expect(content).toContain('AVG LOAD');
+  expect(content).toContain('borderColor: teamStatusColor');
+  expect(content).toContain('boxShadow: `0 0 20px ${alpha(teamStatusColor, 0.2)}`');
 });
 
 test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
@@ -121,7 +129,7 @@ test('TaskSequencer.tsx implements overtime visual cues', () => {
   expect(content).toContain('const isOvertime = useMemo(() =>');
   expect(content).toContain('color: isOvertime ? brandTokens.colors.gremlinPink : \'inherit\'');
   expect(content).toContain('OVERTIME +{overtimeMinutes}M');
-  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*brandTokens\.colors\.saintGold,\s*0\.1\s*\)/);
+  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*progressPercent\s*>\s*80\s*\?\s*brandTokens\.colors\.giltEdge\s*:\s*brandTokens\.colors\.saintGold,\s*0\.1\s*\)/);
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
@@ -156,12 +164,11 @@ test('App.tsx has accessible header chips and skip link', () => {
   const appContent = fs.readFileSync(path.resolve(__dirname, '../../App.tsx'), 'utf8');
   const themeContent = fs.readFileSync(path.resolve(__dirname, '../../theme.ts'), 'utf8');
   expect(appContent).toContain('href="#main-dashboard"');
-  expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
+  expect(appContent).toMatch(/aria-label=\{\s*connectionStatus === 'degraded'\s*\?\s*`System connection degraded: \$\{connectionLabel\} DØPEMÜX Ritual Daemon\. Click to retry connection\.`\s*:\s*`System is actively monitoring ritual state: \$\{connectionLabel\} DØPEMÜX Ritual Daemon`\s*\}/);
   expect(appContent).toContain('<Tooltip title="Current cognitive status and load percentage" arrow>');
   expect(appContent).toMatch(/<Tooltip title=\{isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>/);
   expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toMatch(/<Tooltip title=\{isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>[\s\S]*tabIndex=\{0\}/);
-  expect(appContent).toContain('aria-label={`System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`}');
   expect(appContent).toMatch(/aria-label=\{\s*isCopied\s*\?\s*`AI Recommendation: \$\{cognitiveState\.recommendation\} \(Copied\)`\s*:\s*`Copy AI Recommendation: \$\{cognitiveState\.recommendation\}`\s*\}/);
   expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications\' : \'Clear all notifications\'}');
   expect(appContent).toMatch(/<Tooltip title=\{isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\} arrow>/);
@@ -173,6 +180,17 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(themeContent).toContain('&:focus-visible');
   expect(appContent).toContain('ref={feedHeadingRef}');
   expect(appContent).toContain('tabIndex={-1}');
+
+  // Verify adaptive reconnection bridge
+  expect(appContent).toContain('const [retryTrigger, setRetryTrigger] = useState(0);');
+  expect(appContent).toContain('const handleReconnect = useCallback(() => {');
+  expect(appContent).toMatch(/connectionStatus === 'degraded'\s*\?\s*'Connection degraded\. Click to attempt manual reconnection\.'\s*:\s*'Real-time connection to the ADHD dashboard surface'/);
+  expect(appContent).toMatch(/connectionStatus === 'degraded'\s*\?\s*`System connection degraded: \$\{connectionLabel\} DØPEMÜX Ritual Daemon\. Click to retry connection\.`\s*:\s*`System is actively monitoring ritual state: \$\{connectionLabel\} DØPEMÜX Ritual Daemon`/);
+  expect(appContent).toContain("onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}");
+  expect(appContent).toContain('action={');
+  expect(appContent).toContain("connectionStatus === 'degraded' ? (");
+  expect(appContent).toContain('<Button color="inherit" size="small" onClick={handleReconnect}>');
+  expect(appContent).toContain('RECONNECT');
 
   // Verify notification chips are focusable
   expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
