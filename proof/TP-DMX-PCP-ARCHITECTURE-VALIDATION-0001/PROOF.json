@@ -1,7 +1,7 @@
 {
   "tp_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
   "before_sha": "a05ebf77578c3e163f90d2e194efd2441cebeac6",
-  "after_sha": "49fa7b038f573d67732eeff1acbf8566aee6a1cc",
+  "after_sha": "7ec3837e20598fd35a1f17940d93b3f44801f506",
   "branch": "codex/tp-dmx-pcp-architecture-validation-0001",
   "changed_files": [
     "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md",
@@ -321,7 +321,7 @@
     "Read-only Opus audit returned NEEDS_SUPERVISOR; acceptance is blocked pending Supervisor adjudication.",
     "Negative fail-closed cases are asserted fixture expectations, not executed classifier results.",
     "PR #925 remains draft pending core boundary repair.",
-    "after_sha refreshed to PR head (49fa7b038) by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002."
+    "after_sha refreshed to PR head (7ec3837e2) by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002."
   ],
   "not_run": [
     "GitHub mutation or PR creation",
@@ -449,8 +449,8 @@
     "precommit": "NOT_RUN",
     "reason": "PAL MCP/tool artifacts were not available in this session; local git pre-commit hooks were run separately and recorded under validation_results."
   },
-  "proof_refresh_note": "Framing/proof repair by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002; after_sha refreshed to PR head 49fa7b038.",
-  "after_sha_note": "Repaired by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002: after_sha updated to proof-freshness target (49fa7b038). Authoritative PR tip: use `git rev-parse HEAD` (currently f43418e35 after final amend). Prior repair by TP-DMX-PCP-925-REPAIR-0001 set after_sha to 84149bced. Architecture acceptance remains NEEDS_SUPERVISOR.",
+  "proof_refresh_note": "Framing/proof repair by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002; after_sha refreshed to PR head 7ec3837e2.",
+  "after_sha_note": "Repaired by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002: after_sha updated to current PR branch HEAD (7ec3837e2). Prior repair by TP-DMX-PCP-925-REPAIR-0001 set after_sha to 84149bced. Architecture acceptance remains NEEDS_SUPERVISOR.",
   "framing_proof_repair_audit": {
     "repair_packet_id": "TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002",
     "auditor_tool": "grok-cursor-agent",
