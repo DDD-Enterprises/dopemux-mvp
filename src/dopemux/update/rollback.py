@@ -13,8 +13,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Union
 
-from rich.console import Console
 from rich.panel import Panel
+from dopemux.console import console
 from dopemux.ui.prompts import dopemux_confirm
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ class RollbackManager:
 
     def __init__(self, project_root: Path):
         self.project_root = project_root
-        self.console = Console()
+        self.console = console
 
         # Directory structure
         self.backup_dir = project_root / ".dopemux" / "backups"

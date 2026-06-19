@@ -16,9 +16,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from rich.console import Console
-
-console = Console()
+from dopemux.console import console
 
 
 class ContextSnapshot:

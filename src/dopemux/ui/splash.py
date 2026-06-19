@@ -31,21 +31,21 @@ DOPEMUX_STARTUP_BANNER = """\
 
 def _banner_markup() -> str:
     """Return Rich markup for the branded startup banner."""
-    frame = "#00ffff"
+    frame = "mint"
     logo = [
-        "#00ffff",
-        "#00f0ff",
-        "#00e1ff",
-        "#00d2ff",
-        "#5aaaff",
-        "#8c82ff",
-        "#b478ff",
+        "mint",
+        "mint.bright",
+        "info",
+        "mint.soft",
+        "violet",
+        "magenta",
+        "violet",
     ]
-    drip_bar = "#78b4ff"
-    drip_tick = "#b478ff"
-    tag_core = "#ff50dc"
-    tag_mesh = "#b478ff"
-    tag_operator = "#00ffff"
+    drip_bar = "info"
+    drip_tick = "violet"
+    tag_core = "magenta"
+    tag_mesh = "violet"
+    tag_operator = "mint"
 
     return "\n".join(
         [

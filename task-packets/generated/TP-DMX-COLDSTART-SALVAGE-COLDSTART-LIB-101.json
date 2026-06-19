@@ -1,0 +1,170 @@
+{
+  "id": "TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101",
+  "project": "dopemux-mvp",
+  "target": "Extract the validated logic from install.sh (platform detection, secrets resolution, network/compose orchestration) and existing src/dopemux/update/ and upgrades/ modules into typed, unit-tested src/dopemux/coldstart/ modules. Pure extraction with no behavior change; this module is the foundation imported by CS-102, CS-103, CS-104, CS-111, and CS-116.",
+  "invariants": [
+    "Runtime/source truth outranks this packet and the load plan.",
+    "Preserve the hard invariants: DCP-RED-MERGE-SEAM-0001 stays blocked; LIVE_WRITE_READY stays undefined/blocking; no auto-merge.",
+    "Preserve fail-closed behavior on missing secrets, stale SHAs, or unknown authority.",
+    "Do not expose secrets/tokens/keys in code, logs, receipts, or proof artifacts.",
+    "Do not modify files outside the packet allowlist without stopping for supervisor review."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-COLDSTART",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-coldstart-salvage-coldstart-lib-101",
+    "base_branch": "main",
+    "stacked_because": "Wave-0 entry point; no dependencies; provides the coldstart Python module foundation that CS-102, CS-103, CS-104, CS-111, and CS-116 build on."
+  },
+  "commit": {
+    "message": "feat(coldstart): extract install.sh + update/upgrades logic into src/dopemux/coldstart/",
+    "allowlist": [
+      "src/dopemux/coldstart/__init__.py",
+      "src/dopemux/coldstart/platform.py",
+      "src/dopemux/coldstart/secrets_resolver.py",
+      "src/dopemux/coldstart/network.py",
+      "src/dopemux/coldstart/compose_orchestrator.py",
+      "src/dopemux/coldstart/update_manager.py",
+            "src/dopemux/coldstart/rollback_manager.py",
+            "pyproject.toml",
+            "tests/coldstart/__init__.py",
+      "tests/coldstart/test_platform.py",
+      "tests/coldstart/test_secrets_resolver.py",
+      "tests/coldstart/test_network.py",
+      "tests/coldstart/test_compose_orchestrator.py",
+      "tests/coldstart/test_update_manager.py",
+      "task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json",
+      "proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m compileall -q src/dopemux/coldstart/",
+      "python -m compileall -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py",
+      "pytest -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py",
+      "python -c \"from dopemux.coldstart import platform, secrets_resolver, network, compose_orchestrator, update_manager, rollback_manager; print('imports OK')\"",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(coldstart): salvage install.sh + update/upgrades → src/dopemux/coldstart/",
+    "body": "## Summary\n- Extract platform detection (`detect_platform` → `platform.py`), secrets resolution (`resolve_secret_value`, `read_secret_from_keychain`, `read_secret_from_1password` → `secrets_resolver.py`), network management (`ensure_docker_networks` → `network.py`), and compose orchestration (`install_docker_services` pattern → `compose_orchestrator.py`) from install.sh into typed Python modules under src/dopemux/coldstart/.\n- Extract `UpdateManager` and `RollbackManager` from src/dopemux/update/ and upgrades/ into `update_manager.py` and `rollback_manager.py` within the coldstart package.\n- Zero behavior change — pure extraction + type hints + unit tests with mocked Docker/keychain.\n\n## Scope\nSeries: DMX-COLDSTART. Risk: MED. Wave: 0 (entry point, no deps). Foundation for CS-102/103/104/111/116.\n\n## Validation\nRun packet validation commands and capture proof under `proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/PROOF.json`.\n\n## NOT_RUN\nList any skipped live-Docker, keychain, or integration checks explicitly.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect repo truth before editing. Read install.sh functions: detect_platform (line 960), install_with_brew/apt/dnf/pacman (1159/1197/1227/1258), resolve_secret_value (453), resolve_existing_env_value (373), read_secret_from_keychain (396), read_secret_from_1password (404), read_secret_from_command (415), ensure_docker_networks (702), install_docker_services (1391), wait_for_containers (852), check_system_resources (813). Read src/dopemux/update/__init__.py, manager.py (UpdateManager, UpdateConfig, VersionInfo, UpdateResult — classes at lines 38/47/64/73), health.py, phases.py, progress.py, rollback.py (RollbackManager at line 23). Read src/dopemux/upgrades/__init__.py, context.py, runner.py (PipelineRunner at line 12). Read src/dopemux/cli.py around line 725 (init command) and src/dopemux/commands/mcp_commands.py (mcp_init_cmd at line 576, force/envrc logic at 611-622) to understand what coldstart.py must NOT duplicate yet. Verify src/dopemux/coldstart/ does not yet exist. Check tests/coldstart/ (may not exist either). Check tests/scripts/test_install_sh_secrets.py and tests/scripts/test_shell_installer.py to understand what bash-layer tests already exist and must not be broken.",
+      "context_files": [
+        "install.sh",
+        "src/dopemux/update/__init__.py",
+        "src/dopemux/update/manager.py",
+        "src/dopemux/update/rollback.py",
+        "src/dopemux/update/phases.py",
+        "src/dopemux/update/progress.py",
+        "src/dopemux/upgrades/__init__.py",
+        "src/dopemux/upgrades/context.py",
+        "src/dopemux/upgrades/runner.py",
+        "src/dopemux/cli.py",
+        "src/dopemux/commands/mcp_commands.py",
+        "tests/scripts/test_install_sh_secrets.py",
+        "tests/scripts/test_shell_installer.py",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json"
+      ],
+      "validation": [
+        "Canonical writers for platform detection (install.sh bash), secrets resolution (install.sh + mcp_commands.py), and update/rollback (src/dopemux/update/) are identified and their consumers enumerated.",
+        "Confirmed src/dopemux/coldstart/ does not yet exist — this packet creates it.",
+        "Existing bash-layer tests in tests/scripts/ noted; they must continue to pass after this extraction.",
+        "Any missing authority (e.g., Docker SDK vs subprocess approach) recorded as UNKNOWN rather than inferred.",
+        "The planned diff is confirmed to stay within the packet allowlist."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create src/dopemux/coldstart/ package with five extraction modules. (a) platform.py: type-hinted PlatformInfo dataclass (os_family: 'macos'|'linux'|'unknown', arch: str, python_path: str, has_brew: bool, has_apt: bool, has_dnf: bool, has_pacman: bool) and detect_platform() -> PlatformInfo function extracted from install.sh detect_platform (line 960). (b) secrets_resolver.py: SecretSource enum (MANUAL, KEYCHAIN, ONEPASSWORD, COMMAND, ENV, DEFER), SecretResolution dataclass (value: str | None, source: SecretSource, is_sensitive: bool), resolve_secret_value(var: str, current: str | None, env_file: Path | None, non_interactive: bool = False) -> SecretResolution extracted from install.sh resolve_secret_value (453), read_secret_from_keychain (396), read_secret_from_1password (404); uses subprocess for OS calls; non_interactive mode reads from environment or raises. (c) network.py: ensure_docker_networks(networks: list[str]) -> None extracted from install.sh ensure_docker_networks (702); uses subprocess docker network ls/create. (d) compose_orchestrator.py: ComposeOrchestrator class with pull_images(compose_file: Path, profile: str | None) -> None, bring_up(compose_file: Path, profile: str | None, env: dict) -> None, bring_down(compose_file: Path) -> None, wait_healthy(services: list[str], timeout_s: int = 120) -> bool methods extracted from install.sh install_docker_services (1391) and wait_for_containers (852); uses subprocess docker compose. (e) update_manager.py and rollback_manager.py: thin re-exports wrapping src/dopemux/update/manager.UpdateManager and src/dopemux/update/rollback.RollbackManager under the coldstart namespace for downstream packets (CS-118) to import from one place. src/dopemux/coldstart/__init__.py: exports all public symbols.",
+      "requirements": [
+        "Zero behavior change: extracted Python functions must produce the same decisions as the bash originals for the same inputs.",
+        "Type hints on all public functions and dataclasses; Pydantic or dataclasses acceptable.",
+        "No business logic newly added beyond what install.sh or update/ already implement.",
+        "All subprocess calls use safe_subprocess patterns or subprocess.run with explicit argument lists (no shell=True with user-controlled strings).",
+        "No hardcoded secrets, dev defaults, or placeholder values in any module.",
+        "Docker and keychain calls are injectable (accept a runner callable or subprocess.run by default) to enable mocking in tests."
+      ],
+      "expected_files": [
+        "src/dopemux/coldstart/__init__.py",
+        "src/dopemux/coldstart/platform.py",
+        "src/dopemux/coldstart/secrets_resolver.py",
+        "src/dopemux/coldstart/network.py",
+        "src/dopemux/coldstart/compose_orchestrator.py",
+        "src/dopemux/coldstart/update_manager.py",
+        "src/dopemux/coldstart/rollback_manager.py"
+      ],
+      "validation": [
+        "python -m compileall -q src/dopemux/coldstart/ exits 0.",
+        "python -c 'from dopemux.coldstart import platform, secrets_resolver, network, compose_orchestrator' runs without ImportError.",
+        "No file outside commit.allowlist changed.",
+        "No baked secret defaults (CHANGE_ME, dev_password, sk-dev) appear in src/dopemux/coldstart/."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Write unit tests. (a) tests/coldstart/__init__.py: create (empty, marks package). (b) tests/coldstart/test_platform.py: test detect_platform() returns PlatformInfo with correct os_family on the CI runner OS; mock shutil.which to control brew/apt detection. (c) tests/coldstart/test_secrets_resolver.py: test resolve_secret_value with non_interactive=True reads from monkeypatched env; test missing required secret in non_interactive raises; test keychain path (mock subprocess returning test value); test DEFER path returns SecretResolution with value=None. (d) tests/coldstart/test_network.py: mock subprocess.run; assert ensure_docker_networks calls 'docker network create' for a network not in mock ls output; assert idempotent when network already exists. (e) tests/coldstart/test_compose_orchestrator.py: mock subprocess.run; assert ComposeOrchestrator.bring_up calls 'docker compose up -d'; assert wait_healthy returns False on timeout when mock containers stay unhealthy. (f) tests/coldstart/test_update_manager.py: import UpdateManager from dopemux.coldstart.update_manager; assert it is the same class as src/dopemux/update/manager.UpdateManager (identity or isinstance check). (g) proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/PROOF.json: commands, exit codes, diff scope, residual risks, UNKNOWNs.",
+      "expected_files": [
+        "tests/coldstart/__init__.py",
+        "tests/coldstart/test_platform.py",
+        "tests/coldstart/test_secrets_resolver.py",
+        "tests/coldstart/test_network.py",
+        "tests/coldstart/test_compose_orchestrator.py",
+        "tests/coldstart/test_update_manager.py",
+        "proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/PROOF.json"
+      ],
+      "validation": [
+        "Docs describe implemented behavior only — no aspirational claims.",
+        "Proof artifacts include commands, exit codes, diff scope, residual risks, and UNKNOWNs.",
+        "All unit tests pass with mocked Docker, keychain, and subprocess calls — no live Docker or OS keychain required.",
+        "Generated artifacts are stable and replayable."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run focused validation, inspect git diff, run codereview/precommit, and prepare a truthful completion summary.",
+      "commands": [
+        "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m compileall -q src/dopemux/coldstart/",
+        "python -m compileall -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py",
+        "pytest -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py",
+        "python -c \"from dopemux.coldstart import platform, secrets_resolver, network, compose_orchestrator, update_manager, rollback_manager; print('imports OK')\"",
+        "git diff --check"
+      ],
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "python -m compileall -q src/dopemux/coldstart/ exits 0.",
+        "pytest -q tests/coldstart/test_platform.py tests/coldstart/test_secrets_resolver.py tests/coldstart/test_network.py tests/coldstart/test_compose_orchestrator.py tests/coldstart/test_update_manager.py exits 0 with all tests passing.",
+        "python -c 'from dopemux.coldstart import ...' import check exits 0.",
+        "git diff --check exits 0 (no whitespace errors).",
+        "PAL codereview and precommit steps completed with findings addressed."
+      ]
+    }
+  ]
+}

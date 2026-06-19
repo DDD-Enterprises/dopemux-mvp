@@ -1,0 +1,170 @@
+{
+  "id": "TP-DMX-COLDSTART-L0-DEP-AUDIT-100",
+  "project": "dopemux-mvp",
+  "target": "Produce a machine-checkable L0 membership manifest classifying every keeper skill and hook as L0 (standalone) or L0.5 (requires CLI or fleet), with evidence-backed per-item dependency lists and a CI-runnable assertion that L0 items make no fleet calls. This manifest is the blocking precondition for CS-107 (the signed plugin).",
+  "invariants": [
+    "Runtime/source truth outranks this packet and the load plan.",
+    "Preserve the hard invariants: DCP-RED-MERGE-SEAM-0001 stays blocked; LIVE_WRITE_READY stays undefined/blocking; no auto-merge.",
+    "Preserve fail-closed behavior on missing secrets, stale SHAs, or unknown authority.",
+    "Do not expose secrets/tokens/keys in code, logs, receipts, or proof artifacts.",
+    "Do not modify files outside the packet allowlist without stopping for supervisor review."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-COLDSTART",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-coldstart-l0-dep-audit-100",
+    "base_branch": "main",
+    "stacked_because": "Wave-0 entry point; no dependencies; required before CS-107 plugin authoring can begin."
+  },
+  "commit": {
+    "message": "feat(coldstart): L0 dependency audit — l0_membership.json + CI assertion",
+    "allowlist": [
+      "templates/plugin/l0_membership.json",
+      "tests/coldstart/__init__.py",
+      "tests/coldstart/test_l0_membership.py",
+      "docs/02-how-to/l0-dependency-audit.md",
+      "task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json",
+      "proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool templates/plugin/l0_membership.json",
+      "python -m compileall -q tests/coldstart/test_l0_membership.py",
+      "pytest -q tests/coldstart/test_l0_membership.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(coldstart): L0 dependency audit — l0_membership manifest + CI assertion",
+    "body": "## Summary\n- Classify every keeper skill and hook as L0 (standalone) or L0.5 (requires CLI or fleet) with per-item evidence.\n- Deliver `templates/plugin/l0_membership.json` — the authoritative manifest for the signed plugin (CS-107).\n- Add a CI-runnable pytest assertion that every L0-classified item contains no fleet/MCP/localhost probes.\n\n## Scope\nSeries: DMX-COLDSTART. Risk: MED. Wave: 0 (entry point, no deps).\n\n## Validation\nRun packet validation commands and capture proof under `proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/PROOF.json`.\n\n## NOT_RUN\nList any skipped live-fleet, credential, or supervisor-gated checks explicitly.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect repo truth before editing. Read every file in .claude/commands/dx/ (18 .md files: backlinks.md, block.md, blocked.md, cancel.md, complete.md, complete-tree.md, context.md, depends.md, implement.md, next.md, note.md, notes.md, preview.md, reopen.md, resume.md, search.md, start.md, tree.md). Read every hook in .claude/hooks/ (mcp_health_probe.py, session_lifecycle.py, save_context.sh, check_energy.sh, dcp_surface_guard.py, dcp_denylist_nudge.py, orchestrator_enforcement.py, orchestrator_post_edit_nudge.py, orchestrator_session_start.py, orchestrator_subagent_protocol.py, proof_tracking_guard.py, prompt_analyzer.py, track_file_edit.sh, log_progress.sh). Read .claude/commands/research*.md, implement.md, plan.md, plan-tasks.md, plan-slice.md. For each item grep for: task-orchestrator references (mcp__task-orchestrator, advance_item, claim_item), localhost or port probes (curl http://localhost, socket.connect, requests.get), docker calls, conport calls (mcp__conport__), fleet-service names (redis, qdrant, postgres, serena). Record findings per item with line evidence. Identify templates/plugin/ directory (exists as templates/plugin/routing.yaml and skills/ subdirectory; no l0_membership.json yet). Verify tests/coldstart/ exists (created by earlier packets OR create __init__.py here).",
+      "context_files": [
+        ".claude/commands/dx/backlinks.md",
+        ".claude/commands/dx/block.md",
+        ".claude/commands/dx/blocked.md",
+        ".claude/commands/dx/cancel.md",
+        ".claude/commands/dx/complete.md",
+        ".claude/commands/dx/complete-tree.md",
+        ".claude/commands/dx/context.md",
+        ".claude/commands/dx/depends.md",
+        ".claude/commands/dx/implement.md",
+        ".claude/commands/dx/next.md",
+        ".claude/commands/dx/note.md",
+        ".claude/commands/dx/notes.md",
+        ".claude/commands/dx/preview.md",
+        ".claude/commands/dx/reopen.md",
+        ".claude/commands/dx/resume.md",
+        ".claude/commands/dx/search.md",
+        ".claude/commands/dx/start.md",
+        ".claude/commands/dx/tree.md",
+        ".claude/hooks/mcp_health_probe.py",
+        ".claude/hooks/session_lifecycle.py",
+        ".claude/hooks/save_context.sh",
+        ".claude/hooks/check_energy.sh",
+        ".claude/hooks/dcp_surface_guard.py",
+        ".claude/hooks/dcp_denylist_nudge.py",
+        ".claude/hooks/orchestrator_enforcement.py",
+        ".claude/hooks/orchestrator_post_edit_nudge.py",
+        ".claude/hooks/orchestrator_session_start.py",
+        ".claude/hooks/orchestrator_subagent_protocol.py",
+        ".claude/hooks/proof_tracking_guard.py",
+        ".claude/hooks/prompt_analyzer.py",
+        ".claude/hooks/track_file_edit.sh",
+        ".claude/hooks/log_progress.sh",
+        ".claude/commands/research-quick.md",
+        ".claude/commands/research-deep.md",
+        ".claude/commands/research-report.md",
+        ".claude/commands/implement.md",
+        ".claude/commands/plan.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json"
+      ],
+      "validation": [
+        "Every keeper skill and hook has been read and its fleet/MCP/localhost dependencies identified or confirmed absent.",
+        "Items with mcp__task-orchestrator or localhost probes are recorded as L0.5 with specific line evidence.",
+        "Items with no fleet calls are recorded as L0 (standalone) candidates.",
+        "Any ambiguous items (e.g., fail-open fleet probes) are marked UNKNOWN pending the test assertion.",
+        "The planned diff is confirmed to stay within the packet allowlist."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Author `templates/plugin/l0_membership.json`. Schema: { \"version\": \"1.0\", \"generated\": \"<ISO date>\", \"items\": [ { \"id\": \"<skill-or-hook-name>\", \"type\": \"skill\" | \"hook\", \"path\": \"<relative path>\", \"tier\": \"L0\" | \"L0.5\", \"evidence\": [ \"<grep finding or 'no fleet calls found'>\" ], \"fleet_deps\": [ \"<mcp-tool or service name>\" ] } ] }. Classify all 18 dx/ commands, 14 hooks, and the research/plan/implement commands. L0 criteria: no mcp__task-orchestrator calls, no mcp__conport__ calls requiring a running fleet, no localhost port probes, no docker subprocess calls, no unconditional calls to fleet services. L0.5 criteria: any of the above present without a verified fail-open path. Hooks with fail-open guards (e.g., dcp_surface_guard.py, proof_tracking_guard.py that fail open when fleet absent) may still be L0 if the guard is verified in tests. Record each guard pattern as evidence.",
+      "expected_files": [
+        "templates/plugin/l0_membership.json"
+      ],
+      "requirements": [
+        "Every item in the manifest must have at least one non-empty evidence string from actual file inspection.",
+        "No item classified L0 may have an unguarded fleet/MCP call (absence of guard = L0.5).",
+        "Fleet-coupled items that ship with a hard-degrade path (probe → no-op + message) may be classified L0 only if the degrade path is verified by tests/coldstart/test_l0_membership.py.",
+        "The manifest must be valid JSON; use python -m json.tool to verify before committing."
+      ],
+      "validation": [
+        "templates/plugin/l0_membership.json passes python -m json.tool.",
+        "Every item listed in the manifest corresponds to a real file in the repo (no invented paths).",
+        "No L0 item has an unguarded mcp__task-orchestrator, mcp__conport__, localhost probe, or docker call in its source.",
+        "No file outside commit.allowlist changed."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Write tests and docs. (a) tests/coldstart/__init__.py: create if not already present (may exist after CS-101). (b) tests/coldstart/test_l0_membership.py: load templates/plugin/l0_membership.json; assert every item exists on disk; for every L0-classified item, grep its source file for the fleet-call patterns (mcp__task-orchestrator, mcp__conport__, localhost, docker, requests.get.*localhost, socket.connect) and assert the patterns are absent OR that every match is inside a fail-open guard block (guard_pattern = 'except', 'if.*not.*available', 'fail_open'); test must be runnable with `pytest -q` with no fleet running. (c) docs/02-how-to/l0-dependency-audit.md: document the L0/L0.5 criteria, how to re-run the audit when skills/hooks change, and how to update the manifest. (d) proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/PROOF.json: commands, exit codes, diff scope, residual risks, UNKNOWNs.",
+      "expected_files": [
+        "tests/coldstart/__init__.py",
+        "tests/coldstart/test_l0_membership.py",
+        "docs/02-how-to/l0-dependency-audit.md",
+        "proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/PROOF.json"
+      ],
+      "validation": [
+        "Docs describe the implemented manifest schema and classification criteria only — no aspirational claims.",
+        "Proof artifacts include commands, exit codes, diff scope, residual risks, and UNKNOWNs.",
+        "pytest -q tests/coldstart/test_l0_membership.py passes with no fleet running.",
+        "Generated artifacts are stable and replayable."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run focused validation, inspect git diff, run codereview/precommit, and prepare a truthful completion summary.",
+      "commands": [
+        "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python -m json.tool templates/plugin/l0_membership.json",
+        "python -m compileall -q tests/coldstart/test_l0_membership.py",
+        "pytest -q tests/coldstart/test_l0_membership.py",
+        "git diff --check"
+      ],
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/TP-DMX-COLDSTART-L0-DEP-AUDIT-100.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "python -m json.tool templates/plugin/l0_membership.json exits 0 (valid JSON).",
+        "pytest -q tests/coldstart/test_l0_membership.py exits 0 with all assertions passing.",
+        "git diff --check exits 0 (no whitespace errors).",
+        "PAL codereview and precommit steps completed with findings addressed."
+      ]
+    }
+  ]
+}

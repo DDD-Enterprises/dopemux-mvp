@@ -116,3 +116,53 @@ Both paths are present in `origin/main`. Note: `steward_gate.py` was absent at T
 
 - **This packet (TP-DCP-0001):** REV1 §4 (contract registry), §5 (red-lane taxonomy), §6 (envelope field-lists + §6.0 meta-contract).
 - **Fixture data:** Populated ONLY from pasted evidence text. No filesystem traversal of the target repo. All SHA/hash/digest values are illustrative placeholders (`sha256:PLACEHOLDER-illustrative-not-computed`).
+
+---
+
+## Contract Promotion Ladder (L0–L3) — added by DMX-DCP-TOOLING-101
+
+Each schema in this directory has a **level** that tracks its promotion from draft to locked contract. Levels are recorded in `manifest.json` (see below).
+
+| Level | Name | Key Exit Criteria |
+|-------|------|-------------------|
+| **L0** | DRAFT | Schema file present; structural tests pass; `schema_version` ends `.v0`; `validation_state` = `PROVISIONAL_UNVERIFIED_ENFORCEMENT` or `DESIGN_ONLY` |
+| **L1** | RECONCILED | L0 PLUS shape verified against a repo artifact on `origin/main`; `validation_state` = `REPO_CROSS_CHECKED` |
+| **L2** | WIRED | L1 PLUS at least one `runtime_producer` AND one `runtime_consumer` in `manifest.json`; CI gate exercises the coupling |
+| **L3** | LOCKED | L2 PLUS CI gate enforces on merge path; `schema_version` bumped `.v0`→`.v1`; change-control lane active |
+
+### Version-Precedence Rule
+
+Two version fields govern each contract:
+
+- **`schema_version`** (inside the `.schema.json` file, as a `const`) is the **stability marker**. `.v0` = unstable/DRAFT; `.v1` = locked. This field is the authority: a contract at `.v0` is UNSTABLE regardless of `contract_version`.
+- **`contract_version`** (in `manifest.json`, semver string) is the **operational version** of the manifest entry. It tracks metadata changes independently of the schema file.
+
+Both fields bump together at L2→L3: `schema_version` moves from `.v0` to `.v1`, `contract_version` moves from `0.x.y` to `1.0.0`.
+
+---
+
+## Contracts Manifest — `manifest.json`
+
+`schemas/dcp/manifest.json` is the machine-readable registry of all 19 contracts in this directory. It:
+
+- Lists one entry per `.schema.json` file (excluding `dcp_contracts_manifest.schema.json` itself).
+- Records `level`, `validation_state`, `enforcement_side`, `ci_gates`, `instance_files`, `runtime_producers`, and `runtime_consumers` for each contract.
+- Validates against `schemas/dcp/dcp_contracts_manifest.schema.json` (JSON Schema draft-07).
+- Is enforced by `tests/dcp/test_contracts_consistency.py` on every CI run.
+
+**Do not edit `manifest.json` without updating the corresponding promotion-ladder entry.** Promote a contract's `level` only when all exit criteria for the target level are met (see table above).
+
+DMX-DCP-TOOLING-102 promotes the red-lane taxonomy seed from the aggregate test fixture into the standalone instance file `schemas/dcp/dcp_red_lane_taxonomy.instance.json`. The local scanner reads that instance for report metadata only; it does not gain live-write, external API, or PR mutation authority.
+
+### Deterministic vs LLM Enforcement Boundary
+
+Enforcement surfaces are classified in [ADR-222](../../docs/90-adr/adr-222-deterministic-vs-llm-boundary.md). The short rule:
+
+> "A probabilistic guard is a vibe plane, not a red-lane gate."
+> "No deny may exist only in an LLM surface."
+
+- `enforcement_side: deterministic` — the contract is or will be enforced by a hard-blocking deterministic surface (CI gate, CLI non-zero exit, PreToolUse hook).
+- `enforcement_side: llm_advisory` — the contract is only checked by LLM reasoning surfaces (skills, personas); advisory output only, never a hard block.
+- `enforcement_side: human` — enforcement requires human approval (e.g. CODEOWNERS, approval artifact).
+
+See [ADR-222](../../docs/90-adr/adr-222-deterministic-vs-llm-boundary.md) for the full 7-row surface table and L0–L3 promotion criteria.

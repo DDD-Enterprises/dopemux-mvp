@@ -44,3 +44,25 @@ def test_brand_lint_helpers_catch_merge_markers_and_raw_hex(tmp_path: Path) -> N
     assert "merge conflict markers detected" in merge_errors[0]
     assert palette_errors
     assert "#ff00ff" in palette_errors[0]
+
+
+def test_brand_lint_helpers_catch_start_path_raw_ui_surfaces(tmp_path: Path) -> None:
+    module = _load_brand_lint_module()
+
+    py_file = tmp_path / "start_path.py"
+    py_file.write_text(
+        "from rich.console import Console\n"
+        "import click\n"
+        'console = Console()\n'
+        'print("raw")\n'
+        'click.echo("raw")\n'
+        'ACCENT = "#ff00ff"\n',
+        encoding="utf-8",
+    )
+
+    errors = module._iter_start_path_ui_violations(py_file)
+
+    assert any("raw Console()" in error for error in errors)
+    assert any("raw print()" in error for error in errors)
+    assert any("raw click.echo()" in error for error in errors)
+    assert any("#ff00ff" in error for error in errors)

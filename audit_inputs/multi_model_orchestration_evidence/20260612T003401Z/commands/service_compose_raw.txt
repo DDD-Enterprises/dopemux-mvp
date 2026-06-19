@@ -1,0 +1,634 @@
+./Dockerfile
+./Dockerfile.frontend
+./compose.yml
+./docker/leantime/Dockerfile
+./docker/mcp-servers-source/conport-bridge/Dockerfile
+./docker/mcp-servers-source/conport/Dockerfile
+./docker/mcp-servers-source/desktop-commander/Dockerfile
+./docker/mcp-servers-source/exa/Dockerfile
+./docker/mcp-servers-source/gptr-mcp/Dockerfile
+./docker/mcp-servers-source/leantime-bridge/Dockerfile
+./docker/mcp-servers-source/litellm/Dockerfile
+./docker/mcp-servers-source/pal/Dockerfile
+./docker/mcp-servers-source/serena/Dockerfile
+./services/activity-capture/Dockerfile
+./services/adhd-dashboard/Dockerfile
+./services/adhd-notifier/Dockerfile
+./services/adhd_engine/Dockerfile
+./services/claude_brain/Dockerfile
+./services/dope-context/Dockerfile
+./services/dopecon-bridge/Dockerfile
+./services/dopemux-gpt-researcher/Dockerfile
+./services/mcp-client/Dockerfile
+./services/mcp-integration-bridge/Dockerfile
+./services/monitoring-dashboard/Dockerfile
+./services/registry.yaml
+./services/task-orchestrator/Dockerfile
+./services/voice-commands/Dockerfile
+./services/webhook_receiver/Dockerfile
+./services/working-memory-assistant/Dockerfile
+./services/working-memory-assistant/Dockerfile.dope-memory
+./services/workspace-watcher/Dockerfile
+./src/dopemux/mcp/registry.yaml
+
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENROUTER_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"GEMINI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"ANTHROPIC_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"HOST_CODE_PARENT_DIR\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"HOST_PROJECT_RELATIVE_PATH\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"HOST_PROJECT_RELATIVE_PATH\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENROUTER_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"GEMINI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"ANTHROPIC_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"XAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENROUTER_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"GEMINI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"LITELLM_MASTER_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"LEANTIME_TOKEN\" variable is not set. Defaulting to a blank string."
+NAME                            IMAGE                           COMMAND                  SERVICE             CREATED        STATUS                  PORTS
+dope-decision-graph-bridge      dopemux-dopecon-bridge          "python -m dopecon_b…"   dopecon-bridge      2 weeks ago    Up 27 hours (healthy)   0.0.0.0:3016->3016/tcp, [::]:3016->3016/tcp
+dopemux-dope-memory-1           dopemux-dope-memory             "python dope_memory_…"   dope-memory         39 hours ago   Up 27 hours (healthy)   0.0.0.0:3020->3020/tcp, [::]:3020->3020/tcp
+dopemux-mcp-desktop-commander   dopemux-desktop-commander       "python /app/server.…"   desktop-commander   5 weeks ago    Up 27 hours (healthy)   0.0.0.0:3012->3012/tcp, [::]:3012->3012/tcp
+dopemux-mcp-gptr-mcp            dopemux-gptr-mcp                "sh -c 'DOPEMUX_GPTR…"   gptr-mcp            7 days ago     Up 2 hours (healthy)    0.0.0.0:3009->3009/tcp, [::]:3009->3009/tcp
+dopemux-mcp-serena              dopemux-serena                  "bash /app/start_wit…"   serena              40 hours ago   Up 27 hours (healthy)   0.0.0.0:3006->3006/tcp, [::]:3006->3006/tcp, 0.0.0.0:4006->4006/tcp, [::]:4006->4006/tcp
+dopemux-postgres-age            apache/age:release_PG16_1.6.0   "docker-entrypoint.s…"   postgres            2 weeks ago    Up 27 hours (healthy)   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+leantime                        dopemux-leantime                "/sbin/tini -- /star…"   leantime            2 weeks ago    Up 27 hours (healthy)   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+mcp-conport                     dopemux-conport                 "bash start_with_inf…"   conport             2 weeks ago    Up 27 hours (healthy)   0.0.0.0:3004-3005->3004-3005/tcp, [::]:3004-3005->3004-3005/tcp, 0.0.0.0:4004->4004/tcp, [::]:4004->4004/tcp
+mcp-dope-context                dopemux-dope-context            "python -m src.mcp.s…"   dope-context        7 weeks ago    Up 27 hours (healthy)   0.0.0.0:3010->3010/tcp, [::]:3010->3010/tcp
+mcp-pal                         dopemux-pal                     "/app/.venv/bin/pyth…"   pal                 4 days ago     Up 27 hours (healthy)   0.0.0.0:3003->3003/tcp, [::]:3003->3003/tcp
+mcp-qdrant                      qdrant/qdrant:latest            "./entrypoint.sh"        mcp-qdrant          7 weeks ago    Up 2 hours              0.0.0.0:6333-6334->6333-6334/tcp, [::]:6333-6334->6333-6334/tcp
+mysql_leantime                  mysql:8.0                       "docker-entrypoint.s…"   mysql_leantime      2 weeks ago    Up 2 hours (healthy)    3306/tcp, 33060/tcp
+redis-events                    redis:7-alpine                  "docker-entrypoint.s…"   redis-events        7 weeks ago    Up 27 hours (healthy)   0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
+redis-primary                   redis:7-alpine                  "docker-entrypoint.s…"   redis-primary       7 weeks ago    Up 27 hours (healthy)   0.0.0.0:6380->6379/tcp, [::]:6380->6379/tcp
+redis_leantime                  redis:7-alpine                  "docker-entrypoint.s…"   redis_leantime      2 weeks ago    Up 27 hours (healthy)   6379/tcp
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENROUTER_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"GEMINI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"ANTHROPIC_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"XAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENROUTER_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"GEMINI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"LITELLM_MASTER_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENROUTER_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"GEMINI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"LEANTIME_TOKEN\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"ANTHROPIC_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"HOST_CODE_PARENT_DIR\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"HOST_PROJECT_RELATIVE_PATH\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"HOST_PROJECT_RELATIVE_PATH\" variable is not set. Defaulting to a blank string."
+redis-events
+redis-ui
+serena
+postgres
+dope-memory
+gptr-mcp
+mysql_leantime
+redis_leantime
+leantime
+mcp-qdrant
+leantime-bridge
+redis-primary
+webhook-poller
+pal
+adhd-engine
+dopecon-bridge
+conport
+desktop-commander
+dope-context
+pal-stdio
+litellm
+task-orchestrator
+webhook-receiver
+exa
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENROUTER_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"GEMINI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"ANTHROPIC_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"XAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENROUTER_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"GEMINI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"LITELLM_MASTER_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"ANTHROPIC_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"HOST_CODE_PARENT_DIR\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"HOST_PROJECT_RELATIVE_PATH\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"HOST_PROJECT_RELATIVE_PATH\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"OPENROUTER_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"GEMINI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-06-11T17:34:14-07:00" level=warning msg="The \"LEANTIME_TOKEN\" variable is not set. Defaulting to a blank string."
+# Dopemux Canonical Docker Compose
+#
+# CANONICAL DEVELOPMENT ENTRYPOINT
+# This is the single source of truth for running Dopemux services.
+#
+# Services Included:
+# - Infrastructure: PostgreSQL (AGE), Redis (2x), Qdrant
+# - MCP Servers: ConPort, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Exa, Desktop Commander, Leantime Bridge
+# - Application Services: DopeconBridge, Task Orchestrator, ADHD Engine
+#
+# Usage:
+#   docker compose up -d                    # Start all services
+#   docker compose ps                       # View running services
+#   docker compose down                     # Stop all services
+#   docker compose logs -f <service>        # View logs
+#
+# Guidelines:
+# - `compose.yml` is the canonical runtime file for this repository.
+# - Do not add overlay compose files for normal runtime operation.
+# - Instance-aware services must be parameterized through env overrides, not duplicated service definitions.
+
+name: dopemux
+
+networks:
+  dopemux-network:
+    external: true
+    name: dopemux-network
+
+volumes:
+  pg_age_data:
+  mcp_litellm_data:
+  mcp_logs:
+  mcp_cache:
+  dope-decision-graph-qdrant-data:
+  leantime_mysql_data:
+  leantime_redis_data:
+  leantime_public_userfiles:
+  leantime_userfiles:
+  leantime_logs:
+  leantime_config:
+  mcp_client_data:
+  mcp_client_logs:
+  mcp_plane_coordinator_data:
+  mcp_plane_coordinator_logs:
+
+
+services:
+  # ========================================
+  # INFRASTRUCTURE SERVICES
+  # ========================================
+
+  # PostgreSQL with AGE (primary database)
+  postgres:
+    image: apache/age:release_PG16_1.6.0
+    container_name: dopemux-postgres-age
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    environment:
+      - POSTGRES_USER=dopemux_age
+      - POSTGRES_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+      - POSTGRES_DB=dopemux_knowledge_graph
+    volumes:
+      - pg_age_data:/var/lib/postgresql/data
+      - ./docker/postgres/01-init-age.sql:/docker-entrypoint-initdb.d/01-init-age.sql
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1" ]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+      start_period: 20s
+
+  # Redis Events (for EventBus streaming)
+  redis-events:
+    image: redis:7-alpine
+    container_name: redis-events
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    ports:
+      - "${REDIS_EVENTS_PORT:-6379}:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Redis Primary (for caching)
+  redis-primary:
+    image: redis:7-alpine
+    container_name: redis-primary
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "${REDIS_PRIMARY_PORT:-6380}:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # MySQL (Leantime)
+  mysql_leantime:
+    image: mysql:8.0
+    container_name: mysql_leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-leantime_root_dev}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-leantime}
+      - MYSQL_USER=${MYSQL_USER:-leantime}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-leantime_dev_password}
+    command: >
+      --character-set-server=UTF8MB4
+      --collation-server=UTF8MB4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+    volumes:
+      - leantime_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD:-leantime_root_dev} || exit 1"]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+
+  # Redis (Leantime cache/session support)
+  redis_leantime:
+    image: redis:7-alpine
+    container_name: redis_leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    command: >
+      sh -c 'if [ -n "$$REDIS_PASSWORD" ]; then
+      exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
+      else
+      exec redis-server --appendonly yes;
+      fi'
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    volumes:
+      - leantime_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      retries: 5
+      interval: 10s
+
+  # Leantime PM container (canonical stack member)
+  leantime:
+    build:
+      context: ./docker/leantime
+      dockerfile: Dockerfile
+    container_name: leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "${LEANTIME_PORT:-8080}:80"
+    depends_on:
+      mysql_leantime:
+        condition: service_healthy
+      redis_leantime:
+        condition: service_started
+    environment:
+      - LEAN_DB_HOST=mysql_leantime
+      - LEAN_DB_USER=${MYSQL_USER:-leantime}
+      - LEAN_DB_PASSWORD=${MYSQL_PASSWORD:-leantime_dev_password}
+      - LEAN_DB_DATABASE=${MYSQL_DATABASE:-leantime}
+      - LEAN_DB_PORT=3306
+      - LEAN_SITENAME=${LEAN_SITENAME:-Dopemux Leantime}
+      - LEAN_SESSION_PASSWORD=${LEAN_SESSION_PASSWORD:-dopemux_session_password_minimum_32_chars}
+      - LEAN_APP_URL=${LEAN_APP_URL:-http://localhost:8080}
+      - LEAN_SESSION_EXPIRATION=${LEAN_SESSION_EXPIRATION:-28800}
+      - LEAN_DEBUG=${LEAN_DEBUG:-0}
+      - LEAN_API_ENABLED=${LEAN_API_ENABLED:-true}
+      - LEAN_MCP_ENABLED=${LEAN_MCP_ENABLED:-true}
+      - LEAN_MCP_TOKEN=${LEAN_MCP_TOKEN:-}
+      - LEAN_ADHD_MODE=${LEAN_ADHD_MODE:-true}
+      - LEAN_NOTIFICATION_BATCH=${LEAN_NOTIFICATION_BATCH:-true}
+      - LEAN_CONTEXT_PRESERVATION=${LEAN_CONTEXT_PRESERVATION:-true}
+      - REDIS_HOST=redis_leantime
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    volumes:
+      - leantime_public_userfiles:/var/www/html/public/userfiles
+      - leantime_userfiles:/var/www/html/userfiles
+      - ./docker/leantime/plugins:/var/www/html/app/Plugins
+      - leantime_logs:/var/www/html/storage/logs
+      - leantime_config:/var/www/html/config
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:80/ >/dev/null || exit 1"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+      start_period: 60s
+
+  # Redis UI (optional web interface)
+  redis-ui:
+    image: redislabs/redisinsight:latest
+    container_name: dopemux-redis-ui
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "${REDIS_UI_PORT:-8081}:5540"
+    # Note: RedisInsight healthcheck disabled - app takes time to start and doesn't respond reliably to health checks
+
+  # Qdrant (vector database for embeddings)
+  mcp-qdrant:
+    image: qdrant/qdrant:latest
+    container_name: mcp-qdrant
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
+    volumes:
+      - dope-decision-graph-qdrant-data:/qdrant/storage
+
+  # ========================================
+  # MCP SERVERS (Core Intelligence)
+  # ========================================
+
+  # ConPort - Knowledge Graph & Context Management
+  conport:
+    build:
+      context: .
+      dockerfile: docker/mcp-servers/conport/Dockerfile
+    container_name: ${CONPORT_CONTAINER_NAME:-mcp-conport}
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    environment:
+      - DOPEMUX_INSTANCE_ID=${DOPEMUX_INSTANCE_ID:-}
+      - MCP_SERVER_PORT=3005
+      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DATABASE_URL=postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - AGE_HOST=dopemux-postgres-age
+      - AGE_PORT=5432
+      - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+      - REDIS_URL=redis://redis-primary:6379
+      - QDRANT_URL=http://mcp-qdrant:6333
+    ports:
+      - "${CONPORT_HTTP_PORT:-3004}:3004"
+      - "${CONPORT_MCP_PORT:-3005}:3005"
+      - "${CONPORT_INFO_PORT:-4004}:4004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-primary:
+        condition: service_healthy
+      mcp-qdrant:
+        condition: service_started
+      dopecon-bridge:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3004/health || exit 1" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+
+  # Zen - Multi-Model Reasoning
+  pal:
+    build:
+      context: .
+      dockerfile: docker/mcp-servers/pal/Dockerfile
+    container_name: mcp-pal
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+# Dopemux Service Registry
+# Single source of truth for ports, health endpoints, and service configuration
+# 
+# Schema:
+#   name: string - canonical service name
+#   port: integer - external host port
+#   container_port: integer (optional) - internal container port (defaults to port)
+#   health_path: string - health check endpoint path
+#   health_method: string (optional) - HTTP method for health check (default: GET)
+#   health_timeout_ms: integer (optional) - timeout in milliseconds (default: 5000)
+#   health_expected_status: integer (optional) - expected HTTP status (default: 200)
+#   compose_service_name: string (optional) - docker-compose service name (defaults to name)
+#   enabled_in_smoke: boolean - whether service is included in smoke stack
+#   category: string - service category (infrastructure, mcp, coordination, cognitive)
+#   description: string - brief service description
+
+version: "1.0"
+last_updated: "2026-03-11"
+
+services:
+  # Infrastructure Services
+  - name: postgres
+    port: 5432
+    container_port: 5432
+    health_path: null  # Uses pg_isready command
+    compose_service_name: postgres
+    enabled_in_smoke: true
+    category: infrastructure
+    description: "PostgreSQL database with AGE extension for knowledge graph"
+
+  - name: redis-events
+    port: 6379
+    container_port: 6379
+    health_path: null  # Uses redis-cli ping
+    compose_service_name: redis-events
+    enabled_in_smoke: false
+    category: infrastructure
+    description: "Redis for event streaming"
+
+  - name: redis-primary
+    port: 6380
+    container_port: 6379
+    health_path: null
+    compose_service_name: redis-primary
+    enabled_in_smoke: false
+    category: infrastructure
+    description: "Redis for caching"
+
+  - name: qdrant
+    port: 6333
+    container_port: 6333
+    health_path: /
+    compose_service_name: mcp-qdrant
+    enabled_in_smoke: true
+    category: infrastructure
+    description: "Qdrant vector database"
+
+  # Coordination Layer (Port Base + 0 and + 16)
+  - name: dopecon-bridge
+    port: 3016
+    container_port: 3016
+    health_path: /health
+    compose_service_name: dopecon-bridge
+    enabled_in_smoke: true
+    category: coordination
+    description: "DopeconBridge - Central coordination layer"
+
+  - name: dopecon-bridge-alt
+    port: 3000
+    container_port: 3016
+    health_path: /health
+    compose_service_name: dopecon-bridge
+    enabled_in_smoke: false
+    category: coordination
+    description: "DopeconBridge Alternate Port"
+
+  # MCP Services (Port Base + 3 to + 15)
+  - name: pal
+    port: 3003
+    container_port: 3003
+    health_path: /health
+    compose_service_name: pal
+    enabled_in_smoke: false
+    category: mcp
+    description: "PAL MCP - Multi-model reasoning server"
+
+  - name: conport-http
+    port: 3004
+    container_port: 3004
+    health_path: /health
+    compose_service_name: conport
+    enabled_in_smoke: true
+    category: mcp
+    env_contract_exceptions:
+      - variable: PORT
+        reason: "ConPort smoke runtime binds via MCP_SERVER_PORT and service-specific startup scripts."
+      - variable: LOG_LEVEL
+        reason: "ConPort smoke runtime uses internal logging defaults instead of a unified LOG_LEVEL contract."
+      - variable: ENVIRONMENT
+        reason: "ConPort smoke runtime does not consume the shared ENVIRONMENT variable."
+      - variable: HEALTH_CHECK_PATH
+        reason: "ConPort health path is defined by the HTTP server implementation rather than loaded from env."
+      - variable: SERVICE_NAME
+        reason: "ConPort identifies itself through MCP/server metadata rather than the shared SERVICE_NAME env."
+    description: "ConPort HTTP API"
+
+  - name: conport-mcp
+    port: 3005
+    container_port: 3005
+    health_path: /health
+    compose_service_name: conport
+    enabled_in_smoke: false
+    category: mcp
+    description: "ConPort MCP (SSE)"
+
+  - name: serena
+    port: 3006
+    container_port: 3006
+    health_path: /health
+    compose_service_name: serena
+    enabled_in_smoke: false
+    category: mcp
+    description: "Serena MCP - ADHD accommodation server"
+
+  - name: gpt-researcher
+    port: 3009
+    container_port: 3009
+    health_path: /health
+    compose_service_name: gptr-mcp
+    enabled_in_smoke: false
+    category: mcp
+    description: "GPT Researcher MCP"
+
+  - name: dope-context
+    port: 3010
+    container_port: 3010
+    health_path: /health
+    compose_service_name: dope-context
+    enabled_in_smoke: false
+    category: mcp
+    description: "Dope-Context MCP"
+
+  - name: exa
+    port: 3011
+    container_port: 3011
+    health_path: /health
+    compose_service_name: exa
+    enabled_in_smoke: false
+    category: mcp
+    description: "Exa Search MCP"
+
+  - name: desktop-commander
+    port: 3012
+    container_port: 3012
+    health_path: /health
+    compose_service_name: desktop-commander
+    enabled_in_smoke: false
+    category: mcp
+    description: "Desktop Commander MCP"
+
+  - name: task-orchestrator
+    port: 8000
+    container_port: 8000
+    health_path: /health
+    compose_service_name: task-orchestrator
+    enabled_in_smoke: true
+    category: cognitive
+    env_contract_exceptions:
+      - variable: DATABASE_URL
+        reason: "Task Orchestrator smoke runtime does not require a direct database connection in this stack."
+    description: "Task Orchestrator (Multi-instance)"
+
+  - name: leantime-bridge
+    port: 3015
+    container_port: 3015
+    health_path: /health
+    compose_service_name: leantime-bridge
+    enabled_in_smoke: false
+    category: coordination
+    description: "Leantime Bridge MCP"
+
+  # Temporal Services (Port Base + 20+)
+  - name: dope-memory
+    port: 3020
+    container_port: 3020
+    health_path: /health
+    compose_service_name: dope-memory
+    enabled_in_smoke: true
+    category: mcp
+    description: "Dope-Memory"
+
+  - name: adhd-engine
+    port: 3025
+    container_port: 8095
+    health_path: /health
+    compose_service_name: adhd-engine
+    enabled_in_smoke: false
+    category: cognitive
+    description: "ADHD Engine (Multi-instance)"
+
+  # Shared Legacy/Static Services
+  - name: leantime
+    port: 8080
+    container_port: 80
+    health_path: /
+    compose_service_name: leantime
+    enabled_in_smoke: false
+    category: coordination
+    description: "Leantime PM application"
+
+  - name: webhook-receiver
+    port: 8790
+    container_port: 8790
+    health_path: /healthz
+    compose_service_name: webhook-receiver
+    enabled_in_smoke: false
+    category: coordination
+    description: "OpenAI webhook receiver"
+
+  - name: litellm
+    port: 4000
+    container_port: 4000
+    health_path: /health
+    compose_service_name: litellm
+    enabled_in_smoke: false
+    category: infrastructure
+    description: "LiteLLM Proxy"

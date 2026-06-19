@@ -1,0 +1,23 @@
+- `pwd`: `pwd`
+- `git_root`: `git rev-parse --show-toplevel`
+- `git_head`: `git rev-parse HEAD`
+- `git_branch`: `git branch --show-current`
+- `git_remotes`: `git remote -v`
+- `git_status_short`: `git status --short`
+- `git_worktree_list`: `git worktree list`
+- `git_diff_stat`: `git diff --stat`
+- `git_diff_name_only`: `git diff --name-only`
+- `find_files_max4`: `find . -maxdepth 4 -type f`
+- `find_surfaces`: `find . -maxdepth 6 -type f (mcp/workflow/slash/command/agent/router/routing)`
+- `find_agent_workflow_dirs`: `find . -maxdepth 5 agent/workflow dirs`
+- `dopemux_help`: `dopemux help subcommands`
+- `dopetask_help`: `dopetask source/wrapper evidence; executable calls skipped by install/execution guard`
+- `runtime_entrypoint_snippets`: `sed snippets for runtime entrypoint files`
+- `mcp_inventory_raw`: `find/rg MCP inventory`
+- `slash_agent_workflow_raw`: `slash/agent/workflow inventory`
+- `service_compose_raw`: `service/compose/registry inventory, no service start`
+- `routing_model_raw`: `routing/model config surfaces`
+- `proof_contracts_raw`: `proof/packet contract surfaces`
+- `test_and_ci_evidence`: `find workflows/tests; python -m compileall -q src services; python -m pytest -q`
+- `drift_contradiction_ledger`: `rg drift/contradiction terms`
+- `secret_redaction_report`: `rg broad/high-confidence secret patterns over evidence dir`
