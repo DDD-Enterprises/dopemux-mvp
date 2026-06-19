@@ -1,0 +1,254 @@
+# dopemux help
+/Users/hue/.local/bin/dopemux
+Usage: python -m dopemux.cli [OPTIONS] COMMAND [ARGS]...
+
+  🧠 DØPEMÜX - Ritual Daemon of Focused Development
+
+  DØPEMÜX is a flight-deck for neurodivergent developers, engineered to
+  automate context preservation, orchestrate attention monitoring, and
+  decompose complex objectives into ritualistic tasks. This command-line
+  interface acts as your  primary ritual circle, synchronizing daemon states
+  across your workspace, tmux sessions, and mobile devices to ensure zero
+  context decay.
+
+  Invoking this daemon establishes a cockpit environment where focus is a
+  service and distraction is mitigated by architectural design.
+
+Options:
+  --version
+  -c, --config TEXT               🔬 Path to the ritual configuration file
+                                  (dopemux.toml). Defaults to searching
+                                  project root or ~/.config/dopemux/.
+  -v, --verbose                   📊 Increase verbosity of the ritual logs.
+                                  Enables deep telemetry for troubleshooting
+                                  the flight-deck.
+  --debug-log FILE                📜 Specify a direct telemetry line to a file
+                                  for capturing all internal daemon signals.
+  --render-mode [rich|plain|compact|audit]
+                                  🎭 Select the HUD aesthetic. 'rich' for high-
+                                  fidelity interactive feedback, 'plain' for
+                                  CI/CD compatibility, 'compact' for minimal
+                                  screen footprint, or 'audit' for security
+                                  review.
+  --compact                       ⚡ Toggle compact HUD rendering. Minimize the
+                                  visual footprint of the cockpit.
+  --plain                         🧪 Disable ritual styling. Renders output as
+                                  raw text for ingestion by other daemons.
+  --json                          📊 Emit ritual state as JSON. Ideal for
+                                  flight-data analysis or external HUD
+                                  integration. Implies --plain.
+  --no-hints                      💧 Silence the flight-deck startup tips. For
+                                  experienced pilots who have mastered the
+                                  ritual.
+  --help                          Show this message and exit.
+
+Commands:
+  agent          🧠 Cognitive Uplink: Agent-to-agent communication
+  agent-loop     🤖 Grand Orchestrator: Agentic workflow execution loop...
+  analyze        🔬 Deep Inspection: Run high-fidelity codebase analysis...
+  audit          🔬 Documentation Audit: Corpus analysis and guided...
+  autoresponder  🤖 Auto-Response Ritual: Manage Claude Auto Responder...
+  backup         💾 Save Current Context
+  capture        📥 Telemetry Ingestion: Capture ritual tool signals...
+  cockpit        Dopemux Cockpit -- guarded operator and runtime-render...
+  dashboard      📊 Cockpit HUD: Launch the high-fidelity TUI dashboard
+  debug          🩺 Ritual Apothecary: Interactive debugging support
+  decisions      📊 Decision Governance: Track and analyze cockpit...
+  dev            🔧 Contributor Flight-Deck: Development & hot reload
+  doctor         🏥 System Apothecary: Run diagnostics and health checks
+  dope           🔥 Engage DOPE Ritual: Launch full high-fidelity cockpit...
+  env            🔒 Environment Guard: Safe environment variable inspection
+  extract        📄 Ritual Daemon: Document extraction with ADHD-optimized...
+  health         🏥 Diagnostic HUD: Comprehensive health check for the...
+  hooks          🔗 Event Synchronization: Manage Claude Code integration...
+  init           🚀 Synchronize Flight-Deck: Initialize DØPEMÜX Rituals
+  instances      🧪 Instance Orchestration: Manage parallel Ritual-Daemons
+  kernel         🔬 TaskX Kernel Lifecycle: Orchestrate Ritual Steps
+  launch         🚀 Ignite Cockpit: Quick launch with opinionated presets
+  layouts        📐 Catalog Cockpit Architectures: Show available layouts...
+  mcp            🔬 Neural Architecture: Command the MCP infrastructure
+  memory         🧠 Cognitive Core: Memory capture and global DAEMON...
+  mobile         📱 Satellite HUD: Manage Dopemux mobile (Happy) integration
+  mobile-env     📱 dopemux-mobile: ADHD-optimized mobile tmux environment.
+  native-hooks   🔗 Protocol Synchronization: Manage Claude Code internal...
+  orchestrator   Read-only Task Orchestrator status and daily planning...
+  personas       🎭 Cognitive Personas: Management and discovery of AI...
+  pr-merge       Delegate PR merge specialist commands to the...
+  pr-steward     🧾 Check-Only Governance: PR Steward
+  profile        📋 Contextual Attunement: Manage MCP profiles for tool...
+  quick          ⚡ Streamlined Ignition: Fastest cockpit launch (Shortcut)
+  restore        🔄 Temporal Restoration: Reconstruct past development...
+  routing        Manage Dopemux routing and launchd services.
+  rte            Canonical operator entrypoint for Repo Truth Extractor.
+  run-build      🏗️ Materialization Ritual: Run a build command and send...
+  run-tests      🧪 Validation Ritual: Run automated tests and send...
+  safe           🛡️ Safety Interlocks: Ritual safety hook management
+  save           💾 Save Current Context
+  servers        🔬 Cockpit Alias: Alternative entry point for MCP operations
+  session        ⏳ Temporal Registry: Session search and management
+  shell-setup    🐚 Engage Shell Uplink: Output integration code for...
+  start          ⚡ Ignition: Launch the DØPEMÜX Cockpit
+  status         📊 Diagnostic HUD: Show current session status and metrics
+  switch         ✅ Set active profile
+  system-data    Mac system-data diagnosis, cleanup planning, TUI, and...
+  task           📋 Legacy Ritual: Manage tasks (DEPRECATED - Use...
+  theme          🎭 Aesthetic Synchronizer: Manage UI themes and ritual...
+  tmux           🧭 Cockpit Navigation: Orchestrate tmux sessions and panes
+  trigger        ⚡ Sensor Triggers: Internal hook telemetry signals
+  truth          Deprecated Repo Truth Extractor entrypoint.
+  update         🔄 System Regeneration: Update and Upgrade DØPEMÜX
+  upgrades       Legacy compatibility alias for `dopemux rte`.
+  wire-conport   ⚡ Synchronize Uplink: Wire ConPort MCP Terminal
+  wizard         🧙 Ritual Guide: Guided extraction flight-deck walkthrough
+  workflow       📜 Mission Planning: Orchestrate ritual workflows and ideas
+Usage: python -m dopemux.cli kernel [OPTIONS] COMMAND [ARGS]...
+
+  🔬 TaskX Kernel Lifecycle: Orchestrate Ritual Steps
+
+  Manages the primary execution kernel of the TaskX subsystem. These commands
+  delegate to the TaskX ritual wrapper (scripts/taskx), synchronizing the
+  core state and lifecycle of the active daemon.
+
+  Capabilities: - Diagnostic Scans: Run the doctor ritual to verify kernel
+  health. - Lifecycle Stages: Compile, Run, Collect, Gate, Promote, Feedback,
+  and Loop.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  collect   📊 Harvest ritual artifacts and state updates from the active...
+  compile   🧪 Synchronize and compile the TaskX ritual logic.
+  doctor    🔬 Run diagnostic scan on the active kernel (TaskX doctor).
+  feedback  🧠 Process mission feedback and update ritual heuristics.
+  gate      💧 Verify ritual exit conditions and quality gates.
+  loop      ⚡ Initiate a persistent ritual loop.
+  promote   ⚡ Advance the ritual state to the next temporal coordinate.
+  run       ⚡ Execute the current TaskX ritual cycle.
+Usage: python -m dopemux.cli mcp [OPTIONS] COMMAND [ARGS]...
+
+  🔬 Neural Architecture: Command the MCP infrastructure
+
+  Manages the Docker-based Model Context Protocol servers. These daemons
+  (ConPort, PAL, Serena, etc.) provide the underlying neural architecture  for
+  the cockpit's tool capabilities and semantic context management.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  add           ➕ Append Server: Add a per-worktree MCP from the catalog...
+  doctor        🩺 Health Sweep: Verify env vars, port reachability,...
+  down          💧 Cool Down Cores: Terminate MCP containers and volumes
+  init          🌱 Bootstrap Worktree: Scaffold .mcp.json + per-worktree...
+  list          📋 Survey Fleet: Show globals, locals, catalog availability
+  logs          🧠 Tap Telemetry: Stream real-time log data from MCP services
+  remove        ➖ Drop Server: Remove a per-worktree MCP from .mcp.json
+  start-all     🧙 Summon Ecosystem: Ignite the complete DØPEMÜX stack
+  status        📊 Diagnostic HUD: Interrogate MCP service health
+  sync-globals  🌐 Promote Singletons: Reconcile ~/.claude.json mcpServers...
+  up            ⚡ Ignite Engine: Deploy MCP servers via Docker Compose
+Usage: python -m dopemux.cli routing [OPTIONS] COMMAND [ARGS]...
+
+  Manage Dopemux routing and launchd services.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  api             Switch to API mode (route through LiteLLM + external...
+  config          Show current routing configuration.
+  direct          Switch to direct/subscription mode (route straight to...
+  docker          Generate Docker Compose snippets for services.
+  doctor          Audit repo-owned routing alias contract drift in...
+  freeflow        Inspect strict-free routing policy, quotas, and...
+  health          Check service health and exit with appropriate status...
+  install         Install launchd services for LiteLLM and CCR.
+  reload          Reload all launchd services.
+  repair          Attempt to repair routing services.
+  repair-aliases  Preview or repair stale repo-owned alias mappings...
+  start           Start all launchd services.
+  status          Show status of launchd services.
+  stop            Stop all launchd services.
+  sync-keys       Sync API keys from current environment to routing.env.
+  uninstall       Uninstall all launchd services.
+Usage: python -m dopemux.cli health [OPTIONS]
+
+  🏥 Diagnostic HUD: Comprehensive health check for the DØPEMÜX ecosystem
+
+  Monitors core daemon health, Claude Code integration, MCP server  stability,
+  Docker service status, and ADHD cockpit effectiveness.  Synchronizes across
+  all subsystems to ensure a stable ritual environment.
+
+Options:
+  -d, --detailed          📊 Deep Telemetry: Show high-fidelity health
+                          diagnostics for all subsystems.
+  -s, --service TEXT      🔬 Target Daemon: Check the health of a specific
+                          ritual service.
+  -f, --fix               🔧 Auto-Remediation: Attempt to restore unhealthy
+                          services to stable coordinates.
+  -c, --cleanup           🧹 Purge Orphans: Find and terminate abandoned MCP
+                          server processes.
+  -w, --watch             👁️  Continuous HUD: Engage persistent monitoring
+                          mode.
+  -i, --interval INTEGER  ⏱️ Scan Frequency: Watch interval in seconds
+                          (default: 30).
+  --help                  Show this message and exit.
+Usage: python -m dopemux.cli workflow [OPTIONS] COMMAND [ARGS]...
+
+  📜 Mission Planning: Orchestrate ritual workflows and ideas
+
+  Manages the lifecycle of cockpit missions, from initial pattern synthesis
+  to high-fidelity execution. Synchronizes across active workflows, ideas,
+  and epics to ensure cognitive alignment with mission objectives.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  cancel   ⏹️ Halt Mission: Deactivate current workflow sequence
+  epics    📈 Grand Rituals: Manage cockpit epics and long-term missions
+  ideas    💡 Cognitive Seeds: Manage mission ideas and ritual patterns
+  init     🚀 Ignite Mission: Create or resume a local ritual workflow
+  inspect  🔬 Deep Audit: Show mission details, checkpoints, and launch...
+  resume   ▶️ Re-Engage Mission: Rebind workspace to an existing workflow
+  status   📊 Mission HUD: Show active workflow status and telemetry
+Usage: python -m dopemux.cli memory [OPTIONS] COMMAND [ARGS]...
+
+  🧠 Cognitive Core: Memory capture and global DAEMON rollup operations
+
+  Orchestrates the persistent memory systems of the DØPEMÜX cockpit.  This
+  system synchronizes per-project ledgers into a global rollup index,
+  enabling cross-workspace semantic search and high-fidelity telemetry
+  harvesting from ritual toolsets.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  capture  📥 Telemetry Ingestion: Capture ritual tool signals (Copilot,...
+  rollup   📊 Global Synthesis: Sync and query global daemon rollup index
+Legacy command disabled. Use `dopemux rte` instead.
+Usage: python -m dopemux.cli tmux [OPTIONS] COMMAND [ARGS]...
+
+  🧭 Cockpit Navigation: Orchestrate tmux sessions and panes
+
+  Manages the high-fidelity structural layout of the DØPEMÜX cockpit.
+  Synchronizes across sessions, windows, and panes to provide a  consistent,
+  multi-agent focal environment for ritual execution.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  agent     🤖 Agent Rituals: Manage high-fidelity agent focal points
+  capture   Capture recent output from a tmux pane.
+  close     Close a tmux pane controlled by Dopemux.
+  happy     Launch Happy CLI in new tmux panes anchored to target panes.
+  list      📊 Diagnostic HUD: Scan and catalog all visible tmux panes
+  open      🪟 Materialize Pane: Open a new cockpit pane using presets or...
+  send      ⚡ Pulse Signal: Send keystrokes or literal text to a ritual pane
+  sessions  📋 Catalog Sessions: List and engage available cockpit sessions
+  start     🚀 Ignite Cockpit: Create a high-fidelity tmux session and...
+  stop      Stop a Dopemux tmux session.
+  theme     🎨 Ritual Aesthetic: Preview and apply cockpit visual themes

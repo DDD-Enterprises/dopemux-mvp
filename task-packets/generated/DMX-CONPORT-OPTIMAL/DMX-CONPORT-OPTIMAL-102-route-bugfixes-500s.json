@@ -1,0 +1,143 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s",
+  "project": "dopemux-mvp",
+  "target": "Eliminate three certain runtime 500s in enhanced_server.py: fix ag_catalog schema reference, stringify UUID/Decimal in search_content JSON serialization, and verify no other ag_catalog schema references in unified_queries.py.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must not add new REST routes or change route signatures.",
+    "This packet must not alter PostgreSQL schema or run migrations.",
+    "This packet must treat any remaining ag_catalog reference as UNKNOWN until verified read-only.",
+    "This packet must fail closed — if a fix cannot be validated, record NOT_RUN, not PASS."
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-101-server-bringup-health-smoke",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-102-route-bugfixes-500s",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(conport): eliminate 500s — ag_catalog schema ref, search UUID/Decimal serialization",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/unified_queries.py",
+      "docker/mcp-servers-source/conport/Dockerfile",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s.json",
+      "proof/conport-optimal-102/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "grep -n 'ag_catalog' docker/mcp-servers-source/conport/enhanced_server.py | grep -v '#' || true",
+      "grep -n 'ag_catalog' docker/mcp-servers-source/conport/unified_queries.py | grep -v '#' || true",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(conport): eliminate runtime 500s — schema ref + serialization — 102",
+    "body": "Fixes three certain runtime 500 errors: (a) changes schema='ag_catalog' to schema='public' at enhanced_server.py:206; (b) stringifies UUID id and Decimal rank in search_content JSON rows before serialization; (c) verifies unified_queries.py has no remaining ag_catalog references. Routes /api/search/<ws>, /api/unified-search, and /api/workspace-relationships should return 200 after this fix.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: verify worktree, repo identity, and conport service is healthy (101 must have passed). Read enhanced_server.py lines 200-215 and 1420-1500, and all of unified_queries.py to understand the schema reference and serialization context.",
+      "validation": [
+        "enhanced_server.py is readable and the ag_catalog reference at line ~206 is located.",
+        "search_content handler at lines ~1428-1495 is read and UUID/Decimal types identified.",
+        "unified_queries.py is read in full and all ag_catalog occurrences catalogued."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/unified_queries.py",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Fix (a): In enhanced_server.py at line ~206, change schema='ag_catalog' to schema='public'. Verify the surrounding AGE graph query context to confirm this is the correct schema for the target PostgreSQL installation.",
+      "validation": [
+        "grep -n ag_catalog enhanced_server.py shows no uncommented runtime reference at the target line.",
+        "The surrounding graph query context is preserved and logically consistent.",
+        "Python syntax check passes: python -m py_compile enhanced_server.py."
+      ],
+      "commands": [
+        "grep -n 'ag_catalog' docker/mcp-servers-source/conport/enhanced_server.py",
+        "python -m py_compile docker/mcp-servers-source/conport/enhanced_server.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Fix (b): In search_content handler (~enhanced_server.py:1428-1495), ensure UUID id fields are cast with str() and Decimal rank fields with float() before JSON serialization, or pass default=str to json.dumps. Preserve existing field structure and ordering.",
+      "validation": [
+        "No TypeError: Object of type UUID is not JSON serializable can be raised by the handler.",
+        "No TypeError: Object of type Decimal is not JSON serializable can be raised by the handler.",
+        "Python syntax check passes: python -m py_compile enhanced_server.py.",
+        "Unit test (if any exist) for search_content still passes."
+      ],
+      "commands": [
+        "python -m py_compile docker/mcp-servers-source/conport/enhanced_server.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Fix (c): Scan unified_queries.py for any ag_catalog schema references. If found in runtime query strings, change to public. If found only in comments or dead code, annotate as verified-dead. Record findings in proof.",
+      "validation": [
+        "grep -n ag_catalog unified_queries.py output is fully accounted for in proof (each line is either fixed or annotated as comment/dead).",
+        "Python syntax check passes: python -m py_compile unified_queries.py."
+      ],
+      "commands": [
+        "grep -n 'ag_catalog' docker/mcp-servers-source/conport/unified_queries.py || echo 'NONE'",
+        "python -m py_compile docker/mcp-servers-source/conport/unified_queries.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Smoke-test all three previously-500 routes against the running conport container. Record HTTP status codes in proof.",
+      "validation": [
+        "GET /api/search/<workspace_id>?q=test returns HTTP 200 (not 500).",
+        "GET /api/unified-search?q=test&workspace_id=<id> returns HTTP 200 (not 500).",
+        "GET /api/workspace-relationships/<workspace_id> returns HTTP 200 (not 500).",
+        "All response codes recorded verbatim in proof/conport-optimal-102/."
+      ],
+      "commands": [
+        "curl -sf -o /dev/null -w '%{http_code}' 'http://localhost:3004/api/search/test-ws?q=test'",
+        "curl -sf -o /dev/null -w '%{http_code}' 'http://localhost:3004/api/unified-search?q=test&workspace_id=test-ws'",
+        "curl -sf -o /dev/null -w '%{http_code}' 'http://localhost:3004/api/workspace-relationships/test-ws'"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Commit only allowlisted files, validate TP JSON, push branch, open PR, record proof bundle.",
+      "validation": [
+        "TP JSON validates against dopetask-canonical-spec.json with exit 0.",
+        "Only allowlisted files are staged and committed.",
+        "PR URL recorded in proof."
+      ]
+    }
+  ]
+}

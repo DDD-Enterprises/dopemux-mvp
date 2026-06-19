@@ -1,0 +1,369 @@
+# OPEN_PR_BRANCH_RECON
+## open PR list relevant to DCP/MCP/OpenCode/Grok/model/routing/proof/DX/docker/CLI
+#871	UNSTABLE	draft=false	feat/dx-overhaul	updated=2026-06-11T21:33:55Z	docs(dx-overhaul): Phase 1+2 — systems research, workflow maps, DR-DCP-015 intake	https://github.com/DDD-Enterprises/dopemux-mvp/pull/871
+#870	BLOCKED	draft=false	feat/dcp-mcp-ro-0007-proofs-docs	updated=2026-06-11T02:40:12Z	feat(dcp): TP-DCP-MCP-RO-0007 proof bundle and tunnel validation docs	https://github.com/DDD-Enterprises/dopemux-mvp/pull/870
+#869	BLOCKED	draft=false	feat/dcp-predecessor-packets	updated=2026-06-11T02:39:59Z	feat(dcp): DMX-DCP-MODEL-ROUTING-MVP predecessor scouting packets 0000–0000I	https://github.com/DDD-Enterprises/dopemux-mvp/pull/869
+#868	BLOCKED	draft=false	feat/proof-artifacts-misc	updated=2026-06-11T02:43:58Z	chore(proof): add TP-DMX-EVIDENCE-GATE-VERIFY-001 and TP-OPS-MAC-SCRUBBER-001 artifacts	https://github.com/DDD-Enterprises/dopemux-mvp/pull/868
+#867	BLOCKED	draft=false	feat/opencode-pal-integration	updated=2026-06-11T02:40:56Z	feat(opencode): wire PAL MCP into OpenCode with agents, guide, and hygiene updates	https://github.com/DDD-Enterprises/dopemux-mvp/pull/867
+#866	BLOCKED	draft=false	fix/docker-copy-security	updated=2026-06-11T15:26:53Z	fix(docker): broaden Dockerfile COPY paths and upgrade litellm for CVEs	https://github.com/DDD-Enterprises/dopemux-mvp/pull/866
+#865	BLOCKED	draft=false	fix/mcp-server-configs	updated=2026-06-11T02:38:34Z	fix(mcp): repair server configs and add pal-stdio service	https://github.com/DDD-Enterprises/dopemux-mvp/pull/865
+#864	UNSTABLE	draft=false	fix/cli-orchestrator-startup	updated=2026-06-11T02:36:46Z	fix(cli): resolve wizard-less orchestrator startup hangs and configurator crash	https://github.com/DDD-Enterprises/dopemux-mvp/pull/864
+#862	BEHIND	draft=true	dcp/model-routing-0001	updated=2026-06-11T00:58:46Z	DMX-DCP-MODEL-ROUTING-MVP-0001 domain model + dual independent audit (clean carve from #854)	https://github.com/DDD-Enterprises/dopemux-mvp/pull/862
+#858	BEHIND	draft=false	claude/dcp-mcp-skills-hooks-2026-06-10	updated=2026-06-10T10:10:57Z	feat(dcp/mcp): 4 hooks + 5 skills for DCP read-only facade and MCP server workflows	https://github.com/DDD-Enterprises/dopemux-mvp/pull/858
+#857	BEHIND	draft=false	claude/gracious-snyder-c3e244	updated=2026-06-11T08:22:52Z	feat(dope-memory): serve real MCP streamable-HTTP endpoint at /mcp	https://github.com/DDD-Enterprises/dopemux-mvp/pull/857
+#856	BEHIND	draft=false	claude/magical-grothendieck-28dd50	updated=2026-06-10T10:15:10Z	fix(docker): copy full src/ and tools/ before installing dopemux wheel	https://github.com/DDD-Enterprises/dopemux-mvp/pull/856
+#855	BEHIND	draft=false	chore/proof-archives-and-audit-artifacts	updated=2026-06-10T09:23:57Z	chore(proof): archive audit artifacts, proof bundles, and claudedocs	https://github.com/DDD-Enterprises/dopemux-mvp/pull/855
+#854	BEHIND	draft=false	dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat	updated=2026-06-11T23:20:44Z	feat(dcp): DMX-DCP-MODEL-ROUTING-MVP-0001 domain model, OpenCode integration, and predecessor routing packets	https://github.com/DDD-Enterprises/dopemux-mvp/pull/854
+
+## remote branch tips
+mvp/dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat	0f1844ac2
+0f1844ac2 2026-06-11 fix(proof): add NEEDS_SUPERVISOR embedded_audit to PR-854-B stewardship proof
+mvp/dcp/model-routing-0001	a83f8e252
+a83f8e252 2026-06-10 chore(dcp): carve clean DMX-DCP-MODEL-ROUTING-MVP-0001 domain model + proof (from mixed PR #854)
+mvp/feat/dcp-mcp-ro-0007-proofs-docs	54b7226c0
+54b7226c0 2026-06-10 feat(dcp): add TP-DCP-MCP-RO-0007 proof bundle and tunnel validation docs
+mvp/feat/dcp-predecessor-packets	4ca876ea8
+4ca876ea8 2026-06-10 feat(dcp): add predecessor scouting packets DMX-DCP-MODEL-ROUTING-MVP-0000 through 0000I
+mvp/feat/opencode-pal-integration	06ed907dd
+06ed907dd 2026-06-10 feat(opencode): wire PAL into OpenCode with agents, guide, start-pal.sh, and hygiene allowlist
+mvp/feat/mcp-dcp-combined-workstream	15f235b8c
+15f235b8c 2026-06-10 fix(ci): allowlist .opencode dir in root-hygiene and markdown-location-guard
+mvp/fix/mcp-server-configs	41d1e5b3c
+41d1e5b3c 2026-06-10 fix(mcp): repair conport/dope-memory transport, add pal-stdio service with stdin_open
+mvp/fix/cli-orchestrator-startup	b6d3b8aa6
+b6d3b8aa6 2026-06-10 fix(cli): resolve wizard-less orchestrator startup hangs and configurator crash (#838)
+mvp/fix/docker-copy-security	969659e98
+969659e98 2026-06-11 fix(docker): address openssl and wheel CVEs in all Debian-based Dockerfiles
+mvp/feat/dx-overhaul	76f39477d
+76f39477d 2026-06-11 docs(dx-overhaul): Phase 1+2 artifacts — systems research, workflow maps, DR-DCP-015
+
+## changed files against mvp/main for relevant remote branches
+### mvp/dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat
+.claude/agents/architect.md
+.claude/agents/developer.md
+.claude/agents/project-manager.md
+.claude/agents/researcher.md
+.dockerignore
+.gitignore
+.opencode/agents/pal-planner.md
+.opencode/agents/pal-reviewer.md
+.pre-commit-config.yaml
+AGENTS.md
+Dockerfile
+compose.yml
+config/instructions/pal-opencode-guide.md
+config/repo_hygiene/root_hygiene_policy.json
+docker/mcp-servers-source/conport/Dockerfile
+docker/mcp-servers-source/litellm/Dockerfile
+docker/mcp-servers-source/pal-stdio/Dockerfile
+docker/mcp-servers-source/pal-stdio/README.md
+docker/mcp-servers-source/pal-stdio/pal_stdio_proxy.py
+docker/mcp-servers-source/pal/pal-mcp-server/start-pal.sh
+docs/03-reference/dcp/model-routing-domain.md
+opencode.jsonc
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/AGENT_SURFACE_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/AUDIT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/COMMAND_HELP_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/COMMAND_LOG.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/MCP_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/MODEL_CONFIG_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/MUTATION_RED_LANE_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/PROOF_SHAPE_SAMPLE_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/RUNNER_CONFIG_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/SERVICE_BOUNDARY_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/SLASH_COMMAND_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/SURFACE_CENSUS.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/UNKNOWN_AND_CONFLICT_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/WORKFLOW_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000C/ORIGIN_MAIN_DELTA_VS_0000B.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000C/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000C/ROUTING_POLICY_ORIGIN_MAIN_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000D/DIRTY_FILE_DECISION_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000D/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000E/ROUTING_RUNTIME_HEALTH_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000F/RUNNER_DRY_RUN_MATRIX.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000G/MCP_AUTHORITY_REGISTRY.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000H/AUDIT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000H/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000I/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/COMMAND_LOG.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/FINAL_STATUS_PORCELAIN.txt
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/GPT55_REVIEW_BRIEF.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/HANDOFF.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/IMPLEMENTER_NOTES.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/PAL_CHAIN.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_NAME_ONLY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_STAT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/01_scout_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/02_planner_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/03_builder_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/04_self_check_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/05_auditor_a_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/06_auditor_b_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/07_gpt55_review_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDITOR_A_REPORT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDITOR_B_REPORT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDIT_SUMMARY.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/AUDITOR_REPORT.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/COMMAND_LOG.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/DOCKER_SCOUT_CLASSIFICATION.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/HANDOFF.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/PAL_CHAIN.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/PAL_STDIO_BUILD.log
+proof/PR-854-B-PAL-OPENCODE-DOCKER/PAL_STDIO_COMPOSE_RESTART_TEST.log
+proof/PR-854-B-PAL-OPENCODE-DOCKER/PAL_STDIO_NO_STDIN.log
+proof/PR-854-B-PAL-OPENCODE-DOCKER/PAL_STDIO_WITH_STDIN.log
+proof/PR-854-B-PAL-OPENCODE-DOCKER/PROOF.json
+proof/PR-854-B-PAL-OPENCODE-DOCKER/PR_STEWARD_LATEST_HEAD.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/VERIFY_PAL.log
+proof/PR-854-B-PAL-OPENCODE-DOCKER/pal/00_intake_guard.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/pal/01_repo_pr_baseline.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/pal/02_evidence_inventory.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/pal/03_runtime_test_plan.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/pal/04_plan_challenge.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/pal/05_execution_evidence.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/pal/06_proof_codereview.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/pal/07_precommit_review.md
+proof/PR-854-B-PAL-OPENCODE-DOCKER/pal/08_final_handoff.md
+proof/TP-DCP-MCP-RO-0006/PROOF.json
+proof/TP-DMX-EVIDENCE-GATE-VERIFY-001/AUDIT_REQUEST.md
+proof/TP-DMX-EVIDENCE-GATE-VERIFY-001/NO_WRITE_CONFIRMATION.md
+proof/TP-DMX-EVIDENCE-GATE-VERIFY-001/SUMMARY.md
+proof/TP-DMX-EVIDENCE-GATE-VERIFY-001/VERIFICATION_GATES_REPORT.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0001-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0002-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0003-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0004-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0005-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0006-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0007-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0008-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0009-manifest.json
+proof/gemini-remediate/TP-GEMINI-REMEDIATE-ORCH-SESSION-STARTUP/PROOF.json
+scripts/opencode/verify-pal.sh
+services/adhd_engine/Dockerfile
+services/claude_brain/Dockerfile
+services/dopecon-bridge/Dockerfile
+services/task-orchestrator/Dockerfile
+services/webhook_receiver/Dockerfile
+services/working-memory-assistant/Dockerfile.dope-memory
+src/dopemux/claude/configurator.py
+src/dopemux/cli.py
+src/dopemux/roles/catalog.py
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000C.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000D.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000E.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000F.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000G.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000H.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000I.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001.md
+task-packets/generated/TP-GEMINI-REMEDIATE-ORCH-SESSION-STARTUP.json
+tests/fixtures/dcp/routing_corpus/README.md
+### mvp/dcp/model-routing-0001
+.gitignore
+docs/03-reference/dcp/model-routing-domain.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/COMMAND_LOG.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/FINAL_STATUS_PORCELAIN.txt
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/GPT55_REVIEW_BRIEF.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/HANDOFF.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/IMPLEMENTER_NOTES.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/PAL_CHAIN.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_NAME_ONLY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_STAT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/01_scout_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/02_planner_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/03_builder_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/04_self_check_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/05_auditor_a_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/06_auditor_b_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/07_gpt55_review_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDITOR_A_REPORT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDITOR_B_REPORT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDIT_SUMMARY.md
+task-packets/DMX-DCP-0001-CARVE-FROM-854.json
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001.md
+### mvp/feat/dcp-mcp-ro-0007-proofs-docs
+proof/TP-DCP-MCP-RO-0006/PROOF.json
+### mvp/feat/dcp-predecessor-packets
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/AGENT_SURFACE_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/AUDIT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/COMMAND_HELP_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/COMMAND_LOG.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/MCP_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/MODEL_CONFIG_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/MUTATION_RED_LANE_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/PROOF_SHAPE_SAMPLE_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/RUNNER_CONFIG_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/SERVICE_BOUNDARY_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/SLASH_COMMAND_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/SURFACE_CENSUS.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/UNKNOWN_AND_CONFLICT_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/WORKFLOW_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000C/ORIGIN_MAIN_DELTA_VS_0000B.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000C/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000C/ROUTING_POLICY_ORIGIN_MAIN_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000D/DIRTY_FILE_DECISION_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000D/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000E/ROUTING_RUNTIME_HEALTH_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000F/RUNNER_DRY_RUN_MATRIX.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000G/MCP_AUTHORITY_REGISTRY.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000H/AUDIT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000H/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000I/PROOF.json
+proof/gemini-remediate/TP-GEMINI-REMEDIATE-ORCH-SESSION-STARTUP/PROOF.json
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000C.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000D.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000E.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000F.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000G.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000H.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000I.md
+task-packets/generated/TP-GEMINI-REMEDIATE-ORCH-SESSION-STARTUP.json
+tests/fixtures/dcp/routing_corpus/README.md
+### mvp/feat/opencode-pal-integration
+.claude/agents/architect.md
+.claude/agents/developer.md
+.claude/agents/project-manager.md
+.claude/agents/researcher.md
+.opencode/agents/pal-planner.md
+.opencode/agents/pal-reviewer.md
+.pre-commit-config.yaml
+AGENTS.md
+config/instructions/pal-opencode-guide.md
+config/repo_hygiene/root_hygiene_policy.json
+docker/mcp-servers-source/pal/pal-mcp-server/start-pal.sh
+opencode.jsonc
+scripts/opencode/verify-pal.sh
+### mvp/feat/mcp-dcp-combined-workstream
+.claude/agents/architect.md
+.claude/agents/developer.md
+.claude/agents/project-manager.md
+.claude/agents/researcher.md
+.dockerignore
+.gitignore
+.opencode/agents/pal-planner.md
+.opencode/agents/pal-reviewer.md
+.pre-commit-config.yaml
+AGENTS.md
+Dockerfile
+compose.yml
+config/instructions/pal-opencode-guide.md
+config/repo_hygiene/root_hygiene_policy.json
+docker/mcp-servers-source/conport/Dockerfile
+docker/mcp-servers-source/litellm/Dockerfile
+docker/mcp-servers-source/pal-stdio/Dockerfile
+docker/mcp-servers-source/pal-stdio/README.md
+docker/mcp-servers-source/pal-stdio/pal_stdio_proxy.py
+docker/mcp-servers-source/pal/pal-mcp-server/start-pal.sh
+docs/03-reference/dcp/model-routing-domain.md
+opencode.jsonc
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/AGENT_SURFACE_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/AUDIT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/COMMAND_HELP_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/COMMAND_LOG.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/MCP_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/MODEL_CONFIG_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/MUTATION_RED_LANE_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/PROOF_SHAPE_SAMPLE_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/RUNNER_CONFIG_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/SERVICE_BOUNDARY_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/SLASH_COMMAND_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/SURFACE_CENSUS.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/UNKNOWN_AND_CONFLICT_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000/WORKFLOW_INVENTORY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000C/ORIGIN_MAIN_DELTA_VS_0000B.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000C/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000C/ROUTING_POLICY_ORIGIN_MAIN_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000D/DIRTY_FILE_DECISION_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000D/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000E/ROUTING_RUNTIME_HEALTH_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000F/RUNNER_DRY_RUN_MATRIX.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000G/MCP_AUTHORITY_REGISTRY.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000H/AUDIT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000H/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0000I/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/COMMAND_LOG.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/FINAL_STATUS_PORCELAIN.txt
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/GPT55_REVIEW_BRIEF.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/HANDOFF.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/IMPLEMENTER_NOTES.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/PAL_CHAIN.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/PROOF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_NAME_ONLY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_STAT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/01_scout_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/02_planner_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/03_builder_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/04_self_check_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/05_auditor_a_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/06_auditor_b_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/07_gpt55_review_prompt.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDITOR_A_REPORT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDITOR_B_REPORT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDIT_SUMMARY.md
+proof/TP-DCP-MCP-RO-0006/PROOF.json
+proof/TP-DMX-EVIDENCE-GATE-VERIFY-001/AUDIT_REQUEST.md
+proof/TP-DMX-EVIDENCE-GATE-VERIFY-001/NO_WRITE_CONFIRMATION.md
+proof/TP-DMX-EVIDENCE-GATE-VERIFY-001/SUMMARY.md
+proof/TP-DMX-EVIDENCE-GATE-VERIFY-001/VERIFICATION_GATES_REPORT.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0001-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0002-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0003-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0004-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0005-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0006-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0007-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0008-manifest.json
+proof/TP-OPS-MAC-SCRUBBER-001/A0009-manifest.json
+proof/gemini-remediate/TP-GEMINI-REMEDIATE-ORCH-SESSION-STARTUP/PROOF.json
+scripts/opencode/verify-pal.sh
+services/adhd_engine/Dockerfile
+services/claude_brain/Dockerfile
+services/dopecon-bridge/Dockerfile
+services/task-orchestrator/Dockerfile
+services/webhook_receiver/Dockerfile
+services/working-memory-assistant/Dockerfile.dope-memory
+src/dopemux/claude/configurator.py
+src/dopemux/cli.py
+src/dopemux/roles/catalog.py
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000C.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000D.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000E.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000F.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000G.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000H.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000I.md
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001.md
+task-packets/generated/TP-GEMINI-REMEDIATE-ORCH-SESSION-STARTUP.json
+tests/fixtures/dcp/routing_corpus/README.md
+### mvp/fix/mcp-server-configs
+compose.yml
+docker/mcp-servers-source/pal-stdio/Dockerfile
+docker/mcp-servers-source/pal-stdio/README.md
+docker/mcp-servers-source/pal-stdio/pal_stdio_proxy.py
+### mvp/fix/cli-orchestrator-startup
+src/dopemux/claude/configurator.py
+src/dopemux/cli.py
+src/dopemux/roles/catalog.py
+### mvp/fix/docker-copy-security
+.dockerignore
+Dockerfile
+docker/mcp-servers-source/conport/Dockerfile
+docker/mcp-servers-source/litellm/Dockerfile
+services/adhd_engine/Dockerfile
+services/claude_brain/Dockerfile
+services/dopecon-bridge/Dockerfile
+services/task-orchestrator/Dockerfile
+services/webhook_receiver/Dockerfile
+services/working-memory-assistant/Dockerfile.dope-memory
+### mvp/feat/dx-overhaul
+claudedocs/dx-overhaul/00-process.md
+claudedocs/dx-overhaul/01-research-synthesis.md
+claudedocs/dx-overhaul/02-workflow-maps.md
+claudedocs/dx-overhaul/research/DR-DCP-015-dcp-tooling-layer.md

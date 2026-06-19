@@ -4,24 +4,18 @@ You are Planner for DMX-DCP-MODEL-ROUTING-MVP-0001.
 
 Do not edit files.
 
-Make a simple implementation plan.
+Make a simple restoration plan from Downloads.
 
-**Plan must have these slices**:
-A. schemas
-B. fixtures
-C. tests
-D. docs
-E. proof
-F. audit prep
-G. GPT-5.5 review brief
+Plan must include:
+A. locate archive
+B. backup existing proof dir
+C. restore proof files
+D. verify manifest
+E. stage only allowed files
+F. regenerate final capture
+G. stop if forbidden files enter staged diff
 
-For each slice include:
-- files touched
-- what to create
-- validation command
-- stop condition
-
-**Return**:
+Return:
 - plan
 - assumptions
 - risks

@@ -1,0 +1,136 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-302-review-reminders",
+  "project": "dopemux-mvp",
+  "target": "Activate the review_reminders table and expose REST + MCP interfaces to create, list, and complete decision-review reminders, giving ADHD practitioners a schedulable nudge loop for revisiting past decisions.",
+  "invariants": [
+    "This packet must verify whether review_reminders exists in migration 001 or schema.sql before adding any migration.",
+    "This packet must add migration 009_review_reminders.sql only if the table is confirmed absent; if it is present, the migration step is NOT_RUN.",
+    "This packet must not modify existing decisions data or the decisions table schema.",
+    "This packet must fail-closed on unknown reminder_id (404) and unknown decision_id (400/404).",
+    "This packet must not touch files outside the allowlist.",
+    "This packet must classify unresolved ambiguity about table existence as UNKNOWN and stop."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-109-docs-reconciliation"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/conport-optimal-302-review-reminders",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): add review-reminders REST routes and MCP tools",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/server.py",
+      "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+      "docker/mcp-servers-source/conport/tests/test_review_reminders.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-302-review-reminders.json",
+      "proof/conport-optimal-302/DMX-CONPORT-OPTIMAL-302-review-reminders/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-302-review-reminders.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-302-review-reminders.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest docker/mcp-servers-source/conport/tests/test_review_reminders.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): review-reminders REST routes + MCP tools",
+    "body": "Activates the review_reminders table (adds migration 009_review_reminders.sql only if the table is absent from migration 001/schema). Adds POST /api/decisions/{id}/reminders, GET /api/reminders?workspace_id=, and POST /api/reminders/{id}/complete REST routes in enhanced_server.py. Adds create_review_reminder, list_review_reminders, and complete_review_reminder MCP tools in server.py and JSON-RPC handlers in conport_mcp_stdio.py.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: create a fresh dedicated worktree from origin/main. Verify repo marker, origin identity, branch, and clean baseline. Inspect docker/mcp-servers-source/conport/schema.sql and all migration files under migrations/ to determine whether a review_reminders table is already defined. Record finding (EXISTS / ABSENT / UNKNOWN) in proof.",
+      "validation": [
+        "Worktree path, branch, origin, marker verified and recorded in proof.",
+        "Table existence classified as EXISTS, ABSENT, or UNKNOWN — not assumed."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/conport/schema.sql",
+        "docker/mcp-servers-source/conport/migrations/",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "If S1 found the review_reminders table ABSENT, create docker/mcp-servers-source/conport/migrations/009_review_reminders.sql with the table definition: id INTEGER PRIMARY KEY AUTOINCREMENT, decision_id INTEGER NOT NULL REFERENCES decisions(id), workspace_id TEXT NOT NULL, remind_at TEXT NOT NULL, completed_at TEXT, notes TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP. If EXISTS, skip and record NOT_RUN.",
+      "validation": [
+        "Migration file created only when table was confirmed absent in S1.",
+        "SQL is idempotent (CREATE TABLE IF NOT EXISTS).",
+        "If table already existed, step is recorded as NOT_RUN with reason."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Write failing tests in docker/mcp-servers-source/conport/tests/test_review_reminders.py covering: (a) POST /api/decisions/{id}/reminders creates a reminder and returns 201 with id; (b) GET /api/reminders?workspace_id= lists all non-completed reminders for the workspace; (c) POST /api/reminders/{id}/complete marks the reminder completed and sets completed_at; (d) POST on unknown decision_id returns 400 or 404; (e) complete on unknown reminder_id returns 404.",
+      "validation": [
+        "All five test cases exist and fail (red) before production code is added.",
+        "Tests are self-contained and use the in-process test client."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Implement the three REST routes in enhanced_server.py: POST /api/decisions/{decision_id}/reminders (body: remind_at required, notes optional, workspace_id required), GET /api/reminders (query param: workspace_id required, returns non-completed reminders ordered by remind_at), POST /api/reminders/{reminder_id}/complete (sets completed_at to now). Each route validates inputs and fails-closed on missing or invalid data.",
+      "validation": [
+        "All five tests from S3 pass (green).",
+        "Listing endpoint returns only non-completed reminders.",
+        "No regression in other enhanced_server.py routes."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Add three MCP tools in server.py (create_review_reminder, list_review_reminders, complete_review_reminder) with schemas mirroring the REST routes. Add corresponding JSON-RPC handlers in conport_mcp_stdio.py following the existing handler pattern.",
+      "validation": [
+        "All three tools appear in the MCP tool listing.",
+        "JSON-RPC create/list/complete round-trip succeeds against a live or test instance.",
+        "Pattern consistency with existing MCP tools confirmed by code review step."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/conport_mcp_stdio.py"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run all targeted tests, validate TP JSON, commit only allowlisted files, push branch, open PR against main, and file proof bundle.",
+      "validation": [
+        "TP JSON validates with exit 0 against dopetask-canonical-spec.json.",
+        "Targeted tests pass; NOT_RUN items recorded with reasons.",
+        "Only allowlisted files are staged.",
+        "PR URL recorded in proof bundle."
+      ]
+    }
+  ]
+}

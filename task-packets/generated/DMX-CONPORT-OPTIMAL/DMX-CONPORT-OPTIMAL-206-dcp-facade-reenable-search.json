@@ -1,0 +1,113 @@
+{
+  "id": "DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search",
+  "project": "dopemux-mvp",
+  "target": "Re-enable search_decisions and search_progress in the DCP read-only facade now that ConPort's underlying search and relationship surfaces are stable, remove the 500/auto-fork workarounds, and add a get_linked_items reader in the facade's ConPort adapter.",
+  "invariants": [
+    "This packet must not introduce write paths into the DCP read-only facade.",
+    "search_decisions and search_progress must remain read-only; they must not mutate ConPort state.",
+    "get_linked_items in the facade must only call GET /api/relationships — never POST or DELETE.",
+    "Removing the 500/auto-fork workaround must be conditioned on confirmed ConPort search stability from prior TPs; if not confirmed, abort and record UNKNOWN.",
+    "The facade must not expose raw ConPort error payloads to callers; map unknown errors to 502.",
+    "Do not alter the facade's route manifest or the DCP denylist — those are contract-sensitive surfaces.",
+    "Facade integration tests must cover search and get_linked_items; no new test may be skipped."
+  ],
+  "depends_on": [
+    "DMX-CONPORT-OPTIMAL-102-route-bugfixes-500s",
+    "DMX-CONPORT-OPTIMAL-107-gate-autofork-on-get",
+    "DMX-CONPORT-OPTIMAL-202-entity-relationship-write-api"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-conport-optimal",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-CONPORT-OPTIMAL-205-search-delegation-docs",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/conport-optimal-206-dcp-facade-reenable-search",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(dcp-facade): re-enable search_decisions/search_progress, add get_linked_items reader",
+    "allowlist": [
+      "services/dcp-readonly-facade/src/dcp_facade/tools.py",
+      "services/dcp-readonly-facade/src/dcp_facade/conport.py",
+      "services/dcp-readonly-facade/tests/test_facade_search_integration.py",
+      "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search.json",
+      "proof/conport-optimal-206/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-206-dcp-facade-reenable-search.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest services/dcp-readonly-facade/tests/test_facade_search_integration.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp-facade): re-enable search + add get_linked_items reader (ConPort optimal final)",
+    "body": "Final packet in the DMX-CONPORT-OPTIMAL series. Re-enables search_decisions and search_progress in services/dcp-readonly-facade/src/dcp_facade/tools.py by removing the 500/auto-fork workarounds added before ConPort search was stable. Adds a get_linked_items reader in services/dcp-readonly-facade/src/dcp_facade/conport.py that calls GET /api/relationships (read-only). Adds integration tests in services/dcp-readonly-facade/tests/test_facade_search_integration.py covering search_decisions, search_progress, and get_linked_items against a stubbed ConPort. Unknown ConPort errors are mapped to 502. Does not alter the facade route manifest or DCP denylist. Depends on 102 (ConPort 500 fixes), 107 (Redis cache), and 202 (entity-relationship read surface).",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read services/dcp-readonly-facade/src/dcp_facade/tools.py and conport.py. Identify the exact lines where search_decisions and search_progress are disabled (the 500/auto-fork workaround). Verify that the ConPort route fixes from TPs 102 and 107 are present in the merged base branch before proceeding. If not, record UNKNOWN and abort.",
+      "validation": [
+        "The exact workaround lines in tools.py for search_decisions and search_progress are identified and recorded.",
+        "TP 102 and TP 107 fixes are confirmed present in origin/main (git log check).",
+        "The facade's conport.py adapter interface is mapped — specifically what methods call ConPort REST and their error handling patterns."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "services/dcp-readonly-facade/src/dcp_facade/tools.py",
+        "services/dcp-readonly-facade/src/dcp_facade/conport.py",
+        "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing integration tests in services/dcp-readonly-facade/tests/test_facade_search_integration.py: (a) search_decisions with a query returns matching decision objects (no 500), (b) search_progress with a query returns matching progress objects, (c) get_linked_items with a source_id returns linked items, (d) ConPort 500 response is mapped to 502 by the facade (not exposed raw), (e) get_linked_items does not call POST or DELETE on ConPort.",
+      "validation": [
+        "All 5 test cases exist and fail before the workarounds are removed and get_linked_items is added.",
+        "Tests use a stub/mock ConPort so they are not live-integration dependent.",
+        "Tests assert on response shape, not just status codes."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "In tools.py: remove the 500/auto-fork workaround blocks for search_decisions and search_progress; restore their normal call path to conport.py adapter methods. In conport.py: add get_linked_items(workspace_id, source_id, source_type) method that calls GET /api/relationships?workspace_id=&source_id=&source_type=, parses the response, and maps unknown errors to 502. Expose get_linked_items as a facade tool in tools.py (read-only, no write path).",
+      "validation": [
+        "search_decisions and search_progress no longer have the workaround comment or dead-code branch.",
+        "get_linked_items method exists in conport.py and calls only GET /api/relationships.",
+        "get_linked_items is exposed in tools.py.",
+        "Error mapping to 502 is implemented for unknown ConPort errors in both search and get_linked_items paths."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run all facade search integration tests plus the full facade test suite, validate TP JSON against canonical schema, commit allowlisted files, push, open PR, and record final proof bundle for the series.",
+      "validation": [
+        "pytest test_facade_search_integration.py exits 0 with all 5 tests passing.",
+        "Full facade test suite shows no regressions.",
+        "python -m jsonschema exits 0 for the TP JSON.",
+        "Only allowlisted files are staged.",
+        "Proof bundle records: TP id, worktree, branch, files changed, test exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks, series completion status."
+      ]
+    }
+  ]
+}

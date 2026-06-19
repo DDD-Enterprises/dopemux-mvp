@@ -4,9 +4,9 @@ title: Dmx Dcp Model Routing Mvp 0001
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-06-09'
-last_review: '2026-06-09'
-next_review: '2026-09-07'
+date: '2026-06-10'
+last_review: '2026-06-10'
+next_review: '2026-09-08'
 prelude: Dmx Dcp Model Routing Mvp 0001 (explanation) for dopemux documentation and
   developer workflows.
 ---

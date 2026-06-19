@@ -12,7 +12,7 @@ prelude: Glyphs (reference) for dopemux documentation and developer workflows.
 # Nerd Font Glyphs
 
 Copied from `src/dopemux/ui/theme.py::Glyphs`. Primary set assumes
-**JetBrains Mono Nerd Font**. Every glyph has an ASCII fallback for
+**Dopemux Term Nerd Font Mono**. Every glyph has an ASCII fallback for
 non-Nerd-Font terminals.
 
 ## Status

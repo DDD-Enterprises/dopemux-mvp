@@ -1,23 +1,8 @@
 # Auditor B Prompt — 0001
 
-You are independent Auditor B.
+Independent Auditor B must perform broad contradiction hunt.
 
-Do not edit files.
-
-Perform broad contradiction hunt.
-
-Compare implementation against:
-- repo authority rules
-- system boundaries
-- PAL rules
-- proof contract
-- 0000C clean origin/main baseline
-- 0000E LiteLLM unhealthy status
-- 0000F runner matrix
-- 0000G unknown registry seed
-- 0000H PASS_WITH_RISKS audit
-
-**Attack**:
+Attack:
 1. branch WIP promoted above clean origin/main?
 2. advisory policy treated as runtime?
 3. LiteLLM health assumed?
@@ -31,8 +16,8 @@ Compare implementation against:
 11. proof families collapsed?
 12. auditors self-certified?
 
-**Return**:
-- verdict: PASS / PASS_WITH_RISKS / FAIL / NEEDS_SUPERVISOR
+Return:
+- verdict
 - contradiction_ledger
 - authority_leaks
 - proof_gaps

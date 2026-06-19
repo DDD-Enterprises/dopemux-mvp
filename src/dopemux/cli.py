@@ -3299,6 +3299,10 @@ def theme(ctx, name: Optional[str], list_themes: bool):
 cli.add_command(audit)
 cli.add_command(audit.commands["wizard"], "wizard")
 
+from .commands.dcp_commands import dcp  # noqa: E402
+
+cli.add_command(dcp)
+
 
 from .commands.cockpit_commands import cockpit  # noqa: E402
 
@@ -5140,6 +5144,27 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     show_default=False,
     help="LLM routing policy for extraction. Defaults to the model-map policy.",
 )
+@click.option(
+    "--cost-profile",
+    default=None,
+    help="RTE cost profile or rte-cost-* alias to pass to the v5 runner.",
+)
+@click.option(
+    "--model-alias",
+    multiple=True,
+    help="Override a runner cell alias as ALIAS=provider/model. Repeatable.",
+)
+@click.option(
+    "--disable-provider",
+    multiple=True,
+    help="Disable a provider route in the v5 runner. Repeatable.",
+)
+@click.option(
+    "--max-cost-usd",
+    type=float,
+    default=None,
+    help="Forward a hard spend cap to the v5 runner.",
+)
 @click.option("--disable-escalation", is_flag=True, default=False, show_default=True)
 @click.option("--escalation-max-hops", type=int, default=2, show_default=True)
 @click.option("--batch-mode", is_flag=True, default=False, show_default=True)
@@ -5194,6 +5219,10 @@ def extractor_run(
     partition_workers: int,
     max_partitions_per_step: Optional[int],
     routing_policy: Optional[str],
+    cost_profile: Optional[str],
+    model_alias: tuple[str, ...],
+    disable_provider: tuple[str, ...],
+    max_cost_usd: Optional[float],
     disable_escalation: bool,
     escalation_max_hops: int,
     batch_mode: bool,
@@ -5263,7 +5292,16 @@ def extractor_run(
     args.extend(["--partition-workers", str(partition_workers)])
     if max_partitions_per_step is not None:
         args.extend(["--max-partitions-per-step", str(max(0, int(max_partitions_per_step)))])
-    args.extend(["--routing-policy", effective_routing_policy])
+    if routing_policy or not cost_profile:
+        args.extend(["--routing-policy", effective_routing_policy])
+    if cost_profile:
+        args.extend(["--cost-profile", cost_profile])
+    for alias in model_alias:
+        args.extend(["--model-alias", alias])
+    for provider in disable_provider:
+        args.extend(["--disable-provider", provider])
+    if max_cost_usd is not None:
+        args.extend(["--max-cost-usd", str(float(max_cost_usd))])
     if disable_escalation:
         args.append("--disable-escalation")
     args.extend(["--escalation-max-hops", str(max(0, int(escalation_max_hops)))])

@@ -53,6 +53,9 @@ class ScannerInfo:
     external_writes_used: bool = False
     dopetask_execution_used: bool = False
     github_api_used: bool = False
+    taxonomy_id: str = "UNKNOWN"
+    taxonomy_path: str = "schemas/dcp/dcp_red_lane_taxonomy.instance.json"
+    taxonomy_lane_ids: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -60,7 +63,10 @@ class ScannerInfo:
             "live_adapters_used": self.live_adapters_used,
             "external_writes_used": self.external_writes_used,
             "dopetask_execution_used": self.dopetask_execution_used,
-            "github_api_used": self.github_api_used
+            "github_api_used": self.github_api_used,
+            "taxonomy_id": self.taxonomy_id,
+            "taxonomy_path": self.taxonomy_path,
+            "taxonomy_lane_ids": self.taxonomy_lane_ids
         }
 
 @dataclass

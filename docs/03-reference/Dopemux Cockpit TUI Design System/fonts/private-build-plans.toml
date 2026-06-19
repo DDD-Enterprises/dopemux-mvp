@@ -1,35 +1,100 @@
-# Dopemux Term starter build plan.
+# Dopemux cockpit font build plans.
 #
-# This is a conservative starter plan for the canonical cockpit terminal
-# font. Final variant keys should be exported from the Iosevka Customizer
-# rather than guessed by hand.
+# Two families:
+#   - Dopemux Term   (spacing = term)                canonical operator mono / TUI
+#   - Dopemux Editor (spacing = quasi-proportional)  prose-set companion (--font-editor)
 #
-# Do not hand-expand a large style matrix until the cockpit needs it.
-# Slab is intentionally excluded from the canonical cockpit terminal font.
+# Faces per family: Regular + Medium, each Upright / Italic / Oblique (normal width).
+# A real Medium weight is shipped so cockpit "bold" is never synthesized.
+#
+# Ambiguity-reduction character variants (cv__ / ss__ keys) should be exported from
+# the Iosevka Customizer into the `variants.design` sections rather than guessed by
+# hand. Slab is intentionally excluded.
+#
+# Build with build-dopemux-fonts.sh, then patch with patch-nerd-font.sh. See build.md.
 
-[buildPlans.IosevkaDopemuxTerm]
+[buildPlans.DopemuxTerm]
 family = "Dopemux Term"
 spacing = "term"
 serifs = "sans"
 noCvSs = false
 exportGlyphNames = true
 
-# Final ambiguity-reduction variants belong here after export from the
-# Iosevka Customizer. Keep this starter minimal until those keys are known.
-[buildPlans.IosevkaDopemuxTerm.variants.design]
+# Customizer-exported ambiguity-reduction variants belong here.
+[buildPlans.DopemuxTerm.variants.design]
 
-[buildPlans.IosevkaDopemuxTerm.weights.Regular]
+[buildPlans.DopemuxTerm.weights.Regular]
 shape = 400
 menu = 400
 css = 400
 
-[buildPlans.IosevkaDopemuxTerm.slopes.Upright]
-shape = "upright"
+[buildPlans.DopemuxTerm.weights.Medium]
+shape = 500
+menu = 500
+css = 500
+
+[buildPlans.DopemuxTerm.slopes.Upright]
 angle = 0
+shape = "upright"
 menu = "upright"
 css = "normal"
 
-[buildPlans.IosevkaDopemuxTerm.widths.Normal]
+[buildPlans.DopemuxTerm.slopes.Italic]
+angle = 9.4
+shape = "italic"
+menu = "italic"
+css = "italic"
+
+[buildPlans.DopemuxTerm.slopes.Oblique]
+angle = 9.4
+shape = "oblique"
+menu = "oblique"
+css = "oblique"
+
+[buildPlans.DopemuxTerm.widths.Normal]
+shape = 500
+menu = 5
+css = "normal"
+
+[buildPlans.DopemuxEditor]
+family = "Dopemux Editor"
+spacing = "quasi-proportional"
+serifs = "sans"
+noCvSs = false
+exportGlyphNames = true
+
+# Customizer-exported ambiguity-reduction variants belong here.
+[buildPlans.DopemuxEditor.variants.design]
+
+[buildPlans.DopemuxEditor.weights.Regular]
+shape = 400
+menu = 400
+css = 400
+
+[buildPlans.DopemuxEditor.weights.Medium]
+shape = 500
+menu = 500
+css = 500
+
+[buildPlans.DopemuxEditor.slopes.Upright]
+angle = 0
+shape = "upright"
+menu = "upright"
+css = "normal"
+
+[buildPlans.DopemuxEditor.slopes.Italic]
+angle = 9.4
+shape = "italic"
+menu = "italic"
+css = "italic"
+
+[buildPlans.DopemuxEditor.slopes.Oblique]
+angle = 9.4
+shape = "oblique"
+menu = "oblique"
+css = "oblique"
+
+[buildPlans.DopemuxEditor.widths.Normal]
 shape = 500
 menu = 5
 css = "normal"
