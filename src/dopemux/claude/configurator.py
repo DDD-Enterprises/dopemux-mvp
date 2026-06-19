@@ -129,9 +129,7 @@ class ClaudeConfigurator:
             self._clear_persona_artifacts(claude_dir)
             return False
 
-        instructions = manager.assemble_instructions(
-            role=role, project_type=template
-        )
+        instructions = manager.assemble_instructions(role=role, project_type=template)
 
         # 1. Write the fully-owned persona file (source of truth, regenerated).
         persona_file = claude_dir / self.ACTIVE_PERSONA_FILENAME
@@ -260,7 +258,7 @@ You are working on a **{template} project** with Dopemux ADHD optimizations enab
 - **Break Intervals**: {config.adhd_profile.break_interval} minutes
 - **Notification Style**: {config.adhd_profile.notification_style}
 - **Visual Complexity**: {config.adhd_profile.visual_complexity}
-- **Attention Adaptation**: {'Enabled' if config.attention.adaptation_enabled else 'Disabled'}
+- **Attention Adaptation**: {"Enabled" if config.attention.adaptation_enabled else "Disabled"}
 
 ### Development Principles
 - **Context Preservation**: Auto-save every {config.context.auto_save_interval} seconds
@@ -784,7 +782,9 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         config_file = project_path / ".dopemux" / "config.yaml"
 
         if not config_file.exists():
-            console.logger.info("[error]No Dopemux configuration found in project[/error]")
+            console.logger.info(
+                "[error]No Dopemux configuration found in project[/error]"
+            )
             return
 
         import yaml

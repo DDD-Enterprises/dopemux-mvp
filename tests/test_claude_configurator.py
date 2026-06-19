@@ -497,9 +497,9 @@ class TestClaudeConfigurator:
         for filename, content in files.items():
             # Each file should contain at least some JS-specific terms
             js_found = any(term in content for term in js_terms)
-            assert (
-                js_found
-            ), f"{filename} should contain JavaScript-specific content. Content preview: {content[:200]}..."
+            assert js_found, (
+                f"{filename} should contain JavaScript-specific content. Content preview: {content[:200]}..."
+            )
 
 
 class TestPersonaInjection:
@@ -635,8 +635,7 @@ class TestPersonaInjection:
         claude_dir.mkdir(parents=True, exist_ok=True)
         # Malformed prior state: an END marker with no matching START.
         (claude_dir / "claude.md").write_text(
-            "# Doctrine\n\nKEEP_ME line.\n\n"
-            "<!-- DOPEMUX:ACTIVE-PERSONA:END -->\n"
+            "# Doctrine\n\nKEEP_ME line.\n\n<!-- DOPEMUX:ACTIVE-PERSONA:END -->\n"
         )
         self._write_persona(temp_project_dir, "developer")
         configurator = ClaudeConfigurator(config_manager)
@@ -696,7 +695,10 @@ class TestF1CatalogAliases:
         assert result is True
         active = temp_project_dir / ".claude" / "active-persona.md"
         assert active.exists()
-        assert "principal-software-engineer" in active.read_text().lower() or "SENTINEL_CONTENT" in active.read_text()
+        assert (
+            "principal-software-engineer" in active.read_text().lower()
+            or "SENTINEL_CONTENT" in active.read_text()
+        )
 
     def test_architect_alias_resolves(self, config_manager, temp_project_dir):
         """'architect' must resolve to se-system-architecture-reviewer."""
@@ -746,10 +748,14 @@ class TestF1CatalogAliases:
         stale.write_text("# stale content\n")
 
         configurator = ClaudeConfigurator(config_manager)
-        result = configurator.setup_project_config(temp_project_dir, role="no-such-role")
+        result = configurator.setup_project_config(
+            temp_project_dir, role="no-such-role"
+        )
 
         assert result is False
-        assert not stale.exists(), "Stale active-persona.md must be cleared on fail-closed"
+        assert not stale.exists(), (
+            "Stale active-persona.md must be cleared on fail-closed"
+        )
 
     def test_unresolvable_role_clears_stale_managed_block(
         self, config_manager, temp_project_dir
@@ -783,9 +789,7 @@ class TestF2CreateMinimalClaudeMd:
     def _write_persona(self, project_dir, role="developer"):
         personas_dir = project_dir / ".claude" / "personas"
         personas_dir.mkdir(parents=True, exist_ok=True)
-        (personas_dir / f"{role}.agent.md").write_text(
-            f"# {role} persona\n\nBODY.\n"
-        )
+        (personas_dir / f"{role}.agent.md").write_text(f"# {role} persona\n\nBODY.\n")
 
     def test_creates_minimal_claude_md_when_absent(
         self, config_manager, temp_project_dir
@@ -923,9 +927,7 @@ class TestF4WizardEnvPathInjects:
         """
         import pathlib
 
-        cli_source = pathlib.Path(
-            __file__
-        ).parent.parent / "src" / "dopemux" / "cli.py"
+        cli_source = pathlib.Path(__file__).parent.parent / "src" / "dopemux" / "cli.py"
         source = cli_source.read_text()
 
         # The configure role-based instructions block must reference
@@ -969,9 +971,8 @@ class TestF4WizardEnvPathInjects:
 
         # Confirm cli.py dry_run exit is BEFORE the injection block in source order.
         import pathlib
-        cli_source = pathlib.Path(
-            __file__
-        ).parent.parent / "src" / "dopemux" / "cli.py"
+
+        cli_source = pathlib.Path(__file__).parent.parent / "src" / "dopemux" / "cli.py"
         source = cli_source.read_text()
         dry_run_exit_idx = source.find("ctx.exit(0)")
         injection_idx = source.find("role=requested_role")
