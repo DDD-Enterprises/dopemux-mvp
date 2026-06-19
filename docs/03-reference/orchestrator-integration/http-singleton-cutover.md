@@ -35,7 +35,8 @@ The HTTP singleton mounts the same `data_dir` at `/app/data` and sets:
 
 - `DATABASE_PATH=/app/data/current-tasks.db`
 - `MCP_TRANSPORT=http`
-- `MCP_PORT=${TASK_ORCHESTRATOR_HTTP_PORT:-7890}`
+- `MCP_HTTP_PORT=${TASK_ORCHESTRATOR_HTTP_PORT:-7890}`
+- `MCP_HTTP_HOST=0.0.0.0` (bind inside container; host publish stays `127.0.0.1:${port}`)
 - `USE_FLYWAY=true`
 
 Loaded task trees therefore carry over when both launchers resolve the same project root.
@@ -55,7 +56,8 @@ Loaded task trees therefore carry over when both launchers resolve the same proj
    ```bash
    curl -fsS -X POST "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp" \
      -H 'Content-Type: application/json' \
-     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}}}' |
+     -H 'Accept: application/json, text/event-stream' \
+     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"health-check","version":"1.0"}}}' |
      grep -q serverInfo
    ```
 

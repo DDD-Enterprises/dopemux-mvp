@@ -77,7 +77,10 @@ if [[ -z "${workspace_root}" ]]; then
   done
 fi
 
-[[ -n "${workspace_root}" ]] || die "could not derive workspace root from env or current git root"
+if [[ -z "${workspace_root}" ]]; then
+  printf 'task-orchestrator-current-stdio: no workspace detected (CWD not in a git repo and no *_WORKSPACE_ROOT/*_PROJECT_ROOT env set); skipping orchestrator for this session\n' >&2
+  exit 0
+fi
 [[ -f "${LOGBACK_CONFIG}" ]] || die "missing logback config at ${LOGBACK_CONFIG}"
 
 project_root=""
@@ -139,6 +142,46 @@ mkdir -p "${data_dir}"
 # the first session's MCP. For typical single-operator-per-project use
 # this matches expectations.
 container_name="task-orchestrator-${workspace_id}"
+
+# ─── Defer to a running HTTP singleton ─────────────────────────────────
+# Claude (and any HTTP client) runs this workspace's orchestrator as a
+# long-lived HTTP singleton container that PUBLISHES a host TCP port
+# (task-orchestrator-http-singleton.sh, default :7890). It shares this
+# launcher's container name and data_dir. Our kill-and-replace below would
+# tear that singleton down and disconnect the other client.
+#
+# A stdio container never publishes a host port (the image only EXPOSEs
+# 3001/tcp internally), so a *running* container with our name AND a
+# host-published port binding is unambiguously the HTTP singleton — not a
+# leaked stdio container. In that case defer: emit a note and exit 0 without
+# touching it. Codex sets required = false for this server, so the clean
+# exit is non-fatal; the singleton keeps serving the shared data_dir to the
+# HTTP client. When no singleton is running this detection is empty and we
+# fall through to a normal stdio launch, so Codex still gets tools when it is
+# the only client. Leaked same-named stdio containers publish no host port,
+# so they are NOT matched here and are still reaped by kill-and-replace.
+singleton_cid="$(docker ps -q --filter "name=^${container_name}$" 2>/dev/null | awk 'NF{print;exit}' || true)"
+if [[ -n "${singleton_cid}" ]]; then
+  singleton_port="$(docker inspect \
+    --format '{{range $p,$conf := .NetworkSettings.Ports}}{{if $conf}}{{(index $conf 0).HostPort}} {{end}}{{end}}' \
+    "${singleton_cid}" 2>/dev/null | awk '{print $1; exit}' || true)"
+  if [[ -n "${singleton_port}" ]]; then
+    health="unverified"
+    if command -v curl >/dev/null 2>&1; then
+      if curl -fsS -m 3 \
+        -X POST "http://127.0.0.1:${singleton_port}/mcp" \
+        -H 'Content-Type: application/json' \
+        -H 'Accept: application/json, text/event-stream' \
+        -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"stdio-defer-probe","version":"1.0"}}}' 2>/dev/null \
+        | grep -q 'serverInfo'; then
+        health="healthy"
+      fi
+    fi
+    printf 'task-orchestrator-current-stdio: HTTP singleton already running for %s at http://127.0.0.1:%s/mcp (%s); deferring — skipping stdio launch\n' \
+      "${container_name}" "${singleton_port}" "${health}" >&2
+    exit 0
+  fi
+fi
 
 stale_by_name="$(docker ps -aq --filter "name=^${container_name}$" 2>/dev/null || true)"
 

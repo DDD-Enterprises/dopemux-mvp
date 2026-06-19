@@ -25,6 +25,8 @@ if [[ "${1:-}" == "--dry-run" ]]; then
   assert_contains "${http_output}" "data_dir="
   assert_contains "${http_output}" "url=http://127.0.0.1:7890/mcp"
   assert_contains "${http_output}" "MCP_TRANSPORT=http"
+  assert_contains "${http_output}" "MCP_HTTP_PORT=7890"
+  assert_contains "${http_output}" "MCP_HTTP_HOST=0.0.0.0"
   assert_contains "${http_output}" "127.0.0.1:7890:7890"
   assert_contains "${rollback_output}" "restore .mcp.json task-orchestrator entry to type=stdio"
 
@@ -65,11 +67,12 @@ count="$(docker ps --format '{{.Names}}' | awk -v n="${container_name}" '$0 == n
 [[ "${count}" == "1" ]] || die "expected exactly one ${container_name}, got ${count}"
 
 port="${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
-for _ in $(seq 1 30); do
+for _ in $(seq 1 45); do
   if curl -fsS \
     -X POST "http://127.0.0.1:${port}/mcp" \
     -H 'Content-Type: application/json' \
-    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}}}' |
+    -H 'Accept: application/json, text/event-stream' \
+    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test-orchestrator-http-singleton","version":"1.0"}}}' |
     grep -q 'serverInfo'; then
     exit 0
   fi
