@@ -7,40 +7,56 @@ author: codex
 date: '2026-06-16'
 last_review: '2026-06-16'
 next_review: '2026-09-14'
-prelude: Fixture-only validation frame for a reusable Dopemux Project Control Plane substrate.
+prelude: Fixture-only validation frame for reusable PCP Core substrate plus project extensions.
 ---
 # Project Control Plane Architecture Validation
 
+## Superseding Supervisor Framing
+
+PCP Core is the reusable parent substrate for any Git repo. DCP is PCP Core plus the Dopemux extension. dNh CRM is PCP Core plus the dNh extension. Project-specific systems are extensions, not PCP Core.
+
+This PR validates fixture and dry-run contract shape only. It does not implement or validate a generic runtime exporter. Negative cases remain fixture assertions, not executed behavior.
+
+Dopetask and Task Orchestrator are Dopemux/DCP extension concepts. Any current PCP artifact that requires those named systems is a boundary defect to be repaired by the follow-up extension-contract and de-Dopemux boundary packets.
+
+Architecture status: `PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN`.
+
+Merge status: draft; `NEEDS_SUPERVISOR`; not merge-ready.
+
 ## Verdict
 
-`ARCHITECTURE_CONFIRMED_WITH_CORRECTIONS`
+`ARCHITECTURE_SHAPE_PLAUSIBLE_PENDING_EXPORTER`
 
-The reusable substrate shape is directionally correct: Dopemux owns generic control-plane contracts and dry-run artifact generation, while each project supplies profile and adapter configuration. dNh-CRM is the first adapter target, not the universal system.
+PCP Core fixture and dry-run contract shape are directionally plausible. This packet proves contract shape, ownership, fixture coverage, and dry-run handoffs only. It does not prove a live exporter implementation or runtime behavior. The read-only Opus audit returned `NEEDS_SUPERVISOR`, and Supervisor acceptance remains pending.
 
-The correction is important: this packet proves contract shape, ownership, fixture coverage, and dry-run handoffs. It does not prove a live exporter implementation. The verdict is scoped to contract-shape validation only; the read-only Opus audit returned `NEEDS_SUPERVISOR`, and Supervisor acceptance remains pending.
+Extension contract and generic authority-map schema are missing and require follow-up packets.
 
 ## Core Boundary
 
-Dopemux Project Control Plane core owns:
+PCP Core owns:
 
 - generic schemas
 - project profile contract
 - project evidence export contract
 - red-lane result contract
 - proof pointer contract
-- dry-run Dopetask mapping contract
-- dry-run Task Orchestrator item contract
 - executor/audit/supervisor artifact contracts
 - fixture harness conventions
 
-Dopemux Project Control Plane core must not own:
+PCP Core must not require Dopemux, Dopetask, Task Orchestrator, DCP, dNh, OpenClaw, ConPort, dope-memory, dope-context, or any named project system.
 
-- dNh CRM runtime behavior
-- CRM, Telegram, calendar, identity, policy, event-store, or database writes
+PCP Core must not own:
+
+- project runtime behavior (CRM, Telegram, calendar, identity, policy, event-store, or database writes)
 - GitHub mutation or merge authorization
-- Task Orchestrator live writes
-- Dopetask execution
 - final audit or acceptance
+
+Dopemux/DCP extension surfaces (not PCP Core requirements):
+
+- dry-run Dopetask mapping contract
+- dry-run Task Orchestrator item contract
+- Task Orchestrator live writes (blocked until write contract exists)
+- Dopetask execution (blocked until mapping contract exists)
 
 ## Project Adapter Boundary
 
@@ -64,21 +80,37 @@ Project runtime remains outside PCP. For dNh, this includes CRM, Telegram, polic
 
 These surfaces are dry-run only in this packet:
 
-- Dopetask mapping
-- Task Orchestrator item/note rendering
+- Dopemux/DCP extension: Dopetask mapping (fixture assertion only)
+- Dopemux/DCP extension: Task Orchestrator item/note rendering (fixture assertion only)
 - executor request/result
 - audit request/result
 - Supervisor decision draft
 
+No generic PCP exporter is implemented in PR #925. No runtime exporter behavior is validated in PR #925.
+
 The E2E artifact at `reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json` records that no live writes, GitHub mutation, Dopetask execution, Task Orchestrator MCP write, or runtime imports occurred.
+
+## Build Order
+
+1. PR925 framing/proof repair
+2. PCP extension contract
+3. PCP core de-Dopemux boundary repair
+4. PCP generic exporter
+5. DCP extension mapping
+6. dNh extension mapping
+7. fixture-to-runtime validation
+8. PR Steward / proof readiness integration
+9. Task Orchestrator visibility
+10. live-write gates
+11. FastAPI bridge / live writes last
 
 ## Later Write Gates
 
 Live writes require separate packets and explicit contracts:
 
-- Task Orchestrator MCP writes require a write contract and replay/idempotency proof.
-- Dopetask execution requires stable export and mapping contracts.
-- dNh artifact-only export requires Supervisor acceptance of the generic substrate.
+- Task Orchestrator MCP writes require a write contract and replay/idempotency proof (Dopemux/DCP extension).
+- Dopetask execution requires stable export and mapping contracts (Dopemux/DCP extension).
+- dNh artifact-only export requires Supervisor acceptance of PCP Core plus dNh extension mapping.
 - FastAPI bridge work is last, after artifact, Dopetask, proof/status, and Task Orchestrator visibility adapters are proven.
 
 ## Never-Write Rules

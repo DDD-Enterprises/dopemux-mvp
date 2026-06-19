@@ -14,7 +14,7 @@ prelude: Tp Dmx Pcp Architecture Validation 0001 Implementation Notes (explanati
 
 ## Summary
 
-Executed the fixture-only Project Control Plane architecture validation in Dopemux before any dNh-specific adapter implementation.
+Executed fixture-only PCP Core architecture validation (fixture/dry-run contract shape only). PCP Core is the reusable parent substrate; DCP and dNh CRM are extensions, not PCP Core.
 
 ## Scope
 
@@ -35,4 +35,22 @@ Read-only Opus audit ran and returned `NEEDS_SUPERVISOR`. Supervisor acceptance 
 ## Residual Risks
 
 - No executable generic exporter was implemented in this packet; E2E is artifact simulation.
+- No runtime exporter behavior is validated in PR #925.
+- Extension contract and generic authority-map schema are missing.
+- Dopetask and Task Orchestrator are Dopemux/DCP extension concepts, not PCP Core requirements.
 - Supervisor acceptance remains pending.
+- PR #925 remains draft pending core boundary repair.
+
+## Build Order
+
+1. PR925 framing/proof repair
+2. PCP extension contract
+3. PCP core de-Dopemux boundary repair
+4. PCP generic exporter
+5. DCP extension mapping
+6. dNh extension mapping
+7. fixture-to-runtime validation
+8. PR Steward / proof readiness integration
+9. Task Orchestrator visibility
+10. live-write gates
+11. FastAPI bridge / live writes last

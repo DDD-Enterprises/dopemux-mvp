@@ -188,11 +188,15 @@
       "pass": true
     }
   ],
-  "architecture_verdict": "ARCHITECTURE_CONFIRMED_WITH_CORRECTIONS",
+  "architecture_verdict": "PCP_CORE_DRY_RUN_CONTRACT_SHAPE_VALIDATED_EXPORTER_NOT_IMPLEMENTED",
   "corrections_required": [
     "Implement a real generic exporter in a later packet before dNh live artifact export.",
     "Run independent Opus audit before Supervisor acceptance.",
-    "Keep Task Orchestrator writes and Dopetask execution blocked until explicit write contracts exist."
+    "Keep Task Orchestrator writes and Dopetask execution blocked until explicit write contracts exist.",
+    "PCP Core is the reusable parent substrate; DCP and dNh are extensions.",
+    "PR #925 validates fixture/dry-run shape only; runtime exporter behavior is unproven.",
+    "Extension contract and generic authority-map schema require follow-up packets.",
+    "Dopetask and Task Orchestrator concepts belong to the Dopemux/DCP extension, not PCP Core."
   ],
-  "verdict_scope": "contract-shape-only; behavior remains fixture asserted and Supervisor acceptance is pending"
+  "verdict_scope": "fixture-shape and dry-run contract validation only; runtime exporter behavior unproven; Supervisor acceptance pending"
 }

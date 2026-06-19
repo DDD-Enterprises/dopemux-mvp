@@ -1,7 +1,7 @@
 {
   "id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
   "project": "dopemux-mvp",
-  "target": "Validate the reusable Dopemux Project Control Plane substrate using fixture-only contracts before dNh-specific adapter implementation.",
+  "target": "Validate PCP Core fixture and dry-run contract shape using fixture-only contracts before extension-contract and de-Dopemux boundary repair. DCP is PCP Core plus the Dopemux extension; dNh CRM is PCP Core plus the dNh extension.",
   "invariants": [
     "No live Task Orchestrator writes, Dopetask execution, GitHub mutation, or project runtime writes.",
     "dNh-specific knowledge must live in project profile, adapter configuration, fixture evidence, or a later dNh-specific packet.",

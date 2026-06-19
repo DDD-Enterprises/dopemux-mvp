@@ -30,9 +30,25 @@ Repo truth confirms Dopemux already has DCP schemas, PR Steward schemas, proof s
 
 # Architecture Verdict
 
-`ARCHITECTURE_CONFIRMED_WITH_CORRECTIONS`
+`ARCHITECTURE_SHAPE_PLAUSIBLE_PENDING_EXPORTER`
 
-The substrate should be generic PCP core plus project adapters. This verdict is scoped to contract-shape validation only: schemas, ownership boundaries, fixture packs, and dry-run artifacts. The read-only Opus audit returned `NEEDS_SUPERVISOR`, so Supervisor adjudication is still required before acceptance. A real generic exporter and dNh live artifact-only exporter require later packets.
+Machine-readable status: `PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN`.
+
+PCP Core is the reusable parent substrate for any Git repo. DCP is PCP Core plus the Dopemux extension. dNh CRM is PCP Core plus the dNh extension. Project-specific systems are extensions, not PCP Core.
+
+This verdict is scoped to fixture-shape and dry-run contract validation only: schemas, ownership boundaries, fixture packs, and dry-run artifacts. No generic runtime exporter is implemented or validated. Negative cases are fixture assertions, not executed behavior. The read-only Opus audit returned `NEEDS_SUPERVISOR`, so Supervisor adjudication is still required before acceptance. Extension contract, generic authority-map schema, generic exporter, and dNh live artifact-only exporter require later packets.
+
+## Superseding Supervisor Framing
+
+PCP Core is the reusable parent substrate for any Git repo. DCP is PCP Core plus the Dopemux extension. dNh CRM is PCP Core plus the dNh extension. Project-specific systems are extensions, not PCP Core.
+
+This PR validates fixture and dry-run contract shape only. It does not implement or validate a generic runtime exporter. Negative cases remain fixture assertions, not executed behavior.
+
+Dopetask and Task Orchestrator are Dopemux/DCP extension concepts. Any current PCP artifact that requires those named systems is a boundary defect to be repaired by the follow-up extension-contract and de-Dopemux boundary packets.
+
+Architecture status: `PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN`.
+
+Merge status: draft; `NEEDS_SUPERVISOR`; not merge-ready.
 
 # Ownership Matrix
 
@@ -43,7 +59,7 @@ Pass posture:
 - Every listed responsibility has one primary owner.
 - Shared responsibilities are expressed as handoff contracts.
 - Only Supervisor owns acceptance.
-- Only Dopetask/Codex executor lanes own execution.
+- Only Dopemux/DCP extension executor lanes (Dopetask/Codex) own execution; these are not PCP Core requirements.
 - Project runtime writes remain owned by project runtime under gated packets.
 
 # Contracts Added
@@ -115,9 +131,26 @@ Validation is recorded in `proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.j
 # Risks / Drift
 
 - No live generic exporter implementation is included.
+- No runtime exporter behavior is validated in PR #925.
+- Extension contract and generic authority-map schema are missing.
 - Read-only Opus audit returned `NEEDS_SUPERVISOR`; Supervisor acceptance is not recorded.
 - Negative fail-closed cases are asserted fixture expectations, not executed classifier results.
-- Task Orchestrator live writes and Dopetask execution remain blocked.
+- Task Orchestrator live writes and Dopetask execution remain blocked (Dopemux/DCP extension concepts).
+- PR #925 remains draft pending core boundary repair.
+
+# Build Order
+
+1. PR925 framing/proof repair
+2. PCP extension contract
+3. PCP core de-Dopemux boundary repair
+4. PCP generic exporter
+5. DCP extension mapping
+6. dNh extension mapping
+7. fixture-to-runtime validation
+8. PR Steward / proof readiness integration
+9. Task Orchestrator visibility
+10. live-write gates
+11. FastAPI bridge / live writes last
 
 # Forbidden Action Confirmation
 
@@ -139,4 +172,4 @@ Revert the packet branch or remove only the files listed in the task packet allo
 
 # Decision Request
 
-Request Supervisor adjudication of the `NEEDS_SUPERVISOR` audit result. If accepted or accepted with corrections, the next implementation packet should build the generic fixture-based exporter before any dNh live artifact-only exporter.
+Request Supervisor adjudication of the `NEEDS_SUPERVISOR` audit result. Next required packet after framing repair: `TP-DMX-PCP-EXTENSION-CONTRACT-0001`, then PCP core de-Dopemux boundary repair, then generic fixture-based exporter before any dNh live artifact-only exporter.

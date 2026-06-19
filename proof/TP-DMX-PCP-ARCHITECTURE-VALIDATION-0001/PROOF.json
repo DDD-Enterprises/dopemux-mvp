@@ -1,7 +1,7 @@
 {
   "tp_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
   "before_sha": "a05ebf77578c3e163f90d2e194efd2441cebeac6",
-  "after_sha": "84149bced3638ae806ded2b790ce1fde2991cab3",
+  "after_sha": "937f2144ec8af1423ce87de377a2a969c0d55e01",
   "branch": "codex/tp-dmx-pcp-architecture-validation-0001",
   "changed_files": [
     "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md",
@@ -295,14 +295,33 @@
     "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json",
     "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md"
   ],
-  "architecture_verdict": "ARCHITECTURE_CONFIRMED_WITH_CORRECTIONS",
+  "architecture_verdict": "PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN",
+  "repair_packet_id": "TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002",
+
+  "build_order": [
+    "PR925 framing/proof repair",
+    "PCP extension contract",
+    "PCP core de-Dopemux boundary repair",
+    "PCP generic exporter",
+    "DCP extension mapping",
+    "dNh extension mapping",
+    "fixture-to-runtime validation",
+    "PR Steward / proof readiness integration",
+    "Task Orchestrator visibility",
+    "live-write gates",
+    "FastAPI bridge / live writes last"
+  ],
   "known_risks": [
     "No live generic exporter implementation was built; E2E result is a fixture dry-run artifact.",
+    "No runtime exporter behavior is validated in PR #925.",
+    "Extension contract and generic authority-map schema are missing.",
+    "PCP Core must not require Dopemux, Dopetask, or Task Orchestrator; current artifacts still carry Dopemux-shaped boundary defects pending de-Dopemux repair.",
     "Supervisor acceptance is not recorded in this packet.",
-    "Task Orchestrator live writes and Dopetask execution remain blocked until later contracts exist.",
+    "Task Orchestrator live writes and Dopetask execution remain blocked until later contracts exist (Dopemux/DCP extension concepts).",
     "Read-only Opus audit returned NEEDS_SUPERVISOR; acceptance is blocked pending Supervisor adjudication.",
     "Negative fail-closed cases are asserted fixture expectations, not executed classifier results.",
-    "after_sha repaired to PR head by TP-DMX-PCP-925-REPAIR-0001; architecture acceptance remains NEEDS_SUPERVISOR."
+    "PR #925 remains draft pending core boundary repair.",
+    "after_sha refreshed to PR head by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002."
   ],
   "not_run": [
     "GitHub mutation or PR creation",
@@ -367,7 +386,7 @@
         "severity": "MEDIUM",
         "title": "Architecture verdict needed scope restriction",
         "status": "RESOLVED",
-        "body": "The verdict is scoped to contract shape only; behavior remains fixture-asserted and pending Supervisor acceptance."
+        "body": "Machine-readable architecture_verdict downgraded to PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN; human docs use ARCHITECTURE_SHAPE_PLAUSIBLE_PENDING_EXPORTER. PCP Core parent-substrate framing added; DCP/dNh demoted to extensions."
       },
       {
         "id": "AUDIT-M4-PAL-EVIDENCE",
@@ -393,7 +412,10 @@
     ],
     "remaining_risks": [
       "Supervisor acceptance is still pending; an auditor verdict is not acceptance.",
-      "Fixture-only by design: no live generic exporter exists; Task Orchestrator writes and Dopetask execution remain blocked until explicit write contracts exist.",
+      "Fixture-only by design: no live generic exporter exists; runtime exporter behavior unproven.",
+      "Extension contract and generic authority-map schema missing.",
+      "PCP schema boundary defects (Dopemux-shaped core language) remain; de-Dopemux boundary repair required.",
+      "Task Orchestrator writes and Dopetask execution remain blocked until explicit write contracts exist (Dopemux/DCP extension).",
       "Negative cases remain asserted fixture expectations until a generic exporter/classifier harness exists."
     ],
     "skip_reason": null,
@@ -401,7 +423,8 @@
       "AUDIT-B1-WORKTREE-DRIFT: worktree amendments prepared for commit and validation rerun after corrections.",
       "AUDIT-M1-ALLOWLIST: verified current task packet allowlist includes AUDITOR_REPORT.md.",
       "AUDIT-M2-AUDIT-VERDICT-DRIFT: aligned E2E proof_pointer and audit_result verdicts to NEEDS_SUPERVISOR.",
-      "AUDIT-M3-VERDICT-SCOPE: scoped ARCHITECTURE_CONFIRMED_WITH_CORRECTIONS to contract-shape validation only in docs and proof.",
+      "AUDIT-M3-VERDICT-SCOPE: replaced ARCHITECTURE_CONFIRMED_WITH_CORRECTIONS with PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN and ARCHITECTURE_SHAPE_PLAUSIBLE_PENDING_EXPORTER.",
+      "TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002: added PCP Core parent-substrate framing; demoted DCP/dNh to extensions; documented missing extension contract and authority-map schema.",
       "AUDIT-M4-PAL-EVIDENCE: recorded PAL codereview/precommit MCP artifacts as NOT_RUN.",
       "AUDIT-L2-DOPMUX-TYPO: changed project_kind enum and dopemux fixture from DOPMUX to DOPEMUX.",
       "AUDIT-L3-BASE-SHA: recorded review_base_sha separately from canonical_work_commit_parent_sha."
@@ -426,6 +449,35 @@
     "precommit": "NOT_RUN",
     "reason": "PAL MCP/tool artifacts were not available in this session; local git pre-commit hooks were run separately and recorded under validation_results."
   },
-  "proof_refresh_note": "Command outputs refreshed after rebasing onto origin/main and correcting audit verdict alignment.",
-  "after_sha_note": "Repaired by TP-DMX-PCP-925-REPAIR-0001: updated to current PR branch HEAD for machine-linkable proof freshness. The original value (fe4f36e5...) was a pre-amend orphan that resolved but did not represent the reviewed PR head. Architecture acceptance remains NEEDS_SUPERVISOR."
+  "proof_refresh_note": "Framing/proof repair by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002; after_sha refreshed to commit 937f2144e.",
+  "after_sha_note": "Repaired by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002: after_sha updated to current PR branch HEAD (937f2144e). Prior repair by TP-DMX-PCP-925-REPAIR-0001 set after_sha to 84149bced. Architecture acceptance remains NEEDS_SUPERVISOR.",
+  "framing_proof_repair_audit": {
+    "repair_packet_id": "TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002",
+    "auditor_tool": "grok-cursor-agent",
+    "auditor_model": "grok",
+    "invocation": "in-session read-only review of framing/proof repair diff against packet allowlist and supervisor synthesis",
+    "exit_code": 0,
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "auditor_findings": [
+      "PCP Core parent-substrate framing added to docs and proof.",
+      "Overstrong ARCHITECTURE_CONFIRMED_WITH_CORRECTIONS labels replaced in JSON and human docs.",
+      "Dopetask and Task Orchestrator demoted to Dopemux/DCP extension concepts.",
+      "NEEDS_SUPERVISOR and draft/not-merge-ready status preserved.",
+      "No runtime files changed; no exporter implemented.",
+      "PCP schema boundary defects (Dopemux-shaped core) intentionally deferred to extension-contract and de-Dopemux packets."
+    ],
+    "fixes_applied_from_audit": [],
+    "remaining_risks": [
+      "Supervisor recheck still required.",
+      "Schema-level de-Dopemux boundary repair not in scope for this packet."
+    ],
+    "skip_reason": null
+  },
+  "corrections_required": [
+    "PCP Core is the reusable parent substrate; DCP and dNh are extensions.",
+    "PR #925 validates fixture/dry-run shape only; runtime exporter behavior is unproven.",
+    "Extension contract and generic authority-map schema require follow-up packets.",
+    "Dopetask and Task Orchestrator concepts belong to the Dopemux/DCP extension, not PCP Core."
+  ],
+  "verdict_scope": "fixture-shape and dry-run contract validation only; runtime exporter behavior unproven; Supervisor acceptance pending"
 }

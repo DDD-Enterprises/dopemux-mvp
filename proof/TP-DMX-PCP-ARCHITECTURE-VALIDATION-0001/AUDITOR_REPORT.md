@@ -112,3 +112,16 @@ This session ran the external verification the packet's PAL chain lacked: a PAL 
 ## Recommendation (unchanged ceiling)
 
 Route to Supervisor at `NEEDS_SUPERVISOR`. AAA-A (external PAL verification) and AAA-B (downgrade the structured `architecture_verdict` field) are the substantive items for the next packet or a coordinated implementer edit; AAA-C/AAA-D are minor. None are merge-risk; the change remains additive docs/schemas/fixtures.
+
+---
+
+## Superseding note — TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002
+
+The historical audit sections above remain the audit-of-record for the original packet execution. A subsequent framing/proof repair packet addressed AAA-B:
+
+- `architecture_verdict` in `PROOF.json` and `E2E_DRY_RUN_RESULT.json` now reads `PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN` and `PCP_CORE_DRY_RUN_CONTRACT_SHAPE_VALIDATED_EXPORTER_NOT_IMPLEMENTED` respectively.
+- Human docs now use `ARCHITECTURE_SHAPE_PLAUSIBLE_PENDING_EXPORTER`.
+- PCP Core parent-substrate framing added; DCP and dNh demoted to extensions.
+- Schema-level de-Dopemux boundary defects remain deferred to follow-up packets.
+
+Supervisor status remains `NEEDS_SUPERVISOR`; PR #925 remains draft and not merge-ready.
