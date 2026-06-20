@@ -13,7 +13,7 @@ Memory Trinity law codification, operator command routing, drift validators, PAL
 
 | ID | Severity | Status | Title |
 |----|----------|--------|-------|
-| F001 | HIGH | **RESOLVED** | `mcp doctor` FAIL — was stale per-worktree port allocation (`:3039`/`:3054`/`:7924`) with no containers; fixed by aligning `.envrc` to running shared singletons (`:3005`/`:3020`/`:7890`) → exit 0 |
+| F001 | HIGH | **RESOLVED (operator-env)** | `mcp doctor` FAIL — was stale per-worktree port allocation (`:3039`/`:3054`/`:7924`) with no containers; fixed by a local gitignored `.envrc` aligning to running shared singletons (`:3005`/`:3020`/`:7890`) → exit 0. Allocator code unchanged; nothing ships in this branch |
 | F002 | MEDIUM | **RESOLVED (17/20)** | Skills sync now installed into `.claude/skills` + `.github/skills` (17 family-mapped skills each, valid `SKILL.md`); 3 family-less templates not synced |
 | F003 | MEDIUM | ACCEPTED_RISK | DCP facade dope-context transport BLOCKED (fail-closed by design) |
 | F004 | LOW | RESOLVED | `tm:*` commands removed in commit `2bab19203` |

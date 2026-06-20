@@ -81,7 +81,7 @@ Non-blocking followups remain (see below). Final merge is the operator's call.
 
 - ✅ PR #939 CLOSED → OPEN/MERGEABLE/CLEAN
 - ✅ BEHIND main → rebased clean
-- ✅ B5 mcp doctor FAIL → exit 0
+- ✅ B5 mcp doctor FAIL → exit 0 (operator-env `.envrc`; port allocator unchanged)
 - ✅ CI not at pushed HEAD → all required green at `622f823450a8e7b54c06b8e2924ec39e95c63b13`
 
 ## Remaining (non-blocking) followups

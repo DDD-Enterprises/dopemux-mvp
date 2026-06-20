@@ -24,7 +24,7 @@
     {"id": "B1", "codex": "PASS", "supervisor": "CLAIMED_PASS", "note": "Log-only runtime evidence"},
     {"id": "B2", "codex": "PASS", "supervisor": "CLAIMED_PASS", "note": "Log-only runtime evidence"},
     {"id": "B3", "codex": "PASS", "supervisor": "CLAIMED_PASS", "note": "~/.claude.json not in pack"},
-    {"id": "B5", "codex": "RESOLVED", "supervisor": "RESOLVED", "note": "mcp doctor exit 0 with env aligned to shared singletons; OBSERVED this session"},
+    {"id": "B5", "codex": "RESOLVED_OPERATOR_ENV", "supervisor": "RESOLVED_OPERATOR_ENV", "note": "mcp doctor exit 0 via local gitignored .envrc aligning to running shared singletons (OBSERVED); port allocator unchanged — no code ships in this branch"},
     {"id": "D2", "codex": "RESOLVED_17_20", "supervisor": "RESOLVED_17_20", "note": ".claude/skills + .github/skills installed (17/20); 3 family-less templates not synced"},
     {"id": "D3", "codex": "PASS", "supervisor": "PASS", "note": "docs_index.yaml catalog present; note 17/20 install vs 20-entry catalog"},
     {"id": "D5", "codex": "PASS", "supervisor": "PARTIAL", "note": "l0_membership present; task-master-ai/Zen staleness remains"},
@@ -33,7 +33,7 @@
   "hard_stops": [
     "RESOLVED: PR #939 CLOSED -> now OPEN/MERGEABLE/CLEAN",
     "RESOLVED: BEHIND main -> rebased clean on origin/main",
-    "RESOLVED: B5 mcp doctor FAIL -> exit 0",
+    "RESOLVED (operator-env): B5 mcp doctor FAIL -> exit 0 via local .envrc; allocator unchanged",
     "RESOLVED: CI not at pushed HEAD -> all 8 required green at 622f823450a8e7b54c06b8e2924ec39e95c63b13",
     "OPEN (non-blocking): embedded_audit SKIPPED — operator/supervisor to accept or require a run",
     "OPEN (non-blocking): D2 17/20 skills — operator decision on the 3 family-less templates"
