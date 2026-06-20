@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from click.testing import CliRunner
 
 from dopemux.commands.cockpit_commands import cockpit
@@ -54,6 +55,25 @@ def test_default_size_is_120x40_plain():
     code, output = _invoke("run", "--plain")
     assert code == 0
     assert "120x40" in output
+
+
+@pytest.mark.parametrize(
+    ("mode", "authority_label"),
+    [
+        ("pm", "task-orchestrator"),
+        ("implementer", "dopetask"),
+        ("overview", "operator control"),
+        ("services", "service catalog"),
+        ("events", "dope-memory"),
+    ],
+)
+def test_plain_render_accepts_all_supported_modes(mode, authority_label):
+    code, output = _invoke("run", "--mode", mode, "--size", "120x40", "--plain")
+    assert code == 0
+    assert "STATIC DEMO" in output
+    assert "NO WRITES" in output
+    assert "SRC=" in output
+    assert authority_label in output.lower()
 
 
 def test_no_forbidden_phrases_via_cli():
