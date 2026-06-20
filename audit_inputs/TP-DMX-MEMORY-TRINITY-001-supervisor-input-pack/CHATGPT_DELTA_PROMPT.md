@@ -1,8 +1,14 @@
 # ChatGPT Delta Challenge Prompt (supersedes full A–F re-review)
 
-**Pack**: Use the newly uploaded supervisor input pack only. Treat any earlier **100KB / 30-file** pack as **superseded**.
+**Pack**: Use the newly uploaded supervisor input pack only. Treat any earlier pack as **superseded** (100KB/30-file, or **~108880 bytes / 32–33 entries**).
 
-**Current pack marker**: `115KB+` rebuild includes:
+**Step 0 — integrity gate (mandatory)**:
+1. Unzip and read `audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/PACK_INVENTORY.json`
+2. Confirm `zip_bytes >= 143000` and `entry_count >= 44`
+3. Confirm `required_present` is true for: `SUPERVISOR_FINAL_REVIEW.md`, `SUPERVISOR_FINAL_REVIEW.json`, `PR_939_LIVE_REFRESH.md`, `PROOF.json`, `l0_membership.json`
+4. If integrity fails → output `PACK_STALE: STOP` and do not grade
+
+**Current canonical pack** (`./scripts/build_supervisor_input_pack.sh`) includes:
 - `D2_D3_D4_EVIDENCE.md`
 - `docs/docs_index.yaml`
 - `templates/plugin/l0_membership.json`
