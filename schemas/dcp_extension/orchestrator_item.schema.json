@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://dopemux.dev/schemas/project_control_plane/orchestrator_item.schema.json",
+  "$id": "https://dopemux.dev/schemas/dcp_extension/orchestrator_item.schema.json",
   "title": "Task Orchestrator Item Dry Run",
   "type": "object",
   "additionalProperties": false,

@@ -86,8 +86,8 @@
     "paths": []
   },
   "forbidden_action_confirmation": {
-    "live_task_orchestrator_written": false,
-    "dopetask_executed": false,
+    "external_workflow_written": false,
+    "external_runner_executed": false,
     "github_mutated": false,
     "runtime_written": false
   }
