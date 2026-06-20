@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/executor_run_request.schema.json",
+  "title": "Executor Run Request Dry Run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "executor",
+    "packet_id",
+    "mode",
+    "allow_live_writes",
+    "inputs"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.executor_run_request.v0"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "executor": {
+      "type": "string",
+      "enum": [
+        "CODEX",
+        "DOPETASK",
+        "UNKNOWN"
+      ]
+    },
+    "packet_id": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "DRY_RUN",
+        "ARTIFACT_ONLY"
+      ]
+    },
+    "allow_live_writes": {
+      "type": "boolean",
+      "const": false
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
