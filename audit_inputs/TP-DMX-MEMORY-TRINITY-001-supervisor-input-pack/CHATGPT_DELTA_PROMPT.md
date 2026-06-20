@@ -1,13 +1,22 @@
 # ChatGPT Delta Challenge Prompt (supersedes full A–F re-review)
 
-**Pack**: Use the newly uploaded supervisor input pack only. Treat any earlier pack as **superseded** (100KB/30-file, or **~108880 bytes / 32–33 entries**).
+**Pack**: Use the newly uploaded supervisor input pack only. Treat any earlier pack as **superseded**.
 
-**Step 0 — integrity gate (mandatory)**:
-1. Unzip and read `audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/PACK_INVENTORY.json`
-2. Confirm `zip_bytes >= 142000`, `entry_count >= 44`, and `repo_head_sha` matches `PROOF.json` / `SUPERVISOR_FINAL_REVIEW.json` (stale v2 ≈ 108880 / 32–33)
-3. Confirm `required_present` is true for: `SUPERVISOR_FINAL_REVIEW.md`, `SUPERVISOR_FINAL_REVIEW.json`, `PR_939_LIVE_REFRESH.md`, `PROOF.json`, `l0_membership.json`
-4. Confirm `pr_939` is **HOLD** (PR closed) unless `PR_939_LIVE_REFRESH.md` shows OPEN
-5. If integrity fails → output `PACK_STALE: STOP` and do not grade
+**Known stale uploads** (do not grade):
+
+| Bytes | Entries | Problem |
+|-------|---------|---------|
+| 100458 | 30 | v1 — no D2/D3/D4, no docs_index |
+| ~108880 | 32–33 | v2 — missing final review, PROOF, l0 |
+| **101458** | **30** | v4 — missing 8 required files (see `UPLOAD_GATE.md`) |
+
+**Step 0 — integrity gate (mandatory, inspect THE ZIP not an external inventory file)**:
+1. Measure attached zip: if `bytes < 142000` or `entries < 44` → `PACK_STALE: STOP`
+2. Unzip and read `audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/PACK_INVENTORY.json` **from inside the zip**
+3. Confirm `required_present` all true for final review, PR refresh, PROOF, D2_D3_D4, docs_index, l0_membership
+4. Confirm `repo_head_sha` matches `PROOF.json` / `SUPERVISOR_FINAL_REVIEW.json`
+5. Read `PR_939_LIVE_REFRESH.md` for current PR state (OPEN @ `bab18a82f`); `pr_939` is **HOLD** until CI green + rebase
+6. If integrity fails → output `PACK_STALE: STOP` and do not grade
 
 **Current canonical pack** (`./scripts/build_supervisor_input_pack.sh`) includes:
 - `D2_D3_D4_EVIDENCE.md`

@@ -1,26 +1,26 @@
 # Input Pack — TP-DMX-MEMORY-TRINITY-001 Supervisor Review
 
 **Pack ID**: `TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack`
-**HEAD**: `2285c3a6` (authoritative; run `./scripts/build_supervisor_input_pack.sh` to refresh)
-**PR**: https://github.com/DDD-Enterprises/dopemux-mvp/pull/939
+**HEAD**: `bab18a82f` (run `./scripts/build_supervisor_input_pack.sh` to refresh)
+**PR**: https://github.com/DDD-Enterprises/dopemux-mvp/pull/939 (OPEN)
 
 ---
 
 ## Verify upload before review (mandatory)
 
-ChatGPT/upload truncation has produced **stale partial packs** (~108,880 bytes / 32–33 entries).
+ChatGPT upload truncation has produced **stale partial packs**. An external `PACK_INVENTORY.json` describing 144KB while the zip is 101KB means **wrong zip attached**.
 
-**Canonical pack fingerprints** (from `PACK_INVENTORY.json`):
+**Canonical pack fingerprints** (from `PACK_INVENTORY.json` inside zip):
 
 | Field | Expected |
 |-------|----------|
-| `zip_bytes` | **≥ 142000** (current build: **144741**) |
+| `zip_bytes` | **≥ 142000** (current build: **144602**) |
 | `entry_count` | **≥ 44** (current build: **45**) |
-| `zip_sha256` | `a8102235a5321835b52bec10e9ca8c1d34966620b70c2b77f93725eddd40c62c` |
-| `zip_sha256_scope` | `all_entries_except_PACK_INVENTORY.json` (avoids self-referential drift) |
-| `repo_head_sha` | `2285c3a6b594fea6e16585fdd5e8119b986fc89` (must match PROOF + supervisor final) |
+| `zip_sha256` | `fa0c185691563d9b1111f11bbb77c45a9d4af378face7db30f0b07eebdc4a109` |
+| `zip_sha256_scope` | `all_entries_except_PACK_INVENTORY.json` |
+| `repo_head_sha` | `bab18a82f8ccd66fde2cd04ea0a33b5061768321` |
 
-**First step for supervisor**: unzip and confirm `PACK_INVENTORY.json` exists and lists:
+**First step for supervisor**: unzip attached zip and confirm these paths exist:
 
 ```
 proof/TP-DMX-MEMORY-TRINITY-001/SUPERVISOR_FINAL_REVIEW.md
@@ -29,10 +29,11 @@ proof/TP-DMX-MEMORY-TRINITY-001/PR_939_LIVE_REFRESH.md
 proof/TP-DMX-MEMORY-TRINITY-001/PROOF.json
 templates/plugin/l0_membership.json
 audit_inputs/.../D2_D3_D4_EVIDENCE.md
+audit_inputs/.../CHATGPT_DELTA_PROMPT.md
 docs/docs_index.yaml
 ```
 
-If any are missing → **STOP** — pack is superseded/stale; do not grade D3/D5/final review.
+If any are missing → **STOP** — `PACK_STALE`; do not grade.
 
 ---
 
@@ -52,31 +53,17 @@ Output: `audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack.zip`
 
 | Pack | Bytes | Entries | Problem |
 |------|-------|---------|---------|
-| v1 ChatGPT upload | 100458 | 30 | No D2_D3_D4, no docs_index |
-| v2 partial upload | ~108880 | 32–33 | Missing SUPERVISOR_FINAL_REVIEW, PR_939_LIVE_REFRESH, PROOF.json, l0_membership |
-| **v3 canonical** | **144741** | **45** | Full required set + aligned PACK_INVENTORY.json |
+| v1 | 100458 | 30 | No D2_D3_D4, no docs_index |
+| v2 | ~108880 | 32–33 | Missing final review, PROOF, l0 |
+| v4 ChatGPT upload | **101458** | **30** | Missing 8 required files |
+| **canonical** | **144602** | **45** | Full set + PACK_INVENTORY inside zip |
 
----
-
-## Tier 1 — Required (approval gate)
-
-See `PACK_REQUIRED_FILES.txt` for machine-verified list.
-
-| # | Path | Purpose |
-|---|------|---------|
-| 1 | `SUPERVISOR-5.5-PRO-PROMPT.md` | Full review prompt |
-| 2 | `CHATGPT_DELTA_PROMPT.md` | Delta challenge only (preferred) |
-| 3 | `proof/.../SUPERVISOR_FINAL_REVIEW.md` | Final verdict |
-| 4 | `proof/.../SUPERVISOR_FINAL_REVIEW.json` | Machine verdict |
-| 5 | `proof/.../PR_939_LIVE_REFRESH.md` | Live CI blockers |
-| 6 | `proof/.../PROOF.json` | Refreshed proof + embedded_audit |
-| 7 | `D2_D3_D4_EVIDENCE.md` | D2/D3/D4 corroboration |
-| 8 | `docs/docs_index.yaml` | D3 catalog |
-| 9 | `templates/plugin/l0_membership.json` | D5 fleet deps |
-| 10 | `PACK_INVENTORY.json` | Upload integrity gate |
+See `UPLOAD_GATE.md` for operator upload checklist.
 
 ---
 
 ## ChatGPT instruction
 
-Paste `CHATGPT_DELTA_PROMPT.md`. Verify `PACK_INVENTORY.json` before any grading.
+1. Attach zip only (~145 KB, 45 entries)
+2. Paste `CHATGPT_DELTA_PROMPT.md`
+3. Supervisor Step 0 must inspect zip bytes/entries before grading
