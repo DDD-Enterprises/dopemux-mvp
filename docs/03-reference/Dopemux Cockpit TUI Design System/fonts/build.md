@@ -48,8 +48,7 @@ git clone https://github.com/ryanoasis/nerd-fonts  # NERD_FONTS_REPO
 
 export IOSEVKA_REPO=/path/to/Iosevka
 export NERD_FONTS_REPO=/path/to/nerd-fonts
-export OUT_DIR="$PWD/out"
-mkdir -p "$OUT_DIR"
+export OUT_DIR="$PWD/out"  # ignored by fonts/.gitignore
 
 # 1. Build the unpatched Dopemux Term + Dopemux Editor faces.
 ./build-dopemux-fonts.sh
@@ -58,9 +57,11 @@ mkdir -p "$OUT_DIR"
 ./patch-nerd-font.sh
 ```
 
-`build-dopemux-fonts.sh` copies `private-build-plans.toml` into the Iosevka
-checkout and runs `npm run build -- ttf::IosevkaDopemuxTerm` and
-`... ttf::IosevkaDopemuxEditor`, then collects the TTFs into `OUT_DIR`. Set
+`build-dopemux-fonts.sh` backs up the Iosevka checkout's existing
+`private-build-plans.toml`, installs the cockpit plan for the duration of the
+run, and restores the original plan on exit. It runs
+`npm run build -- ttf::DopemuxTerm` and `... ttf::DopemuxEditor`, then collects
+the TTFs into `OUT_DIR`. The script creates `OUT_DIR` when needed. Set
 `IOSEVKA_TARGET=ttf-unhinted` to skip the `ttfautohint` dependency.
 
 `patch-nerd-font.sh` runs `fontforge -script font-patcher --complete --careful`
@@ -111,9 +112,10 @@ The forbidden check should return nothing. The verification snippet should print
 
 ## No-binary-commit rule
 
-Generated `.ttf`, `.otf`, `.woff`, and `.woff2` files are not committed by
-default (`.gitignore`). Commit binaries only after explicit approval and review
-of the binary list.
+Generated `.ttf`, `.otf`, `.woff`, `.woff2`, `.dopemux-built-fonts.txt*`, and
+the documented `out/` build directory are not committed by default
+(`.gitignore`). Commit binaries only after explicit approval and review of the
+binary list.
 
 ## Notes
 

@@ -35,7 +35,7 @@ dependencies = [
     "requests>=2.28.0",
     "openai>=1.50.0",
     "google-genai>=1.0.0",
-    "aiohttp>=3.14.0",
+    "aiohttp>=3.14.1",
     "watchdog>=3.0.0",
     "python-dateutil>=2.8.2",
     "python-dotenv>=1.2.2",
@@ -106,8 +106,8 @@ services = [
     "tenacity>=8.2.3",
     "structlog>=24.1.0",
     "prometheus-client>=0.19.0",
-    "pyjwt>=2.8.0",
-    "cryptography>=41.0.0",
+    "pyjwt>=2.13.0",
+    "cryptography>=48.0.1",
     "passlib[bcrypt]>=1.7.4",
     "celery[redis]>=5.3.0",
     "kombu>=5.3.0",
@@ -116,7 +116,7 @@ services = [
     "beautifulsoup4>=4.12.0",
     "lxml>=6.1.0",
     "rank_bm25",
-    "python-multipart>=0.0.27",
+    "python-multipart>=0.0.31",
     "aioredis>=2.0.1",
     "asyncio-mqtt>=0.16.0",
     "aiofiles>=23.2.1",
@@ -186,6 +186,7 @@ packages = [
     "dopemux.roles",
     "dopemux.service_base",
     "dopemux.system_data",
+    "dopemux.personas",
     "dopemux.templates",
     "dopemux.tools",
     "dopemux.tmux",
@@ -247,6 +248,7 @@ packages = [
     "init/task-packets/STATUS.md",
     "init/task-packets/TEMPLATE_TASK_PACKET.md",
 ]
+"dopemux.personas" = ["*.agent.md"]
 "dopemux_pr_steward" = ["config.schema.json"]
 "tools.pr_steward" = ["known_reviewers.json"]
 

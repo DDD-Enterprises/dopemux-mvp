@@ -29,6 +29,13 @@ class ClaudeConfigurator:
     - MCP server configuration files
     """
 
+    # Marker delimiting the managed persona-reference block injected into an
+    # existing claude.md. Re-running role activation replaces only the content
+    # between these markers; doctrine outside the block is never touched.
+    PERSONA_BLOCK_START = "<!-- DOPEMUX:ACTIVE-PERSONA:START -->"
+    PERSONA_BLOCK_END = "<!-- DOPEMUX:ACTIVE-PERSONA:END -->"
+    ACTIVE_PERSONA_FILENAME = "active-persona.md"
+
     def __init__(self, config_manager: ConfigManager):
         """Initialize configurator with configuration manager."""
         self.config_manager = config_manager
@@ -39,7 +46,7 @@ class ClaudeConfigurator:
         template: str = "python",
         force: bool = False,
         role: Optional[str] = None,
-    ) -> None:
+    ) -> Optional[bool]:
         """
         Setup complete project configuration for Dopemux.
 
@@ -47,10 +54,16 @@ class ClaudeConfigurator:
             project_path: Target project directory
             template: Project template type
             force: Overwrite existing configuration
-            role: Optional role name (e.g. "developer"). When provided, only
-                ensures .claude/ and .dopemux/ directories exist; doctrine
-                files are NOT regenerated to avoid clobbering existing content.
-                Persona injection is a separate later increment (out of scope here).
+            role: Optional role name (e.g. "developer"). When provided, doctrine
+                files are NOT regenerated to avoid clobbering existing content;
+                instead the role's assembled guidelines are injected into a
+                dedicated, fully-owned ``.claude/active-persona.md`` file and an
+                idempotent reference block is added to an existing claude.md.
+
+        Returns:
+            For role activation: ``True`` if the persona was injected, ``False``
+            if it failed closed (role resolved to no guidelines). ``None`` for
+            the non-role generation path.
         """
         claude_dir = project_path / ".claude"
         dopemux_dir = project_path / ".dopemux"
@@ -61,8 +74,9 @@ class ClaudeConfigurator:
 
         # When called for role activation (dopemux start --role X), do not
         # regenerate or overwrite doctrine files — they may already exist.
+        # Inject the persona into its own owned file (clobber-free) and return.
         if role is not None:
-            return
+            return self._inject_persona(claude_dir, template, role)
 
         # Generate Claude configuration files
         self._create_claude_md(claude_dir, template)
@@ -79,6 +93,152 @@ class ClaudeConfigurator:
         console.print(
             f"[success]✓ Claude configuration setup complete for {template} project[/success]"
         )
+
+    def _inject_persona(self, claude_dir: Path, template: str, role: str) -> bool:
+        """Inject role/persona guidelines without clobbering doctrine files.
+
+        Strategy (clobber-free):
+        - Assemble the role's guidelines via :class:`InstructionManager`.
+        - Write them to a dedicated, fully-owned ``active-persona.md`` file that
+          is regenerated (overwritten) on every activation — idempotent and
+          never co-located with hand-authored doctrine.
+        - When a ``claude.md`` already exists, idempotently insert a
+          marker-bounded reference block so Claude Code actually loads the
+          persona. Doctrine outside the markers is left untouched.
+
+        Fails closed: if the role resolves to no guidelines, nothing is written
+        and a warning is emitted (no misleading "activated" success state).
+        """
+        from .instruction_manager import InstructionManager
+
+        project_root = claude_dir.parent
+        manager = InstructionManager(project_root)
+
+        # Fail closed on the PERSONA specifically: assemble_instructions also
+        # appends role-independent global guidelines, so checking its combined
+        # output would falsely "activate" an unresolvable role whenever
+        # config/instructions/ exists. Gate on the persona resolving instead.
+        persona_content = manager.get_persona_content(role)
+        if not persona_content or not persona_content.strip():
+            console.print(
+                f"[warning]⚠️  No guidelines found for role '{role}'; "
+                f"persona not injected.[/warning]"
+            )
+            # F1: When a role resolves to no persona, clear any stale owned
+            # artifacts left by a prior activation so state stays honest.
+            self._clear_persona_artifacts(claude_dir)
+            return False
+
+        instructions = manager.assemble_instructions(role=role, project_type=template)
+
+        # 1. Write the fully-owned persona file (source of truth, regenerated).
+        persona_file = claude_dir / self.ACTIVE_PERSONA_FILENAME
+        persona_file.write_text(
+            f"# Active Persona: {role}\n\n"
+            "> Generated by `dopemux start --role`. This file is overwritten on "
+            "every role activation — do not edit by hand.\n\n"
+            f"{instructions}\n"
+        )
+
+        # 2. Idempotently reference it from an existing claude.md (if present).
+        self._reference_persona_in_claude_md(claude_dir, role)
+
+        console.print(
+            f"[success]✓ Activated persona '{role}' "
+            f"({self.ACTIVE_PERSONA_FILENAME})[/success]"
+        )
+        return True
+
+    def _reference_persona_in_claude_md(self, claude_dir: Path, role: str) -> None:
+        """Insert/replace the marker-bounded persona reference in claude.md.
+
+        F2: When claude.md does not exist, create a minimal one that imports the
+        persona file via ``@active-persona.md`` so Claude Code actually loads it.
+        The minimal file is only created when absent; an existing claude.md is
+        never overwritten (clobber-free guarantee).
+
+        F5: Use ``@active-persona.md`` import syntax (not a Markdown link) so the
+        Claude Code harness actually loads the persona content at session start.
+        """
+        claude_md = claude_dir / "claude.md"
+        if not claude_md.exists():
+            # F2: create a minimal loader when no claude.md is present.
+            minimal = (
+                "# Project Instructions\n\n"
+                "> This file was created by `dopemux start --role` because no\n"
+                "> `.claude/claude.md` existed. Add project-specific doctrine here;\n"
+                "> the active-persona block below is managed automatically.\n\n"
+            )
+            block = (
+                f"{self.PERSONA_BLOCK_START}\n"
+                "## Active Persona & Guidelines\n\n"
+                f"Role **{role}** is active.\n\n"
+                f"@{self.ACTIVE_PERSONA_FILENAME}\n"
+                f"{self.PERSONA_BLOCK_END}\n"
+            )
+            claude_md.write_text(minimal + block)
+            return
+
+        # F5: emit @import (not a Markdown link) so the harness loads the file.
+        block = (
+            f"{self.PERSONA_BLOCK_START}\n"
+            "## Active Persona & Guidelines\n\n"
+            f"Role **{role}** is active.\n\n"
+            f"@{self.ACTIVE_PERSONA_FILENAME}\n"
+            f"{self.PERSONA_BLOCK_END}"
+        )
+
+        existing = claude_md.read_text()
+        start = existing.find(self.PERSONA_BLOCK_START)
+        end = existing.find(self.PERSONA_BLOCK_END)
+
+        if start != -1 and end != -1 and end > start:
+            # Replace the existing managed block in place (idempotent).
+            end += len(self.PERSONA_BLOCK_END)
+            updated = existing[:start] + block + existing[end:]
+        else:
+            # No well-formed block. Strip any orphaned/partial markers first so
+            # a malformed prior state can't cause unbounded duplication on
+            # repeat activations, then append a fresh managed block. All
+            # non-marker doctrine is preserved.
+            cleaned = existing.replace(self.PERSONA_BLOCK_START, "").replace(
+                self.PERSONA_BLOCK_END, ""
+            )
+            updated = cleaned.rstrip() + "\n\n" + block + "\n"
+
+        claude_md.write_text(updated)
+
+    def _clear_persona_artifacts(self, claude_dir: Path) -> None:
+        """Remove owned persona artifacts so stale state is never left behind.
+
+        Called when a role resolves to no persona (F1).  Only touches files that
+        ``_inject_persona`` owns; doctrine files (claude.md, session.md, etc.)
+        are never removed.
+        """
+        # Remove the fully-owned active-persona file if it exists.
+        persona_file = claude_dir / self.ACTIVE_PERSONA_FILENAME
+        if persona_file.exists():
+            persona_file.unlink()
+            logger.debug("Removed stale %s", self.ACTIVE_PERSONA_FILENAME)
+
+        # Scrub the managed block from claude.md (if present) so no reference
+        # to a non-existent persona file remains.
+        claude_md = claude_dir / "claude.md"
+        if claude_md.exists():
+            existing = claude_md.read_text()
+            start = existing.find(self.PERSONA_BLOCK_START)
+            end = existing.find(self.PERSONA_BLOCK_END)
+            if start != -1 and end != -1 and end > start:
+                end += len(self.PERSONA_BLOCK_END)
+                updated = existing[:start] + existing[end:]
+                claude_md.write_text(updated.rstrip() + "\n")
+            else:
+                # Strip any orphaned partial markers.
+                cleaned = existing.replace(self.PERSONA_BLOCK_START, "").replace(
+                    self.PERSONA_BLOCK_END, ""
+                )
+                if cleaned != existing:
+                    claude_md.write_text(cleaned)
 
     def _create_claude_md(self, claude_dir: Path, template: str) -> None:
         """Create project-specific claude.md file."""
@@ -98,7 +258,7 @@ You are working on a **{template} project** with Dopemux ADHD optimizations enab
 - **Break Intervals**: {config.adhd_profile.break_interval} minutes
 - **Notification Style**: {config.adhd_profile.notification_style}
 - **Visual Complexity**: {config.adhd_profile.visual_complexity}
-- **Attention Adaptation**: {'Enabled' if config.attention.adaptation_enabled else 'Disabled'}
+- **Attention Adaptation**: {"Enabled" if config.attention.adaptation_enabled else "Disabled"}
 
 ### Development Principles
 - **Context Preservation**: Auto-save every {config.context.auto_save_interval} seconds
@@ -622,7 +782,9 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         config_file = project_path / ".dopemux" / "config.yaml"
 
         if not config_file.exists():
-            console.logger.info("[error]No Dopemux configuration found in project[/error]")
+            console.logger.info(
+                "[error]No Dopemux configuration found in project[/error]"
+            )
             return
 
         import yaml

@@ -14,12 +14,9 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
-from rich.console import Console
-
+from dopemux.console import console
 from dopemux.pm.models import PMTaskStatus
 from dopemux.pm.writes import pm_transition_work_item
-
-console = Console()
 
 
 class TaskPriority(str, Enum):

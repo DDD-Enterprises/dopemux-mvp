@@ -129,3 +129,11 @@
 ## 2025-05-27 - [Tactile Feedback for Task Persistence]
 **Learning:** Extending the "Tactile Confirmation" pattern (icon swap + tooltip update + pulse animation) to the current ritual task allows users to confidently capture and share their focus without breaking ritual flow. Additionally, ensuring "destructive" actions like 'Reset' have high-visibility focus states (using color-coordinated glows) prevents "lost focus" frustration for keyboard users during high-stress ritual management.
 **Action:** Apply the three-tier tactile confirmation loop to task-level actions and use status-coordinated glows for high-priority focus states to support both confidence and orientation.
+
+## 2026-05-28 - [Adaptive Reconnection Bridge]
+**Learning:** For dashboards relying on real-time background services, a passive "Down" status can lead to user helplessness and frustration. Transforming the connection status indicator and system error alerts into interactive "bridges" (e.g., a clickable Chip and a 'RECONNECT' button) empowers users to manually trigger recovery. Decoupling UI state cleanups (like clearing success notifications) from the core service lifecycle ensures that a reconnection attempt doesn't inadvertently reset unrelated micro-interactions.
+**Action:** Implement interactive manual recovery paths for all critical service indicators and decouple UI-only state cleanups from core service effects.
+
+## 2025-05-29 - [Consolidating Interactive Surfaces]
+**Learning:** In high-density dashboards, nested tooltips (e.g., a card-level tooltip and an internal progress bar tooltip) can create visual clutter and "tooltip fighting." Consolidating metadata into a single, high-level Card-Level Interactive Surface provides a cleaner experience while maintaining accessibility.
+**Action:** When making a panel root focusable and adding a summary Tooltip, remove redundant nested Tooltips from internal metrics to reduce cognitive load.

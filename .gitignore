@@ -277,7 +277,14 @@ services/conport_kg/auth/keys/*.pem
 # LLM Archive files
 dopemux-mvp-llm-*.zip
 *.zip
+!audit_inputs/**/*.zip
 !docs/planes/pm/dopemux/_opus_inputs/bundle_20260213.zip
+proof/TP-DCP-MCP-RO-0001/COMMAND_LOG.md
+audit_inputs/dcp-runner-recon/REPO_SURFACE_RECON.txt
+audit_inputs/multi_model_orchestration_evidence/**/routing_model_raw.txt
+audit_inputs/multi_model_orchestration_evidence/**/slash_agent_workflow_raw.txt
+audit_inputs/multi_model_orchestration_evidence/**/SECRET_REDACTION_REPORT.md
+audit_inputs/multi_model_orchestration_evidence/**/DRIFT_CONTRADICTION_LEDGER.md
 reports/*.zip
 test_*.txt
 test_output.txt

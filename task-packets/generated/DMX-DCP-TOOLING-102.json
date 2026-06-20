@@ -1,0 +1,121 @@
+{
+  "id": "DMX-DCP-TOOLING-102",
+  "project": "dopemux-mvp",
+  "target": "DCP red-lane taxonomy instance and scanner metadata evolution",
+  "invariants": [
+    "No live writes, external API calls, Dopetask execution, or PR mutation are introduced.",
+    "DCP-RED-MERGE-SEAM-0001 remains a hard block.",
+    "The scanner remains local and deterministic.",
+    "Taxonomy absence must be explicit in report metadata, not a hidden success claim.",
+    "TP-101 manifest and ADR scope remain intact."
+  ],
+  "depends_on": [
+    "DMX-DCP-TOOLING-101"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-TOOLING",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/dmx-dcp-tooling-101",
+    "base_branch": "main",
+    "stacked_because": "Bundle TP-101 and TP-102 foundation review work in PR #885 to reduce review overhead."
+  },
+  "commit": {
+    "message": "feat(dcp): DMX-DCP-TOOLING-102 taxonomy instance and scanner metadata",
+    "allowlist": [
+      "task-packets/generated/DMX-DCP-TOOLING-102.json",
+      "schemas/dcp/dcp_red_lane_taxonomy.instance.json",
+      "schemas/dcp/README.md",
+      "schemas/dcp/manifest.json",
+      "schemas/dcp/dcp_red_lane_report.schema.json",
+      "src/dopemux/dcp/red_lane.py",
+      "src/dopemux/dcp/red_lane_scanner.py",
+      "src/dopemux/dcp/red_lane_taxonomy.py",
+      "tests/dcp/test_dcp_0102_red_lane_taxonomy.py",
+      "proof/DMX-DCP-TOOLING-102/PROOF.json",
+      "proof/DMX-DCP-TOOLING-102/AUDITOR_REPORT.md",
+      "proof/DMX-DCP-TOOLING-102/APPROVAL.json"
+    ],
+    "verify": [
+      "python -m pytest -q tests/dcp/test_dcp_0102_red_lane_taxonomy.py tests/dcp/test_dcp_0005_red_lane_scanner.py tests/dcp/test_contracts_consistency.py",
+      "python -m jsonschema -i task-packets/generated/DMX-DCP-TOOLING-102.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i schemas/dcp/dcp_red_lane_taxonomy.instance.json schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): DMX-DCP-TOOLING 101+102 foundation bundle",
+    "body": "Bundles TP-101 contracts manifest/promotion ladder with TP-102 red-lane taxonomy instance and scanner metadata evolution.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "102-red-test",
+      "task": "Add regression tests proving the scanner exposes taxonomy metadata and that the repo taxonomy instance validates against its schema.",
+      "validation": [
+        "python -m pytest -q tests/dcp/test_dcp_0102_red_lane_taxonomy.py"
+      ],
+      "expected_files": [
+        "tests/dcp/test_dcp_0102_red_lane_taxonomy.py"
+      ]
+    },
+    {
+      "id": "102-instance",
+      "task": "Promote the red-lane taxonomy out of the aggregate fixture into a repo-local instance file and point the manifest at it.",
+      "validation": [
+        "python -m jsonschema -i schemas/dcp/dcp_red_lane_taxonomy.instance.json schemas/dcp/dcp_red_lane_taxonomy.schema.json"
+      ],
+      "expected_files": [
+        "schemas/dcp/dcp_red_lane_taxonomy.instance.json",
+        "schemas/dcp/manifest.json"
+      ]
+    },
+    {
+      "id": "102-scanner-metadata",
+      "task": "Update local scanner report metadata to include taxonomy_id, taxonomy_path, and taxonomy_lane_ids without adding external writes.",
+      "validation": [
+        "python -m pytest -q tests/dcp/test_dcp_0102_red_lane_taxonomy.py tests/dcp/test_dcp_0005_red_lane_scanner.py"
+      ],
+      "expected_files": [
+        "src/dopemux/dcp/red_lane.py",
+        "src/dopemux/dcp/red_lane_scanner.py",
+        "src/dopemux/dcp/red_lane_taxonomy.py",
+        "schemas/dcp/dcp_red_lane_report.schema.json"
+      ]
+    },
+    {
+      "id": "102-proof",
+      "task": "Record proof, auditor report, and sanctioned-change approval artifact for the red-lane foundation packet.",
+      "validation": [
+        "python -m json.tool proof/DMX-DCP-TOOLING-102/PROOF.json >/dev/null",
+        "python -m json.tool proof/DMX-DCP-TOOLING-102/APPROVAL.json >/dev/null"
+      ],
+      "expected_files": [
+        "proof/DMX-DCP-TOOLING-102/PROOF.json",
+        "proof/DMX-DCP-TOOLING-102/AUDITOR_REPORT.md",
+        "proof/DMX-DCP-TOOLING-102/APPROVAL.json"
+      ]
+    }
+  ]
+}

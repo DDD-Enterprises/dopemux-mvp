@@ -59,14 +59,29 @@ for input in "${INPUTS[@]}"; do
   face="${base#*-}"
 
   patch_args=(--complete --careful)
-  if [[ "$family" == "DopemuxTerm" ]]; then
-    patch_args+=(--mono)
-  fi
+  patch_name=""
+  case "$family" in
+    DopemuxTerm)
+      patch_name="Dopemux Term Nerd Font"
+      patch_args+=(--mono)
+      ;;
+    DopemuxEditor)
+      patch_name="Dopemux Editor Nerd Font"
+      patch_args+=(--variable-width-glyphs)
+      ;;
+    *)
+      printf 'Unexpected built font family stem: %s (from %s)\n' "$family" "$(basename "$input")" >&2
+      exit 1
+      ;;
+  esac
+  patch_args+=(--name "$patch_name")
 
   # --complete: all Nerd Font glyph sets (guarantees the codepoints documented in
   #             src/dopemux/ui/theme.py::Glyphs).
   # --mono:     single-width cells for terminal / TUI rendering. Term only;
-  #             Editor remains quasi-proportional.
+  # --variable-width-glyphs: keeps Editor icon advances proportional.
+  # --name:     explicit family name; avoid deriving from full names, which can
+  #             fragment Medium faces into a separate family.
   # --careful:  never overwrite glyphs already present in the source face.
   # font-patcher requires FontForge's Python: run via `fontforge -script`,
   # NOT `python3 font-patcher`.
@@ -90,5 +105,5 @@ done
 cleanup_patch_tmp
 
 printf '\nPatched %s face(s) into %s\n' "$patched" "$PATCHED_DIR"
-printf 'DopemuxTerm uses --mono; DopemuxEditor keeps source spacing.\n'
+printf 'DopemuxTerm uses --mono; DopemuxEditor uses --variable-width-glyphs.\n'
 printf 'Review generated binaries before committing; binaries are not committed by default (.gitignore).\n'
