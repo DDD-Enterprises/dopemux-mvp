@@ -1,0 +1,95 @@
+{
+  "id": "TP-DMX-PCP-EXTENSION-CONTRACT-AUTHORITY-MAP-0001",
+  "project": "dopemux-mvp",
+  "target": "Add extension_manifest.schema.json and authority_map.schema.json as PCP Core co-keystones, with tests proving extensions are additive-only and fail closed on unknown ownership. No exporter, no schema moves yet.",
+  "invariants": [
+    "Runtime, GitHub, and PR truth outrank this packet; re-pull live state before execution (AGENTS.md \u00a72).",
+    "Authority model is fixed: PCP Core is the parent substrate; DCP and dNh are extensions. No 'DCP parent' framing.",
+    "No live writes, Dopetask execution, Task Orchestrator MCP writes, dNh runtime mutation, PR ready/merge, or OpenClaw production routing unless this packet's gates explicitly authorize it.",
+    "Execution is gated by depends_on: do not start until every blocker item is terminal or a supervisor waives sequencing.",
+    "Implementer is not the sole final auditor; embedded audit must be independent (AIR Red Lines #9).",
+    "Allowlist paths are proposed targets and may be refined by upstream packet outputs; keep changes within the declared allowlist.",
+    "Both schemas ship together; neither is optional 'later garnish' (AIR \u00a75/\u00a76).",
+    "Extensions cannot override core fail-closed behavior, weaken proof/audit gates, promote an adapter to authority, or be required for baseline PCP.",
+    "authority_map unknown owner behavior must be BLOCK_OR_ESCALATE (fail closed).",
+    "Correct the proposed enum value to DOPEMUX_DCP (not DOPMUX_DCP)."
+  ],
+  "depends_on": [
+    "TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PCP-DCP-ROUTING",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-pcp-extension-contract-authority-map-0001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(pcp): extension contract + authority map co-keystones",
+    "allowlist": [
+      "schemas/project_control_plane/authority_map.schema.json",
+      "schemas/project_control_plane/extension_manifest.schema.json",
+      "tests/project_control_plane/test_authority_map_schema.py",
+      "tests/project_control_plane/test_extension_manifest_schema.py",
+      "docs/03-reference/architecture/pcp-extension-contract-and-authority-map.md",
+      "task-packets/generated/TP-DMX-PCP-EXTENSION-CONTRACT-AUTHORITY-MAP-0001.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-PCP-EXTENSION-CONTRACT-AUTHORITY-MAP-0001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-PCP-EXTENSION-CONTRACT-AUTHORITY-MAP-0001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "git diff --stat",
+      "python -m json.tool schemas/project_control_plane/authority_map.schema.json >/dev/null",
+      "python -m json.tool schemas/project_control_plane/extension_manifest.schema.json >/dev/null",
+      "pytest -q tests/project_control_plane/test_authority_map_schema.py tests/project_control_plane/test_extension_manifest_schema.py"
+    ]
+  },
+  "pr": {
+    "title": "feat(pcp): extension contract + authority map co-keystones",
+    "body": "Adds the PCP Core extension-manifest and authority-map schemas as co-keystones with additive-only and fail-closed-unknown tests. Draft / NEEDS_SUPERVISOR. Depends on Packet 1 (PR #925 repair) proof or supervisor waiver.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Author authority_map.schema.json (domain, action, canonical_authority_owner, canonical_writer, reader_or_projection_surface, mirror/cache/index status, source_truth_refs, proof_required, live_write_allowed, approval_required, rollback_required, unknown_behavior=BLOCK_OR_ESCALATE).",
+      "validation": [
+        "python -m json.tool schemas/project_control_plane/authority_map.schema.json >/dev/null"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Author extension_manifest.schema.json (extension_kind enum DOPEMUX_DCP/DNH_CRM/PROJECT/UNKNOWN, additive capabilities, hard invariants cannot_override_core_fail_closed/weaken_proof_gates/weaken_audit_gates/promote_adapter_to_authority/require_extension_for_baseline_core).",
+      "validation": [
+        "python -m json.tool schemas/project_control_plane/extension_manifest.schema.json >/dev/null",
+        "rg -n DOPEMUX_DCP schemas/project_control_plane/extension_manifest.schema.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add tests proving additive-only behavior, fail-closed on unknown owner, and that an extension cannot weaken core gates.",
+      "validation": [
+        "pytest -q tests/project_control_plane/test_authority_map_schema.py tests/project_control_plane/test_extension_manifest_schema.py"
+      ]
+    }
+  ]
+}
