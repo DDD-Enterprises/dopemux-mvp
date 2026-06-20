@@ -75,13 +75,15 @@ Rules:
 
 ## 6. Architecture Boundaries
 
+**Memory Trinity (accepted ADR law, 2026-06-19):** ConPort, dope-memory, and dope-context are distinct canonical planes. Cross-plane projection is allowed; cross-plane canonical overwrite is forbidden. See `docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md` and `.claude/modules/shared/memory-trinity-routing.md`.
+
 - `dopemux`: operator control, CLI, startup, routing, MCP/service coordination.
 - `dopetask`: external execution runtime through `scripts/dopetask`; `scripts/taskx` is a compatibility shim.
 - PM metadata: Leantime.
 - Workflow transitions: task-orchestrator.
-- Decisions, progress, and structured context: ConPort.
-- Historical receipts and chronicle: dope-memory.
-- Code and docs retrieval: dope-context.
+- Decisions, progress, and structured context: **ConPort** (Memory Trinity plane 1).
+- Historical receipts and chronicle: **dope-memory** (Memory Trinity plane 2).
+- Code and docs retrieval: **dope-context** (Memory Trinity plane 3; read-only retrieval, never canonical writer).
 - dopecon-bridge routes, proxies, and transports events only; it is not canonical task, workflow, decision, progress, PM, chronicle, or retrieval authority.
 - ADHD Engine supports operator state, cognitive-state, recommendations, and hooks only.
 - Repo Truth Extractor audits and extracts repo truth only; its outputs are evidence artifacts, not runtime truth.

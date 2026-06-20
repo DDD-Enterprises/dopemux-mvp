@@ -1,0 +1,27 @@
+{
+  "tp_id": "TP-DMX-MEMORY-TRINITY-001",
+  "tp_path": "task-packets/TP-DMX-MEMORY-TRINITY-001.json",
+  "branch": "fix/mcp-server-build-failures",
+  "head_sha": "b37b36beb",
+  "worktree_path": "/Users/hue/code/dopemux-mvp",
+  "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+  "slices": ["S1 ADR law", "S2 command routing", "S3 audit prompt + plan"],
+  "validations": [
+    {"command": "python3 scripts/validate_memory_command_refs.py", "exit_code": 0, "bucket": "PASS"},
+    {"command": "python3 -m jsonschema -i task-packets/TP-DMX-MEMORY-TRINITY-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json", "exit_code": 0, "bucket": "PASS"},
+    {"command": "git diff --check", "exit_code": 0, "bucket": "PASS"},
+    {"command": "PYTHONPATH=src python -m dopemux.cli mcp doctor", "exit_code": 1, "bucket": "FAIL", "reason": "per-worktree env unset in audit shell"},
+    {"command": "PAL analyze->challenge chain", "exit_code": null, "bucket": "NOT_RUN"}
+  ],
+  "codereview_status": "NOT_RUN",
+  "precommit_status": "NOT_RUN",
+  "commit_sha": "b37b36beb",
+  "pr_url_or_blocker": "PENDING",
+  "residual_risks": [
+    "47 tm:* commands remain",
+    "DCP facade dope-context transport gap",
+    "Skill install paths empty"
+  ],
+  "unknowns": ["PAL artifacts", "live search_all decision projection"],
+  "cleanup_status": "N/A"
+}

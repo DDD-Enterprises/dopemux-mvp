@@ -1,0 +1,30 @@
+{
+  "verdict": "PARTIAL",
+  "packet_id": "TP-DMX-MEMORY-TRINITY-001",
+  "audited_at": "2026-06-19",
+  "checks": [
+    {"id": "A1", "result": "PASS", "evidence": "docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md:11 status accepted"},
+    {"id": "A2", "result": "PASS", "evidence": "AGENTS.md:76 Memory Trinity citation"},
+    {"id": "A3", "result": "PASS", "evidence": ".claude/modules/shared/memory-trinity-routing.md"},
+    {"id": "B1", "result": "PASS", "evidence": "docker mcp-dope-context healthy"},
+    {"id": "B2", "result": "PASS", "evidence": "~/.claude.json dope-context localhost:3010/mcp"},
+    {"id": "B3", "result": "FAIL", "evidence": "dopemux mcp doctor exit 1 env unset"},
+    {"id": "C1", "result": "PASS", "evidence": "scripts/validate_memory_command_refs.py exit 0"},
+    {"id": "D1", "result": "FAIL", "evidence": ".claude/commands/tm 47 markdown files"},
+    {"id": "D2", "result": "FAIL", "evidence": ".github/skills absent"},
+    {"id": "E1", "result": "PASS", "evidence": "services/dope-context/src/mcp/server.py TRINITY_BOUNDARY_MARKER"},
+    {"id": "E2", "result": "PASS", "evidence": "src/dopemux/orchestrator/memory_writers.py mirror_status"},
+    {"id": "E3", "result": "NOT_RUN", "evidence": "services/dcp-readonly-facade dope_context.py fail-closed stub"}
+  ],
+  "unknowns": [
+    "search_all live decision projection",
+    "PAL chain proof artifacts"
+  ],
+  "next_slices": [
+    "TP-DMX-MEMORY-TRINITY-002",
+    "TP-DMX-MEMORY-TRINITY-003",
+    "TP-DMX-MEMORY-TRINITY-004",
+    "source .envrc.dopemux-mcp onboarding",
+    "DCP facade dope-context JSON-RPC bridge"
+  ]
+}
