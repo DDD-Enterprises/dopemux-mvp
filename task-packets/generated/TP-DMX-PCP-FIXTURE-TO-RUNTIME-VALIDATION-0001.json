@@ -1,0 +1,83 @@
+{
+  "id": "TP-DMX-PCP-FIXTURE-TO-RUNTIME-VALIDATION-0001",
+  "project": "dopemux-mvp",
+  "target": "Execute (not assert) the exporter fail-closed negative traps \u2014 generated/vendor/secret/contradiction \u2014 producing a failure index with command outputs and exit codes. Must run immediately after the exporter and before any DCP/dNh extension mapping.",
+  "invariants": [
+    "Runtime, GitHub, and PR truth outrank this packet; re-pull live state before execution (AGENTS.md \u00a72).",
+    "Authority model is fixed: PCP Core is the parent substrate; DCP and dNh are extensions. No 'DCP parent' framing.",
+    "No live writes, Dopetask execution, Task Orchestrator MCP writes, dNh runtime mutation, PR ready/merge, or OpenClaw production routing unless this packet's gates explicitly authorize it.",
+    "Execution is gated by depends_on: do not start until every blocker item is terminal or a supervisor waives sequencing.",
+    "Implementer is not the sole final auditor; embedded audit must be independent (AIR Red Lines #9).",
+    "Allowlist paths are proposed targets and may be refined by upstream packet outputs; keep changes within the declared allowlist.",
+    "Negative cases are EXECUTED with real outputs and exit codes; assertion-only 'expected==asserted' results are forbidden (AIR Red Line #16).",
+    "This packet proves the core exporter's fail-closed behavior before extensions build on it (sequence step 4.5)."
+  ],
+  "depends_on": [
+    "TP-DMX-PCP-CORE-GENERIC-EXPORTER-0001"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PCP-DCP-ROUTING",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PCP-CORE-GENERIC-EXPORTER-0001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-pcp-fixture-to-runtime-validation-0001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "test(pcp): executed exporter negative-trap validation",
+    "allowlist": [
+      "src/dopemux/pcp/negative_cases.py",
+      "tests/project_control_plane/test_negative_traps.py",
+      "reports/project-control-plane/validation/NEGATIVE_TRAPS_RESULT.json",
+      "schemas/project_control_plane/negative_case_result.schema.json",
+      "task-packets/generated/TP-DMX-PCP-FIXTURE-TO-RUNTIME-VALIDATION-0001.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-PCP-FIXTURE-TO-RUNTIME-VALIDATION-0001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-PCP-FIXTURE-TO-RUNTIME-VALIDATION-0001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "git diff --stat",
+      "pytest -q tests/project_control_plane/test_negative_traps.py",
+      "python -m json.tool reports/project-control-plane/validation/NEGATIVE_TRAPS_RESULT.json >/dev/null"
+    ]
+  },
+  "pr": {
+    "title": "test(pcp): executed exporter negative-trap validation",
+    "body": "Executes the generated/vendor/secret/contradiction fail-closed traps against the generic exporter and records a failure index with exit codes. Behaviour evidence on the core, before extensions. Draft / NEEDS_SUPERVISOR.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement a negative-case runner that executes each trap against the exporter and records command, stdout/stderr ref, and exit code.",
+      "validation": [
+        "pytest -q tests/project_control_plane/test_negative_traps.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Emit NEGATIVE_TRAPS_RESULT.json failure index (executed, not asserted) and validate it parses.",
+      "validation": [
+        "python -m json.tool reports/project-control-plane/validation/NEGATIVE_TRAPS_RESULT.json >/dev/null"
+      ]
+    }
+  ]
+}
