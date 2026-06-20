@@ -1,0 +1,54 @@
+{
+  "schema_version": "pcp.negative_case_result.v0",
+  "generated_from_fixture": false,
+  "total": 5,
+  "passed": 5,
+  "failed": 0,
+  "cases": [
+    {
+      "name": "non_git_dir",
+      "category": "discovery",
+      "scenario": "Call export_evidence on a plain directory with no .git",
+      "expectation": "ValueError raised (not a Git repository)",
+      "executed": true,
+      "outcome": "ValueError: Not a Git repository (or git is unavailable): '/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/tmpyjzf6jrj'",
+      "result": "PASS"
+    },
+    {
+      "name": "no_commit_repo",
+      "category": "discovery",
+      "scenario": "git init a directory but make no commits, then call export_evidence",
+      "expectation": "ValueError raised (no commits \u2014 head_sha unavailable)",
+      "executed": true,
+      "outcome": "ValueError: Git repository at '/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/tmpnkzgz3zw' has no commits \u2014 a real head_sha cannot be captured.",
+      "result": "PASS"
+    },
+    {
+      "name": "runtime_missing_head_sha",
+      "category": "schema-gate",
+      "scenario": "Validate project_evidence_export instance with generated_from_fixture=false and repo_state.head_sha=null",
+      "expectation": "Schema rejects: allOf runtime head_sha gate fires (null is not valid string)",
+      "executed": true,
+      "outcome": "1 validation error(s): None is not of type 'string'",
+      "result": "PASS"
+    },
+    {
+      "name": "old_dopemux_field",
+      "category": "de-dopemux",
+      "scenario": "Validate project_evidence_export instance whose forbidden_action_confirmation uses old key dopetask_executed",
+      "expectation": "Schema rejects due to additionalProperties:false on forbidden_action_confirmation",
+      "executed": true,
+      "outcome": "Rejected (additionalProperties): Additional properties are not allowed ('dopetask_executed', 'live_task_orchestrator_written' were unexpected)",
+      "result": "PASS"
+    },
+    {
+      "name": "secret_content_no_leak",
+      "category": "secret-safety",
+      "scenario": "Commit a file containing a unique marker to a tmp repo; run export_evidence; check the JSON",
+      "expectation": "Secret marker absent from export JSON (exporter records paths, not content)",
+      "executed": true,
+      "outcome": "Marker 'TRAP_SECRET_A7B3C9D2E5F1' absent from export JSON (1675 chars); exporter records paths only",
+      "result": "PASS"
+    }
+  ]
+}
