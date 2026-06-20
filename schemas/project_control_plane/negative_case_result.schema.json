@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/negative_case_result.schema.json",
+  "title": "Project Control Plane Negative Case Result",
+  "description": "Artifact produced by executing (not merely asserting) fail-closed negative traps against the PCP exporter.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_from_fixture",
+    "total",
+    "passed",
+    "failed",
+    "cases"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "pcp.negative_case_result.v0"
+    },
+    "generated_from_fixture": {
+      "type": "boolean",
+      "default": false
+    },
+    "total": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "passed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "failed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "category",
+          "scenario",
+          "expectation",
+          "executed",
+          "outcome",
+          "result"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scenario": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expectation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "executed": {
+            "const": true
+          },
+          "outcome": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result": {
+            "type": "string",
+            "enum": ["PASS", "FAIL", "UNKNOWN"]
+          }
+        }
+      }
+    }
+  }
+}
