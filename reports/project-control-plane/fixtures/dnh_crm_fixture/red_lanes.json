@@ -1,0 +1,42 @@
+{
+  "schema_version": "pcp.project_red_lanes.v0",
+  "project_id": "dnh-crm-fixture",
+  "default_on_unknown": "BLOCK",
+  "classifications": [
+    {
+      "lane_id": "crm-write",
+      "scope": "PROJECT",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    },
+    {
+      "lane_id": "telegram-send",
+      "scope": "PROJECT",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    },
+    {
+      "lane_id": "calendar-write",
+      "scope": "PROJECT",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    },
+    {
+      "lane_id": "runtime-db",
+      "scope": "PROJECT",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    },
+    {
+      "lane_id": "forbidden-worktree",
+      "scope": "PROJECT",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    }
+  ]
+}

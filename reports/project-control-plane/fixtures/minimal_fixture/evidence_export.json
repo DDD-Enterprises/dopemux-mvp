@@ -1,0 +1,81 @@
+{
+  "schema_version": "pcp.project_evidence_export.v0",
+  "project_id": "minimal-generic-fixture",
+  "generated_from_fixture": true,
+  "profile_ref": "reports/project-control-plane/fixtures/minimal_fixture/project_profile.json",
+  "repo_state": {
+    "root_verified": true,
+    "worktree_state": "UNKNOWN",
+    "head_sha": "sha256:PLACEHOLDER-illustrative-not-computed",
+    "branch": "fixture-branch"
+  },
+  "authority_docs": [
+    {
+      "path": "README.md",
+      "state": "UNKNOWN"
+    }
+  ],
+  "active_packet": {
+    "state": "UNKNOWN",
+    "packet_id": null,
+    "path": null
+  },
+  "status_ledger": {
+    "state": "PRESENT",
+    "path": "status/ledger.json",
+    "entries": [
+      {
+        "id": "fixture-entry-001",
+        "status": "READY_FOR_REVIEW"
+      }
+    ]
+  },
+  "proof_manifest": {
+    "state": "UNKNOWN",
+    "path": "proof/ACTIVE/PROOF.json",
+    "freshness": "UNKNOWN"
+  },
+  "workflow_list": [
+    {
+      "id": "workflow-fixture-001",
+      "status": "DRY_RUN_ONLY",
+      "source": "fixture"
+    }
+  ],
+  "pr_review_state": {
+    "state": "PRESENT",
+    "authority_allowed": false,
+    "open_prs": [
+      "PR-FIXTURE-OPEN-NOT-AUTHORITY"
+    ]
+  },
+  "red_lane_results": [
+    {
+      "lane_id": "runtime-write",
+      "result": "PASS",
+      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
+    },
+    {
+      "lane_id": "unknown-authority",
+      "result": "PASS",
+      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
+    }
+  ],
+  "unknowns": [
+    {
+      "field": "active_packet",
+      "reason": "minimal fixture intentionally omits active packet",
+      "result": "BLOCKED"
+    }
+  ],
+  "dirty_state": {
+    "state": "UNKNOWN",
+    "paths": []
+  },
+  "forbidden_action_confirmation": {
+    "live_task_orchestrator_written": false,
+    "dopetask_executed": false,
+    "github_mutated": false,
+    "runtime_written": false
+  }
+}

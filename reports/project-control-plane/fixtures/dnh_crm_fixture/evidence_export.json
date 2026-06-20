@@ -1,0 +1,94 @@
+{
+  "schema_version": "pcp.project_evidence_export.v0",
+  "project_id": "dnh-crm-fixture",
+  "generated_from_fixture": true,
+  "profile_ref": "reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json",
+  "repo_state": {
+    "root_verified": true,
+    "worktree_state": "CLEAN",
+    "head_sha": "sha256:PLACEHOLDER-illustrative-not-computed",
+    "branch": "fixture-branch"
+  },
+  "authority_docs": [
+    {
+      "path": "AGENTS.md",
+      "state": "PRESENT"
+    },
+    {
+      "path": "docs/governance/macro-packet-operating-model.md",
+      "state": "PRESENT"
+    }
+  ],
+  "active_packet": {
+    "state": "PRESENT",
+    "packet_id": "TP-DNH-RDCP-FIXTURE-0000",
+    "path": "task-packets/TP-DNH-RDCP-FIXTURE-0000.json"
+  },
+  "status_ledger": {
+    "state": "PRESENT",
+    "path": "status/ledger.json",
+    "entries": [
+      {
+        "id": "fixture-entry-001",
+        "status": "READY_FOR_REVIEW"
+      }
+    ]
+  },
+  "proof_manifest": {
+    "state": "PRESENT",
+    "path": "proof/TP-DNH-RDCP-FIXTURE-0000/PROOF.json",
+    "freshness": "CURRENT"
+  },
+  "workflow_list": [
+    {
+      "id": "workflow-fixture-001",
+      "status": "DRY_RUN_ONLY",
+      "source": "fixture"
+    }
+  ],
+  "pr_review_state": {
+    "state": "PRESENT",
+    "authority_allowed": false,
+    "open_prs": [
+      "PR-FIXTURE-OPEN-NOT-AUTHORITY"
+    ]
+  },
+  "red_lane_results": [
+    {
+      "lane_id": "crm-write",
+      "result": "PASS",
+      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
+    },
+    {
+      "lane_id": "telegram-send",
+      "result": "PASS",
+      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
+    },
+    {
+      "lane_id": "calendar-write",
+      "result": "PASS",
+      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
+    },
+    {
+      "lane_id": "runtime-db",
+      "result": "PASS",
+      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
+    },
+    {
+      "lane_id": "forbidden-worktree",
+      "result": "PASS",
+      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
+    }
+  ],
+  "unknowns": [],
+  "dirty_state": {
+    "state": "CLEAN",
+    "paths": []
+  },
+  "forbidden_action_confirmation": {
+    "live_task_orchestrator_written": false,
+    "dopetask_executed": false,
+    "github_mutated": false,
+    "runtime_written": false
+  }
+}

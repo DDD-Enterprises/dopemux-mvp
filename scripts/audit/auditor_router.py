@@ -30,6 +30,10 @@ _CLINK_CONF_DIR = Path(
     / "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients"
 )
 
+# Planned audit routes with unsupported clink runners stay out of PAL's auto-load
+# directory so pal-stdio does not crash at registry init.
+_AUDIT_EXTRA_CLINK_CONF_DIR = Path(__file__).resolve().parent / "fixtures" / "clink_clients"
+
 # Ordered list of clink config names to load as the default route registry.
 # claude-audit is primary (priority 0); gemini-audit is fallback (priority 1).
 _DEFAULT_ROUTE_NAMES: tuple[str, ...] = ("claude-audit", "gemini-audit")

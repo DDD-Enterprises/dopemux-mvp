@@ -1,0 +1,51 @@
+{
+  "project_id": "dopemux-mvp-fixture",
+  "cases": [
+    {
+      "case": "missing active packet",
+      "expected_result": "BLOCKED_UNKNOWN_ACTIVE_PACKET",
+      "asserted_result": "BLOCKED_UNKNOWN_ACTIVE_PACKET"
+    },
+    {
+      "case": "invalid schema",
+      "expected_result": "BLOCKED_SCHEMA_INVALID",
+      "asserted_result": "BLOCKED_SCHEMA_INVALID"
+    },
+    {
+      "case": "forbidden runtime path",
+      "expected_result": "NEEDS_SUPERVISOR",
+      "asserted_result": "NEEDS_SUPERVISOR"
+    },
+    {
+      "case": "forbidden worktree",
+      "expected_result": "BLOCKED_FORBIDDEN_WORKTREE",
+      "asserted_result": "BLOCKED_FORBIDDEN_WORKTREE"
+    },
+    {
+      "case": "runtime DB included",
+      "expected_result": "BLOCKED_RUNTIME_DB",
+      "asserted_result": "BLOCKED_RUNTIME_DB"
+    },
+    {
+      "case": "live Task Orchestrator write requested",
+      "expected_result": "BLOCKED_NO_WRITE_CONTRACT",
+      "asserted_result": "BLOCKED_NO_WRITE_CONTRACT"
+    },
+    {
+      "case": "Dopetask execution requested too early",
+      "expected_result": "BLOCKED_NO_WRITE_CONTRACT",
+      "asserted_result": "BLOCKED_NO_WRITE_CONTRACT"
+    },
+    {
+      "case": "unknown proof freshness",
+      "expected_result": "NEEDS_EVIDENCE_REFRESH",
+      "asserted_result": "NEEDS_EVIDENCE_REFRESH"
+    },
+    {
+      "case": "open PR treated as authority",
+      "expected_result": "BLOCKED_UNACCEPTED_AUTHORITY",
+      "asserted_result": "BLOCKED_UNACCEPTED_AUTHORITY"
+    }
+  ],
+  "dangerous_cases_degrade_to_warning_only": false
+}

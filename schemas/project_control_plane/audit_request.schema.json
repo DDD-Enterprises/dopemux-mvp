@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/audit_request.schema.json",
+  "title": "Audit Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "audit_id",
+    "auditor_role",
+    "target_artifacts",
+    "mutation_allowed",
+    "questions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.audit_request.v0"
+    },
+    "audit_id": {
+      "type": "string"
+    },
+    "auditor_role": {
+      "type": "string",
+      "enum": [
+        "OPUS",
+        "GEMINI",
+        "HUMAN_SUPERVISOR",
+        "UNKNOWN"
+      ]
+    },
+    "target_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mutation_allowed": {
+      "type": "boolean",
+      "const": false
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
