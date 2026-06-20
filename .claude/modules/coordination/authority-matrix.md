@@ -11,7 +11,9 @@
 
 | System | OWNS (Exclusive Authority) | NEVER Does |
 |--------|---------------------------|------------|
-| **ConPort (PostgreSQL AGE)** | Task storage (progress_entry)<br/>Task metadata (custom_data)<br/>Dependencies (link_conport_items)<br/>Architectural decisions<br/>Knowledge graph queries<br/>Context preservation (product & active) | PRD parsing<br/>ADHD metric calculation<br/>LSP operations<br/>Real-time session management |
+| **ConPort (PostgreSQL AGE)** — Memory Trinity plane 1 | Task storage (progress_entry)<br/>Task metadata (custom_data)<br/>Dependencies (link_conport_items)<br/>Architectural decisions<br/>Knowledge graph queries<br/>Context preservation (product & active) | PRD parsing<br/>ADHD metric calculation<br/>LSP operations<br/>Chronicle storage<br/>Semantic retrieval authority |
+| **dope-memory** — Memory Trinity plane 2 | Chronicle, replay, recap, reflection, trajectory<br/>Mirror receipts for ConPort writes | Decisions/progress canonical store<br/>PM metadata<br/>Workflow legality<br/>Code/docs retrieval |
+| **dope-context** — Memory Trinity plane 3 | Semantic retrieval over indexed code/docs<br/>Ranking and context assembly (read-only) | Canonical decisions/progress<br/>Chronicle writes<br/>PM/task storage |
 | **SuperClaude** | PRD parsing via `/dx:prd-parse`<br/>25 standard commands execution<br/>15 specialized agents<br/>`/dx:` custom command routing<br/>Human review workflow (Approach C) | Task storage<br/>Decision logging<br/>Code navigation<br/>ADHD state tracking |
 | **Python ADHD Engine** | Energy tracking & matching<br/>Cognitive load calculation (0-1)<br/>Break monitoring (25/60/90min)<br/>Attention state analysis<br/>Smart task recommendation<br/>Hyperfocus protection | Task storage<br/>PRD parsing<br/>LSP operations<br/>Knowledge graph management |
 | **Serena LSP** | LSP protocol operations<br/>Code navigation & completion<br/>Symbol search & analysis<br/>Semantic code understanding<br/>Tree-sitter parsing<br/>Navigation caching | Task management<br/>Decision storage<br/>PRD decomposition<br/>Session timing |

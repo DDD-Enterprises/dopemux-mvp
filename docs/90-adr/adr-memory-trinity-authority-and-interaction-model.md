@@ -5,10 +5,10 @@ type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-11'
-last_review: '2026-03-11'
-next_review: '2026-06-11'
+last_review: '2026-06-19'
+next_review: '2026-09-19'
 prelude: Defines ConPort, dope-memory, and dope-context as distinct canonical memory planes to prevent cross-plane authority escalation.
-status: proposed
+status: accepted
 graph_metadata:
   node_type: ADR
   impact: high
@@ -22,7 +22,7 @@ graph_metadata:
 
 # ADR: Memory Trinity authority and interaction model
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-03-11
 **Owners:** Dopemux Memory Plane / Context Plane / PM Plane
 **Decision Type:** Architecture / Authority Boundary / Cross-Plane Interaction

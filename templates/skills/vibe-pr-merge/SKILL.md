@@ -1,3 +1,8 @@
+---
+name: vibe-pr-merge
+description: Vibe-guardrailed PR queue remediation and merge orchestration via dopemux vibe pr-merge commands. Use for supervised or autonomous PR drain under Vibe policy — not for architecture design or bypassing security review.
+---
+
 # Skill: Vibe PR Merge Specialist
 
 ## Purpose

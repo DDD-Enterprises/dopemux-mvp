@@ -186,6 +186,14 @@ skills:
   workflow_plan_reviewer: templates/skills/plan-reviewer/SKILL.md
   workflow_code_implementer: templates/skills/code-implementer/SKILL.md
   workflow_quality_refactorer: templates/skills/quality-refactorer/SKILL.md
+  pr_merge_specialist: templates/skills/pr-merge-specialist/SKILL.md
+  vibe_pr_merge: templates/skills/vibe-pr-merge/SKILL.md
+  testgen_core: templates/skills/testgen/SKILL.md
+  testgen_gemini: templates/skills/testgen-gemini/SKILL.md
+  testgen_copilot: templates/skills/testgen-copilot/SKILL.md
+  testgen_claude: templates/skills/testgen-claude/SKILL.md
+  ci_remediation_specialist: templates/skills/ci-remediation-specialist/SKILL.md
+  load_orchestrator_persona: templates/skills/load-orchestrator-persona/SKILL.md
 fast_dev_os:
   readme: docs/03-reference/fast-dev-os/readme.md
   project_constitution: docs/03-reference/fast-dev-os/project-constitution.md

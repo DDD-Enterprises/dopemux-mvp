@@ -11,7 +11,7 @@ from typing import Dict, Iterable, List
 
 FAMILIES: Dict[str, List[str]] = {
     "testgen": ["testgen", "testgen-gemini", "testgen-copilot", "testgen-claude"],
-    "pr-merge-specialist": ["pr-merge-specialist"],
+    "pr-merge-specialist": ["pr-merge-specialist", "vibe-pr-merge"],
     "pr-docgen-sync": [
         "pr-docgen-sync",
         "pr-docgen-sync-gemini",
@@ -27,6 +27,10 @@ FAMILIES: Dict[str, List[str]] = {
         "plan-reviewer",
         "code-implementer",
         "quality-refactorer",
+    ],
+    "ops": [
+        "ci-remediation-specialist",
+        "load-orchestrator-persona",
     ],
 }
 
@@ -58,28 +62,52 @@ def _resolve_skill_names(families: Iterable[str]) -> List[str]:
     return selected
 
 
-def sync_skills(repo_root: Path, codex_home: Path, skill_names: Iterable[str], dry_run: bool = False) -> None:
+def _target_roots(repo_root: Path, targets: Iterable[str], *, codex_home: Path | None = None) -> List[Path]:
+    mapping = {
+        "codex": (codex_home or _default_codex_home()) / "skills",
+        "claude": repo_root / ".claude" / "skills",
+        "github": repo_root / ".github" / "skills",
+    }
+    selected = list(targets)
+    if "all" in selected:
+        selected = list(mapping.keys())
+    roots: List[Path] = []
+    for name in selected:
+        if name not in mapping:
+            allowed = ", ".join([*mapping.keys(), "all"])
+            raise ValueError(f"Unknown target '{name}'. Allowed: {allowed}")
+        roots.append(mapping[name])
+    return roots
+
+
+def sync_skills(
+    repo_root: Path,
+    target_roots: Iterable[Path],
+    skill_names: Iterable[str],
+    dry_run: bool = False,
+) -> None:
     source_root = repo_root / "templates" / "skills"
-    target_root = codex_home / "skills"
 
     for skill_name in skill_names:
         src = source_root / skill_name
-        dst = target_root / skill_name
         if not src.exists():
             raise FileNotFoundError(f"Source skill not found: {src}")
 
-        if dry_run:
-            print(f"[dry-run] sync {src} -> {dst}")
-            continue
+        for target_root in target_roots:
+            dst = target_root / skill_name
+            if dry_run:
+                print(f"[dry-run] sync {src} -> {dst}")
+                continue
 
-        if dst.exists():
-            shutil.rmtree(dst)
-        shutil.copytree(src, dst)
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if dst.exists():
+                shutil.rmtree(dst)
+            shutil.copytree(src, dst)
 
-        if not (dst / "SKILL.md").exists():
-            raise RuntimeError(f"Synced skill missing SKILL.md: {dst}")
+            if not (dst / "SKILL.md").exists():
+                raise RuntimeError(f"Synced skill missing SKILL.md: {dst}")
 
-        print(f"synced {skill_name} -> {dst}")
+            print(f"synced {skill_name} -> {dst}")
 
 
 def main() -> int:
@@ -93,14 +121,22 @@ def main() -> int:
         help="Skill family to sync (repeatable): testgen, pr-docgen-sync, pr-merge-specialist, all",
     )
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--target",
+        action="append",
+        default=[],
+        help="Install target (repeatable): codex, claude, github, all",
+    )
     args = parser.parse_args()
 
     families = args.family or ["all"]
     skill_names = _resolve_skill_names(families)
     repo_root = Path(args.repo_root).resolve()
-    codex_home = Path(args.codex_home).resolve() if args.codex_home else _default_codex_home().resolve()
+    targets = args.target or ["codex"]
+    codex_home = Path(args.codex_home).resolve() if args.codex_home else None
+    target_roots = _target_roots(repo_root, targets, codex_home=codex_home)
 
-    sync_skills(repo_root=repo_root, codex_home=codex_home, skill_names=skill_names, dry_run=args.dry_run)
+    sync_skills(repo_root=repo_root, target_roots=target_roots, skill_names=skill_names, dry_run=args.dry_run)
     return 0
 
 

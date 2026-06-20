@@ -1,0 +1,111 @@
+{
+  "id": "TP-DMX-MEMORY-TRINITY-001",
+  "project": "dopemux-mvp",
+  "target": "Codify Memory Trinity as accepted ADR law, wire dope-context into operator commands, eliminate dead OpenMemory/Mem0/memory_bank command drift, add routing module + drift validator, and publish supervisor audit prompt + PAL-gated remediation plan for skills/memory follow-on slices.",
+  "invariants": [
+    "Memory Trinity planes remain distinct: ConPort (decisions/progress), dope-memory (chronicle), dope-context (retrieval only).",
+    "No cross-plane canonical overwrite in operator commands.",
+    "dope-context is never declared a canonical writer in slash commands or modules.",
+    "Do not delete tm:* commands in this packet (deferred to TP-DMX-MEMORY-TRINITY-002).",
+    "Do not bridge DCP facade MCP JSON-RPC in this packet."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MEMORY-TRINITY",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/mcp-server-build-failures",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(memory): codify Memory Trinity law and wire dope-context operator routing (TP-DMX-MEMORY-TRINITY-001)",
+    "allowlist": [
+      "docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md",
+      "docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md",
+      "docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md",
+      "docs/90-adr/adr-dope-context-as-search-and-retrieval-plane.md",
+      "AGENTS.md",
+      ".claude/modules/shared/memory-trinity-routing.md",
+      ".claude/modules/_index.md",
+      ".claude/modules/coordination/authority-matrix.md",
+      ".claude/commands/ctx/search-here.md",
+      ".claude/commands/ctx/index-search.md",
+      ".claude/commands/decision.md",
+      ".claude/commands/caveat.md",
+      ".claude/commands/followup.md",
+      ".claude/commands/mem-query.md",
+      ".claude/commands/mem-search.md",
+      ".claude/commands/scratch.md",
+      ".claude/commands/pattern.md",
+      ".claude/commands/runbook-update.md",
+      ".claude/commands/bootstrap.md",
+      ".claude/commands/switch.md",
+      ".claude/commands/ship.md",
+      ".claude/commands/retrospect.md",
+      ".claude/commands/mem/save.md",
+      ".claude/commands/mem/summarize.md",
+      ".claude/commands/ctx-index-search.md",
+      ".claude/commands/doc-pull.md",
+      "scripts/validate_memory_command_refs.py",
+      "task-packets/TP-DMX-MEMORY-TRINITY-001.json",
+      "task-packets/prompts/SUPERVISOR-MEMORY-TRINITY-AUDIT.md",
+      "task-packets/plans/MEMORY-SKILLS-REMEDIATION-PLAN.md",
+      "proof/TP-DMX-MEMORY-TRINITY-001/PROOF.json",
+      "proof/TP-DMX-MEMORY-TRINITY-001/AUDIT_REPORT.md",
+      "proof/TP-DMX-MEMORY-TRINITY-001/AUDIT_REPORT.json"
+    ],
+    "verify": [
+      "python3 scripts/validate_memory_command_refs.py",
+      "python3 -m json.tool task-packets/TP-DMX-MEMORY-TRINITY-001.json",
+      "python3 -m jsonschema -i task-packets/TP-DMX-MEMORY-TRINITY-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "grep -q 'status: accepted' docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md",
+      "test -f .claude/modules/shared/memory-trinity-routing.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory): Memory Trinity law + dope-context operator routing",
+    "body": "Slice 001 of DMX-MEMORY-TRINITY series: promotes Memory Trinity ADRs to accepted, adds operator routing card, rewires ctx/memory slash commands from dead OpenMemory/Mem0/memory_bank backends to ConPort + dope-context, adds drift validator, supervisor audit prompt, and PAL-gated remediation plan for follow-on skill cleanup slices.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "thinkdeep", "challenge", "planner", "challenge", "codereview", "precommit", "challenge"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Promote Memory Trinity ADRs to accepted and update AGENTS.md §6.",
+      "validation": [
+        "grep -q 'status: accepted' docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md",
+        "grep -q 'Memory Trinity' AGENTS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add memory-trinity-routing module and rewrite ctx/memory commands for ConPort + dope-context.",
+      "validation": [
+        "python3 scripts/validate_memory_command_refs.py",
+        "grep -q 'mcp__dope-context__' .claude/commands/ctx/search-here.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Publish supervisor audit prompt, remediation plan, and task packet with PAL chain.",
+      "validation": [
+        "test -f task-packets/prompts/SUPERVISOR-MEMORY-TRINITY-AUDIT.md",
+        "test -f task-packets/plans/MEMORY-SKILLS-REMEDIATION-PLAN.md"
+      ]
+    }
+  ]
+}

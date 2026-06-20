@@ -1,5 +1,6 @@
-Append steps/lessons to a repo docs (`docs/**`) + ConPort decision/progress runbook.
-Call: /mcp memory_bank update "docs/runbooks/<topic>.md" "<steps + links>"
+Append steps/lessons to `docs/runbooks/<topic>.md` + log **ConPort** progress/decision.
 
-> Token thrift:
-- **ConPort**: prefer summaries/search with small `limit` (3–5) before full context.
+1. Update the runbook markdown under `docs/runbooks/`.
+2. `mcp__conport__log_decision` or `log_progress` referencing the runbook path.
+
+> Token thrift: prefer ConPort summaries/search with small `limit` (3–5) before full context.
