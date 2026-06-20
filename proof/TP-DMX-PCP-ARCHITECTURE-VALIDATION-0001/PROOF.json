@@ -1,0 +1,533 @@
+{
+  "tp_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
+  "before_sha": "724a25fa01c77f7f1fd6ccf8a78da09f082e0ded",
+  "after_sha": "51f34764bdd7e35196fe3c99031493e89e310dcf",
+  "branch": "codex/tp-dmx-pcp-architecture-validation-0001",
+  "changed_files": [
+    "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md",
+    "docs/05-audit-reports/project-control-plane/architecture-validation-report.md",
+    "docs/ops/project-control-plane/architecture-validation.md",
+    "docs/ops/project-control-plane/ownership-matrix.md",
+    "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md",
+    "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json",
+    "reports/project-control-plane/fixtures/dnh_crm_fixture/evidence_export.json",
+    "reports/project-control-plane/fixtures/dnh_crm_fixture/negative_cases.json",
+    "reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json",
+    "reports/project-control-plane/fixtures/dnh_crm_fixture/red_lanes.json",
+    "reports/project-control-plane/fixtures/dopemux_fixture/evidence_export.json",
+    "reports/project-control-plane/fixtures/dopemux_fixture/negative_cases.json",
+    "reports/project-control-plane/fixtures/dopemux_fixture/project_profile.json",
+    "reports/project-control-plane/fixtures/dopemux_fixture/red_lanes.json",
+    "reports/project-control-plane/fixtures/minimal_fixture/evidence_export.json",
+    "reports/project-control-plane/fixtures/minimal_fixture/negative_cases.json",
+    "reports/project-control-plane/fixtures/minimal_fixture/project_profile.json",
+    "reports/project-control-plane/fixtures/minimal_fixture/red_lanes.json",
+    "reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json",
+    "schemas/project_control_plane/audit_request.schema.json",
+    "schemas/project_control_plane/audit_result.schema.json",
+    "schemas/project_control_plane/dopetask_packet_mapping.schema.json",
+    "schemas/project_control_plane/executor_run_request.schema.json",
+    "schemas/project_control_plane/executor_run_result.schema.json",
+    "schemas/project_control_plane/orchestrator_item.schema.json",
+    "schemas/project_control_plane/project_evidence_export.schema.json",
+    "schemas/project_control_plane/project_profile.schema.json",
+    "schemas/project_control_plane/project_red_lanes.schema.json",
+    "schemas/project_control_plane/proof_pointer.schema.json",
+    "schemas/project_control_plane/supervisor_decision.schema.json",
+    "task-packets/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001-implementation-notes.md",
+    "task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json"
+  ],
+  "commands": [
+    {
+      "cmd": "git status --short",
+      "exit_code": 0,
+      "stdout": " M proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json\n",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/jsonschema/__main__.py:4: DeprecationWarning: The jsonschema CLI is deprecated and will be removed in a future version. Please use check-jsonschema instead, which can be installed from https://pypi.org/project/check-jsonschema/\n  from jsonschema.cli import main\n"
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/project_profile.schema.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/project_evidence_export.schema.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/project_red_lanes.schema.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/dopetask_packet_mapping.schema.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/proof_pointer.schema.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/orchestrator_item.schema.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/executor_run_request.schema.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/executor_run_result.schema.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/audit_request.schema.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/audit_result.schema.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/supervisor_decision.schema.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python -m json.tool proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json >/dev/null",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "python - <<'PY2'\nfrom jsonschema import Draft202012Validator\nimport json\nfrom pathlib import Path\nschema_paths = [\n    'schemas/project_control_plane/project_profile.schema.json',\n    'schemas/project_control_plane/project_evidence_export.schema.json',\n    'schemas/project_control_plane/project_red_lanes.schema.json',\n    'schemas/project_control_plane/dopetask_packet_mapping.schema.json',\n    'schemas/project_control_plane/proof_pointer.schema.json',\n    'schemas/project_control_plane/orchestrator_item.schema.json',\n    'schemas/project_control_plane/executor_run_request.schema.json',\n    'schemas/project_control_plane/executor_run_result.schema.json',\n    'schemas/project_control_plane/audit_request.schema.json',\n    'schemas/project_control_plane/audit_result.schema.json',\n    'schemas/project_control_plane/supervisor_decision.schema.json',\n]\nschemas = {}\nfor path in schema_paths:\n    schema = json.loads(Path(path).read_text())\n    Draft202012Validator.check_schema(schema)\n    schemas[path] = schema\nprint(f'meta_schema_ok={len(schema_paths)}')\nfixtures = [\n    'reports/project-control-plane/fixtures/dnh_crm_fixture',\n    'reports/project-control-plane/fixtures/dopemux_fixture',\n    'reports/project-control-plane/fixtures/minimal_fixture',\n]\nfor fixture in fixtures:\n    Draft202012Validator(schemas['schemas/project_control_plane/project_profile.schema.json']).validate(json.loads(Path(fixture, 'project_profile.json').read_text()))\n    Draft202012Validator(schemas['schemas/project_control_plane/project_evidence_export.schema.json']).validate(json.loads(Path(fixture, 'evidence_export.json').read_text()))\n    Draft202012Validator(schemas['schemas/project_control_plane/project_red_lanes.schema.json']).validate(json.loads(Path(fixture, 'red_lanes.json').read_text()))\nprint(f'fixture_instances_ok={len(fixtures)}')\ne2e = json.loads(Path('reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json').read_text())\ncontract_map = {\n    'dopetask_packet_mapping': 'schemas/project_control_plane/dopetask_packet_mapping.schema.json',\n    'proof_pointer': 'schemas/project_control_plane/proof_pointer.schema.json',\n    'orchestrator_item': 'schemas/project_control_plane/orchestrator_item.schema.json',\n    'executor_run_request': 'schemas/project_control_plane/executor_run_request.schema.json',\n    'executor_run_result': 'schemas/project_control_plane/executor_run_result.schema.json',\n    'audit_request': 'schemas/project_control_plane/audit_request.schema.json',\n    'audit_result': 'schemas/project_control_plane/audit_result.schema.json',\n    'supervisor_decision': 'schemas/project_control_plane/supervisor_decision.schema.json',\n}\nfor key, schema_path in contract_map.items():\n    Draft202012Validator(schemas[schema_path]).validate(e2e['contract_instances'][key])\nprint(f'e2e_contract_instances_ok={len(contract_map)}')\nPY2",
+      "exit_code": 0,
+      "stdout": "meta_schema_ok=11\nfixture_instances_ok=3\ne2e_contract_instances_ok=8\n",
+      "stderr": ""
+    },
+    {
+      "cmd": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cmd": "git diff --stat",
+      "exit_code": 0,
+      "stdout": " proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json | 9 +++++----\n 1 file changed, 5 insertions(+), 4 deletions(-)\n",
+      "stderr": ""
+    },
+    {
+      "cmd": "pre-commit run --files docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md docs/ops/project-control-plane/architecture-validation.md docs/ops/project-control-plane/ownership-matrix.md schemas/project_control_plane/project_profile.schema.json schemas/project_control_plane/project_evidence_export.schema.json schemas/project_control_plane/project_red_lanes.schema.json schemas/project_control_plane/dopetask_packet_mapping.schema.json schemas/project_control_plane/proof_pointer.schema.json schemas/project_control_plane/orchestrator_item.schema.json schemas/project_control_plane/executor_run_request.schema.json schemas/project_control_plane/executor_run_result.schema.json schemas/project_control_plane/audit_request.schema.json schemas/project_control_plane/audit_result.schema.json schemas/project_control_plane/supervisor_decision.schema.json reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json reports/project-control-plane/fixtures/dnh_crm_fixture/evidence_export.json reports/project-control-plane/fixtures/dnh_crm_fixture/red_lanes.json reports/project-control-plane/fixtures/dnh_crm_fixture/negative_cases.json reports/project-control-plane/fixtures/dopemux_fixture/project_profile.json reports/project-control-plane/fixtures/dopemux_fixture/evidence_export.json reports/project-control-plane/fixtures/dopemux_fixture/red_lanes.json reports/project-control-plane/fixtures/dopemux_fixture/negative_cases.json reports/project-control-plane/fixtures/minimal_fixture/project_profile.json reports/project-control-plane/fixtures/minimal_fixture/evidence_export.json reports/project-control-plane/fixtures/minimal_fixture/red_lanes.json reports/project-control-plane/fixtures/minimal_fixture/negative_cases.json docs/05-audit-reports/project-control-plane/architecture-validation-report.md reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json task-packets/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001-implementation-notes.md proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md",
+      "exit_code": 0,
+      "stdout": "Validate YAML frontmatter in docs..........................................................Passed\nValidate documentation against knowledge graph schema......................................Passed\nBlock prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed\nValidate prelude \u2264100 tokens for efficient embeddings......................................Passed\nEnforce markdown file locations for changed files..........................................Passed\nEnforce docs placement hygiene (changed files).............................................Passed\nEnforce docs filename hygiene (kebab-case).................................................Passed\nAudit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed\nReject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped\nEnforce repository root hygiene (no random root files).....................................Passed\nValidate proof bundle embedded_audit schema................................................Passed\nmarkdownlint...............................................................................Passed\ntrim trailing whitespace...................................................................Passed\nfix end of files...........................................................................Passed\ncheck yaml.............................................................(no files to check)Skipped\n",
+      "stderr": ""
+    }
+  ],
+  "validation_results": [
+    {
+      "cmd": "git status --short",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m jsonschema -i task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/project_profile.schema.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/project_evidence_export.schema.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/project_red_lanes.schema.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/dopetask_packet_mapping.schema.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/proof_pointer.schema.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/orchestrator_item.schema.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/executor_run_request.schema.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/executor_run_result.schema.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/audit_request.schema.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/audit_result.schema.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool schemas/project_control_plane/supervisor_decision.schema.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m json.tool proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json >/dev/null",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python - <<'PY2'\nfrom jsonschema import Draft202012Validator\nimport json\nfrom pathlib import Path\nschema_paths = [\n    'schemas/project_control_plane/project_profile.schema.json',\n    'schemas/project_control_plane/project_evidence_export.schema.json',\n    'schemas/project_control_plane/project_red_lanes.schema.json',\n    'schemas/project_control_plane/dopetask_packet_mapping.schema.json',\n    'schemas/project_control_plane/proof_pointer.schema.json',\n    'schemas/project_control_plane/orchestrator_item.schema.json',\n    'schemas/project_control_plane/executor_run_request.schema.json',\n    'schemas/project_control_plane/executor_run_result.schema.json',\n    'schemas/project_control_plane/audit_request.schema.json',\n    'schemas/project_control_plane/audit_result.schema.json',\n    'schemas/project_control_plane/supervisor_decision.schema.json',\n]\nschemas = {}\nfor path in schema_paths:\n    schema = json.loads(Path(path).read_text())\n    Draft202012Validator.check_schema(schema)\n    schemas[path] = schema\nprint(f'meta_schema_ok={len(schema_paths)}')\nfixtures = [\n    'reports/project-control-plane/fixtures/dnh_crm_fixture',\n    'reports/project-control-plane/fixtures/dopemux_fixture',\n    'reports/project-control-plane/fixtures/minimal_fixture',\n]\nfor fixture in fixtures:\n    Draft202012Validator(schemas['schemas/project_control_plane/project_profile.schema.json']).validate(json.loads(Path(fixture, 'project_profile.json').read_text()))\n    Draft202012Validator(schemas['schemas/project_control_plane/project_evidence_export.schema.json']).validate(json.loads(Path(fixture, 'evidence_export.json').read_text()))\n    Draft202012Validator(schemas['schemas/project_control_plane/project_red_lanes.schema.json']).validate(json.loads(Path(fixture, 'red_lanes.json').read_text()))\nprint(f'fixture_instances_ok={len(fixtures)}')\ne2e = json.loads(Path('reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json').read_text())\ncontract_map = {\n    'dopetask_packet_mapping': 'schemas/project_control_plane/dopetask_packet_mapping.schema.json',\n    'proof_pointer': 'schemas/project_control_plane/proof_pointer.schema.json',\n    'orchestrator_item': 'schemas/project_control_plane/orchestrator_item.schema.json',\n    'executor_run_request': 'schemas/project_control_plane/executor_run_request.schema.json',\n    'executor_run_result': 'schemas/project_control_plane/executor_run_result.schema.json',\n    'audit_request': 'schemas/project_control_plane/audit_request.schema.json',\n    'audit_result': 'schemas/project_control_plane/audit_result.schema.json',\n    'supervisor_decision': 'schemas/project_control_plane/supervisor_decision.schema.json',\n}\nfor key, schema_path in contract_map.items():\n    Draft202012Validator(schemas[schema_path]).validate(e2e['contract_instances'][key])\nprint(f'e2e_contract_instances_ok={len(contract_map)}')\nPY2",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "git diff --check",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "git diff --stat",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "cmd": "pre-commit run --files docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md docs/ops/project-control-plane/architecture-validation.md docs/ops/project-control-plane/ownership-matrix.md schemas/project_control_plane/project_profile.schema.json schemas/project_control_plane/project_evidence_export.schema.json schemas/project_control_plane/project_red_lanes.schema.json schemas/project_control_plane/dopetask_packet_mapping.schema.json schemas/project_control_plane/proof_pointer.schema.json schemas/project_control_plane/orchestrator_item.schema.json schemas/project_control_plane/executor_run_request.schema.json schemas/project_control_plane/executor_run_result.schema.json schemas/project_control_plane/audit_request.schema.json schemas/project_control_plane/audit_result.schema.json schemas/project_control_plane/supervisor_decision.schema.json reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json reports/project-control-plane/fixtures/dnh_crm_fixture/evidence_export.json reports/project-control-plane/fixtures/dnh_crm_fixture/red_lanes.json reports/project-control-plane/fixtures/dnh_crm_fixture/negative_cases.json reports/project-control-plane/fixtures/dopemux_fixture/project_profile.json reports/project-control-plane/fixtures/dopemux_fixture/evidence_export.json reports/project-control-plane/fixtures/dopemux_fixture/red_lanes.json reports/project-control-plane/fixtures/dopemux_fixture/negative_cases.json reports/project-control-plane/fixtures/minimal_fixture/project_profile.json reports/project-control-plane/fixtures/minimal_fixture/evidence_export.json reports/project-control-plane/fixtures/minimal_fixture/red_lanes.json reports/project-control-plane/fixtures/minimal_fixture/negative_cases.json docs/05-audit-reports/project-control-plane/architecture-validation-report.md reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json task-packets/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001-implementation-notes.md proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "json_schema_meta_validation",
+      "status": "PASS",
+      "detail": "11 schemas accepted by Draft202012Validator.check_schema"
+    },
+    {
+      "name": "fixture_instance_validation",
+      "status": "PASS",
+      "detail": "3 fixture profile/evidence/red-lane packs validate against PCP schemas"
+    },
+    {
+      "name": "e2e_contract_instance_validation",
+      "status": "PASS",
+      "detail": "8 E2E contract instances validate against PCP schemas"
+    },
+    {
+      "name": "pal_codereview_mcp_artifact",
+      "status": "NOT_RUN",
+      "detail": "No PAL codereview MCP/tool transcript artifact exists for this session"
+    },
+    {
+      "name": "pal_precommit_mcp_artifact",
+      "status": "NOT_RUN",
+      "detail": "No PAL precommit MCP/tool transcript artifact exists for this session; local git pre-commit hooks passed"
+    }
+  ],
+  "proof_artifacts": [
+    "task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json",
+    "docs/ops/project-control-plane/architecture-validation.md",
+    "docs/ops/project-control-plane/ownership-matrix.md",
+    "docs/05-audit-reports/project-control-plane/architecture-validation-report.md",
+    "reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json",
+    "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json",
+    "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md"
+  ],
+  "architecture_verdict": "PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN",
+  "repair_packet_id": "TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002",
+
+  "build_order": [
+    "PR925 framing/proof repair",
+    "PCP extension contract",
+    "PCP core de-Dopemux boundary repair",
+    "PCP generic exporter",
+    "DCP extension mapping",
+    "dNh extension mapping",
+    "fixture-to-runtime validation",
+    "PR Steward / proof readiness integration",
+    "Task Orchestrator visibility",
+    "live-write gates",
+    "FastAPI bridge / live writes last"
+  ],
+  "known_risks": [
+    "No live generic exporter implementation was built; E2E result is a fixture dry-run artifact.",
+    "No runtime exporter behavior is validated in PR #925.",
+    "Extension contract and generic authority-map schema are missing.",
+    "PCP Core must not require Dopemux, Dopetask, or Task Orchestrator; current artifacts still carry Dopemux-shaped boundary defects pending de-Dopemux repair.",
+    "Supervisor acceptance is not recorded in this packet.",
+    "Task Orchestrator live writes and Dopetask execution remain blocked until later contracts exist (Dopemux/DCP extension concepts).",
+    "Read-only Opus audit returned NEEDS_SUPERVISOR; acceptance is blocked pending Supervisor adjudication.",
+    "Negative fail-closed cases are asserted fixture expectations, not executed classifier results.",
+    "PR #925 remains draft pending core boundary repair.",
+    "after_sha binds to substantive framing-repair commit 51f34764b; proof-amend commits do not redefine validated content."
+  ],
+  "not_run": [
+    "GitHub mutation or PR creation",
+    "Dopetask execution",
+    "Task Orchestrator MCP write",
+    "dNh runtime validation",
+    "PAL codereview MCP/tool artifact",
+    "PAL precommit MCP/tool artifact"
+  ],
+  "forbidden_action_confirmation": {
+    "live_task_orchestrator_written": false,
+    "dopetask_executed": false,
+    "github_mutated": false,
+    "dnh_runtime_changed": false,
+    "crm_written": false,
+    "telegram_sent": false,
+    "calendar_written": false,
+    "identity_changed": false,
+    "policy_changed": false,
+    "runtime_db_changed": false,
+    "branch_protection_changed": false
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "NEEDS_SUPERVISOR",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "claude -p --model opus --permission-mode plan --tools \"\" --no-session-persistence --max-budget-usd 5 < /tmp/pcp_opus_audit_prompt_small.md > proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AUDIT-B1-WORKTREE-DRIFT",
+        "severity": "BLOCKING",
+        "title": "Audited artifacts diverged from committed HEAD when audit ran",
+        "status": "RESOLVED",
+        "body": "Latest read-only Opus audit saw six modified tracked files and required committing amendments plus rerunning validation before acceptance."
+      },
+      {
+        "id": "AUDIT-H1-INDEPENDENCE",
+        "severity": "HIGH",
+        "title": "Prior embedded audit conflated auditor and implementer roles",
+        "status": "OPEN",
+        "body": "This proof treats the latest read-only Opus report as the audit of record and does not count auditor-applied edits as acceptance."
+      },
+      {
+        "id": "AUDIT-M1-ALLOWLIST",
+        "severity": "MEDIUM",
+        "title": "Auditor reported AUDITOR_REPORT.md outside allowlist",
+        "status": "RESOLVED",
+        "body": "Current task packet commit.allowlist includes proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md; this appears stale in the auditor input, not current repo truth."
+      },
+      {
+        "id": "AUDIT-M2-AUDIT-VERDICT-DRIFT",
+        "severity": "MEDIUM",
+        "title": "E2E/proof audit verdicts disagreed",
+        "status": "RESOLVED",
+        "body": "E2E proof_pointer.auditor_verdict and audit_result.verdict now use NEEDS_SUPERVISOR to match the audit of record."
+      },
+      {
+        "id": "AUDIT-M3-VERDICT-SCOPE",
+        "severity": "MEDIUM",
+        "title": "Architecture verdict needed scope restriction",
+        "status": "RESOLVED",
+        "body": "Machine-readable architecture_verdict downgraded to PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN; human docs use ARCHITECTURE_SHAPE_PLAUSIBLE_PENDING_EXPORTER. PCP Core parent-substrate framing added; DCP/dNh demoted to extensions."
+      },
+      {
+        "id": "AUDIT-M4-PAL-EVIDENCE",
+        "severity": "MEDIUM",
+        "title": "PAL codereview/precommit artifacts missing",
+        "status": "RESOLVED",
+        "body": "Proof records PAL codereview and PAL precommit artifacts as NOT_RUN; local git pre-commit hook output remains separately recorded."
+      },
+      {
+        "id": "AUDIT-L2-DOPMUX-TYPO",
+        "severity": "LOW",
+        "title": "project_kind enum typo DOPMUX",
+        "status": "RESOLVED",
+        "body": "project_kind enum and dopemux fixture now use DOPEMUX."
+      },
+      {
+        "id": "AUDIT-L3-BASE-SHA",
+        "severity": "LOW",
+        "title": "Review base SHA differed from proof parent SHA",
+        "status": "RESOLVED",
+        "body": "Proof now records review_base_sha separately from canonical_work_commit_parent_sha."
+      }
+    ],
+    "remaining_risks": [
+      "Supervisor acceptance is still pending; an auditor verdict is not acceptance.",
+      "Fixture-only by design: no live generic exporter exists; runtime exporter behavior unproven.",
+      "Extension contract and generic authority-map schema missing.",
+      "PCP schema boundary defects (Dopemux-shaped core language) remain; de-Dopemux boundary repair required.",
+      "Task Orchestrator writes and Dopetask execution remain blocked until explicit write contracts exist (Dopemux/DCP extension).",
+      "Negative cases remain asserted fixture expectations until a generic exporter/classifier harness exists."
+    ],
+    "skip_reason": null,
+    "fixes_applied": [
+      "AUDIT-B1-WORKTREE-DRIFT: worktree amendments prepared for commit and validation rerun after corrections.",
+      "AUDIT-M1-ALLOWLIST: verified current task packet allowlist includes AUDITOR_REPORT.md.",
+      "AUDIT-M2-AUDIT-VERDICT-DRIFT: aligned E2E proof_pointer and audit_result verdicts to NEEDS_SUPERVISOR.",
+      "AUDIT-M3-VERDICT-SCOPE: replaced ARCHITECTURE_CONFIRMED_WITH_CORRECTIONS with PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN and ARCHITECTURE_SHAPE_PLAUSIBLE_PENDING_EXPORTER.",
+      "TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002: added PCP Core parent-substrate framing; demoted DCP/dNh to extensions; documented missing extension contract and authority-map schema.",
+      "AUDIT-M4-PAL-EVIDENCE: recorded PAL codereview/precommit MCP artifacts as NOT_RUN.",
+      "AUDIT-L2-DOPMUX-TYPO: changed project_kind enum and dopemux fixture from DOPMUX to DOPEMUX.",
+      "AUDIT-L3-BASE-SHA: recorded review_base_sha separately from canonical_work_commit_parent_sha."
+    ]
+  },
+  "review_base_sha": "724a25fa01c77f7f1fd6ccf8a78da09f082e0ded",
+  "canonical_work_commit_parent_sha": "724a25fa01c77f7f1fd6ccf8a78da09f082e0ded",
+  "pal_chain_evidence": {
+    "declared_packet_chain": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ],
+    "codex_session_execution": "analyze/thinkdeep/challenge/planner/implement performed in-session by Codex; no separate PAL MCP transcript artifact exists.",
+    "codereview": "NOT_RUN",
+    "precommit": "NOT_RUN",
+    "reason": "PAL MCP/tool artifacts were not available in this session; local git pre-commit hooks were run separately and recorded under validation_results."
+  },
+  "proof_freshness_model": "after_sha binds to substantive content commit (51f34764b framing repair); proof-only amend commits are recorded separately and do not self-certify.",
+  "authoritative_pr_tip_sha": "fef5b0740",
+  "proof_refresh_note": "Rebased onto main (724a25fa0) 2026-06-19; prior framing/proof repair by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002 preserved. after_sha points to substantive repair commit 51f34764b, not proof-writing commits.",
+  "after_sha_note": "Satisfiable freshness: after_sha=51f34764b (docs(pcp-925) framing repair, rebased). Prior repair by TP-DMX-PCP-925-REPAIR-0001 fixed orphan after_sha and dNh policy_ref at d0f01d4c5 (verified, not redone). Rebased onto main 724a25fa0; architecture acceptance remains NEEDS_SUPERVISOR.",
+  "review_thread_classification": {
+    "pr_number": 925,
+    "classified_at_commit": "fef5b0740",
+    "threads": [
+      {
+        "thread_id": "PRRT_kwDOPyIw986KJns5",
+        "path": "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json",
+        "author": "chatgpt-codex-connector",
+        "classification": "OUTDATED_UNRESOLVED",
+        "disposition": "SUBSTANTIVELY_ADDRESSED_NOT_RESOLVED",
+        "reason": "after_sha orphan repaired in d0f01d4c5 and reframed to satisfiable semantics in TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002; thread remains open on GitHub because it is outdated."
+      },
+      {
+        "thread_id": "PRRT_kwDOPyIw986KJns9",
+        "path": "reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json",
+        "author": "chatgpt-codex-connector",
+        "classification": "OUTDATED_UNRESOLVED",
+        "disposition": "SUBSTANTIVELY_ADDRESSED_NOT_RESOLVED",
+        "reason": "policy_ref corrected to red_lanes.json in d0f01d4c5; thread remains open on GitHub because it is outdated."
+      }
+    ],
+    "summary": {
+      "total_unresolved": 2,
+      "outdated_unresolved": 2,
+      "active_unresolved": 0,
+      "blocking_for_ready": false,
+      "note": "Both threads are outdated-but-unresolved; substantive fixes landed; Supervisor may auto-resolve or accept as non-blocking for draft posture."
+    }
+  },
+  "prior_repair_verification": {
+    "repair_commit_d0f01d4c5": {
+      "after_sha_orphan_repair": "VERIFIED",
+      "dnh_policy_ref_repair": "VERIFIED",
+      "note": "Verified only; not redone by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002. Commit hash updated after rebase onto main."
+    }
+  },
+  "rebase_onto_main": {
+    "rebased_at": "2026-06-19",
+    "base_sha": "724a25fa01c77f7f1fd6ccf8a78da09f082e0ded",
+    "commits_replayed": 11,
+    "conflicts": 0,
+    "note": "PR #925 branch rebased onto current main per A-prime integration path; proof SHAs refreshed to rebased commit identities."
+  },
+  "air_reference": "docs/03-reference/architecture/air-dmx-pcp-dcp-architecture-0001.md",
+  "framing_proof_repair_audit": {
+    "repair_packet_id": "TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002",
+    "auditor_tool": "grok-cursor-agent",
+    "auditor_model": "grok",
+    "invocation": "in-session read-only review of framing/proof repair diff against packet allowlist and supervisor synthesis",
+    "exit_code": 0,
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "auditor_findings": [
+      "PCP Core parent-substrate framing added to docs and proof.",
+      "Overstrong ARCHITECTURE_CONFIRMED_WITH_CORRECTIONS labels replaced in JSON and human docs.",
+      "Dopetask and Task Orchestrator demoted to Dopemux/DCP extension concepts.",
+      "NEEDS_SUPERVISOR and draft/not-merge-ready status preserved.",
+      "No runtime files changed; no exporter implemented.",
+      "PCP schema boundary defects (Dopemux-shaped core) intentionally deferred to extension-contract and de-Dopemux packets.",
+      "AIR recorded at docs/03-reference/architecture/air-dmx-pcp-dcp-architecture-0001.md.",
+      "Two outdated-but-unresolved review threads classified in review_thread_classification.",
+      "after_sha uses satisfiable semantics binding to substantive repair commit 51f34764b.",
+      "d0f01d4c5 after_sha and dNh policy_ref repairs verified, not redone."
+    ],
+    "fixes_applied_from_audit": [],
+    "remaining_risks": [
+      "Supervisor recheck still required.",
+      "Schema-level de-Dopemux boundary repair not in scope for this packet."
+    ],
+    "skip_reason": null
+  },
+  "corrections_required": [
+    "PCP Core is the reusable parent substrate; DCP and dNh are extensions.",
+    "PR #925 validates fixture/dry-run shape only; runtime exporter behavior is unproven.",
+    "Extension contract and generic authority-map schema require follow-up packets.",
+    "Dopetask and Task Orchestrator concepts belong to the Dopemux/DCP extension, not PCP Core."
+  ],
+  "verdict_scope": "fixture-shape and dry-run contract validation only; runtime exporter behavior unproven; Supervisor acceptance pending"
+}
