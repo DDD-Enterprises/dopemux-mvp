@@ -474,13 +474,11 @@ class EnhancedConPortServer:
             logger.warning("⚠️  Schema verification query returned no rows; proceeding anyway")
             logger.info("✅ Schema verification OK")
 
-        # Ensure optional columns for instance isolation exist
-        try:
-            async with self.db_pool.acquire() as conn:
-                await conn.execute("ALTER TABLE IF EXISTS progress_entries ADD COLUMN IF NOT EXISTS instance_id VARCHAR(255);")
-                await conn.execute("ALTER TABLE IF EXISTS decisions ADD COLUMN IF NOT EXISTS instance_id VARCHAR(255);")
-        except Exception as _e:
-            logger.debug(f"Schema optional column ensure skipped: {_e}")
+        logger.info(
+            "Enhanced ConPort migrations are operator-gated; run "
+            "/app/migrations/conport_migration_gate.py before enabling "
+            "schema-dependent features."
+        )
 
     async def get_context(self, request):
         """Get active context for workspace with worktree instance support"""
