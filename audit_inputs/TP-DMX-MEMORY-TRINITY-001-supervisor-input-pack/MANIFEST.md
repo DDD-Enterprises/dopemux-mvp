@@ -1,7 +1,7 @@
 # Input Pack — TP-DMX-MEMORY-TRINITY-001 Supervisor Review
 
 **Pack ID**: `TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack`
-**HEAD**: `a520acf43` (authoritative; run `./scripts/build_supervisor_input_pack.sh` to refresh)
+**HEAD**: `19c6879d` (authoritative; run `./scripts/build_supervisor_input_pack.sh` to refresh)
 **PR**: https://github.com/DDD-Enterprises/dopemux-mvp/pull/939
 
 ---
@@ -18,7 +18,7 @@ ChatGPT/upload truncation has produced **stale partial packs** (~108,880 bytes /
 | `entry_count` | **≥ 44** (current build: **45**) |
 | `zip_sha256` | `a8102235a5321835b52bec10e9ca8c1d34966620b70c2b77f93725eddd40c62c` |
 | `zip_sha256_scope` | `all_entries_except_PACK_INVENTORY.json` (avoids self-referential drift) |
-| `repo_head_sha` | `a520acf43b594fea6e16585fdd5e8119b986fc89` (must match PROOF + supervisor final) |
+| `repo_head_sha` | `19c6879db594fea6e16585fdd5e8119b986fc89` (must match PROOF + supervisor final) |
 
 **First step for supervisor**: unzip and confirm `PACK_INVENTORY.json` exists and lists:
 

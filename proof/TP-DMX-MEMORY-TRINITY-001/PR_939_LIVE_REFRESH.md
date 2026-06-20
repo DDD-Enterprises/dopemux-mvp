@@ -2,7 +2,7 @@
 
 **Source**: `gh pr view 939`, `gh pr checks 939`, `gh api .../check-runs`  
 **Queried**: 2026-06-20T04:10Z  
-**Authoritative local HEAD**: `a520acf43d5fda41807ab6d78891416679fb004a`  
+**Authoritative local HEAD**: `19c6879d1b72366184c25078252fd2fabf5cbe8d`  
 **Last pushed remote HEAD**: `a668df6a71b33a7152c098e470eca85085a3eaaa` (origin/fix/mcp-server-build-failures)
 
 ## PR state
@@ -38,12 +38,12 @@
 
 Prior failures at `a1690402b` (markdownlint, missing `embedded_audit`) are **resolved** at `7199c61a8` and remain green through `a668df6a7`.
 
-## Local HEAD delta (`a520acf43`)
+## Local HEAD delta (`19c6879d`)
 
 | Item | Status |
 |------|--------|
 | Pushed to origin | **NO** (local ahead by 1 commit: pack builder + verify script) |
-| CI at `a520acf43` | **NOT_RUN** (no GitHub checks for unpushed commit) |
+| CI at `19c6879d` | **NOT_RUN** (no GitHub checks for unpushed commit) |
 | Proof freshness | Refreshed in this reconciliation pass |
 
 ## Supervisor impact
@@ -59,6 +59,6 @@ Prior failures at `a1690402b` (markdownlint, missing `embedded_audit`) are **res
 ## Remaining blockers (ordered)
 
 1. **PR closed** — reopen #939 or open successor PR with reconciled proof.
-2. **Push local HEAD** `a520acf43` and confirm CI green at pushed SHA.
+2. **Push local HEAD** `19c6879d` and confirm CI green at pushed SHA.
 3. **Operator**: B5 mcp doctor port alignment; D2 skills sync install.
 4. **Rebase** on `main` before merge attempt (if PR reopened).

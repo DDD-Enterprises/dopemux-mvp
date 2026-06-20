@@ -7,7 +7,7 @@
   "pr_939": "HOLD",
   "pr_939_post_remediation": "MERGE_WITH_FOLLOWUPS",
   "pr_939_note": "Current HOLD because PR #939 is CLOSED without merge (2026-06-20T04:05:30Z). MERGE_WITH_FOLLOWUPS applies only after reopen/new PR, required CI green at pushed HEAD, rebase on main, operator acceptance or remediation of B5/D2, and proof at that same HEAD. A/C hard-stop sections pass on branch evidence; this does not override operator REJECT or closed PR state.",
-  "branch_sha": "a520acf43d5fda41807ab6d78891416679fb004a",
+  "branch_sha": "19c6879d1b72366184c25078252fd2fabf5cbe8d",
   "remote_head_sha": "a668df6a71b33a7152c098e470eca85085a3eaaa",
   "confidence": "medium",
   "evidence_posture": {
@@ -28,14 +28,14 @@
   "hard_stops": [
     "operator_readiness: B5 mcp doctor FAIL",
     "release_readiness: PR #939 CLOSED (not merged)",
-    "release_readiness: local HEAD a520acf43 not pushed — CI NOT_RUN at local HEAD"
+    "release_readiness: local HEAD 19c6879d not pushed — CI NOT_RUN at local HEAD"
   ],
   "pr_939_live": {
     "state": "CLOSED",
     "merged": false,
     "closed_at": "2026-06-20T04:05:30Z",
     "head_sha_remote": "a668df6a71b33a7152c098e470eca85085a3eaaa",
-    "head_sha_local": "a520acf43d5fda41807ab6d78891416679fb004a",
+    "head_sha_local": "19c6879d1b72366184c25078252fd2fabf5cbe8d",
     "changed_files": 172,
     "ci_at_remote_head": {
       "audit_proof_validator": "PASS at a668df6a7",
@@ -48,7 +48,7 @@
     "search_all live ConPort decision projection end-to-end",
     "mcp init port drift fix without container rebinding",
     "PAL 06_CODEREVIEW PASS vs embedded medium/high findings",
-    "CI at local HEAD a520acf43 after push"
+    "CI at local HEAD 19c6879d after push"
   ],
   "not_run": [
     "B1-B3 independent runtime reprobe",
@@ -57,14 +57,14 @@
     "CI at unpushed local HEAD"
   ],
   "next_slices": [
-    "Push a520acf43+ with reconciled proof; reopen PR or open successor",
+    "Push 19c6879d+ with reconciled proof; reopen PR or open successor",
     "Rebase on main before merge",
     "Fix B5 mcp doctor port alignment",
     "sync_repo_skills.py --target claude github",
     "Post-merge audit on main"
   ],
   "stale_proof_flags": [
-    "RESOLVED: head_sha reconciled to a520acf43 across PROOF, PR refresh, supervisor final",
+    "RESOLVED: head_sha reconciled to 19c6879d across PROOF, PR refresh, supervisor final",
     "embedded_audit.status remains SKIPPED — not a PASS",
     "PACK_INVENTORY must be rebuilt after artifact edits — do not trust stale fingerprints"
   ],
