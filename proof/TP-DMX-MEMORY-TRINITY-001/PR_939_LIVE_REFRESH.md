@@ -1,22 +1,23 @@
 # PR #939 Live Refresh — 2026-06-20 (reconciled)
 
 **Source**: `gh pr view 939`, `gh pr checks 939`, `gh api .../check-runs`  
-**Queried**: 2026-06-20T04:10Z  
-**Authoritative local HEAD**: `2285c3a61c51da88f1716e1544df144f866efce2`  
-**Last pushed remote HEAD**: `a668df6a71b33a7152c098e470eca85085a3eaaa` (origin/fix/mcp-server-build-failures)
+**Queried**: 2026-06-20T04:55Z (post-reopen)  
+**Authoritative HEAD**: `aa3461a247298b8ab51491e4486d63afbec4a827` (pushed)  
+**Prior remote HEAD**: `a668df6a71b33a7152c098e470eca85085a3eaaa`
 
 ## PR state
 
 | Field | Value |
 |-------|-------|
-| State | **CLOSED** (not merged) |
-| Closed at | `2026-06-20T04:05:30Z` |
+| State | **OPEN** (reopened) |
+| Reopened after close | `2026-06-20T04:05:30Z` → reopened post `aa3461a24` push |
 | mergedAt | `null` |
 | Base | `main` |
+| Merge state | **BEHIND** |
 | Head branch | `fix/mcp-server-build-failures` |
 | PR URL | https://github.com/DDD-Enterprises/dopemux-mvp/pull/939 |
 
-> **Supervisor note**: PR closure without merge supersedes prior OPEN/BEHIND posture. Current recommendation is **HOLD** until PR is reopened or replaced; post-remediation semantic remains **MERGE_WITH_FOLLOWUPS** under operator/CI prerequisites.
+> **Supervisor note**: Current recommendation **HOLD** until CI green at `aa3461a24` and rebase on `main`. Post-remediation semantic **MERGE_WITH_FOLLOWUPS** unchanged.
 
 ## Scope @ last pushed head (`a668df6a7`)
 
@@ -38,27 +39,26 @@
 
 Prior failures at `a1690402b` (markdownlint, missing `embedded_audit`) are **resolved** at `7199c61a8` and remain green through `a668df6a7`.
 
-## Local HEAD delta (`2285c3a6`)
+## CI @ `aa3461a24` (post-push + reopen)
 
 | Item | Status |
 |------|--------|
-| Pushed to origin | **NO** (local ahead by 1 commit: pack builder + verify script) |
-| CI at `2285c3a6` | **NOT_RUN** (no GitHub checks for unpushed commit) |
-| Proof freshness | Refreshed in this reconciliation pass |
+| Pushed to origin | **YES** |
+| CI @ `aa3461a24` | **PENDING** (triggered on push/reopen) |
+| Proof freshness | Reconciled; refresh after CI completes |
 
 ## Supervisor impact
 
 | Verdict | Prior stale refresh (`a1690402b`) | Current reconciled |
 |---------|-----------------------------------|-------------------|
-| Merge readiness | BLOCKED (4 CI FAIL) | **BLOCKED** (PR closed; operator blockers remain) |
-| PR #939 current | HOLD | **HOLD** (closed — reopen required) |
+| Merge readiness | BLOCKED (4 CI FAIL) | **BLOCKED** (BEHIND main; operator blockers remain) |
+| PR #939 current | HOLD | **HOLD** (OPEN — awaiting CI @ aa3461a24) |
 | PR #939 post-remediation | — | **MERGE_WITH_FOLLOWUPS** (if reopened + CI + operator gates) |
 | Operator readiness | REJECT | **REJECT** (unchanged — B5/D2) |
 | Slice 001 source | CONDITIONAL | **CONDITIONAL** (unchanged) |
 
 ## Remaining blockers (ordered)
 
-1. **PR closed** — reopen #939 or open successor PR with reconciled proof.
-2. **Push local HEAD** `2285c3a6` and confirm CI green at pushed SHA.
+1. **Await CI** green at `aa3461a24` (in progress).
+2. **Rebase on `main`** (BEHIND).
 3. **Operator**: B5 mcp doctor port alignment; D2 skills sync install.
-4. **Rebase** on `main` before merge attempt (if PR reopened).
