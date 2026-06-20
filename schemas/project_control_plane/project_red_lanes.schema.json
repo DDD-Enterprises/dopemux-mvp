@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/project_red_lanes.schema.json",
+  "title": "Project Control Plane Red Lane Classification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_id",
+    "default_on_unknown",
+    "classifications"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.project_red_lanes.v0"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "default_on_unknown": {
+      "type": "string",
+      "enum": [
+        "BLOCK",
+        "NEEDS_SUPERVISOR"
+      ]
+    },
+    "classifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lane_id",
+          "scope",
+          "match",
+          "result",
+          "reason"
+        ],
+        "properties": {
+          "lane_id": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "GENERIC",
+              "PROJECT",
+              "UNKNOWN"
+            ]
+          },
+          "match": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "BLOCKED",
+              "NEEDS_SUPERVISOR",
+              "NEEDS_EVIDENCE_REFRESH",
+              "UNKNOWN"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

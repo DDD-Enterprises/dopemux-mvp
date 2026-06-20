@@ -1,0 +1,52 @@
+{
+  "schema_version": "pcp.project_profile.v0",
+  "project_id": "minimal-generic-fixture",
+  "project_kind": "GENERIC",
+  "repo": {
+    "name": "minimal-repo",
+    "root_marker": ".git",
+    "allowed_worktrees": [
+      "reports/project-control-plane/fixtures/minimal_fixture"
+    ],
+    "forbidden_worktrees": [],
+    "runtime_imports_allowed": false
+  },
+  "authority_docs": [
+    {
+      "path": "README.md",
+      "required": false,
+      "state": "UNKNOWN"
+    }
+  ],
+  "packet": {
+    "active_packet_paths": [
+      "task-packets/ACTIVE.json"
+    ],
+    "required": true,
+    "unknown_code": "BLOCKED_UNKNOWN_ACTIVE_PACKET"
+  },
+  "proof": {
+    "proof_roots": [
+      "proof/ACTIVE"
+    ],
+    "freshness_required": true,
+    "unknown_code": "NEEDS_EVIDENCE_REFRESH"
+  },
+  "red_lane_policy": {
+    "policy_ref": null,
+    "default_on_unknown": "BLOCK",
+    "lanes": [
+      "runtime-write",
+      "unknown-authority"
+    ]
+  },
+  "forbidden_paths": [
+    {
+      "glob": "runtime/**",
+      "reason": "runtime writes not authorized in generic fixture",
+      "result": "NEEDS_SUPERVISOR"
+    }
+  ],
+  "export_mode": "ARTIFACT_ONLY",
+  "unknown_policy": "FAIL_CLOSED"
+}

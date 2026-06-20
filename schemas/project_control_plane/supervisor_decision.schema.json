@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/supervisor_decision.schema.json",
+  "title": "Supervisor Decision Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "packet_id",
+    "decision",
+    "accepted_by_supervisor",
+    "mutation_authorized",
+    "rationale"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.supervisor_decision.v0"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "packet_id": {
+      "type": "string"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "ACCEPT",
+        "ACCEPT_WITH_CORRECTIONS",
+        "REJECT",
+        "DEFER",
+        "UNKNOWN"
+      ]
+    },
+    "accepted_by_supervisor": {
+      "type": "boolean"
+    },
+    "mutation_authorized": {
+      "type": "boolean",
+      "const": false
+    },
+    "rationale": {
+      "type": "string"
+    }
+  }
+}
