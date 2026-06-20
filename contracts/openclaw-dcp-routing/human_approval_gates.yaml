@@ -1,0 +1,71 @@
+schema_version: "1.0.0"
+artifact_id: "human_approval_gates"
+status: "PROPOSED"
+default_missing_approval_action: "BLOCK"
+approval_event_required_fields:
+  - approval_id
+  - approver
+  - approval_scope
+  - approved_at
+  - expires_at
+  - route_decision_id
+  - risk_class
+  - privacy_class
+  - explicit_statement
+gates:
+  privacy_override:
+    trigger: "Selected route is more permissive than privacy_class_policy default."
+    required_approval_scope: "privacy_route_override"
+    block_if_missing: true
+  destructive_write_execution:
+    trigger: "Shell/edit/write tool can mutate files or external systems."
+    required_approval_scope: "write_or_destructive_execution"
+    block_if_missing: true
+  scope_expansion:
+    trigger: "Files/tools/commands exceed packet allowlist."
+    required_approval_scope: "scope_expansion"
+    block_if_missing: true
+  cost_escalation:
+    trigger: "Estimated or actual route cost exceeds cost ceiling."
+    required_approval_scope: "budget_override"
+    block_if_missing: true
+  R5_R6_task:
+    trigger: "risk_class is R5_SECURITY_OR_AUTHORITY or R6_RELEASE_OR_PRODUCTION."
+    required_approval_scope: "high_risk_execution"
+    block_if_missing: true
+  missing_proof:
+    trigger: "Required proof fields absent, stale, or unverifiable."
+    required_approval_scope: "proof_gap_acceptance"
+    block_if_missing: true
+    note: "Approval may unblock investigation, not release readiness."
+  auditor_conflict:
+    trigger: "Auditor returns FAIL, NEEDS_SUPERVISOR, or conflicts with implementer."
+    required_approval_scope: "audit_conflict_resolution"
+    block_if_missing: true
+  release_judgment:
+    trigger: "Any R6 or release_judgment role."
+    required_approval_scope: "release_approval"
+    block_if_missing: true
+  consumer_plan_proof_use:
+    trigger: "Manual app or consumer-plan route contributes to DCP workflow evidence."
+    required_approval_scope: "consumer_plan_evidence_acceptance"
+    block_if_missing: true
+  openrouter_sensitive_use:
+    trigger: "OpenRouter paid route proposed for private, client, secret-adjacent, security, or release lane."
+    required_approval_scope: "openrouter_sensitive_route"
+    block_if_missing: true
+  preview_experimental_use:
+    trigger: "Preview, experimental, or early-access model proposed for R4+ or authority task."
+    required_approval_scope: "preview_model_risk_acceptance"
+    block_if_missing: true
+  provider_drift:
+    trigger: "Actual provider/model differs from policy route in private or high-risk lane."
+    required_approval_scope: "provider_drift_acceptance"
+    block_if_missing: true
+  benchmark_bypass:
+    trigger: "Route lacks required local benchmark certification."
+    required_approval_scope: "benchmark_bypass"
+    block_if_missing: true
+    note: "Bypass cannot grant production or release authority; it can only permit bounded investigation."
+
+validation_notes: Every gate is fail-closed. Benchmark bypass is intentionally non-authoritative.
