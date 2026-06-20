@@ -398,3 +398,17 @@ LIVE_LOG*.txt
 .claude/.surface-guard-warned.json
 .claude/.denylist-nudge-cache.json
 .antigravitycli/
+
+# Local AI tool workspaces (not repo state)
+.grok/
+.workpack/
+
+# Local DB/service backups
+backups/
+
+# Extracted zip contents (zips themselves are tracked via !audit_inputs/**/*.zip)
+audit_inputs/pcp_dcp_full_architecture_regeneration/
+audit_inputs/pcp_pr925_supervisor_adjudication/
+
+# Debug-only logback config (production variant is already tracked)
+scripts/mcp-wrappers/task-orchestrator-logback-debug.xml

@@ -29,6 +29,7 @@ Modules for integration patterns and authority boundaries:
 
 ### Shared (`shared/`)
 Cross-cutting concerns and common patterns:
+- `memory-trinity-routing.md` - Memory Trinity operator routing card (ConPort / dope-memory / dope-context)
 - `sprint.md` - Sprint management with ConPort integration
 - `event-patterns.md` - Event-driven architecture patterns
 - `adhd-patterns.md` - ADHD accommodations and SuperClaude session workflows
@@ -37,6 +38,7 @@ Cross-cutting concerns and common patterns:
 ## Loading Strategy (Simplified Architecture)
 
 **Session Start** (Always load):
+- `shared/memory-trinity-routing.md` - Which memory plane to use
 - `shared/superclaude-workflows.md` - Primary workflow integration
 - `cognitive-plane/conport-memory.md` - Knowledge graph and decisions
 - Reference MCP docs via @ imports (conditional loading)
