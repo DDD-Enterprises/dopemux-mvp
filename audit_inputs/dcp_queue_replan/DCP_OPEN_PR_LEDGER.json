@@ -1,0 +1,160 @@
+{
+  "bundle_id": "GB-DMX-DCP-QUEUE-REPLAN-001",
+  "generated_at": "2026-06-19T22:00:00Z",
+  "origin_main_sha": "724a25fa01c77f7f1fd6ccf8a78da09f082e0ded",
+  "phase1_status": {
+    "908": "MERGED",
+    "909": "MERGED",
+    "906": "MERGED",
+    "923": "MERGED",
+    "915": "MERGED",
+    "920": "MERGED",
+    "runtime_on_main": [
+      "src/dopemux/dcp/lane_engine.py",
+      "src/dopemux/dcp/routing_classifier.py",
+      "schemas/dcp/*",
+      "tests/dcp/*"
+    ],
+    "notes": "0006/0007 doc packets and 0006 implementation commits present on main; lane engine #906 + postmerge fix #923 + Prompt5 reconcile #920 landed."
+  },
+  "open_dcp_pr_count": 1,
+  "prs": [
+    {
+      "pr_number": 931,
+      "title": "[codex] add OpenClaw DCP routing contracts",
+      "state": "OPEN",
+      "base_sha": "697a6a20dfe36e6763049913a17f2415321e5932",
+      "head_sha": "017dc52bd9163fb20514bdf295777f8fa435f833",
+      "mergeable": "MERGEABLE",
+      "is_draft": false,
+      "checks_summary": "25 checks; 0 fail; all SUCCESS or SKIPPED",
+      "unresolved_active_threads": 0,
+      "unresolved_outdated_threads": 0,
+      "changed_files_summary": "38 files (+4813): contracts/openclaw-dcp-routing/**, tests/contracts/test_openclaw_dcp_routing_contracts.py, tests/test_markdown_location_guard.py, pyproject.toml, uv.lock, .pre-commit-config.yaml",
+      "lane": "DCP_TOOLING_IMPLEMENTATION",
+      "classification": "STALE_BASE",
+      "dependencies": [
+        "Merged #926 (OpenClaw contracts in docs/03-reference/dcp/openclaw-routing/) — semantic overlap requires re-stack decision",
+        "Phase 1 model-routing runtime (#906, #915, #923) — no hard blocker"
+      ],
+      "staleness_against_origin_main": "6 commits behind (base 697a6a20 → main 724a25fa); merge-base confirms ancestor",
+      "recommended_action": "Rebase onto origin/main; resolve contracts/ vs docs/03-reference/dcp/openclaw-routing/ duplication; then READY_TO_EVALUATE for merge",
+      "evidence_refs": [
+        "https://github.com/DDD-Enterprises/dopemux-mvp/pull/931",
+        "origin/main:0df813263 (#926 merge)",
+        "task-packets/OPENCLAW-DCP-ROUTING-CONTRACTS-0001.json on main"
+      ],
+      "unknowns": [
+        "Whether contracts/ relocation supersedes docs mirror or both must coexist",
+        "PR Steward READY gate on rebased head not re-run in this packet"
+      ]
+    }
+  ],
+  "closed_or_merged_dcp_prs_reviewed": [
+    {
+      "pr_number": 878,
+      "title": "docs(dcp): DMX-DCP-TOOLING series — design pack + 15 task packets + load plan",
+      "state": "CLOSED",
+      "merged": false,
+      "base_sha": "f962e3a25887746b4fa911557aecdc3e6bfca87f",
+      "head_sha": "0738c026f70f718aa083a7dafbc0f9a1ac02b594",
+      "mergeable_at_close": "CONFLICTING",
+      "checks_summary": "UNKNOWN (closed PR)",
+      "unresolved_active_threads": 3,
+      "unresolved_outdated_threads": 0,
+      "changed_files_summary": "claudedocs/dcp-tooling-system/**, claudedocs/dr-dcp-015-evidence-pack/**, task-packets/generated/DMX-DCP-TOOLING-{101..115}.json, docs/ops/load-plans/load_plan-DMX-DCP-TOOLING.json",
+      "lane": "DCP_TOOLING_DESIGN",
+      "classification": "CLOSE_RECOMMENDED",
+      "dependencies": [
+        "#885 merged 101+102 foundation — partial overlap",
+        "Phase 1 (#906–#923) — design references pre-Phase-1 assumptions for packets 103–115"
+      ],
+      "staleness_against_origin_main": "Severely stale; never merged; base f962e3a2 ≪ main 724a25fa",
+      "recommended_action": "Leave closed; if tooling series 103–115 still desired, open fresh PR with refreshed packets/load-plan on current main — do not resurrect #878 branch as-is",
+      "evidence_refs": [
+        "https://github.com/DDD-Enterprises/dopemux-mvp/pull/878",
+        "main has proof/DMX-DCP-TOOLING-101,102 and only generated/DMX-DCP-TOOLING-102.json"
+      ],
+      "unknowns": [
+        "Exact close reason (conflicts vs operator decision) not fetched"
+      ],
+      "answers": {
+        "still_valid_after_phase1": "Partially — design intent valid; packet IDs and load-plan deps stale vs merged Phase 1 + #885",
+        "pre_phase1_assumptions": true,
+        "packets_need_refresh": true,
+        "needs_rebase": true,
+        "unresolved_threads": "3 active unresolved at close (108, 111, 112)",
+        "next_correct_active_pr": false,
+        "should_revise_or_close": "Close (already closed); refresh as new PR if needed"
+      }
+    },
+    {
+      "pr_number": 885,
+      "title": "feat(dcp): DMX-DCP-TOOLING 101+102 foundation bundle",
+      "state": "MERGED",
+      "merged_at": "2026-06-18T06:46:11Z",
+      "head_sha": "a503f8ab6dc6ed29afd4199101609ad2cdcdb634",
+      "lane": "DCP_TOOLING_IMPLEMENTATION",
+      "classification": "SUPERSEDED",
+      "dependencies": ["#878 design pack (never merged)"],
+      "staleness_against_origin_main": "N/A — on main at 707f76785",
+      "recommended_action": "No action; 103–115 remain unstarted on main",
+      "evidence_refs": ["origin/main:707f76785"],
+      "unknowns": [],
+      "answers": {
+        "depends_on_878": "Soft dependency — implemented 101+102 without merged design PR",
+        "packets_still_valid": "101+102 landed; 103+ not on main",
+        "overlaps_phase1": "Orthogonal to lane engine / provenance Phase 1",
+        "needs_rebase": false,
+        "unresolved_threads": "N/A — merged",
+        "should_wait_for_878": "N/A — already merged"
+      }
+    },
+    {
+      "pr_number": 873,
+      "title": "[codex] add gpt55 evidence intake bundle",
+      "state": "MERGED",
+      "merged_at": "2026-06-18T06:46:18Z",
+      "head_sha": "326256de9e6fadb4290e62881bc1e8b944e51778",
+      "lane": "DCP_EVIDENCE_ARCHIVE",
+      "classification": "EVIDENCE_ARCHIVE_ONLY",
+      "dependencies": ["#920 Prompt 5 reconcile partially supersedes runway narrative"],
+      "staleness_against_origin_main": "N/A — on main at ea78e912f",
+      "recommended_action": "No PR action; evidence preserved in audit_inputs/ on main",
+      "evidence_refs": [
+        "origin/main:ea78e912f",
+        "audit_inputs/gpt55_recon_source/",
+        "audit_inputs/dcp-runner-recon/"
+      ],
+      "unknowns": [],
+      "answers": {
+        "superseded_by_920": "Partially — #920 merged Prompt 5 reconciliation docs; intake bundle remains unique archive",
+        "unique_evidence": true,
+        "stale_archive_only": true,
+        "should_close_rebase_or_shrink": "Already merged; no action"
+      }
+    }
+  ],
+  "non_dcp_open_prs_noted": [
+    {"pr_number": 936, "title": "fix(conport): restore migration foundation gate", "lane": "ConPort"},
+    {"pr_number": 933, "title": "feat(rte-cost): align cost profile controls", "lane": "RTE"},
+    {"pr_number": 925, "title": "docs(pcp): validate project control plane architecture", "lane": "PCP (not DCP)"}
+  ],
+  "recommended_next_active_pr": 931,
+  "recommended_order": [931],
+  "close_or_supersede_recommendations": [
+    "#878: remain CLOSED; do not reopen without full packet refresh",
+    "#873: merged archive — no close needed",
+    "#885: merged — no action",
+    "#926 (merged): treat as baseline for #931 duplication review"
+  ],
+  "blockers": [
+    "#931 STALE_BASE — 6 commits behind origin/main",
+    "#931 semantic overlap with merged #926 (docs/ vs contracts/ tree)",
+    "#878 tooling packets 103–115 not on main — design series paused"
+  ],
+  "unknowns": [
+    "#878 exact close rationale",
+    "Operator priority: OpenClaw contracts (#931) vs tooling design refresh (#878 successor)"
+  ]
+}

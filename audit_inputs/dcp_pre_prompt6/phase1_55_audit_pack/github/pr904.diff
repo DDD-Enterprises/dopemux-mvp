@@ -1,0 +1,301 @@
+diff --git a/src/dopemux/dcp/routing_classifier.py b/src/dopemux/dcp/routing_classifier.py
+index f83e6f0a3..1a891ab0a 100644
+--- a/src/dopemux/dcp/routing_classifier.py
++++ b/src/dopemux/dcp/routing_classifier.py
+@@ -201,13 +201,19 @@ def _derive_route_status(
+     inp: RoutingClassificationInput,
+     red_lane: RedLaneState,
+ ) -> RouteStatus:
+-    """Derive conservative route status from attributes and red-lane state."""
++    """Derive conservative route status from attributes and red-lane state.
++
++    Status precedence is most-severe-first: a hard-BLOCKED reason outranks an
++    UNKNOWN one. The hard-BLOCKED checks (red-lane, BLOCKED authority, missing
++    proof on a mutating/non-trivial route, stale proof) are evaluated BEFORE the
++    UNKNOWN-authority guard so that a caller inspecting ``status`` learns *why* a
++    route is blocked even when authority is also unknown. An unknown-authority
++    route is non-runnable regardless, so this ordering strengthens
++    discoverability without weakening any fail-closed guarantee.
++    """
+     if red_lane is RedLaneState.RED_LANE:
+         return RouteStatus.BLOCKED
+ 
+-    if inp.has_unknown_authority or inp.authority_class is AuthorityClass.UNKNOWN:
+-        return RouteStatus.UNKNOWN
+-
+     if inp.authority_class is AuthorityClass.BLOCKED:
+         return RouteStatus.BLOCKED
+ 
+@@ -217,6 +223,9 @@ def _derive_route_status(
+     if inp.has_stale_proof:
+         return RouteStatus.BLOCKED
+ 
++    if inp.has_unknown_authority or inp.authority_class is AuthorityClass.UNKNOWN:
++        return RouteStatus.UNKNOWN
++
+     if inp.task_source is TaskSource.UNKNOWN:
+         return RouteStatus.UNKNOWN
+ 
+diff --git a/task-packets/DMX-DCP-PRE-PROMPT6-0002.md b/task-packets/DMX-DCP-PRE-PROMPT6-0002.md
+new file mode 100644
+index 000000000..2e82109b5
+--- /dev/null
++++ b/task-packets/DMX-DCP-PRE-PROMPT6-0002.md
+@@ -0,0 +1,155 @@
++---
++id: DMX-DCP-PRE-PROMPT6-0002
++title: Routing Classifier Status Precedence Fix
++type: explanation
++owner: '@hu3mann'
++author: '@hu3mann'
++date: '2026-06-16'
++last_review: '2026-06-16'
++next_review: '2026-09-14'
++prelude: Reorders DCP routing-classifier status derivation to most-severe-first (BLOCKED > UNKNOWN) so a hard-BLOCKED reason is no longer masked as UNKNOWN by the default unknown-authority guard. Pure status-discoverability fix; no fail-closed weakening.
++---
++
++# DMX-DCP-PRE-PROMPT6-0002 — Routing Classifier Status Precedence Fix
++
++**Series**: DMX-DCP-PRE-PROMPT6
++**Packet**: 0002
++**Type**: Bugfix (status precedence) + reconciliation tests
++**Status**: IMPLEMENTED
++**Branch**: `feat/dcp-pre-p6-precedence-fix` (off `main` @ `a740edc40`, post-#902)
++**Implementer**: Claude Code (Opus, TDD red→green)
++**Embedded auditor**: Claude Opus (separate subagent)
++**Date**: 2026-06-16
++
++---
++
++## Objective
++
++Fix routing-classifier status precedence so a hard-BLOCKED reason (BLOCKED authority,
++missing proof on a mutating/non-trivial route, stale proof) is reported in
++`RouteDecision.status` even when authority is also unknown — instead of being masked
++as `RouteStatus.UNKNOWN` by the default `has_unknown_authority=True` guard.
++
++## The bug (observed on `main`)
++
++In `_derive_route_status`, the UNKNOWN-authority guard ran **before** the hard-BLOCKED gates:
++
++```
++red_lane                                  → BLOCKED
++has_unknown_authority OR authority UNKNOWN → UNKNOWN   ← returned first
++authority BLOCKED                          → BLOCKED
++missing_proof (+ mutating/non-trivial)     → BLOCKED
++stale_proof                                → BLOCKED
++```
++
++`has_unknown_authority` defaults to `True` (conservative), so any stale/missing-proof
++or BLOCKED-authority route with default authority returned `status=UNKNOWN`. The block
++reason was still present in `stop_conditions` (e.g. `"stale_proof"`), but `status` —
++the field callers read to learn *why* a route is blocked — reported UNKNOWN. A
++readiness/reporting footgun, not a security hole. (Deferred from 0002R reconciliation.)
++
++## The fix (minimal)
++
++Reorder to most-severe-first (BLOCKED > UNKNOWN): the three hard-BLOCKED checks now run
++**before** the UNKNOWN-authority guard. A 2-line move + a precedence docstring. No new
++fields, no enum changes, no public-API change.
++
++## Why it is safe (no fail-closed weakening)
++
++`RouteDecision.is_runnable()` (`routing_model.py`) already returns `False` for UNKNOWN
++authority, so an unknown-authority route was — and remains — non-runnable. The reorder
++only changes what `status` *reports*, never what is runnable. Red-lane is still derived
++first (`_derive_red_lane_state` → RED_LANE → `status=BLOCKED`), so `requires_mcp_call` /
++`requires_live_write` / `requires_dopetask_execution` / `touches_secrets` remain
++hard-blocked ahead of everything. A guardrail test pins that a route whose *only* defect
++is unknown authority still reports UNKNOWN (no over-blocking).
++
++## Files touched
++
++| File | Op | Lines |
++|---|---|---|
++| `src/dopemux/dcp/routing_classifier.py` | reorder + docstring | +17/-4 |
++| `tests/unit/dcp/test_routing_classifier.py` | 1 test loosened + 2 added | +74/-21 |
++| `task-packets/DMX-DCP-PRE-PROMPT6-0002.md` | new (this file) | new |
++
++## Tests (TDD: RED → GREEN)
++
++- **RED** (unmodified source): `test_unresolved_review_threads_block_readiness` (bypass
++  dropped) + `test_hard_blocked_reason_wins_over_unknown_authority` **failed** (status
++  UNKNOWN ≠ BLOCKED); guardrail `test_unknown_authority_alone_still_reports_unknown`
++  **passed** → `2 failed, 1 passed`.
++- **GREEN** (after reorder): all 3 pass.
++
++## Validation — PASS
++
++| Gate | Result |
++|---|---|
++| `compileall src/dopemux/dcp` | PASS (exit 0) |
++| precedence tests (3) | PASS (3/3) |
++| `tests/unit/dcp/test_routing_classifier.py` | PASS (77/77, exit 0) |
++| `tests/unit/dcp/ tests/dcp/test_dcp_model_routing_0001_domain.py` | PASS (193/193, exit 0) |
++| `git diff --check` | PASS (exit 0) |
++| diff scope = allowlisted files only | PASS (3 files) |
++
++**NOT_RUN**: full-repo suite, networked/MCP integration — out of packet scope (classifier
++is a pure function with no I/O). Residual risk: none beyond the classifier surface.
++
++## Invariants preserved
++
++- Classifier remains a pure function (no I/O / shell / network / fs / connector / MCP / runner).
++- `requires_mcp_call → RED_LANE → BLOCKED` unchanged (red-lane derived first).
++- `requires_live_write` / `requires_dopetask_execution` / `touches_secrets` hard-blocks unchanged.
++- Unknown authority cannot grant mutation (`is_runnable()` unchanged).
++- No new classifier fields; no public enum changes.
++
++## Embedded audit
++
++**VERDICT: PASS** — independent Opus subagent (read-only, adversarial; agent `aa3b96f911ab51542`).
++
++Method: faithful reconstruction of the BEFORE order (= `main`) vs the AFTER working tree,
++swept exhaustively over **41,472** input combinations (`AuthorityClass` × stale/missing-proof
++× mutating/non-trivial scope × source/type/risk/complexity/impact/CI).
++
++- **18,144** status changes, **100% UNKNOWN→BLOCKED**; zero other deltas — monotonically more conservative.
++- `is_runnable()` differs in **0 / 41,472**; non-runnable→runnable: **0**.
++- status UNKNOWN→ALLOWED: **0 / 41,472**.
++- `allowed_actions` broadening: **0**.
++- red-lane / MCP (`requires_mcp_call`) / live-write / dopetask hard-blocks verified BLOCKED +
++  non-runnable under best-case bypass; `_derive_red_lane_state`, `_derive_allowed_actions`,
++  `_derive_forbidden_actions`, `is_runnable()` confirmed unchanged.
++- Tests non-tautological: monkeypatching the old order makes the precedence assertions fail;
++  the over-block guardrail passes under both orders (a naive always-BLOCK fix would fail it).
++- **No counterexample found** across all four hunted transition classes.
++
++Integration UNKNOWN (out of this file's scope): a downstream caller treating `status==UNKNOWN`
++as soft/retryable now sees `BLOCKED` for stale/missing-proof/BLOCKED-authority routes — the
++intended more-conservative signal; callers keying on the literal value should fail-closed on BLOCKED.
++
++## Rollback
++
++```bash
++git checkout main -- src/dopemux/dcp/routing_classifier.py tests/unit/dcp/test_routing_classifier.py
++git rm -f task-packets/DMX-DCP-PRE-PROMPT6-0002.md
++# or: git branch -D feat/dcp-pre-p6-precedence-fix
++```
++
++## Residual risk
++
++- Pre-existing Pyright nits (`_normalize_enum` bare `type`; string-literal enum args in
++  normalization tests) are untouched and out of scope.
++- Behaviour change is observable to any caller that branched on `status==UNKNOWN` for a
++  stale/missing-proof route; such a caller now sees `BLOCKED`. No in-repo caller does so —
++  the classifier is read-only and consumed by the net-new 0004 lane engine.
++
++## Expected output
++
++```
++TP: DMX-DCP-PRE-PROMPT6-0002
++STATUS: IMPLEMENTED
++BRANCH: feat/dcp-pre-p6-precedence-fix
++COMMIT: <filled at commit>
++PR: <filled at PR>
++VALIDATION: PASS (compileall + 193 DCP tests + diff check)
++AUDIT_VERDICT: PASS (independent Opus; 41,472-combo exhaustive sweep — 0 newly-runnable, 0 UNKNOWN→ALLOWED, 0 allowed_actions broadening; red-lane/MCP/live-write/dopetask intact)
++RESIDUAL_RISKS: status-report change only; no fail-closed weakening
++```
+diff --git a/tests/unit/dcp/test_routing_classifier.py b/tests/unit/dcp/test_routing_classifier.py
+index 7b868d080..2800481e4 100644
+--- a/tests/unit/dcp/test_routing_classifier.py
++++ b/tests/unit/dcp/test_routing_classifier.py
+@@ -1221,7 +1221,7 @@ def test_live_write_without_contract_blocks() -> None:
+ 
+ 
+ def test_unresolved_review_threads_block_readiness() -> None:
+-    """Lock: has_stale_proof=True blocks the route (status=BLOCKED) when authority is known.
++    """Lock: has_stale_proof=True blocks the route (status=BLOCKED) regardless of authority.
+ 
+     Note: "unresolved review threads" as a PR-Steward concern is a HIGHER-LAYER
+     readiness check that lives outside this classifier.  The stale-proof gate
+@@ -1229,25 +1229,18 @@ def test_unresolved_review_threads_block_readiness() -> None:
+     gate: a route with stale or invalidated evidence is not actionable until proof
+     is refreshed.
+ 
+-    IMPORTANT — precedence finding (surfaced during 0002R reconciliation):
+-    With all-default inputs (has_unknown_authority=True), the classifier returns
+-    RouteStatus.UNKNOWN instead of RouteStatus.BLOCKED for has_stale_proof=True,
+-    because _derive_route_status checks has_unknown_authority BEFORE has_stale_proof.
+-    The BLOCKED status is only reachable after the unknown-authority guard passes.
+-    This test therefore supplies has_unknown_authority=False to reach the
+-    stale-proof BLOCKED path, which is the behaviour this invariant is meant to lock.
+-
+-    This ordering is NOT a security regression (unknown authority is non-runnable
+-    regardless) but is a latent discoverability gap: stale_proof is recorded in
+-    stop_conditions even when status=UNKNOWN, so the gate signal is present.
+-    A future classifier refactor should ensure has_stale_proof → BLOCKED
+-    regardless of authority-gate ordering.
++    PRECEDENCE (fixed in PRE-PROMPT6-0002, was a latent gap deferred from 0002R):
++    A hard-BLOCKED reason such as stale proof MUST be reported in ``status`` even
++    when authority is also unknown (the conservative default).  ``_derive_route_status``
++    now applies the hard-BLOCKED checks (authority BLOCKED, missing proof, stale
++    proof) BEFORE the UNKNOWN-authority guard — a most-severe-first ordering
++    (BLOCKED > UNKNOWN).  The default ``has_unknown_authority=True`` therefore no
++    longer masks the stale-proof BLOCKED status.
+     """
+     inp = RoutingClassificationInput(
+         has_stale_proof=True,
+-        # Must bypass the unknown-authority guard to reach the stale-proof BLOCKED path.
+-        has_unknown_authority=False,
+-        authority_class=AuthorityClass.OPERATOR,
++        # Default authority is UNKNOWN: the stale-proof BLOCKED reason must still
++        # surface in ``status`` (this is the precedence fix being locked).
+     )
+     decision = classify_route(inp)
+ 
+@@ -1255,6 +1248,53 @@ def test_unresolved_review_threads_block_readiness() -> None:
+         f"expected BLOCKED for stale proof input, got {decision.status}"
+     )
+     assert not decision.is_runnable()
++    # The stale-proof reason is surfaced in both status and stop_conditions.
++    assert "stale_proof" in decision.stop_conditions
++
++
++def test_hard_blocked_reason_wins_over_unknown_authority() -> None:
++    """Lock: status precedence is most-severe-first — BLOCKED beats UNKNOWN.
++
++    Each hard-BLOCKED reason must be reported in ``status`` even when authority is
++    also unknown (the default).  Before the PRE-PROMPT6-0002 precedence fix the
++    UNKNOWN-authority guard returned first and masked these reasons as
++    RouteStatus.UNKNOWN.
++    """
++    # Stale proof + default unknown authority → BLOCKED (not UNKNOWN).
++    stale = classify_route(RoutingClassificationInput(has_stale_proof=True))
++    assert stale.status is RouteStatus.BLOCKED
++
++    # Explicitly BLOCKED authority + default unknown-authority flag → BLOCKED.
++    blocked_auth = classify_route(
++        RoutingClassificationInput(authority_class=AuthorityClass.BLOCKED)
++    )
++    assert blocked_auth.status is RouteStatus.BLOCKED
++
++    # Missing proof on a mutating/non-trivial route + unknown authority → BLOCKED.
++    missing = classify_route(
++        RoutingClassificationInput(
++            has_missing_proof=True,
++            is_repo_changing=True,
++            is_non_trivial=True,
++        )
++    )
++    assert missing.status is RouteStatus.BLOCKED
++
++
++def test_unknown_authority_alone_still_reports_unknown() -> None:
++    """Lock: with no hard-BLOCKED reason, unknown authority still yields UNKNOWN.
++
++    The precedence fix must not over-block: a route whose only defect is unknown
++    authority (no stale/missing proof, not red-lane) remains RouteStatus.UNKNOWN.
++    """
++    decision = classify_route(
++        RoutingClassificationInput(
++            has_unknown_authority=True,
++            authority_class=AuthorityClass.UNKNOWN,
++        )
++    )
++    assert decision.status is RouteStatus.UNKNOWN
++    assert not decision.is_runnable()
+ 
+ 
+ def test_secret_pattern_routes_to_supervisor() -> None:

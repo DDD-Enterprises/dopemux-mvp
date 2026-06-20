@@ -1,0 +1,162 @@
+{
+  "pr": 906,
+  "pr_title": "feat(dcp): lane engine MVP \u2014 decide_lane() pure consumer (0005)",
+  "pr_state": "MERGED",
+  "pr_merged_at": "2026-06-17T01:30:37Z",
+  "pr_head_sha": "5b1b03a1002b",
+  "pr_merge_sha": "02fa9b30ac0a",
+  "current_main_sha": "556ffff1b",
+  "main_advanced_past_906": true,
+  "post_906_commits": [
+    "b460047eb feat(dcp): implement 0006 classifier provenance hardening",
+    "d14dbda80 fix(dcp): wire provenance fields through CLI",
+    "5c7663c0a fix(dcp): keep read-only audits out of provenance block",
+    "ea4871e0f fix(dcp): preserve blocked bridge authority",
+    "556ffff1b fix(dcp): strict CLI parsing for trust-raising provenance booleans"
+  ],
+  "lane_engine_changed_since_906": false,
+  "thread_count": 13,
+  "unresolved_not_outdated_count": 2,
+  "threads": [
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": null,
+      "isResolved": true,
+      "isOutdated": true,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Use RouteDecision.is_runnable() for executability",
+      "classification": "AUTO_APPLIED_OUTDATED"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": null,
+      "isResolved": true,
+      "isOutdated": true,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Normalize input enums before lane matching",
+      "classification": "AUTO_APPLIED_OUTDATED"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": 354,
+      "isResolved": true,
+      "isOutdated": false,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Strip mutating actions from non-runnable lanes",
+      "classification": "AUTO_APPLIED"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": null,
+      "isResolved": true,
+      "isOutdated": true,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Route repo-changing inputs before read-only fallback",
+      "classification": "AUTO_APPLIED_OUTDATED"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": null,
+      "isResolved": true,
+      "isOutdated": true,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Route file-touching inputs out of the evidence lane",
+      "classification": "AUTO_APPLIED_OUTDATED"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": null,
+      "isResolved": true,
+      "isOutdated": true,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Keep PR readiness from inheriting mutating requests",
+      "classification": "AUTO_APPLIED_OUTDATED"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": 158,
+      "isResolved": true,
+      "isOutdated": false,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Fail closed on restored decisions with UNKNOWN fields",
+      "classification": "AUTO_APPLIED"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": 128,
+      "isResolved": true,
+      "isOutdated": false,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Block UNKNOWN proof requirements before execution",
+      "classification": "AUTO_APPLIED"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": 158,
+      "isResolved": true,
+      "isOutdated": false,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Block routes that carry stop conditions",
+      "classification": "AUTO_APPLIED"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": 354,
+      "isResolved": true,
+      "isOutdated": false,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Narrow mutating actions on passive lanes",
+      "classification": "AUTO_APPLIED"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": 248,
+      "isResolved": true,
+      "isOutdated": false,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Route public-behavior changes out of evidence",
+      "classification": "AUTO_APPLIED"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": 70,
+      "isResolved": false,
+      "isOutdated": false,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Strip hard-forbidden actions from passive lanes",
+      "classification": "MUST_FIX"
+    },
+    {
+      "path": "src/dopemux/dcp/lane_engine.py",
+      "line": 128,
+      "isResolved": false,
+      "isOutdated": false,
+      "reviewer": "chatgpt-codex-connector",
+      "title": "Block restored unknown markers before execution",
+      "classification": "MUST_FIX"
+    }
+  ],
+  "findings": {
+    "thread_70_strip_hard_forbidden_from_passive_lanes": {
+      "status": "STILL_VALID",
+      "evidence": "_MUTATING_ACTIONS (lane_engine.py:70) omits 7 classifier _ALWAYS_FORBIDDEN tokens: call_connector, execute_dopetask, execute_runner, mutate_task_orchestrator, run_destructive_command, touch_secrets, write_github_state. Passive *executable* lanes call _strip_mutating_actions (line 352), which does not remove them. lane_engine.py unchanged since the #906 merge.",
+      "reachability": "Forged/restored RouteDecision only. classify_route always emits these in forbidden_actions (routing_classifier.py:440), so a classifier-produced runnable decision never carries them in allowed_actions. The leak requires deserializing an untrusted RouteDecision.",
+      "threat_owner": "0007 trusted input-provenance contract (PR #909, docs-only \u2014 not implemented)",
+      "fix": "For _PASSIVE_LANES, intersect with _READ_ONLY_PROOF_SAFE_ACTIONS allowlist (fail-closed) OR union _MUTATING_ACTIONS with classifier _ALWAYS_FORBIDDEN before stripping."
+    },
+    "thread_128_block_restored_unknown_markers": {
+      "status": "STILL_VALID",
+      "evidence": "RouteDecision.unknowns exists (routing_model.py:234) and round-trips through from_dict (routing_model.py:384). is_runnable() (routing_model.py:401) checks red_lane_state / authority_class / status only \u2014 NOT unknowns. _has_unknown_decision_contract (lane_engine.py:118) enumerates UNKNOWN enum fields but does NOT check decision.unknowns.",
+      "reachability": "Forged/restored decision with all enum fields known + unknowns=[...] + status=ALLOWED + red_lane_state=CLEAR + valid authority_class => is_runnable() True => LOCAL_CODE_IMPLEMENTATION executable with mutating allowed_actions, even though the sibling backend policy blocks unknowns_present.",
+      "threat_owner": "0006/0007 provenance hardening",
+      "fix": "Add `bool(decision.unknowns)` to _has_unknown_decision_contract (fail-closed in the executability gate)."
+    }
+  },
+  "tests": {
+    "compileall_src_dopemux_dcp": "PASS (exit 0)",
+    "test_lane_engine_py + test_routing_classifier_py": "PASS (129 passed)"
+  },
+  "prompt6_ready": false,
+  "pr906_triage_status": "BLOCKED",
+  "next_action": "create follow-up fix packet (2 small fail-closed fixes + reproduction tests) OR explicitly defer to 0007 implementation with documented rationale; then assemble the Prompt 6 bundle"
+}

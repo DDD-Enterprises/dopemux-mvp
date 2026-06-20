@@ -1,0 +1,76 @@
+=== PR #904 ===
+title:	fix(dcp): order hard-BLOCKED checks before UNKNOWN-authority guard (PRE-P6-0002)
+state:	MERGED
+author:	hu3mann (Dj Dom)
+labels:	
+assignees:	
+reviewers:	
+projects:	
+milestone:	
+number:	904
+url:	https://github.com/DDD-Enterprises/dopemux-mvp/pull/904
+additions:	225
+deletions:	21
+auto-merge:	disabled
+--
+## What
+
+Reorders `_derive_route_status` in the DCP routing classifier so hard-BLOCKED reasons (BLOCKED authority, missing proof on a mutating/non-trivial route, stale proof) are evaluated **before** the UNKNOWN-authority guard — most-severe-first (`BLOCKED > UNKNOWN`).
+
+Resolves the precedence footgun deferred from the 0002R reconciliation (#902): `has_unknown_authority` defaults to `True`, so a stale/missing-proof or BLOCKED-authority route with default authority reported `status=UNKNOWN`, masking the real block reason (which was still present in `stop_conditions`).
+
+## Why it's safe (no fail-closed weakening)
+
+`RouteDecision.is_runnable()` already returns `False` for UNKNOWN authority, so such routes were — and remain — non-runnable. This change **only changes what `status` reports**, never what is runnable. Red-lane is still derived first, so `requires_mcp_call` / `requires_live_write` / `requires_dopetask_execution` / `touches_secrets` stay hard-blocked ahead of everything.
+
+## Changes
+- `src/dopemux/dcp/routing_classifier.py` — 2-line guard move + precedence docstring (+17/-4)
+- `tests/unit/dcp/test_routing_classifier.py` — dropped the `has_unknown_authority=False` bypass from the 0002R stale-proof test; added `test_hard_blocked_reason_wins_over_unknown_authority` + `test_unknown_authority_alone_still_reports_unknown` (no-over-block guardrail)
+- `task-packets/DMX-DCP-PRE-PROMPT6-0002.md` — packet / explanation doc
+
+## TDD
+RED (unmodified source): the de-bypassed test + the precedence test fail (`status UNKNOWN ≠ BLOCKED`); guardrail passes. GREEN (after reorder): all pass.
+
+## Validation
+- `compileall src/dopemux/dcp` — PASS
+- `tests/unit/dcp/` — **178 passed**; `+ tests/dcp/test_dcp_model_routing_0001_domain.py` — **193 passed**; classifier file — **77 passed**
+- `git diff --check` — clean
+
+## Embedded audit — PASS (independent Opus, adversarial)
+Exhaustive sweep of **41,472** input combinations (BEFORE=`main` vs AFTER):
+- 18,144 status changes, **100% UNKNOWN→BLOCKED**, zero other deltas
+- `is_runnable()` differs in **0 / 41,472**; non-runnable→runnable **0**; UNKNOWN→ALLOWED **0**; `allowed_actions` broadening **0**
+- red-lane / MCP / live-write / dopetask verified intact; no counterexample found
+
+## Residual risk
+Status-report change only. A downstream caller that treated `status==UNKNOWN` as soft/retryable now sees `BLOCKED` for stale/missing-proof/BLOCKED-authority routes (the intended more-conservative signal). No in-repo caller does so — the classifier is read-only, consumed by the net-new lane engine.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+
+=== PR #904 CHECKS ===
+Analyze (javascript-typescript)	pass	1m1s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546001/job/81630127684	
+Analyze (python)	pass	1m27s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546001/job/81630127718	
+Analyze (ruby)	pass	50s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546001/job/81630127661	
+CodeQL	pass	2s	https://github.com/DDD-Enterprises/dopemux-mvp/runs/81630288849	
+advisory check-only intake	pass	12s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546052/job/81630127673	
+checks	pass	43s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546032/job/81630127811	
+identity-check	pass	9s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546093/job/81630127719	
+identity-check	pass	6s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27611602639/job/81637072752	
+independent embedded audit	pass	12s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546059/job/81630127754	
+preflight	pass	43s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546009/job/81630127862	
+💅 Code Quality & Linting	pass	33s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630127986	
+📊 ADHD-Friendly Security Summary	pass	4s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546038/job/81630181333	
+📊 CI Pipeline Summary	pass	3s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630939931	
+📚 Documentation Check	pass	10s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630128088	
+🔍 Audit Proof Validator (--all)	pass	16s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630128003	
+🔒 Security Review	pass	7s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630128020	
+🗺️ Model Routing Consistency	pass	12s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630128044	
+🤖 Claude Code Security Analysis	pass	7s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546038/job/81630127607	
+🧪 Auditor Router	pass	26s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630128074	
+🧪 Extractor Full	pass	4m11s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630128131	
+🧪 Extractor Smoke	pass	1m36s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630127987	
+🧪 Unit Tests	pass	1m16s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630128047	
+📊 Scoped Coverage	skipping	0	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630128813	
+🔗 Integration Tests	skipping	0	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630128951	
+🧪 Installer Smoke	skipping	0	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27609546008/job/81630128954	

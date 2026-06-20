@@ -1,0 +1,65 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.0.3, pluggy-1.6.0
+rootdir: /Users/hue/code/dopemux-mvp
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: cov-7.1.0, asyncio-1.4.0, langsmith-0.8.7, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 276 items
+
+tests/unit/dcp/test_dcp_cli.py .......                                   [  2%]
+tests/unit/dcp/test_routing_backend_policy.py .......................... [ 11%]
+......................                                                   [ 19%]
+tests/unit/dcp/test_routing_classifier.py .............................. [ 30%]
+...............................................                          [ 47%]
+tests/unit/dcp/test_routing_model.py ................................... [ 60%]
+...........                                                              [ 64%]
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/tests/dcp/test_placeholder.py . [ 64%]
+                                                                         [ 64%]
+tests/dcp/test_dcp_0002_contract_derivation.py ...............F.         [ 71%]
+tests/dcp/test_dcp_0003_proof_family_dispatch.py ..................      [ 77%]
+tests/dcp/test_dcp_0004_control_snapshot.py .....................        [ 85%]
+tests/dcp/test_dcp_0005_red_lane_scanner.py ..................           [ 91%]
+tests/dcp/test_dcp_contracts.py ........                                 [ 94%]
+tests/dcp/test_dcp_model_routing_0001_domain.py ...............          [100%]
+
+=================================== FAILURES ===================================
+_____________________ test_16_no_forbidden_files_modified ______________________
+
+    def test_16_no_forbidden_files_modified():
+        base_ref = _packet_base_ref()
+        diff_range = f"{base_ref}...HEAD" if base_ref else "HEAD^..HEAD"
+        result = subprocess.run(
+            ["git", "diff", "--name-only", diff_range],
+            capture_output=True, text=True,
+            cwd=Path(__file__).resolve().parents[2]
+        )
+        assert result.returncode == 0, (
+            f"git diff --name-only {diff_range} failed "
+            f"(exit {result.returncode}): {result.stderr.strip() or 'no stderr output'}"
+        )
+        changed = result.stdout.strip().splitlines()
+        forbidden_prefixes = [
+            "src/dopemux_pr_merge_specialist/",
+            "dopemux_pr_merge_specialist/",
+            "scripts/batch_resolve_and_merge.py",
+            ".github/workflows/",
+        ]
+        violations = [
+            f for f in changed
+            if any(f.startswith(p) for p in forbidden_prefixes)
+        ]
+>       assert not violations, (
+            "Forbidden files in git diff:\n" + "\n".join(violations)
+        )
+E       AssertionError: Forbidden files in git diff:
+E         .github/workflows/ci-complete.yml
+E         .github/workflows/gemini-plan-execute.yml
+E         .github/workflows/gemini-review.yml
+E         .github/workflows/pr-steward.yml
+E       assert not ['.github/workflows/ci-complete.yml', '.github/workflows/gemini-plan-execute.yml', '.github/workflows/gemini-review.yml', '.github/workflows/pr-steward.yml']
+
+tests/dcp/test_dcp_0002_contract_derivation.py:526: AssertionError
+=========================== short test summary info ============================
+FAILED tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified
+======================== 1 failed, 275 passed in 0.58s =========================
+Exit code: 1

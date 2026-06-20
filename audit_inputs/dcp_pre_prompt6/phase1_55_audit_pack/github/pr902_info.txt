@@ -1,0 +1,72 @@
+=== PR #902 ===
+title:	test(dcp): 0002R reconciliation — lock 5 routing-classifier invariants
+state:	MERGED
+author:	hu3mann (Dj Dom)
+labels:	
+assignees:	
+reviewers:	
+projects:	
+milestone:	
+number:	902
+url:	https://github.com/DDD-Enterprises/dopemux-mvp/pull/902
+additions:	328
+deletions:	0
+auto-merge:	disabled
+--
+## DMX-DCP-MODEL-ROUTING-MVP-0002R — Classifier Rules + Fixtures Reconciliation (scoped)
+
+Reconciliation-only hardening of the existing DCP routing classifier. **No source changes** — 5 new unit tests that lock already-implemented invariants, plus the packet doc.
+
+### Scope decision (supervisor)
+The originating gate packet listed 12 required test cases. Code inspection found **6 of them reference classifier fields that do not exist** (bridge/proxy, retrieval-derived, secure-MCP-readonly, ECC-intake, opencode/grok-wrapper-proof) and map to lanes the architecture explicitly marked `ACCEPTED_LATER` / `DESIGN_ONLY`. Forcing them here would mean building deferred-lane fields under a "reconciliation" packet. So scope was narrowed to **5 reconciliation tests**; the 6 lane-concept cases are **deferred to 0003+ lane engine** (documented in the packet).
+
+### Tests added (assert existing behavior, zero new fields)
+1. `test_unknown_authority_blocks_mutation` — unknown authority → no mutation actions in `allowed_actions`
+2. `test_dopetask_boundary_blocks_dcp_core_execution` — dopetask exec → explicit forbidden-action token, not runnable
+3. `test_live_write_without_contract_blocks` — live-write → `status=BLOCKED` unconditionally
+4. `test_unresolved_review_threads_block_readiness` — stale-proof readiness gate → `BLOCKED`
+5. `test_secret_pattern_routes_to_supervisor` — secrets → `RED_LANE` + `SUPERVISOR_AUDIT` + `ALWAYS` escalation (3-way lock)
+
+### Finding surfaced (not patched — out of reconciliation scope)
+`_derive_route_status` checks `has_unknown_authority` **before** `has_stale_proof`, so a bare `has_stale_proof=True` reports `UNKNOWN` instead of `BLOCKED`. **Not a security regression** (unknown authority is non-runnable regardless), but a latent status-reporting gap. Test 4 documents it and supplies an authority bypass to reach the real gate. Flagged for the 0003+ lane-engine fix.
+
+### Validation
+- ✅ 191 pytest pass (`tests/unit/dcp/` + `test_dcp_model_routing_0001_domain.py`) — 186 baseline + 5
+- ✅ `compileall src/dopemux/dcp` clean
+- ✅ `git diff --check` clean; diff scope = exactly 2 allowlisted files (+314 lines)
+- ✅ deterministic-first confirmed (no model-assisted path)
+
+### Files
+- `tests/unit/dcp/test_routing_classifier.py` (+142)
+- `task-packets/DMX-DCP-MODEL-ROUTING-MVP-0002R.md` (new, +172)
+
+Opus-audited (auditor-separated from Sonnet implementation).
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+=== PR #902 CHECKS ===
+Analyze (javascript-typescript)	pass	1m5s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518565/job/81616447824	
+Analyze (python)	pass	1m32s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518565/job/81616447808	
+Analyze (ruby)	pass	49s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518565/job/81616447935	
+CodeQL	pass	2s	https://github.com/DDD-Enterprises/dopemux-mvp/runs/81616584607	
+advisory check-only intake	pass	14s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518531/job/81616447699	
+checks	pass	1m4s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518586/job/81616447929	
+identity-check	pass	8s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605517738/job/81616446415	
+identity-check	pass	8s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518594/job/81616447656	
+independent embedded audit	pass	16s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518587/job/81616447878	
+preflight	pass	42s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518578/job/81616447861	
+💅 Code Quality & Linting	pass	37s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616448322	
+📊 ADHD-Friendly Security Summary	pass	4s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518576/job/81616500453	
+📊 CI Pipeline Summary	pass	4s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81617018268	
+📚 Documentation Check	pass	11s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616448188	
+🔍 Audit Proof Validator (--all)	pass	15s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616448213	
+🔒 Security Review	pass	10s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616448135	
+🗺️ Model Routing Consistency	pass	12s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616448311	
+🤖 Claude Code Security Analysis	pass	8s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518576/job/81616448066	
+🧪 Auditor Router	pass	27s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616448144	
+🧪 Extractor Full	pass	3m0s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616448109	
+🧪 Extractor Smoke	pass	1m34s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616448171	
+🧪 Unit Tests	pass	1m11s	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616448121	
+📊 Scoped Coverage	skipping	0	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616449032	
+🔗 Integration Tests	skipping	0	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616448956	
+🧪 Installer Smoke	skipping	0	https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/27605518569/job/81616448923	
