@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://dopemux.dev/schemas/project_control_plane/dopetask_packet_mapping.schema.json",
+  "$id": "https://dopemux.dev/schemas/dcp_extension/dopetask_packet_mapping.schema.json",
   "title": "Dopetask Packet Mapping Dry Run",
   "type": "object",
   "additionalProperties": false,

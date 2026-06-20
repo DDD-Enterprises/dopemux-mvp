@@ -31,7 +31,7 @@
     },
     "generated_from_fixture": {
       "type": "boolean",
-      "const": true
+      "default": false
     },
     "profile_ref": {
       "type": "string"
@@ -343,16 +343,16 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "live_task_orchestrator_written",
-        "dopetask_executed",
+        "external_workflow_written",
+        "external_runner_executed",
         "github_mutated",
         "runtime_written"
       ],
       "properties": {
-        "live_task_orchestrator_written": {
+        "external_workflow_written": {
           "const": false
         },
-        "dopetask_executed": {
+        "external_runner_executed": {
           "const": false
         },
         "github_mutated": {
@@ -363,5 +363,38 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "$comment": "Runtime head_sha gate: a real (non-fixture) export must capture a real head_sha.",
+      "if": {
+        "properties": {
+          "generated_from_fixture": {
+            "const": false
+          }
+        },
+        "required": [
+          "generated_from_fixture"
+        ]
+      },
+      "then": {
+        "required": [
+          "repo_state"
+        ],
+        "properties": {
+          "repo_state": {
+            "required": [
+              "head_sha"
+            ],
+            "properties": {
+              "head_sha": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }
