@@ -1,0 +1,84 @@
+{
+  "id": "TP-DMX-PCP-PR-STEWARD-PROOF-READINESS-0001",
+  "project": "dopemux-mvp",
+  "target": "Integrate PR Steward readiness intake: harvest PR metadata, head SHA, changed files, commits, reviews, review threads, checks/CI, and proof freshness, emitting a MERGE_READINESS signal. PR Steward is advisory; it does not itself make READY/merge claims.",
+  "invariants": [
+    "Runtime, GitHub, and PR truth outrank this packet; re-pull live state before execution (AGENTS.md \u00a72).",
+    "Authority model is fixed: PCP Core is the parent substrate; DCP and dNh are extensions. No 'DCP parent' framing.",
+    "No live writes, Dopetask execution, Task Orchestrator MCP writes, dNh runtime mutation, PR ready/merge, or OpenClaw production routing unless this packet's gates explicitly authorize it.",
+    "Execution is gated by depends_on: do not start until every blocker item is terminal or a supervisor waives sequencing.",
+    "Implementer is not the sole final auditor; embedded audit must be independent (AIR Red Lines #9).",
+    "Allowlist paths are proposed targets and may be refined by upstream packet outputs; keep changes within the declared allowlist.",
+    "PR Steward is not merge authority and green CI is not semantic proof (AIR Red Lines #7/#8).",
+    "READY is blocked by stale proof, failed/stale checks, unknown reviewer/bot, unclassified review items, unresolved blocking threads, diff outside allowlist, or missing security/release approval."
+  ],
+  "depends_on": [
+    "TP-DMX-DCP-EXTENSION-MAPPING-0001",
+    "TP-DMX-DCP-ROUTING-EXTENSION-MAPPING-0001"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PCP-DCP-ROUTING",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DCP-EXTENSION-MAPPING-0001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-pcp-pr-steward-proof-readiness-0001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(pcp): PR Steward proof-readiness intake",
+    "allowlist": [
+      "src/dopemux/pcp/pr_steward.py",
+      "schemas/project_control_plane/merge_readiness.schema.json",
+      "tests/project_control_plane/test_pr_steward.py",
+      "docs/ops/project-control-plane/pr-steward-readiness.md",
+      "task-packets/generated/TP-DMX-PCP-PR-STEWARD-PROOF-READINESS-0001.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-PCP-PR-STEWARD-PROOF-READINESS-0001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-PCP-PR-STEWARD-PROOF-READINESS-0001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "git diff --stat",
+      "python -m json.tool schemas/project_control_plane/merge_readiness.schema.json >/dev/null",
+      "pytest -q tests/project_control_plane/test_pr_steward.py"
+    ]
+  },
+  "pr": {
+    "title": "feat(pcp): PR Steward proof-readiness intake",
+    "body": "Harvests current PR metadata/checks/reviews/threads/proof-freshness into a MERGE_READINESS signal. Advisory only; not merge authority; green CI is not semantic proof. Draft / NEEDS_SUPERVISOR.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement readiness intake over current head SHA (metadata, changed files, commits, reviews, threads, checks, proof freshness) with reviewer/bot classification.",
+      "validation": [
+        "pytest -q tests/project_control_plane/test_pr_steward.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Emit MERGE_READINESS with explicit BLOCKED reasons; prove READY is withheld on any blocking condition.",
+      "validation": [
+        "python -m json.tool schemas/project_control_plane/merge_readiness.schema.json >/dev/null"
+      ]
+    }
+  ]
+}

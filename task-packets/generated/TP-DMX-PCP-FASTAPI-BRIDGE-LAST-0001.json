@@ -1,0 +1,86 @@
+{
+  "id": "TP-DMX-PCP-FASTAPI-BRIDGE-LAST-0001",
+  "project": "dopemux-mvp",
+  "target": "Implement the FastAPI bridge / live adapter LAST \u2014 only after the live-write gates exist and pass, with gate proof, rollback, and post-write verification. Critical-risk: the bridge is never promoted to authority.",
+  "invariants": [
+    "Runtime, GitHub, and PR truth outrank this packet; re-pull live state before execution (AGENTS.md \u00a72).",
+    "Authority model is fixed: PCP Core is the parent substrate; DCP and dNh are extensions. No 'DCP parent' framing.",
+    "No live writes, Dopetask execution, Task Orchestrator MCP writes, dNh runtime mutation, PR ready/merge, or OpenClaw production routing unless this packet's gates explicitly authorize it.",
+    "Execution is gated by depends_on: do not start until every blocker item is terminal or a supervisor waives sequencing.",
+    "Implementer is not the sole final auditor; embedded audit must be independent (AIR Red Lines #9).",
+    "Allowlist paths are proposed targets and may be refined by upstream packet outputs; keep changes within the declared allowlist.",
+    "Do not start until LIVE_WRITE_GATES (Packet 10) is terminal and a supervisor approves; critical-risk packet.",
+    "The bridge is an adapter, never a canonical authority.",
+    "Every live write goes through the canonical writer with dry-run proof, rollback, approval, and post-write verification."
+  ],
+  "depends_on": [
+    "TP-DMX-PCP-LIVE-WRITE-GATES-0001"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PCP-DCP-ROUTING",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PCP-LIVE-WRITE-GATES-0001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-pcp-fastapi-bridge-last-0001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(pcp): FastAPI bridge / live adapter (gated, last)",
+    "allowlist": [
+      "src/dopemux/pcp/bridge/__init__.py",
+      "src/dopemux/pcp/bridge/fastapi_bridge.py",
+      "tests/project_control_plane/test_fastapi_bridge.py",
+      "docs/ops/project-control-plane/fastapi-bridge.md",
+      "task-packets/generated/TP-DMX-PCP-FASTAPI-BRIDGE-LAST-0001.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-PCP-FASTAPI-BRIDGE-LAST-0001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-PCP-FASTAPI-BRIDGE-LAST-0001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "git diff --stat",
+      "pytest -q tests/project_control_plane/test_fastapi_bridge.py"
+    ]
+  },
+  "pr": {
+    "title": "feat(pcp): FastAPI bridge / live adapter (gated, last)",
+    "body": "Adds the FastAPI bridge/live adapter behind the LIVE_WRITE_READY gates with gate proof, rollback, and post-write verification. Bridge is not authority. Critical-risk; supervisor + independent audit required. Draft / NEEDS_SUPERVISOR.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement the bridge adapter routing every mutation through the canonical writer behind the LIVE_WRITE_READY gate (dry-run first).",
+      "validation": [
+        "pytest -q tests/project_control_plane/test_fastapi_bridge.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Prove gate enforcement: a write is rejected unless approval + dry-run proof + rollback + post-write verification are all present.",
+      "validation": [
+        "pytest -q tests/project_control_plane/test_fastapi_bridge.py -k gate"
+      ]
+    }
+  ]
+}
