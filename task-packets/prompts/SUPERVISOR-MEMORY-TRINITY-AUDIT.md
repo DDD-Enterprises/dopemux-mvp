@@ -1,3 +1,15 @@
+---
+id: SUPERVISOR-MEMORY-TRINITY-AUDIT
+title: Supervisor Memory Trinity Audit
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-19'
+last_review: '2026-06-19'
+next_review: '2026-09-17'
+prelude: Supervisor Memory Trinity Audit (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Supervisor Audit Prompt — Memory Trinity & Skills/Memory Remediation
 
 **Series**: `DMX-MEMORY-TRINITY`

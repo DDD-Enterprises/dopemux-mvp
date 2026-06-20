@@ -1,3 +1,15 @@
+---
+id: MEMORY-SKILLS-REMEDIATION-PLAN
+title: Memory Skills Remediation Plan
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-19'
+last_review: '2026-06-19'
+next_review: '2026-09-17'
+prelude: Memory Skills Remediation Plan (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Memory Trinity & Skills Remediation Plan
 
 **Series**: `DMX-MEMORY-TRINITY`
