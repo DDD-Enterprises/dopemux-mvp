@@ -63,7 +63,8 @@
           "name": { "type": "string" },
           "status": { "type": "string", "enum": ["queued", "in_progress", "completed", "unknown"] },
           "conclusion": { "type": "string", "enum": ["success", "failure", "neutral", "cancelled", "skipped", "timed_out", "action_required", "pending", "unknown"] },
-          "head_sha": { "type": "string" }
+          "head_sha": { "type": "string" },
+          "matches_head_sha": { "type": "boolean" }
         }
       }
     },
@@ -108,9 +109,11 @@
           "checks": {
             "minItems": 1,
             "items": {
+              "required": ["matches_head_sha"],
               "properties": {
                 "status": { "const": "completed" },
-                "conclusion": { "const": "success" }
+                "conclusion": { "const": "success" },
+                "matches_head_sha": { "const": true }
               }
             }
           },

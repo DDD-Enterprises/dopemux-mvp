@@ -13,11 +13,11 @@ route_cost_tiers:
     approval_required_above: 0.25
   standard:
     max_usd_per_task: 3.0
-    allowed_pools: ["repo_cartographer", "planner_default", "implementer_default", "auditor_default", "structured_packet"]
+    allowed_pools: ["repo_cartographer", "planner_default", "implementer_default", "implementer_alt", "auditor_default", "structured_packet"]
     approval_required_above: 3.0
   premium:
     max_usd_per_task: 25.0
-    allowed_pools: ["planner_strong", "auditor_deep", "security_reviewer", "release_judge", "supervisor"]
+    allowed_pools: ["planner_strong", "proof_validator", "auditor_deep", "security_reviewer", "release_judge", "supervisor"]
     approval_required_above: 10.0
   emergency:
     max_usd_per_task: 50.0

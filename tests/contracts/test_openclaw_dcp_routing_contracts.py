@@ -392,6 +392,7 @@ def test_pr_steward_ready_is_impossible_with_blocking_constraints():
                 "status": "completed",
                 "conclusion": "success",
                 "head_sha": "abcdef1234567890",
+                "matches_head_sha": True,
             }
         ],
         "review_comments": [],
@@ -429,6 +430,29 @@ def test_pr_steward_ready_is_impossible_with_blocking_constraints():
         ("audit_refs", []),
         ("checks", []),
         (
+            "checks",
+            [
+                {
+                    "name": "contract-tests",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "head_sha": "old0000000000000",
+                    "matches_head_sha": False,
+                }
+            ],
+        ),
+        (
+            "checks",
+            [
+                {
+                    "name": "contract-tests",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "head_sha": "abcdef1234567890",
+                }
+            ],
+        ),
+        (
             "review_threads",
             [
                 {
@@ -447,6 +471,7 @@ def test_pr_steward_ready_is_impossible_with_blocking_constraints():
                     "status": "in_progress",
                     "conclusion": "pending",
                     "head_sha": "abcdef1234567890",
+                    "matches_head_sha": True,
                 }
             ],
         ),
@@ -574,6 +599,12 @@ def test_high_risk_proof_requires_passing_audit_and_full_approval_event():
         with pytest.raises(ValidationError):
             validate(instance=candidate, schema=schema)
 
+    for field in ["prompt_hash", "response_hash"]:
+        candidate = copy.deepcopy(proof)
+        candidate[field] = "not-a-real-hash!"
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
 
 def test_benchmark_result_certify_requires_no_blocking_signals():
     schema = _json(CONTRACT_ROOT / "benchmark_result.schema.json")
@@ -696,3 +727,16 @@ def test_openrouter_profiles_preserve_required_fail_closed_controls():
     assert structured["required_provider_settings"]["require_parameters"] is True
     assert structured["required_provider_settings"]["response_format"] == "json_schema"
     assert structured["required_provider_settings"]["strict"] is True
+
+
+def test_cost_policy_tier_membership_matches_pool_ceilings():
+    policy = _yaml(CONTRACT_ROOT / "cost_policy.yaml")
+    tiers = policy["route_cost_tiers"]
+    ceilings = policy["pool_cost_ceilings"]
+
+    for pool, ceiling in ceilings.items():
+        tier_name = ceiling["tier"]
+        assert pool in tiers[tier_name]["allowed_pools"]
+
+    assert "implementer_alt" in tiers["standard"]["allowed_pools"]
+    assert "proof_validator" in tiers["premium"]["allowed_pools"]

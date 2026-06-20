@@ -37,8 +37,8 @@
     "provider_route_profile": { "type": ["string", "null"] },
     "runner": { "$ref": "#/definitions/runner" },
     "access_path": { "type": "string" },
-    "prompt_hash": { "type": "string", "minLength": 16 },
-    "response_hash": { "type": "string", "minLength": 16 },
+    "prompt_hash": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+    "response_hash": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
     "cost": {
       "type": "object",
       "additionalProperties": false,
