@@ -31,7 +31,7 @@
   "commit": {
     "message": "docs(pcp-925): AIR + framing proof repair completion",
     "allowlist": [
-      "docs/03-reference/architecture/AIR-DMX-PCP-DCP-ARCHITECTURE-0001.md",
+      "docs/03-reference/architecture/air-dmx-pcp-dcp-architecture-0001.md",
       "docs/05-audit-reports/project-control-plane/architecture-validation-report.md",
       "docs/ops/project-control-plane/architecture-validation.md",
       "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md",
@@ -76,7 +76,7 @@
       "id": "S2",
       "task": "Record AIR as governance anchor and downgrade overstrong architecture verdict labels in proof and human docs.",
       "validation": [
-        "test -f docs/03-reference/architecture/AIR-DMX-PCP-DCP-ARCHITECTURE-0001.md",
+        "test -f docs/03-reference/architecture/air-dmx-pcp-dcp-architecture-0001.md",
         "rg -n 'PCP_CORE_FIXTURE_SHAPE_VALIDATED_RUNTIME_UNPROVEN|ARCHITECTURE_SHAPE_PLAUSIBLE_PENDING_EXPORTER' proof docs reports"
       ]
     },

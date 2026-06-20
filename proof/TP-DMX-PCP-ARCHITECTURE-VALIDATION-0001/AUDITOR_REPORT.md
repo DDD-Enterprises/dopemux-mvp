@@ -130,7 +130,7 @@ Supervisor status remains `NEEDS_SUPERVISOR`; PR #925 remains draft and not merg
 
 `TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002` completion added:
 
-- AIR governance anchor: `docs/03-reference/architecture/AIR-DMX-PCP-DCP-ARCHITECTURE-0001.md`
+- AIR governance anchor: `docs/03-reference/architecture/air-dmx-pcp-dcp-architecture-0001.md`
 - `review_thread_classification` in `PROOF.json` for two outdated-but-unresolved Codex threads (after_sha orphan, dNh policy_ref) — both substantively addressed in `68b8fd17`, not re-done
 - Satisfiable `after_sha` semantics: binds to substantive framing-repair commit `9e00d5aa7`, not the proof-writing commit
 - PAL codereview/precommit remain `NOT_RUN` in `pal_chain_evidence`

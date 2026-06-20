@@ -489,7 +489,7 @@
       "note": "Verified only; not redone by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002."
     }
   },
-  "air_reference": "docs/03-reference/architecture/AIR-DMX-PCP-DCP-ARCHITECTURE-0001.md",
+  "air_reference": "docs/03-reference/architecture/air-dmx-pcp-dcp-architecture-0001.md",
   "framing_proof_repair_audit": {
     "repair_packet_id": "TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002",
     "auditor_tool": "grok-cursor-agent",
@@ -504,7 +504,7 @@
       "NEEDS_SUPERVISOR and draft/not-merge-ready status preserved.",
       "No runtime files changed; no exporter implemented.",
       "PCP schema boundary defects (Dopemux-shaped core) intentionally deferred to extension-contract and de-Dopemux packets.",
-      "AIR recorded at docs/03-reference/architecture/AIR-DMX-PCP-DCP-ARCHITECTURE-0001.md.",
+      "AIR recorded at docs/03-reference/architecture/air-dmx-pcp-dcp-architecture-0001.md.",
       "Two outdated-but-unresolved review threads classified in review_thread_classification.",
       "after_sha uses satisfiable semantics binding to substantive repair commit 9e00d5aa7.",
       "68b8fd17 after_sha and dNh policy_ref repairs verified, not redone."
