@@ -1,11 +1,11 @@
 {
   "pack_id": "TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack",
-  "built_at": "2026-06-20T04:02:59Z",
-  "repo_head_sha": "a668df6a71b33a7152c098e470eca85085a3eaaa",
+  "built_at": "2026-06-20T04:50:00Z",
+  "repo_head_sha": "a520acf43d5fda41807ab6d78891416679fb004a",
   "zip_path": "audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/../TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack.zip",
-  "zip_bytes": 142871,
-  "zip_sha256": "2b8e517d4a7bfb76405b8408269fdd7511282b813a95bbde98c2a83be3fda0a3",
-  "entry_count": 44,
+  "zip_bytes": 144733,
+  "zip_sha256": "d70151ef87f283981ee1abfca4b99a2c817baaaddc0fddd25438e2317d0391b5",
+  "entry_count": 45,
   "required_count": 36,
   "required_present": {
     "audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/SUPERVISOR-5.5-PRO-PROMPT.md": true,
@@ -57,6 +57,7 @@
     "audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/CHATGPT_MAIN_PREFLIGHT.md",
     "audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/D2_D3_D4_EVIDENCE.md",
     "audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/MANIFEST.md",
+    "audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/PACK_INVENTORY.json",
     "audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/SUPERVISOR-5.5-PRO-PROMPT.md",
     "docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md",
     "docs/90-adr/adr-dope-context-as-search-and-retrieval-plane.md",
@@ -95,5 +96,7 @@
     "note": "Any pack < 120000 bytes or missing SUPERVISOR_FINAL_REVIEW / PROOF.json / l0_membership is stale",
     "stale_example_bytes": 108880,
     "stale_example_entries": 33
-  }
+  },
+  "zip_bytes_excluding_inventory": 143254,
+  "zip_sha256_scope": "all_entries_except_PACK_INVENTORY.json"
 }

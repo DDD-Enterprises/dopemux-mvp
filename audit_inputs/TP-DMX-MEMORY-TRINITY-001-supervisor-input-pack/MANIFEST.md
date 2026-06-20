@@ -1,7 +1,7 @@
 # Input Pack — TP-DMX-MEMORY-TRINITY-001 Supervisor Review
 
 **Pack ID**: `TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack`
-**HEAD**: `a668df6a7` (run `./scripts/build_supervisor_input_pack.sh` to refresh)
+**HEAD**: `a520acf43` (authoritative; run `./scripts/build_supervisor_input_pack.sh` to refresh)
 **PR**: https://github.com/DDD-Enterprises/dopemux-mvp/pull/939
 
 ---
@@ -14,9 +14,11 @@ ChatGPT/upload truncation has produced **stale partial packs** (~108,880 bytes /
 
 | Field | Expected |
 |-------|----------|
-| `zip_bytes` | **≥ 143000** (current build: 143429) |
-| `entry_count` | **≥ 44** (current build: 44 + inventory = 45 in zip listing) |
-| `zip_sha256` | `6b4d0992962a8ebf239f518349d8ab12caa9f8fc656ea715538b926e37f2d89d` |
+| `zip_bytes` | **≥ 142000** (current build: **144741**) |
+| `entry_count` | **≥ 44** (current build: **45**) |
+| `zip_sha256` | `a8102235a5321835b52bec10e9ca8c1d34966620b70c2b77f93725eddd40c62c` |
+| `zip_sha256_scope` | `all_entries_except_PACK_INVENTORY.json` (avoids self-referential drift) |
+| `repo_head_sha` | `a520acf43b594fea6e16585fdd5e8119b986fc89` (must match PROOF + supervisor final) |
 
 **First step for supervisor**: unzip and confirm `PACK_INVENTORY.json` exists and lists:
 
@@ -39,6 +41,7 @@ If any are missing → **STOP** — pack is superseded/stale; do not grade D3/D5
 ```bash
 cd /Users/hue/code/dopemux-mvp
 ./scripts/build_supervisor_input_pack.sh
+./scripts/verify_supervisor_input_pack.sh   # must PASS before upload
 ```
 
 Output: `audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack.zip`
@@ -51,7 +54,7 @@ Output: `audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack.zip`
 |------|-------|---------|---------|
 | v1 ChatGPT upload | 100458 | 30 | No D2_D3_D4, no docs_index |
 | v2 partial upload | ~108880 | 32–33 | Missing SUPERVISOR_FINAL_REVIEW, PR_939_LIVE_REFRESH, PROOF.json, l0_membership |
-| **v3 canonical** | **143429** | **45** | Full required set + PACK_INVENTORY.json |
+| **v3 canonical** | **144741** | **45** | Full required set + aligned PACK_INVENTORY.json |
 
 ---
 

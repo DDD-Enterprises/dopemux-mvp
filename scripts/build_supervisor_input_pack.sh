@@ -70,9 +70,49 @@ if missing:
     raise SystemExit(f"ZIP missing required entries: {missing}")
 
 Path(inventory_path).write_text(json.dumps(inventory, indent=2) + "\n", encoding="utf-8")
-# Also embed inventory inside zip
+# Embed inventory inside zip, then refresh sidecar fingerprints (zip size/hash change on embed)
 import subprocess
 subprocess.run(["zip", "-q", str(zp), inventory_path], check=True)
+with zipfile.ZipFile(zp, "r") as zf:
+    entries = sorted(zf.namelist())
+    files = [e for e in entries if not e.endswith("/")]
+inventory["entry_count"] = len(files)
+inventory["entries"] = files
+
+def zip_fingerprint(zpath: Path, exclude: str | None = None) -> tuple[int, str]:
+    import io
+    buf = io.BytesIO()
+    with zipfile.ZipFile(zpath, "r") as zin, zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zout:
+        for item in zin.infolist():
+            if exclude and item.filename == exclude:
+                continue
+            zout.writestr(item, zin.read(item.filename))
+    payload = buf.getvalue()
+    return len(payload), hashlib.sha256(payload).hexdigest()
+
+def replace_zip_entry(zpath: Path, entry: str, src: Path) -> None:
+    import io
+    buf = io.BytesIO()
+    with zipfile.ZipFile(zpath, "r") as zin, zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zout:
+        for item in zin.infolist():
+            if item.filename == entry:
+                continue
+            zout.writestr(item, zin.read(item.filename))
+        zout.write(src, entry)
+    zpath.write_bytes(buf.getvalue())
+
+# Fingerprint excludes inventory entry to avoid self-referential hash drift
+inv_bytes, inv_sha = zip_fingerprint(zp, exclude=inventory_path)
+inventory["zip_bytes"] = zp.stat().st_size
+inventory["zip_bytes_excluding_inventory"] = inv_bytes
+inventory["zip_sha256"] = inv_sha
+inventory["zip_sha256_scope"] = "all_entries_except_PACK_INVENTORY.json"
+Path(inventory_path).write_text(json.dumps(inventory, indent=2) + "\n", encoding="utf-8")
+replace_zip_entry(zp, inventory_path, Path(inventory_path))
+inventory["zip_bytes"] = zp.stat().st_size
+inventory["zip_bytes_excluding_inventory"], inventory["zip_sha256"] = zip_fingerprint(zp, exclude=inventory_path)
+Path(inventory_path).write_text(json.dumps(inventory, indent=2) + "\n", encoding="utf-8")
+replace_zip_entry(zp, inventory_path, Path(inventory_path))
 print(json.dumps({
     "zip_bytes": inventory["zip_bytes"],
     "zip_sha256": inventory["zip_sha256"],

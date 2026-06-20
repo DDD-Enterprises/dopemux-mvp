@@ -1,16 +1,18 @@
 {
   "branch_verdict": "PARTIAL",
   "merge_verdict": "BLOCKED",
-  "merge_verdict_note": "Release readiness blocked per 2026-06-17 policy: requires current head SHA, current CI/checks, current proof, and independent approval. Stale or incomplete proof is an explicit blocker. BLOCKED here means release-readiness blocked, not 'branch A/C failed'.",
+  "merge_verdict_note": "Release readiness blocked per 2026-06-17 policy: requires current head SHA, current CI/checks, current proof, and independent approval. PR #939 is CLOSED (not merged). BLOCKED means release-readiness blocked, not 'branch A/C failed'.",
   "slice_001_approval": "CONDITIONAL",
   "operator_readiness": "REJECT",
-  "pr_939": "MERGE_WITH_FOLLOWUPS",
-  "pr_939_note": "Allowed only because A/C hard-stop sections pass on branch evidence. Merge still requires: (1) required CI green at current HEAD, (2) explicit operator acceptance of B5/D2 follow-ups or their remediation, (3) current proof at HEAD. Do not confuse merge_verdict BLOCKED with a green release gate.",
-  "branch_sha": "7199c61a8f67b6b1e402e25d9b77ef6bea57bfd3",
+  "pr_939": "HOLD",
+  "pr_939_post_remediation": "MERGE_WITH_FOLLOWUPS",
+  "pr_939_note": "Current HOLD because PR #939 is CLOSED without merge (2026-06-20T04:05:30Z). MERGE_WITH_FOLLOWUPS applies only after reopen/new PR, required CI green at pushed HEAD, rebase on main, operator acceptance or remediation of B5/D2, and proof at that same HEAD. A/C hard-stop sections pass on branch evidence; this does not override operator REJECT or closed PR state.",
+  "branch_sha": "a520acf43d5fda41807ab6d78891416679fb004a",
+  "remote_head_sha": "a668df6a71b33a7152c098e470eca85085a3eaaa",
   "confidence": "medium",
   "evidence_posture": {
-    "superseded_pack": "100458 bytes / 30 files (missing D2_D3_D4_EVIDENCE, docs_index, l0_membership, SUPERVISOR_FINAL_REVIEW)",
-    "current_pack": "115KB+ rebuild at HEAD 7199c61a8 — OBSERVED locally, CLAIMED until re-uploaded to ChatGPT",
+    "superseded_pack": "108880 bytes / 32-33 entries (missing final review, PROOF, l0_membership)",
+    "current_pack": "144KB+ rebuild — required files present; fingerprint must match PACK_INVENTORY after rebuild",
     "runtime_logs": "CLAIMED_PASS for B1-B3 via COMMAND_LOG.md"
   },
   "disagreements": [
@@ -19,46 +21,52 @@
     {"id": "B2", "codex": "PASS", "supervisor": "CLAIMED_PASS", "note": "Log-only runtime evidence"},
     {"id": "B3", "codex": "PASS", "supervisor": "CLAIMED_PASS", "note": "~/.claude.json not in pack"},
     {"id": "D2", "codex": "PARTIAL", "supervisor": "PARTIAL", "note": "OR-gate met; operator install FAIL"},
-    {"id": "D3", "codex": "PASS", "supervisor": "PASS", "note": "docs_index.yaml + verify script in rebuilt pack"},
-    {"id": "D5", "codex": "PASS", "supervisor": "PARTIAL", "note": "l0_membership present in rebuilt pack; task-master-ai/Zen staleness"},
+    {"id": "D3", "codex": "PASS", "supervisor": "PASS", "note": "docs_index.yaml + verify script in pack"},
+    {"id": "D5", "codex": "PASS", "supervisor": "PARTIAL", "note": "l0_membership present; task-master-ai/Zen staleness"},
     {"id": "E3", "codex": "PASS", "supervisor": "PASS+NOT_RUN", "note": "PASS documented BLOCKED; NOT_RUN bridged transport"}
   ],
   "hard_stops": [
     "operator_readiness: B5 mcp doctor FAIL",
-    "release_readiness: merge_verdict BLOCKED until current CI + proof + approval"
+    "release_readiness: PR #939 CLOSED (not merged)",
+    "release_readiness: local HEAD a520acf43 not pushed — CI NOT_RUN at local HEAD"
   ],
   "pr_939_live": {
-    "state": "OPEN",
-    "head_sha": "7199c61a8f67b6b1e402e25d9b77ef6bea57bfd3",
+    "state": "CLOSED",
+    "merged": false,
+    "closed_at": "2026-06-20T04:05:30Z",
+    "head_sha_remote": "a668df6a71b33a7152c098e470eca85085a3eaaa",
+    "head_sha_local": "a520acf43d5fda41807ab6d78891416679fb004a",
     "changed_files": 172,
-    "merge_state_status": "BEHIND",
-    "ci_delta": {
-      "audit_proof_validator": "PASS at 7199c61a8",
-      "code_quality_checks": "FAIL at 7199c61a8 — docs-frontmatter-guard auto-fix pending commit",
-      "documentation_check_advisory": "PASS"
+    "ci_at_remote_head": {
+      "audit_proof_validator": "PASS at a668df6a7",
+      "code_quality_checks": "PASS at a668df6a7",
+      "independent_embedded_audit": "PASS at a668df6a7",
+      "ci_at_local_head": "NOT_RUN — unpushed"
     }
   },
   "unknowns": [
     "search_all live ConPort decision projection end-to-end",
     "mcp init port drift fix without container rebinding",
-    "PAL 06_CODEREVIEW PASS vs embedded medium/high findings"
+    "PAL 06_CODEREVIEW PASS vs embedded medium/high findings",
+    "CI at local HEAD a520acf43 after push"
   ],
   "not_run": [
     "B1-B3 independent runtime reprobe",
     "DCP facade JSON-RPC bridge live probe",
-    "skills sync install execution"
+    "skills sync install execution",
+    "CI at unpushed local HEAD"
   ],
   "next_slices": [
-    "Commit docs-frontmatter fix; confirm CI green at 7199c61a8+",
-    "Rebase on main (BEHIND)",
+    "Push a520acf43+ with reconciled proof; reopen PR or open successor",
+    "Rebase on main before merge",
     "Fix B5 mcp doctor port alignment",
     "sync_repo_skills.py --target claude github",
     "Post-merge audit on main"
   ],
   "stale_proof_flags": [
-    "RESOLVED at 7199c61a8: PROOF.json embedded_audit + head refresh",
-    "SUPERSEDED: ChatGPT 100KB pack — use 115KB+ rebuild only",
-    "AUDIT_REPORT head may lag PROOF until reconciled post-CI"
+    "RESOLVED: head_sha reconciled to a520acf43 across PROOF, PR refresh, supervisor final",
+    "embedded_audit.status remains SKIPPED — not a PASS",
+    "PACK_INVENTORY must be rebuilt after artifact edits — do not trust stale fingerprints"
   ],
   "e3_grade": {
     "documentation": "PASS",

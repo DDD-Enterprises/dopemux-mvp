@@ -4,9 +4,10 @@
 
 **Step 0 — integrity gate (mandatory)**:
 1. Unzip and read `audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/PACK_INVENTORY.json`
-2. Confirm `zip_bytes >= 143000` and `entry_count >= 44`
+2. Confirm `zip_bytes >= 142000`, `entry_count >= 44`, and `repo_head_sha` matches `PROOF.json` / `SUPERVISOR_FINAL_REVIEW.json` (stale v2 ≈ 108880 / 32–33)
 3. Confirm `required_present` is true for: `SUPERVISOR_FINAL_REVIEW.md`, `SUPERVISOR_FINAL_REVIEW.json`, `PR_939_LIVE_REFRESH.md`, `PROOF.json`, `l0_membership.json`
-4. If integrity fails → output `PACK_STALE: STOP` and do not grade
+4. Confirm `pr_939` is **HOLD** (PR closed) unless `PR_939_LIVE_REFRESH.md` shows OPEN
+5. If integrity fails → output `PACK_STALE: STOP` and do not grade
 
 **Current canonical pack** (`./scripts/build_supervisor_input_pack.sh`) includes:
 - `D2_D3_D4_EVIDENCE.md`
@@ -14,7 +15,7 @@
 - `templates/plugin/l0_membership.json`
 - `SUPERVISOR_FINAL_REVIEW.md` / `.json`
 - `PR_939_LIVE_REFRESH.md`
-- Refreshed `PROOF.json` with `embedded_audit` (post `7199c61a8`)
+- Refreshed `PROOF.json` with reconciled `head_sha` and `embedded_audit` (status SKIPPED, not PASS)
 
 Verdict already exists in:
 - `proof/TP-DMX-MEMORY-TRINITY-001/SUPERVISOR_FINAL_REVIEW.md`

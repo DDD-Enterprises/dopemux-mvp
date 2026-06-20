@@ -1,30 +1,71 @@
 {
   "verdict": "PARTIAL",
   "packet_id": "TP-DMX-MEMORY-TRINITY-001",
+  "series_id": "DMX-MEMORY-TRINITY",
   "audited_at": "2026-06-19",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "fix/mcp-server-build-failures",
+  "head_sha": "a1690402b86f9304efb4da5068c03118239c1b4e",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/939",
+  "scope": {
+    "local_branch": "PARTIAL",
+    "origin_main_github_preflight": "FAIL"
+  },
   "checks": [
-    {"id": "A1", "result": "PASS", "evidence": "docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md:11 status accepted"},
-    {"id": "A2", "result": "PASS", "evidence": "AGENTS.md:76 Memory Trinity citation"},
-    {"id": "A3", "result": "PASS", "evidence": ".claude/modules/shared/memory-trinity-routing.md"},
-    {"id": "B1", "result": "PASS", "evidence": "docker mcp-dope-context healthy"},
-    {"id": "B2", "result": "PASS", "evidence": "~/.claude.json dope-context localhost:3010/mcp"},
-    {"id": "B3", "result": "FAIL", "evidence": "dopemux mcp doctor exit 1 env unset"},
-    {"id": "C1", "result": "PASS", "evidence": "scripts/validate_memory_command_refs.py exit 0"},
-    {"id": "D1", "result": "FAIL", "evidence": ".claude/commands/tm 47 markdown files"},
-    {"id": "D2", "result": "FAIL", "evidence": ".github/skills absent"},
-    {"id": "E1", "result": "PASS", "evidence": "services/dope-context/src/mcp/server.py TRINITY_BOUNDARY_MARKER"},
-    {"id": "E2", "result": "PASS", "evidence": "src/dopemux/orchestrator/memory_writers.py mirror_status"},
-    {"id": "E3", "result": "NOT_RUN", "evidence": "services/dcp-readonly-facade dope_context.py fail-closed stub"}
+    {"id": "A1", "section": "A", "result": "PASS", "evidence": "docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md:11,25"},
+    {"id": "A1b", "section": "A", "result": "PASS", "evidence": "docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md:11,26"},
+    {"id": "A1c", "section": "A", "result": "PASS", "evidence": "docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md:11,26"},
+    {"id": "A1d", "section": "A", "result": "PASS", "evidence": "docs/90-adr/adr-dope-context-as-search-and-retrieval-plane.md:11,25"},
+    {"id": "A2", "section": "A", "result": "PASS", "evidence": "AGENTS.md:78-86"},
+    {"id": "A3", "section": "A", "result": "PASS", "evidence": ".claude/modules/shared/memory-trinity-routing.md:7-37", "main_result": "FAIL", "main_evidence": "git show origin/main fatal path not in main"},
+    {"id": "A4", "section": "A", "result": "PASS", "evidence": ".claude/modules/coordination/authority-matrix.md:14-16,206"},
+    {"id": "B1", "section": "B", "result": "PASS", "evidence": "docker ps mcp-dope-context healthy 127.0.0.1:3010"},
+    {"id": "B2", "section": "B", "result": "PASS", "evidence": "curl initialize HTTP 200 Accept application/json text/event-stream"},
+    {"id": "B3", "section": "B", "result": "PASS", "evidence": "~/.claude.json mcpServers.dope-context url http://localhost:3010/mcp"},
+    {"id": "B4", "section": "B", "result": "PASS", "evidence": ".mcp.json conport dope-memory task-orchestrator"},
+    {"id": "B5", "section": "B", "result": "FAIL", "evidence": "dopemux mcp doctor exit 1 conport :3039 dope-memory :3054 not listening"},
+    {"id": "C1", "section": "C", "result": "PASS", "evidence": "scripts/validate_memory_command_refs.py exit 0", "main_result": "FAIL", "main_evidence": "script absent on origin/main"},
+    {"id": "C2", "section": "C", "result": "PASS", "evidence": ".claude/commands/decision.md caveat.md followup.md scratch.md mcp__conport__"},
+    {"id": "C3", "section": "C", "result": "PASS", "evidence": ".claude/commands/ctx/search-here.md ctx/index-search.md mcp__dope-context__ frontmatter"},
+    {"id": "C4", "section": "C", "result": "PASS", "evidence": ".claude/commands/get-decisions.md search-decisions.md conport"},
+    {"id": "D1", "section": "D", "result": "PASS", "evidence": "scripts/validate_skill_frontmatter.py exit 0 20 skills"},
+    {"id": "D2", "section": "D", "result": "PARTIAL", "evidence": "scripts/skills/sync_repo_skills.py:61-76 targets .claude/skills .github/skills; dirs ABSENT; dry-run exit 0; operator_readiness FAIL"},
+    {"id": "D3", "section": "D", "result": "PASS", "evidence": "docs/docs_index.yaml:175-196; python verify catalog_count=20 template_count=20 missing=[]"},
+    {"id": "D4", "section": "D", "result": "PASS", "evidence": "find tm/* count 0; git 2bab19203 deleted tm in slices 002-004; TP-001 invariant scoped to packet 001 only"},
+    {"id": "D5", "section": "D", "result": "PASS", "evidence": "templates/plugin/l0_membership.json exists"},
+    {"id": "E1", "section": "E", "result": "PASS", "evidence": "services/dope-context/src/mcp/server.py:96 TRINITY_BOUNDARY_MARKER"},
+    {"id": "E2", "section": "E", "result": "PASS", "evidence": "src/dopemux/orchestrator/memory_writers.py mirror_status"},
+    {"id": "E3", "section": "E", "result": "PASS", "evidence": "services/dcp-readonly-facade/src/dcp_facade/dope_context.py fail-closed BLOCKED documented"},
+    {"id": "F1", "section": "F", "result": "PASS", "evidence": "AUDIT_REPORT.md residual risks section"}
   ],
   "unknowns": [
-    "search_all live decision projection",
-    "PAL chain proof artifacts"
+    "search_all live ConPort decision projection end-to-end",
+    "worktree port drift fix via dopemux mcp init regeneration",
+    "PAL pal/* proof artifact re-validation"
+  ],
+  "not_run": [
+    "sync_repo_skills.py --target claude install",
+    "DCP facade live JSON-RPC bridge",
+    "conport/dope-memory initialize on worktree ports 3039/3054"
+  ],
+  "commands": [
+    {"cmd": "git rev-parse --show-toplevel", "exit": 0},
+    {"cmd": "git branch --show-current", "exit": 0},
+    {"cmd": "git rev-parse HEAD", "exit": 0},
+    {"cmd": "python3 scripts/validate_memory_command_refs.py", "exit": 0},
+    {"cmd": "python3 scripts/validate_skill_frontmatter.py", "exit": 0},
+    {"cmd": "docker ps --filter name=dope-context", "exit": 0},
+    {"cmd": "curl MCP initialize 127.0.0.1:3010/mcp", "exit": 0},
+    {"cmd": "PYTHONPATH=src python -m dopemux.cli mcp doctor", "exit": 1},
+    {"cmd": "source .envrc.dopemux-mcp && mcp doctor", "exit": 1},
+    {"cmd": "git show origin/main:memory-trinity-routing.md", "exit": 128},
+    {"cmd": "git show origin/main:validate_memory_command_refs.py", "exit": 128}
   ],
   "next_slices": [
-    "TP-DMX-MEMORY-TRINITY-002",
-    "TP-DMX-MEMORY-TRINITY-003",
-    "TP-DMX-MEMORY-TRINITY-004",
-    "source .envrc.dopemux-mcp onboarding",
-    "DCP facade dope-context JSON-RPC bridge"
+    "Merge PR #939; rerun audit on main",
+    "Regenerate worktree MCP env; mcp doctor PASS",
+    "sync_repo_skills.py --target claude",
+    "TP-DMX-MEMORY-TRINITY-005 docs dedup",
+    "DCP facade dope-context JSON-RPC bridge child packet"
   ]
 }
