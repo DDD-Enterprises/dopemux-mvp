@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/proof_pointer.schema.json",
+  "title": "Project Control Plane Proof Pointer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pointer_id",
+    "project_id",
+    "packet_id",
+    "path",
+    "freshness_state",
+    "validation_status",
+    "auditor_verdict",
+    "unknowns"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.proof_pointer.v0"
+    },
+    "pointer_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "packet_id": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    },
+    "freshness_state": {
+      "type": "string",
+      "enum": [
+        "CURRENT",
+        "STALE",
+        "UNKNOWN"
+      ]
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "UNKNOWN"
+      ]
+    },
+    "auditor_verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "PASS_WITH_RISKS",
+        "FAIL",
+        "NEEDS_SUPERVISOR",
+        "NOT_RUN",
+        "UNKNOWN"
+      ]
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

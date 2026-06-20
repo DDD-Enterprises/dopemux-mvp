@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/extension_manifest.schema.json",
+  "title": "PCP Extension Manifest",
+  "description": "Declares how a named extension (Dopemux/DCP, dNh CRM, or any project) attaches to PCP Core. Additive-only: the hard invariants block forbids weakening core fail-closed/proof/audit gates, promoting an adapter to authority, or requiring the extension for baseline PCP. PCP Core keystone; pairs with authority_map.schema.json. The five invariants are pinned const true so a manifest that tries to declare any of them false is invalid by construction (fail-closed).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "extension_id",
+    "extension_kind",
+    "extension_identity",
+    "capabilities",
+    "schemas",
+    "invariants"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.extension_manifest.v0"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PROPOSED",
+        "ACTIVE",
+        "DEPRECATED"
+      ],
+      "default": "PROPOSED"
+    },
+    "extension_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "extension_kind": {
+      "type": "string",
+      "enum": [
+        "DOPEMUX_DCP",
+        "DNH_CRM",
+        "PROJECT",
+        "UNKNOWN"
+      ]
+    },
+    "compatible_pcp_core_versions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "extension_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_id_patterns",
+        "repo_markers",
+        "discovery_hints"
+      ],
+      "properties": {
+        "project_id_patterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repo_markers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "discovery_hints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Additive contributions only. Each list names what the extension adds to core; none can remove or override core behavior.",
+      "required": [
+        "authority_map_contributions",
+        "red_lane_contributions",
+        "evidence_export_sections",
+        "proof_status_mappings",
+        "runtime_mappings",
+        "adapter_mappings"
+      ],
+      "properties": {
+        "authority_map_contributions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "red_lane_contributions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence_export_sections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "proof_status_mappings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "runtime_mappings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "adapter_mappings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "schemas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owned_schema_ids",
+        "core_schema_extensions",
+        "forbidden_core_overrides"
+      ],
+      "properties": {
+        "owned_schema_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Schemas namespaced under and owned by this extension."
+        },
+        "core_schema_extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additive extension sections attached to core schemas (never replacements)."
+        },
+        "forbidden_core_overrides": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Core schema ids this extension explicitly must never override."
+        }
+      }
+    },
+    "invariants": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Hard invariants pinned const true. A manifest cannot be valid unless it affirms all five; it cannot declare any of them false.",
+      "required": [
+        "cannot_override_core_fail_closed",
+        "cannot_weaken_proof_gates",
+        "cannot_weaken_audit_gates",
+        "cannot_promote_adapter_to_authority",
+        "cannot_require_extension_for_baseline_core"
+      ],
+      "properties": {
+        "cannot_override_core_fail_closed": {
+          "type": "boolean",
+          "const": true
+        },
+        "cannot_weaken_proof_gates": {
+          "type": "boolean",
+          "const": true
+        },
+        "cannot_weaken_audit_gates": {
+          "type": "boolean",
+          "const": true
+        },
+        "cannot_promote_adapter_to_authority": {
+          "type": "boolean",
+          "const": true
+        },
+        "cannot_require_extension_for_baseline_core": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    }
+  }
+}

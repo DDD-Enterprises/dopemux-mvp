@@ -1,0 +1,21 @@
+{
+  "schema_version": "pcp.project_red_lanes.v0",
+  "project_id": "minimal-generic-fixture",
+  "default_on_unknown": "BLOCK",
+  "classifications": [
+    {
+      "lane_id": "runtime-write",
+      "scope": "GENERIC",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    },
+    {
+      "lane_id": "unknown-authority",
+      "scope": "GENERIC",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    }
+  ]
+}

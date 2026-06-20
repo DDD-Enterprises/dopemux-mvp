@@ -34,6 +34,7 @@ COPY docker/mcp-servers-source/conport/instance_detector.py .
 COPY docker/mcp-servers-source/conport/integration_bridge_client.py .
 COPY docker/mcp-servers-source/conport/conport_mcp_stdio.py .
 COPY docker/mcp-servers-source/conport/schema.sql .
+COPY docker/mcp-servers-source/conport/migrations /app/migrations
 COPY docker/mcp-servers-source/conport/info_server.py .
 COPY docker/mcp-servers-source/conport/start_with_info.sh .
 

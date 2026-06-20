@@ -1,0 +1,66 @@
+{
+  "schema_version": "pcp.project_profile.v0",
+  "project_id": "dopemux-mvp-fixture",
+  "project_kind": "DOPEMUX",
+  "repo": {
+    "name": "dopemux-mvp",
+    "root_marker": ".dopetaskroot",
+    "allowed_worktrees": [
+      "/Users/hue/code/dopemux-mvp/.worktrees/*"
+    ],
+    "forbidden_worktrees": [
+      "/Users/hue/code/dopemux-mvp on dirty main"
+    ],
+    "runtime_imports_allowed": false
+  },
+  "authority_docs": [
+    {
+      "path": "AGENTS.md",
+      "required": true,
+      "state": "PRESENT"
+    },
+    {
+      "path": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "required": true,
+      "state": "PRESENT"
+    }
+  ],
+  "packet": {
+    "active_packet_paths": [
+      "task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json"
+    ],
+    "required": true,
+    "unknown_code": "BLOCKED_UNKNOWN_ACTIVE_PACKET"
+  },
+  "proof": {
+    "proof_roots": [
+      "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001"
+    ],
+    "freshness_required": true,
+    "unknown_code": "NEEDS_EVIDENCE_REFRESH"
+  },
+  "red_lane_policy": {
+    "policy_ref": "schemas/dcp/dcp_red_lane_taxonomy.schema.json",
+    "default_on_unknown": "BLOCK",
+    "lanes": [
+      "merge-seam",
+      "github-mutation",
+      "task-orchestrator-live-write",
+      "dopetask-exec"
+    ]
+  },
+  "forbidden_paths": [
+    {
+      "glob": "src/dopemux_pr_merge_specialist/**",
+      "reason": "merge seam is quarantined for PCP validation",
+      "result": "NEEDS_SUPERVISOR"
+    },
+    {
+      "glob": ".github/workflows/**",
+      "reason": "workflow mutation is out of scope",
+      "result": "NEEDS_SUPERVISOR"
+    }
+  ],
+  "export_mode": "ARTIFACT_ONLY",
+  "unknown_policy": "FAIL_CLOSED"
+}
