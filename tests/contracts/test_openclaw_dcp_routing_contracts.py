@@ -342,6 +342,25 @@ def test_blocked_openrouter_free_attempt_can_record_forbidden_route_evidence():
         validate(instance=selected, schema=schema)
 
 
+def test_selected_model_pools_must_match_declared_lanes():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    release = _json(EXAMPLE_ROOT / "R6_RELEASE_OR_PRODUCTION.json")
+    read = _json(EXAMPLE_ROOT / "R0_READ.json")
+
+    validate(instance=release, schema=schema)
+    validate(instance=read, schema=schema)
+
+    release_on_read_pool = copy.deepcopy(release)
+    release_on_read_pool["selected_pool"] = "cheap_read"
+    with pytest.raises(ValidationError):
+        validate(instance=release_on_read_pool, schema=schema)
+
+    read_on_release_pool = copy.deepcopy(read)
+    read_on_release_pool["selected_pool"] = "release_judge"
+    with pytest.raises(ValidationError):
+        validate(instance=read_on_release_pool, schema=schema)
+
+
 def test_release_example_requires_human_gate_and_current_release_proof_posture():
     release = _json(EXAMPLE_ROOT / "R6_RELEASE_OR_PRODUCTION.json")
 
@@ -440,6 +459,122 @@ def test_pr_steward_ready_is_impossible_with_blocking_constraints():
             validate(instance=blocked, schema=schema)
 
 
+def test_high_risk_proof_requires_passing_audit_and_full_approval_event():
+    schema = _json(CONTRACT_ROOT / "proof_requirements.schema.json")
+    proof = {
+        "schema_version": "1.0.0",
+        "route_decision_id": "rd_release_001",
+        "task_id": "task-001",
+        "packet_id": "TP-001",
+        "privacy_class": "RELEASE_AUTHORITY",
+        "risk_class": "R6_RELEASE_OR_PRODUCTION",
+        "task_execution_class": "release",
+        "model_provider_used": "openai",
+        "runner_used": "direct_api",
+        "requested_model": "openai/gpt-5.5-pro",
+        "actual_model": "openai/gpt-5.5-pro",
+        "provider_endpoint_or_route_profile": "direct_api_release",
+        "prompt_hash": "0" * 64,
+        "prompt_body_ref": "proof/prompt.txt",
+        "response_hash": "1" * 64,
+        "response_body_ref": "proof/response.txt",
+        "files_read": [],
+        "files_changed": [{"path": "contracts/openclaw-dcp-routing/README.md", "sha256": None}],
+        "git_status_before": "clean",
+        "git_status_after": "clean",
+        "git_diff_stat": "1 file changed",
+        "git_diff": "diff --git a/file b/file",
+        "commands_run": [
+            {
+                "command": "pytest",
+                "cwd": "/repo",
+                "started_at": "2026-06-17T12:00:00Z",
+            }
+        ],
+        "command_outputs": [
+            {
+                "command": "pytest",
+                "stdout_ref": "proof/pytest.out",
+                "stderr_ref": None,
+                "exit_code": 0,
+            }
+        ],
+        "exit_codes": [0],
+        "test_lint_typecheck_results": [
+            {
+                "name": "contract tests",
+                "command": "pytest",
+                "status": "passed",
+                "exit_code": 0,
+                "output_ref": "proof/pytest.out",
+            }
+        ],
+        "structured_schema_id": "route_decision.schema.json",
+        "structured_validation_result": {
+            "validated": True,
+            "validator": "jsonschema",
+            "schema_id": "route_decision.schema.json",
+            "errors": [],
+        },
+        "cost_estimate": {"estimated_usd": 1.0, "ceiling_usd": 10.0},
+        "actual_usage": {"input_tokens": 100, "output_tokens": 20, "actual_usd": 0.5},
+        "route_decision_reason": "Release lane proof requires current audit and approval.",
+        "audit_decision": {
+            "auditor_provider": "anthropic",
+            "auditor_model": "claude-sonnet-4.6",
+            "auditor_runner": "direct_api",
+            "auditor_verdict": "PASS_WITH_RISKS",
+            "audit_ref": "proof/audit.md",
+        },
+        "approval_event": {
+            "approval_id": "approval_001",
+            "approver": "human",
+            "approval_scope": "release_approval",
+            "approved_at": "2026-06-17T12:00:00Z",
+            "expires_at": "2026-06-18T12:00:00Z",
+            "route_decision_id": "rd_release_001",
+            "risk_class": "R6_RELEASE_OR_PRODUCTION",
+            "privacy_class": "RELEASE_AUTHORITY",
+            "explicit_statement": "Approved for this release decision only.",
+        },
+        "head_sha": "abcdef1234567890",
+        "pr_metadata": {
+            "repo": "DDD-Enterprises/dopemux-mvp",
+            "pr_number": 123,
+            "head_sha": "abcdef1234567890",
+            "base_branch": "main",
+        },
+        "openclaw_trajectory_ref": None,
+        "redaction_report": {
+            "redaction_applied": False,
+            "secret_scan_state": "clean",
+            "notes": "No secrets.",
+        },
+        "remaining_risks": [],
+        "created_at": "2026-06-17T12:00:00Z",
+    }
+    validate(instance=proof, schema=schema)
+
+    for verdict in ["FAIL", "NEEDS_SUPERVISOR", "SKIPPED"]:
+        candidate = copy.deepcopy(proof)
+        candidate["audit_decision"]["auditor_verdict"] = verdict
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+    for missing_field in [
+        "approval_scope",
+        "expires_at",
+        "route_decision_id",
+        "risk_class",
+        "privacy_class",
+        "explicit_statement",
+    ]:
+        candidate = copy.deepcopy(proof)
+        del candidate["approval_event"][missing_field]
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+
 def test_benchmark_result_certify_requires_no_blocking_signals():
     schema = _json(CONTRACT_ROOT / "benchmark_result.schema.json")
     passing = {
@@ -488,6 +623,10 @@ def test_benchmark_result_certify_requires_no_blocking_signals():
     for patch in blocking_patches:
         candidate = copy.deepcopy(passing)
         candidate.update(patch)
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+        candidate["certification_recommendation"] = "CERTIFY_WITH_LIMITS"
         with pytest.raises(ValidationError):
             validate(instance=candidate, schema=schema)
 

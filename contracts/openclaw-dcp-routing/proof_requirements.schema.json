@@ -101,11 +101,44 @@
     "approval_event": {
       "type": ["object", "null"],
       "additionalProperties": false,
-      "required": ["approval_id", "approver", "approved_at", "scope"],
+      "required": [
+        "approval_id",
+        "approver",
+        "approval_scope",
+        "approved_at",
+        "expires_at",
+        "route_decision_id",
+        "risk_class",
+        "privacy_class",
+        "explicit_statement"
+      ],
       "properties": {
         "approval_id": { "type": "string" },
         "approver": { "type": "string" },
+        "approval_scope": {
+          "type": "string",
+          "enum": [
+            "privacy_route_override",
+            "write_or_destructive_execution",
+            "scope_expansion",
+            "budget_override",
+            "high_risk_execution",
+            "proof_gap_acceptance",
+            "audit_conflict_resolution",
+            "release_approval",
+            "consumer_plan_evidence_acceptance",
+            "openrouter_sensitive_route",
+            "preview_model_risk_acceptance",
+            "provider_drift_acceptance",
+            "benchmark_bypass"
+          ]
+        },
         "approved_at": { "type": "string", "format": "date-time" },
+        "expires_at": { "type": "string", "format": "date-time" },
+        "route_decision_id": { "type": "string", "minLength": 1 },
+        "risk_class": { "$ref": "#/definitions/risk_class" },
+        "privacy_class": { "$ref": "#/definitions/privacy_class" },
+        "explicit_statement": { "type": "string", "minLength": 1 },
         "scope": { "type": "string" }
       }
     },
@@ -155,7 +188,13 @@
       "if": { "properties": { "risk_class": { "enum": ["R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] } } },
       "then": {
         "properties": {
-          "audit_decision": { "type": "object" }
+          "audit_decision": {
+            "type": "object",
+            "properties": {
+              "auditor_verdict": { "enum": ["PASS", "PASS_WITH_RISKS"] }
+            }
+          },
+          "approval_event": { "type": "object" }
         }
       }
     },

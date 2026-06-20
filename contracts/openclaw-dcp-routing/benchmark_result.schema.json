@@ -141,7 +141,7 @@
   },
   "allOf": [
     {
-      "if": { "properties": { "certification_recommendation": { "const": "CERTIFY" } } },
+      "if": { "properties": { "certification_recommendation": { "enum": ["CERTIFY", "CERTIFY_WITH_LIMITS"] } } },
       "then": {
         "properties": {
           "pass_fail": { "const": "PASS" },

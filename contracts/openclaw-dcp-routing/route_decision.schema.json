@@ -174,6 +174,149 @@
       }
     },
     {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "cheap_read" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["cheap_file_reading", "issue_triage", "task_intake"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "cheap_classifier" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["task_classification", "issue_triage", "task_intake"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "repo_cartographer" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["repo_cartography", "architecture_synthesis", "planning"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT", "R4_MULTI_FILE_EDIT"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "planner_default" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["planning", "architecture_synthesis"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT", "R4_MULTI_FILE_EDIT"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "planner_strong" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["strong_planning", "architecture_synthesis", "final_supervisor_synthesis"] },
+          "risk_class": { "enum": ["R4_MULTI_FILE_EDIT", "R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "implementer_default" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["implementation", "narrow_patch_generation", "multi_file_refactor"] },
+          "risk_class": { "enum": ["R3_LOCAL_EDIT", "R4_MULTI_FILE_EDIT"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "implementer_alt" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["narrow_patch_generation", "test_generation", "implementation"] },
+          "risk_class": { "enum": ["R2_TEST_ONLY", "R3_LOCAL_EDIT", "R4_MULTI_FILE_EDIT"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "test_builder" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["test_generation"] },
+          "risk_class": { "enum": ["R2_TEST_ONLY"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "structured_packet" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["structured_task_packet_generation", "task_classification", "proof_bundle_generation"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "proof_validator" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["proof_validation", "pr_review", "final_supervisor_synthesis"] },
+          "risk_class": { "enum": ["R3_LOCAL_EDIT", "R4_MULTI_FILE_EDIT", "R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "auditor_default" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["challenger_review", "pr_review", "proof_validation"] },
+          "risk_class": { "enum": ["R3_LOCAL_EDIT", "R4_MULTI_FILE_EDIT", "R5_SECURITY_OR_AUTHORITY"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "auditor_deep" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["security_review", "release_judgment", "final_supervisor_synthesis"] },
+          "risk_class": { "enum": ["R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "security_reviewer" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["security_review"] },
+          "risk_class": { "enum": ["R5_SECURITY_OR_AUTHORITY"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "release_judge" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["release_judgment"] },
+          "risk_class": { "enum": ["R6_RELEASE_OR_PRODUCTION"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "supervisor" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["final_supervisor_synthesis", "strong_planning", "architecture_synthesis"] },
+          "risk_class": { "enum": ["R4_MULTI_FILE_EDIT", "R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "openrouter_free_sandbox" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["cheap_file_reading", "issue_triage", "test_generation"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY"] }
+        }
+      }
+    },
+    {
       "if": {
         "properties": {
           "decision_status": { "const": "SELECTED" },
