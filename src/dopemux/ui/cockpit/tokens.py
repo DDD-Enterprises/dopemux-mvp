@@ -15,6 +15,12 @@ from dopemux.voice import (
 )
 
 
+def _is_full_cockpit_render(text: str) -> bool:
+    """Detect full TUI/markdown cockpit output (not label:/message:/action: payload)."""
+    stripped = text.lstrip()
+    return stripped.startswith("#") or "# Dopemux Cockpit" in text
+
+
 def _has_required_closer(text: str, required: list[str]) -> bool:
     stripped = text.strip()
     lines = [line.strip() for line in stripped.splitlines() if line.strip()]
@@ -42,7 +48,10 @@ def validate_rendered_text(
     """Validate rendered cockpit text, including UI closer enforcement."""
     config = gates or load_voice_gates()
     selected_mode = mode or select_mode(surface, text)
-    result = validate_output(surface, selected_mode, text, config)
+    validation_surface = surface
+    if surface is Surface.UI and _is_full_cockpit_render(text):
+        validation_surface = Surface.CLI
+    result = validate_output(validation_surface, selected_mode, text, config)
     violations = list(result.violations)
 
     closers = config.get("lexical_gates", {}).get("required_closers", [])
