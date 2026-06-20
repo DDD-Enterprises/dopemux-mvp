@@ -2,7 +2,7 @@
   "tp_id": "TP-DMX-MEMORY-TRINITY-001",
   "tp_path": "task-packets/TP-DMX-MEMORY-TRINITY-001.json",
   "branch": "fix/mcp-server-build-failures",
-  "head_sha": "19c6879d1b72366184c25078252fd2fabf5cbe8d",
+  "head_sha": "0684aa2d596a1a4a8a9f6e50c791cd5443b21a48",
   "remote_head_sha": "a668df6a71b33a7152c098e470eca85085a3eaaa",
   "worktree_path": "/Users/hue/code/dopemux-mvp",
   "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
@@ -23,7 +23,7 @@
   ],
   "codereview_status": "PASS",
   "precommit_status": "PASS",
-  "commit_sha": "19c6879d1b72366184c25078252fd2fabf5cbe8d",
+  "commit_sha": "0684aa2d596a1a4a8a9f6e50c791cd5443b21a48",
   "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/939 — CLOSED (not merged) 2026-06-20T04:05:30Z",
   "residual_risks": [
     "mcp doctor FAIL — per-worktree port drift",

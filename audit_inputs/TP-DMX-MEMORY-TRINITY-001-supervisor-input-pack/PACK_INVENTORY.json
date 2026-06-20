@@ -1,10 +1,10 @@
 {
   "pack_id": "TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack",
-  "built_at": "2026-06-20T04:50:45Z",
-  "repo_head_sha": "19c6879d1b72366184c25078252fd2fabf5cbe8d",
+  "built_at": "2026-06-20T04:50:57Z",
+  "repo_head_sha": "0684aa2d596a1a4a8a9f6e50c791cd5443b21a48",
   "zip_path": "audit_inputs/TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack/../TP-DMX-MEMORY-TRINITY-001-supervisor-input-pack.zip",
-  "zip_bytes": 144744,
-  "zip_sha256": "551c02709f5b8abce99cc722115a456ab6bc4941c4df61680b568117faf7209c",
+  "zip_bytes": 144747,
+  "zip_sha256": "925f6c494ddf1980e3991324505f98cb6aed0f3ec7a54f26a28e17c4aeeb95c0",
   "entry_count": 45,
   "required_count": 36,
   "required_present": {
@@ -97,6 +97,6 @@
     "stale_example_bytes": 108880,
     "stale_example_entries": 33
   },
-  "zip_bytes_excluding_inventory": 143264,
+  "zip_bytes_excluding_inventory": 143269,
   "zip_sha256_scope": "all_entries_except_PACK_INVENTORY.json"
 }

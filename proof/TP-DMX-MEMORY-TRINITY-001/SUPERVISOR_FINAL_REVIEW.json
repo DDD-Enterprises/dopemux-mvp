@@ -7,7 +7,7 @@
   "pr_939": "HOLD",
   "pr_939_post_remediation": "MERGE_WITH_FOLLOWUPS",
   "pr_939_note": "Current HOLD because PR #939 is CLOSED without merge (2026-06-20T04:05:30Z). MERGE_WITH_FOLLOWUPS applies only after reopen/new PR, required CI green at pushed HEAD, rebase on main, operator acceptance or remediation of B5/D2, and proof at that same HEAD. A/C hard-stop sections pass on branch evidence; this does not override operator REJECT or closed PR state.",
-  "branch_sha": "19c6879d1b72366184c25078252fd2fabf5cbe8d",
+  "branch_sha": "0684aa2d596a1a4a8a9f6e50c791cd5443b21a48",
   "remote_head_sha": "a668df6a71b33a7152c098e470eca85085a3eaaa",
   "confidence": "medium",
   "evidence_posture": {
@@ -35,7 +35,7 @@
     "merged": false,
     "closed_at": "2026-06-20T04:05:30Z",
     "head_sha_remote": "a668df6a71b33a7152c098e470eca85085a3eaaa",
-    "head_sha_local": "19c6879d1b72366184c25078252fd2fabf5cbe8d",
+    "head_sha_local": "0684aa2d596a1a4a8a9f6e50c791cd5443b21a48",
     "changed_files": 172,
     "ci_at_remote_head": {
       "audit_proof_validator": "PASS at a668df6a7",
