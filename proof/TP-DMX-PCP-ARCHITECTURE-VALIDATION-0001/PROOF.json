@@ -1,7 +1,7 @@
 {
   "tp_id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
-  "before_sha": "a05ebf77578c3e163f90d2e194efd2441cebeac6",
-  "after_sha": "9e00d5aa742d947f611f5877009931158bf54ba4",
+  "before_sha": "724a25fa01c77f7f1fd6ccf8a78da09f082e0ded",
+  "after_sha": "51f34764bdd7e35196fe3c99031493e89e310dcf",
   "branch": "codex/tp-dmx-pcp-architecture-validation-0001",
   "changed_files": [
     "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md",
@@ -321,7 +321,7 @@
     "Read-only Opus audit returned NEEDS_SUPERVISOR; acceptance is blocked pending Supervisor adjudication.",
     "Negative fail-closed cases are asserted fixture expectations, not executed classifier results.",
     "PR #925 remains draft pending core boundary repair.",
-    "after_sha binds to substantive framing-repair commit 9e00d5aa7; proof-amend commits do not redefine validated content."
+    "after_sha binds to substantive framing-repair commit 51f34764b; proof-amend commits do not redefine validated content."
   ],
   "not_run": [
     "GitHub mutation or PR creation",
@@ -430,8 +430,8 @@
       "AUDIT-L3-BASE-SHA: recorded review_base_sha separately from canonical_work_commit_parent_sha."
     ]
   },
-  "review_base_sha": "a05ebf77578c3e163f90d2e194efd2441cebeac6",
-  "canonical_work_commit_parent_sha": "a05ebf77578c3e163f90d2e194efd2441cebeac6",
+  "review_base_sha": "724a25fa01c77f7f1fd6ccf8a78da09f082e0ded",
+  "canonical_work_commit_parent_sha": "724a25fa01c77f7f1fd6ccf8a78da09f082e0ded",
   "pal_chain_evidence": {
     "declared_packet_chain": [
       "analyze",
@@ -449,13 +449,13 @@
     "precommit": "NOT_RUN",
     "reason": "PAL MCP/tool artifacts were not available in this session; local git pre-commit hooks were run separately and recorded under validation_results."
   },
-  "proof_freshness_model": "after_sha binds to substantive content commit (9e00d5aa7 framing repair); proof-only amend commits are recorded separately and do not self-certify.",
-  "authoritative_pr_tip_sha": "29e0c1710ae4ea2594d373db67d34a797b81b115",
-  "proof_refresh_note": "Framing/proof repair by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002; after_sha points to substantive repair commit 9e00d5aa7, not the proof-writing commit.",
-  "after_sha_note": "Satisfiable freshness: after_sha=9e00d5aa7 (docs(pcp-925) framing repair). Prior repair by TP-DMX-PCP-925-REPAIR-0001 fixed orphan after_sha and dNh policy_ref at 68b8fd17 (verified, not redone). Architecture acceptance remains NEEDS_SUPERVISOR.",
+  "proof_freshness_model": "after_sha binds to substantive content commit (51f34764b framing repair); proof-only amend commits are recorded separately and do not self-certify.",
+  "authoritative_pr_tip_sha": "PLACEHOLDER_PR_TIP_SHA",
+  "proof_refresh_note": "Rebased onto main (724a25fa0) 2026-06-19; prior framing/proof repair by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002 preserved. after_sha points to substantive repair commit 51f34764b, not proof-writing commits.",
+  "after_sha_note": "Satisfiable freshness: after_sha=51f34764b (docs(pcp-925) framing repair, rebased). Prior repair by TP-DMX-PCP-925-REPAIR-0001 fixed orphan after_sha and dNh policy_ref at d0f01d4c5 (verified, not redone). Rebased onto main 724a25fa0; architecture acceptance remains NEEDS_SUPERVISOR.",
   "review_thread_classification": {
     "pr_number": 925,
-    "classified_at_commit": "29e0c1710ae4ea2594d373db67d34a797b81b115",
+    "classified_at_commit": "PLACEHOLDER_PR_TIP_SHA",
     "threads": [
       {
         "thread_id": "PRRT_kwDOPyIw986KJns5",
@@ -463,7 +463,7 @@
         "author": "chatgpt-codex-connector",
         "classification": "OUTDATED_UNRESOLVED",
         "disposition": "SUBSTANTIVELY_ADDRESSED_NOT_RESOLVED",
-        "reason": "after_sha orphan repaired in 68b8fd17 and reframed to satisfiable semantics in TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002; thread remains open on GitHub because it is outdated."
+        "reason": "after_sha orphan repaired in d0f01d4c5 and reframed to satisfiable semantics in TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002; thread remains open on GitHub because it is outdated."
       },
       {
         "thread_id": "PRRT_kwDOPyIw986KJns9",
@@ -471,7 +471,7 @@
         "author": "chatgpt-codex-connector",
         "classification": "OUTDATED_UNRESOLVED",
         "disposition": "SUBSTANTIVELY_ADDRESSED_NOT_RESOLVED",
-        "reason": "policy_ref corrected to red_lanes.json in 68b8fd17; thread remains open on GitHub because it is outdated."
+        "reason": "policy_ref corrected to red_lanes.json in d0f01d4c5; thread remains open on GitHub because it is outdated."
       }
     ],
     "summary": {
@@ -483,11 +483,18 @@
     }
   },
   "prior_repair_verification": {
-    "repair_commit_68b8fd17": {
+    "repair_commit_d0f01d4c5": {
       "after_sha_orphan_repair": "VERIFIED",
       "dnh_policy_ref_repair": "VERIFIED",
-      "note": "Verified only; not redone by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002."
+      "note": "Verified only; not redone by TP-DMX-PCP-PR925-FRAMING-PROOF-REPAIR-0002. Commit hash updated after rebase onto main."
     }
+  },
+  "rebase_onto_main": {
+    "rebased_at": "2026-06-19",
+    "base_sha": "724a25fa01c77f7f1fd6ccf8a78da09f082e0ded",
+    "commits_replayed": 11,
+    "conflicts": 0,
+    "note": "PR #925 branch rebased onto current main per A-prime integration path; proof SHAs refreshed to rebased commit identities."
   },
   "air_reference": "docs/03-reference/architecture/air-dmx-pcp-dcp-architecture-0001.md",
   "framing_proof_repair_audit": {
@@ -506,8 +513,8 @@
       "PCP schema boundary defects (Dopemux-shaped core) intentionally deferred to extension-contract and de-Dopemux packets.",
       "AIR recorded at docs/03-reference/architecture/air-dmx-pcp-dcp-architecture-0001.md.",
       "Two outdated-but-unresolved review threads classified in review_thread_classification.",
-      "after_sha uses satisfiable semantics binding to substantive repair commit 9e00d5aa7.",
-      "68b8fd17 after_sha and dNh policy_ref repairs verified, not redone."
+      "after_sha uses satisfiable semantics binding to substantive repair commit 51f34764b.",
+      "d0f01d4c5 after_sha and dNh policy_ref repairs verified, not redone."
     ],
     "fixes_applied_from_audit": [],
     "remaining_risks": [
