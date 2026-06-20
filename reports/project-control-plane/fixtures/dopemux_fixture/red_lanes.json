@@ -1,0 +1,35 @@
+{
+  "schema_version": "pcp.project_red_lanes.v0",
+  "project_id": "dopemux-mvp-fixture",
+  "default_on_unknown": "BLOCK",
+  "classifications": [
+    {
+      "lane_id": "merge-seam",
+      "scope": "PROJECT",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    },
+    {
+      "lane_id": "github-mutation",
+      "scope": "PROJECT",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    },
+    {
+      "lane_id": "task-orchestrator-live-write",
+      "scope": "PROJECT",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    },
+    {
+      "lane_id": "dopetask-exec",
+      "scope": "PROJECT",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    }
+  ]
+}

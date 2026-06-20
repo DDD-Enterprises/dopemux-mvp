@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/authority_map.schema.json",
+  "title": "Project Control Plane Authority Map",
+  "description": "Machine-checkable ownership map. For each (domain, action) it records the canonical authority owner, the canonical writer, the projection/mirror/cache/source distinction, proof and live-write gates, and a fail-closed behavior for unknown ownership. PCP Core keystone; pairs with extension_manifest.schema.json. Adding or extending entries is how extensions contribute ownership without weakening core. Fail-closed by construction: a derived surface can never be writable, a writable entry must be a SOURCE with a named writer, and unknown ownership must block or escalate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_id",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.authority_map.v0"
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/authority_entry"
+      }
+    }
+  },
+  "$defs": {
+    "authority_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain",
+        "action",
+        "canonical_authority_owner",
+        "canonical_writer",
+        "surface_class",
+        "reader_or_projection_surface",
+        "source_truth_refs",
+        "proof_required",
+        "live_write_allowed",
+        "approval_required",
+        "rollback_required",
+        "unknown_behavior"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The owned domain, e.g. 'pm.tasks', 'memory.decisions', 'routing.lane'."
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The action over the domain, e.g. 'read', 'project', 'write', 'mutate'."
+        },
+        "canonical_authority_owner": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The upstream system that OWNS the domain. An extension/adapter is a mapper, never the owner."
+        },
+        "canonical_writer": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The only surface permitted to mutate the owned domain after gates. Null means 'no writer by design' (derived/immutable surface). Must be a non-null name whenever live_write_allowed is true (enforced below)."
+        },
+        "surface_class": {
+          "type": "string",
+          "enum": [
+            "SOURCE",
+            "PROJECTION",
+            "MIRROR",
+            "CACHE",
+            "INDEX",
+            "ADAPTER",
+            "UNKNOWN"
+          ],
+          "description": "Distinguishes the authoritative SOURCE from derived/projected/mirrored/cached/indexed/adapter surfaces. Only SOURCE may be writable; all other classes are fail-closed to read-only (enforced below)."
+        },
+        "reader_or_projection_surface": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The read/projection surface that exposes this domain without owning it."
+        },
+        "source_truth_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "References to the authoritative source artifacts (paths, schema ids, proof families). At least one is required so every entry cites where truth lives."
+        },
+        "proof_required": {
+          "type": "boolean"
+        },
+        "live_write_allowed": {
+          "type": "boolean",
+          "default": false,
+          "description": "Defaults false (fail-closed). May only be true for a SOURCE surface with a non-null canonical_writer, and only once the live-write gate contract is satisfied for this domain."
+        },
+        "approval_required": {
+          "type": "boolean"
+        },
+        "rollback_required": {
+          "type": "boolean"
+        },
+        "unknown_behavior": {
+          "type": "string",
+          "const": "BLOCK_OR_ESCALATE",
+          "description": "Fail-closed by construction: an unknown owner must block or escalate, never silently proceed."
+        }
+      },
+      "allOf": [
+        {
+          "$comment": "Derived/unknown surfaces are never writable and have no canonical writer.",
+          "if": {
+            "properties": {
+              "surface_class": {
+                "enum": [
+                  "PROJECTION",
+                  "MIRROR",
+                  "CACHE",
+                  "INDEX",
+                  "ADAPTER",
+                  "UNKNOWN"
+                ]
+              }
+            },
+            "required": [
+              "surface_class"
+            ]
+          },
+          "then": {
+            "properties": {
+              "live_write_allowed": {
+                "const": false
+              },
+              "canonical_writer": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "$comment": "A writable entry must be a SOURCE surface with a named (non-null) canonical writer.",
+          "if": {
+            "properties": {
+              "live_write_allowed": {
+                "const": true
+              }
+            },
+            "required": [
+              "live_write_allowed"
+            ]
+          },
+          "then": {
+            "properties": {
+              "surface_class": {
+                "const": "SOURCE"
+              },
+              "canonical_writer": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

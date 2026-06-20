@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcp.local/schemas/route_decision_logger.schema.json",
+  "title": "Route Decision Log Entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "log_id",
+    "route_decision_id",
+    "task_id",
+    "requested_model",
+    "actual_model",
+    "requested_provider",
+    "actual_provider",
+    "provider_route_profile",
+    "runner",
+    "access_path",
+    "prompt_hash",
+    "response_hash",
+    "cost",
+    "latency",
+    "fallback_events",
+    "policy_checks",
+    "blocked_route_reasons",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "log_id": { "type": "string", "minLength": 1 },
+    "route_decision_id": { "type": "string", "minLength": 1 },
+    "task_id": { "type": "string", "minLength": 1 },
+    "requested_model": { "type": "string", "minLength": 1 },
+    "actual_model": { "type": "string", "minLength": 1 },
+    "requested_provider": { "$ref": "#/definitions/provider" },
+    "actual_provider": { "$ref": "#/definitions/provider" },
+    "provider_route_profile": { "type": ["string", "null"] },
+    "runner": { "$ref": "#/definitions/runner" },
+    "access_path": { "type": "string" },
+    "prompt_hash": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+    "response_hash": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["estimated_usd", "actual_usd", "currency"],
+      "properties": {
+        "estimated_usd": { "type": ["number", "null"], "minimum": 0 },
+        "actual_usd": { "type": ["number", "null"], "minimum": 0 },
+        "currency": { "type": "string", "enum": ["USD", "UNKNOWN"] }
+      }
+    },
+    "latency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wall_ms", "ttfb_ms", "ttft_ms", "completion_ms"],
+      "properties": {
+        "wall_ms": { "type": ["number", "null"], "minimum": 0 },
+        "ttfb_ms": { "type": ["number", "null"], "minimum": 0 },
+        "ttft_ms": { "type": ["number", "null"], "minimum": 0 },
+        "completion_ms": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "fallback_events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from_route", "to_route", "reason", "weakened_policy"],
+        "properties": {
+          "from_route": { "type": "string" },
+          "to_route": { "type": "string" },
+          "reason": { "type": "string" },
+          "weakened_policy": { "type": "boolean" }
+        }
+      }
+    },
+    "policy_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["check_id", "status", "message"],
+        "properties": {
+          "check_id": { "type": "string" },
+          "status": { "type": "string", "enum": ["PASS", "FAIL", "SKIPPED"] },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "blocked_route_reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "definitions": {
+    "provider": {
+      "type": "string",
+      "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple", "unknown"]
+    },
+    "runner": {
+      "type": "string",
+      "enum": ["openclaw", "codex", "claude_code", "gemini_antigravity", "openrouter_generic", "direct_api", "manual_app", "shell_local", "dopetask", "unknown"]
+    }
+  }
+}

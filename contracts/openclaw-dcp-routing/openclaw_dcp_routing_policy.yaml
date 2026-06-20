@@ -1,0 +1,255 @@
+schema_version: "1.0.0"
+artifact_id: "openclaw_dcp_routing_policy"
+status: "PROPOSED"
+claim_posture:
+  OBSERVED:
+    - "OpenClaw is a high-privilege worker/runtime substrate requiring DCP wrapper governance."
+    - "Consumer subscriptions are not equivalent to programmable API access unless the provider officially supports the path."
+    - "OpenRouter is a routing/control layer, not a trust oracle."
+  PROPOSED:
+    - "DCP owns classification, forbidden-route evaluation, proof normalization, audit independence, and release gates."
+  UNKNOWN:
+    - "Exact local benchmark pass rates for each route until Turn 5+ benchmark execution."
+metadata:
+  created_for: "OpenClaw + DCP role-based multi-model routing"
+  created_at_policy_date: "2026-06-17"
+  owner_layer: "DCP supervisor"
+  openclaw_role: "worker_runtime"
+  openrouter_role: "controlled_breadth_fallback"
+  production_ready: false
+  acceptance_required_before_enablement:
+    - "local_benchmark_certification"
+    - "route_decision_schema_validation"
+    - "proof_schema_validation"
+    - "forbidden_route_test_pass"
+    - "audit_independence_test_pass"
+privacy_classes:
+  - PUBLIC_SANDBOX
+  - PUBLIC_REPO
+  - PRIVATE_REPO_NO_SECRETS
+  - PRIVATE_REPO_POSSIBLE_SECRETS
+  - SECRET_BEARING
+  - CLIENT_DATA
+  - SECURITY_SENSITIVE
+  - RELEASE_AUTHORITY
+  - UNKNOWN
+risk_classes:
+  - R0_READ
+  - R1_DRAFT
+  - R2_TEST_ONLY
+  - R3_LOCAL_EDIT
+  - R4_MULTI_FILE_EDIT
+  - R5_SECURITY_OR_AUTHORITY
+  - R6_RELEASE_OR_PRODUCTION
+  - UNKNOWN
+routing_roles:
+  - task_intake
+  - task_classification
+  - repo_cartography
+  - cheap_file_reading
+  - issue_triage
+  - planning
+  - strong_planning
+  - architecture_synthesis
+  - implementation
+  - narrow_patch_generation
+  - multi_file_refactor
+  - test_generation
+  - ui_design_audit
+  - multimodal_audit
+  - structured_task_packet_generation
+  - proof_bundle_generation
+  - proof_validation
+  - challenger_review
+  - pr_review
+  - security_review
+  - release_judgment
+  - final_supervisor_synthesis
+route_decision_lifecycle:
+  states:
+    - INTAKE_RECEIVED
+    - CLASSIFIED
+    - POLICY_CHECKED
+    - ROUTE_SELECTED
+    - PROOF_REQUIREMENTS_BOUND
+    - HUMAN_GATE_CHECKED
+    - BENCHMARK_CERTIFICATION_CHECKED
+    - EXECUTION_ALLOWED
+    - BLOCKED
+    - ESCALATED
+  allowed_terminal_states:
+    - EXECUTION_ALLOWED
+    - BLOCKED
+    - ESCALATED
+  required_order:
+    - classify_privacy_and_risk
+    - evaluate_forbidden_routes
+    - evaluate_structured_output_requirements
+    - evaluate_benchmark_certification
+    - bind_proof_requirements
+    - evaluate_human_gates
+    - select_route
+    - emit_route_decision_log
+default_route_selection_order:
+  automation_or_schema_authority:
+    - direct_api
+    - local_self_hosted_if_benchmarked
+    - openrouter_paid_pinned_if_policy_clean
+    - manual_app_with_proof_capture
+  low_risk_public_read:
+    - cheap_direct_api
+    - openrouter_free_pinned
+    - openrouter_paid_low_cost
+    - manual_app_with_capture
+  implementation:
+    - direct_api_or_native_code_runner
+    - local_runner_with_proof
+    - openrouter_paid_benchmarked
+    - consumer_plan_local_runner_with_proof
+  security_or_release:
+    - direct_api_frontier
+    - independent_provider_audit
+    - explicit_human_approval
+    - openrouter_paid_challenger_only
+fail_closed_rules:
+  unknown_privacy_class: "BLOCK_OR_ESCALATE"
+  unknown_risk_class: "BLOCK_OR_ESCALATE"
+  unknown_actual_provider_high_risk: "BLOCK"
+  unknown_actual_model_high_risk: "BLOCK"
+  unknown_actual_provider_private: "BLOCK"
+  missing_benchmark_certification_for_high_trust: "BLOCK"
+  missing_schema_validation_for_authority: "BLOCK"
+  missing_proof_for_write_task: "BLOCK"
+  missing_human_approval_when_required: "BLOCK"
+  provider_drift_in_private_or_high_risk: "BLOCK"
+  fallback_weakens_any_guard: "BLOCK"
+evidence_requirements:
+  all_routes:
+    - route_decision_id
+    - task_id
+    - privacy_class
+    - risk_class
+    - selected_pool
+    - requested_model
+    - actual_model
+    - provider
+    - runner
+    - access_path
+    - prompt_hash
+    - response_hash
+    - created_at
+  repo_read:
+    - files_read
+    - evidence_refs
+  write_tasks:
+    - git_status_before
+    - git_status_after
+    - git_diff_stat
+    - git_diff
+    - files_changed
+    - commands_run
+    - command_outputs
+    - exit_codes
+  structured_output:
+    - structured_schema_id
+    - structured_validation_result
+    - local_validator_version
+  openrouter:
+    - openrouter_profile
+    - requested_model
+    - actual_model
+    - actual_provider
+    - provider_settings
+    - cost_estimate
+    - actual_usage
+    - fallback_events
+  high_risk:
+    - audit_decision
+    - independent_audit_ref
+    - approval_event_or_block
+  release:
+    - pr_metadata
+    - head_sha
+    - ci_check_refs
+    - proof_freshness_ref
+    - merge_readiness_ref
+audit_independence_requirements:
+  default:
+    implementer_must_not_be_sole_final_auditor: true
+    prefer_different_provider: true
+    prefer_different_runner: true
+    prefer_different_session: true
+  release:
+    requires_independent_audit_or_explicit_human_approval: true
+    same_provider_exception_requires_human_approval: true
+  security:
+    direct_api_preferred: true
+    openrouter_free_forbidden: true
+    manual_app_output_requires_capture: true
+human_gate_triggers:
+  - privacy_override
+  - destructive_or_write_execution
+  - scope_expansion
+  - cost_escalation
+  - R5_SECURITY_OR_AUTHORITY
+  - R6_RELEASE_OR_PRODUCTION
+  - missing_proof
+  - auditor_conflict
+  - release_judgment
+  - consumer_plan_proof_use
+  - openrouter_sensitive_use
+  - preview_or_experimental_high_risk_use
+  - provider_drift
+  - benchmark_bypass
+release_gate_rules:
+  status_values:
+    - READY
+    - BLOCKED
+    - NEEDS_SUPERVISOR
+  ready_requires:
+    - current_head_sha
+    - current_ci_checks
+    - current_proof_bundle
+    - no_failed_required_checks
+    - no_stale_checks
+    - no_stale_proof
+    - no_unresolved_blocking_threads
+    - no_unknown_reviewers_or_bots
+    - no_unclassified_review_items
+    - diff_inside_packet_allowlist
+    - independent_audit_or_human_approval
+  blocked_if:
+    - unknown_reviewer_or_bot
+    - failed_checks
+    - stale_checks
+    - stale_proof
+    - unresolved_blocking_thread
+    - diff_escapes_packet_allowlist
+    - missing_security_or_release_approval
+local_benchmark_certification_requirement:
+  required_before:
+    - production
+    - high_trust
+    - schema_authority
+    - private_repo
+    - R4_MULTI_FILE_EDIT
+    - R5_SECURITY_OR_AUTHORITY
+    - R6_RELEASE_OR_PRODUCTION
+  minimums:
+    valid_json_rate: 1.0
+    schema_validity_rate: 1.0
+    fail_closed_unsupported_route_rate: 1.0
+    evidence_grounding_precision_min: 0.98
+    unsupported_claim_rate_max: 0.01
+    contradiction_recall_min: 0.90
+    core_field_stability_min: 0.95
+forbidden_fallback_weakening_rules:
+  - "Never downgrade privacy controls."
+  - "Never downgrade json_schema strict mode to json_object or prose."
+  - "Never disable provider.require_parameters on OpenRouter structured routes."
+  - "Never allow OpenRouter free fallback into private, secret, security, release, or schema-authority lanes."
+  - "Never replace independent audit with implementer self-review."
+  - "Never bypass cost ceiling without approval."
+  - "Never silently accept actual model/provider drift in private or high-risk routes."
+
+validation_notes: This artifact is strict-policy YAML. It intentionally marks production readiness as false until benchmark and route-certification artifacts exist.

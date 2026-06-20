@@ -1,0 +1,159 @@
+{
+  "id": "TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001",
+  "project": "dopemux-mvp",
+  "target": "Validate PCP Core fixture and dry-run contract shape using fixture-only contracts before extension-contract and de-Dopemux boundary repair. DCP is PCP Core plus the Dopemux extension; dNh CRM is PCP Core plus the dNh extension.",
+  "invariants": [
+    "No live Task Orchestrator writes, Dopetask execution, GitHub mutation, or project runtime writes.",
+    "dNh-specific knowledge must live in project profile, adapter configuration, fixture evidence, or a later dNh-specific packet.",
+    "Supervisor remains the only acceptance authority; Codex proof is not acceptance.",
+    "UNKNOWN must be explicit and fail closed."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PCP-ARCHITECTURE-VALIDATION",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-pcp-architecture-validation-0001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(pcp): validate project control plane architecture",
+    "allowlist": [
+      "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md",
+      "docs/ops/project-control-plane/architecture-validation.md",
+      "docs/ops/project-control-plane/ownership-matrix.md",
+      "schemas/project_control_plane/project_profile.schema.json",
+      "schemas/project_control_plane/project_evidence_export.schema.json",
+      "schemas/project_control_plane/project_red_lanes.schema.json",
+      "schemas/project_control_plane/dopetask_packet_mapping.schema.json",
+      "schemas/project_control_plane/proof_pointer.schema.json",
+      "schemas/project_control_plane/orchestrator_item.schema.json",
+      "schemas/project_control_plane/executor_run_request.schema.json",
+      "schemas/project_control_plane/executor_run_result.schema.json",
+      "schemas/project_control_plane/audit_request.schema.json",
+      "schemas/project_control_plane/audit_result.schema.json",
+      "schemas/project_control_plane/supervisor_decision.schema.json",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/evidence_export.json",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/red_lanes.json",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/negative_cases.json",
+      "reports/project-control-plane/fixtures/dopemux_fixture/project_profile.json",
+      "reports/project-control-plane/fixtures/dopemux_fixture/evidence_export.json",
+      "reports/project-control-plane/fixtures/dopemux_fixture/red_lanes.json",
+      "reports/project-control-plane/fixtures/dopemux_fixture/negative_cases.json",
+      "reports/project-control-plane/fixtures/minimal_fixture/project_profile.json",
+      "reports/project-control-plane/fixtures/minimal_fixture/evidence_export.json",
+      "reports/project-control-plane/fixtures/minimal_fixture/red_lanes.json",
+      "reports/project-control-plane/fixtures/minimal_fixture/negative_cases.json",
+      "docs/05-audit-reports/project-control-plane/architecture-validation-report.md",
+      "reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json",
+      "task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json",
+      "task-packets/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001-implementation-notes.md",
+      "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json",
+      "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool schemas/project_control_plane/project_profile.schema.json >/dev/null",
+      "python -m json.tool schemas/project_control_plane/project_evidence_export.schema.json >/dev/null",
+      "python -m json.tool schemas/project_control_plane/project_red_lanes.schema.json >/dev/null",
+      "python -m json.tool schemas/project_control_plane/proof_pointer.schema.json >/dev/null",
+      "python -m json.tool schemas/project_control_plane/orchestrator_item.schema.json >/dev/null",
+      "python -m json.tool reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json >/dev/null",
+      "git diff --check",
+      "git diff --stat"
+    ]
+  },
+  "pr": {
+    "title": "docs(pcp): validate project control plane architecture",
+    "body": "## Summary\n- Adds fixture-only Project Control Plane architecture validation artifacts.\n- Adds strict PCP contract schemas and three project fixture packs.\n- Demotes dNh RDCP as the first adapter target, not the universal system.\n\n## Scope\nPlanning, schemas, fixtures, dry-run artifacts, and proof only. No live writes or runtime changes.\n\n## Validation\nSee proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json.\n\n## Audit\n- Read-only Opus audit returned NEEDS_SUPERVISOR.\n- Supervisor acceptance remains pending.\n\n## NOT_RUN\n- GitHub mutation / PR creation.\n- Dopetask execution.\n- Task Orchestrator MCP write.\n- dNh runtime validation.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, marker, branch, clean status, existing conventions, and active DCP architecture documents.",
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md",
+        "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md"
+      ],
+      "validation": [
+        "Repo identity and dedicated worktree are verified before edits."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Patch architecture framing so dNh RDCP is first adapter target for a reusable PCP substrate, not the universal execution sequence.",
+      "expected_files": [
+        "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md"
+      ],
+      "validation": [
+        "Patch preserves original synthesis as decision input and adds an explicit validation gate before dNh adapter execution."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add PCP ownership matrix and architecture validation report docs.",
+      "expected_files": [
+        "docs/ops/project-control-plane/architecture-validation.md",
+        "docs/ops/project-control-plane/ownership-matrix.md",
+        "docs/05-audit-reports/project-control-plane/architecture-validation-report.md"
+      ],
+      "validation": [
+        "Docs distinguish owner, must-not-own, inputs, outputs, persistence, mutation risk, and generic/project-specific posture."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add strict JSON schemas and fixture packs for dNh, Dopemux, and minimal generic project shapes.",
+      "expected_files": [
+        "schemas/project_control_plane/project_profile.schema.json",
+        "reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json",
+        "reports/project-control-plane/fixtures/dopemux_fixture/project_profile.json",
+        "reports/project-control-plane/fixtures/minimal_fixture/project_profile.json"
+      ],
+      "validation": [
+        "Schemas are valid JSON Schema; fixture JSON is syntactically valid; UNKNOWN and fail-closed results are explicit."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Create dry-run E2E artifact and proof bundle without live writes or runtime imports.",
+      "expected_files": [
+        "reports/project-control-plane/validation/E2E_DRY_RUN_RESULT.json",
+        "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/PROOF.json",
+        "proof/TP-DMX-PCP-ARCHITECTURE-VALIDATION-0001/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Required validation commands run and proof records PASS/FAIL/NOT_RUN truthfully."
+      ]
+    }
+  ]
+}

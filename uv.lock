@@ -1057,6 +1057,7 @@ all = [
     { name = "flake8" },
     { name = "httpx" },
     { name = "isort" },
+    { name = "jsonschema" },
     { name = "kombu" },
     { name = "lxml" },
     { name = "mcp" },
@@ -1098,6 +1099,7 @@ dev = [
     { name = "dopetask" },
     { name = "flake8" },
     { name = "isort" },
+    { name = "jsonschema" },
     { name = "mypy" },
     { name = "pip-audit" },
     { name = "pre-commit" },
@@ -1147,6 +1149,7 @@ services = [
     { name = "tree-sitter-typescript" },
 ]
 test = [
+    { name = "jsonschema" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -1181,6 +1184,8 @@ requires-dist = [
     { name = "httpx", marker = "extra == 'services'", specifier = ">=0.28.1" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=5.12.0" },
     { name = "jinja2", specifier = ">=3.1.0" },
+    { name = "jsonschema", marker = "extra == 'dev'", specifier = ">=4.20.0" },
+    { name = "jsonschema", marker = "extra == 'test'", specifier = ">=4.20.0" },
     { name = "kombu", marker = "extra == 'services'", specifier = ">=5.3.0" },
     { name = "litellm", specifier = ">=1.83.7" },
     { name = "lxml", marker = "extra == 'services'", specifier = ">=6.1.0" },
