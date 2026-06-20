@@ -2,7 +2,7 @@
   "tp_id": "TP-DMX-MEMORY-TRINITY-001",
   "tp_path": "task-packets/TP-DMX-MEMORY-TRINITY-001.json",
   "branch": "fix/mcp-server-build-failures",
-  "head_sha": "0684aa2d596a1a4a8a9f6e50c791cd5443b21a48",
+  "head_sha": "2285c3a61c51da88f1716e1544df144f866efce2",
   "remote_head_sha": "a668df6a71b33a7152c098e470eca85085a3eaaa",
   "worktree_path": "/Users/hue/code/dopemux-mvp",
   "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
@@ -23,19 +23,19 @@
   ],
   "codereview_status": "PASS",
   "precommit_status": "PASS",
-  "commit_sha": "0684aa2d596a1a4a8a9f6e50c791cd5443b21a48",
+  "commit_sha": "2285c3a61c51da88f1716e1544df144f866efce2",
   "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/939 — CLOSED (not merged) 2026-06-20T04:05:30Z",
   "residual_risks": [
     "mcp doctor FAIL — per-worktree port drift",
     "Skill install paths empty — sync not executed",
     "DCP facade dope-context JSON-RPC transport BLOCKED",
     "PR #939 closed without merge — reopen or new PR required",
-    "Local HEAD 19c6879d not yet pushed; CI at remote HEAD a668df6a7 only"
+    "Local HEAD 2285c3a6 not yet pushed; CI at remote HEAD a668df6a7 only"
   ],
   "unknowns": [
     "live search_all ConPort decision projection end-to-end",
     "mcp init regeneration fixes port drift without container rebinding",
-    "CI status at unpushed local HEAD 19c6879d"
+    "CI status at unpushed local HEAD 2285c3a6"
   ],
   "cleanup_status": "N/A",
   "embedded_audit": {
@@ -48,7 +48,7 @@
     "report_path": "proof/TP-DMX-MEMORY-TRINITY-001/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [
-      "Reconciled head_sha across proof and supervisor artifacts at 19c6879d",
+      "Reconciled head_sha across proof and supervisor artifacts at 2285c3a6",
       "Supervisor audit artifacts under proof/TP-DMX-MEMORY-TRINITY-001/"
     ],
     "remaining_risks": [
