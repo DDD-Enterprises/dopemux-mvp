@@ -1,64 +1,62 @@
-# PR #939 Live Refresh — 2026-06-20 (reconciled)
+# PR #939 Live Refresh — 2026-06-20 (post-rebase + B5/D2 remediation)
 
-**Source**: `gh pr view 939`, `gh pr checks 939`, `gh api .../check-runs`  
-**Queried**: 2026-06-20T04:55Z (post-reopen)  
-**Authoritative HEAD**: `aa3461a247298b8ab51491e4486d63afbec4a827` (pushed)  
-**Prior remote HEAD**: `a668df6a71b33a7152c098e470eca85085a3eaaa`
+**Source**: `gh pr view 939`, `gh pr checks 939 --required` (watch_rc=0)
+**Queried**: 2026-06-20 (after rebase on origin/main, force-push-with-lease, CI settle)
+**Reviewed HEAD**: `622f823450a8e7b54c06b8e2924ec39e95c63b13` (CI-validated)
+**Note**: the live PR head is the proof-bundle commit (child of `622f823450a8e7b54c06b8e2924ec39e95c63b13`, proof-only changes).
 
 ## PR state
 
 | Field | Value |
 |-------|-------|
-| State | **OPEN** (reopened) |
-| Reopened after close | `2026-06-20T04:05:30Z` → reopened post `aa3461a24` push |
+| State | **OPEN** |
+| Merge state | **CLEAN** |
+| Mergeable | **MERGEABLE** |
 | mergedAt | `null` |
 | Base | `main` |
-| Merge state | **BEHIND** |
+| Behind main | **No** (rebased clean, 0 conflicts) |
 | Head branch | `fix/mcp-server-build-failures` |
 | PR URL | https://github.com/DDD-Enterprises/dopemux-mvp/pull/939 |
 
-> **Supervisor note**: Current recommendation **HOLD** until CI green at `aa3461a24` and rebase on `main`. Post-remediation semantic **MERGE_WITH_FOLLOWUPS** unchanged.
+> **Recommendation**: **MERGE_WITH_FOLLOWUPS** — required CI is green, branch is rebased,
+> B5/D2 remediated. Followups are non-blocking. Final merge is the operator's call.
 
-## Scope @ last pushed head (`a668df6a7`)
-
-| Metric | Value |
-|--------|-------|
-| Changed files | **172** |
-| Additions | ~12,078 |
-| Deletions | 3,546 |
-
-## Required CI @ `a668df6a7` — PASS (all green)
+## Required CI @ `622f823450a8e7b54c06b8e2924ec39e95c63b13` — all green (8/8)
 
 | Job | Result |
 |-----|--------|
-| `checks` | **PASS** |
-| `💅 Code Quality & Linting` | **PASS** |
-| `🔍 Audit Proof Validator (--all)` | **PASS** |
-| `independent embedded audit` | **PASS** |
-| `📊 CI Pipeline Summary` | **PASS** (no blocking failures observed) |
+| 🔒 Security Review | **PASS** |
+| 📚 Documentation Check | **PASS** |
+| identity-check | **PASS** |
+| 🧪 Unit Tests | **PASS** |
+| Analyze (python) | **PASS** |
+| Analyze (javascript-typescript) | **PASS** |
+| Analyze (ruby) | **PASS** |
+| 📊 CI Pipeline Summary | **PASS** |
 
-Prior failures at `a1690402b` (markdownlint, missing `embedded_audit`) are **resolved** at `7199c61a8` and remain green through `a668df6a7`.
+Advisory (NOT required, outside merge gate): `Scout claude-brain` was failing in an earlier run; `Scout adhd-engine` pending. Branch protection on `main` requires only the 8 jobs above.
 
-## CI @ `aa3461a24` (post-push + reopen)
+## Supervisor impact (delta from prior reconciled refresh)
 
-| Item | Status |
-|------|--------|
-| Pushed to origin | **YES** |
-| CI @ `aa3461a24` | **PENDING** (triggered on push/reopen) |
-| Proof freshness | Reconciled; refresh after CI completes |
-
-## Supervisor impact
-
-| Verdict | Prior stale refresh (`a1690402b`) | Current reconciled |
-|---------|-----------------------------------|-------------------|
-| Merge readiness | BLOCKED (4 CI FAIL) | **BLOCKED** (BEHIND main; operator blockers remain) |
-| PR #939 current | HOLD | **HOLD** (OPEN — awaiting CI @ aa3461a24) |
-| PR #939 post-remediation | — | **MERGE_WITH_FOLLOWUPS** (if reopened + CI + operator gates) |
-| Operator readiness | REJECT | **REJECT** (unchanged — B5/D2) |
+| Verdict | Prior (`2285c3a6`, stale) | Current (`622f823450a8e7b54c06b8e2924ec39e95c63b13`, live) |
+|---------|---------------------------|------------------------------|
+| Merge readiness | BLOCKED (PR CLOSED + BEHIND + CI-not-pushed) | **MERGE_WITH_FOLLOWUPS** |
+| PR #939 | HOLD (CLOSED) | **OPEN / CLEAN / MERGEABLE** |
+| Operator readiness | REJECT (B5 + D2) | **CONDITIONAL** (B5 + D2 cleared) |
+| B5 mcp doctor | FAIL | **PASS** (exit 0) |
+| D2 skills install | absent | **17/20 installed + committed** |
 | Slice 001 source | CONDITIONAL | **CONDITIONAL** (unchanged) |
 
-## Remaining blockers (ordered)
+## Resolved blockers
 
-1. **Await CI** green at `aa3461a24` (in progress).
-2. **Rebase on `main`** (BEHIND).
-3. **Operator**: B5 mcp doctor port alignment; D2 skills sync install.
+1. ✅ PR reopened/OPEN (prior artifacts wrongly recorded CLOSED).
+2. ✅ Rebased on `main` (no longer BEHIND).
+3. ✅ Required CI green at the pushed/reviewed HEAD.
+4. ✅ B5 `mcp doctor` exit 0.
+5. ✅ D2 skills installed into `.claude/skills` + `.github/skills`.
+
+## Remaining (non-blocking)
+
+- embedded_audit SKIPPED — accept or run an independent embedded audit.
+- D2 17/20 — operator decision on the 3 family-less templates.
+- D5 `l0_membership.json` stale fleet refs.

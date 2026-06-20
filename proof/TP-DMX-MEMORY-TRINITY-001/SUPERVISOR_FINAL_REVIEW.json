@@ -1,72 +1,78 @@
 {
   "branch_verdict": "PARTIAL",
-  "merge_verdict": "BLOCKED",
-  "merge_verdict_note": "Release readiness blocked per 2026-06-17 policy: requires current head SHA, current CI/checks, current proof, and independent approval. PR #939 is CLOSED (not merged). BLOCKED means release-readiness blocked, not 'branch A/C failed'.",
+  "branch_verdict_note": "B5 (mcp doctor) and D2 (skills install) RESOLVED this slice; PARTIAL remains for D5 l0_membership staleness, 17/20 skills coverage, and SKIPPED embedded_audit.",
+  "merge_verdict": "MERGE_WITH_FOLLOWUPS",
+  "merge_verdict_note": "Prior BLOCKED was driven by PR #939 CLOSED + BEHIND main + CI-not-at-pushed-HEAD. ALL THREE now resolved: PR is OPEN/MERGEABLE/CLEAN, branch rebased on origin/main, and all 8 required checks are green at the reviewed head 622f823450a8e7b54c06b8e2924ec39e95c63b13. Remaining followups are non-blocking (see next_slices).",
   "slice_001_approval": "CONDITIONAL",
-  "operator_readiness": "REJECT",
-  "pr_939": "HOLD",
-  "pr_939_post_remediation": "MERGE_WITH_FOLLOWUPS",
-  "pr_939_note": "Current HOLD because PR #939 is CLOSED without merge (2026-06-20T04:05:30Z). MERGE_WITH_FOLLOWUPS applies only after reopen/new PR, required CI green at pushed HEAD, rebase on main, operator acceptance or remediation of B5/D2, and proof at that same HEAD. A/C hard-stop sections pass on branch evidence; this does not override operator REJECT or closed PR state.",
-  "branch_sha": "2285c3a61c51da88f1716e1544df144f866efce2",
-  "remote_head_sha": "a668df6a71b33a7152c098e470eca85085a3eaaa",
-  "confidence": "medium",
+  "operator_readiness": "CONDITIONAL",
+  "operator_readiness_note": "Both REJECT drivers cleared — B5 mcp doctor now exits 0 (env aligned to running singletons), D2 skills installed (17/20) and committed. CONDITIONAL pending operator acceptance of: (a) 17/20 skills scope, (b) embedded_audit SKIPPED posture.",
+  "pr_939": "MERGE_WITH_FOLLOWUPS",
+  "pr_939_note": "Conditions for MERGE_WITH_FOLLOWUPS are met: PR OPEN (mergeState CLEAN), rebased on main, required CI green at 622f823450a8e7b54c06b8e2924ec39e95c63b13, B5/D2 remediated. Followups (17/20 skills decision, embedded audit, D5 staleness) do not block merge. Final merge remains the operator's call.",
+  "reviewed_head_sha": "622f823450a8e7b54c06b8e2924ec39e95c63b13",
+  "reviewed_head_note": "Single authoritative reviewed head. The proof-bundle commit (live PR head) is a child that changes only proof/ + audit_inputs/; verify with `git diff 622f823450a8e7b54c06b8e2924ec39e95c63b13..<PR head>`.",
+  "remote_head_sha": "622f823450a8e7b54c06b8e2924ec39e95c63b13",
+  "confidence": "high",
   "evidence_posture": {
-    "superseded_pack": "108880 bytes / 32-33 entries (missing final review, PROOF, l0_membership)",
-    "current_pack": "144KB+ rebuild — required files present; fingerprint must match PACK_INVENTORY after rebuild",
-    "runtime_logs": "CLAIMED_PASS for B1-B3 via COMMAND_LOG.md"
+    "pack": "rebuilt at proof-bundle commit; fingerprints in PACK_INVENTORY.json (zip_sha256_scope=all_entries_except_PACK_INVENTORY.json); verify via scripts/verify_supervisor_input_pack.sh",
+    "ci": "all 8 required checks PASS at 622f823450a8e7b54c06b8e2924ec39e95c63b13 (gh pr checks 939 --required, watch_rc=0)",
+    "B5": "OBSERVED PASS — source ./.envrc && dopemux mcp doctor -> 'All checks green' (exit 0)",
+    "D2": "OBSERVED PASS — .claude/skills + .github/skills each populated with 17 skills (valid SKILL.md); committed",
+    "runtime_logs": "CLAIMED_PASS for B1-B3 via COMMAND_LOG.md (not independently re-run)"
   },
   "disagreements": [
     {"id": "A4", "codex": "PASS", "supervisor": "PARTIAL", "note": "Trinity rows present; matrix v2.0.0 simplified-architecture tone"},
     {"id": "B1", "codex": "PASS", "supervisor": "CLAIMED_PASS", "note": "Log-only runtime evidence"},
     {"id": "B2", "codex": "PASS", "supervisor": "CLAIMED_PASS", "note": "Log-only runtime evidence"},
     {"id": "B3", "codex": "PASS", "supervisor": "CLAIMED_PASS", "note": "~/.claude.json not in pack"},
-    {"id": "D2", "codex": "PARTIAL", "supervisor": "PARTIAL", "note": "OR-gate met; operator install FAIL"},
-    {"id": "D3", "codex": "PASS", "supervisor": "PASS", "note": "docs_index.yaml + verify script in pack"},
-    {"id": "D5", "codex": "PASS", "supervisor": "PARTIAL", "note": "l0_membership present; task-master-ai/Zen staleness"},
+    {"id": "B5", "codex": "RESOLVED", "supervisor": "RESOLVED", "note": "mcp doctor exit 0 with env aligned to shared singletons; OBSERVED this session"},
+    {"id": "D2", "codex": "RESOLVED_17_20", "supervisor": "RESOLVED_17_20", "note": ".claude/skills + .github/skills installed (17/20); 3 family-less templates not synced"},
+    {"id": "D3", "codex": "PASS", "supervisor": "PASS", "note": "docs_index.yaml catalog present; note 17/20 install vs 20-entry catalog"},
+    {"id": "D5", "codex": "PASS", "supervisor": "PARTIAL", "note": "l0_membership present; task-master-ai/Zen staleness remains"},
     {"id": "E3", "codex": "PASS", "supervisor": "PASS+NOT_RUN", "note": "PASS documented BLOCKED; NOT_RUN bridged transport"}
   ],
   "hard_stops": [
-    "operator_readiness: B5 mcp doctor FAIL",
-    "release_readiness: PR #939 CLOSED (not merged)",
-    "release_readiness: local HEAD 2285c3a6 not pushed — CI NOT_RUN at local HEAD"
+    "RESOLVED: PR #939 CLOSED -> now OPEN/MERGEABLE/CLEAN",
+    "RESOLVED: BEHIND main -> rebased clean on origin/main",
+    "RESOLVED: B5 mcp doctor FAIL -> exit 0",
+    "RESOLVED: CI not at pushed HEAD -> all 8 required green at 622f823450a8e7b54c06b8e2924ec39e95c63b13",
+    "OPEN (non-blocking): embedded_audit SKIPPED — operator/supervisor to accept or require a run",
+    "OPEN (non-blocking): D2 17/20 skills — operator decision on the 3 family-less templates"
   ],
   "pr_939_live": {
-    "state": "CLOSED",
+    "state": "OPEN",
     "merged": false,
-    "closed_at": "2026-06-20T04:05:30Z",
-    "head_sha_remote": "a668df6a71b33a7152c098e470eca85085a3eaaa",
-    "head_sha_local": "2285c3a61c51da88f1716e1544df144f866efce2",
-    "changed_files": 172,
-    "ci_at_remote_head": {
-      "audit_proof_validator": "PASS at a668df6a7",
-      "code_quality_checks": "PASS at a668df6a7",
-      "independent_embedded_audit": "PASS at a668df6a7",
-      "ci_at_local_head": "NOT_RUN — unpushed"
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "reviewed_head_sha": "622f823450a8e7b54c06b8e2924ec39e95c63b13",
+    "ci_at_reviewed_head": {
+      "required_all_green": true,
+      "checks": ["Security Review", "Documentation Check", "identity-check", "Unit Tests", "Analyze (python)", "Analyze (javascript-typescript)", "Analyze (ruby)", "CI Pipeline Summary"],
+      "advisory_non_required": "Scout claude-brain was failing/pending in a prior run; NOT in the required set"
     }
   },
   "unknowns": [
     "search_all live ConPort decision projection end-to-end",
-    "mcp init port drift fix without container rebinding",
     "PAL 06_CODEREVIEW PASS vs embedded medium/high findings",
-    "CI at local HEAD 2285c3a6 after push"
+    "whether the 3 family-less skills belong in .claude/.github targets"
   ],
   "not_run": [
     "B1-B3 independent runtime reprobe",
     "DCP facade JSON-RPC bridge live probe",
-    "skills sync install execution",
-    "CI at unpushed local HEAD"
+    "independent embedded CLI audit"
   ],
   "next_slices": [
-    "Push 2285c3a6+ with reconciled proof; reopen PR or open successor",
-    "Rebase on main before merge",
-    "Fix B5 mcp doctor port alignment",
-    "sync_repo_skills.py --target claude github",
+    "Operator: accept 17/20 skills scope or extend sync_repo_skills.py FAMILIES to install all 20",
+    "Optional: run independent embedded audit to upgrade embedded_audit from SKIPPED",
+    "Refresh l0_membership.json to drop stale Zen / task-master-ai fleet refs (D5)",
+    "Operator merge decision on PR #939",
     "Post-merge audit on main"
   ],
   "stale_proof_flags": [
-    "RESOLVED: head_sha reconciled to 2285c3a6 across PROOF, PR refresh, supervisor final",
+    "RESOLVED: head_sha reconciled to single reviewed head 622f823450a8e7b54c06b8e2924ec39e95c63b13 across PROOF, PR refresh, supervisor final",
+    "RESOLVED: PR state corrected CLOSED -> OPEN",
+    "RESOLVED: CI status corrected to live all-green at reviewed head",
     "embedded_audit.status remains SKIPPED — not a PASS",
-    "PACK_INVENTORY must be rebuilt after artifact edits — do not trust stale fingerprints"
+    "PACK_INVENTORY rebuilt; repo_head_sha = proof-bundle commit (live PR head), one commit ahead of reviewed head_sha by proof-only changes"
   ],
   "e3_grade": {
     "documentation": "PASS",

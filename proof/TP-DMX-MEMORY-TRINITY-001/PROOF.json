@@ -2,40 +2,44 @@
   "tp_id": "TP-DMX-MEMORY-TRINITY-001",
   "tp_path": "task-packets/TP-DMX-MEMORY-TRINITY-001.json",
   "branch": "fix/mcp-server-build-failures",
-  "head_sha": "2285c3a61c51da88f1716e1544df144f866efce2",
-  "remote_head_sha": "a668df6a71b33a7152c098e470eca85085a3eaaa",
+  "head_sha": "622f823450a8e7b54c06b8e2924ec39e95c63b13",
+  "head_sha_note": "Reviewed/CI-validated head (rebased on origin/main; all required checks green). This proof bundle is committed as a child of head_sha; the bundle commit is the live PR head and changes only proof/ + audit_inputs/. Verify: git diff 622f823450a8e7b54c06b8e2924ec39e95c63b13..HEAD touches only proof/ and audit_inputs/.",
+  "remote_head_sha": "622f823450a8e7b54c06b8e2924ec39e95c63b13",
   "worktree_path": "/Users/hue/code/dopemux-mvp",
   "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
   "slices": [
     "S1 ADR law + routing card",
     "S2 command drift fix + validator",
     "S3 audit prompt + remediation plan",
-    "S4 PAL-gated skills remediation 002-004"
+    "S4 PAL-gated skills remediation 002-004",
+    "S5 operator-readiness remediation: B5 mcp doctor + D2 skills install"
   ],
   "validations": [
     {"command": "python3 scripts/validate_memory_command_refs.py", "exit_code": 0, "bucket": "PASS"},
-    {"command": "python3 scripts/validate_skill_frontmatter.py", "exit_code": 0, "bucket": "PASS"},
+    {"command": "python3 scripts/validate_skill_frontmatter.py", "exit_code": 0, "bucket": "PASS", "reason": "20 template skills have name+description frontmatter"},
     {"command": "python3 -m jsonschema -i task-packets/TP-DMX-MEMORY-TRINITY-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json", "exit_code": 0, "bucket": "PASS"},
     {"command": "git diff --check", "exit_code": 0, "bucket": "PASS"},
-    {"command": "PYTHONPATH=src python -m dopemux.cli mcp doctor", "exit_code": 1, "bucket": "FAIL", "reason": "worktree port drift :3039/:3054 vs containers :3005/:3020"},
+    {"command": "source ./.envrc && PYTHONPATH=src python -m dopemux.cli mcp doctor", "exit_code": 0, "bucket": "PASS", "reason": "B5 RESOLVED — All checks green; env aligned to running shared singletons (CONPORT_MCP_PORT=3005, DOPE_MEMORY_PORT=3020, TASK_ORCHESTRATOR_HTTP_PORT=7890) via local .envrc override; prior FAIL was stale per-worktree port allocation (3039/3054/7924) with no containers"},
+    {"command": "python scripts/skills/sync_repo_skills.py --target claude github", "exit_code": 0, "bucket": "PASS", "reason": "D2 — installed 17/20 family-mapped skills into .claude/skills + .github/skills (each with valid SKILL.md); 3 family-less templates (ci-remediation-specialist, load-orchestrator-persona, vibe-pr-merge) not synced by the tool"},
+    {"command": "git rebase origin/main", "exit_code": 0, "bucket": "PASS", "reason": "clean rebase (3 overlap files auto-merged, 0 conflicts); branch no longer BEHIND main"},
+    {"command": "gh pr checks 939 --required", "exit_code": 0, "bucket": "PASS", "reason": "all 8 required checks green at 622f823450a8e7b54c06b8e2924ec39e95c63b13 (Security Review, Documentation Check, identity-check, Unit Tests, Analyze python/js/ruby, CI Pipeline Summary); PR mergeState=CLEAN, mergeable=MERGEABLE, state=OPEN"},
     {"command": "scripts/pal/run_memory_trinity_phases.sh", "exit_code": 0, "bucket": "PASS"},
     {"command": "scripts/audit/validate_audit_proof.py proof/TP-DMX-MEMORY-TRINITY-001/PROOF.json", "exit_code": 0, "bucket": "PASS"}
   ],
   "codereview_status": "PASS",
   "precommit_status": "PASS",
-  "commit_sha": "2285c3a61c51da88f1716e1544df144f866efce2",
-  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/939 — CLOSED (not merged) 2026-06-20T04:05:30Z",
+  "commit_sha": "622f823450a8e7b54c06b8e2924ec39e95c63b13",
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/939 — OPEN, MERGEABLE, mergeState=CLEAN (rebased on main; all required CI green at 622f823450a8e7b54c06b8e2924ec39e95c63b13)",
   "residual_risks": [
-    "mcp doctor FAIL — per-worktree port drift",
-    "Skill install paths empty — sync not executed",
-    "DCP facade dope-context JSON-RPC transport BLOCKED",
-    "PR #939 closed without merge — reopen or new PR required",
-    "Local HEAD 2285c3a6 not yet pushed; CI at remote HEAD a668df6a7 only"
+    "D2 skills install is 17/20 — ci-remediation-specialist, load-orchestrator-persona, vibe-pr-merge have no FAMILIES entry in sync_repo_skills.py and are not installed; operator decision pending on whether they belong in .claude/.github",
+    "embedded_audit.status = SKIPPED (not PASS) — independent embedded CLI audit not run; PAL chain artifacts under proof/TP-DMX-MEMORY-TRINITY-001/pal/",
+    "D5 l0_membership.json retains stale Zen MCP / task-master-ai MCP fleet references (out of scope this slice)",
+    "DCP facade dope-context JSON-RPC bridge transport NOT_RUN (BLOCKED fail-closed by design)",
+    "B5 fix is a local gitignored .envrc override; durable auto-load requires `direnv allow`"
   ],
   "unknowns": [
     "live search_all ConPort decision projection end-to-end",
-    "mcp init regeneration fixes port drift without container rebinding",
-    "CI status at unpushed local HEAD 2285c3a6"
+    "whether the 3 family-less skills are intended for .claude/.github targets"
   ],
   "cleanup_status": "N/A",
   "embedded_audit": {
@@ -48,13 +52,16 @@
     "report_path": "proof/TP-DMX-MEMORY-TRINITY-001/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [
-      "Reconciled head_sha across proof and supervisor artifacts at 2285c3a6",
-      "Supervisor audit artifacts under proof/TP-DMX-MEMORY-TRINITY-001/"
+      "B5 RESOLVED: mcp doctor exits 0 after aligning .envrc to running shared singletons (3005/3020/7890)",
+      "D2 RESOLVED: 17/20 skills installed into .claude/skills + .github/skills and committed",
+      "Branch rebased on origin/main (no longer BEHIND); force-pushed with lease",
+      "All required CI green at frozen head 622f823450a8e7b54c06b8e2924ec39e95c63b13; PR #939 reconciled OPEN/CLEAN (prior artifacts wrongly stated CLOSED)",
+      "head_sha reconciled to single reviewed head 622f823450a8e7b54c06b8e2924ec39e95c63b13 across PROOF / supervisor final / PR refresh"
     ],
     "remaining_risks": [
-      "Operator readiness blocked until mcp doctor PASS and skills sync install",
-      "Merge blocked until PR reopened and CI green at pushed HEAD"
+      "embedded_audit not independently executed (SKIPPED is not PASS)",
+      "operator decision pending on 17/20 skills scope"
     ],
-    "skip_reason": "SKIPPED is not PASS. PAL chain artifacts recorded under proof/TP-DMX-MEMORY-TRINITY-001/pal/; independent embedded CLI audit not run. Supervisor review in SUPERVISOR_FINAL_REVIEW.md."
+    "skip_reason": "SKIPPED is not PASS. Independent embedded CLI audit not invoked this session; PAL chain artifacts recorded under proof/TP-DMX-MEMORY-TRINITY-001/pal/. Supervisor review in SUPERVISOR_FINAL_REVIEW.md."
   }
 }

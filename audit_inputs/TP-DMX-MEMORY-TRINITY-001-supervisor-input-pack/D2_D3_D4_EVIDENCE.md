@@ -69,6 +69,20 @@ python3 scripts/skills/sync_repo_skills.py --target github --dry-run
 | Operator readiness | **FAIL** or **CONDITIONAL** | Paths not populated; operator must run sync |
 | Codex original D2 | **FAIL** (strict "populated" reading) | Fair if grading operator readiness only |
 
+### Post-remediation update (2026-06-20, reviewed head `622f823450a8e7b54c06b8e2924ec39e95c63b13`)
+
+D2 **REMEDIATED** — sync executed (not dry-run) and committed:
+
+```bash
+python scripts/skills/sync_repo_skills.py --target claude github   # exit 0
+find .claude/skills -name SKILL.md | wc -l   → 17
+find .github/skills -name SKILL.md | wc -l   → 17
+```
+
+- `.claude/skills/` and `.github/skills/` are now **populated** (17 skills each, valid `SKILL.md`).
+- **17/20**: the tool installs only family-mapped skills. `ci-remediation-specialist`, `load-orchestrator-persona`, `vibe-pr-merge` have **no `FAMILIES` entry** in `sync_repo_skills.py`, so `--family all` skips them. The 20-entry `docs_index.yaml` catalog (D3) counts all templates; the installer covers 17 of them. **Operator decision pending** on whether the 3 belong in `.claude/.github` (tracked as F006 in `AUDITOR_REPORT.md`).
+- Updated operator-readiness grade: **CONDITIONAL** (paths populated; 17/20 scope pending), no longer FAIL.
+
 ---
 
 ## D3 — `docs_index.yaml` skills vs template count
@@ -163,6 +177,6 @@ git log --oneline -1 -- .claude/commands/tm
 
 | ID | Codex | Recommended supervisor | Delta |
 |----|-------|------------------------|-------|
-| D2 | FAIL | **PARTIAL** (slice) / **FAIL** (operator) | OR-gate: sync path documented in source; dirs absent = not installed |
+| D2 | FAIL → **RESOLVED (17/20)** | **PASS** (slice) / **CONDITIONAL** (operator) | Installed 2026-06-20: `.claude/skills` + `.github/skills` each 17 skills; 3 family-less templates pending operator decision |
 | D3 | PASS | **PASS** | Add `docs/docs_index.yaml` + verification output to corroborate |
 | D4 | PASS | **PASS** (branch) | Add git commit `2bab19203`; series context explains TP invariant |
