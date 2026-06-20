@@ -1,10 +1,11 @@
-# mem/summarize
-Summarize the latest memory entries for this repo.
+# mem/summarize (deprecated — use ConPort search)
 
-**Args**: *(optional)* `$ARGUMENTS` = `<TAG>` (filter)
+Summarize recent **ConPort** mem/scratch/decision entries for this repo.
+
+**Args**: *(optional)* `$ARGUMENTS` = `<TAG>` filter
 
 **Steps**
-1) List recent entries (limit 20). Filter by `<TAG>` if provided.
-2) Output a concise digest grouped by tag with links/ids for follow-up actions.
+1) `search_custom_data_value_fts` and/or `get_decisions` with `limit: 20`.
+2) Filter by tag if provided; output digest grouped by category with ids for follow-up.
 
-**Tools**: memory_bank only.
+For chronicle recap use dope-memory tools when exposed via `/mem:recap` (planned).

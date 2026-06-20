@@ -1,16 +1,31 @@
-# ctx/index-search
-Use the **Claude-Context** MCP to (1) index a path, then (2) search it.
+---
+description: "Index then search a path via dope-context (code and/or docs)"
+arguments: "<path> :: <query> [--docs]"
+allowed-tools: [
+  "Read", "Bash",
+  "mcp__dope-context__index_workspace",
+  "mcp__dope-context__index_docs",
+  "mcp__dope-context__search_code",
+  "mcp__dope-context__docs_search",
+  "mcp__dope-context__get_index_status"
+]
+model: "claude-sonnet-4-5"
+---
 
-**Args**: `$ARGUMENTS` = `<PATH> :: <QUERY>`  
-If no path is provided, use `.`.
+# /ctx:index-search — Index + Search (dope-context)
 
-**Steps**
-1) Ensure **Claude-Context** is connected. If not, stop and tell me which env is missing (OPENAI_API_KEY, MILVUS_ADDRESS, MILVUS_TOKEN or local Milvus/Ollama).
-2) Index `<PATH>` (incremental if index exists).
-3) Run semantic search for `<QUERY>`, return top 10 as `file:line — score — 1-2 sentence snippet`. Prefer source over generated files; group duplicates.
-4) If indexing/search fails, show the exact error plus the next fix command.
+Index a path, then search it with **dope-context**.
 
-**Tools**: Claude-Context only.
+**Args**: `$ARGUMENTS` = `<PATH> :: <QUERY>` (path defaults to `.`)
 
-> Token thrift:
-- **Claude-Context**: cap results to ≤ **5** and refine the query before widening.
+**Authority**: Memory Trinity plane 3 — retrieval only.
+
+## Steps
+
+1. Confirm dope-context MCP is connected; if not, stop with `dopemux mcp sync-globals` + `docker compose up -d dope-context` remediation.
+2. Resolve `<PATH>` to absolute under repo root.
+3. Call `get_index_status`; if stale/missing, call `index_workspace` (code) and/or `index_docs` when `--docs` passed.
+4. Run `search_code` or `docs_search` for `<QUERY>`; return top 5 hits as `file — score — snippet`.
+5. On failure, show exact MCP error + next fix (Qdrant down, VOYAGE_API_KEY missing, etc.).
+
+> Token thrift: cap results to ≤5; prefer `search_code` over `search_all` for targeted lookups.

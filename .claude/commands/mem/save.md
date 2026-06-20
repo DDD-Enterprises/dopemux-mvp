@@ -1,10 +1,11 @@
-# mem/save
-Use **memory_bank** to store durable context for this project.
+# mem/save (deprecated — use ConPort)
+
+Store durable context via **ConPort** `log_custom_data` (Memory Trinity plane 1).
 
 **Args**: `$ARGUMENTS` = `<TITLE> :: <TEXT>`
 
 **Steps**
-1) Create/append an entry under the current repo name, with `<TITLE>` and `<TEXT>`.
-2) Return the entry id and a one-liner summary. Offer to tag (e.g., "design", "decision", "todo").
+1) `mcp__conport__log_custom_data` with `category: "mem"`, `key: <TITLE>`, `value: {text, tags}`.
+2) Return entry key and one-liner summary.
 
-**Tools**: memory_bank only.
+For session checkpoints use `/save` (Dopemux `.dopemux/context.db`), not this command.

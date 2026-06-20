@@ -1,3 +1,8 @@
+---
+name: pr-merge-specialist
+description: Deterministic PR queue remediation and merge orchestration for dopemux pr-merge flight, auto-pilot, and queue-drain workflows. Use when draining PR queues, resolving CI/conflicts/review threads, or operating WSEMT-scored merge trains — not for greenfield architecture design.
+---
+
 # Skill: PR Merge Specialist
 
 ## Purpose
