@@ -31,7 +31,7 @@
 
 ## Cross-plane rules
 
-1. **ConPort writes first** for decisions/progress; dope-memory mirrors (see `memory_writers.py`).
+1. **ConPort writes first** for decisions/progress; dope-memory mirrors (see `memory_writers.py`). Mirror receipts use `mirror_status`: `SUCCESS`, `FAILED`, or `NONE` — ConPort state stays intact on `FAILED` (PARTIAL success).
 2. **dope-context may project** ConPort decisions into search results but must not become the decision store.
 3. **Retrieval ≠ truth** — ranked snippets are evidence, not canonical objects.
 4. **Fail closed** when the target MCP is unreachable; do not fall back to a different plane silently.
