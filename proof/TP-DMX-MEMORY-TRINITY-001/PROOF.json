@@ -2,27 +2,56 @@
   "tp_id": "TP-DMX-MEMORY-TRINITY-001",
   "tp_path": "task-packets/TP-DMX-MEMORY-TRINITY-001.json",
   "branch": "fix/mcp-server-build-failures",
-  "head_sha": "b37b36beb",
+  "head_sha": "a1690402b86f9304efb4da5068c03118239c1b4e",
   "worktree_path": "/Users/hue/code/dopemux-mvp",
   "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
-  "slices": ["S1 ADR law", "S2 command routing", "S3 audit prompt + plan"],
+  "slices": [
+    "S1 ADR law + routing card",
+    "S2 command drift fix + validator",
+    "S3 audit prompt + remediation plan",
+    "S4 PAL-gated skills remediation 002-004"
+  ],
   "validations": [
     {"command": "python3 scripts/validate_memory_command_refs.py", "exit_code": 0, "bucket": "PASS"},
+    {"command": "python3 scripts/validate_skill_frontmatter.py", "exit_code": 0, "bucket": "PASS"},
     {"command": "python3 -m jsonschema -i task-packets/TP-DMX-MEMORY-TRINITY-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json", "exit_code": 0, "bucket": "PASS"},
     {"command": "git diff --check", "exit_code": 0, "bucket": "PASS"},
-    {"command": "PYTHONPATH=src python -m dopemux.cli mcp doctor", "exit_code": 1, "bucket": "FAIL", "reason": "per-worktree env unset in audit shell"},
-    {"command": "scripts/pal/run_memory_trinity_phases.sh (Phase 1 PAL gate)", "exit_code": 0, "bucket": "PASS"},
-    {"command": "PAL 01_ANALYZE through 08_FINAL_CHALLENGE", "exit_code": 0, "bucket": "PASS"}
+    {"command": "PYTHONPATH=src python -m dopemux.cli mcp doctor", "exit_code": 1, "bucket": "FAIL", "reason": "worktree port drift :3039/:3054 vs containers :3005/:3020"},
+    {"command": "scripts/pal/run_memory_trinity_phases.sh", "exit_code": 0, "bucket": "PASS"},
+    {"command": "scripts/audit/validate_audit_proof.py proof/TP-DMX-MEMORY-TRINITY-001/PROOF.json", "exit_code": 0, "bucket": "PASS"}
   ],
   "codereview_status": "PASS",
   "precommit_status": "PASS",
-  "commit_sha": "b37b36beb",
-  "pr_url_or_blocker": "PENDING",
+  "commit_sha": "a1690402b86f9304efb4da5068c03118239c1b4e",
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/939",
   "residual_risks": [
-    "47 tm:* commands remain",
-    "DCP facade dope-context transport gap",
-    "Skill install paths empty"
+    "mcp doctor FAIL — per-worktree port drift",
+    "Skill install paths empty — sync not executed",
+    "DCP facade dope-context JSON-RPC transport BLOCKED",
+    "PR #939 behind main — rebase required"
   ],
-  "unknowns": ["PAL artifacts", "live search_all decision projection"],
-  "cleanup_status": "N/A"
+  "unknowns": [
+    "live search_all ConPort decision projection end-to-end",
+    "mcp init regeneration fixes port drift without container rebinding"
+  ],
+  "cleanup_status": "N/A",
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-MEMORY-TRINITY-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Refreshed PROOF.json head_sha and embedded_audit object",
+      "Supervisor audit artifacts under proof/TP-DMX-MEMORY-TRINITY-001/"
+    ],
+    "remaining_risks": [
+      "Operator readiness blocked until mcp doctor PASS and skills sync install",
+      "Merge blocked until PR CI green and rebase on main"
+    ],
+    "skip_reason": "PAL chain artifacts recorded under proof/TP-DMX-MEMORY-TRINITY-001/pal/; independent embedded CLI audit not run. Supervisor review in SUPERVISOR_FINAL_REVIEW.md."
+  }
 }

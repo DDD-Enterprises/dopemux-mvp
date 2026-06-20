@@ -24,7 +24,7 @@ prelude: Dcp Pcp Architecture Regeneration Gpt55 (reference) for dopemux documen
 > code, config, tests, or the repo authority docs, runtime wins (AGENTS.md §2). The companion
 > Opus audit records confirmed claims, required corrections, and build-order reordering.
 
-According to a document from June 19, 2026, the strongest reconciliation is: **PCP Core is the parent, DCP is a Dopemux extension, dNh is a project extension, and PR #925 is salvageable but not merge-ready.** 
+According to a document from June 19, 2026, the strongest reconciliation is: **PCP Core is the parent, DCP is a Dopemux extension, dNh is a project extension, and PR #925 is salvageable but not merge-ready.**
 
 # Full PCP/DCP Architecture Regeneration and Build Plan
 
@@ -36,10 +36,10 @@ CURRENT_PR925_VERDICT: KEEP_DRAFT_PENDING_CORE_REPAIR
 NEXT_BUILD_ACTION: PR925_FRAMING_PROOF_REPAIR
 ```
 
-**OBSERVED_BY_ADJUDICATION:** PCP Core is the reusable parent substrate; DCP is not the parent; dNh is not the template; both are extensions. 
-**OBSERVED_BY_FILE:** The repo authority model is split across `dopemux`, `dopetask`, task-orchestrator, Leantime, ConPort, dope-memory, dope-context, dopecon-bridge, ADHD Engine, and Repo-Truth-Extractor, so a monolithic DCP parent model is wrong. 
-**OBSERVED_BY_ADJUDICATION:** PR #925 still leaks Dopetask and Task Orchestrator concepts into generic PCP artifacts, and the extension contract plus generic authority-map schema are missing. 
-**OBSERVED_BY_PROOF:** PR #925 currently validates fixture shape and dry-run contracts only; generic runtime exporter behavior remains unproven. 
+**OBSERVED_BY_ADJUDICATION:** PCP Core is the reusable parent substrate; DCP is not the parent; dNh is not the template; both are extensions.
+**OBSERVED_BY_FILE:** The repo authority model is split across `dopemux`, `dopetask`, task-orchestrator, Leantime, ConPort, dope-memory, dope-context, dopecon-bridge, ADHD Engine, and Repo-Truth-Extractor, so a monolithic DCP parent model is wrong.
+**OBSERVED_BY_ADJUDICATION:** PR #925 still leaks Dopetask and Task Orchestrator concepts into generic PCP artifacts, and the extension contract plus generic authority-map schema are missing.
+**OBSERVED_BY_PROOF:** PR #925 currently validates fixture shape and dry-run contracts only; generic runtime exporter behavior remains unproven.
 **CLAIMED_ONLY:** The newly supplied Pro 5.5 adjudication is useful as input, especially on verdict-label repair and proof freshness, but its proposed order putting the generic exporter before the extension contract is not accepted.
 **INFERRED:** Building the exporter before the extension boundary risks baking the current Dopemux-shaped core into runtime code.
 **PROPOSED:** Do PR #925 framing/proof repair first because it is the narrowest safe cleanup, then define the extension contract and de-Dopemux the core before any generic exporter.
@@ -143,9 +143,9 @@ Planes
 
 **Execution plane** handles runner mapping and proof requirements. In PCP Core this is generic; in DCP it maps to Dopetask/Codex/Claude/Gemini/AGY/OpenClaw only through extension contracts.
 
-**Audit plane** requires independence. Creator cannot be sole auditor, and release/security work requires independent audit or explicit human approval. 
+**Audit plane** requires independence. Creator cannot be sole auditor, and release/security work requires independent audit or explicit human approval.
 
-**Proof plane** binds evidence to repo, branch, head SHA, commands, exits, diffs, and artifacts. READY cannot derive from stale proof. 
+**Proof plane** binds evidence to repo, branch, head SHA, commands, exits, diffs, and artifacts. READY cannot derive from stale proof.
 
 **Workflow/projection plane** exposes status/views. It must not become authority for proof, merge, PM truth, or runtime writes.
 
@@ -256,7 +256,7 @@ extension_manifest:
 | ADHD Engine signals                    | Operator-support/cognitive-state hints                             | PM/memory/retrieval/DCP authority                 | Read-only signal proof                                     |         EXTENSION_READ |
 | OpenClaw / OpenRouter                  | Worker/runtime/routing substrate                                   | DCP/PCP policy brain                              | Provider/model logging, local benchmark, independent audit |         CONTRACTS_ONLY |
 
-**OBSERVED_BY_FILE:** The repository already describes these systems as split authority surfaces, not one clean platform. `dopetask` is external execution via `scripts/taskx` to `scripts/dopetask`, task-orchestrator is workflow/PM-transition, and dopecon-bridge is an adapter/proxy rather than authority. 
+**OBSERVED_BY_FILE:** The repository already describes these systems as split authority surfaces, not one clean platform. `dopetask` is external execution via `scripts/taskx` to `scripts/dopetask`, task-orchestrator is workflow/PM-transition, and dopecon-bridge is an adapter/proxy rather than authority.
 
 ---
 
@@ -279,7 +279,7 @@ extension_manifest:
 | Reconciliation service       | Later extension adapter             | PCP workflow engine                     | Dry-run proof and rollback              | Stop before live gates                  |
 | Task Orchestrator visibility | Optional projection                 | Required PCP workflow                   | Projection-only proof                   | Stop on Task Orchestrator write         |
 
-**OBSERVED_BY_ADJUDICATION:** dNh is cleanest when it stays in fixture/extension data: CRM, Telegram, calendar, runtime DB, identity, policy, and proof roots are extension-owned, not core-owned. 
+**OBSERVED_BY_ADJUDICATION:** dNh is cleanest when it stays in fixture/extension data: CRM, Telegram, calendar, runtime DB, identity, policy, and proof roots are extension-owned, not core-owned.
 
 ---
 
@@ -307,7 +307,7 @@ Should #925 stay draft? Yes.
 PR925_ACTION: DEDOPEMUX_BEFORE_MERGE
 ```
 
-**OBSERVED_BY_ADJUDICATION:** Label-only repair is too weak because the core still contains Dopemux-specific contract surfaces; the recommendation is to keep draft and repair #925, then add extension contract and de-Dopemux the core before exporter work. 
+**OBSERVED_BY_ADJUDICATION:** Label-only repair is too weak because the core still contains Dopemux-specific contract surfaces; the recommendation is to keep draft and repair #925, then add extension contract and de-Dopemux the core before exporter work.
 
 ---
 
@@ -367,7 +367,7 @@ PR925_ACTION: DEDOPEMUX_BEFORE_MERGE
 |    10 | `TP-DMX-PCP-LIVE-WRITE-GATES-0001`              | Define live-write gates                              | Contracts only                          | GPT-5.5 Pro supervisor                | Approval, idempotency, rollback, audit requirements              | Any live write                                        | LIVE_WRITE_READY criteria          |
 |    11 | `TP-DMX-PCP-FASTAPI-BRIDGE-LAST-0001`           | Bridge/live writes last                              | Adapter implementation only after gates | Implementer after approval            | Gate proof, rollback, post-write verification                    | Bridge promoted to authority                          | Safe adapter path                  |
 
-**Why extension contract before exporter:** the current PR’s own evidence shows missing extension/authority-map schemas and Dopemux-specific fields in core. Building the exporter first would encode the wrong boundary into code. 
+**Why extension contract before exporter:** the current PR’s own evidence shows missing extension/authority-map schemas and Dopemux-specific fields in core. Building the exporter first would encode the wrong boundary into code.
 
 ---
 
@@ -491,7 +491,7 @@ Updated PR body, proof, E2E dry-run result, validation report, command outputs, 
 | Fixture-to-runtime validation accepted | Negative-case runner, failure index                                      | Traps executed, not asserted                                        | Command outputs and exit codes                    | Independent audit                      | Assertion-only pass                                                            |
 | Live-write readiness                   | LIVE_WRITE_READY contract, canonical writer map, rollback                | Dry-run, idempotency, rollback tests                                | Human approval, audit, PR Steward readiness       | GPT-5.5 supervisor + independent audit | Missing proof, stale proof, unknown reviewer, no rollback, no canonical writer |
 
-**OBSERVED_BY_POLICY:** READY requires current head, current checks, proof current to head, independent audit or human approval, every review item classified, no unknown reviewers/bots, no unresolved blocking threads, and diff within allowlist. 
+**OBSERVED_BY_POLICY:** READY requires current head, current checks, proof current to head, independent audit or human approval, every review item classified, no unknown reviewers/bots, no unresolved blocking threads, and diff within allowlist.
 
 ---
 
