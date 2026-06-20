@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcp.local/schemas/route_certification_ledger.schema.json",
+  "title": "Route Certification Ledger Entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "certification_id",
+    "route_profile",
+    "pool",
+    "role",
+    "model_provider_runner",
+    "benchmark_result_refs",
+    "approved_privacy_classes",
+    "approved_risk_classes",
+    "approved_roles",
+    "expiration",
+    "revocation_reasons",
+    "reviewer",
+    "approval_event",
+    "current_status",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "certification_id": { "type": "string", "minLength": 1 },
+    "route_profile": { "type": "string", "minLength": 1 },
+    "pool": { "type": "string", "minLength": 1 },
+    "role": { "type": "string", "minLength": 1 },
+    "model_provider_runner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "provider", "runner", "access_path"],
+      "properties": {
+        "model": { "type": "string" },
+        "provider": { "type": "string" },
+        "runner": { "type": "string" },
+        "access_path": { "type": "string" }
+      }
+    },
+    "benchmark_result_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "approved_privacy_classes": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/privacy_class" }
+    },
+    "approved_risk_classes": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/risk_class" }
+    },
+    "approved_roles": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "expiration": { "type": "string", "format": "date-time" },
+    "revocation_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "EXPIRED",
+          "PROVIDER_DRIFT",
+          "SCHEMA_REGRESSION",
+          "PRIVACY_VIOLATION",
+          "BENCHMARK_REGRESSION",
+          "SECURITY_INCIDENT",
+          "MODEL_DEPRECATED",
+          "MANUAL_REVOKE"
+        ]
+      }
+    },
+    "reviewer": { "type": "string", "minLength": 1 },
+    "approval_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approval_id", "approved_at", "scope"],
+      "properties": {
+        "approval_id": { "type": "string" },
+        "approved_at": { "type": "string", "format": "date-time" },
+        "scope": { "type": "string" }
+      }
+    },
+    "current_status": {
+      "type": "string",
+      "enum": ["ACTIVE", "ACTIVE_WITH_LIMITS", "EXPIRED", "REVOKED", "SUSPENDED", "PENDING"]
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "current_status": { "enum": ["ACTIVE", "ACTIVE_WITH_LIMITS"] } } },
+      "then": {
+        "properties": {
+          "revocation_reasons": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "revocation_reasons": { "minItems": 1 } } },
+      "then": {
+        "properties": {
+          "current_status": { "enum": ["EXPIRED", "REVOKED", "SUSPENDED"] }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "privacy_class": {
+      "type": "string",
+      "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO", "PRIVATE_REPO_NO_SECRETS", "PRIVATE_REPO_POSSIBLE_SECRETS", "SECRET_BEARING", "CLIENT_DATA", "SECURITY_SENSITIVE", "RELEASE_AUTHORITY", "UNKNOWN"]
+    },
+    "risk_class": {
+      "type": "string",
+      "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT", "R4_MULTI_FILE_EDIT", "R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION", "UNKNOWN"]
+    }
+  }
+}
