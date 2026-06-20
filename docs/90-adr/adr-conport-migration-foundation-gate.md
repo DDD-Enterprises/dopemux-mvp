@@ -102,7 +102,7 @@ file — are ported into the canonical gate:
 `applied_verified` / `verified` / `failed` status strings and exit `1` were
 **not** adopted, to avoid breaking the merged #917 contract and its test suite.
 The hardening's error *messages* are ported verbatim; the *envelope* stays
-#917's. The word "legacy" in the no-mutate message is #928's wording for "a
+PR #917's. The word "legacy" in the no-mutate message is PR #928's wording for "a
 pre-existing ledger this gate does not own."
 
 ## Consequences
