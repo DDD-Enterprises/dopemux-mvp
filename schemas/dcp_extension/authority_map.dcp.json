@@ -1,0 +1,166 @@
+{
+  "schema_version": "pcp.authority_map.v0",
+  "project_id": "DDD-Enterprises/dopemux-mvp",
+  "entries": [
+    {
+      "domain": "workflow.tasks",
+      "action": "project",
+      "canonical_authority_owner": "task-orchestrator",
+      "canonical_writer": null,
+      "surface_class": "PROJECTION",
+      "reader_or_projection_surface": "dcp task-orchestrator read projection",
+      "source_truth_refs": [
+        "task-orchestrator MCP (current-tasks.db)"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "memory.decisions",
+      "action": "read",
+      "canonical_authority_owner": "conport",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dcp conport read adapter",
+      "source_truth_refs": [
+        "conport (PostgreSQL+AGE knowledge graph)"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "memory.chronicle",
+      "action": "read",
+      "canonical_authority_owner": "dope-memory",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dcp dope-memory read adapter",
+      "source_truth_refs": [
+        "dope-memory chronicle store"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "retrieval.code_docs",
+      "action": "query",
+      "canonical_authority_owner": "dope-context",
+      "canonical_writer": null,
+      "surface_class": "INDEX",
+      "reader_or_projection_surface": "dcp dope-context retrieval index",
+      "source_truth_refs": [
+        "dope-context Qdrant index"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "transport.events",
+      "action": "read",
+      "canonical_authority_owner": "dopecon-bridge",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dcp dopecon-bridge transport adapter",
+      "source_truth_refs": [
+        "Redis Streams + EventBus (proxied by dopecon-bridge)"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "operator.cognitive_state",
+      "action": "read",
+      "canonical_authority_owner": "adhd-engine",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dcp adhd-engine signal adapter",
+      "source_truth_refs": [
+        "ADHD Engine operator signals"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "repo.truth_extraction",
+      "action": "read",
+      "canonical_authority_owner": "repo-truth-extractor",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dcp repo-truth-extractor artifact reader",
+      "source_truth_refs": [
+        "Repo-Truth-Extractor artifacts"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "execution.external_runner",
+      "action": "map",
+      "canonical_authority_owner": "dopetask",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dcp dopetask execution-mapping adapter",
+      "source_truth_refs": [
+        "Dopetask external execution runtime"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "operator.control",
+      "action": "project",
+      "canonical_authority_owner": "dopemux-cli",
+      "canonical_writer": null,
+      "surface_class": "PROJECTION",
+      "reader_or_projection_surface": "dcp dopemux operator-control projection",
+      "source_truth_refs": [
+        "dopemux CLI/startup"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "pr.readiness",
+      "action": "read",
+      "canonical_authority_owner": "pr-steward",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dcp pr-steward readiness intake",
+      "source_truth_refs": [
+        "PR Steward review-sensor intake"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    }
+  ]
+}
