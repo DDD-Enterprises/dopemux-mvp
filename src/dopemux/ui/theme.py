@@ -508,7 +508,7 @@ def create_console(**kwargs: Any) -> Console:
 
 def styled_table(
     title: str,
-    *columns: str | tuple[str] | tuple[str, dict[str, Any]],
+    *columns: str | tuple[str, dict[str, Any]],
     compact: bool = False,
     **table_kwargs: Any,
 ) -> Table:
@@ -516,8 +516,8 @@ def styled_table(
 
     Args:
         title: Table title (rendered with ``table.header`` style).
-        *columns: Column names, or ``(name,)`` / ``(name, kwargs)`` tuples
-            for :meth:`Table.add_column`.
+        *columns: Column names, or ``(name, kwargs)`` tuples for
+            :meth:`Table.add_column`.
         compact: If ``True``, use ``SIMPLE`` box and tighter padding.
         **table_kwargs: Forwarded to :class:`rich.table.Table`.
 
@@ -553,8 +553,7 @@ def styled_table(
         table.add_column("Timestamp", style="text.dim", no_wrap=True)
     for col in columns:
         if isinstance(col, tuple):
-            name = col[0]
-            col_kwargs = col[1] if len(col) > 1 else {}
+            name, col_kwargs = col
             table.add_column(name, **col_kwargs)
         else:
             table.add_column(col)
