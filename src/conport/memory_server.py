@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 """
+DEAD CODE — superseded by docker/mcp-servers-source/conport/
+
+Canonical runtime path: docker/mcp-servers-source/conport/.
+
 ConPort Memory MCP Server
 
 Implements the unified memory graph for Dopemux with:
