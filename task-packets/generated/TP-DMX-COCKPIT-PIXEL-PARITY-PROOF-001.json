@@ -1,0 +1,142 @@
+{
+  "id": "TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001",
+  "project": "dopemux-mvp",
+  "target": "Produce artifact-only Cockpit pixel parity proof comparing current merged runtime renders against uploaded PNG references without rebuilding Cockpit or silently fixing design drift.",
+  "invariants": [
+    "This is a continuation/proof packet, not a new Cockpit series.",
+    "Do not rebuild Cockpit runtime UI.",
+    "Do not change design tokens, NO_COLOR behavior, glyph doctrine, or runtime rendering.",
+    "Do not claim READY_FOR_CLAUDE_DESIGN or final design approval.",
+    "Do not mutate uploaded PNG references.",
+    "Do not run live services, PM writes, ConPort writes, dope-memory writes, Docker calls, network calls, or T4 remote mutation.",
+    "Classify deviations only as MATCH, ACCEPTABLE_DELTA, DESIGN_DRIFT, RUNTIME_BUG, SPEC_AMBIGUITY, or UNKNOWN.",
+    "If viewport, font, rasterization, or source-reference equivalence is not proven, pixel certainty remains UNKNOWN."
+  ],
+  "depends_on": [
+    "TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001",
+    "PR #948 merged: feat(cockpit): render electric refresh modes"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-COCKPIT-ELECTRIC-REFRESH",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-pixel-parity-proof-001",
+    "base_branch": "origin/main",
+    "stacked_because": "Continuation proof lane follows merged PR #948 at origin/main without changing runtime behavior."
+  },
+  "commit": {
+    "message": "test(cockpit): add pixel parity proof",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001.json",
+      "task-packets/INDEX.md",
+      "scripts/cockpit_pixel_parity_proof.py",
+      "tests/unit/dopemux/ui/cockpit/test_pixel_parity_proof.py",
+      "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit/test_pixel_parity_proof.py -q",
+      "PYTHONPATH=src python scripts/cockpit_pixel_parity_proof.py --output proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001",
+      "python -m json.tool proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/PIXEL_PARITY_REPORT.json >/dev/null",
+      "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py tests/test_cockpit_tokens.py -q",
+      "PYTHONPATH=src python -m compileall -q src/dopemux tests scripts/cockpit_pixel_parity_proof.py",
+      "git diff --check",
+      "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001.json task-packets/INDEX.md scripts/cockpit_pixel_parity_proof.py tests/unit/dopemux/ui/cockpit/test_pixel_parity_proof.py proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/research.md proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/plan.md proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/PIXEL_PARITY_REPORT.json proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/PIXEL_PARITY_REPORT.md"
+    ]
+  },
+  "pr": {
+    "title": "test(cockpit): add pixel parity proof",
+    "body": "Adds TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001 as an artifact/test-only continuation proof packet. It compares current merged Cockpit runtime renders against uploaded PNG references, emits structured classifications, and preserves the boundary that design drift is reported rather than silently fixed. No runtime rendering, token doctrine, live integration, PM writes, or READY_FOR_CLAUDE_DESIGN claims are introduced.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1-preflight-and-research",
+      "task": "Verify repo identity, main head, PR #948 merge truth, current Cockpit runtime files, uploaded PNG metadata, and existing screenshot/export tooling before implementation.",
+      "commands": [
+        "git fetch origin main",
+        "git rev-parse origin/main",
+        "gh pr view 948 --json number,title,state,mergedAt,headRefName,headRefOid,mergeCommit,url,baseRefName",
+        "python -m json.tool docs/03-reference/spec/dopetask/dopetask-canonical-spec.json >/dev/null"
+      ],
+      "expected_files": [
+        "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/research.md"
+      ],
+      "validation": [
+        "Research records OBSERVED / PROPOSED / UNKNOWN classifications and does not authorize runtime design fixes."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json",
+        "src/dopemux/ui/cockpit/render_modes.py",
+        "src/dopemux/ui/cockpit/app.py",
+        "docs/03-reference/Dopemux Cockpit TUI Design System/uploads/"
+      ]
+    },
+    {
+      "id": "S2-proof-generator",
+      "task": "Add a deterministic local proof generator and focused tests for image classification, runtime text render capture, and Textual SVG export.",
+      "requirements": [
+        "Use local uploaded PNGs only.",
+        "Use current Cockpit runtime render/export code without modifying runtime behavior.",
+        "Treat raster/font/viewport uncertainty as UNKNOWN.",
+        "Classify bright setup-form references as SPEC_AMBIGUITY rather than runtime failure.",
+        "Classify dark Cockpit/RTE references as DESIGN_DRIFT unless exact pixel parity is proven."
+      ],
+      "expected_files": [
+        "scripts/cockpit_pixel_parity_proof.py",
+        "tests/unit/dopemux/ui/cockpit/test_pixel_parity_proof.py"
+      ],
+      "validation": [
+        "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit/test_pixel_parity_proof.py -q"
+      ]
+    },
+    {
+      "id": "S3-generate-proof",
+      "task": "Generate PIXEL_PARITY_REPORT.json, PIXEL_PARITY_REPORT.md, five runtime text renders, and five Textual SVG screenshots under the packet proof directory.",
+      "expected_files": [
+        "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/PIXEL_PARITY_REPORT.json",
+        "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/PIXEL_PARITY_REPORT.md"
+      ],
+      "validation": [
+        "PYTHONPATH=src python scripts/cockpit_pixel_parity_proof.py --output proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001",
+        "python -m json.tool proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/PIXEL_PARITY_REPORT.json >/dev/null"
+      ]
+    },
+    {
+      "id": "S4-validate-and-precommit",
+      "task": "Validate the packet, focused Cockpit tests, compileability, diff cleanliness, and scoped pre-commit hooks.",
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py tests/test_cockpit_tokens.py -q",
+        "PYTHONPATH=src python -m compileall -q src/dopemux tests scripts/cockpit_pixel_parity_proof.py",
+        "git diff --check",
+        "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001.json task-packets/INDEX.md scripts/cockpit_pixel_parity_proof.py tests/unit/dopemux/ui/cockpit/test_pixel_parity_proof.py proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/research.md proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/plan.md proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/PIXEL_PARITY_REPORT.json proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/PIXEL_PARITY_REPORT.md"
+      ]
+    }
+  ]
+}

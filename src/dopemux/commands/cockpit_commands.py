@@ -109,10 +109,10 @@ def cockpit(
 @cockpit.command("run")
 @click.option(
     "--mode",
-    type=click.Choice(["pm"], case_sensitive=False),
+    type=click.Choice(["pm", "implementer", "overview", "services", "events"], case_sensitive=False),
     default="pm",
     show_default=True,
-    help="Cockpit mode (only PM is implemented in this slice).",
+    help="Cockpit mode: pm | implementer | overview | services | events.",
 )
 @click.option(
     "--size",

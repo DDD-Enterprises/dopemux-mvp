@@ -1,0 +1,158 @@
+{
+  "id": "TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001",
+  "project": "dopemux-mvp",
+  "target": "Cockpit Textual TUI Direction B Electric Refresh runtime continuation",
+  "invariants": [
+    "Implement continuation/remediation, not a new cockpit series.",
+    "Preserve no-live-writes and no-PM-mutations semantics.",
+    "Render exactly five top-level modes: pm, implementer, overview, services, events.",
+    "Use artifact-derived/static data only; every data row must carry SRC provenance or explicit UNKNOWN.",
+    "Do not change token doctrine from uploaded handback Option E without a separate token packet.",
+    "Do not claim final Claude Design readiness or promote blocked package rows to ready."
+  ],
+  "depends_on": [
+    "PR-536 merged: Add PM Cockpit Textual TUI shell",
+    "PR-806 merged: unified cockpit TUI design spec + Claude Design pack",
+    "PR-938 merged: enforce rendered text closers",
+    "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
+    "TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-COCKPIT-ELECTRIC-REFRESH",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-DMX-COCKPIT-DESIGN-PICKUP-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-electric-refresh-runtime-001",
+    "base_branch": "origin/main",
+    "stacked_because": "Primary checkout is dirty and on an unrelated branch; execute in a fresh worktree."
+  },
+  "commit": {
+    "message": "feat(cockpit): render electric refresh modes",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json",
+      "task-packets/INDEX.md",
+      "src/dopemux/ui/cockpit/render_modes.py",
+      "src/dopemux/ui/cockpit/app.py",
+      "src/dopemux/commands/cockpit_commands.py",
+      "tests/unit/dopemux/ui/cockpit/test_cockpit_render_modes.py",
+      "tests/unit/dopemux/ui/cockpit/test_cockpit_command.py",
+      "tests/unit/test_cockpit_cli.py",
+      "proof/cockpit-electric-refresh-runtime/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001/"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py tests/test_cockpit_tokens.py -q",
+      "PYTHONPATH=src python -m compileall -q src/dopemux tests",
+      "git diff --check",
+      "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json task-packets/INDEX.md src/dopemux/ui/cockpit/render_modes.py src/dopemux/ui/cockpit/app.py src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit/test_cockpit_render_modes.py tests/unit/dopemux/ui/cockpit/test_cockpit_command.py tests/unit/test_cockpit_cli.py"
+    ]
+  },
+  "pr": {
+    "title": "feat(cockpit): render electric refresh modes",
+    "body": "Implements the Direction B Electric Refresh continuation packet as a deterministic five-mode cockpit render surface with no live writes, no token-doctrine changes, and proof artifacts for validation.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1-preflight-and-packet",
+      "task": "Create the packet in a fresh worktree from origin/main, verify repo identity, recheck merged cockpit PRs and open cockpit PRs, then validate this packet against the canonical schema.",
+      "requirements": [
+        "Do not execute in /Users/hue/code/dopemux-mvp if it remains dirty or on fix/mcp-server-build-failures.",
+        "Record uploaded zip SHA256 hashes, missing editable-source/font gap, and token conflict in proof."
+      ],
+      "commands": [
+        "git fetch origin main",
+        "gh pr view 536 --json number,title,state,mergedAt,headRefName,headRefOid,url",
+        "gh pr view 806 --json number,title,state,mergedAt,headRefName,headRefOid,url",
+        "gh pr view 938 --json number,title,state,mergedAt,headRefName,headRefOid,url",
+        "gh pr list --state open --search cockpit --json number,title,state,headRefName,url"
+      ],
+      "expected_files": [
+        "task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json"
+      ],
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "claudedocs/design/tui-design-spec.md",
+        "claudedocs/design/tui-claude-design-pack.md"
+      ]
+    },
+    {
+      "id": "S2-five-mode-renderer",
+      "task": "Add a pure deterministic five-mode render facade while preserving the existing PM render contract and too-small blocker behavior.",
+      "requirements": [
+        "Expose SUPPORTED_COCKPIT_MODES and render_cockpit(mode, cols, rows, plain=True).",
+        "Keep render_pm available and behavior-compatible for existing tests.",
+        "Services, Implementer, Overview, and Events must render static artifact-derived surfaces with four-field pane headers, closed status chips, SRC labels, and no live reads/writes.",
+        "UNKNOWN is rendered as text only, never as a success chip."
+      ],
+      "expected_files": [
+        "src/dopemux/ui/cockpit/render_modes.py",
+        "tests/unit/dopemux/ui/cockpit/test_cockpit_render_modes.py"
+      ],
+      "validation": [
+        "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit -q"
+      ]
+    },
+    {
+      "id": "S3-cli-and-textual-wiring",
+      "task": "Wire cockpit run --mode and the Textual shell to the five-mode render facade without changing the guarded --runtime-render package path.",
+      "requirements": [
+        "Expand CLI mode choice to pm, implementer, overview, services, events.",
+        "Interactive Textual shell must show the active mode and support direct numeric mode switches 1 through 5 when Textual is installed.",
+        "Plain/audit output must remain deterministic and ANSI-free unless existing tests prove otherwise.",
+        "No service start/stop, task transition, PM mutation, network call, or subprocess action may be introduced."
+      ],
+      "expected_files": [
+        "src/dopemux/ui/cockpit/app.py",
+        "src/dopemux/commands/cockpit_commands.py",
+        "tests/unit/test_cockpit_cli.py"
+      ],
+      "validation": [
+        "PYTHONPATH=src python -m pytest tests/unit/test_cockpit_cli.py tests/unit/dopemux/ui/cockpit -q"
+      ]
+    },
+    {
+      "id": "S4-proof-and-precommit",
+      "task": "Generate proof showing the implementation is a continuation/remediation packet, not final design approval, then run focused validation and precommit on only allowed files.",
+      "requirements": [
+        "Proof must include PR truth, zip inventory/hashes, source gaps, token conflict, validation commands with exit codes, diff summary, and residual UNKNOWNs.",
+        "Do not update final readiness docs or mark any blocked package row ready."
+      ],
+      "expected_files": [
+        "proof/cockpit-electric-refresh-runtime/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001/"
+      ],
+      "validation": [
+        "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py tests/test_cockpit_tokens.py -q",
+        "PYTHONPATH=src python -m compileall -q src/dopemux tests",
+        "git diff --check",
+        "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json task-packets/INDEX.md src/dopemux/ui/cockpit/render_modes.py src/dopemux/ui/cockpit/app.py src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit/test_cockpit_render_modes.py tests/unit/dopemux/ui/cockpit/test_cockpit_command.py tests/unit/test_cockpit_cli.py"
+      ]
+    }
+  ]
+}
