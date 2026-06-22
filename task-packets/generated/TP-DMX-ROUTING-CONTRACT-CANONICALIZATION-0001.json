@@ -1,0 +1,93 @@
+{
+  "id": "TP-DMX-ROUTING-CONTRACT-CANONICALIZATION-0001",
+  "project": "dopemux-mvp",
+  "target": "Establish contracts/openclaw-dcp-routing as the single canonical OpenClaw/DCP routing machine-contract source and demote the docs mirror to a pointer.",
+  "invariants": [
+    "Runtime, GitHub, and PR truth outrank this packet.",
+    "Contracts-only cleanup: no runtime routing, provider calls, benchmark harness, OpenClaw execution, or production-route enablement.",
+    "Exactly one mutable policy surface may remain for OpenClaw/DCP routing contracts.",
+    "Documentation may point to the canonical contracts tree, but must not carry a second mutable copy.",
+    "Preserve traceability to PR #926 and PR #931."
+  ],
+  "depends_on": [
+    "PR #931 merged"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-ROUTING-FINISH-LINE",
+    "base_branch": "main",
+    "parent_tp_id": "OPENCLAW-DCP-ROUTING-CONTRACTS-0001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-routing-contract-canonicalization-0001",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(dcp): canonicalize OpenClaw routing contracts",
+    "allowlist": [
+      "contracts/openclaw-dcp-routing/**",
+      "docs/03-reference/dcp/openclaw-routing/**",
+      "tests/dcp/**",
+      "tests/contracts/**",
+      "README.md",
+      "docs/INDEX.md",
+      "docs/00-MASTER-INDEX.md",
+      "pyproject.toml",
+      "task-packets/generated/TP-DMX-ROUTING-CONTRACT-CANONICALIZATION-0001.json"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-ROUTING-CONTRACT-CANONICALIZATION-0001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/contracts/test_openclaw_dcp_routing_contracts.py tests/dcp/test_openclaw_dcp_routing_contracts.py -q",
+      "git diff --check",
+      "pre-commit run --files task-packets/generated/TP-DMX-ROUTING-CONTRACT-CANONICALIZATION-0001.json docs/03-reference/dcp/openclaw-routing/README.md tests/dcp/test_openclaw_dcp_routing_contracts.py"
+    ]
+  },
+  "pr": {
+    "title": "docs(dcp): canonicalize OpenClaw routing contracts",
+    "body": "Makes contracts/openclaw-dcp-routing the sole mutable OpenClaw/DCP routing machine-contract source and replaces the docs mirror with a pointer. No runtime routing, provider calls, benchmark execution, or production-route enablement.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect contracts and docs OpenClaw/DCP routing trees and compare file/hash drift.",
+      "validation": [
+        "Contracts and docs trees are both observed before demotion.",
+        "Canonical path decision is based on current tests and repo governance."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Demote docs/03-reference/dcp/openclaw-routing to a README pointer to contracts/openclaw-dcp-routing.",
+      "validation": [
+        "Docs path no longer contains mutable copies of schemas, policies, examples, or contract markdown.",
+        "README states the canonical path and preserves PR #926/#931 traceability."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Update tests to read OpenClaw/DCP routing contracts from the canonical contracts path.",
+      "validation": [
+        "tests/dcp/test_openclaw_dcp_routing_contracts.py reads contracts/openclaw-dcp-routing.",
+        "Focused contract test suites pass."
+      ]
+    }
+  ]
+}
