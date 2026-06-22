@@ -145,3 +145,7 @@
 ## 2026-05-30 - [MUI Tooltip Child Constraints and JSX Validity]
 **Learning:** Material UI `Tooltip` components require exactly one child element to correctly attach event listeners and ARIA attributes. Providing multiple children or failing to close the tag leads to React render errors and invalid JSX. Wrapping multiple elements in a single `Box` or `div` satisfies this requirement while maintaining the desired layout.
 **Action:** Always wrap multiple children of a `Tooltip` in a single container element and ensure component tags are properly closed to avoid UI breakage.
+
+## 2026-05-30 - [Status-Driven Reactive UX & Emotional Context]
+**Learning:** Purely numerical metrics can be abstract and "dry." Using a centralized status utility (`deriveStatus`) to drive a synchronized suite of visual cues—coordinated colors, dynamic borders, reactive animations (like pulses for critical states), and personality-driven text ("roasts")—creates a cohesive "at-a-glance" experience. This reduces the user's cognitive effort to interpret high-stakes metrics by providing both logical and emotional context.
+**Action:** Synchronize multiple visual and textual channels (color, animation, voice) using a shared status utility to provide high-bandwidth, intuitive feedback for critical dashboard metrics.
