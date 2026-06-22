@@ -1,0 +1,4 @@
+interface:
+  display_name: "Testgen"
+  short_description: "Generate deterministic multi-layer test suites"
+  default_prompt: "Use $testgen to generate a comprehensive test suite from this task packet with a 90% touched-code coverage gate."
