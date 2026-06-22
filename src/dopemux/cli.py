@@ -2819,11 +2819,18 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
             )
 
             for task in progress_info.get("tasks", []):
+                task_status = task.get("status", "")
                 status_emoji = (
-                    "✅" if task["completed"] else "🔄" if task["in_progress"] else "⏳"
+                    "✅"
+                    if task_status == "completed"
+                    else "🔄"
+                    if task_status == "in_progress"
+                    else "⏳"
                 )
                 table.add_row(
-                    task["name"], status_emoji, f"{task.get('progress', 0):.0%}"
+                    task.get("description", task.get("id", "?")),
+                    status_emoji,
+                    f"{task.get('progress', 0):.0%}",
                 )
 
             console.logger.info(table)
