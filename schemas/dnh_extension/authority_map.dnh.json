@@ -1,0 +1,166 @@
+{
+  "schema_version": "pcp.authority_map.v0",
+  "project_id": "dnh-crm-fixture",
+  "entries": [
+    {
+      "domain": "dnh.project_profile",
+      "action": "project",
+      "canonical_authority_owner": "dnh-crm",
+      "canonical_writer": null,
+      "surface_class": "PROJECTION",
+      "reader_or_projection_surface": "dnh project-profile projection",
+      "source_truth_refs": [
+        "reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "dnh.authority_docs",
+      "action": "read",
+      "canonical_authority_owner": "dnh-crm",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dnh authority-docs reader",
+      "source_truth_refs": [
+        "dNh authority docs inventory"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "dnh.proof_roots",
+      "action": "read",
+      "canonical_authority_owner": "dnh-crm",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dnh proof-roots pointer mapping",
+      "source_truth_refs": [
+        "dNh proof/status roots"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "dnh.crm",
+      "action": "read",
+      "canonical_authority_owner": "dnh-crm",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dnh CRM runtime read mapping (artifact-only)",
+      "source_truth_refs": [
+        "dNh CRM runtime"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "dnh.telegram",
+      "action": "read",
+      "canonical_authority_owner": "dnh-crm",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dnh Telegram adapter (no-send)",
+      "source_truth_refs": [
+        "dNh Telegram messaging"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "dnh.calendar",
+      "action": "read",
+      "canonical_authority_owner": "dnh-crm",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dnh Calendar adapter (no-write)",
+      "source_truth_refs": [
+        "dNh Calendar"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "dnh.identity",
+      "action": "read",
+      "canonical_authority_owner": "dnh-crm",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dnh Identity authority mapping (no-merge)",
+      "source_truth_refs": [
+        "dNh Identity system"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "dnh.policy",
+      "action": "read",
+      "canonical_authority_owner": "dnh-crm",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dnh Policy mapping (no-write)",
+      "source_truth_refs": [
+        "dNh Policy domain"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "dnh.event_store",
+      "action": "read",
+      "canonical_authority_owner": "dnh-crm",
+      "canonical_writer": null,
+      "surface_class": "MIRROR",
+      "reader_or_projection_surface": "dnh event-store read-only evidence map",
+      "source_truth_refs": [
+        "dNh event store"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "dnh.runtime_db",
+      "action": "read",
+      "canonical_authority_owner": "dnh-crm",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dnh runtime-DB FORBIDDEN/red-lane (read-only)",
+      "source_truth_refs": [
+        "dNh runtime database"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    }
+  ]
+}
