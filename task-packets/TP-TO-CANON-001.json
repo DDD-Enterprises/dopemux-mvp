@@ -1,0 +1,72 @@
+{
+  "id": "TP-TO-CANON-001",
+  "project": "dopemux-mvp",
+  "target": "Canonical reconciliation datastore contract and schema",
+  "invariants": [
+    "No live current-tasks.db writes are allowed before supervised cutover.",
+    "Every imported or materialized row must preserve source provenance.",
+    "Raw note bodies and FTS row exports must remain excluded.",
+    "Task Orchestrator must not be promoted into single PM authority."
+  ],
+  "depends_on": [
+    "TP-TO-CANON-000"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TO-CANON",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/to-canon-intake-000",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(task-orchestrator): add canonical reconciliation dry run",
+    "allowlist": [
+      "task-packets/TP-TO-CANON-001.json",
+      "docs/03-reference/systems/task-orchestrator/canonical-datastore-contract.md",
+      "schemas/task-orchestrator/canonical-datastore.schema.json",
+      "schemas/task-orchestrator/reconciliation-decision.schema.json",
+      "services/task-orchestrator/app/storage/canonical_store_schema.sql",
+      "tests/task_orchestrator/test_canonical_store_schema.py"
+    ],
+    "verify": [
+      "python -m json.tool schemas/task-orchestrator/canonical-datastore.schema.json",
+      "python -m json.tool schemas/task-orchestrator/reconciliation-decision.schema.json",
+      "python -m pytest -q tests/task_orchestrator/test_canonical_store_schema.py",
+      "python -m compileall -q services/task-orchestrator/app tests/task_orchestrator",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(task-orchestrator): add canonical reconciliation dry run",
+    "body": "## Summary\n- add offline canonical datastore schema and safe pack importer\n- add deterministic active-source resolver and coldstart reports\n- produce full dry-run reconciliation artifacts for the June 22 pack\n\n## Validation\n- python -m json.tool schemas/task-orchestrator/canonical-datastore.schema.json\n- python -m json.tool schemas/task-orchestrator/reconciliation-decision.schema.json\n- python -m pytest -q tests/task_orchestrator/test_canonical_store_schema.py\n- python -m compileall -q services/task-orchestrator/app tests/task_orchestrator\n- git diff --check",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "schema-contract",
+      "task": "Define offline canonical datastore schema, JSON schemas, and authority-boundary docs.",
+      "validation": [
+        "DDL loads with foreign keys and JSON schemas parse."
+      ]
+    }
+  ]
+}
