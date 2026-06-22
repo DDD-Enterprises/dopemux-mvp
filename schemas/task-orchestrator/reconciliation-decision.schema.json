@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/task-orchestrator/reconciliation-decision.schema.json",
+  "title": "Task Orchestrator Reconciliation Decisions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "active_db_slug", "decisions"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "task-orchestrator.reconciliation-decision.v0"
+    },
+    "active_db_slug": {"type": "string"},
+    "decisions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/decision"}
+    }
+  },
+  "$defs": {
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_db_slug",
+        "source_database_path",
+        "source_schema_hash",
+        "source_table",
+        "source_row_id",
+        "source_mtime_utc",
+        "import_run_id",
+        "archive_sha256",
+        "decision_type",
+        "decision",
+        "reason"
+      ],
+      "properties": {
+        "source_db_slug": {"type": "string"},
+        "source_database_path": {"type": "string"},
+        "source_schema_hash": {"type": "string"},
+        "source_table": {"type": "string"},
+        "source_row_id": {"type": "string"},
+        "source_mtime_utc": {"type": "string"},
+        "import_run_id": {"type": "string"},
+        "archive_sha256": {"type": "string"},
+        "decision_type": {"type": "string"},
+        "decision": {
+          "type": "string",
+          "enum": [
+            "promote_to_current",
+            "provenance_only",
+            "conflict_not_identity",
+            "accepted_do_not_rerun",
+            "keep_blocked",
+            "queue_only"
+          ]
+        },
+        "reason": {"type": "string"},
+        "evidence_ref": {"type": ["string", "null"]}
+      }
+    }
+  }
+}
