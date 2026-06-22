@@ -1,0 +1,269 @@
+{
+  "active_db_slug": "dopemux-mvp-2e346e2084bca021",
+  "classification_counts": {
+    "active_root_in_progress": 1,
+    "explicit_blocked": 1,
+    "operator_gate": 1,
+    "queue_only": 12,
+    "queue_only_supervisor_required": 4,
+    "repo_pr_proof_observed": 3
+  },
+  "items": [
+    {
+      "classification": "active_root_in_progress",
+      "decision": "remain_active_in_progress",
+      "evidence": {
+        "role": "work",
+        "status_label": "in-progress"
+      },
+      "role": "work",
+      "source_row_id": "cf545820-25cc-45fb-9cfe-296b6cb6c428",
+      "status_label": "in-progress",
+      "title": "DMX-COLDSTART task-packet series"
+    },
+    {
+      "classification": "operator_gate",
+      "decision": "operator_only_do_not_automate",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "c6ef349f-76a4-4d76-8f89-715f6bac379f",
+      "status_label": null,
+      "title": "OP-DMX-COLDSTART-PYPI-NAME-000"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "a2dc529d-f3a0-49dc-bc7d-613e7ddf6e8a",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-AUTH-SECRETS-103"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "357a4ed7-011d-468e-9d67-9e3997a44806",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-DOCS-GETTINGSTARTED-114"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "508e7bd1-659c-4ab1-8b8d-5bbcae1bee99",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-DOCTOR-STATUS-105"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "834b4456-7198-4e75-bdfb-cab82511e159",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-DOCTRINE-SYNC-115"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "d025e6d8-3019-49c9-bbf8-65a9d4dd09f1",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-EXTRAS-PYPI-111"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "88508bca-9dfb-48e2-8103-2cf071925251",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-FLEET-IMAGES-110"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "e07ea927-1de4-4312-aff0-871c1e0b1d63",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-FRESHVM-CI-112"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "b8285060-f079-453f-8521-50711b0e2b7b",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-GLOBALS-SYNC-106"
+    },
+    {
+      "classification": "explicit_blocked",
+      "decision": "keep_blocked_until_repo_packet_allowlist_exists",
+      "evidence": {
+        "role": "blocked",
+        "status_label": "blocked"
+      },
+      "role": "blocked",
+      "source_row_id": "e356805f-8851-498e-8768-b2e37024a81d",
+      "status_label": "blocked",
+      "title": "TP-DMX-COLDSTART-INIT-UNIFY-102"
+    },
+    {
+      "classification": "repo_pr_proof_observed",
+      "decision": "accepted_do_not_rerun",
+      "evidence": {
+        "pr": "#886",
+        "proof_exists": true,
+        "proof_json": "/Users/hue/.codex/worktrees/a318/dopemux-mvp/proof/TP-DMX-COLDSTART-L0-DEP-AUDIT-100/PROOF.json"
+      },
+      "role": "terminal",
+      "source_row_id": "fc63e1b1-1397-4043-b693-b13adc0777f0",
+      "status_label": "in-progress",
+      "title": "TP-DMX-COLDSTART-L0-DEP-AUDIT-100"
+    },
+    {
+      "classification": "queue_only_supervisor_required",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "349edcca-1952-47c8-9783-03334dac61b3",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-L0-PLUGIN-107"
+    },
+    {
+      "classification": "queue_only_supervisor_required",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "018e5af6-7dc1-46c4-9fc8-276410f0df8c",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-LIFECYCLE-118"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "fe6011e7-0343-4de8-b6e5-c1bcef1d3244",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-MIGRATION-CLEANUP-116"
+    },
+    {
+      "classification": "repo_pr_proof_observed",
+      "decision": "accepted_do_not_rerun",
+      "evidence": {
+        "pr": "#888",
+        "proof_exists": true,
+        "proof_json": "/Users/hue/.codex/worktrees/a318/dopemux-mvp/proof/TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109/PROOF.json"
+      },
+      "role": "terminal",
+      "source_row_id": "631cc5af-42c0-4b7d-bb66-f3d1411a0d29",
+      "status_label": "done",
+      "title": "TP-DMX-COLDSTART-ORCH-HTTP-CUTOVER-109"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "feb38f04-6f89-4304-a0dc-115e37c6df50",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-PUBLIC-HYGIENE-119"
+    },
+    {
+      "classification": "queue_only_supervisor_required",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "32fb6d09-8218-489c-bedc-dd49517b55be",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-RELEASE-PIPELINE-113"
+    },
+    {
+      "classification": "repo_pr_proof_observed",
+      "decision": "accepted_do_not_rerun",
+      "evidence": {
+        "pr": "#887",
+        "proof_exists": true,
+        "proof_json": "/Users/hue/.codex/worktrees/a318/dopemux-mvp/proof/TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101/PROOF.json"
+      },
+      "role": "terminal",
+      "source_row_id": "eda94cae-4b78-4bd9-95bd-d63f5a153235",
+      "status_label": "in-progress",
+      "title": "TP-DMX-COLDSTART-SALVAGE-COLDSTART-LIB-101"
+    },
+    {
+      "classification": "queue_only_supervisor_required",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "118537c4-1165-41c5-b25e-991bf7f75c90",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-SECURITY-GATE-108"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "d2fd1639-4169-4305-b613-82e4c5003248",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-UP-DOWN-104"
+    },
+    {
+      "classification": "queue_only",
+      "decision": "do_not_infer_readiness_from_to_role",
+      "evidence": {
+        "role": "queue"
+      },
+      "role": "queue",
+      "source_row_id": "181154a3-2c14-4995-9c77-26df978852d3",
+      "status_label": null,
+      "title": "TP-DMX-COLDSTART-VERSION-CONTRACT-117"
+    }
+  ],
+  "point_in_time": {
+    "basis": "June 22 Task Orchestrator safe-pack reconciliation and PR evidence: completed-PR map (#886/#887/#888), high-risk packet set, and the model.py schema-class table-count thresholds are point-in-time facts.",
+    "valid_as_of_utc": "2026-06-22T19:28:14Z"
+  },
+  "root_decision": "remain_active_in_progress",
+  "schema_version": "task-orchestrator.reconciliation-decision.v0"
+}

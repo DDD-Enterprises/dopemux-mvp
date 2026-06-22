@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/task-orchestrator/canonical-datastore.schema.json",
+  "title": "Task Orchestrator Canonical Reconciliation Datastore Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_pack",
+    "source_databases",
+    "imported_entities",
+    "redaction_policy"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "task-orchestrator.canonical-datastore.v0"
+    },
+    "source_pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["archive_sha256", "generated_at_utc", "redacted_only"],
+      "properties": {
+        "archive_sha256": {"type": "string"},
+        "generated_at_utc": {"type": "string"},
+        "redacted_only": {"type": "boolean"}
+      }
+    },
+    "source_databases": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/source_database"}
+    },
+    "imported_entities": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/imported_entity"}
+    },
+    "redaction_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw_note_bodies", "fts_rows", "freeform_descriptions"],
+      "properties": {
+        "raw_note_bodies": {"const": "excluded"},
+        "fts_rows": {"const": "excluded"},
+        "freeform_descriptions": {"const": "redacted_hash_handle"}
+      }
+    }
+  },
+  "$defs": {
+    "provenance": {
+      "type": "object",
+      "comment": "Reusable provenance fields. Intentionally NOT closed here: closure is applied on the composed schemas via `unevaluatedProperties` so extension fields added through `allOf` are not rejected by this subschema (JSON Schema 2020-12).",
+      "required": [
+        "source_db_slug",
+        "source_database_path",
+        "source_schema_hash",
+        "source_table",
+        "source_row_id",
+        "source_mtime_utc",
+        "import_run_id",
+        "archive_sha256"
+      ],
+      "properties": {
+        "source_db_slug": {"type": "string"},
+        "source_database_path": {"type": "string"},
+        "source_schema_hash": {"type": "string"},
+        "source_table": {"type": "string"},
+        "source_row_id": {"type": "string"},
+        "source_mtime_utc": {"type": "string"},
+        "import_run_id": {"type": "string"},
+        "archive_sha256": {"type": "string"}
+      }
+    },
+    "source_database": {
+      "type": "object",
+      "allOf": [
+        {"$ref": "#/$defs/provenance"},
+        {
+          "type": "object",
+          "required": [
+            "schema_class",
+            "adjudication_class",
+            "canonical_treatment"
+          ],
+          "properties": {
+            "schema_class": {
+              "type": "string",
+              "enum": ["modern", "legacy", "unknown"]
+            },
+            "adjudication_class": {"type": "string"},
+            "canonical_treatment": {"type": "string"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "imported_entity": {
+      "type": "object",
+      "allOf": [
+        {"$ref": "#/$defs/provenance"},
+        {
+          "type": "object",
+          "required": ["entity_type"],
+          "properties": {
+            "entity_type": {
+              "type": "string",
+              "enum": [
+                "work_item",
+                "dependency",
+                "note_index",
+                "role_transition",
+                "root_overview",
+                "reconciliation_decision",
+                "canonical_current_work_item"
+              ]
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    }
+  }
+}

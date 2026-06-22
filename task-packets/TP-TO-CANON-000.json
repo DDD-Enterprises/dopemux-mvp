@@ -1,0 +1,146 @@
+{
+  "id": "TP-TO-CANON-000",
+  "project": "dopemux-mvp",
+  "target": "Task Orchestrator safe evidence-pack intake and DB adjudication manifest",
+  "invariants": [
+    "No live current-tasks.db writes are allowed.",
+    "The safe export pack is evidence, not a live runtime authority by itself.",
+    "Every source DB classification must preserve source provenance.",
+    "Do not merge multiple dopemux-mvp databases blindly.",
+    "Raw note bodies and FTS row exports must not be emitted."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TO-CANON",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/to-canon-intake-000",
+    "base_branch": "origin/main",
+    "stacked_because": "Current workspace was a detached clean worktree at origin/main; branch created in-place before edits."
+  },
+  "commit": {
+    "message": "docs(task-orchestrator): adjudicate canonical evidence pack",
+    "allowlist": [
+      "task-packets/TP-TO-CANON-000.json",
+      "audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/ADJUDICATION_MANIFEST.json",
+      "audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/SOURCE_DATABASE_CLASSIFICATION.csv",
+      "audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/SCHEMA_FINGERPRINTS.csv",
+      "docs/05-audit-reports/task-orchestrator/to-canon-000-adjudication-20260622.md",
+      "docs/05-audit-reports/task-orchestrator/to-canon-000-research.md"
+    ],
+    "verify": [
+      "shasum -a 256 /private/tmp/to-all-dbs-20260622T192814Z.tar.gz",
+      "python -m json.tool audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/ADJUDICATION_MANIFEST.json",
+      "python -m jsonschema -i task-packets/TP-TO-CANON-000.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh --print-resolution",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(task-orchestrator): adjudicate canonical evidence pack",
+    "body": "## Summary\n- add TP-TO-CANON-000 for safe Task Orchestrator evidence-pack intake\n- classify all 26 source DBs while preserving source provenance\n- record active dopemux DB adjudication and stop-condition checks\n\n## Validation\n- shasum -a 256 /private/tmp/to-all-dbs-20260622T192814Z.tar.gz\n- python -m json.tool audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/ADJUDICATION_MANIFEST.json\n- python -m jsonschema -i task-packets/TP-TO-CANON-000.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- scripts/mcp-wrappers/task-orchestrator-current-stdio.sh --print-resolution\n- git diff --check",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect-pack",
+      "task": "Verify the safe export archive hash, extract it under /tmp, inspect top-level CSV shapes, and confirm EXPORT_ERRORS.csv has zero data rows.",
+      "requirements": [
+        "Stop on hash mismatch.",
+        "Stop if export errors are present."
+      ],
+      "commands": [
+        "shasum -a 256 /private/tmp/to-all-dbs-20260622T192814Z.tar.gz",
+        "tar -tzf /private/tmp/to-all-dbs-20260622T192814Z.tar.gz | sed -n '1,120p'"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Archive hash and CSV shape evidence captured."
+      ],
+      "context_files": [
+        "/private/tmp/to-all-dbs-20260622T192814Z.tar.gz"
+      ]
+    },
+    {
+      "id": "classify-dbs",
+      "task": "Classify all 26 source databases by schema family, content, active/current state, project provenance, stale/empty shell, or recovery-only treatment.",
+      "requirements": [
+        "Preserve source DB slug, path, mtime, counts, schema fingerprint, and treatment.",
+        "Do not promote stale, legacy, recovery, or project-specific DB rows into active dopemux current state."
+      ],
+      "commands": [
+        "python generation script over /tmp/to-all-dbs-20260622T192814Z safe CSVs"
+      ],
+      "expected_files": [
+        "audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/ADJUDICATION_MANIFEST.json",
+        "audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/SOURCE_DATABASE_CLASSIFICATION.csv",
+        "audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/SCHEMA_FINGERPRINTS.csv"
+      ],
+      "validation": [
+        "All 26 DBs classified and active dopemux DB is dopemux-mvp-2e346e2084bca021."
+      ],
+      "context_files": [
+        "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md"
+      ]
+    },
+    {
+      "id": "document-proof",
+      "task": "Write the adjudication report and research evidence without changing runtime code or live Task Orchestrator state.",
+      "requirements": [
+        "State authority boundaries explicitly.",
+        "Mark the safe export scope and raw note-body limitation."
+      ],
+      "commands": [
+        "python -m json.tool audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/ADJUDICATION_MANIFEST.json"
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/task-orchestrator/to-canon-000-adjudication-20260622.md",
+        "docs/05-audit-reports/task-orchestrator/to-canon-000-research.md"
+      ],
+      "validation": [
+        "Generated JSON parses and report records boundary/stop-condition evidence."
+      ],
+      "context_files": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate the task packet and generated artifacts, inspect diff scope, and run precommit on changed files if configured and safe.",
+      "requirements": [
+        "Report all PASS, FAIL, and NOT_RUN results truthfully."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-TO-CANON-000.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check",
+        "pre-commit run --files <changed files>"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Schema validation and diff checks pass, or blockers are reported."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    }
+  ]
+}

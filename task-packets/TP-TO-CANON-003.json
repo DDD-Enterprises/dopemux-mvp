@@ -1,0 +1,70 @@
+{
+  "id": "TP-TO-CANON-003",
+  "project": "dopemux-mvp",
+  "target": "Identity, dedupe, active pointer resolver, and coldstart reconciliation rules",
+  "invariants": [
+    "No live current-tasks.db writes are allowed before supervised cutover.",
+    "Every imported or materialized row must preserve source provenance.",
+    "Raw note bodies and FTS row exports must remain excluded.",
+    "Task Orchestrator must not be promoted into single PM authority."
+  ],
+  "depends_on": [
+    "TP-TO-CANON-000"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TO-CANON",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/to-canon-intake-000",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(task-orchestrator): add canonical reconciliation dry run",
+    "allowlist": [
+      "task-packets/TP-TO-CANON-003.json",
+      "tools/task_orchestrator_reconcile/resolve.py",
+      "tools/task_orchestrator_reconcile/dedupe.py",
+      "tools/task_orchestrator_reconcile/coldstart.py",
+      "tests/tools/test_task_orchestrator_reconcile_import.py",
+      "docs/03-reference/systems/task-orchestrator/reconciliation-rules.md"
+    ],
+    "verify": [
+      "python -m pytest -q tests/tools/test_task_orchestrator_reconcile_import.py",
+      "python -m compileall -q tools/task_orchestrator_reconcile tests/tools",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(task-orchestrator): add canonical reconciliation dry run",
+    "body": "## Summary\n- add offline canonical datastore schema and safe pack importer\n- add deterministic active-source resolver and coldstart reports\n- produce full dry-run reconciliation artifacts for the June 22 pack\n\n## Validation\n- python -m pytest -q tests/tools/test_task_orchestrator_reconcile_import.py\n- python -m compileall -q tools/task_orchestrator_reconcile tests/tools\n- git diff --check",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "resolve-current",
+      "task": "Resolve active current source, duplicate-title conflicts, and coldstart item classifications without live writes.",
+      "validation": [
+        "Active rows come only from dopemux-mvp-2e346e2084bca021; duplicate titles are conflicts; coldstart 102 remains blocked."
+      ]
+    }
+  ]
+}
