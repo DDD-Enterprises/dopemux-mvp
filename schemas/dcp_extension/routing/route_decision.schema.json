@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dopemux.local/dcp_extension/routing/route_decision.schema.json",
+  "title": "DCP Routing Extension Route Decision Contract",
+  "description": "Contracts-only DCP route decision. This schema records selected or blocked routing decisions; it does not authorize runtime routing or provider execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "task_ref",
+    "lane_id",
+    "privacy_class",
+    "risk_class",
+    "decision",
+    "selected_route_id",
+    "selected_provider",
+    "selected_model",
+    "access_path",
+    "live_write_runner_selected",
+    "blocked_reasons",
+    "proof_requirement",
+    "audit_requirement",
+    "human_gate_required",
+    "benchmark_certification_ref",
+    "evidence_refs",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dcp.routing.route_decision.v0"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^rd_[A-Za-z0-9_.:-]+$"
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lane_id": {
+      "$ref": "#/$defs/lane_id"
+    },
+    "privacy_class": {
+      "$ref": "#/$defs/privacy_class"
+    },
+    "risk_class": {
+      "$ref": "#/$defs/risk_class"
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["SELECTED", "BLOCKED", "ESCALATED", "NEEDS_SUPERVISOR"]
+    },
+    "selected_route_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "selected_provider": {
+      "type": ["string", "null"],
+      "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple", "unknown", null]
+    },
+    "selected_model": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "access_path": {
+      "anyOf": [
+        { "$ref": "#/$defs/access_path" },
+        { "type": "null" }
+      ]
+    },
+    "live_write_runner_selected": {
+      "type": "boolean",
+      "const": false
+    },
+    "blocked_reasons": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/blocked_reason"
+      }
+    },
+    "proof_requirement": {
+      "$ref": "#/$defs/proof_requirement"
+    },
+    "audit_requirement": {
+      "$ref": "#/$defs/audit_requirement"
+    },
+    "human_gate_required": {
+      "type": "boolean"
+    },
+    "benchmark_certification_ref": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "decision": { "const": "SELECTED" } },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "selected_route_id": { "type": "string", "minLength": 1 },
+          "selected_provider": { "type": "string", "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple", "unknown"] },
+          "selected_model": { "type": "string", "minLength": 1 },
+          "access_path": { "$ref": "#/$defs/access_path" },
+          "blocked_reasons": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "decision": { "enum": ["BLOCKED", "ESCALATED", "NEEDS_SUPERVISOR"] } },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "selected_route_id": { "type": "null" },
+          "selected_provider": { "type": "null" },
+          "selected_model": { "type": "null" },
+          "access_path": { "type": "null" },
+          "blocked_reasons": { "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "privacy_class": { "const": "UNKNOWN" } },
+        "required": ["privacy_class"]
+      },
+      "then": {
+        "properties": {
+          "decision": { "enum": ["BLOCKED", "ESCALATED", "NEEDS_SUPERVISOR"] },
+          "blocked_reasons": { "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "risk_class": { "const": "UNKNOWN" } },
+        "required": ["risk_class"]
+      },
+      "then": {
+        "properties": {
+          "decision": { "enum": ["BLOCKED", "ESCALATED", "NEEDS_SUPERVISOR"] },
+          "blocked_reasons": { "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "access_path": { "const": "openrouter_free" } },
+        "required": ["access_path"]
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            { "properties": { "lane_id": { "enum": ["protected_authority", "release_supervisor", "unknown_fail_closed"] } }, "required": ["lane_id"] },
+            { "properties": { "privacy_class": { "enum": ["PRIVATE_REPO_NO_SECRETS", "PRIVATE_REPO_POSSIBLE_SECRETS", "SECRET_BEARING", "CLIENT_DATA", "SECURITY_SENSITIVE", "RELEASE_AUTHORITY", "UNKNOWN"] } }, "required": ["privacy_class"] },
+            { "properties": { "risk_class": { "enum": ["R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION", "UNKNOWN"] } }, "required": ["risk_class"] },
+            { "properties": { "proof_requirement": { "enum": ["security", "release"] } }, "required": ["proof_requirement"] },
+            { "properties": { "audit_requirement": { "enum": ["independent", "deep", "security", "release"] } }, "required": ["audit_requirement"] }
+          ]
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "lane_id": {
+      "type": "string",
+      "enum": [
+        "public_read",
+        "public_draft",
+        "test_only",
+        "local_edit",
+        "multi_file_edit",
+        "protected_authority",
+        "release_supervisor",
+        "unknown_fail_closed"
+      ]
+    },
+    "privacy_class": {
+      "type": "string",
+      "enum": [
+        "PUBLIC_SANDBOX",
+        "PUBLIC_REPO",
+        "PRIVATE_REPO_NO_SECRETS",
+        "PRIVATE_REPO_POSSIBLE_SECRETS",
+        "SECRET_BEARING",
+        "CLIENT_DATA",
+        "SECURITY_SENSITIVE",
+        "RELEASE_AUTHORITY",
+        "UNKNOWN"
+      ]
+    },
+    "risk_class": {
+      "type": "string",
+      "enum": [
+        "R0_READ",
+        "R1_DRAFT",
+        "R2_TEST_ONLY",
+        "R3_LOCAL_EDIT",
+        "R4_MULTI_FILE_EDIT",
+        "R5_SECURITY_OR_AUTHORITY",
+        "R6_RELEASE_OR_PRODUCTION",
+        "UNKNOWN"
+      ]
+    },
+    "access_path": {
+      "type": "string",
+      "enum": [
+        "direct_api",
+        "openrouter_paid",
+        "openrouter_free",
+        "local_self_hosted",
+        "codex",
+        "claude_code",
+        "gemini_cli",
+        "manual_app"
+      ]
+    },
+    "proof_requirement": {
+      "type": "string",
+      "enum": ["minimal", "standard", "implementation", "security", "release", "unknown"]
+    },
+    "audit_requirement": {
+      "type": "string",
+      "enum": ["none", "light", "embedded", "independent", "deep", "security", "release"]
+    },
+    "blocked_reason": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN_PRIVACY_CLASS",
+        "UNKNOWN_RISK_CLASS",
+        "OPENROUTER_FREE_FORBIDDEN",
+        "CONSUMER_APP_AUTHORITY_FORBIDDEN",
+        "PREVIEW_SOLE_HIGH_RISK_AUTHORITY",
+        "MISSING_BENCHMARK_CERTIFICATION",
+        "MISSING_SCHEMA_VALIDATION",
+        "MISSING_PROOF_REQUIREMENT",
+        "MISSING_HUMAN_APPROVAL",
+        "AUDIT_INDEPENDENCE_VIOLATION",
+        "PROVIDER_MODEL_DRIFT",
+        "FALLBACK_WEAKENS_GUARD",
+        "PRIVACY_MISMATCH",
+        "LIVE_WRITE_RUNNER_FORBIDDEN"
+      ]
+    }
+  }
+}
