@@ -1,0 +1,323 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/merge_readiness.schema.json",
+  "title": "PCP Core PR Steward Merge Readiness Signal",
+  "description": "Generic, project-agnostic MERGE_READINESS signal emitted by the PCP-Core PR Steward readiness intake. This signal is ADVISORY only — it NEVER merges, sets PR ready, or mutates any resource. READY is fail-closed: withheld on ANY blocking condition.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pr_ref",
+    "head_sha",
+    "status",
+    "blocked_reasons",
+    "intake",
+    "advisory",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.merge_readiness.v0",
+      "description": "Schema version sentinel. Must be exactly 'pcp.merge_readiness.v0'."
+    },
+    "pr_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "number", "head_ref", "base_ref"],
+      "properties": {
+        "repo": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repository in 'owner/repo' or bare 'repo' form."
+        },
+        "number": {
+          "type": "integer",
+          "description": "Pull request number."
+        },
+        "head_ref": {
+          "type": "string",
+          "description": "Head branch reference name."
+        },
+        "base_ref": {
+          "type": "string",
+          "description": "Base branch reference name (merge target)."
+        }
+      }
+    },
+    "head_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$|^[0-9a-f]{64}$",
+      "description": "SHA-1 (40 hex) or SHA-256 (64 hex) of the PR head commit at harvest time."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["READY", "BLOCKED", "NEEDS_SUPERVISOR"],
+      "description": "Merge readiness verdict. READY is withheld on any blocking condition."
+    },
+    "blocked_reasons": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "Enumerated reasons READY was withheld. Empty iff status is READY.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "STALE_PROOF",
+          "FAILED_CHECK",
+          "STALE_CHECK",
+          "UNKNOWN_REVIEWER_OR_BOT",
+          "UNCLASSIFIED_REVIEW_ITEM",
+          "UNRESOLVED_BLOCKING_THREAD",
+          "DIFF_OUTSIDE_ALLOWLIST",
+          "MISSING_SECURITY_RELEASE_APPROVAL",
+          "MISSING_REQUIRED_INTAKE",
+          "UNKNOWN"
+        ]
+      }
+    },
+    "intake": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Harvested evidence from the PR at read-only intake time.",
+      "required": [
+        "changed_files",
+        "commits",
+        "checks",
+        "reviews",
+        "review_threads",
+        "reviewer_classifications",
+        "unclassified_review_items",
+        "proof_refs",
+        "proof_freshness",
+        "diff_escapes_allowlist",
+        "security_release_required",
+        "security_release_approved"
+      ],
+      "properties": {
+        "changed_files": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paths of files changed in the PR diff."
+        },
+        "commits": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Commit SHAs included in the PR (head-to-merge-base)."
+        },
+        "checks": {
+          "type": "array",
+          "description": "CI/status check results harvested for the PR head commit.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "conclusion", "stale_to_head"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Check or workflow name."
+              },
+              "conclusion": {
+                "type": "string",
+                "enum": ["SUCCESS", "FAILURE", "NEUTRAL", "STALE", "PENDING", "UNKNOWN"],
+                "description": "Normalised check conclusion. STALE = ran against an older SHA; PENDING = not yet complete; UNKNOWN = could not classify."
+              },
+              "stale_to_head": {
+                "type": "boolean",
+                "description": "True if this check ran against a commit other than head_sha."
+              }
+            }
+          }
+        },
+        "reviews": {
+          "type": "array",
+          "description": "Raw review objects (shape opaque to generic core; validated downstream).",
+          "items": {}
+        },
+        "review_threads": {
+          "type": "array",
+          "description": "PR review threads with resolution and blocking classification.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["resolved", "blocking"],
+            "properties": {
+              "resolved": {
+                "type": "boolean",
+                "description": "True if the thread has been marked resolved."
+              },
+              "blocking": {
+                "type": "boolean",
+                "description": "True if the thread was classified as a hard blocker."
+              }
+            }
+          }
+        },
+        "reviewer_classifications": {
+          "type": "array",
+          "description": "Actor identity classifications for all reviewers/commenters.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["actor", "kind"],
+            "properties": {
+              "actor": {
+                "type": "string",
+                "description": "GitHub login or bot name."
+              },
+              "kind": {
+                "type": "string",
+                "enum": ["HUMAN", "KNOWN_BOT", "UNKNOWN"],
+                "description": "Identity classification. UNKNOWN triggers UNKNOWN_REVIEWER_OR_BOT blocker."
+              }
+            }
+          }
+        },
+        "unclassified_review_items": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Review item IDs or references that could not be classified. Non-empty triggers UNCLASSIFIED_REVIEW_ITEM blocker."
+        },
+        "proof_refs": {
+          "type": "array",
+          "description": "Proof artifact references harvested from the PR.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "head_sha"],
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path or URL of the proof artifact."
+              },
+              "head_sha": {
+                "type": ["string", "null"],
+                "description": "The head SHA recorded inside the proof artifact, or null if unreadable."
+              }
+            }
+          }
+        },
+        "proof_freshness": {
+          "type": "string",
+          "enum": ["FRESH", "STALE", "MISSING", "UNKNOWN"],
+          "description": "Proof freshness classification. FRESH requires proof_refs[].head_sha == PR head_sha. STALE/MISSING/UNKNOWN withholds READY."
+        },
+        "diff_escapes_allowlist": {
+          "type": "boolean",
+          "description": "True if any changed file falls outside the declared allowlist for this PR. Withholds READY."
+        },
+        "security_release_required": {
+          "type": "boolean",
+          "description": "True if the diff touches security- or release-gated paths requiring explicit human approval."
+        },
+        "security_release_approved": {
+          "type": "boolean",
+          "description": "True if a qualifying human approver granted the security/release gate."
+        }
+      }
+    },
+    "advisory": {
+      "type": "boolean",
+      "const": true,
+      "description": "Always true. This signal is advisory only — it is NEVER a merge authority. Green CI is NOT semantic proof. See AIR Red Lines #7/#8."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime at which this signal was assembled."
+    }
+  },
+  "allOf": [
+    {
+      "description": "Fail-closed gate (a): READY requires zero blocked_reasons, FRESH proof, and diff within allowlist.",
+      "if": {
+        "properties": { "status": { "const": "READY" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "blocked_reasons": { "maxItems": 0 },
+          "intake": {
+            "properties": {
+              "proof_freshness": { "const": "FRESH" },
+              "diff_escapes_allowlist": { "const": false }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "Fail-closed gate (b): BLOCKED or NEEDS_SUPERVISOR requires at least one blocked_reason.",
+      "if": {
+        "properties": { "status": { "enum": ["BLOCKED", "NEEDS_SUPERVISOR"] } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "blocked_reasons": { "minItems": 1 }
+        }
+      }
+    },
+    {
+      "description": "Fail-closed gate (c): stale/missing/unknown proof forces status to non-READY.",
+      "if": {
+        "properties": {
+          "intake": {
+            "properties": {
+              "proof_freshness": { "enum": ["STALE", "MISSING", "UNKNOWN"] }
+            },
+            "required": ["proof_freshness"]
+          }
+        },
+        "required": ["intake"]
+      },
+      "then": {
+        "properties": {
+          "status": { "enum": ["BLOCKED", "NEEDS_SUPERVISOR"] }
+        }
+      }
+    },
+    {
+      "description": "Fail-closed gate (d): diff outside allowlist forces status to non-READY.",
+      "if": {
+        "properties": {
+          "intake": {
+            "properties": {
+              "diff_escapes_allowlist": { "const": true }
+            },
+            "required": ["diff_escapes_allowlist"]
+          }
+        },
+        "required": ["intake"]
+      },
+      "then": {
+        "properties": {
+          "status": { "enum": ["BLOCKED", "NEEDS_SUPERVISOR"] }
+        }
+      }
+    },
+    {
+      "description": "Fail-closed gate (e): READY with an unapproved security gate is rejected. If status is READY then intake must have security_release_required=false OR security_release_approved=true.",
+      "if": {
+        "properties": { "status": { "const": "READY" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "intake": {
+            "anyOf": [
+              {
+                "properties": { "security_release_required": { "const": false } },
+                "required": ["security_release_required"]
+              },
+              {
+                "properties": { "security_release_approved": { "const": true } },
+                "required": ["security_release_approved"]
+              }
+            ]
+          }
+        },
+        "required": ["intake"]
+      }
+    }
+  ]
+}
