@@ -1,0 +1,4 @@
+interface:
+  display_name: "Testgen Claude"
+  short_description: "Claude-first wrapper for deterministic testgen"
+  default_prompt: "Use $testgen-claude to generate a full layered test suite from this packet with Claude-first specialist routing."
