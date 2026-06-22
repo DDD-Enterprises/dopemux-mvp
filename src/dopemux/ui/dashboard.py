@@ -21,7 +21,7 @@ from .service_endpoints import (
     refresh_age_label,
     resolve_dashboard_endpoints,
 )
-from .theme import Glyphs, StatusChip, styled_gauge, styled_panel, styled_table
+from .theme import DOPEMUX_THEME, Glyphs, StatusChip, styled_gauge, styled_panel, styled_table
 from .voice import VoiceEngine, VoiceMode
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -460,6 +460,16 @@ class DopemuxDashboard(App):
     def __init__(self) -> None:
         super().__init__()
         self._endpoints_cache: dict[str, ResolvedEndpoint] | None = None
+
+    def on_mount(self) -> None:
+        """Register the dopemux rich theme on the app console.
+
+        Widgets render rich Panels/markup using dopemux theme style names
+        (``warning``, ``text.dim``, ``label``, ``mint`` …). Textual renders
+        widgets via ``app.console`` (textual.visual.render_strips), so without
+        this the first themed render raises ``MissingStyle``.
+        """
+        self.console.push_theme(DOPEMUX_THEME)
 
     def dashboard_endpoints(self) -> dict[str, ResolvedEndpoint]:
         """Lazily resolve endpoints once and return cached values thereafter.
