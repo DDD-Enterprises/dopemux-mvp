@@ -41,6 +41,15 @@ def test_runtime_render_requires_package_dir():
     assert RUNTIME_RENDER_BLOCKER in output
 
 
+def test_cockpit_run_accepts_non_pm_plain_mode_without_runtime_render_flag():
+    code, output = _invoke("run", "--mode", "services", "--plain")
+    assert code == 0
+    assert "STATIC DEMO" in output
+    assert "NO WRITES" in output
+    assert "service catalog" in output.lower()
+    assert "safe_for_claude_design: YES" not in output
+
+
 def test_runtime_render_text_snapshot_preserves_blocked_governance_state():
     code, output = _invoke(
         "--runtime-render",
