@@ -139,5 +139,6 @@ Observed: JSON-RPC search result contained the seeded keyword.
 
 ## Commit / PR
 
-- Commit: `PENDING`
-- PR: `PENDING`
+- Implementation commit: `33691c7be53903caafd7eb0b3261bfc19d0349e8`
+- PR: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/959`
+- Note: this proof file was updated after PR creation in a proof-only follow-up commit, so the branch tip may be newer than the implementation commit above.
