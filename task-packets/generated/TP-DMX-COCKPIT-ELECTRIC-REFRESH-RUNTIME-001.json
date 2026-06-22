@@ -44,6 +44,7 @@
       "src/dopemux/ui/cockpit/app.py",
       "src/dopemux/commands/cockpit_commands.py",
       "tests/unit/dopemux/ui/cockpit/test_cockpit_render_modes.py",
+      "tests/unit/dopemux/ui/cockpit/test_cockpit_command.py",
       "tests/unit/test_cockpit_cli.py",
       "proof/cockpit-electric-refresh-runtime/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001/"
     ],
@@ -52,7 +53,7 @@
       "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py tests/test_cockpit_tokens.py -q",
       "PYTHONPATH=src python -m compileall -q src/dopemux tests",
       "git diff --check",
-      "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json task-packets/INDEX.md src/dopemux/ui/cockpit/render_modes.py src/dopemux/ui/cockpit/app.py src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit/test_cockpit_render_modes.py tests/unit/test_cockpit_cli.py"
+      "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json task-packets/INDEX.md src/dopemux/ui/cockpit/render_modes.py src/dopemux/ui/cockpit/app.py src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit/test_cockpit_render_modes.py tests/unit/dopemux/ui/cockpit/test_cockpit_command.py tests/unit/test_cockpit_cli.py"
     ]
   },
   "pr": {
@@ -150,7 +151,7 @@
         "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py tests/test_cockpit_tokens.py -q",
         "PYTHONPATH=src python -m compileall -q src/dopemux tests",
         "git diff --check",
-        "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json task-packets/INDEX.md src/dopemux/ui/cockpit/render_modes.py src/dopemux/ui/cockpit/app.py src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit/test_cockpit_render_modes.py tests/unit/test_cockpit_cli.py"
+        "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json task-packets/INDEX.md src/dopemux/ui/cockpit/render_modes.py src/dopemux/ui/cockpit/app.py src/dopemux/commands/cockpit_commands.py tests/unit/dopemux/ui/cockpit/test_cockpit_render_modes.py tests/unit/dopemux/ui/cockpit/test_cockpit_command.py tests/unit/test_cockpit_cli.py"
       ]
     }
   ]

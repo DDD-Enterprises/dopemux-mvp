@@ -82,7 +82,7 @@ def render_cockpit(
     ]
     for pane in model.panes:
         lines.extend(_render_pane(pane, cols=cols))
-    return "\n".join(lines)
+    return "\n".join(line[:cols] for line in lines)
 
 
 def mode_model(mode: str) -> ModeModel:

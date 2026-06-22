@@ -69,6 +69,28 @@ PASS:
 - `python -m ruff check src/dopemux/commands/cockpit_commands.py src/dopemux/ui/cockpit/app.py src/dopemux/ui/cockpit/render_modes.py tests/unit/dopemux/ui/cockpit/test_cockpit_render_modes.py tests/unit/dopemux/ui/cockpit/test_cockpit_command.py tests/unit/test_cockpit_cli.py`
 - PAL codereview: internal review completed, issues found `0`, continuation ID `b698be19-ffa6-468e-8881-ea6ed8892a08`.
 
+## Review Remediation
+
+2026-06-22 live PR review found two actionable issues:
+
+- Non-PM chrome rows could exceed the selected viewport width.
+- `tests/unit/dopemux/ui/cockpit/test_cockpit_command.py` was modified but missing from the packet allowlist and pre-commit file list.
+
+Remediation:
+
+- Added a regression assertion that every rendered row is `<= cols` for every supported mode and viewport.
+- Clamped non-PM renderer output rows to `cols`.
+- Added `tests/unit/dopemux/ui/cockpit/test_cockpit_command.py` to the packet allowlist and pre-commit validation strings.
+
+Review-remediation validation:
+
+- RED: `PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit/test_cockpit_render_modes.py -q` failed on the new max-width assertion for non-PM modes.
+- GREEN: same command passed with `19 passed`.
+- `python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`
+- `PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py tests/test_cockpit_tokens.py -q`
+- `PYTHONPATH=src python -m compileall -q src/dopemux tests`
+- `git diff --check`
+
 NOT_RUN:
 
 - Pixel-perfect comparison against uploaded PNGs.

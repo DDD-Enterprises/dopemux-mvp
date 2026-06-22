@@ -68,6 +68,7 @@ def test_every_supported_mode_renders_deterministic_static_contract(mode, size):
     assert "next_action: " in first
     assert "SRC=" in first
     assert "[BLOCKER]" not in first
+    assert max(len(line) for line in first.splitlines()) <= cols
     for phrase in FORBIDDEN_PHRASES:
         assert phrase not in first
     for label in MODE_AUTHORITY_LABELS[mode]:
