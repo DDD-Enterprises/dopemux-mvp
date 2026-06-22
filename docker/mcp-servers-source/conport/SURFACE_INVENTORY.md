@@ -7,6 +7,15 @@
 ## Overview
 This document specifies the MCP tool surface exposed by the ConPort MCP server (`server.py` and `conport_mcp_stdio.py`). All tools here act as thin, un-opinionated proxies to the underlying ConPort PM-plane REST API running on port 3004.
 
+## Canonical Codebase
+`docker/mcp-servers-source/conport/` is the single runtime-integrated ConPort
+MCP server codebase for this repository.
+
+The older `src/conport/` and `services/conport_kg/` trees are quarantined
+dead-code surfaces. They must not be imported, deployed, or treated as
+canonical ConPort runtime authority without explicit operator approval and a
+new task packet.
+
 ## Callable-Surface Inventory
 The following 13 tools are currently exposed:
 
