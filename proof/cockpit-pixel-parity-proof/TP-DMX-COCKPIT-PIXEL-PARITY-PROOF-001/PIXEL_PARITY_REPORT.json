@@ -1,0 +1,156 @@
+{
+  "boundaries": {
+    "design_fixes_authorized": false,
+    "live_integration_claimed": false,
+    "ready_for_claude_design_claimed": false,
+    "runtime_changes_authorized": false,
+    "token_doctrine_changes_authorized": false
+  },
+  "classification_vocab": [
+    "MATCH",
+    "ACCEPTABLE_DELTA",
+    "DESIGN_DRIFT",
+    "RUNTIME_BUG",
+    "SPEC_AMBIGUITY",
+    "UNKNOWN"
+  ],
+  "packet_id": "TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001",
+  "reference_images": [
+    {
+      "category": "dark_cockpit_reference",
+      "classification": "DESIGN_DRIFT",
+      "height": 739,
+      "mean_luminance": 21.69,
+      "mode": "RGBA",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.11.21 PM.png",
+      "pixel_certainty": "UNKNOWN",
+      "rationale": "Uploaded PNG is a dark Cockpit/RTE-style reference. Current runtime export is the merged five-mode static continuation surface, so exact pixel parity is not proven and visual drift must be reported rather than fixed here.",
+      "width": 1072
+    },
+    {
+      "category": "dark_cockpit_reference",
+      "classification": "DESIGN_DRIFT",
+      "height": 738,
+      "mean_luminance": 22.2,
+      "mode": "RGBA",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.11.37 PM.png",
+      "pixel_certainty": "UNKNOWN",
+      "rationale": "Uploaded PNG is a dark Cockpit/RTE-style reference. Current runtime export is the merged five-mode static continuation surface, so exact pixel parity is not proven and visual drift must be reported rather than fixed here.",
+      "width": 1073
+    },
+    {
+      "category": "dark_cockpit_reference",
+      "classification": "DESIGN_DRIFT",
+      "height": 752,
+      "mean_luminance": 21.73,
+      "mode": "RGBA",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 10.12.47 PM.png",
+      "pixel_certainty": "UNKNOWN",
+      "rationale": "Uploaded PNG is a dark Cockpit/RTE-style reference. Current runtime export is the merged five-mode static continuation surface, so exact pixel parity is not proven and visual drift must be reported rather than fixed here.",
+      "width": 1074
+    },
+    {
+      "category": "non_runtime_setup_form_reference",
+      "classification": "SPEC_AMBIGUITY",
+      "height": 606,
+      "mean_luminance": 244.42,
+      "mode": "RGBA",
+      "path": "docs/03-reference/Dopemux Cockpit TUI Design System/uploads/Screenshot 2026-04-24 at 9.05.48 PM.png",
+      "pixel_certainty": "UNKNOWN",
+      "rationale": "Uploaded PNG is bright and visually distinct from the dark Cockpit runtime reference set; treat as reference-set ambiguity, not runtime failure.",
+      "width": 412
+    }
+  ],
+  "runtime_artifacts": [
+    {
+      "classification": "UNKNOWN",
+      "classification_reason": "Runtime artifact was generated for proof comparison, but uploaded PNG viewport/font/source equivalence is not established in this packet.",
+      "mode": "pm",
+      "raster_png_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-screenshots/pm.png",
+      "raster_png_sha256": "dd16597e7cfebdc16e257bca4951e1cb7e56cced818bb25b57233c12a58fc9b9",
+      "raster_png_size": [
+        1482,
+        1026
+      ],
+      "rasterization": "OBSERVED",
+      "svg_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-screenshots/pm.svg",
+      "svg_sha256": "2bfcf390ccdc86c189c9b13ec4cb8431b97f7b3cf608cd3fad813d5c08595a7d",
+      "text_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-renders/pm.txt",
+      "text_sha256": "4f5dae24cff0c0714f5a4b51f522832dcc7b9361882fe2b5d4a3b6daf57c2df0"
+    },
+    {
+      "classification": "UNKNOWN",
+      "classification_reason": "Runtime artifact was generated for proof comparison, but uploaded PNG viewport/font/source equivalence is not established in this packet.",
+      "mode": "implementer",
+      "raster_png_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-screenshots/implementer.png",
+      "raster_png_sha256": "0f39815c9b2f599db569fcf246104da0ddbd2fa3ecb5d0601d3a0fa347ad17ee",
+      "raster_png_size": [
+        1482,
+        1026
+      ],
+      "rasterization": "OBSERVED",
+      "svg_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-screenshots/implementer.svg",
+      "svg_sha256": "994a88ac4dae586e21113429579b645871b58f9b7832d10f49edb23da8761df2",
+      "text_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-renders/implementer.txt",
+      "text_sha256": "453fa535ace5877bd61f245b32c8e7138e62df86cda6f1c4d353de2085cafc45"
+    },
+    {
+      "classification": "UNKNOWN",
+      "classification_reason": "Runtime artifact was generated for proof comparison, but uploaded PNG viewport/font/source equivalence is not established in this packet.",
+      "mode": "overview",
+      "raster_png_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-screenshots/overview.png",
+      "raster_png_sha256": "a91da516b1cfb340b1babec56907c49d7bc1a5b7169a521d5d6b0019ee93c057",
+      "raster_png_size": [
+        1482,
+        1026
+      ],
+      "rasterization": "OBSERVED",
+      "svg_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-screenshots/overview.svg",
+      "svg_sha256": "3e9d28b72c782f1158cd19795405d0f8aebc281fdd3c8324a2a5cadc9f5925d5",
+      "text_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-renders/overview.txt",
+      "text_sha256": "8ff0ea046f8707f73092170bc65c2df058a2f90b991372fc3d32a06625291196"
+    },
+    {
+      "classification": "UNKNOWN",
+      "classification_reason": "Runtime artifact was generated for proof comparison, but uploaded PNG viewport/font/source equivalence is not established in this packet.",
+      "mode": "services",
+      "raster_png_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-screenshots/services.png",
+      "raster_png_sha256": "380a1b739b9aa96f0af37bacea9c343a7411f8f9653a746b9b3b6288acd322b5",
+      "raster_png_size": [
+        1482,
+        1026
+      ],
+      "rasterization": "OBSERVED",
+      "svg_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-screenshots/services.svg",
+      "svg_sha256": "39ba17d07d8551cc3740872e710330d94411d30376e002acf124ce476c7ff6fb",
+      "text_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-renders/services.txt",
+      "text_sha256": "a648a883fc1232a1c070e9e751f80d92df0c017504eceb26423b1991838c4270"
+    },
+    {
+      "classification": "UNKNOWN",
+      "classification_reason": "Runtime artifact was generated for proof comparison, but uploaded PNG viewport/font/source equivalence is not established in this packet.",
+      "mode": "events",
+      "raster_png_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-screenshots/events.png",
+      "raster_png_sha256": "d947bd0bf5293ab36544060eaeb73fc4d4e6edf12884eeac57b395c36e3e93fa",
+      "raster_png_size": [
+        1482,
+        1026
+      ],
+      "rasterization": "OBSERVED",
+      "svg_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-screenshots/events.svg",
+      "svg_sha256": "b2a754830e5a16d9d3b08eeec73b31adeeecccccdcc89ce74ffefdd1f58ba5f2",
+      "text_path": "proof/cockpit-pixel-parity-proof/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001/runtime-renders/events.txt",
+      "text_sha256": "545b5531dabb8739d01570d2f399caf81bfd8b60c127d0e3636bdcc982a54c91"
+    }
+  ],
+  "runtime_modes": [
+    "pm",
+    "implementer",
+    "overview",
+    "services",
+    "events"
+  ],
+  "status": "CONTINUATION_PROOF",
+  "upload_dir": "docs/03-reference/Dopemux Cockpit TUI Design System/uploads",
+  "verdict": "DESIGN_DRIFT observed for dark uploaded Cockpit/RTE references; SPEC_AMBIGUITY observed for the setup-form reference; true pixel MATCH is UNKNOWN because viewport/font/source equivalence is not proven."
+}
