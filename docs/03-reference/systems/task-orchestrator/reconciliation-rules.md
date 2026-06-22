@@ -34,3 +34,14 @@ Title matches across databases are conflicts, not identity. Canonical identity i
 - 102 remains blocked until concrete repo packet authority and allowlist exist.
 - Queue-only packets remain queue-only. TO role alone does not imply implementation readiness.
 - 107, 108, 113, and 118 remain supervisor/high-risk queue items.
+
+## Coldstart Decision Contract
+
+The coldstart artifact (`COLDSTART_RECONCILIATION.json`, emitted by `--emit-coldstart`) is validated against `schemas/task-orchestrator/reconciliation-decision.schema.json`. The enums are derived from `tools/task_orchestrator_reconcile/resolve.py::coldstart_report`:
+
+- `decision`: `accepted_do_not_rerun`, `remain_active_in_progress`, `keep_blocked_until_repo_packet_allowlist_exists`, `operator_only_do_not_automate`, `do_not_infer_readiness_from_to_role`.
+- `classification`: `repo_pr_proof_observed`, `active_root_in_progress`, `explicit_blocked`, `operator_gate`, `queue_only`, `queue_only_supervisor_required`.
+
+## Point-in-Time Knowledge
+
+The completed-PR map (`#886`/`#887`/`#888`), the high-risk packet set (`107`/`108`/`113`/`118`), and the `model.py` schema-class table-count thresholds (`>=25` modern, `==5` legacy) are **point-in-time facts** as of the June 22 safe pack, surfaced in each artifact's `point_in_time` block (`valid_as_of_utc` / `basis`). They are not durable runtime truth and must be revalidated (or moved to a config artifact) before reuse beyond this dry run.

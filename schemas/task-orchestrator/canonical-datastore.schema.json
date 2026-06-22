@@ -48,7 +48,7 @@
   "$defs": {
     "provenance": {
       "type": "object",
-      "additionalProperties": false,
+      "comment": "Reusable provenance fields. Intentionally NOT closed here: closure is applied on the composed schemas via `unevaluatedProperties` so extension fields added through `allOf` are not rejected by this subschema (JSON Schema 2020-12).",
       "required": [
         "source_db_slug",
         "source_database_path",
@@ -71,11 +71,11 @@
       }
     },
     "source_database": {
+      "type": "object",
       "allOf": [
         {"$ref": "#/$defs/provenance"},
         {
           "type": "object",
-          "additionalProperties": true,
           "required": [
             "schema_class",
             "adjudication_class",
@@ -90,14 +90,15 @@
             "canonical_treatment": {"type": "string"}
           }
         }
-      ]
+      ],
+      "unevaluatedProperties": false
     },
     "imported_entity": {
+      "type": "object",
       "allOf": [
         {"$ref": "#/$defs/provenance"},
         {
           "type": "object",
-          "additionalProperties": true,
           "required": ["entity_type"],
           "properties": {
             "entity_type": {
@@ -114,7 +115,8 @@
             }
           }
         }
-      ]
+      ],
+      "unevaluatedProperties": false
     }
   }
 }

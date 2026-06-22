@@ -7,10 +7,40 @@ import subprocess
 import sys
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+
 
 ROOT = Path(__file__).resolve().parents[2]
 ACTIVE = "dopemux-mvp-2e346e2084bca021"
 RECOVERY = "dnh_crm__recovery_20260504t060227z-364b7472ece807d7"
+CANONICAL_DATASTORE_SCHEMA = (
+    ROOT / "schemas" / "task-orchestrator" / "canonical-datastore.schema.json"
+)
+
+
+def _run_import(pack: Path, output: Path, *extra: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "tools.task_orchestrator_reconcile.import_pack",
+            "--input",
+            str(pack),
+            "--output",
+            str(output),
+            *extra,
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+def _unredact_note(pack: Path) -> None:
+    notes = pack / "dbs" / ACTIVE / "all_tables_safe" / "notes.csv"
+    text = notes.read_text(encoding="utf-8")
+    notes.write_text(text.replace("[REDACTED len=", "raw note ", 1), encoding="utf-8")
 
 
 def _write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, object]]) -> None:
@@ -485,3 +515,118 @@ def test_import_pack_rejects_unredacted_note_body(tmp_path: Path) -> None:
 
     assert result.returncode == 2
     assert "unredacted note body value" in result.stderr
+
+
+def test_import_pack_emits_schema_valid_manifest_when_requested(tmp_path: Path) -> None:
+    pack = _make_pack(tmp_path)
+    output = tmp_path / "canonical.sqlite"
+    manifest_path = tmp_path / "manifest.json"
+
+    result = _run_import(
+        pack,
+        output,
+        "--archive-sha256",
+        "archive-test",
+        "--redacted-only",
+        "--resolve-current",
+        "--emit-manifest",
+        str(manifest_path),
+    )
+
+    assert result.returncode == 0, result.stderr
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    schema = json.loads(CANONICAL_DATASTORE_SCHEMA.read_text(encoding="utf-8"))
+    # The emitted manifest must validate against the committed contract.
+    Draft202012Validator(schema).validate(manifest)
+
+    assert manifest["schema_version"] == "task-orchestrator.canonical-datastore.v0"
+    assert manifest["source_pack"]["archive_sha256"] == "archive-test"
+    assert manifest["source_pack"]["redacted_only"] is True
+    # generated_at_utc is deterministic (newest source mtime), never wall-clock.
+    assert manifest["source_pack"]["generated_at_utc"] == "2026-06-22T00:00:00Z"
+    assert len(manifest["source_databases"]) == 2
+    entity_types = {e["entity_type"] for e in manifest["imported_entities"]}
+    assert entity_types == {"canonical_current_work_item"}
+    assert len(manifest["imported_entities"]) == 4
+
+
+def test_import_pack_redaction_check_is_default_or_requires_explicit_opt_out(
+    tmp_path: Path,
+) -> None:
+    pack = _make_pack(tmp_path)
+    _unredact_note(pack)
+
+    # No --redacted-only and no opt-out: verification must still run by default
+    # and reject the unredacted note body.
+    result = _run_import(pack, tmp_path / "canonical.sqlite")
+
+    assert result.returncode == 2, result.stdout
+    assert "unredacted note body value" in result.stderr
+
+
+def test_import_pack_records_unredacted_opt_out_warning_when_used(
+    tmp_path: Path,
+) -> None:
+    pack = _make_pack(tmp_path)
+    _unredact_note(pack)
+    report = tmp_path / "report.json"
+
+    result = _run_import(
+        pack,
+        tmp_path / "canonical.sqlite",
+        "--allow-unredacted-safe-pack-input",
+        "--emit-report",
+        str(report),
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "WARNING" in result.stderr
+    assert "skipping safe-pack" in result.stderr
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["unredacted_opt_out"] is True
+    assert payload["redacted_only"] is False
+
+
+def test_import_pack_uses_pinned_import_run_id_in_reports(tmp_path: Path) -> None:
+    pack = _make_pack(tmp_path)
+    report = tmp_path / "report.json"
+    coldstart = tmp_path / "coldstart.json"
+
+    result = _run_import(
+        pack,
+        tmp_path / "canonical.sqlite",
+        "--archive-sha256",
+        "archive-test",
+        "--import-run-id",
+        "to-canon-pinned-001",
+        "--redacted-only",
+        "--resolve-current",
+        "--emit-report",
+        str(report),
+        "--emit-coldstart",
+        str(coldstart),
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["import_run_id"] == "to-canon-pinned-001"
+    # Re-running with the same pinned id yields the same id (byte-stable evidence).
+    rerun = _run_import(
+        pack,
+        tmp_path / "canonical2.sqlite",
+        "--archive-sha256",
+        "archive-test",
+        "--import-run-id",
+        "to-canon-pinned-001",
+        "--redacted-only",
+        "--resolve-current",
+        "--emit-report",
+        str(tmp_path / "report2.json"),
+    )
+    assert rerun.returncode == 0, rerun.stderr
+    payload2 = json.loads((tmp_path / "report2.json").read_text(encoding="utf-8"))
+    assert payload2["import_run_id"] == "to-canon-pinned-001"
+
+    cold = json.loads(coldstart.read_text(encoding="utf-8"))
+    assert cold["schema_version"] == "task-orchestrator.reconciliation-decision.v0"
+    assert "point_in_time" in cold

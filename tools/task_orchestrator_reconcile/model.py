@@ -50,6 +50,11 @@ def int_field(row: dict[str, str], key: str) -> int:
 
 
 def schema_class(table_count: int) -> str:
+    # Point-in-time heuristic: the >=25 (modern) and ==5 (legacy) table-count
+    # thresholds describe the Task Orchestrator schemas observed in the June 22
+    # safe pack. They are not durable runtime truth and should be revalidated (or
+    # moved to a config artifact) before reuse beyond this dry run. See
+    # resolve.COLDSTART_KNOWLEDGE_VALID_AS_OF / COLDSTART_KNOWLEDGE_BASIS.
     if table_count >= 25:
         return "modern"
     if table_count == 5:

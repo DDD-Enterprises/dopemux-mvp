@@ -260,5 +260,10 @@
       "title": "TP-DMX-COLDSTART-VERSION-CONTRACT-117"
     }
   ],
-  "root_decision": "remain_active_in_progress"
+  "point_in_time": {
+    "basis": "June 22 Task Orchestrator safe-pack reconciliation and PR evidence: completed-PR map (#886/#887/#888), high-risk packet set, and the model.py schema-class table-count thresholds are point-in-time facts.",
+    "valid_as_of_utc": "2026-06-22T19:28:14Z"
+  },
+  "root_decision": "remain_active_in_progress",
+  "schema_version": "task-orchestrator.reconciliation-decision.v0"
 }

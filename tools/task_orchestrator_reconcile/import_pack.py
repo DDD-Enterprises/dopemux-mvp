@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 import sqlite3
+import sys
 import uuid
 from collections import Counter
 from datetime import datetime, timezone
@@ -19,8 +20,10 @@ from .model import (
     sha256_file,
 )
 from .resolve import (
+    build_canonical_datastore_manifest,
     build_resolve_report,
     insert_database_decisions,
+    manifest_generated_at_utc,
     materialize_current_work_items,
 )
 
@@ -371,8 +374,19 @@ def _write_json(path: Path | None, payload: dict) -> None:
 def import_pack(args: argparse.Namespace) -> dict:
     input_dir = args.input.resolve()
     _require_pack(input_dir)
-    if args.redacted_only:
+    # Redaction verification is fail-safe by default (opt-out, not opt-in). The
+    # legacy --redacted-only flag is still accepted but is no longer required.
+    unredacted_opt_out = bool(args.allow_unredacted_safe_pack_input)
+    redacted_only = not unredacted_opt_out
+    if redacted_only:
         _verify_redacted_only(input_dir)
+    else:
+        print(
+            "WARNING: --allow-unredacted-safe-pack-input set; skipping safe-pack "
+            "redaction verification. Note bodies and imported titles/summaries are "
+            "NOT checked for redaction.",
+            file=sys.stderr,
+        )
 
     if args.archive_sha256:
         archive_sha256 = args.archive_sha256
@@ -423,7 +437,8 @@ def import_pack(args: argparse.Namespace) -> dict:
         report = {
             "import_run_id": import_run_id,
             "archive_sha256": archive_sha256,
-            "redacted_only": bool(args.redacted_only),
+            "redacted_only": redacted_only,
+            "unredacted_opt_out": unredacted_opt_out,
             "source_databases": len(sources_list),
             "schema_counts": dict(
                 Counter(source.schema_class for source in sources_list)
@@ -441,6 +456,14 @@ def import_pack(args: argparse.Namespace) -> dict:
             report["resolve"] = resolve_report
             _write_json(args.emit_coldstart, resolve_report["coldstart"])
             _write_json(args.emit_conflicts, build_collision_report(conn))
+        if args.emit_manifest:
+            manifest = build_canonical_datastore_manifest(
+                conn,
+                archive_sha256=archive_sha256,
+                redacted_only=redacted_only,
+                generated_at_utc=manifest_generated_at_utc(conn),
+            )
+            _write_json(args.emit_manifest, manifest)
         _write_json(args.emit_report, report)
         return report
     finally:
@@ -456,11 +479,25 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--archive", type=Path)
     parser.add_argument("--archive-sha256")
     parser.add_argument("--import-run-id")
-    parser.add_argument("--redacted-only", action="store_true")
+    parser.add_argument(
+        "--redacted-only",
+        action="store_true",
+        help="(legacy/no-op) safe-pack redaction verification now runs by default",
+    )
+    parser.add_argument(
+        "--allow-unredacted-safe-pack-input",
+        action="store_true",
+        help="opt out of safe-pack redaction verification (warns loudly, recorded in report)",
+    )
     parser.add_argument("--resolve-current", action="store_true")
     parser.add_argument("--emit-report", type=Path)
     parser.add_argument("--emit-coldstart", type=Path)
     parser.add_argument("--emit-conflicts", type=Path)
+    parser.add_argument(
+        "--emit-manifest",
+        type=Path,
+        help="emit a canonical-datastore.schema.json-conforming provenance manifest",
+    )
     return parser
 
 

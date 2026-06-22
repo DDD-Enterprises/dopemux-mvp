@@ -9,7 +9,7 @@
   },
   "archive_sha256": "79e00c2ec578db0675ce9e220be423228706b2e91badbef0f31da91b33f5c3c4",
   "canonical_current_work_items": 418,
-  "import_run_id": "to-canon-fe1fc2f069f946928f0ec01664a3a8b9",
+  "import_run_id": "to-canon-20260622T192814Z",
   "imported_counts": {
     "dependencies": 463,
     "note_indexes": 633,
@@ -284,7 +284,12 @@
           "title": "TP-DMX-COLDSTART-VERSION-CONTRACT-117"
         }
       ],
-      "root_decision": "remain_active_in_progress"
+      "point_in_time": {
+        "basis": "June 22 Task Orchestrator safe-pack reconciliation and PR evidence: completed-PR map (#886/#887/#888), high-risk packet set, and the model.py schema-class table-count thresholds are point-in-time facts.",
+        "valid_as_of_utc": "2026-06-22T19:28:14Z"
+      },
+      "root_decision": "remain_active_in_progress",
+      "schema_version": "task-orchestrator.reconciliation-decision.v0"
     },
     "database_decisions": {
       "promote_to_current": 1,
@@ -607,5 +612,6 @@
     "legacy": 15,
     "modern": 11
   },
-  "source_databases": 26
+  "source_databases": 26,
+  "unredacted_opt_out": false
 }
