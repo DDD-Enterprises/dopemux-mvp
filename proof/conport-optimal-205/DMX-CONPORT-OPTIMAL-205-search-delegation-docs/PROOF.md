@@ -120,5 +120,6 @@ NOT_RUN:
 
 ## Commit / PR
 
-- Commit: recorded after commit creation.
-- PR: recorded after PR creation.
+- Implementation commit after rebase: `265cd55f01e1d362e2cd824da342dbdf9598c9fd`
+- PR: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/960`
+- Note: this proof file was updated after PR creation in a proof-only follow-up commit, so the branch tip may be newer than the implementation commit above.
