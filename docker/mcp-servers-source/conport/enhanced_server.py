@@ -15,7 +15,7 @@ from typing import Dict, Any, Optional, List
 import subprocess
 from pathlib import Path
 from datetime import datetime, timedelta
-from urllib.parse import urlencode, urlparse
+from urllib.parse import quote, quote_plus, urlencode, urlparse
 
 # Setup logging first
 logging.basicConfig(level=logging.INFO)
@@ -1748,6 +1748,7 @@ class EnhancedConPortServer:
             'conport_get_custom_data': self._get_custom_data_tool,
             'conport_save_custom_data': self._save_custom_data_tool,
             'conport_delete_custom_data': self._delete_custom_data_tool,
+            'conport_search_content': self._search_content_tool,
             # Instance management
             'conport_fork_instance': self._fork_instance,
             'conport_promote': self._promote_progress,
@@ -1831,6 +1832,18 @@ class EnhancedConPortServer:
 
     async def _delete_custom_data_tool(self, args):
         return await self._request_custom_data_tool("DELETE", args)
+
+    async def _search_content_tool(self, args):
+        workspace_id = args.get('workspace_id')
+        query = args.get('query')
+        url = f"http://127.0.0.1:{self.port}/api/search/{quote(workspace_id or '', safe='')}?q={quote_plus(query or '')}"
+        timeout = aiohttp.ClientTimeout(total=10)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url) as resp:
+                data = await resp.json()
+                if resp.status >= 400:
+                    return {"error": data.get("error", "search_content failed")}
+                return data
 
     def _get_tool_schemas(self) -> List[Dict[str, Any]]:
         """Returns the list of supported tools with their JSON schemas"""
@@ -1999,6 +2012,18 @@ class EnhancedConPortServer:
                         "key": {"type": "string"}
                     },
                     "required": ["workspace_id", "category", "key"]
+                }
+            },
+            {
+                "name": "conport_search_content",
+                "description": "Search decisions and progress entries in a workspace",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "query": {"type": "string"}
+                    },
+                    "required": ["workspace_id", "query"]
                 }
             }
         ]
