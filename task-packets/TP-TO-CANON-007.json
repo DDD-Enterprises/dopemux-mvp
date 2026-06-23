@@ -1,0 +1,116 @@
+{
+  "id": "TP-TO-CANON-007",
+  "project": "dopemux-mvp",
+  "target": "Author (do not execute) a supervised cutover plan for promoting the offline canonical reconciliation datastore to a runtime-backed Task Orchestrator workflow-memory store. Docs-only: a cutover plan plus a red-team risk doc, gated behind explicit operator approval.",
+  "invariants": [
+    "Docs-only. No code, no live current-tasks.db mutation, no actual cutover.",
+    "The plan must require explicit operator approval before any write/cutover.",
+    "Stale/recovery DBs are archived, never deleted.",
+    "Authority boundaries (task-orchestrator views-only, Leantime passive PM, ConPort structured context/decisions, dope-memory chronicle, dopecon-bridge transport-only) are preserved and named.",
+    "dopecon-bridge must not be promoted into a data authority.",
+    "The plan names the canonical writer, a live backup-before-mutation step, and exact rollback commands.",
+    "Enabling and validating the TP-TO-CANON-006 read-only view is listed as a cutover precondition."
+  ],
+  "depends_on": [
+    "TP-TO-CANON-004"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TO-CANON",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-TO-CANON-004",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/to-canon-tail-005-007",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(task-orchestrator): supervised canonical-store cutover plan",
+    "allowlist": [
+      "task-packets/TP-TO-CANON-007.json",
+      "docs/03-reference/systems/task-orchestrator/canonical-store-cutover-plan.md",
+      "docs/05-audit-reports/task-orchestrator/canonical-store-cutover-risk.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-TO-CANON-007.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python scripts/docs_validator.py docs/03-reference/systems/task-orchestrator/canonical-store-cutover-plan.md docs/05-audit-reports/task-orchestrator/canonical-store-cutover-risk.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(task-orchestrator): supervised canonical-store cutover plan",
+    "body": "## Summary\n- add a supervised, operator-gated cutover plan for the offline canonical reconciliation datastore (plan only, no execution)\n- add a red-team risk doc (verdict PASS or PASS_WITH_RISKS)\n- preserve task-orchestrator / Leantime / ConPort / dope-memory / dopecon-bridge authority boundaries; bridge stays transport-only\n\n## Validation\n- python -m jsonschema -i task-packets/TP-TO-CANON-007.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python scripts/docs_validator.py <new docs>\n- git diff --check\n\nNo code, no live current-tasks.db mutation, no actual cutover, no stale-DB deletion.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "author-cutover-plan",
+      "task": "Write docs/03-reference/systems/task-orchestrator/canonical-store-cutover-plan.md extending canonical-datastore-contract.md: name the canonical writer, the live backup-before-mutation step, exact rollback commands, the operator-approval gate, and the precondition that the TP-TO-CANON-006 read-only view is enabled and validated first. Archive (never delete) stale DBs.",
+      "requirements": [
+        "Explicit operator-approval gate before any write/cutover.",
+        "Preserve and name the bridge/ConPort/Leantime/dope-memory authority boundaries.",
+        "Include exact backup and rollback commands."
+      ],
+      "expected_files": [
+        "docs/03-reference/systems/task-orchestrator/canonical-store-cutover-plan.md"
+      ],
+      "validation": [
+        "Plan names canonical writer, backup, rollback, approval gate, and 006 precondition."
+      ],
+      "context_files": [
+        "docs/03-reference/systems/task-orchestrator/canonical-datastore-contract.md",
+        "config/runtime_authority_manifest.json"
+      ]
+    },
+    {
+      "id": "author-risk-doc",
+      "task": "Write docs/05-audit-reports/task-orchestrator/canonical-store-cutover-risk.md as a red-team risk assessment of the cutover plan, with an explicit verdict of PASS or PASS_WITH_RISKS.",
+      "requirements": [
+        "Enumerate data-loss, authority-flattening, and replay/idempotency risks with mitigations.",
+        "Verdict must be PASS or PASS_WITH_RISKS."
+      ],
+      "expected_files": [
+        "docs/05-audit-reports/task-orchestrator/canonical-store-cutover-risk.md"
+      ],
+      "validation": [
+        "Risk doc carries an explicit verdict and mitigations."
+      ],
+      "context_files": [
+        "docs/03-reference/systems/task-orchestrator/canonical-datastore-contract.md"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate the packet and run docs gates and diff-scope checks.",
+      "requirements": [
+        "Report PASS / FAIL / NOT_RUN truthfully."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-TO-CANON-007.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check"
+      ],
+      "validation": [
+        "Schema validation passes and docs gates pass or blockers are reported."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    }
+  ]
+}
