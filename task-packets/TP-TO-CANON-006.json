@@ -1,0 +1,142 @@
+{
+  "id": "TP-TO-CANON-006",
+  "project": "dopemux-mvp",
+  "target": "Expose the offline canonical reconciliation SQLite as a READ-ONLY operator view behind a feature flag. Adds a `dopemux orchestrator canonical-store inspect` CLI command that reads a caller-supplied offline SQLite file and prints provenance-tagged rows plus a point-in-time banner. Derived/read-only; never a canonical authority; default behavior unchanged when the flag is off.",
+  "invariants": [
+    "Reads ONLY a caller-supplied offline SQLite path (--db); never opens or writes a live current-tasks.db.",
+    "SQLite is opened read-only (file:...?mode=ro URI). No writes, no schema changes.",
+    "The feature flag CANONICAL_STORE_READ_VIEW_ENABLED (default false) gates the command; it fails closed when the flag is unset/false or the --db path is missing.",
+    "Default CLI behavior is unchanged when the flag is off; existing orchestrator tests still pass.",
+    "Output carries a point-in-time / valid_as_of banner so the view never implies liveness.",
+    "The reconciliation store is NOT registered with a canonical_* authority role; it remains a DERIVED read-only view (per canonical-datastore-contract.md). config/runtime_authority_manifest.json is not modified.",
+    "Raw note bodies and FTS rows are not surfaced; only provenance + derived current-work-item summaries."
+  ],
+  "depends_on": [
+    "TP-TO-CANON-004"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TO-CANON",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-TO-CANON-004",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/to-canon-006-readview",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(task-orchestrator): read-only canonical-store operator view behind feature flag",
+    "allowlist": [
+      "task-packets/TP-TO-CANON-006.json",
+      "src/dopemux/orchestrator/canonical_readview.py",
+      "src/dopemux/commands/orchestrator_commands.py",
+      "tests/unit/orchestrator/test_canonical_store_readview.py"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-TO-CANON-006.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest -q tests/unit/orchestrator/test_canonical_store_readview.py",
+      "python -m pytest -q tests/unit/orchestrator",
+      "python scripts/verify_runtime_authority.py --manifest config/runtime_authority_manifest.json",
+      "python -m compileall -q src/dopemux/orchestrator src/dopemux/commands",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(task-orchestrator): read-only canonical-store operator view behind feature flag",
+    "body": "## Summary\n- add `dopemux orchestrator canonical-store inspect --db <offline.sqlite>` read-only operator view over the offline canonical reconciliation SQLite\n- gate behind CANONICAL_STORE_READ_VIEW_ENABLED (default off, fail-closed); SQLite opened read-only (mode=ro)\n- print provenance-tagged rows + a point-in-time valid_as_of banner so the view never implies liveness\n- derived/read-only: NOT registered as a canonical authority; runtime_authority_manifest unchanged\n\n## Validation\n- python -m jsonschema -i task-packets/TP-TO-CANON-006.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- python -m pytest -q tests/unit/orchestrator (new command tests + no regression with flag off)\n- python scripts/verify_runtime_authority.py --manifest config/runtime_authority_manifest.json (exit 0)\n- git diff --check\n\nNo live current-tasks.db access; default behavior unchanged when the flag is off; no raw note bodies or FTS rows.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "add-readview",
+      "task": "Add src/dopemux/orchestrator/canonical_readview.py (inside the dopemux package so the installed CLI can import it without the repo-root tools/ package): a read-only reader that opens a caller-supplied offline canonical SQLite (file:...?mode=ro), reads canonical_current_work_items rows and source-database provenance, and returns a structured summary including valid_as_of = MAX(source_mtime_utc) from source_databases. No writes, no live DB.",
+      "requirements": [
+        "Open SQLite strictly read-only (uri mode=ro).",
+        "Surface provenance (source_db_slug, source_row_id, import_run_id, archive_sha256) and the valid_as_of value; do not surface raw note bodies or FTS rows.",
+        "Raise a clear error if the file is missing or is not a canonical store (expected tables absent)."
+      ],
+      "expected_files": [
+        "src/dopemux/orchestrator/canonical_readview.py"
+      ],
+      "validation": [
+        "Reader opens a fixture sqlite read-only and returns provenance-tagged rows + a point-in-time value."
+      ],
+      "context_files": [
+        "services/task-orchestrator/app/storage/canonical_store_schema.sql",
+        "docs/03-reference/systems/task-orchestrator/canonical-datastore-contract.md",
+        "tools/task_orchestrator_reconcile/import_pack.py"
+      ]
+    },
+    {
+      "id": "add-cli-command",
+      "task": "Add a `canonical-store` subgroup + `inspect` command to the existing orchestrator click group in src/dopemux/commands/orchestrator_commands.py (mirror workflow_status/workflow_inspect). Gate on os.getenv('CANONICAL_STORE_READ_VIEW_ENABLED'): fail closed via click.ClickException when unset/false. Take --db <path> and --json-output. Print provenance-tagged rows + a valid_as_of banner. Fail closed if --db is missing.",
+      "requirements": [
+        "Default behavior unchanged when the flag is off (the command exists but errors clearly; no other command's behavior changes).",
+        "No live current-tasks.db access.",
+        "Reuse readview.py for all data access."
+      ],
+      "expected_files": [
+        "src/dopemux/commands/orchestrator_commands.py"
+      ],
+      "validation": [
+        "Command is registered under `dopemux orchestrator canonical-store inspect` and fails closed when the flag is off."
+      ],
+      "context_files": [
+        "src/dopemux/commands/workflow_group_commands.py",
+        "src/dopemux/cli.py"
+      ]
+    },
+    {
+      "id": "test",
+      "task": "Add tests/unit/orchestrator/test_canonical_store_readview.py using click's CliRunner: (a) flag off -> command fails closed (non-zero, clear message); (b) flag on + missing --db -> fails closed; (c) flag on + a fixture offline sqlite -> prints provenance rows + valid_as_of banner; (d) the reader opens read-only. Build the fixture sqlite in a tmp dir (do not touch any live DB).",
+      "requirements": [
+        "Tests run offline with a self-built fixture sqlite.",
+        "Assert fail-closed behavior and the valid_as_of banner."
+      ],
+      "expected_files": [
+        "tests/unit/orchestrator/test_canonical_store_readview.py"
+      ],
+      "validation": [
+        "Targeted pytest passes and the broader tests/unit/orchestrator suite still passes."
+      ],
+      "context_files": [
+        "tests/unit/orchestrator"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate the packet, run the runtime-authority static check (must stay exit 0 with no manifest change), and check diff scope.",
+      "requirements": [
+        "Report PASS / FAIL / NOT_RUN truthfully."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-TO-CANON-006.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python scripts/verify_runtime_authority.py --manifest config/runtime_authority_manifest.json",
+        "git diff --check"
+      ],
+      "validation": [
+        "Schema validation passes, runtime-authority check exits 0, diff stays within the allowlist."
+      ],
+      "context_files": [
+        "scripts/verify_runtime_authority.py",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    }
+  ]
+}
