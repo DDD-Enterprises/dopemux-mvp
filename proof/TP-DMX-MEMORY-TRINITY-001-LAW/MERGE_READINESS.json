@@ -1,0 +1,44 @@
+{
+  "pr": 947,
+  "branch": "feat/memory-trinity-law",
+  "base": "main",
+  "title": "feat(memory): Memory Trinity law + dope-context routing + command remediation",
+  "steward_run": "fresh, post-split, 2026-06-20",
+  "req_1_head_reconciliation": {
+    "pr_head": "single commit on feat/memory-trinity-law (query live: gh pr view 947 --json headRefOid)",
+    "base_sha": "e757c6d1d",
+    "delta_vs_main": "90 files (+1927/-3544)",
+    "classification": "SCOPE-COHERENT — one commit off current main; no stale-head ambiguity (proof folded into the commit, not a drifting child). Rebased clean on main (0 behind).",
+    "status": "PASS"
+  },
+  "req_2_required_checks_at_head": {
+    "required_set": ["Security Review", "Documentation Check", "identity-check", "Unit Tests", "Analyze (python)", "Analyze (javascript-typescript)", "Analyze (ruby)", "CI Pipeline Summary"],
+    "result": "8/8 PASS (re-verify at final amended head via `gh pr checks 947 --required`)",
+    "note": "Code commit → full required suite triggers (not path-filtered).",
+    "status": "PASS"
+  },
+  "req_3_review_comment_classification": {
+    "codex_usage_limit_comment": "N/A — that comment was on #939 (the pre-split mega-PR). #947 is a fresh PR.",
+    "docker_scout_findings": "N/A — #947 touches no services/ or docker/ paths; introduces no image. The adhd-engine:pr-939 Scout vulns were on the old mega head and are pre-existing base/dependency (repo-wide dependabot), not introduced here.",
+    "unknown_bots_reviewers": "none",
+    "status": "PASS"
+  },
+  "req_4_scope_classification": {
+    "single_concern": true,
+    "concern": "Memory Trinity doctrine + command surface",
+    "why_defensible": "The pre-split mega-PR (396 files) mixed Memory Trinity law + a 210-file skills install + the already-merged Docker fix + proof churn. Split: Docker fix already merged via #942; skills install → #939; proof churn dropped. What remains here is one coherent slice (the TP-DMX-MEMORY-TRINITY-001 law/command remediation).",
+    "status": "PASS"
+  },
+  "req_5_verdict": {
+    "status": "READY",
+    "conditions": [
+      "Human review/approval per branch protection",
+      "Merge order: merge #947 BEFORE #939 (this PR ships the sync tool, FAMILIES map, and templates/skills frontmatter fixes the install depends on)",
+      "Re-confirm required CI green at the final amended head before clicking merge"
+    ],
+    "blocking_issues": [],
+    "non_blocking_followups": [
+      "embedded_audit NOT_RUN (validators + required CI provide machine verification; Audit Proof Validator is not a required check)"
+    ]
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dopemux.local/dcp_extension/routing/openclaw_route.schema.json",
+  "title": "DCP Routing Extension OpenClaw Route Contract",
+  "description": "Contracts-only route metadata for future OpenClaw routing integration. This schema does not enable OpenClaw runtime execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "route_id",
+    "route_kind",
+    "provider",
+    "access_path",
+    "runner",
+    "allowed_for_privacy_classes",
+    "allowed_for_risk_classes",
+    "openrouter_free",
+    "benchmark_required",
+    "structured_output_required",
+    "proof_capture_required",
+    "may_be_sole_authority",
+    "live_write_runner",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dcp.routing.openclaw_route.v0"
+    },
+    "route_id": {
+      "type": "string",
+      "pattern": "^route_[A-Za-z0-9_.:-]+$"
+    },
+    "route_kind": {
+      "type": "string",
+      "enum": ["direct_api", "openrouter_paid", "openrouter_free", "local_self_hosted", "manual_app"]
+    },
+    "provider": {
+      "type": "string",
+      "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple", "unknown"]
+    },
+    "access_path": {
+      "type": "string",
+      "enum": [
+        "direct_api",
+        "openrouter_paid",
+        "openrouter_free",
+        "local_self_hosted",
+        "codex",
+        "claude_code",
+        "gemini_cli",
+        "manual_app"
+      ]
+    },
+    "runner": {
+      "type": "string",
+      "enum": ["openclaw", "codex", "claude_code", "gemini_cli", "manual_app", "shell_local", "unknown"]
+    },
+    "allowed_for_privacy_classes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/privacy_class" }
+    },
+    "allowed_for_risk_classes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/risk_class" }
+    },
+    "openrouter_free": {
+      "type": "boolean"
+    },
+    "benchmark_required": {
+      "type": "boolean"
+    },
+    "structured_output_required": {
+      "type": "boolean"
+    },
+    "proof_capture_required": {
+      "type": "boolean"
+    },
+    "may_be_sole_authority": {
+      "type": "boolean",
+      "const": false
+    },
+    "live_write_runner": {
+      "type": "boolean",
+      "const": false
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PROPOSED", "BLOCKED", "DEPRECATED"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "openrouter_free": { "const": true } },
+        "required": ["openrouter_free"]
+      },
+      "then": {
+        "properties": {
+          "provider": { "const": "openrouter" },
+          "access_path": { "const": "openrouter_free" },
+          "route_kind": { "const": "openrouter_free" }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "properties": {
+                "allowed_for_privacy_classes": {
+                  "contains": {
+                    "enum": [
+                      "PRIVATE_REPO_NO_SECRETS",
+                      "PRIVATE_REPO_POSSIBLE_SECRETS",
+                      "SECRET_BEARING",
+                      "CLIENT_DATA",
+                      "SECURITY_SENSITIVE",
+                      "RELEASE_AUTHORITY",
+                      "UNKNOWN"
+                    ]
+                  }
+                }
+              },
+              "required": ["allowed_for_privacy_classes"]
+            },
+            {
+              "properties": {
+                "allowed_for_risk_classes": {
+                  "contains": {
+                    "enum": ["R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION", "UNKNOWN"]
+                  }
+                }
+              },
+              "required": ["allowed_for_risk_classes"]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "privacy_class": {
+      "type": "string",
+      "enum": [
+        "PUBLIC_SANDBOX",
+        "PUBLIC_REPO",
+        "PRIVATE_REPO_NO_SECRETS",
+        "PRIVATE_REPO_POSSIBLE_SECRETS",
+        "SECRET_BEARING",
+        "CLIENT_DATA",
+        "SECURITY_SENSITIVE",
+        "RELEASE_AUTHORITY",
+        "UNKNOWN"
+      ]
+    },
+    "risk_class": {
+      "type": "string",
+      "enum": [
+        "R0_READ",
+        "R1_DRAFT",
+        "R2_TEST_ONLY",
+        "R3_LOCAL_EDIT",
+        "R4_MULTI_FILE_EDIT",
+        "R5_SECURITY_OR_AUTHORITY",
+        "R6_RELEASE_OR_PRODUCTION",
+        "UNKNOWN"
+      ]
+    }
+  }
+}

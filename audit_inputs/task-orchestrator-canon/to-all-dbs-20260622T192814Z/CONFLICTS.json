@@ -1,0 +1,305 @@
+{
+  "duplicate_title_conflicts": [
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "6bf53c20-206a-4e15-be4e-59f77d721b5e",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "6461ae2a-bf49-4466-b1aa-4b7f34978833",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Accelerated Governance Packet"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "bc1d22f9-468b-4043-8705-2dda526bd7fb",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "7bdc8a69-c633-4321-9968-92731c92f27a",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "CI Proof Builder Lane"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "63bf7a8a-a713-4d1e-90b5-bf9f17e40f17",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "a5908096-7763-4e1a-b835-6a936c39c6b9",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "CQRS Projection Lane"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "3bc19412-15d0-4308-a2a5-09ce3b5682f3",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "12b36c2f-a6c2-41c3-af51-d850e56b259b",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Calendar Dry-Run Lane"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "82201834-cafd-4f10-8489-0504b85f4d0c",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "6fcf1f71-1b79-4b01-aee8-0315973fbfec",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Day 0 Governance Unblock"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "50891958-c7dd-490f-9542-4b25797a3961",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "ae998cef-247d-4cd0-b140-b34574b8de79",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Event Store Lane"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "4f544d01-17cb-441d-b9a3-df8a133aca58",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "59d4fbc0-3648-4b2c-b32f-4d688cd15362",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Evidence Pack"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "c22067fd-628d-4c7c-b9a0-96760a45ca5c",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "09000f7f-22c0-4acc-a18e-60e4f26d1f43",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Memory/RAG Minimal Lane"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "b5239003-6e78-4de8-bf57-8bd124506a7c",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "349066c0-d69f-4295-a023-4766a4d6bee7",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Policy Spine Lane"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "ad5f95bd-6ab9-43e6-a886-e8412d0dc77d",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "6c73bfce-ed82-4a2f-ae27-72e88b0e21be",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Release Candidate Audit"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "84184220-59d5-494e-b4f3-2da60d51bde7",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "f5629e74-313b-4c95-b09f-0dcedcf8548b",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Security/Config Cleanup Lane"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "e4fd06cd-29d1-4c04-872e-84e6f210c801",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "afd58a1b-de90-42e5-9a64-b63a13766cce",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Supervisor Acceptance"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "6891e1b1-c99e-47a7-83be-d75138af0643",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "d835219b-fce9-4b0c-ad9e-138a5a60cba7",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Telegram Mirror Lane"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "b6be2d97-790c-4add-9aa6-c1c0e940d828",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "28bfb084-8812-4a38-86c1-63504f594d8b",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "Twenty Mock/Sandbox Lane"
+    },
+    {
+      "database_count": 2,
+      "decision": "conflict_not_identity",
+      "entries": [
+        {
+          "role": "queue",
+          "source_db_slug": "dnh_crm__recovery_20260504t060227z-364b7472ece807d7",
+          "source_row_id": "d5dd81b2-57cc-4395-9552-3ebcd18022cf",
+          "status_label": null
+        },
+        {
+          "role": "queue",
+          "source_db_slug": "dopemux-mvp-2e346e2084bca021",
+          "source_row_id": "b7bd0906-4d68-4aa0-8884-dd9fdb0ee323",
+          "status_label": null
+        }
+      ],
+      "row_count": 2,
+      "title": "dNh CRM v0.1 Accelerated Release Train"
+    }
+  ],
+  "total": 15
+}

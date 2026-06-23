@@ -1,0 +1,43 @@
+{
+  "tp_id": "TP-DMX-MEMORY-TRINITY-001",
+  "slice": "LAW (PR #947 — split from #939)",
+  "tp_path": "task-packets/TP-DMX-MEMORY-TRINITY-001.json",
+  "branch": "feat/memory-trinity-law",
+  "base_sha": "e757c6d1d",
+  "head_sha": "651440a81",
+  "head_sha_note": "651440a81 is the rebased feature commit being proven; this proof bundle is folded into it via amend, so the live PR head is the resulting single commit (query: gh pr view 947 --json headRefOid). PR #947 is ONE commit vs origin/main — identity is base+PR+diff, not a drifting head.",
+  "worktree_path": "/Users/hue/code/dopemux-mvp",
+  "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/947",
+  "scope": "Memory Trinity law: ADR + .claude/modules/shared/memory-trinity-routing.md, .claude/commands remediation (incl. tm:* removal), AGENTS authority matrix, docs_index skills catalog, memory/skill-frontmatter validators + 2 templates/skills frontmatter fixes, sync_repo_skills.py with 20-family map, TP packet. 90 files vs main (+1927/-3544).",
+  "validations": [
+    {"command": "python3 scripts/validate_memory_command_refs.py", "exit_code": 0, "bucket": "PASS", "reason": "no forbidden memory refs in .claude/commands"},
+    {"command": "python3 scripts/validate_skill_frontmatter.py", "exit_code": 0, "bucket": "PASS", "reason": "20/20 templates/skills have name+description frontmatter"},
+    {"command": "gh pr checks 947 --required", "exit_code": 0, "bucket": "PASS", "reason": "8/8 required green at pre-amend head 651440a81 (Security Review, Documentation Check, identity-check, Unit Tests, Analyze python/js/ruby, CI Pipeline Summary); RE-VERIFY at final amended head post-push — see MERGE_READINESS.json + live gh pr checks"},
+    {"command": "git rebase origin/main", "exit_code": 0, "bucket": "PASS", "reason": "clean rebase, 0 conflicts; not BEHIND main"}
+  ],
+  "codereview_status": "PASS (pre-commit validators: memory-command-refs + skill-frontmatter)",
+  "precommit_status": "PASS",
+  "commit_sha": "651440a81 (+ this proof, amended)",
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/947 — OPEN, single commit off main, required CI green",
+  "residual_risks": [
+    "head_sha is the pre-amend feature commit; live PR head = its amended child (proof folded in) — single-commit PR, identity is base+PR",
+    "embedded_audit NOT_RUN (no independent CLI audit; validators + required CI provide machine verification)",
+    "Skills INSTALL output is in PR #939 (this PR ships the tool + FAMILIES + templates; the install copies are self-contained)"
+  ],
+  "unknowns": [],
+  "cleanup_status": "Local staging branch feat/skills-install deleted; old mega-state archived at tag archive/pr939-mega-20260620",
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-MEMORY-TRINITY-001-LAW/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": ["Memory Trinity law slice split cleanly from the #939 mega-PR; validators pass; 20-FAMILIES map complete"],
+    "remaining_risks": ["validate_memory_command_refs.py does not guard tm: reintroduction; sync_skills() target_roots typed Iterable; no unit tests for the 3 new scripts (see /review)"],
+    "skip_reason": "SKIPPED is not PASS. Independent embedded CLI audit not invoked for this split slice; correctness verified via repo validators (memory-command-refs, skill-frontmatter) + required CI."
+  }
+}

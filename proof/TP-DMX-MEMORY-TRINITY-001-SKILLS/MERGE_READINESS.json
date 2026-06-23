@@ -1,0 +1,46 @@
+{
+  "pr": 939,
+  "branch": "fix/mcp-server-build-failures",
+  "base": "main",
+  "title": "feat(skills): install 20/20 repo skill templates (.claude/skills + .github/skills)",
+  "steward_run": "fresh, post-split + repurpose, 2026-06-20",
+  "repurpose_note": "PR #939 previously carried the 396-file TP-DMX-MEMORY-TRINITY-001 mega-change. Per the supervisor BLOCK it was split; this PR was force-pushed to the skills-install slice only. Old mega-state archived at tag archive/pr939-mega-20260620 (996492704).",
+  "req_1_head_reconciliation": {
+    "pr_head": "single commit on fix/mcp-server-build-failures (query live: gh pr view 939 --json headRefOid)",
+    "base_sha": "b11e8bdbb",
+    "delta_vs_main": "216 files (.claude/skills + .github/skills, 20 skills each)",
+    "classification": "SCOPE-COHERENT — one commit off current main; rebased clean (0 behind). The prior stale-head/396-file ambiguity is gone (mega-state archived).",
+    "status": "PASS"
+  },
+  "req_2_required_checks_at_head": {
+    "required_set": ["Security Review", "Documentation Check", "identity-check", "Unit Tests", "Analyze (python)", "Analyze (javascript-typescript)", "Analyze (ruby)", "CI Pipeline Summary"],
+    "result": "8/8 PASS at skills-install head (incl. Unit Tests + Analyze python — the checks a skills-copy PR with .py test files could trip). Re-verify at final amended head via `gh pr checks 939 --required`.",
+    "status": "PASS"
+  },
+  "req_3_review_comment_classification": {
+    "supervisor_block_verdict": "Was for the pre-split 396-file mega-PR (scope). RESOLVED by the split — this PR is now single-concern skills-install.",
+    "codex_usage_limit_comment": "Codex code review was unavailable (usage limit) on the mega-PR. Advisory, non-blocking; not a required check. Re-review applies to the new scoped diff.",
+    "docker_scout_findings": "adhd-engine:pr-939-e59bada (1 critical + highs) was built from the OLD mega head (e59bada). The repurposed head touches NO services/ or docker/ paths (skills .md only) — vulns are pre-existing base/dependency (repo-wide dependabot), NOT introduced by this PR. Advisory (Scout not required).",
+    "unknown_bots_reviewers": "none",
+    "status": "PASS"
+  },
+  "req_4_scope_classification": {
+    "single_concern": true,
+    "concern": "Skills install output (D2)",
+    "why_defensible": "Pure install: 20 templates/skills copied verbatim into .claude/skills + .github/skills. No law, no Docker, no proof churn. The enabling tool/FAMILIES/template-fixes live in #947.",
+    "status": "PASS"
+  },
+  "req_5_verdict": {
+    "status": "READY",
+    "conditions": [
+      "MERGE #947 FIRST (ships the sync tool, 20-FAMILIES map, and templates/skills frontmatter fixes)",
+      "Human review/approval per branch protection",
+      "Re-confirm required CI green at the final amended head before merge"
+    ],
+    "blocking_issues": [],
+    "non_blocking_followups": [
+      "embedded_audit NOT_RUN (install is verbatim copy of validated templates; required CI green)",
+      "Docker Scout base/dep vulns are a repo-wide dependabot concern, tracked separately — not introduced here"
+    ]
+  }
+}

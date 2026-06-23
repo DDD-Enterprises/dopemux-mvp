@@ -8,7 +8,7 @@ from jsonschema import Draft7Validator
 
 
 ROOT = Path(__file__).resolve().parents[2]
-ARTIFACT_DIR = ROOT / "docs" / "03-reference" / "dcp" / "openclaw-routing"
+ARTIFACT_DIR = ROOT / "contracts" / "openclaw-dcp-routing"
 EXAMPLES_DIR = ARTIFACT_DIR / "example_route_decisions"
 
 EXPECTED_JSON = {
@@ -37,12 +37,12 @@ EXPECTED_YAML = {
 }
 
 EXPECTED_MARKDOWN = {
-    "readme.md",
-    "runner-adapter-contract.md",
-    "openclaw-proof-normalization-contract.md",
-    "provider-availability-probe-spec.md",
-    "local-benchmark-harness-requirements.md",
-    "turn4-acceptance-checklist.md",
+    "README.md",
+    "runner_adapter_contract.md",
+    "openclaw_proof_normalization_contract.md",
+    "provider_availability_probe_spec.md",
+    "local_benchmark_harness_requirements.md",
+    "TURN4_ACCEPTANCE_CHECKLIST.md",
 }
 
 EXPECTED_EXAMPLES = {
@@ -90,7 +90,7 @@ def valid_merge_readiness() -> dict:
         "branch": "codex/example",
         "head_sha": "abcdef1234567890",
         "base_branch": "main",
-        "changed_files": ["docs/03-reference/dcp/openclaw-routing/route_decision.schema.json"],
+        "changed_files": ["contracts/openclaw-dcp-routing/route_decision.schema.json"],
         "commits": [{"sha": "abcdef1234567890", "message": "feat(dcp): add contracts"}],
         "checks": [
             {

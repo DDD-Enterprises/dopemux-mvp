@@ -5,10 +5,10 @@ type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-11'
-last_review: '2026-03-11'
-next_review: '2026-06-09'
+last_review: '2026-06-19'
+next_review: '2026-09-19'
 prelude: Bound dope-context to semantic retrieval and provenance-aware search rather than canonical PM, workflow, context, or chronicle truth.
-status: proposed
+status: accepted
 graph_metadata:
   node_type: ADR
   impact: medium
@@ -22,7 +22,7 @@ graph_metadata:
 
 # ADR: dope-context as search and retrieval plane
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-03-11
 **Owners:** Dopemux Retrieval Plane / Context Plane / PM Plane
 **Decision Type:** Authority Boundary / Retrieval Architecture

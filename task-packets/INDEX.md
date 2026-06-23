@@ -101,6 +101,7 @@ A packet is superseded by another packet
 | TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001 | UI Cockpit | Repair Cockpit runtime contract-fidelity gaps | Active | N/A |
 | TP-DMX-COCKPIT-DESIGN-PICKUP-001 | UI Cockpit | Create current-state Cockpit design pickup brief after pack-to-main consolidation | Active | N/A |
 | TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001 | UI Cockpit | Implement Direction B Electric Refresh five-mode runtime continuation | Active | N/A |
+| TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001 | UI Cockpit | Compare merged Cockpit runtime renders against uploaded PNG references without design fixes | Active | N/A |
 | TP-DMX-MOBILE-TUI-SPEC-001 | UI Cockpit | Install mobile-first tmux Cockpit UX specification without runtime changes | Active | N/A |
 | PACKET_031 | Memory | Dual Capture Adapters, Single Ledger | Executing | ADR-213 |
 | PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
