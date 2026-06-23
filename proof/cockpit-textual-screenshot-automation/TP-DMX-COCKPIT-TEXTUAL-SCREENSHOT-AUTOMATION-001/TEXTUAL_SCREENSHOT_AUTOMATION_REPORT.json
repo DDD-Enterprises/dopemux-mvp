@@ -1,0 +1,419 @@
+{
+  "boundaries": {
+    "design_fixes_authorized": false,
+    "live_integration_claimed": false,
+    "pixel_parity_claimed": false,
+    "ready_for_claude_design_claimed": false,
+    "runtime_changes_authorized": false,
+    "token_doctrine_changes_authorized": false
+  },
+  "modes": [
+    "pm",
+    "implementer",
+    "overview",
+    "services",
+    "events"
+  ],
+  "packet_id": "TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001",
+  "purpose": "Repeatable Cockpit Textual screenshot automation for the current merged five-mode runtime continuation.",
+  "screenshot_count": 15,
+  "screenshots": [
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "pm",
+      "normalized_svg_sha256": "3e8c41ffea3b4fc962d17a31850a5d2e7cdc122c9d65b2867b0e09d15ab4ce91",
+      "raster_png_mean_luminance": 32.19,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/pm-120x40.png",
+      "raster_png_sha256": "dd16597e7cfebdc16e257bca4951e1cb7e56cced818bb25b57233c12a58fc9b9",
+      "raster_png_size": [
+        1482,
+        1026
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "92cac9ec7421f6a51477dbec5e7b7100cc2b14a7bf1fd6260c5b52fd2e7c5056",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/pm-120x40.svg",
+      "svg_sha256": "3e8c41ffea3b4fc962d17a31850a5d2e7cdc122c9d65b2867b0e09d15ab4ce91",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/pm-120x40.txt",
+      "text_sha256": "51768c6a872c67c27f83df8f27bc8c00fcc9daad068fe6dc29841c03c5fe1e03",
+      "viewport": {
+        "cols": 120,
+        "rows": 40
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "implementer",
+      "normalized_svg_sha256": "c4d0ef60025e3dc219f413c2d7574673b890454f9f35da382c76840434312b53",
+      "raster_png_mean_luminance": 34.99,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/implementer-120x40.png",
+      "raster_png_sha256": "0f39815c9b2f599db569fcf246104da0ddbd2fa3ecb5d0601d3a0fa347ad17ee",
+      "raster_png_size": [
+        1482,
+        1026
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "975a899fac101fa13f567de4f997799bc015808ec8b7a1174d866f1c21577ff7",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/implementer-120x40.svg",
+      "svg_sha256": "c4d0ef60025e3dc219f413c2d7574673b890454f9f35da382c76840434312b53",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/implementer-120x40.txt",
+      "text_sha256": "80c4f25b52cee7273bf305f5ec33ce3477344248f2591e998421664d6f22e1eb",
+      "viewport": {
+        "cols": 120,
+        "rows": 40
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "overview",
+      "normalized_svg_sha256": "5bd7f9ea45e4bab13a5d20b5fd2534f1b876c21e3eb8d5640bc54260bea51db9",
+      "raster_png_mean_luminance": 34.55,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/overview-120x40.png",
+      "raster_png_sha256": "a91da516b1cfb340b1babec56907c49d7bc1a5b7169a521d5d6b0019ee93c057",
+      "raster_png_size": [
+        1482,
+        1026
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "8c4666153da9288662e53be4df089d1c51d16917c3a1987d77b18d5e42f8986a",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/overview-120x40.svg",
+      "svg_sha256": "5bd7f9ea45e4bab13a5d20b5fd2534f1b876c21e3eb8d5640bc54260bea51db9",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/overview-120x40.txt",
+      "text_sha256": "7c53768c91e4a318c88e68994c11b5f4a3e3bfcedd66fa3527a83c852d8b5baa",
+      "viewport": {
+        "cols": 120,
+        "rows": 40
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "services",
+      "normalized_svg_sha256": "340135626b12b753cdbc6b21cea846cdd0425fd1f78fb04766fa75f8a5dcf0ac",
+      "raster_png_mean_luminance": 34.53,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/services-120x40.png",
+      "raster_png_sha256": "380a1b739b9aa96f0af37bacea9c343a7411f8f9653a746b9b3b6288acd322b5",
+      "raster_png_size": [
+        1482,
+        1026
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "2a6f87446b98214080355751a47013a3cfeb56e9bd4cbf1978b1dca43cf20587",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/services-120x40.svg",
+      "svg_sha256": "340135626b12b753cdbc6b21cea846cdd0425fd1f78fb04766fa75f8a5dcf0ac",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/services-120x40.txt",
+      "text_sha256": "d1cdd5109d8b24a8ed959619c09c2f3022ddcf52ea62d8ee7c4b5737f2c913e8",
+      "viewport": {
+        "cols": 120,
+        "rows": 40
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "events",
+      "normalized_svg_sha256": "1ad0f720576763c505daa4f71507cd0214dd5243cbf95360400e00ec27c02f3e",
+      "raster_png_mean_luminance": 34.71,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/events-120x40.png",
+      "raster_png_sha256": "d947bd0bf5293ab36544060eaeb73fc4d4e6edf12884eeac57b395c36e3e93fa",
+      "raster_png_size": [
+        1482,
+        1026
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "4c521f438c757b5100ac88ee231c1bea53329032deeb0e0c2c107e200dc66b47",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/events-120x40.svg",
+      "svg_sha256": "1ad0f720576763c505daa4f71507cd0214dd5243cbf95360400e00ec27c02f3e",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/events-120x40.txt",
+      "text_sha256": "545b5531dabb8739d01570d2f399caf81bfd8b60c127d0e3636bdcc982a54c91",
+      "viewport": {
+        "cols": 120,
+        "rows": 40
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "pm",
+      "normalized_svg_sha256": "813da59dd34cbd97e82f288eb27b8ff3b1e9bfa60a00d4f47da5616b547f154f",
+      "raster_png_mean_luminance": 34.33,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/pm-100x32.png",
+      "raster_png_sha256": "73580acf2a2ffe792b808f4f5279ed7228899916007a40e462bc7dd31a1a0fab",
+      "raster_png_size": [
+        1238,
+        831
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "5839f53a5ab26857f2b5eeab8ce7aca84b68d386eb5419fcf18090f86755ecab",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/pm-100x32.svg",
+      "svg_sha256": "813da59dd34cbd97e82f288eb27b8ff3b1e9bfa60a00d4f47da5616b547f154f",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/pm-100x32.txt",
+      "text_sha256": "a685a18042badb0d1bfc2f6db93c17d09a06f448267d8005fbb3ac7ee79d3546",
+      "viewport": {
+        "cols": 100,
+        "rows": 32
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "implementer",
+      "normalized_svg_sha256": "311210adb77b1280572ddc62db4ce3c9e39e0b9d50fd5ffd473ed1a64a576839",
+      "raster_png_mean_luminance": 37.53,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/implementer-100x32.png",
+      "raster_png_sha256": "e81825e9847ce3b7f617fdc16d4e63764ee0f4e81f940a1efb35354b4b81b9c8",
+      "raster_png_size": [
+        1238,
+        831
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "31985a80a367851236225a8db3e45f2adb3a3f822f561b1fe95d10b204f707d3",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/implementer-100x32.svg",
+      "svg_sha256": "311210adb77b1280572ddc62db4ce3c9e39e0b9d50fd5ffd473ed1a64a576839",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/implementer-100x32.txt",
+      "text_sha256": "77150d212f3085597de9d80a9349f6d9187668920d6e39122186797cd2f259c2",
+      "viewport": {
+        "cols": 100,
+        "rows": 32
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "overview",
+      "normalized_svg_sha256": "eb5bb29e4d5ae19325284183d11a671ef4da49ee7f5e24ef9feecb57c76e950d",
+      "raster_png_mean_luminance": 36.89,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/overview-100x32.png",
+      "raster_png_sha256": "d9677f533b78091ab4cde9c38b1ff516baece88e0f3e4f243c7d5b34ea386fb6",
+      "raster_png_size": [
+        1238,
+        831
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "588662a619e848cc91f3d2a64c38e8a0f87757673cddcaabb78d3a94ec4fcdeb",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/overview-100x32.svg",
+      "svg_sha256": "eb5bb29e4d5ae19325284183d11a671ef4da49ee7f5e24ef9feecb57c76e950d",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/overview-100x32.txt",
+      "text_sha256": "20c453271f90b32874bbe13e7769b1e3bf1624cf5cd8a75b5221690289969123",
+      "viewport": {
+        "cols": 100,
+        "rows": 32
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "services",
+      "normalized_svg_sha256": "f7d841099dc1221b023cbfd23b16b46a2a85ea991c7e810cf097a089180da9e8",
+      "raster_png_mean_luminance": 37.09,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/services-100x32.png",
+      "raster_png_sha256": "c049d648702a0e32de8001bf4f745caea2195b921c5eda1936dfb9f47fb1fa91",
+      "raster_png_size": [
+        1238,
+        831
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "5081f200199f243f652d7dc9c4940201a0a8551ac87c26eca31b4015ad02ef54",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/services-100x32.svg",
+      "svg_sha256": "f7d841099dc1221b023cbfd23b16b46a2a85ea991c7e810cf097a089180da9e8",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/services-100x32.txt",
+      "text_sha256": "6f2eb901150e7c5aa81c5d511c43689935a7c230ccfc58cb3d587d521222e8b1",
+      "viewport": {
+        "cols": 100,
+        "rows": 32
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "events",
+      "normalized_svg_sha256": "d2b69bfd95f5d4689cfc721611d5684cb47c2d80cf40f9f0f13001c6a74fcb88",
+      "raster_png_mean_luminance": 37.14,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/events-100x32.png",
+      "raster_png_sha256": "371233cc28363ca212a48f06f552ee47e0c403d1acb7d7dc9c0684384f8c503e",
+      "raster_png_size": [
+        1238,
+        831
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "f8ead1a3a6fdd92d8caee10f512dd48170568933d0b9e29298d60ce286090196",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/events-100x32.svg",
+      "svg_sha256": "d2b69bfd95f5d4689cfc721611d5684cb47c2d80cf40f9f0f13001c6a74fcb88",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/events-100x32.txt",
+      "text_sha256": "adeea9576d6583709410009a958b25ded45f7732bdd867894979f6ceb484546a",
+      "viewport": {
+        "cols": 100,
+        "rows": 32
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "pm",
+      "normalized_svg_sha256": "d82aff72ababf12b60e8ed79dd2ad75554f5881f877d7e48f6bb3dec287af1d3",
+      "raster_png_mean_luminance": 37.12,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/pm-80x24.png",
+      "raster_png_sha256": "0eeccf1da3bd6568f6bb557a1bbd4b296044395ecddb365e94ab2d12b94ab399",
+      "raster_png_size": [
+        994,
+        636
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "dfa1c0b3187347f158f85e6cca976c5a7c5a12f42609e1a8757dcfd49f9b8648",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/pm-80x24.svg",
+      "svg_sha256": "d82aff72ababf12b60e8ed79dd2ad75554f5881f877d7e48f6bb3dec287af1d3",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/pm-80x24.txt",
+      "text_sha256": "77053c4c6c7672d02bf9dbfb9b7d5b38f5f5c8bf96e56b18d156a6aed4c555e2",
+      "viewport": {
+        "cols": 80,
+        "rows": 24
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "implementer",
+      "normalized_svg_sha256": "74b68f15c7c56fe31039e5e42093a0c9375491813552d582d66a3cd7da8159e8",
+      "raster_png_mean_luminance": 39.83,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/implementer-80x24.png",
+      "raster_png_sha256": "4ca43bdc32fde27a95e2aa6c10f0fba3afcd4bec9fe14fd7b7e7afdae046d255",
+      "raster_png_size": [
+        994,
+        636
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "c082b4e7283bfd58c5f8c4e9474f00ec2280bd2cc62fd400a1dec7552764f8fb",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/implementer-80x24.svg",
+      "svg_sha256": "74b68f15c7c56fe31039e5e42093a0c9375491813552d582d66a3cd7da8159e8",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/implementer-80x24.txt",
+      "text_sha256": "4b9f9229403fac0bd2840428c97f91a93d2e71ed6a224099c0a0881ca69214a6",
+      "viewport": {
+        "cols": 80,
+        "rows": 24
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "overview",
+      "normalized_svg_sha256": "2c5faabc370d655193282cf81310125b1cd493e69e14a3da759b1cf90813e1df",
+      "raster_png_mean_luminance": 38.89,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/overview-80x24.png",
+      "raster_png_sha256": "302b241262a2a2a061a99866a81dc312235e5c5980f6e9e635bdd7006a10d37d",
+      "raster_png_size": [
+        994,
+        636
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "ea715b0f487b05195f05ac163bc9d3ce06e89cd2baa159729d66a548b6ec7769",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/overview-80x24.svg",
+      "svg_sha256": "2c5faabc370d655193282cf81310125b1cd493e69e14a3da759b1cf90813e1df",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/overview-80x24.txt",
+      "text_sha256": "d30d88b5a10ed3a27d0cee9e254c80ab73dddb5c55c2e6f986264bf056d4395e",
+      "viewport": {
+        "cols": 80,
+        "rows": 24
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "services",
+      "normalized_svg_sha256": "48fd6b8b7c5c79fe71b9dd4457867708265b2ce877d26efa46172f6f5cc21290",
+      "raster_png_mean_luminance": 39.35,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/services-80x24.png",
+      "raster_png_sha256": "a22ac7b01e81bce172ed1a52e855a670896e999795a52bd67f97dce3de542ae4",
+      "raster_png_size": [
+        994,
+        636
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "17f0d785a98a63233e58ceb4f274806ba62b75765c00131ffcb0dba9d09ec214",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/services-80x24.svg",
+      "svg_sha256": "48fd6b8b7c5c79fe71b9dd4457867708265b2ce877d26efa46172f6f5cc21290",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/services-80x24.txt",
+      "text_sha256": "3d03009c2a9a538fe42687a592adeea5044e29340d44053a9875e927c26dafed",
+      "viewport": {
+        "cols": 80,
+        "rows": 24
+      }
+    },
+    {
+      "capture_reason": "Textual run_test export_screenshot returned SVG",
+      "capture_status": "PASS",
+      "mode": "events",
+      "normalized_svg_sha256": "6b1e0c70e8bbd1ac2dade4e4fa16027c361066f34ede886442b4f8aa337e570d",
+      "raster_png_mean_luminance": 39.33,
+      "raster_png_nonblank": true,
+      "raster_png_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/raster-screenshots/events-80x24.png",
+      "raster_png_sha256": "62ee87f99f202ec7775933fa96e646383451b23e3b782904092d3e198c2628b2",
+      "raster_png_size": [
+        994,
+        636
+      ],
+      "rasterization": "OBSERVED",
+      "rasterization_reason": "rsvg-convert produced a PNG artifact",
+      "raw_svg_sha256": "ffe43d47faa73b29716764229cc9465b2baef76200316a57aa953bfca043e0ed",
+      "svg_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/textual-screenshots/events-80x24.svg",
+      "svg_sha256": "6b1e0c70e8bbd1ac2dade4e4fa16027c361066f34ede886442b4f8aa337e570d",
+      "text_path": "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/runtime-renders/events-80x24.txt",
+      "text_sha256": "119dbd40adc5f2fff33738d4019f498fcc7c69d776fd481cdb6b120fc3c50996",
+      "viewport": {
+        "cols": 80,
+        "rows": 24
+      }
+    }
+  ],
+  "status": "CONTINUATION_PROOF",
+  "unknowns": [
+    "Cross-platform terminal font/raster equivalence is not proven.",
+    "Uploaded PNG pixel parity is not evaluated by this packet.",
+    "Live service, PM, ConPort, and dope-memory integration are not exercised.",
+    "Raster PNG proof is UNKNOWN when rsvg-convert is unavailable."
+  ],
+  "verdict": "PASS: current Cockpit Textual runtime screenshots were generated for the requested modes and viewports. Pixel parity, design approval, token doctrine, and live integration remain outside this packet.",
+  "viewports": [
+    {
+      "cols": 120,
+      "rows": 40
+    },
+    {
+      "cols": 100,
+      "rows": 32
+    },
+    {
+      "cols": 80,
+      "rows": 24
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "id": "TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001",
+  "project": "dopemux-mvp",
+  "target": "Add repeatable Cockpit-specific Textual screenshot automation for the merged five-mode runtime continuation without changing runtime design, tokens, PM integration, or live service behavior.",
+  "invariants": [
+    "Continuation/proof packet only; do not create a new Cockpit series.",
+    "Do not rebuild Cockpit runtime UI or change runtime rendering.",
+    "Do not change design tokens, NO_COLOR behavior, or glyph doctrine.",
+    "Do not claim pixel parity, READY_FOR_CLAUDE_DESIGN, final design approval, or live integration.",
+    "Do not mutate uploaded PNG references.",
+    "Do not run live services, PM writes, ConPort writes, dope-memory writes, Docker calls, network calls, or T4 remote mutation.",
+    "Use the current Cockpit Textual runtime path under src/dopemux/ui/cockpit/app.py.",
+    "Generated proof must record explicit modes, viewports, artifact paths, hashes, rasterization status, and remaining UNKNOWNs."
+  ],
+  "depends_on": [
+    "TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001",
+    "TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001",
+    "PR #948 merged: feat(cockpit): render electric refresh modes",
+    "PR #955 merged: test(cockpit): add pixel parity proof"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-COCKPIT-ELECTRIC-REFRESH",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cockpit-textual-screenshot-automation-001r",
+    "base_branch": "origin/main",
+    "stacked_because": "Continuation proof lane follows merged pixel parity proof on current origin/main without changing runtime behavior."
+  },
+  "commit": {
+    "message": "test(cockpit): add textual screenshot automation",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001.json",
+      "task-packets/INDEX.md",
+      "scripts/cockpit_textual_screenshot_automation.py",
+      "tests/unit/dopemux/ui/cockpit/test_textual_screenshot_automation.py",
+      "proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit/test_textual_screenshot_automation.py -q",
+      "PYTHONPATH=src python scripts/cockpit_textual_screenshot_automation.py --output proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001",
+      "python -m json.tool proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/TEXTUAL_SCREENSHOT_AUTOMATION_REPORT.json >/dev/null",
+      "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py tests/test_cockpit_tokens.py -q",
+      "PYTHONPATH=src python -m compileall -q src/dopemux tests scripts/cockpit_textual_screenshot_automation.py",
+      "git diff --check",
+      "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001.json task-packets/INDEX.md scripts/cockpit_textual_screenshot_automation.py tests/unit/dopemux/ui/cockpit/test_textual_screenshot_automation.py proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/research.md proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/plan.md proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/TEXTUAL_SCREENSHOT_AUTOMATION_REPORT.json proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/TEXTUAL_SCREENSHOT_AUTOMATION_REPORT.md proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/INDEPENDENT_AUDITS.md"
+    ]
+  },
+  "pr": {
+    "title": "test(cockpit): add textual screenshot automation",
+    "body": "Adds TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001 as a proof/test-only continuation packet. It generates repeatable Cockpit Textual screenshots for the merged five-mode runtime surface across explicit viewports, records hashes and rasterization status, and preserves the boundary that design parity, token doctrine, live integration, PM writes, and READY_FOR_CLAUDE_DESIGN are not claimed.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1-preflight-research-and-trace",
+      "task": "Verify repo identity, current main head, merged continuation packet truth, current Cockpit runtime files, current screenshot/export surfaces, and historical QA script drift before implementation.",
+      "validation": [
+        "Research records OBSERVED / INFERRED / UNKNOWN classifications and does not authorize runtime design fixes."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "task-packets/generated/TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001.json",
+        "src/dopemux/ui/cockpit/app.py",
+        "src/dopemux/ui/cockpit/render_modes.py",
+        "scripts/cockpit_pixel_parity_proof.py",
+        "qa/scenarios/90_tui_renders.sh"
+      ]
+    },
+    {
+      "id": "S2-test-first-generator",
+      "task": "Add a focused failing test, then implement a Cockpit-specific Textual screenshot automation generator that captures text, SVG, optional PNG rasters, hashes, mode, viewport, and explicit boundary metadata.",
+      "validation": [
+        "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit/test_textual_screenshot_automation.py -q"
+      ]
+    },
+    {
+      "id": "S3-generate-proof",
+      "task": "Generate the repeatable screenshot report, Textual SVGs, deterministic text renders, and optional raster PNGs under the packet proof directory.",
+      "validation": [
+        "PYTHONPATH=src python scripts/cockpit_textual_screenshot_automation.py --output proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001",
+        "python -m json.tool proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/TEXTUAL_SCREENSHOT_AUTOMATION_REPORT.json >/dev/null"
+      ]
+    },
+    {
+      "id": "S4-independent-audits",
+      "task": "Run read-only independent audits with Claude Code, Grok Build, and agy when local tools and authentication permit; otherwise record exact NOT_RUN or FAIL blockers in proof.",
+      "validation": [
+        "Audit artifact records PASS / FAIL / NOT_RUN for claude, grok, and agy."
+      ]
+    },
+    {
+      "id": "S5-validate-and-precommit",
+      "task": "Validate the packet, focused Cockpit tests, broader Cockpit regression set, compileability, diff cleanliness, scoped hooks, audit artifacts, and rollback feasibility.",
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "PYTHONPATH=src python -m pytest tests/unit/dopemux/ui/cockpit tests/unit/test_cockpit_cli.py tests/test_cockpit_tokens.py -q",
+        "PYTHONPATH=src python -m compileall -q src/dopemux tests scripts/cockpit_textual_screenshot_automation.py",
+        "git diff --check",
+        "pre-commit run --files task-packets/generated/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001.json task-packets/INDEX.md scripts/cockpit_textual_screenshot_automation.py tests/unit/dopemux/ui/cockpit/test_textual_screenshot_automation.py proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/research.md proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/plan.md proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/TEXTUAL_SCREENSHOT_AUTOMATION_REPORT.json proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/TEXTUAL_SCREENSHOT_AUTOMATION_REPORT.md proof/cockpit-textual-screenshot-automation/TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001/INDEPENDENT_AUDITS.md"
+      ]
+    }
+  ]
+}
