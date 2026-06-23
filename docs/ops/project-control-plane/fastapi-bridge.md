@@ -23,7 +23,7 @@ live-write runtimes (AIR Red Line #15).
 
 ## Fail-closed decision
 
-`route_mutation(operation, *, live_write_ready, execute, writer_registry, executed_keys, now)`
+`route_mutation(operation, *, live_write_ready, execute, writer_registry, dedup_store, now)`
 evaluates, in order. A writer is reached only at the final step; every other
 branch returns without invoking any writer.
 
@@ -35,7 +35,7 @@ branch returns without invoking any writer.
 | 4 | `sha256(canonical(operation))` equals gate `payload_digest` | `REJECTED` (`PAYLOAD_DIGEST_MISMATCH`) |
 | 5 | `execute is True` (identity, not truthiness) | `DRY_RUN` (no write) |
 | 6 | gate's `canonical_writer` name resolves in `writer_registry` | `REJECTED` (`CANONICAL_WRITER_NOT_REGISTERED`) |
-| 7 | `assertion_id` is first-seen in `executed_keys` | `REJECTED` (`DUPLICATE_SUPPRESSED`) |
+| 7 | `assertion_id` is first-seen in `dedup_store` | `REJECTED` (`DUPLICATE_SUPPRESSED`) |
 | 8 | writer returns normally | `LIVE` on success; `REJECTED` (`WRITER_RAISED:<type>`) on exception |
 
 Modes map to HTTP status on `POST /bridge/mutate`: `REJECTED` → 403, `DRY_RUN` /
