@@ -1,0 +1,37 @@
+# Dopemux Cockpit mode=Services
+STATIC DEMO  NO WRITES  no live PM mutations
+runtime_surface: artifact-derived static continuation
+READY_FOR_CLAUDE_DESIGN: not approved
+viewport: 80x24
+modes:   PM   |   Implementer   |   Overview   | [ Services ] |   Events
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[chrome] top_level_modes: PM | Implementer | Overview | Services | Events
+[chrome] secondary_surfaces: Command Palette | Settings/Admin/Runtime | Safe Act
+[chrome] SRC omitted on chrome; data rows below carry SRC labels
+[services] service visibility and guarded action policy; no execution
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃LEFT RAIL  service inventory                                                  ┃
+┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃
+┃domain: service_inventory                                                     ┃
+┃authority: service catalog and compose wiring                                 ┃
+┃role: derived                                                                 ┃
+┃next_action: inspect_service                                                  ┃
+┃SRC=service-catalog                                                           ┃
+┃[LOGGED] service catalog rows are visibility-only in this packet              ┃
+┃[EDGE] typed service-id required before any future action packet              ┃
+┃policy gate blocks start/stop without explicit packet and operator approval   ┃
+┃UNKNOWN: live container health is not queried by this static renderer         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃CENTER  safe action gate                                                      ┃
+┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃
+┃domain: service_action_gate                                                   ┃
+┃authority: safe actions / proof gate                                          ┃
+┃role: canonical                                                               ┃
+┃next_action: open_proof_gate                                                  ┃
+┃SRC=safe-action-gate                                                          ┃
+┃[BLOCKED] T4 remote mutation policy absent                                    ┃
+┃[BLOCKED] TX/TU tiers never executable                                        ┃
+┃typed service-id, policy gate, proof receipt, and operator consent required   ┃
+┃this renderer never invokes shell, network, compose, or service commands      ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛

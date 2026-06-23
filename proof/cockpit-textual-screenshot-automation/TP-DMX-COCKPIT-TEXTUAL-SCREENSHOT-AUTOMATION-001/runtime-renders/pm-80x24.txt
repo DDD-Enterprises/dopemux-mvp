@@ -1,0 +1,89 @@
+# Dopemux Cockpit  mode=PM
+STATIC DEMO  NO WRITES  no live PM mutations
+viewport: 80x24  bridge_placement: inspector-detail-collapsed
+modes: PM | Implementer | Overview | Services | Events
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃LEFT RAIL  workflow / slice map                                               ┃
+┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃
+┃domain: workflow_slice                                                        ┃
+┃authority: task-orchestrator workflow transitions                             ┃
+┃role: derived                                                                 ┃
+┃next_action: open                                                             ┃
+┃SRC=task-orchestrator                                                         ┃
+┃                                                                              ┃
+┃  1. [LIVE]    DMX-COCKPIT-PM-TEXTUAL-001 -- ready_for_triage                 ┃
+┃  2. [LOGGED]  DMX-PM-PLANE-AUDIT-014 -- adjudication                         ┃
+┃  3. [EDGE]    DMX-BRIDGE-PROXY-AUDIT-002 -- waiting_on_proxy_review          ┃
+┃  more_count: 4                                                               ┃
+┃  next_token: slice_cursor_DMX-PM-PLANE-AUDIT-019                             ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃CENTER UPPER  workflow triage / readiness queue                               ┃
+┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃
+┃domain: readiness_queue                                                       ┃
+┃authority: task-orchestrator workflow transitions                             ┃
+┃role: canonical                                                               ┃
+┃next_action: triage                                                           ┃
+┃SRC=task-orchestrator                                                         ┃
+┃                                                                              ┃
+┃  1. [LIVE]    DMX-COCKPIT-PM-TEXTUAL-001  legality=ok  blockers=0            ┃
+┃  2. [LOGGED]  DMX-PM-PLANE-AUDIT-014     legality=ok  blockers=1             ┃
+┃  3. [EDGE]    DMX-BRIDGE-PROXY-AUDIT-002 legality=UNKNOWN  blockers=0        ┃
+┃  more_count: 2                                                               ┃
+┃  next_token: queue_cursor_priority=2                                         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃CENTER LOWER  adjudication context                                            ┃
+┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃
+┃domain: adjudication                                                          ┃
+┃authority: task-orchestrator workflow transitions                             ┃
+┃role: canonical                                                               ┃
+┃next_action: inspect                                                          ┃
+┃                                                                              ┃
+┃blocker:        UNKNOWN -- needs verification from task-orchestrator          ┃
+┃transitions:    triage -> ready -> handoff                                    ┃
+┃linked_decision SRC=conport  D-2026.04-PM-014  status=LOGGED                  ┃
+┃linked_decision SRC=conport  D-2026.04-PM-019  status=LOGGED                  ┃
+┃chronicle SRC=dope-memory     R-2026.04-CHRON-882  status=AFTERCARE           ┃
+┃metadata SRC=leantime         LT-1422  ticket_age=3d                          ┃
+┃handoff_ready:  false (acceptance subset incomplete)                          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃INSPECTOR UPPER  selected slice detail                                        ┃
+┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃
+┃domain: slice_detail                                                          ┃
+┃authority: task-orchestrator workflow transitions                             ┃
+┃role: canonical                                                               ┃
+┃next_action: inspect                                                          ┃
+┃                                                                              ┃
+┃slice_id:        DMX-COCKPIT-PM-TEXTUAL-001                                   ┃
+┃metadata SRC=leantime         LT-1422  owner=hu3mann                          ┃
+┃context  SRC=conport          PC-DMX-COCKPIT  scope=cockpit pm tui            ┃
+┃progress SRC=conport          P-2026.04-PM-022  status=in_progress            ┃
+┃transitions: open|triage|handoff  current=triage                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃INSPECTOR LOWER UPPER  canonical actions                                      ┃
+┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃
+┃domain: decisions                                                             ┃
+┃authority: conport decisions/progress context                                 ┃
+┃role: authoring                                                               ┃
+┃next_action: log_decision                                                     ┃
+┃                                                                              ┃
+┃action: log_decision     SRC=conport            via=conport_action_surface    ┃
+┃action: log_progress     SRC=conport            via=conport_action_surface    ┃
+┃action: workflow.advance SRC=task-orchestrator  via=task_orchestrator_api     ┃
+┃action: chronicle.read   SRC=dope-memory        via=dope_memory_api           ┃
+┃action: retrieval.query  SRC=dope-context       via=dope_context_api          ┃
+┃note: canonical writes route through their own service surface; not via bridge┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+[inspector-detail] bridge collapsed: dopecon-bridge adapter/proxy ref only
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[chrome]  filter=triage  legality=ok  warnings=0  ctrl+k=palette
+[chrome]  cue: ADHD_engine: focused; suggest 25-min focus block (advisory only)
