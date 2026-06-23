@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 from typing import Any, Optional, List
-from urllib.parse import urlencode
+from urllib.parse import quote, quote_plus, urlencode
 
 import aiohttp
 from mcp.server.fastmcp import FastMCP
@@ -205,6 +205,15 @@ async def delete_custom_data(workspace_id: str, category: str, key: str) -> str:
     query = urlencode({"workspace_id": workspace_id, "category": category, "key": key})
     data = await _delete_json(f"{CONPORT_URL}/api/custom_data?{query}")
     return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def search_content(workspace_id: str, query: str) -> str:
+    """Search decisions and progress entries in a workspace."""
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        url = f"{CONPORT_URL}/api/search/{quote(workspace_id, safe='')}?q={quote_plus(query)}"
+        data = await _get_json(session, url)
+        return json.dumps(data, ensure_ascii=False, indent=2)
 
 
 async def main():
