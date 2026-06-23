@@ -1,7 +1,11 @@
 // @ts-nocheck
 import { expect, test } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom/vitest';
+import React from 'react';
 import fs from 'fs';
 import path from 'path';
+import PredictionPanel from '../PredictionPanel';
 
 const componentsDir = path.resolve(__dirname, '..');
 
@@ -18,22 +22,31 @@ test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Toolti
   expect(content).toContain('tabIndex={0}');
 });
 
-test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', () => {
-  const filePath = path.join(componentsDir, 'PredictionPanel.tsx');
-  if (!fs.existsSync(filePath)) {
-    console.warn(`Skipping: Required component missing for accessibility test: ${filePath}`);
-    return;
-  }
-  const content = fs.readFileSync(filePath, 'utf8');
-  expect(content).toContain('aria-label="15-Minute Load Prediction Percentage"');
-  expect(content).toContain('aria-valuetext');
-  expect(content).toContain('Prediction Loading...');
-  expect(content).toMatch(/aria-label=\{\s*hasPrediction\s*\?\s*`Fifteen minute prediction \$\{value\} percent, \$\{statusMeta\.label\}\. \$\{roast\}`\s*:\s*'No prediction available'\s*\}/);
-  expect(content).toMatch(/<Tooltip[^>]*title=\{\s*hasPrediction\s*\?\s*`15-minute forecast: \$\{statusMeta\.label\} \(\$\{value\}%\)\. \$\{roast\}`\s*:\s*'15-minute forecast: AI-driven projection of your cognitive load'\s*\}/);
-  expect(content).toContain('tabIndex={0}');
-  expect(content).toContain("cursor: 'help'");
-  expect(content).toContain('&:hover, &:focus-visible');
-  expect(content).toContain('@keyframes predictive-pulse');
+test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
+  // Test 1: Loading state (no prediction)
+  const { rerender } = render(<PredictionPanel />);
+  const progressBar = screen.getByRole('progressbar');
+  expect(progressBar).toHaveAttribute('aria-label', '15-Minute Load Prediction Percentage');
+  expect(progressBar).toHaveAttribute('aria-valuetext', 'Prediction Loading...');
+
+  const panel = screen.getByLabelText('No prediction available');
+  expect(panel).toHaveAttribute('tabIndex', '0');
+
+  // Test 2: With critical prediction
+  rerender(<PredictionPanel prediction={0.9} />);
+
+  const criticalValue = '90%';
+  expect(screen.getByText(criticalValue)).toBeDefined();
+  expect(progressBar).toHaveAttribute('aria-valuetext', criticalValue);
+
+  const criticalLabel = /Fifteen minute prediction 90 percent, Break\. Now\./i;
+  expect(screen.getByLabelText(criticalLabel)).toBeDefined();
+
+  // Test 3: With optimal prediction
+  rerender(<PredictionPanel prediction={0.4} />);
+  const optimalValue = '40%';
+  expect(screen.getByText(optimalValue)).toBeDefined();
+  expect(screen.getByLabelText(/Fifteen minute prediction 40 percent, Flow Ritual/i)).toBeDefined();
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
