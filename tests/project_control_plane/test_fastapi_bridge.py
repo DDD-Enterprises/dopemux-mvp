@@ -30,6 +30,8 @@ from fastapi.testclient import TestClient
 
 from dopemux.pcp.bridge import fastapi_bridge as bridge
 from dopemux.pcp.bridge.fastapi_bridge import (
+    InProcessDedupStore,
+    RedisDedupStore,
     check_live_write_gate,
     create_bridge_router,
     route_mutation,
@@ -222,7 +224,7 @@ class TestRoute:
         op = _operation()
         gate = _ready_gate_for(op)
         r = route_mutation(op, live_write_ready=gate, execute=True,
-                           writer_registry=self._writer_reg(spy), executed_keys=set(), now=_NOW)
+                           writer_registry=self._writer_reg(spy), dedup_store=InProcessDedupStore(), now=_NOW)
         assert r["mode"] == "LIVE" and r["executed"] is True
         assert r["writer_result"] == {"merged": True}
         assert len(spy.calls) == 1 and spy.calls[0] == op
@@ -241,7 +243,7 @@ class TestRoute:
         op = _operation()
         gate = _ready_gate_for(op)
         r = route_mutation(op, live_write_ready=gate, execute=True,
-                           writer_registry=self._writer_reg(spy), executed_keys=set(), now=_NOW)
+                           writer_registry=self._writer_reg(spy), dedup_store=InProcessDedupStore(), now=_NOW)
         assert r["mode"] == "REJECTED" and r["executed"] is False
         assert any(reason.startswith("WRITER_RAISED") for reason in r["reasons"])
 
@@ -298,7 +300,7 @@ class TestBinding:
         op = _operation(pr_id=42, head_sha="abc123")
         gate = _ready_gate_for(op)
         r = route_mutation(op, live_write_ready=gate, execute=True,
-                           writer_registry={"dopemux.test_writer": spy}, executed_keys=set(), now=_NOW)
+                           writer_registry={"dopemux.test_writer": spy}, dedup_store=InProcessDedupStore(), now=_NOW)
         assert r["mode"] == "LIVE" and len(spy.calls) == 1
 
 
@@ -313,7 +315,7 @@ class TestRegistry:
         gate = _ready_gate_for(op, canonical_writer="dopemux.real_writer")
         # registry only has a DIFFERENT name
         r = route_mutation(op, live_write_ready=gate, execute=True,
-                           writer_registry={"dopemux.other_writer": spy}, executed_keys=set(), now=_NOW)
+                           writer_registry={"dopemux.other_writer": spy}, dedup_store=InProcessDedupStore(), now=_NOW)
         assert r["mode"] == "REJECTED" and "CANONICAL_WRITER_NOT_REGISTERED" in r["reasons"]
         assert spy.calls == []
 
@@ -322,7 +324,7 @@ class TestRegistry:
         op = _operation()
         gate = _ready_gate_for(op, canonical_writer="dopemux.real_writer")
         r = route_mutation(op, live_write_ready=gate, execute=True,
-                           writer_registry={"dopemux.real_writer": spy}, executed_keys=set(), now=_NOW)
+                           writer_registry={"dopemux.real_writer": spy}, dedup_store=InProcessDedupStore(), now=_NOW)
         assert r["mode"] == "LIVE" and len(spy.calls) == 1
 
 
@@ -335,15 +337,91 @@ class TestDedup:
         spy = _SpyWriter()
         op = _operation()
         gate = _ready_gate_for(op, assertion_id="assert-dedup-1")
-        store: set = set()
+        store = InProcessDedupStore()
         reg = {"dopemux.test_writer": spy}
         first = route_mutation(op, live_write_ready=gate, execute=True,
-                               writer_registry=reg, executed_keys=store, now=_NOW)
+                               writer_registry=reg, dedup_store=store, now=_NOW)
         second = route_mutation(op, live_write_ready=gate, execute=True,
-                                writer_registry=reg, executed_keys=store, now=_NOW)
+                                writer_registry=reg, dedup_store=store, now=_NOW)
         assert first["mode"] == "LIVE"
         assert second["mode"] == "REJECTED" and "DUPLICATE_SUPPRESSED" in second["reasons"]
         assert len(spy.calls) == 1  # writer called exactly once total
+
+    def test_in_process_dedup_store_first_call_returns_false(self):
+        store = InProcessDedupStore()
+        assert store.check_and_record("key-1") is False  # first-seen
+
+    def test_in_process_dedup_store_second_call_returns_true(self):
+        store = InProcessDedupStore()
+        store.check_and_record("key-1")
+        assert store.check_and_record("key-1") is True  # duplicate
+
+    def test_in_process_dedup_store_different_keys_independent(self):
+        store = InProcessDedupStore()
+        assert store.check_and_record("key-A") is False
+        assert store.check_and_record("key-B") is False  # different key, first-seen
+        assert store.check_and_record("key-A") is True   # key-A is now duplicate
+
+
+class _FakeRedisClient:
+    """Minimal fake redis client implementing SET NX semantics for testing."""
+
+    def __init__(self) -> None:
+        self._store: dict = {}
+        self.set_calls: list = []
+
+    def set(self, name: str, value: str, *, nx: bool = False, ex: int | None = None):
+        self.set_calls.append({"name": name, "value": value, "nx": nx, "ex": ex})
+        if nx:
+            if name in self._store:
+                return None  # key already exists — duplicate
+            self._store[name] = value
+            return True  # newly set — first-seen
+        self._store[name] = value
+        return True
+
+
+class TestRedisDedupStore:
+    def test_first_key_returns_false(self):
+        client = _FakeRedisClient()
+        store = RedisDedupStore(client)
+        assert store.check_and_record("key-1") is False  # first-seen
+
+    def test_second_key_returns_true(self):
+        client = _FakeRedisClient()
+        store = RedisDedupStore(client)
+        store.check_and_record("key-1")
+        assert store.check_and_record("key-1") is True  # duplicate
+
+    def test_set_called_with_nx_true_and_ex(self):
+        client = _FakeRedisClient()
+        store = RedisDedupStore(client, ttl_seconds=3600)
+        store.check_and_record("key-x")
+        assert len(client.set_calls) == 1
+        call = client.set_calls[0]
+        assert call["nx"] is True
+        assert call["ex"] == 3600
+
+    def test_key_prefix_applied(self):
+        client = _FakeRedisClient()
+        store = RedisDedupStore(client, key_prefix="test:prefix:")
+        store.check_and_record("my-key")
+        assert client.set_calls[0]["name"] == "test:prefix:my-key"
+
+    def test_route_mutation_with_redis_store_deduplicates(self):
+        spy = _SpyWriter()
+        op = _operation()
+        gate = _ready_gate_for(op, assertion_id="assert-redis-dedup")
+        client = _FakeRedisClient()
+        redis_store = RedisDedupStore(client)
+        reg = {"dopemux.test_writer": spy}
+        first = route_mutation(op, live_write_ready=gate, execute=True,
+                               writer_registry=reg, dedup_store=redis_store, now=_NOW)
+        second = route_mutation(op, live_write_ready=gate, execute=True,
+                                writer_registry=reg, dedup_store=redis_store, now=_NOW)
+        assert first["mode"] == "LIVE" and first["executed"] is True
+        assert second["mode"] == "REJECTED" and "DUPLICATE_SUPPRESSED" in second["reasons"]
+        assert len(spy.calls) == 1  # writer called exactly once
 
 
 # ===========================================================================
@@ -475,7 +553,7 @@ class TestStructural:
         results = [
             route_mutation(op, live_write_ready=None, execute=True, writer_registry=reg, now=_NOW),  # REJECTED
             route_mutation(op, live_write_ready=gate, execute=False, writer_registry=reg, now=_NOW),  # DRY_RUN
-            route_mutation(op, live_write_ready=gate, execute=True, writer_registry=reg, executed_keys=set(), now=_NOW),  # LIVE
+            route_mutation(op, live_write_ready=gate, execute=True, writer_registry=reg, dedup_store=InProcessDedupStore(), now=_NOW),  # LIVE
         ]
         assert {r["mode"] for r in results} == {"REJECTED", "DRY_RUN", "LIVE"}
         for r in results:
@@ -488,7 +566,7 @@ class TestStructural:
         reg = {"dopemux.test_writer": spy}
         rejected = route_mutation(op, live_write_ready=None, execute=True, writer_registry=reg, now=_NOW)
         dry = route_mutation(op, live_write_ready=gate, execute=False, writer_registry=reg, now=_NOW)
-        live = route_mutation(op, live_write_ready=gate, execute=True, writer_registry=reg, executed_keys=set(), now=_NOW)
+        live = route_mutation(op, live_write_ready=gate, execute=True, writer_registry=reg, dedup_store=InProcessDedupStore(), now=_NOW)
         for r in (rejected, dry, live):
             assert r["executed"] is (r["mode"] == "LIVE")
 

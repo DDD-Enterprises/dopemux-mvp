@@ -26,7 +26,7 @@ import hashlib
 import json
 import pathlib
 from datetime import datetime, timezone
-from typing import Any, Callable
+from typing import Any, Callable, Protocol
 
 from fastapi import APIRouter, FastAPI
 from fastapi import status as http_status
@@ -57,6 +57,69 @@ _MODE_LIVE = "LIVE"
 _RESULT_SCHEMA_VERSION = "pcp.bridge_result.v0"
 
 Writer = Callable[[dict], Any]
+
+
+# ---------------------------------------------------------------------------
+# Idempotency dedup store — pluggable contract.
+# ---------------------------------------------------------------------------
+
+class DedupStore(Protocol):
+    """Contract for an idempotency dedup store.
+
+    ``check_and_record(key)`` must be atomic:
+      - Returns ``False`` when ``key`` is first-seen (and records it).
+      - Returns ``True`` when ``key`` was already recorded (duplicate).
+    """
+
+    def check_and_record(self, key: str) -> bool: ...
+
+
+class InProcessDedupStore:
+    """In-process dedup store backed by a Python ``set``.
+
+    Atomic within a single synchronous call. Suitable for single-process /
+    single-worker deployments and for testing.
+    """
+
+    def __init__(self) -> None:
+        self._seen: set[str] = set()
+
+    def check_and_record(self, key: str) -> bool:
+        if key in self._seen:
+            return True  # duplicate
+        self._seen.add(key)
+        return False  # first-seen
+
+
+class RedisDedupStore:
+    """Redis-backed dedup store using SET NX semantics.
+
+    The Redis client is injected (duck-typed) — no top-level ``redis`` import
+    so this module remains importable without redis installed.
+
+    ``client.set(name, value, nx=True, ex=ttl_seconds)`` semantics:
+      - Returns ``True`` when the key was newly set (first-seen) → return ``False``.
+      - Returns ``None`` when the key already existed (duplicate) → return ``True``.
+    """
+
+    def __init__(
+        self,
+        client: Any,
+        *,
+        ttl_seconds: int = 86400,
+        key_prefix: str = "pcp:live_write_ready:",
+    ) -> None:
+        self._client = client
+        self._ttl = ttl_seconds
+        self._prefix = key_prefix
+
+    def check_and_record(self, key: str) -> bool:
+        result = self._client.set(
+            self._prefix + key, "1", nx=True, ex=self._ttl
+        )
+        # True → newly set (first-seen) → not a duplicate.
+        # None → key already existed → duplicate.
+        return result is not True
 
 
 # ---------------------------------------------------------------------------
@@ -166,7 +229,7 @@ def route_mutation(
     live_write_ready: dict | None = None,
     execute: bool = False,
     writer_registry: dict[str, Writer] | None = None,
-    executed_keys: set | None = None,
+    dedup_store: "DedupStore | None" = None,
     now: datetime | None = None,
 ) -> dict:
     """Route a single mutation through the fail-closed live-write gate.
@@ -176,11 +239,11 @@ def route_mutation(
     unexpired READY gate; operation_ref + target_surface + payload_digest binding
     to THIS operation; ``execute is True``; the gate's ``canonical_writer`` name
     resolves in ``writer_registry``; and the assertion_id is first-seen in
-    ``executed_keys``. Every other branch returns without invoking any writer.
+    ``dedup_store``. Every other branch returns without invoking any writer.
 
-    ``executed_keys`` is the idempotency store (a set). Pass a shared set to
-    deduplicate across calls (the FastAPI router does this per-router). When it
-    is None, a throwaway set is used (no cross-call dedup).
+    ``dedup_store`` is a pluggable idempotency store (any object implementing
+    ``check_and_record(key) -> bool``). When None, a throwaway
+    ``InProcessDedupStore`` is used (no cross-call dedup).
     """
     # 1. Operation shape (fail-closed).
     if not isinstance(operation, dict):
@@ -243,14 +306,20 @@ def route_mutation(
         )
 
     # 7. Idempotency dedup on assertion_id (record BEFORE the call).
-    store = executed_keys if executed_keys is not None else set()
     key = gate.get("assertion_id")
-    if key in store:
+    if not isinstance(key, str) or not key:
+        # Unreachable for a schema-valid gate (assertion_id is required, minLength 1);
+        # guarded defensively so a non-str key can never reach a dedup store.
+        return _result(
+            mode=_MODE_REJECTED, permitted=True, executed=False,
+            reasons=["GATE_INCONSISTENT"], operation_ref=op_ref, target_surface=op_surface,
+        )
+    store = dedup_store if dedup_store is not None else InProcessDedupStore()
+    if store.check_and_record(key):
         return _result(
             mode=_MODE_REJECTED, permitted=True, executed=False,
             reasons=["DUPLICATE_SUPPRESSED"], operation_ref=op_ref, target_surface=op_surface,
         )
-    store.add(key)
 
     # 8. Delegate to the canonical writer — the ONLY write path.
     try:
@@ -288,7 +357,9 @@ class MutateRequest(BaseModel):
 
 
 def create_bridge_router(
-    *, writer_registry: dict[str, Writer] | None = None
+    *,
+    writer_registry: dict[str, Writer] | None = None,
+    dedup_store: "DedupStore | None" = None,
 ) -> APIRouter:
     """Build the bridge ``APIRouter``.
 
@@ -297,9 +368,13 @@ def create_bridge_router(
     Registering a real writer is an explicit, deliberate caller action. The
     router keeps a private idempotency store so replayed assertion_ids are
     suppressed across requests.
+
+    ``dedup_store`` defaults to None, in which case a private
+    ``InProcessDedupStore`` is created for this router instance. Pass an
+    external store (e.g. ``RedisDedupStore``) for cross-worker dedup.
     """
     router = APIRouter(tags=["PCP Bridge"])
-    _executed_keys: set = set()
+    _dedup_store: DedupStore = dedup_store if dedup_store is not None else InProcessDedupStore()
 
     @router.post("/bridge/mutate")
     async def mutate(req: MutateRequest) -> JSONResponse:
@@ -308,7 +383,7 @@ def create_bridge_router(
             live_write_ready=req.live_write_ready,
             execute=req.execute,
             writer_registry=writer_registry,
-            executed_keys=_executed_keys,
+            dedup_store=_dedup_store,
         )
         code = (
             http_status.HTTP_403_FORBIDDEN
@@ -321,12 +396,17 @@ def create_bridge_router(
 
 
 def create_bridge_app(
-    *, writer_registry: dict[str, Writer] | None = None
+    *,
+    writer_registry: dict[str, Writer] | None = None,
+    dedup_store: "DedupStore | None" = None,
 ) -> FastAPI:
     """Build a standalone FastAPI app mounting the bridge router.
 
     Defaults to no writer registry — dry-run / reject only.
+    ``dedup_store`` is forwarded to the bridge router.
     """
     app = FastAPI(title="PCP Live-Write Bridge", version="0.1.0")
-    app.include_router(create_bridge_router(writer_registry=writer_registry))
+    app.include_router(
+        create_bridge_router(writer_registry=writer_registry, dedup_store=dedup_store)
+    )
     return app

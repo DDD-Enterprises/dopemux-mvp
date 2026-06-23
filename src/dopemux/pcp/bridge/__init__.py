@@ -9,6 +9,9 @@ an explicitly registered canonical_writer (resolved by the gate's
 """
 
 from dopemux.pcp.bridge.fastapi_bridge import (
+    DedupStore,
+    InProcessDedupStore,
+    RedisDedupStore,
     check_live_write_gate,
     create_bridge_app,
     create_bridge_router,
@@ -16,6 +19,9 @@ from dopemux.pcp.bridge.fastapi_bridge import (
 )
 
 __all__ = [
+    "DedupStore",
+    "InProcessDedupStore",
+    "RedisDedupStore",
     "check_live_write_gate",
     "route_mutation",
     "create_bridge_router",

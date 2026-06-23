@@ -42,7 +42,8 @@
       "repo-truth-extractor",
       "dopetask",
       "dopemux-cli",
-      "pr-steward"
+      "pr-steward",
+      "leantime"
     ]
   },
   "schemas": {

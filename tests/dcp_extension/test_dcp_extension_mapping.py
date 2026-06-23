@@ -212,8 +212,9 @@ class TestNegativeTamper:
 # 6. Packet-5 scope lock — exactly the ten target systems, manifest in sync
 # ---------------------------------------------------------------------------
 class TestPacketScope:
-    """Packet 5 maps exactly its ten target systems — not github-ci (deferred to the PR Steward
-    proof-readiness packet) and not Leantime (no AIR §7 row). Guards against scope drift."""
+    """Packet 5 maps its ten original target systems plus Leantime (added as a post-P5 loose-end
+    amendment, closing the AIR §7 gap). GitHub/CI readiness is still deferred to the PR Steward
+    proof-readiness packet. Guards against scope drift."""
 
     EXPECTED_SYSTEMS = {
         "task-orchestrator",
@@ -226,6 +227,7 @@ class TestPacketScope:
         "dopetask",
         "dopemux-cli",
         "pr-steward",
+        "leantime",
     }
 
     def test_mapped_systems_match_packet_target(self):
@@ -242,3 +244,40 @@ class TestPacketScope:
             f"manifest adapter_mappings out of sync with authority-map owners. "
             f"Only in manifest: {adapter_mappings - owners}; only in map: {owners - adapter_mappings}"
         )
+
+
+# ---------------------------------------------------------------------------
+# 7. Leantime entry focused test — post-P5 loose-end amendment
+# ---------------------------------------------------------------------------
+class TestLeantimeEntry:
+    """Focused assertions for the Leantime pm.metadata read ADAPTER entry (AIR §7 gap closure)."""
+
+    @staticmethod
+    def _leantime_entry() -> dict:
+        entries = [
+            e for e in AUTHORITY_INST["entries"]
+            if e["canonical_authority_owner"] == "leantime"
+        ]
+        assert len(entries) == 1, (
+            f"Expected exactly one leantime entry in authority map; found {len(entries)}"
+        )
+        return entries[0]
+
+    def test_leantime_entry_exists(self):
+        entry = self._leantime_entry()
+        assert entry["domain"] == "pm.metadata"
+        assert entry["action"] == "read"
+
+    def test_leantime_surface_class_is_adapter(self):
+        entry = self._leantime_entry()
+        assert entry["surface_class"] == "ADAPTER", (
+            f"Expected ADAPTER, got {entry['surface_class']}"
+        )
+
+    def test_leantime_live_write_not_allowed(self):
+        entry = self._leantime_entry()
+        assert entry["live_write_allowed"] is False
+
+    def test_leantime_canonical_writer_is_null(self):
+        entry = self._leantime_entry()
+        assert entry["canonical_writer"] is None

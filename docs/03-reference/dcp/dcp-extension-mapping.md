@@ -73,6 +73,7 @@ proxy, never the authority.
 | `execution.external_runner` | map | dopetask | ADAPTER | dcp dopetask execution-mapping adapter |
 | `operator.control` | project | dopemux-cli | PROJECTION | dcp dopemux operator-control projection |
 | `pr.readiness` | read | pr-steward | ADAPTER | dcp pr-steward readiness intake |
+| `pm.metadata` | read | leantime | ADAPTER | dcp leantime PM-metadata read adapter |
 
 All entries share these fail-closed properties:
 
@@ -123,17 +124,18 @@ The following PCP Core schemas are explicitly listed as forbidden overrides:
 
 ## Deferred / Not Mapped in Packet 5
 
-The Packet 5 target maps exactly the ten Dopemux systems in the table above. Two systems named
-elsewhere in the architecture are intentionally **not** mapped here:
+The Packet 5 target maps exactly the ten Dopemux systems in the original table. One additional
+system was mapped as a post-P5 loose-end amendment:
+
+- **Leantime** — added as a `pm.metadata` read ADAPTER (closing the AIR §7 gap; `canonical_authority_owner: leantime`, `surface_class: ADAPTER`, `live_write_allowed: false`). The AIR §7 component table now includes a Leantime row. This brings the total mapped systems to **11**.
+
+One system named elsewhere in the architecture is still intentionally **not** mapped here:
 
 - **GitHub / CI readiness** — named in AIR §7 but assigned there to the *PR Steward
   proof-readiness* packet, not this one. It will be added as an additional read/projection
   (`ci.evidence`) entry by that packet.
-- **Leantime** — named in the AIR system inventory (§4 and §261) but has **no row in the AIR §7
-  component table** and is not in this packet's target. It is therefore not mapped in Packet 5;
-  mapping it requires a §7 extension-role definition first (deferred, tracked as an AIR follow-up).
 
-Adding either later is additive — new authority-map entries, no core schema change.
+Adding entries later remains additive — new authority-map entries, no core schema change.
 
 ---
 
