@@ -1,0 +1,8 @@
+{
+  "schema_version": "pcp.proof_status_map.v0",
+  "project_id": "DDD-Enterprises/dopemux-mvp",
+  "proof_pointers": [
+    {"schema_version": "pcp.proof_pointer.v0", "pointer_id": "proof.root.PROOF", "project_id": "DDD-Enterprises/dopemux-mvp", "packet_id": "UNRESOLVED", "path": "PROOF.json", "freshness_state": "UNKNOWN", "validation_status": "UNKNOWN", "auditor_verdict": "UNKNOWN", "unknowns": ["resolved at export time (exporter-consumption follow-up)"]},
+    {"schema_version": "pcp.proof_pointer.v0", "pointer_id": "proof.root.SUMMARY", "project_id": "DDD-Enterprises/dopemux-mvp", "packet_id": "UNRESOLVED", "path": "SUMMARY.md", "freshness_state": "UNKNOWN", "validation_status": "UNKNOWN", "auditor_verdict": "UNKNOWN", "unknowns": ["resolved at export time (exporter-consumption follow-up)"]}
+  ]
+}
