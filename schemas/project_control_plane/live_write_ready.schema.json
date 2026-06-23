@@ -213,6 +213,16 @@
       "type": "string",
       "format": "date-time",
       "description": "ISO 8601 datetime at which this readiness assertion was assembled."
+    },
+    "valid_until": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "ISO 8601 expiry of this readiness assertion. null is permitted only for non-READY status; a READY assertion requires a non-null timestamp. The consuming bridge rejects with GATE_EXPIRED when now > valid_until — the schema enforces presence and format only, not the time comparison."
+    },
+    "payload_digest": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Lowercase SHA-256 hex of the canonical JSON of the exact operation this assertion authorizes. null is permitted only for non-READY status; a READY assertion requires a non-null digest. The consuming bridge rejects with PAYLOAD_DIGEST_MISMATCH when sha256(canonical(operation)) != payload_digest — the schema enforces presence and format only, not the hash comparison."
     }
   },
   "allOf": [
@@ -232,7 +242,9 @@
           "dry_run_proof",
           "independent_audit",
           "post_write_verification",
-          "blocked_reasons"
+          "blocked_reasons",
+          "valid_until",
+          "payload_digest"
         ],
         "properties": {
           "canonical_writer": {
@@ -287,6 +299,14 @@
           },
           "blocked_reasons": {
             "maxItems": 0
+          },
+          "valid_until": {
+            "type": "string",
+            "minLength": 1
+          },
+          "payload_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
           }
         }
       }
