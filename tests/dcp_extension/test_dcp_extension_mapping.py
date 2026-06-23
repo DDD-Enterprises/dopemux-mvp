@@ -228,6 +228,7 @@ class TestPacketScope:
         "dopemux-cli",
         "pr-steward",
         "leantime",
+        "pcp-core-proof-pointer",
     }
 
     def test_mapped_systems_match_packet_target(self):

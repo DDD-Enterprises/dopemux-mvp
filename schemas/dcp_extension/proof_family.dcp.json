@@ -1,0 +1,38 @@
+{
+  "schema_version": "dcp.proof_family.v0",
+  "extension_id": "dopemux-dcp",
+  "project_id": "DDD-Enterprises/dopemux-mvp",
+  "proof_family_id": "dcp-proof-family-projection-0001",
+  "pcp_proof_pointer_schema": "schemas/project_control_plane/proof_pointer.schema.json",
+  "proof_roots": [
+    "proof/",
+    "reports/project-control-plane/"
+  ],
+  "artifact_manifest_paths": [
+    "PROOF_BUNDLE.json",
+    "PROOF.json",
+    "EVIDENCE_LEDGER.md",
+    "EMBEDDED_AUDIT_REPORT.md",
+    "SECURITY_AUDIT_REPORT.md",
+    "HANDOFF_BUNDLE.json"
+  ],
+  "head_sha_binding_required": true,
+  "freshness_values": ["FRESH", "STALE", "MISSING", "UNKNOWN"],
+  "unknown_behavior": "BLOCK_OR_ESCALATE",
+  "source_truth_refs": [
+    "schemas/project_control_plane/project_evidence_export.schema.json",
+    "schemas/project_control_plane/proof_pointer.schema.json",
+    "schemas/dcp_extension/proof_family.dcp.json"
+  ],
+  "must_not_own": [
+    "pcp-core-proof-pointer-semantics",
+    "generic-merge-readiness-authority",
+    "live-write-gate-truth"
+  ],
+  "is_authority": false,
+  "projection_only": true,
+  "validation": {
+    "schema_check_required": true,
+    "negative_fixture_required": true
+  }
+}

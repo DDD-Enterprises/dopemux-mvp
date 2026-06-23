@@ -163,6 +163,23 @@
       "unknown_behavior": "BLOCK_OR_ESCALATE"
     },
     {
+      "domain": "proof.dcp_family",
+      "action": "map",
+      "canonical_authority_owner": "pcp-core-proof-pointer",
+      "canonical_writer": null,
+      "surface_class": "PROJECTION",
+      "reader_or_projection_surface": "dcp proof-family mapping to PCP proof pointer",
+      "source_truth_refs": [
+        "schemas/project_control_plane/project_evidence_export.schema.json",
+        "schemas/dcp_extension/proof_family.dcp.json"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
       "domain": "pm.metadata",
       "action": "read",
       "canonical_authority_owner": "leantime",

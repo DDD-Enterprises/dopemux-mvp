@@ -12,6 +12,7 @@
     "status",
     "blocked_reasons",
     "intake",
+    "intake_completeness",
     "advisory",
     "created_at"
   ],
@@ -71,8 +72,34 @@
           "DIFF_OUTSIDE_ALLOWLIST",
           "MISSING_SECURITY_RELEASE_APPROVAL",
           "MISSING_REQUIRED_INTAKE",
+          "INCOMPLETE_INTAKE",
           "UNKNOWN"
         ]
+      }
+    },
+    "intake_completeness": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-category harvest completeness. READY requires every category COMPLETE.",
+      "required": [
+        "proof_refs",
+        "review_comments",
+        "issue_comments",
+        "checks",
+        "reviews",
+        "review_threads",
+        "reviewer_classifications",
+        "allowlist_diff"
+      ],
+      "properties": {
+        "proof_refs": { "$ref": "#/$defs/completeness_state" },
+        "review_comments": { "$ref": "#/$defs/completeness_state" },
+        "issue_comments": { "$ref": "#/$defs/completeness_state" },
+        "checks": { "$ref": "#/$defs/completeness_state" },
+        "reviews": { "$ref": "#/$defs/completeness_state" },
+        "review_threads": { "$ref": "#/$defs/completeness_state" },
+        "reviewer_classifications": { "$ref": "#/$defs/completeness_state" },
+        "allowlist_diff": { "$ref": "#/$defs/completeness_state" }
       }
     },
     "intake": {
@@ -296,6 +323,40 @@
       }
     },
     {
+      "description": "Fail-closed gate (f): READY requires all intake_completeness categories COMPLETE.",
+      "if": {
+        "properties": { "status": { "const": "READY" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "intake_completeness": {
+            "properties": {
+              "proof_refs": { "const": "COMPLETE" },
+              "review_comments": { "const": "COMPLETE" },
+              "issue_comments": { "const": "COMPLETE" },
+              "checks": { "const": "COMPLETE" },
+              "reviews": { "const": "COMPLETE" },
+              "review_threads": { "const": "COMPLETE" },
+              "reviewer_classifications": { "const": "COMPLETE" },
+              "allowlist_diff": { "const": "COMPLETE" }
+            },
+            "required": [
+              "proof_refs",
+              "review_comments",
+              "issue_comments",
+              "checks",
+              "reviews",
+              "review_threads",
+              "reviewer_classifications",
+              "allowlist_diff"
+            ]
+          }
+        },
+        "required": ["intake_completeness"]
+      }
+    },
+    {
       "description": "Fail-closed gate (e): READY with an unapproved security gate is rejected. If status is READY then intake must have security_release_required=false OR security_release_approved=true.",
       "if": {
         "properties": { "status": { "const": "READY" } },
@@ -319,5 +380,11 @@
         "required": ["intake"]
       }
     }
-  ]
+  ],
+  "$defs": {
+    "completeness_state": {
+      "type": "string",
+      "enum": ["COMPLETE", "MISSING", "UNKNOWN"]
+    }
+  }
 }

@@ -30,7 +30,9 @@
       "dcp_memory",
       "dcp_retrieval"
     ],
-    "proof_status_mappings": [],
+    "proof_status_mappings": [
+      "schemas/dcp_extension/proof_family.dcp.json"
+    ],
     "runtime_mappings": [],
     "adapter_mappings": [
       "task-orchestrator",
@@ -43,7 +45,8 @@
       "dopetask",
       "dopemux-cli",
       "pr-steward",
-      "leantime"
+      "leantime",
+      "pcp-core-proof-pointer"
     ]
   },
   "schemas": {

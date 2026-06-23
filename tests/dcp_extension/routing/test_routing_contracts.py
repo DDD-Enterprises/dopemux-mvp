@@ -9,6 +9,7 @@ import copy
 import json
 import pathlib
 
+import pytest
 from jsonschema import Draft202012Validator
 
 _REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
@@ -34,23 +35,42 @@ def errors(schema: dict, instance: dict) -> list:
 
 
 def valid_selected_route_decision() -> dict:
+    model = "openrouter/public-low-risk"
     return {
         "schema_version": "dcp.routing.route_decision.v0",
         "decision_id": "rd_packet6_selected",
         "task_ref": "TP-DMX-DCP-ROUTING-EXTENSION-MAPPING-0001",
+        "role": "cheap_file_reading",
         "lane_id": "public_read",
         "privacy_class": "PUBLIC_REPO",
         "risk_class": "R0_READ",
         "decision": "SELECTED",
+        "selected_pool": "cheap_read",
+        "selected_route": {
+            "route_name": "route_public_openrouter_free",
+            "route_profile": "public_low_risk",
+            "selection_reason": "public read lane",
+            "fallback_allowed": False,
+        },
         "selected_route_id": "route_public_openrouter_free",
         "selected_provider": "openrouter",
-        "selected_model": "openrouter/public-low-risk",
+        "selected_model": model,
+        "provider": "openrouter",
+        "requested_model": model,
+        "actual_model": model,
+        "actual_provider": "openrouter",
+        "runner": "openrouter",
         "access_path": "openrouter_free",
+        "consumer_plan_used": False,
+        "api_route_used": True,
+        "openrouter_profile": "or_free_sandbox",
+        "structured_output_mode": "none",
         "live_write_runner_selected": False,
         "blocked_reasons": [],
         "proof_requirement": "minimal",
         "audit_requirement": "none",
         "human_gate_required": False,
+        "human_approval_ref": None,
         "benchmark_certification_ref": None,
         "evidence_refs": ["docs/03-reference/dcp/dcp-routing-extension.md"],
         "created_at": "2026-06-22T00:00:00Z",
@@ -62,19 +82,32 @@ def valid_blocked_route_decision() -> dict:
         "schema_version": "dcp.routing.route_decision.v0",
         "decision_id": "rd_packet6_blocked",
         "task_ref": "TP-DMX-DCP-ROUTING-EXTENSION-MAPPING-0001",
+        "role": "security_review",
         "lane_id": "protected_authority",
         "privacy_class": "SECURITY_SENSITIVE",
         "risk_class": "R5_SECURITY_OR_AUTHORITY",
         "decision": "BLOCKED",
+        "selected_pool": "security_release",
+        "selected_route": None,
         "selected_route_id": None,
         "selected_provider": None,
         "selected_model": None,
+        "provider": None,
+        "requested_model": None,
+        "actual_model": None,
+        "actual_provider": None,
+        "runner": None,
         "access_path": None,
+        "consumer_plan_used": None,
+        "api_route_used": None,
+        "openrouter_profile": None,
+        "structured_output_mode": "json_schema_strict",
         "live_write_runner_selected": False,
         "blocked_reasons": ["OPENROUTER_FREE_FORBIDDEN"],
         "proof_requirement": "security",
         "audit_requirement": "independent",
         "human_gate_required": True,
+        "human_approval_ref": None,
         "benchmark_certification_ref": None,
         "evidence_refs": ["docs/03-reference/dcp/dcp-routing-extension.md"],
         "created_at": "2026-06-22T00:00:00Z",
@@ -190,6 +223,41 @@ class TestLaneEngineContract:
         tampered["default_unknown_behavior"] = "ALLOW"
         errs = errors(LANE_ENGINE_SCHEMA, tampered)
         assert errs, "unknown routing conditions must fail closed"
+
+
+class TestRouteDecisionNegativeFixtures:
+    @pytest.mark.parametrize(
+        "fixture_name",
+        [
+            "invalid_selected_unknown_provider.json",
+            "invalid_selected_unknown_actual_model.json",
+            "invalid_selected_openrouter_free_private.json",
+            "invalid_selected_r5_missing_human_approval.json",
+            "invalid_selected_r5_missing_benchmark.json",
+            "invalid_selected_live_write_runner_true.json",
+            "invalid_selected_structured_without_strict_mode.json",
+        ],
+    )
+    def test_invalid_fixtures_fail_schema(self, fixture_name: str):
+        fixture_path = _REPO_ROOT / "tests" / "dcp_extension" / "fixtures" / "routing" / fixture_name
+        instance = _load(fixture_path)
+        errs = errors(ROUTE_DECISION_SCHEMA, instance)
+        assert errs, f"expected invalid fixture to fail: {fixture_name}"
+
+    @pytest.mark.parametrize(
+        "fixture_name",
+        [
+            "valid_blocked_unknown_privacy.json",
+            "valid_selected_public_read_direct_api.json",
+            "valid_selected_r4_with_embedded_audit.json",
+            "valid_selected_r5_with_independent_audit_and_approval.json",
+        ],
+    )
+    def test_valid_fixtures_pass_schema(self, fixture_name: str):
+        fixture_path = _REPO_ROOT / "tests" / "dcp_extension" / "fixtures" / "routing" / fixture_name
+        instance = _load(fixture_path)
+        errs = errors(ROUTE_DECISION_SCHEMA, instance)
+        assert errs == [], f"valid fixture failed schema: {fixture_name} -> {errs}"
 
 
 class TestOpenClawRouteContract:

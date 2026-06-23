@@ -2,26 +2,39 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.dopemux.local/dcp_extension/routing/route_decision.schema.json",
   "title": "DCP Routing Extension Route Decision Contract",
-  "description": "Contracts-only DCP route decision. This schema records selected or blocked routing decisions; it does not authorize runtime routing or provider execution.",
+  "description": "Contracts-only DCP route decision aligned with OpenClaw routing evidence requirements. Records selected or blocked routing decisions; does not authorize runtime routing or provider execution.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema_version",
     "decision_id",
     "task_ref",
+    "role",
     "lane_id",
     "privacy_class",
     "risk_class",
     "decision",
+    "selected_pool",
+    "selected_route",
     "selected_route_id",
     "selected_provider",
     "selected_model",
+    "provider",
+    "requested_model",
+    "actual_model",
+    "actual_provider",
+    "runner",
     "access_path",
+    "consumer_plan_used",
+    "api_route_used",
+    "openrouter_profile",
+    "structured_output_mode",
     "live_write_runner_selected",
     "blocked_reasons",
     "proof_requirement",
     "audit_requirement",
     "human_gate_required",
+    "human_approval_ref",
     "benchmark_certification_ref",
     "evidence_refs",
     "created_at"
@@ -39,6 +52,9 @@
       "type": "string",
       "minLength": 1
     },
+    "role": {
+      "$ref": "#/$defs/role"
+    },
     "lane_id": {
       "$ref": "#/$defs/lane_id"
     },
@@ -52,23 +68,75 @@
       "type": "string",
       "enum": ["SELECTED", "BLOCKED", "ESCALATED", "NEEDS_SUPERVISOR"]
     },
+    "selected_pool": {
+      "$ref": "#/$defs/pool"
+    },
+    "selected_route": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["route_name", "route_profile", "selection_reason", "fallback_allowed"],
+      "properties": {
+        "route_name": { "type": "string", "minLength": 1 },
+        "route_profile": { "type": "string", "minLength": 1 },
+        "selection_reason": { "type": "string", "minLength": 1 },
+        "fallback_allowed": { "type": "boolean" }
+      }
+    },
     "selected_route_id": {
       "type": ["string", "null"],
       "minLength": 1
     },
     "selected_provider": {
-      "type": ["string", "null"],
-      "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple", "unknown", null]
+      "anyOf": [{ "$ref": "#/$defs/provider" }, { "type": "null" }]
     },
     "selected_model": {
       "type": ["string", "null"],
       "minLength": 1
+    },
+    "provider": {
+      "anyOf": [{ "$ref": "#/$defs/provider" }, { "type": "null" }]
+    },
+    "requested_model": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "actual_model": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "actual_provider": {
+      "anyOf": [{ "$ref": "#/$defs/provider" }, { "type": "null" }]
+    },
+    "runner": {
+      "anyOf": [{ "$ref": "#/$defs/runner" }, { "type": "null" }]
     },
     "access_path": {
       "anyOf": [
         { "$ref": "#/$defs/access_path" },
         { "type": "null" }
       ]
+    },
+    "consumer_plan_used": {
+      "type": ["boolean", "null"]
+    },
+    "api_route_used": {
+      "type": ["boolean", "null"]
+    },
+    "openrouter_profile": {
+      "type": ["string", "null"],
+      "enum": [
+        "or_free_sandbox",
+        "or_low_cost_public",
+        "or_paid_private_controlled",
+        "or_structured_noncritical",
+        "or_challenger",
+        "or_emergency_fallback",
+        null
+      ]
+    },
+    "structured_output_mode": {
+      "type": "string",
+      "enum": ["none", "json_schema_strict", "tool_schema_strict", "json_object", "manual_capture"]
     },
     "live_write_runner_selected": {
       "type": "boolean",
@@ -89,6 +157,9 @@
     },
     "human_gate_required": {
       "type": "boolean"
+    },
+    "human_approval_ref": {
+      "type": ["string", "null"]
     },
     "benchmark_certification_ref": {
       "type": ["string", "null"],
@@ -116,9 +187,18 @@
       "then": {
         "properties": {
           "selected_route_id": { "type": "string", "minLength": 1 },
-          "selected_provider": { "type": "string", "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple", "unknown"] },
+          "selected_route": { "type": "object" },
+          "selected_provider": { "type": "string", "not": { "const": "unknown" } },
           "selected_model": { "type": "string", "minLength": 1 },
+          "provider": { "type": "string", "not": { "const": "unknown" } },
+          "requested_model": { "type": "string", "minLength": 1 },
+          "actual_model": { "type": "string", "minLength": 1 },
+          "actual_provider": { "type": "string", "not": { "const": "unknown" } },
+          "runner": { "type": "string", "not": { "const": "unknown" } },
           "access_path": { "$ref": "#/$defs/access_path" },
+          "consumer_plan_used": { "type": "boolean" },
+          "api_route_used": { "type": "boolean" },
+          "proof_requirement": { "type": "string", "not": { "const": "unknown" } },
           "blocked_reasons": { "maxItems": 0 }
         }
       }
@@ -131,9 +211,18 @@
       "then": {
         "properties": {
           "selected_route_id": { "type": "null" },
+          "selected_route": { "type": "null" },
           "selected_provider": { "type": "null" },
           "selected_model": { "type": "null" },
+          "provider": { "type": "null" },
+          "requested_model": { "type": "null" },
+          "actual_model": { "type": "null" },
+          "actual_provider": { "type": "null" },
+          "runner": { "type": "null" },
           "access_path": { "type": "null" },
+          "consumer_plan_used": { "type": "null" },
+          "api_route_used": { "type": "null" },
+          "openrouter_profile": { "type": "null" },
           "blocked_reasons": { "minItems": 1 }
         }
       }
@@ -178,9 +267,70 @@
           ]
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": { "const": "SELECTED" },
+          "risk_class": { "enum": ["R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] }
+        },
+        "required": ["decision", "risk_class"]
+      },
+      "then": {
+        "properties": {
+          "human_gate_required": { "const": true },
+          "human_approval_ref": { "type": "string", "minLength": 1 },
+          "audit_requirement": { "enum": ["independent", "deep", "security", "release"] },
+          "benchmark_certification_ref": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": { "const": "SELECTED" },
+          "lane_id": { "enum": ["protected_authority", "release_supervisor"] }
+        },
+        "required": ["decision", "lane_id"]
+      },
+      "then": {
+        "properties": {
+          "structured_output_mode": {
+            "enum": ["json_schema_strict", "tool_schema_strict"]
+          }
+        }
+      }
     }
   ],
   "$defs": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "cheap_file_reading",
+        "issue_triage",
+        "task_intake",
+        "task_classification",
+        "repo_cartography",
+        "architecture_synthesis",
+        "planning",
+        "implementation",
+        "security_review",
+        "release_judgment",
+        "embedded_audit",
+        "unknown"
+      ]
+    },
+    "pool": {
+      "type": "string",
+      "enum": [
+        "cheap_read",
+        "cheap_classifier",
+        "repo_cartographer",
+        "implementation",
+        "security_release",
+        "unknown"
+      ]
+    },
     "lane_id": {
       "type": "string",
       "enum": [
@@ -221,6 +371,14 @@
         "UNKNOWN"
       ]
     },
+    "provider": {
+      "type": "string",
+      "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple", "unknown"]
+    },
+    "runner": {
+      "type": "string",
+      "enum": ["codex", "claude_code", "gemini_cli", "openrouter", "local", "manual", "unknown"]
+    },
     "access_path": {
       "type": "string",
       "enum": [
@@ -247,6 +405,9 @@
       "enum": [
         "UNKNOWN_PRIVACY_CLASS",
         "UNKNOWN_RISK_CLASS",
+        "UNKNOWN_PROVIDER",
+        "UNKNOWN_MODEL",
+        "UNKNOWN_RUNNER",
         "OPENROUTER_FREE_FORBIDDEN",
         "CONSUMER_APP_AUTHORITY_FORBIDDEN",
         "PREVIEW_SOLE_HIGH_RISK_AUTHORITY",
@@ -258,7 +419,8 @@
         "PROVIDER_MODEL_DRIFT",
         "FALLBACK_WEAKENS_GUARD",
         "PRIVACY_MISMATCH",
-        "LIVE_WRITE_RUNNER_FORBIDDEN"
+        "LIVE_WRITE_RUNNER_FORBIDDEN",
+        "STRUCTURED_OUTPUT_REQUIRED"
       ]
     }
   }

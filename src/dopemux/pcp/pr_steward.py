@@ -97,6 +97,49 @@ def _default_runner(args: list[str]) -> str:
 # Public API: assess_merge_readiness
 # ---------------------------------------------------------------------------
 
+_INTAKE_CATEGORIES = (
+    "proof_refs",
+    "review_comments",
+    "issue_comments",
+    "checks",
+    "reviews",
+    "review_threads",
+    "reviewer_classifications",
+    "allowlist_diff",
+)
+
+
+def _default_completeness() -> dict[str, str]:
+    return {category: "MISSING" for category in _INTAKE_CATEGORIES}
+
+
+def _derive_intake_completeness(intake: dict) -> dict[str, str]:
+    """Derive per-category completeness from harvested intake fields."""
+    explicit = intake.get("intake_completeness")
+    if isinstance(explicit, dict):
+        completeness = _default_completeness()
+        for category in _INTAKE_CATEGORIES:
+            value = explicit.get(category)
+            if value in {"COMPLETE", "MISSING", "UNKNOWN"}:
+                completeness[category] = value
+        return completeness
+
+    completeness = _default_completeness()
+    if intake.get("proof_refs"):
+        completeness["proof_refs"] = "COMPLETE"
+    if intake.get("checks") is not None:
+        completeness["checks"] = "COMPLETE"
+    if intake.get("reviews") is not None:
+        completeness["reviews"] = "COMPLETE"
+    if intake.get("review_threads") is not None:
+        completeness["review_threads"] = "COMPLETE"
+    if intake.get("reviewer_classifications") is not None:
+        completeness["reviewer_classifications"] = "COMPLETE"
+    if "diff_escapes_allowlist" in intake:
+        completeness["allowlist_diff"] = "COMPLETE"
+    return completeness
+
+
 def assess_merge_readiness(
     intake: dict | None,
     *,
@@ -146,10 +189,21 @@ def assess_merge_readiness(
     if not isinstance(intake, dict):
         intake = {}
 
+    intake_completeness = _derive_intake_completeness(intake)
+
+    # ------------------------------------------------------------------
+    # Rule 0: incomplete intake categories block READY
+    # ------------------------------------------------------------------
+    if any(state != "COMPLETE" for state in intake_completeness.values()):
+        blocked.append("INCOMPLETE_INTAKE")
+
     # ------------------------------------------------------------------
     # Rule 1: proof_freshness != FRESH → STALE_PROOF
     # ------------------------------------------------------------------
     proof_freshness = intake.get("proof_freshness", "UNKNOWN")
+    if not intake.get("proof_refs"):
+        if "STALE_PROOF" not in blocked:
+            blocked.append("STALE_PROOF")
     if proof_freshness != "FRESH":
         if "STALE_PROOF" not in blocked:
             blocked.append("STALE_PROOF")
@@ -256,6 +310,7 @@ def assess_merge_readiness(
         "status": status,
         "blocked_reasons": blocked,
         "intake": canonical_intake,
+        "intake_completeness": intake_completeness,
         "advisory": True,
         "created_at": created_at,
     }
@@ -398,6 +453,16 @@ def harvest_pr_intake(
         "diff_escapes_allowlist": False,
         "security_release_required": False,
         "security_release_approved": False,
+        "intake_completeness": {
+            "proof_refs": "MISSING",
+            "review_comments": "MISSING",
+            "issue_comments": "MISSING",
+            "checks": "COMPLETE",
+            "reviews": "COMPLETE",
+            "review_threads": "COMPLETE",
+            "reviewer_classifications": "COMPLETE",
+            "allowlist_diff": "UNKNOWN",
+        },
     }
 
     pr_ref = {
