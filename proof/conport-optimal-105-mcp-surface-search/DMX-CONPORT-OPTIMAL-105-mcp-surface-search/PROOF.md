@@ -17,6 +17,30 @@
 - Added focused MCP search tests in:
   - `docker/mcp-servers-source/conport/tests/test_mcp_search.py`
 
+## Post-Review Restack + Encoding Fix (2026-06-22)
+
+During PR review the branch was rebased onto packet 104
+(`codex/conport-optimal-104-mcp-surface-custom-data`, tip `c6434014e`) so the two
+ConPort-surface PRs stack and merge conflict-free. The conflicts were purely
+additive (shared import line, dispatch dict, tool-method block, schema tail) and
+were resolved as unions of both tool families.
+
+A correctness defect was found and fixed during the restack:
+
+- **Bug**: `search_content` injected `workspace_id` raw into the
+  `/api/search/{workspace_id}` path. aiohttp routes `{workspace_id}` as a single
+  path segment, so a real path-shaped workspace id (e.g.
+  `/Users/hue/code/dopemux-mvp`) produced `/api/search//Users/...` and 404'd. The
+  original proof masked this by seeding under the slash-free slug
+  `packet-105-live`.
+- **Fix**: percent-encode the workspace id with `quote(workspace_id, safe='')` at
+  all three call sites (`enhanced_server._search_content_tool`,
+  `conport_mcp_stdio.search_content`, `server.search_content`).
+- **Regression coverage**: added
+  `test_jsonrpc_search_content_url_encodes_path_workspace_id` and
+  `test_fastmcp_search_content_url_encodes_path_workspace_id`, which assert the
+  built URL contains `%2FUsers%2F...` and never `/api/search//Users`.
+
 ## Analysis Performed
 
 - Read `AGENTS.md`.
@@ -131,14 +155,64 @@ curl -sS -X POST http://localhost:3004/mcp \
 
 Observed: JSON-RPC search result contained the seeded keyword.
 
+### Integrated coexistence + path-workspace e2e (post-restack, 2026-06-22)
+
+Run against the rebased branch (104 + 105 stacked) without disturbing the live
+`mcp-conport` container.
+
+PASS — full conport unit suite on the combined branch:
+
+```text
+python3 -m pytest docker/mcp-servers-source/conport/tests/ -q
+```
+
+Observed: 42 passed (104 `test_mcp_custom_data` + 105 `test_mcp_search` coexisting).
+
+PASS — built the combined image and ran an ephemeral container on alt port
+`3014:3004` against the real DB/network:
+
+```text
+docker build -f docker/mcp-servers/conport/Dockerfile -t dopemux-conport:stack105 .
+docker run -d --name conport-stack105-test --network dopemux-network -p 3014:3004 <db/redis/qdrant env> dopemux-conport:stack105
+```
+
+- `tools/list` advertised all 13 tools including `conport_search_content` and the
+  three `conport_*_custom_data` tools.
+- `conport_search_content` with a **path-shaped** workspace
+  (`/tmp/conport-stack105-e2e`) returned a seeded decision — the exact case that
+  404'd before the encoding fix.
+- `conport_save/get/delete_custom_data` round-trip succeeded under the same path
+  workspace.
+- Negative control: `GET /api/search/<raw-path>` → 404; `GET /api/search/<%2F-encoded>` → 200.
+
+Cleanup: seeded throwaway decision deleted from the DB (`DELETE 1`, verified 0
+remaining), ephemeral container and `dopemux-conport:stack105` image removed, live
+`mcp-conport` confirmed still healthy (`health=200`).
+
 ## Residual Risk
 
-- The live `mcp-conport` container was rebuilt from packet 105's `origin/main`-based worktree. It validates packet 105, but it does not prove coexistence with unmerged packet 104 custom-data MCP additions.
-- The seeded live validation intentionally wrote one decision record to workspace `packet-105-live` to prove live search behavior.
-- Full suite validation was not run; validation stayed packet-scoped per allowlist and blast radius.
+- Coexistence with packet 104 is now proven: the combined image advertises and
+  serves both tool families over JSON-RPC, validated end-to-end under a path-shaped
+  workspace.
+- The original `packet-105-live` seeded decision (slug workspace) from the
+  pre-restack validation remains in the DB; harmless, isolated under a non-path
+  workspace id.
+- The raw-path-segment pattern is shared by pre-existing tools
+  (`get_active_work`/`get_recent_activity`/`get_context`) which avoid the bug only
+  because `enhanced_server` dispatches them in-process. They remain latently
+  affected for any future HTTP self-call refactor — flagged as a separate
+  follow-up, intentionally out of scope here.
+- Full repository suite was not run; validation stayed conport-surface-scoped per
+  blast radius.
 
 ## Commit / PR
 
-- Implementation commit: `33691c7be53903caafd7eb0b3261bfc19d0349e8`
-- PR: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/959`
-- Note: this proof file was updated after PR creation in a proof-only follow-up commit, so the branch tip may be newer than the implementation commit above.
+- Original implementation commit: `33691c7be53903caafd7eb0b3261bfc19d0349e8`
+- Post-restack: rebased onto `codex/conport-optimal-104-mcp-surface-custom-data`
+  (`c6434014e`); implementation commit replayed as `c76dfbf3e` with the
+  workspace_id encoding fix folded into the conflict resolution.
+- PR: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/959` — base retargeted to
+  the packet 104 branch so it stacks and merges conflict-free; auto-retargets to
+  `main` once 104 merges.
+- Note: this proof was updated post-restack; see "Post-Review Restack + Encoding
+  Fix" and "Integrated coexistence + path-workspace e2e".
