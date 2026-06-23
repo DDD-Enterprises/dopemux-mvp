@@ -1,0 +1,90 @@
+{
+  "id": "TP-DMX-OPENCLAW-DCP-BENCHMARK-HARNESS-0002",
+  "project": "dopemux-mvp",
+  "target": "Add a deterministic OpenClaw/DCP benchmark-result contract adapter for the existing offline-first RTE structured benchmark harness.",
+  "invariants": [
+    "No provider calls are made.",
+    "No OpenClaw runtime routing is wired.",
+    "No production or high-trust route is certified without schema-valid benchmark evidence.",
+    "Benchmark results must validate against contracts/openclaw-dcp-routing/benchmark_result.schema.json.",
+    "Provider drift, privacy violations, schema failures, JSON failures, or unsupported claims fail closed."
+  ],
+  "depends_on": [
+    "PR #954 merged",
+    "TP-DMX-ROUTING-CONTRACT-CANONICALIZATION-0001"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "OPENCLAW-DCP-ROUTING-FINISH-LINE",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-DMX-ROUTING-CONTRACT-CANONICALIZATION-0001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/openclaw-dcp-benchmark-harness-0002",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(dcp): emit OpenClaw benchmark result contract",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-OPENCLAW-DCP-BENCHMARK-HARNESS-0002.json",
+      "services/repo-truth-extractor/benchmarking/openclaw_dcp_benchmark_result.py",
+      "services/repo-truth-extractor/tests/test_openclaw_dcp_benchmark_result.py"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-OPENCLAW-DCP-BENCHMARK-HARNESS-0002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest services/repo-truth-extractor/tests/test_openclaw_dcp_benchmark_result.py services/repo-truth-extractor/tests/test_openrouter_structured_benchmark.py -q",
+      "git diff --check",
+      "pre-commit run --files task-packets/generated/TP-DMX-OPENCLAW-DCP-BENCHMARK-HARNESS-0002.json services/repo-truth-extractor/benchmarking/openclaw_dcp_benchmark_result.py services/repo-truth-extractor/tests/test_openclaw_dcp_benchmark_result.py"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): emit OpenClaw benchmark result contract",
+    "body": "Adds a deterministic adapter from the existing offline-first RTE structured benchmark harness into the OpenClaw/DCP benchmark_result.schema.json contract. No provider calls, OpenClaw runtime wiring, live routing, or production certification are enabled.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect the canonical benchmark-result schema and existing RTE structured benchmark harness.",
+      "validation": [
+        "Observed harness behavior is reused instead of duplicated.",
+        "No live provider execution path is added."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add a deterministic adapter that emits benchmark_result.schema.json-conforming records.",
+      "validation": [
+        "CERTIFY is impossible unless JSON validity, schema validity, evidence grounding, unsupported-claim, hallucinated-file, contradiction-recall, core-field-stability, provider-drift, and privacy checks satisfy the contract.",
+        "Provider drift and schema failures produce schema-valid DO_NOT_CERTIFY records."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Validate packet, adapter tests, existing structured benchmark tests, diff hygiene, and pre-commit scope.",
+      "validation": [
+        "Task packet validates against dopetask-canonical-spec.json.",
+        "Focused pytest suite passes.",
+        "git diff --check passes.",
+        "Pre-commit is run on touched files when available."
+      ]
+    }
+  ]
+}
