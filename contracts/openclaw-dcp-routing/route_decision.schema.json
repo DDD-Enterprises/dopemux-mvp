@@ -356,6 +356,29 @@
       "if": {
         "properties": {
           "decision_status": { "const": "SELECTED" },
+          "access_path": { "const": "openrouter_paid" }
+        }
+      },
+      "then": {
+        "properties": {
+          "openrouter_profile": {
+            "type": "string",
+            "enum": [
+              "or_free_sandbox",
+              "or_low_cost_public",
+              "or_paid_private_controlled",
+              "or_structured_noncritical",
+              "or_challenger",
+              "or_emergency_fallback"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" },
           "provider": { "const": "openrouter" },
           "privacy_class": {
             "enum": [

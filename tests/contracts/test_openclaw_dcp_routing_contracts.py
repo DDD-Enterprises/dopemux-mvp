@@ -275,6 +275,37 @@ def test_selected_openrouter_routes_require_named_matching_profile():
         validate(instance=mismatched_profile, schema=schema)
 
 
+def test_selected_openrouter_paid_access_path_requires_named_profile():
+    """Regression for PR Steward Item 1.
+
+    A ``SELECTED`` decision whose ``access_path`` is ``openrouter_paid`` must carry a
+    named (non-null) ``openrouter_profile``. The access_path determines the routing
+    plane, so this holds regardless of the ``provider`` field — otherwise a decision
+    can launder past every per-profile allowlist with ``openrouter_profile: null``.
+    """
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    example = _json(EXAMPLE_ROOT / "R2_TEST_ONLY.json")
+
+    # Baseline: an openrouter_paid route with a named profile validates.
+    assert example["access_path"] == "openrouter_paid"
+    assert example["openrouter_profile"] == "or_low_cost_public"
+    validate(instance=example, schema=schema)
+
+    # Null profile on an openrouter_paid route must FAIL — including when the
+    # provider field is set to a non-openrouter value, which is exactly the
+    # laundering hole the provider-keyed guard did not close.
+    for provider in ["openrouter", "openai", "unknown"]:
+        candidate = copy.deepcopy(example)
+        candidate["provider"] = provider
+        candidate["openrouter_profile"] = None
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+    # Every shipped example decision (R0-R6 + UNKNOWN) still validates.
+    for example_name in EXAMPLE_FILES:
+        validate(instance=_json(EXAMPLE_ROOT / example_name), schema=schema)
+
+
 def test_selected_sensitive_openrouter_routes_require_human_approval():
     schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
     example = _json(EXAMPLE_ROOT / "R2_TEST_ONLY.json")
