@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
+from .coldstart import render_markdown as render_coldstart_markdown
 from .dedupe import build_collision_report
 from .model import (
     ACTIVE_DOPEMUX_DB_SLUG,
@@ -371,6 +372,13 @@ def _write_json(path: Path | None, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _write_md(path: Path | None, payload: dict) -> None:
+    if path is None:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(render_coldstart_markdown(payload), encoding="utf-8")
+
+
 def import_pack(args: argparse.Namespace) -> dict:
     input_dir = args.input.resolve()
     _require_pack(input_dir)
@@ -455,6 +463,7 @@ def import_pack(args: argparse.Namespace) -> dict:
             resolve_report = build_resolve_report(conn, REPO_ROOT)
             report["resolve"] = resolve_report
             _write_json(args.emit_coldstart, resolve_report["coldstart"])
+            _write_md(args.emit_coldstart_md, resolve_report["coldstart"])
             _write_json(args.emit_conflicts, build_collision_report(conn))
         if args.emit_manifest:
             manifest = build_canonical_datastore_manifest(
@@ -492,6 +501,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--resolve-current", action="store_true")
     parser.add_argument("--emit-report", type=Path)
     parser.add_argument("--emit-coldstart", type=Path)
+    parser.add_argument(
+        "--emit-coldstart-md",
+        type=Path,
+        help="(optional) emit a Markdown coldstart reconciliation report alongside --emit-coldstart",
+    )
     parser.add_argument("--emit-conflicts", type=Path)
     parser.add_argument(
         "--emit-manifest",

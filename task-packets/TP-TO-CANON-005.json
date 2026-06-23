@@ -1,0 +1,130 @@
+{
+  "id": "TP-TO-CANON-005",
+  "project": "dopemux-mvp",
+  "target": "Materialize the coldstart reconciliation decision: deterministically render the committed COLDSTART_RECONCILIATION.json into a tracked Markdown decision report. Offline, presentation-only; no new analysis and no live state mutation.",
+  "invariants": [
+    "No live current-tasks.db reads or writes.",
+    "Renderer input is the committed audit_inputs COLDSTART_RECONCILIATION.json, not the raw evidence pack.",
+    "Markdown output is deterministic and byte-stable across re-runs (stable item ordering, no wall-clock).",
+    "The point_in_time block (valid_as_of_utc 2026-06-22T19:28:14Z) is carried verbatim into the report.",
+    "Do not fix live status-label drift (100/101 terminal-but-in-progress) and do not unblock TP-DMX-COLDSTART-INIT-UNIFY-102 — those are live PM writes outside this packet.",
+    "100, 101, and 109 remain repo/PR/proof observed (accepted_do_not_rerun); 102 remains blocked.",
+    "Raw note bodies and FTS rows must not be emitted."
+  ],
+  "depends_on": [
+    "TP-TO-CANON-004"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TO-CANON",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-TO-CANON-004",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/to-canon-tail-005-007",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(task-orchestrator): materialize coldstart reconciliation report",
+    "allowlist": [
+      "task-packets/TP-TO-CANON-005.json",
+      "tools/task_orchestrator_reconcile/coldstart.py",
+      "tools/task_orchestrator_reconcile/import_pack.py",
+      "tests/tools/test_task_orchestrator_reconcile_coldstart.py",
+      "docs/05-audit-reports/task-orchestrator/coldstart-reconciliation-20260622.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-TO-CANON-005.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m tools.task_orchestrator_reconcile.coldstart --from-json audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json --emit-md docs/05-audit-reports/task-orchestrator/coldstart-reconciliation-20260622.md",
+      "python -m tools.task_orchestrator_reconcile.coldstart --from-json audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json --emit-md /tmp/coldstart-rerun.md && diff docs/05-audit-reports/task-orchestrator/coldstart-reconciliation-20260622.md /tmp/coldstart-rerun.md",
+      "python -m pytest -q tests/tools/test_task_orchestrator_reconcile_coldstart.py",
+      "python -m compileall -q tools/task_orchestrator_reconcile tests/tools",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(task-orchestrator): materialize coldstart reconciliation report",
+    "body": "## Summary\n- add a deterministic Markdown renderer over the committed COLDSTART_RECONCILIATION.json (offline; no raw pack, no live DB)\n- emit docs/05-audit-reports/task-orchestrator/coldstart-reconciliation-20260622.md (done/blocked/queue/supervisor/operator-gate + active root, with PR/proof refs)\n- carry the point_in_time provenance banner verbatim\n\n## Validation\n- python -m jsonschema -i task-packets/TP-TO-CANON-005.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json\n- re-render is byte-stable (diff clean)\n- python -m pytest -q tests/tools/test_task_orchestrator_reconcile_coldstart.py\n- git diff --check\n\nNo live current-tasks.db writes; no status-drift fix; no 102 unblock; no raw note bodies or FTS rows.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "add-renderer",
+      "task": "Add a deterministic render_markdown(coldstart: dict) -> str to tools/task_orchestrator_reconcile/coldstart.py that groups items by classification (active_root_in_progress, repo_pr_proof_observed, explicit_blocked, operator_gate, queue_only_supervisor_required, queue_only) with stable ordering, renders the point_in_time banner verbatim, and includes PR/proof evidence refs. Wire a `python -m tools.task_orchestrator_reconcile.coldstart --from-json <path> --emit-md <path>` CLI that reads the committed JSON. Also add an --emit-coldstart-md option to import_pack.py that renders alongside --emit-coldstart during a full import.",
+      "requirements": [
+        "Renderer input is the committed JSON artifact; no raw pack or live DB access.",
+        "Output is byte-stable across re-runs (no wall-clock, deterministic ordering).",
+        "point_in_time.valid_as_of_utc and basis are reproduced verbatim."
+      ],
+      "commands": [
+        "python -m tools.task_orchestrator_reconcile.coldstart --from-json audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json --emit-md docs/05-audit-reports/task-orchestrator/coldstart-reconciliation-20260622.md"
+      ],
+      "expected_files": [
+        "tools/task_orchestrator_reconcile/coldstart.py",
+        "tools/task_orchestrator_reconcile/import_pack.py",
+        "docs/05-audit-reports/task-orchestrator/coldstart-reconciliation-20260622.md"
+      ],
+      "validation": [
+        "Re-rendering the report produces a byte-identical file (diff clean)."
+      ],
+      "context_files": [
+        "audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json",
+        "tools/task_orchestrator_reconcile/coldstart.py",
+        "tools/task_orchestrator_reconcile/resolve.py"
+      ]
+    },
+    {
+      "id": "test-renderer",
+      "task": "Add tests/tools/test_task_orchestrator_reconcile_coldstart.py asserting: render is deterministic (same input -> same output), 100/101/109 are classified accepted_do_not_rerun, 102 stays keep_blocked, the operator gate is preserved, and no live-DB or raw-pack access occurs.",
+      "requirements": [
+        "Tests run offline against a fixture or the committed JSON.",
+        "Assert byte-stability and the do-not-rerun / keep-blocked decisions."
+      ],
+      "commands": [
+        "python -m pytest -q tests/tools/test_task_orchestrator_reconcile_coldstart.py"
+      ],
+      "expected_files": [
+        "tests/tools/test_task_orchestrator_reconcile_coldstart.py"
+      ],
+      "validation": [
+        "Targeted pytest passes."
+      ],
+      "context_files": [
+        "tests/tools/test_task_orchestrator_reconcile_import.py"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate the packet against the canonical spec, confirm byte-stable regeneration, and check diff scope.",
+      "requirements": [
+        "Report PASS / FAIL / NOT_RUN truthfully."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-TO-CANON-005.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check"
+      ],
+      "validation": [
+        "Schema validation passes and diff scope is within the allowlist."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    }
+  ]
+}
