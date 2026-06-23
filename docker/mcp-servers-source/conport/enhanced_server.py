@@ -1424,13 +1424,25 @@ class EnhancedConPortServer:
             return {'error': str(e)}
 
     async def search_content(self, request):
-        """Search decisions and progress entries"""
+        """
+        Search ConPort's structured decision/progress records.
+
+        Query parameter `type` defaults to `all`. Supported values:
+        `decisions` searches only decision rows, `progress` searches only
+        progress_entries rows, and `all` searches both. Semantic/vector
+        retrieval is delegated to dope-context per
+        docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md.
+        """
         workspace_id = request.match_info['workspace_id']
         query = request.query.get('q', '')
         search_type = request.query.get('type', 'all')  # 'decisions', 'progress', 'all'
 
         if not query:
             return web.json_response({'error': 'Query parameter q is required'}, status=400)
+        if search_type not in {'decisions', 'progress', 'all'}:
+            return web.json_response({
+                'error': "search_type must be one of: decisions, progress, all"
+            }, status=422)
 
         try:
             # Create cache key
