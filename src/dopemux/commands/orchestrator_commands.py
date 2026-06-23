@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
+import sqlite3
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
 import click
 
+from dopemux.orchestrator.canonical_readview import read_canonical_view
 from dopemux.orchestrator.hooks import (
     audit_hook_registry_file,
     hook_registry_list_payload,
@@ -43,6 +46,18 @@ from dopemux.orchestrator.workflow_dsl import validate_workflow_dsl_file
 
 
 DEFAULT_PROJECT_ID = "dopemux-mvp"
+
+# ---------------------------------------------------------------------------
+# Canonical-store read view — feature flag
+# ---------------------------------------------------------------------------
+_CANONICAL_STORE_FLAG = "CANONICAL_STORE_READ_VIEW_ENABLED"
+
+
+def _canonical_store_enabled() -> bool:
+    """Return True when the canonical-store read view feature flag is set."""
+    return os.getenv(_CANONICAL_STORE_FLAG, "").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
 
 
 async def pm_get_priority_queue(project_id: str):
@@ -1067,6 +1082,87 @@ def orchestrator_daily(project_id: str, json_output: bool):
     else:
         lines.append("state: empty")
     _emit_lines(lines)
+
+
+@orchestrator_group.group("canonical-store")
+def orchestrator_canonical_store():
+    """Read-only point-in-time view over an offline canonical reconciliation store.
+
+    This is a DERIVED, read-only view — NOT a canonical authority.
+    It never opens or writes a live current-tasks.db.
+    Gate: set CANONICAL_STORE_READ_VIEW_ENABLED=true to enable.
+    """
+
+
+@orchestrator_canonical_store.command("inspect")
+@click.option(
+    "--db",
+    "db_path",
+    required=True,
+    type=click.Path(path_type=Path),
+    help="Path to the offline canonical reconciliation SQLite file.",
+)
+@click.option(
+    "--limit",
+    "limit",
+    type=int,
+    default=None,
+    help="Cap the number of work items returned (full item_count still reported).",
+)
+@click.option(
+    "--json-output",
+    "json_output",
+    is_flag=True,
+    help="Emit output as JSON.",
+)
+def orchestrator_canonical_store_inspect(
+    db_path: Path,
+    limit: Optional[int],
+    json_output: bool,
+):
+    """Inspect the offline canonical reconciliation store (read-only, point-in-time).
+
+    Prints provenance-tagged rows and a valid_as_of banner.
+    The store is opened strictly read-only (sqlite mode=ro) and is NEVER
+    a canonical authority.  Default CLI behavior is unchanged when the
+    feature flag is off.
+    """
+    if not _canonical_store_enabled():
+        raise click.ClickException(
+            f"canonical-store read view is disabled; "
+            f"set {_CANONICAL_STORE_FLAG}=true "
+            f"(read-only, point-in-time view)."
+        )
+    if not db_path.exists():
+        raise click.ClickException(f"canonical store not found: {db_path}")
+    try:
+        view = read_canonical_view(db_path, limit=limit)
+    except (ValueError, FileNotFoundError) as exc:
+        raise click.ClickException(str(exc)) from exc
+    except sqlite3.DatabaseError as exc:
+        raise click.ClickException(
+            f"sqlite error reading canonical store: {exc}"
+        ) from exc
+
+    if json_output:
+        click.echo(json.dumps(view, indent=2, sort_keys=True, default=str))
+        return
+
+    # Human-readable banner — makes point-in-time nature explicit.
+    click.echo(
+        f"[canonical-store] read-only point-in-time view | "
+        f"valid_as_of={view['valid_as_of']} | "
+        f"source_dbs={view['source_db_count']} | "
+        f"items={view['item_count']}"
+    )
+    for item in view["items"]:
+        click.echo(
+            f"  {item.get('canonical_identity', '-')} "
+            f"role={item.get('role', '-')} "
+            f"status={item.get('status_label', '-')} "
+            f"src={item.get('source_db_slug', '-')}/"
+            f"{item.get('source_row_id', '-')}"
+        )
 
 
 @orchestrator_group.command("tui")
