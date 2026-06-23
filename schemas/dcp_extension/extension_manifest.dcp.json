@@ -45,8 +45,7 @@
       "dopetask",
       "dopemux-cli",
       "pr-steward",
-      "leantime",
-      "dopemux"
+      "leantime"
     ]
   },
   "schemas": {
