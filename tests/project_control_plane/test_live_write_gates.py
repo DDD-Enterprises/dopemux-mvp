@@ -97,6 +97,8 @@ def _ready_assertion(**overrides) -> dict:
         "blocked_reasons": [],
         "live_write_performed": False,
         "created_at": "2026-06-22T00:00:00Z",
+        "valid_until": "2999-01-01T00:00:00Z",
+        "payload_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     }
     base.update(overrides)
     return base
@@ -403,3 +405,57 @@ def test_ready_rejected_when_rollback_plan_is_empty_string():
         "Expected ≥1 schema error for READY with rollback.plan='' but got none. "
         "Empty-string rollback plan is a fail-open — READY gate must enforce minLength: 1."
     )
+
+
+# ---------------------------------------------------------------------------
+# 9. valid_until + payload_digest READY-gate enforcement (Packet 11 amendment)
+#    These bind a READY assertion to an expiry and an exact operation payload.
+#    The schema enforces presence + format under READY; the consuming bridge
+#    enforces the time comparison and the hash comparison.
+# ---------------------------------------------------------------------------
+
+def test_ready_rejected_when_valid_until_missing():
+    """READY must be rejected when valid_until is absent."""
+    instance = _ready_assertion()
+    del instance["valid_until"]
+    assert len(_schema_errors(instance)) >= 1
+
+
+def test_ready_rejected_when_valid_until_is_null():
+    """READY must be rejected when valid_until is null."""
+    instance = _ready_assertion(valid_until=None)
+    assert len(_schema_errors(instance)) >= 1
+
+
+def test_ready_rejected_when_payload_digest_missing():
+    """READY must be rejected when payload_digest is absent."""
+    instance = _ready_assertion()
+    del instance["payload_digest"]
+    assert len(_schema_errors(instance)) >= 1
+
+
+def test_ready_rejected_when_payload_digest_is_null():
+    """READY must be rejected when payload_digest is null."""
+    instance = _ready_assertion(payload_digest=None)
+    assert len(_schema_errors(instance)) >= 1
+
+
+def test_ready_rejected_when_payload_digest_bad_format():
+    """READY must be rejected when payload_digest is not a 64-char sha256 hex."""
+    instance = _ready_assertion(payload_digest="not-a-real-sha256-digest")
+    assert len(_schema_errors(instance)) >= 1
+
+
+def test_ready_rejected_when_payload_digest_is_uppercase():
+    """READY must be rejected when payload_digest uses uppercase hex (pattern is [0-9a-f])."""
+    instance = _ready_assertion(payload_digest="A" * 64)
+    assert len(_schema_errors(instance)) >= 1
+
+
+def test_blocked_assertion_may_omit_valid_until_and_payload_digest():
+    """Non-READY (BLOCKED) assertions are additive-compatible: they may omit the
+    new fields entirely (the fields are required only under the READY gate)."""
+    instance = _ready_assertion(status="BLOCKED", blocked_reasons=["MISSING_APPROVAL"])
+    del instance["valid_until"]
+    del instance["payload_digest"]
+    assert _schema_errors(instance) == []
