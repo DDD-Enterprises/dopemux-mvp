@@ -2,9 +2,9 @@
 
 ## Result
 
-Status: PASS on targeted local-dev validation.
+Status: PASS on targeted local-dev validation and 2026-06-22 live verify.
 
-Scope: migration packaging, explicit migration gate runtime, idempotent migration fixes, packet/proof artifacts. No production database mutation was run.
+Scope: migration packaging, explicit migration gate runtime, idempotent migration fixes, packet/proof artifacts, and live local-dev ConPort verify. No migration apply was run during the 2026-06-22 continuation.
 
 ## Authority
 
@@ -47,6 +47,7 @@ Scope: migration packaging, explicit migration gate runtime, idempotent migratio
   - `007_worktree_support_simple.sql` uses idempotent column/index creation.
 - Documented gate usage in `migrations/README.md`.
 - Added targeted proof tests, research, plan, and local schema backup.
+- Rotated the local-dev `AGE_PASSWORD` secret after transcript exposure, reset the `dopemux_age` role password over the trusted local socket, and recreated `postgres`, `conport`, and `dopecon-bridge` from the updated compose env. Secret values are intentionally omitted from proof.
 
 ## Validation
 
@@ -79,6 +80,15 @@ PASS:
   - Result: `200`
 - `docker exec mcp-conport sh -lc 'python /app/migrations/conport_migration_gate.py verify --database-url "$DATABASE_URL"'`
   - Result: pass; verified migrations `001`, `002`, `003`, `004`, and `007`
+- 2026-06-22 credential rotation and live verify continuation:
+  - `docker exec mcp-conport ... psycopg2.connect(os.environ["DATABASE_URL"])`
+    - Result: exit 0; connected to `dopemux_knowledge_graph` as `dopemux_age`
+  - `docker exec dopemux-postgres-age ... PGPASSWORD="$POSTGRES_PASSWORD" psql -h <bridge-ip> ...`
+    - Result: exit 0; TCP SCRAM auth succeeded as `dopemux_age`
+  - `docker compose -f compose.yml ps --format json`
+    - Result: `postgres`, `conport`, and `dopecon-bridge` running healthy after recreation
+  - `docker exec mcp-conport sh -lc 'python /app/migrations/conport_migration_gate.py verify --database-url "$DATABASE_URL"'`
+    - Result: exit 0; pass; verified `001_enhanced_decision_model.sql`, `002_decision_patterns_table.sql`, `003_multi_tenancy_foundation.sql`, `004_unified_query_indexes.sql`, and `007_worktree_support_simple.sql`
 - `pre-commit run --files <changed packet files>`
   - Result: exit 0; applicable hooks passed, unrelated file-pattern hooks skipped
 - PR CI after review fix:
