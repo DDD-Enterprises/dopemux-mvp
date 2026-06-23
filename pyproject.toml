@@ -143,6 +143,7 @@ dopemux-mobile = "dopemux.mobile.main:main"
 dopemux-github = "dopemux_github_specialist.cli:main"
 dopemux-pr-merge = "dopemux_pr_merge_specialist.cli:main"
 dopemux-pr-steward = "dopemux_pr_steward.cli:main"
+dopemux-pcp = "dopemux.pcp.cli:pcp"
 
 [tool.setuptools]
 packages = [
@@ -181,6 +182,8 @@ packages = [
     "dopemux.orchestrator.automation",
     "dopemux.orchestrator.ui",
     "dopemux.orchestrator.validation",
+    "dopemux.pcp",
+    "dopemux.pcp.bridge",
     "dopemux.pm",
     "dopemux.pm.adapters",
     "dopemux.roles",
