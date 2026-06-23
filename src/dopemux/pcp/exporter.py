@@ -31,14 +31,31 @@ from jsonschema import Draft202012Validator
 # validator is available even when the package is imported from any CWD.
 # ---------------------------------------------------------------------------
 _HERE = pathlib.Path(__file__).resolve()
-# src/dopemux/pcp/exporter.py  →  3 levels up = repo root
-_REPO_ROOT = _HERE.parent.parent.parent.parent
-_SCHEMA_PATH = _REPO_ROOT / "schemas" / "project_control_plane" / "project_evidence_export.schema.json"
+_SCHEMA_REL = pathlib.Path("schemas") / "project_control_plane" / "project_evidence_export.schema.json"
+_VALIDATOR: Draft202012Validator | None = None
 
-with _SCHEMA_PATH.open() as _fh:
-    _SCHEMA: dict = json.load(_fh)
 
-_VALIDATOR = Draft202012Validator(_SCHEMA)
+def _schema_candidates() -> list[pathlib.Path]:
+    return [
+        _HERE.parents[3] / _SCHEMA_REL,
+        _HERE.parent / "schemas" / "project_evidence_export.schema.json",
+    ]
+
+
+def _load_validator() -> Draft202012Validator:
+    global _VALIDATOR
+    if _VALIDATOR is not None:
+        return _VALIDATOR
+    for candidate in _schema_candidates():
+        if candidate.is_file():
+            with candidate.open() as fh:
+                schema = json.load(fh)
+            _VALIDATOR = Draft202012Validator(schema)
+            return _VALIDATOR
+    raise FileNotFoundError(
+        "project_evidence_export schema not found; checked: "
+        + ", ".join(str(p) for p in _schema_candidates())
+    )
 
 # Authority doc filenames probed in every repo (generic, order preserved).
 _AUTHORITY_DOC_NAMES = ["AGENTS.md", "RULES.md", "CLAUDE.md"]
@@ -293,7 +310,7 @@ def export_evidence(repo_path: str | os.PathLike = ".") -> dict:
     # ------------------------------------------------------------------
     # 7. Defensive schema validation before returning.
     # ------------------------------------------------------------------
-    errors = list(_VALIDATOR.iter_errors(evidence))
+    errors = list(_load_validator().iter_errors(evidence))
     if errors:
         messages = "; ".join(str(e.message) for e in errors[:5])
         raise ValueError(

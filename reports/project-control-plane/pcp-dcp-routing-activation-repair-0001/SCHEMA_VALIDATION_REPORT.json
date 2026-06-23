@@ -1,0 +1,15 @@
+{
+  "bundle_id": "META-TP-DMX-PCP-DCP-ROUTING-ACTIVATION-REPAIR-0001",
+  "validator": "jsonschema.Draft202012Validator.check_schema",
+  "results": [
+    {"path": "schemas/project_control_plane/authority_map.schema.json", "status": "PASS"},
+    {"path": "schemas/project_control_plane/extension_manifest.schema.json", "status": "PASS"},
+    {"path": "schemas/project_control_plane/live_write_ready.schema.json", "status": "PASS"},
+    {"path": "schemas/project_control_plane/merge_readiness.schema.json", "status": "PASS"},
+    {"path": "schemas/dcp_extension/proof_family.schema.json", "status": "PASS"},
+    {"path": "schemas/dcp_extension/proof_family.dcp.json", "status": "PASS"},
+    {"path": "schemas/dcp_extension/routing/route_decision.schema.json", "status": "PASS"},
+    {"path": "schemas/dcp_extension/routing/lane_engine.schema.json", "status": "PASS"},
+    {"path": "schemas/dcp_extension/routing/openclaw_route.schema.json", "status": "PASS"}
+  ]
+}

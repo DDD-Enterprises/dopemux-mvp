@@ -1,0 +1,30 @@
+{
+  "handoff_id": "META-TP-DMX-PCP-DCP-ROUTING-ACTIVATION-REPAIR-0001-HANDOFF-001",
+  "source_skill": "grok-code-superpowers-pal",
+  "target_skill": "pr-steward",
+  "run_id": "grok-code-20260623-activation-repair",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "grok/pcp-dcp-routing-activation-repair-0001",
+  "base_branch": "main",
+  "governing_posture": "GO_SUPERVISED_FINAL_CREATION",
+  "recommended_next_step": "AWAIT_REVIEW",
+  "authoritative_artifacts": [
+    "PROOF_BUNDLE.json",
+    "EVIDENCE_LEDGER.md",
+    "EMBEDDED_AUDIT_REPORT.md",
+    "SECURITY_AUDIT_REPORT.md"
+  ],
+  "supporting_artifacts": [
+    "COMMAND_LOG.md",
+    "DIFF.patch",
+    "SCHEMA_VALIDATION_REPORT.json",
+    "TEST_RESULTS.md"
+  ],
+  "warnings": [],
+  "blocking_reasons": [],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "grok-code",
+    "created_at": "2026-06-23T12:00:00Z"
+  }
+}

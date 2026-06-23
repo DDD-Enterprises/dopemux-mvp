@@ -60,6 +60,19 @@ _CLEAN_PR_REF = {
 _HEAD_SHA = "a" * 40
 
 
+def _complete_intake_completeness() -> dict[str, str]:
+    return {
+        "proof_refs": "COMPLETE",
+        "review_comments": "COMPLETE",
+        "issue_comments": "COMPLETE",
+        "checks": "COMPLETE",
+        "reviews": "COMPLETE",
+        "review_threads": "COMPLETE",
+        "reviewer_classifications": "COMPLETE",
+        "allowlist_diff": "COMPLETE",
+    }
+
+
 def _clean_intake(**overrides: Any) -> dict:
     """Return a clean (all-gates-clear) intake dict, with optional field overrides."""
     base: dict[str, Any] = {
@@ -77,6 +90,7 @@ def _clean_intake(**overrides: Any) -> dict:
         "diff_escapes_allowlist": False,
         "security_release_required": False,
         "security_release_approved": False,
+        "intake_completeness": _complete_intake_completeness(),
     }
     base.update(overrides)
     return base
@@ -490,6 +504,7 @@ class TestSchemaRejectsReadyWithUnapprovedSecurityGate:
             "head_sha": _HEAD_SHA,
             "status": "READY",
             "blocked_reasons": [],
+            "intake_completeness": _complete_intake_completeness(),
             "advisory": True,
             "created_at": _NOW,
             "intake": {
@@ -515,6 +530,55 @@ class TestSchemaRejectsReadyWithUnapprovedSecurityGate:
             "Schema gate (e) should reject READY with unapproved security gate, "
             f"but no errors were found. Signal: {bad_signal}"
         )
+
+
+class TestIntakeCompleteness:
+    def test_missing_proof_refs_blocks_ready(self):
+        completeness = _complete_intake_completeness()
+        completeness["proof_refs"] = "MISSING"
+        intake = _clean_intake(
+            proof_refs=[],
+            proof_freshness="MISSING",
+            intake_completeness=completeness,
+        )
+        result = _assess(intake)
+        assert result["status"] != "READY"
+        assert "STALE_PROOF" in result["blocked_reasons"]
+        assert "INCOMPLETE_INTAKE" in result["blocked_reasons"]
+
+    def test_incomplete_categories_block_ready(self):
+        completeness = _complete_intake_completeness()
+        completeness["issue_comments"] = "MISSING"
+        intake = _clean_intake(intake_completeness=completeness)
+        result = _assess(intake)
+        assert result["status"] != "READY"
+        assert "INCOMPLETE_INTAKE" in result["blocked_reasons"]
+
+    def test_harvest_intake_is_not_ready(self):
+        fake_gh = {
+            "number": 1,
+            "headRefName": "feature/x",
+            "baseRefName": "main",
+            "headRefOid": _HEAD_SHA,
+            "files": [{"path": "src/a.py"}],
+            "commits": [{"oid": _HEAD_SHA}],
+            "reviews": [],
+            "statusCheckRollup": [{"name": "ci/test", "conclusion": "SUCCESS"}],
+            "reviewThreads": [],
+        }
+
+        def runner(args: list[str]) -> str:
+            return json.dumps(fake_gh)
+
+        harvested = harvest_pr_intake(1, repo="owner/repo", runner=runner)
+        signal = assess_merge_readiness(
+            harvested["intake"],
+            pr_ref=harvested["pr_ref"],
+            head_sha=harvested["head_sha"],
+            created_at=_NOW,
+        )
+        assert signal["status"] != "READY"
+        assert "INCOMPLETE_INTAKE" in signal["blocked_reasons"]
 
 
 # ---------------------------------------------------------------------------

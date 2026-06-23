@@ -178,6 +178,8 @@ packages = [
     "dopemux.memory.adapters",
     "dopemux.mobile",
     "dopemux.orchestrator",
+    "dopemux.pcp",
+    "dopemux.pcp.bridge",
     "dopemux.orchestrator.automation",
     "dopemux.orchestrator.ui",
     "dopemux.orchestrator.validation",
@@ -248,6 +250,8 @@ packages = [
     "init/task-packets/STATUS.md",
     "init/task-packets/TEMPLATE_TASK_PACKET.md",
 ]
+"dopemux.pcp" = ["schemas/project_evidence_export.schema.json"]
+"dopemux.pcp.bridge" = ["schemas/live_write_ready.schema.json"]
 "dopemux.personas" = ["*.agent.md"]
 "dopemux_pr_steward" = ["config.schema.json"]
 "tools.pr_steward" = ["known_reviewers.json"]

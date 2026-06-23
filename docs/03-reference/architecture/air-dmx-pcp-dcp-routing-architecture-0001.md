@@ -628,7 +628,7 @@ This is a recommendation, not a full task packet. **OBSERVED_BY_DIFF:** `task-pa
 **BLOCKED:** This AIR does not authorize live writes.
 **BLOCKED:** This AIR does not make PR #925 merge-ready.
 **BLOCKED:** This AIR does not make OpenClaw routing production-ready.
-**BLOCKED:** This AIR does not authorize a FastAPI bridge.
+**OBSERVED (2026-06-23):** FastAPI bridge code exists inert with fail-closed activation guards (assertion verifier + authority binding); production activation remains **BLOCKED**.
 **BLOCKED:** This AIR does not authorize Dopetask execution.
 **BLOCKED:** This AIR does not authorize Task Orchestrator writes.
 **BLOCKED:** This AIR does not turn PR Steward into merge authority.

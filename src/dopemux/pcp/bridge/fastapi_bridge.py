@@ -34,6 +34,17 @@ from fastapi.responses import JSONResponse
 from jsonschema import Draft202012Validator
 from pydantic import BaseModel, StrictBool
 
+from dopemux.pcp.bridge.assertion_auth import (
+    NoTrustedIssuerVerifier,
+    ReadyAssertionVerifier,
+    requires_assertion_verification,
+)
+from dopemux.pcp.bridge.authority_binding import (
+    AuthorityMapBinding,
+    FailClosedAuthorityBinding,
+    requires_authority_binding,
+)
+
 # ---------------------------------------------------------------------------
 # Schema loading — repo-root relative.
 # src/dopemux/pcp/bridge/fastapi_bridge.py -> parents[4] == repo root
@@ -41,15 +52,31 @@ from pydantic import BaseModel, StrictBool
 # sibling pcp modules (exporter/pr_steward use parents[3]).
 # ---------------------------------------------------------------------------
 _HERE = pathlib.Path(__file__).resolve()
-_REPO_ROOT = _HERE.parents[4]
-_SCHEMA_PATH = (
-    _REPO_ROOT / "schemas" / "project_control_plane" / "live_write_ready.schema.json"
-)
+_SCHEMA_REL = pathlib.Path("schemas") / "project_control_plane" / "live_write_ready.schema.json"
+_VALIDATOR: Draft202012Validator | None = None
 
-with _SCHEMA_PATH.open() as _fh:
-    _SCHEMA: dict = json.load(_fh)
 
-_VALIDATOR = Draft202012Validator(_SCHEMA)
+def _schema_candidates() -> list[pathlib.Path]:
+    return [
+        _HERE.parents[4] / _SCHEMA_REL,
+        _HERE.parent / "schemas" / "live_write_ready.schema.json",
+    ]
+
+
+def _load_validator() -> Draft202012Validator:
+    global _VALIDATOR
+    if _VALIDATOR is not None:
+        return _VALIDATOR
+    for candidate in _schema_candidates():
+        if candidate.is_file():
+            with candidate.open() as fh:
+                schema = json.load(fh)
+            _VALIDATOR = Draft202012Validator(schema)
+            return _VALIDATOR
+    raise FileNotFoundError(
+        "LIVE_WRITE_READY schema not found; checked: "
+        + ", ".join(str(p) for p in _schema_candidates())
+    )
 
 _MODE_REJECTED = "REJECTED"
 _MODE_DRY_RUN = "DRY_RUN"
@@ -163,7 +190,7 @@ def check_live_write_gate(
     """
     if not isinstance(assertion, dict):
         return (False, ["GATE_ABSENT"])
-    if list(_VALIDATOR.iter_errors(assertion)):
+    if list(_load_validator().iter_errors(assertion)):
         return (False, ["GATE_SCHEMA_INVALID"])
     if assertion.get("status") != "READY":
         reasons = list(assertion.get("blocked_reasons") or [])
@@ -230,6 +257,8 @@ def route_mutation(
     execute: bool = False,
     writer_registry: dict[str, Writer] | None = None,
     dedup_store: "DedupStore | None" = None,
+    assertion_verifier: ReadyAssertionVerifier | None = None,
+    authority_binding: AuthorityMapBinding | None = None,
     now: datetime | None = None,
 ) -> dict:
     """Route a single mutation through the fail-closed live-write gate.
@@ -305,6 +334,47 @@ def route_mutation(
             reasons=["CANONICAL_WRITER_NOT_REGISTERED"], operation_ref=op_ref, target_surface=op_surface,
         )
 
+    # 6b. Assertion authentication — required when a writer registry is active.
+    if requires_assertion_verification(execute=execute, writer_registry=registry):
+        verifier = assertion_verifier or NoTrustedIssuerVerifier()
+        try:
+            auth_ok, auth_reasons = verifier.verify(gate, operation=operation)
+        except Exception as exc:  # noqa: BLE001 — fail-closed on verifier failure.
+            return _result(
+                mode=_MODE_REJECTED, permitted=True, executed=False,
+                reasons=["ASSERTION_VERIFY_FAILED:" + type(exc).__name__],
+                operation_ref=op_ref, target_surface=op_surface,
+            )
+        if not auth_ok:
+            return _result(
+                mode=_MODE_REJECTED, permitted=True, executed=False,
+                reasons=auth_reasons or ["ASSERTION_UNAUTHENTICATED"],
+                operation_ref=op_ref, target_surface=op_surface,
+            )
+
+    # 6c. Authority-map binding — required when a writer registry is active.
+    if requires_authority_binding(execute=execute, writer_registry=registry):
+        binding = authority_binding or FailClosedAuthorityBinding()
+        writer_name = canonical_writer_name if isinstance(canonical_writer_name, str) else ""
+        try:
+            bind_ok, bind_reasons = binding.authorize(
+                target_surface=op_surface,
+                canonical_writer=writer_name,
+                operation=operation,
+            )
+        except Exception as exc:  # noqa: BLE001 — fail-closed on binding failure.
+            return _result(
+                mode=_MODE_REJECTED, permitted=True, executed=False,
+                reasons=["AUTHORITY_BINDING_FAILED:" + type(exc).__name__],
+                operation_ref=op_ref, target_surface=op_surface,
+            )
+        if not bind_ok:
+            return _result(
+                mode=_MODE_REJECTED, permitted=True, executed=False,
+                reasons=bind_reasons or ["AUTHORITY_BINDING_DENIED"],
+                operation_ref=op_ref, target_surface=op_surface,
+            )
+
     # 7. Idempotency dedup on assertion_id (record BEFORE the call).
     key = gate.get("assertion_id")
     if not isinstance(key, str) or not key:
@@ -360,6 +430,8 @@ def create_bridge_router(
     *,
     writer_registry: dict[str, Writer] | None = None,
     dedup_store: "DedupStore | None" = None,
+    assertion_verifier: ReadyAssertionVerifier | None = None,
+    authority_binding: AuthorityMapBinding | None = None,
 ) -> APIRouter:
     """Build the bridge ``APIRouter``.
 
@@ -384,6 +456,8 @@ def create_bridge_router(
             execute=req.execute,
             writer_registry=writer_registry,
             dedup_store=_dedup_store,
+            assertion_verifier=assertion_verifier,
+            authority_binding=authority_binding,
         )
         code = (
             http_status.HTTP_403_FORBIDDEN
@@ -399,6 +473,8 @@ def create_bridge_app(
     *,
     writer_registry: dict[str, Writer] | None = None,
     dedup_store: "DedupStore | None" = None,
+    assertion_verifier: ReadyAssertionVerifier | None = None,
+    authority_binding: AuthorityMapBinding | None = None,
 ) -> FastAPI:
     """Build a standalone FastAPI app mounting the bridge router.
 
@@ -407,6 +483,11 @@ def create_bridge_app(
     """
     app = FastAPI(title="PCP Live-Write Bridge", version="0.1.0")
     app.include_router(
-        create_bridge_router(writer_registry=writer_registry, dedup_store=dedup_store)
+        create_bridge_router(
+            writer_registry=writer_registry,
+            dedup_store=dedup_store,
+            assertion_verifier=assertion_verifier,
+            authority_binding=authority_binding,
+        )
     )
     return app
