@@ -264,6 +264,12 @@ def test_privacy_violation_details_redact_bearer_and_env_secret_formats() -> Non
         "Bearer abcdefghijklmnop",
         "OPENROUTER_API_KEY=secret-value",
         "V5_OPENROUTER_API_KEY=secret-value",
+        "OPENAI_API_KEY=sk-proj-placeholdersecret0123456789",
+        "ANTHROPIC_API_KEY=anthropic-placeholder-secret",
+        "GEMINI_API_KEY=gemini-placeholder-secret",
+        "GOOGLE_API_KEY=google-placeholder-secret",
+        "sk-proj-placeholdersecret0123456789",
+        "sk-placeholdersecret0123456789",
     ]
 
     for secret in secret_values:
