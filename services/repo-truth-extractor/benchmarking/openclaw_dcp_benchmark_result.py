@@ -49,7 +49,12 @@ _TESTS_RESULT_VALUES = {
 _SECRET_PATTERNS = (
     re.compile(r"Authorization:\s*Bearer\s+[A-Za-z0-9_\-.]{10,}", re.IGNORECASE),
     re.compile(r"Bearer\s+[A-Za-z0-9_\-.]{10,}", re.IGNORECASE),
+    re.compile(
+        r"\b(?:OPENAI|ANTHROPIC|GEMINI|GOOGLE)_API_KEY\s*=\s*\S+",
+        re.IGNORECASE,
+    ),
     re.compile(r"\bsk" r"-or-[A-Za-z0-9_\-.]{8,}\b", re.IGNORECASE),
+    re.compile(r"\bsk" r"-(?:proj-)?[A-Za-z0-9_\-.]{8,}\b", re.IGNORECASE),
     re.compile(r"\bOPENROUTER_API_KEY\s*=\s*\S+", re.IGNORECASE),
     re.compile(r"\bV5_OPENROUTER_API_KEY\s*=\s*\S+", re.IGNORECASE),
 )
