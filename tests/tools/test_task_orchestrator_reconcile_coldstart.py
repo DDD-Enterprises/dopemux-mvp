@@ -7,6 +7,7 @@ fixture or inline data. No live database access required.
 """
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -140,3 +141,35 @@ def test_valid_as_of_utc_banner_present():
     assert expected in md, (
         f"valid_as_of_utc '{expected}' not found in rendered Markdown"
     )
+
+
+def test_table_cells_escape_delimiters_and_line_breaks():
+    """Item table cells must not corrupt the Markdown table shape."""
+    data = _load_fixture()
+    data["items"] = [
+        {
+            "title": "TP-DMX-COLDSTART-PIPE|SAFE\nNEXT",
+            "role": "work|review",
+            "classification": "queue_only",
+            "decision": "keep|queued",
+            "status_label": "Queue\nOnly",
+            "evidence": {
+                "pr": "#123|#456",
+                "proof_exists": "yes\nobserved",
+                "role": "queue|work",
+            },
+        }
+    ]
+    data["classification_counts"] = {"queue_only": 1}
+
+    md = _render(data)
+
+    row = next(
+        line for line in md.splitlines() if "TP-DMX-COLDSTART-PIPE" in line
+    )
+    assert len(re.findall(r"(?<!\\)\|", row)) == 6
+    assert "TP-DMX-COLDSTART-PIPE\\|SAFE<br>NEXT" in row
+    assert "work\\|review" in row
+    assert "keep\\|queued" in row
+    assert "Queue<br>Only" in row
+    assert "pr=#123\\|#456; proof_exists=yes<br>observed; role=queue\\|work" in row

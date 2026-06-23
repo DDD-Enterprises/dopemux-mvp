@@ -45,6 +45,12 @@ def _evidence_cell(evidence: dict[str, Any]) -> str:
     return "; ".join(parts) if parts else ""
 
 
+def _markdown_table_cell(value: Any) -> str:
+    normalized = str(value)
+    normalized = normalized.replace("\r\n", "\n").replace("\r", "\n")
+    return normalized.replace("\n", "<br>").replace("|", r"\|")
+
+
 def render_markdown(coldstart: dict) -> str:
     """Render a coldstart reconciliation dict as a deterministic Markdown report.
 
@@ -130,12 +136,12 @@ def render_markdown(coldstart: dict) -> str:
         lines.append("| Title | Role | Decision | Status Label | Evidence |")
         lines.append("|-------|------|----------|--------------|----------|")
         for item in group_items:
-            title = item.get("title", "")
-            role = item.get("role", "") or ""
-            decision = item.get("decision", "") or ""
-            status_label = item.get("status_label", "") or ""
+            title = _markdown_table_cell(item.get("title", ""))
+            role = _markdown_table_cell(item.get("role", "") or "")
+            decision = _markdown_table_cell(item.get("decision", "") or "")
+            status_label = _markdown_table_cell(item.get("status_label", "") or "")
             evidence = item.get("evidence", {})
-            evidence_str = _evidence_cell(evidence)
+            evidence_str = _markdown_table_cell(_evidence_cell(evidence))
             lines.append(
                 f"| {title} | {role} | {decision} | {status_label} | {evidence_str} |"
             )
