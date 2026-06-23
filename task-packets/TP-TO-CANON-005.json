@@ -42,8 +42,8 @@
     ],
     "verify": [
       "python -m jsonschema -i task-packets/TP-TO-CANON-005.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
-      "python -m tools.task_orchestrator_reconcile.coldstart --from-json audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json --emit-md docs/05-audit-reports/task-orchestrator/coldstart-reconciliation-20260622.md",
-      "python -m tools.task_orchestrator_reconcile.coldstart --from-json audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json --emit-md /tmp/coldstart-rerun.md && diff docs/05-audit-reports/task-orchestrator/coldstart-reconciliation-20260622.md /tmp/coldstart-rerun.md",
+      "python -m tools.task_orchestrator_reconcile.coldstart --from-json audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json --emit-md /tmp/coldstart-rerun.md",
+      "diff docs/05-audit-reports/task-orchestrator/coldstart-reconciliation-20260622.md /tmp/coldstart-rerun.md",
       "python -m pytest -q tests/tools/test_task_orchestrator_reconcile_coldstart.py",
       "python -m compileall -q tools/task_orchestrator_reconcile tests/tools",
       "git diff --check"

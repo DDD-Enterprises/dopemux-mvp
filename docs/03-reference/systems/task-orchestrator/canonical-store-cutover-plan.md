@@ -70,14 +70,18 @@ Expose the derived view read-only behind the feature flag. Operators compare the
 Task Orchestrator state. **No writes.** This is the only phase any current packet builds.
 
 ### Phase 1 — Backup (no mutation of source)
-Snapshot every live workspace DB to a timestamped archive directory. Read-only copies; archive, never delete.
+Snapshot every live workspace DB to a **uniquely timestamped** archive directory using SQLite's online
+backup (WAL/-shm consistent). Archive, never delete.
 
 ```bash
 # For each workspace's live DB (path derived by the stdio/http wrapper):
 #   ~/.local/share/dopemux-mission-control/task-orchestrator/<workspace-id>/current-tasks.db
-ARCHIVE="audit_inputs/task-orchestrator-canon/backups/$(git rev-parse --short HEAD)"
+ARCHIVE="audit_inputs/task-orchestrator-canon/backups/$(date -u +%Y%m%dT%H%M%SZ)-$(git rev-parse --short HEAD)"
 mkdir -p "$ARCHIVE"
-cp -a "<live current-tasks.db>" "$ARCHIVE/current-tasks.<workspace-id>.db"   # read-only copy
+# Use SQLite's online backup, NOT a bare cp: cp of current-tasks.db alone can miss
+# the -wal/-shm sidecars and capture a torn snapshot under the WAL-lock contention
+# this DB is known for. .backup produces a single consistent file.
+sqlite3 "<live current-tasks.db>" ".backup '$ARCHIVE/current-tasks.<workspace-id>.db'"
 sqlite3 "$ARCHIVE/current-tasks.<workspace-id>.db" 'PRAGMA integrity_check;'
 ```
 
