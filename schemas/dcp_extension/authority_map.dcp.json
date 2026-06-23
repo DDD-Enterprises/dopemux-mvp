@@ -161,6 +161,23 @@
       "approval_required": false,
       "rollback_required": false,
       "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "pm.metadata",
+      "action": "read",
+      "canonical_authority_owner": "leantime",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "dcp leantime PM-metadata read adapter (JSON-RPC + leantime-bridge)",
+      "source_truth_refs": [
+        "Leantime JSON-RPC API (projects, tickets, sprints, milestones)",
+        "leantime-bridge MCP gateway"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
     }
   ]
 }
