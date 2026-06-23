@@ -23,7 +23,7 @@
   "series": {
     "id": "TO-CANON",
     "base_branch": "origin/main",
-    "parent_tp_id": "TP-TO-CANON-004",
+    "parent_tp_id": "TP-TO-CANON-006",
     "final_packet": true
   },
   "execution": {
