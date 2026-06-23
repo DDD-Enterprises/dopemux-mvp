@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import sqlite3
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -1102,12 +1103,23 @@ def orchestrator_canonical_store():
     help="Path to the offline canonical reconciliation SQLite file.",
 )
 @click.option(
+    "--limit",
+    "limit",
+    type=int,
+    default=None,
+    help="Cap the number of work items returned (full item_count still reported).",
+)
+@click.option(
     "--json-output",
     "json_output",
     is_flag=True,
     help="Emit output as JSON.",
 )
-def orchestrator_canonical_store_inspect(db_path: Path, json_output: bool):
+def orchestrator_canonical_store_inspect(
+    db_path: Path,
+    limit: Optional[int],
+    json_output: bool,
+):
     """Inspect the offline canonical reconciliation store (read-only, point-in-time).
 
     Prints provenance-tagged rows and a valid_as_of banner.
@@ -1124,11 +1136,13 @@ def orchestrator_canonical_store_inspect(db_path: Path, json_output: bool):
     if not db_path.exists():
         raise click.ClickException(f"canonical store not found: {db_path}")
     try:
-        view = read_canonical_view(db_path)
+        view = read_canonical_view(db_path, limit=limit)
     except (ValueError, FileNotFoundError) as exc:
         raise click.ClickException(str(exc)) from exc
-    except Exception as exc:  # noqa: BLE001
-        raise click.ClickException(f"failed to read canonical store: {exc}") from exc
+    except sqlite3.DatabaseError as exc:
+        raise click.ClickException(
+            f"sqlite error reading canonical store: {exc}"
+        ) from exc
 
     if json_output:
         click.echo(json.dumps(view, indent=2, sort_keys=True, default=str))

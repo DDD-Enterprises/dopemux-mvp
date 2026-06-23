@@ -56,7 +56,10 @@ def read_canonical_view(
 
     The returned dict has the following keys:
 
-    - ``valid_as_of``    – ``MAX(source_mtime_utc)`` from ``source_databases``
+    - ``valid_as_of``    – ``MAX(source_mtime_utc)`` from ``source_databases``.
+      This is a lexicographic string MAX and equals the true chronological
+      maximum only when every producer mtime is zero-padded ISO-8601 UTC
+      (as emitted by ``import_pack``).
     - ``source_db_count`` – number of source databases recorded
     - ``item_count``     – total canonical work items
     - ``items``          – list of provenance-tagged item dicts
@@ -80,7 +83,7 @@ def read_canonical_view(
     try:
         _verify_canonical_store(conn, db_path)
 
-        # Point-in-time anchor — deterministic, matches the import manifest.
+        # Point-in-time anchor — lexicographic MAX over ISO-8601 UTC mtimes.
         valid_as_of: Optional[str] = conn.execute(
             "SELECT MAX(source_mtime_utc) FROM source_databases;"
         ).fetchone()[0]

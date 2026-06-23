@@ -368,3 +368,57 @@ def test_read_view_handles_uri_metacharacters(canonical_db: Path, tmp_path: Path
             )
     finally:
         conn.close()
+
+
+def test_module_docstring_documents_iso8601_valid_as_of() -> None:
+    """valid_as_of lexicographic MAX assumption is documented for operators."""
+    import dopemux.orchestrator.canonical_readview as module
+
+    doc = module.read_canonical_view.__doc__ or ""
+    assert "ISO-8601" in doc
+    assert "import_pack" in doc
+
+
+def test_inspect_limit_truncates_items_but_not_count(
+    canonical_db: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """--limit caps returned items while item_count stays the store total."""
+    import json
+
+    monkeypatch.setenv("CANONICAL_STORE_READ_VIEW_ENABLED", "true")
+    runner = CliRunner()
+    result = runner.invoke(
+        orchestrator_group,
+        [
+            "canonical-store",
+            "inspect",
+            "--db",
+            str(canonical_db),
+            "--limit",
+            "0",
+            "--json-output",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["item_count"] == 1
+    assert payload["items"] == []
+
+
+def test_inspect_surfaces_sqlite_database_error(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Corrupt SQLite files surface a specific sqlite error message."""
+    monkeypatch.setenv("CANONICAL_STORE_READ_VIEW_ENABLED", "true")
+    corrupt = tmp_path / "corrupt.sqlite"
+    corrupt.write_bytes(b"not-a-sqlite-database")
+    runner = CliRunner()
+    result = runner.invoke(
+        orchestrator_group,
+        ["canonical-store", "inspect", "--db", str(corrupt)],
+    )
+    assert result.exit_code != 0
+    output = (result.output or "") + str(result.exception or "")
+    assert "sqlite error reading canonical store" in output.lower()
