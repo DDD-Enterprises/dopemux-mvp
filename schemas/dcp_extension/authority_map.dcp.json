@@ -178,23 +178,6 @@
       "approval_required": false,
       "rollback_required": false,
       "unknown_behavior": "BLOCK_OR_ESCALATE"
-    },
-    {
-      "domain": "proof.dopemux_family",
-      "action": "read",
-      "canonical_authority_owner": "dopemux",
-      "canonical_writer": null,
-      "surface_class": "ADAPTER",
-      "reader_or_projection_surface": "dcp proof-family adapter",
-      "source_truth_refs": [
-        "PROOF.json",
-        "SUMMARY.md"
-      ],
-      "proof_required": true,
-      "live_write_allowed": false,
-      "approval_required": false,
-      "rollback_required": false,
-      "unknown_behavior": "BLOCK_OR_ESCALATE"
     }
   ]
 }
