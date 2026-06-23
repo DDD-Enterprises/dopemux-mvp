@@ -34,7 +34,7 @@ adopting the plan document itself.
 | R5 | Stale / recovery DB rows promoted into active state | Low | Medium | Stale/legacy/recovery DBs stay provenance-only; archive-never-delete |
 | R6 | Operator-approval gate bypass / automation | Low | High | Plan fails closed; default denied; no step past Phase 2 without recorded sign-off |
 | R7 | Stale point-in-time view presented as live | Medium | Medium | Read view (006) carries a `valid_as_of` banner; cutover requires a freshly regenerated snapshot |
-| R8 | Task Orchestrator MCP health / SQLite contention during backup | Medium | Low-Medium | Backup uses read-only `cp -a` copies of the DB files, not live MCP calls |
+| R8 | Task Orchestrator MCP health / SQLite contention during backup | Medium | Low-Medium | Backup and rollback use SQLite online `.backup` / `.restore` to produce a single consistent file; never bare `cp -a` of live DB files (WAL/SHM sidecars can tear snapshots under contention) |
 
 ## Notes
 

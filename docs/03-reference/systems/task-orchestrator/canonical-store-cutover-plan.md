@@ -102,7 +102,12 @@ unset CANONICAL_STORE_READ_VIEW_ENABLED
 git revert <cutover-commit-sha>
 
 # 3. Restore a live DB from backup ONLY under explicit operator direction (only if a write occurred):
-cp -a "$ARCHIVE/current-tasks.<workspace-id>.db" "<live current-tasks.db path>"
+#    Quiesce writers first (stop task-orchestrator MCP for this workspace).
+#    Use SQLite restore — NOT bare cp — to avoid WAL/-shm inconsistency (same invariant as Phase 1).
+sqlite3 "<live current-tasks.db path>" ".restore '$ARCHIVE/current-tasks.<workspace-id>.db'"
+sqlite3 "<live current-tasks.db path>" 'PRAGMA integrity_check;'
+# Remove stale WAL/SHM sidecars from the pre-restore live file if they remain:
+rm -f "<live current-tasks.db path>"-wal "<live current-tasks.db path>"-shm
 ```
 
 ## Stale / recovery databases
