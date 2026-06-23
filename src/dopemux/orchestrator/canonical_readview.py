@@ -23,7 +23,11 @@ def _connect_ro(db_path: Path) -> sqlite3.Connection:
     """
     if not db_path.exists():
         raise FileNotFoundError(f"canonical store not found: {db_path}")
-    uri = f"file:{db_path}?mode=ro"
+    # Build the file: URI from a percent-encoded absolute path so URI
+    # metacharacters in db_path (e.g. '?' or '#') cannot be parsed as a
+    # query/fragment and silently bypass mode=ro (opening read-write or a
+    # truncated path). resolve() is safe — existence is checked above.
+    uri = db_path.resolve().as_uri() + "?mode=ro"
     conn = sqlite3.connect(uri, uri=True)
     conn.row_factory = sqlite3.Row
     return conn

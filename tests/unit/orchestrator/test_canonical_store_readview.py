@@ -341,3 +341,30 @@ def test_connect_ro_raises_file_not_found(tmp_path: Path) -> None:
     """_connect_ro raises FileNotFoundError when the path does not exist."""
     with pytest.raises(FileNotFoundError):
         _connect_ro(tmp_path / "no_such_file.sqlite")
+
+
+def test_read_view_handles_uri_metacharacters(canonical_db: Path, tmp_path: Path) -> None:
+    """A --db path containing '?' / '#' must open the real file read-only.
+
+    Without percent-encoding, SQLite would parse '?'/'#' as query/fragment and
+    could open a truncated path read-write instead of the requested store.
+    """
+    weird_dir = tmp_path / "weird # dir ? x"
+    weird_dir.mkdir()
+    weird_path = weird_dir / "store #1 ? v.sqlite"
+    weird_path.write_bytes(canonical_db.read_bytes())
+
+    # The correct (non-truncated) store opens and yields its real contents.
+    view = read_canonical_view(weird_path)
+    assert view["item_count"] == 1
+    assert view["items"][0]["source_db_slug"] == _KNOWN_SLUG
+
+    # ...and it is still strictly read-only.
+    conn = _connect_ro(weird_path)
+    try:
+        with pytest.raises(sqlite3.OperationalError):
+            conn.execute(
+                "INSERT INTO source_databases (source_db_slug) VALUES ('x');"
+            )
+    finally:
+        conn.close()
