@@ -1,6 +1,6 @@
 Post-run mini retro:
 - What worked, what failed, time sinks, 3 improvements.
-- Mem0: add as separate entries; repo docs (`docs/**`) + ConPort decision/progress: update /docs/runbooks/<topic>.md if a new pattern emerged.
+- **ConPort**: separate `log_decision` entries per improvement; `log_progress` for action items.
+- Repo docs: update `docs/runbooks/<topic>.md` if a new pattern emerged.
 
-> Token thrift:
-- **ConPort**: prefer summaries/search with small `limit` (3–5) before full context.
+> Token thrift: ConPort searches with `limit` 3–5 before full context.

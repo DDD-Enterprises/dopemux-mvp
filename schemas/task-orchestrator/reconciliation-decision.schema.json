@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/task-orchestrator/reconciliation-decision.schema.json",
+  "title": "Task Orchestrator Coldstart Reconciliation Decisions",
+  "comment": "Models the artifact emitted by `import_pack --emit-coldstart` (COLDSTART_RECONCILIATION.json). Previously this schema modeled the un-emitted `reconciliation_decisions` SQL table; it was repurposed to the actually-emitted coldstart decisions artifact so the committed evidence validates against a real contract. The `decision`/`classification` enums are derived from the resolver code paths in tools/task_orchestrator_reconcile/resolve.py (coldstart_report), not from any single emitted sample.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "active_db_slug",
+    "classification_counts",
+    "items",
+    "root_decision",
+    "point_in_time"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "task-orchestrator.reconciliation-decision.v0"
+    },
+    "active_db_slug": {"type": "string"},
+    "classification_counts": {
+      "type": "object",
+      "additionalProperties": {"type": "integer"}
+    },
+    "root_decision": {"$ref": "#/$defs/decision_value"},
+    "items": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/item"}
+    },
+    "point_in_time": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valid_as_of_utc", "basis"],
+      "properties": {
+        "valid_as_of_utc": {"type": "string"},
+        "basis": {"type": "string"}
+      }
+    }
+  },
+  "$defs": {
+    "decision_value": {
+      "type": "string",
+      "enum": [
+        "accepted_do_not_rerun",
+        "remain_active_in_progress",
+        "keep_blocked_until_repo_packet_allowlist_exists",
+        "operator_only_do_not_automate",
+        "do_not_infer_readiness_from_to_role"
+      ]
+    },
+    "classification_value": {
+      "type": "string",
+      "enum": [
+        "repo_pr_proof_observed",
+        "active_root_in_progress",
+        "explicit_blocked",
+        "operator_gate",
+        "queue_only",
+        "queue_only_supervisor_required"
+      ]
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_row_id",
+        "title",
+        "role",
+        "status_label",
+        "classification",
+        "decision",
+        "evidence"
+      ],
+      "properties": {
+        "source_row_id": {"type": "string"},
+        "title": {"type": "string"},
+        "role": {"type": ["string", "null"]},
+        "status_label": {"type": ["string", "null"]},
+        "classification": {"$ref": "#/$defs/classification_value"},
+        "decision": {"$ref": "#/$defs/decision_value"},
+        "evidence": {
+          "type": "object",
+          "comment": "Intentionally permissive: evidence shape varies by branch (e.g. {pr, proof_json, proof_exists} | {role, status_label} | {role})."
+        }
+      }
+    }
+  }
+}

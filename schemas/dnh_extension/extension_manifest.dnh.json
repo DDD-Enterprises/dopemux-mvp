@@ -1,0 +1,69 @@
+{
+  "schema_version": "pcp.extension_manifest.v0",
+  "status": "PROPOSED",
+  "extension_id": "dnh-crm",
+  "extension_kind": "DNH_CRM",
+  "compatible_pcp_core_versions": [
+    "pcp.authority_map.v0",
+    "pcp.extension_manifest.v0",
+    "pcp.project_evidence_export.v0"
+  ],
+  "extension_identity": {
+    "project_id_patterns": [
+      "dnh-crm",
+      "dnh-crm-fixture"
+    ],
+    "repo_markers": [
+      ".dnhroot"
+    ],
+    "discovery_hints": [
+      "dNh CRM project profile",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/"
+    ]
+  },
+  "capabilities": {
+    "authority_map_contributions": [
+      "schemas/dnh_extension/authority_map.dnh.json"
+    ],
+    "red_lane_contributions": [
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/red_lanes.json"
+    ],
+    "evidence_export_sections": [
+      "dnh_profile",
+      "dnh_authority_docs",
+      "dnh_proof_roots"
+    ],
+    "proof_status_mappings": [],
+    "runtime_mappings": [],
+    "adapter_mappings": [
+      "dnh-project-profile",
+      "dnh-authority-docs",
+      "dnh-proof-roots",
+      "dnh-crm",
+      "dnh-telegram",
+      "dnh-calendar",
+      "dnh-identity",
+      "dnh-policy",
+      "dnh-event-store",
+      "dnh-runtime-db"
+    ]
+  },
+  "schemas": {
+    "owned_schema_ids": [],
+    "core_schema_extensions": [],
+    "forbidden_core_overrides": [
+      "project_evidence_export.schema.json",
+      "authority_map.schema.json",
+      "extension_manifest.schema.json",
+      "project_red_lanes.schema.json",
+      "project_profile.schema.json"
+    ]
+  },
+  "invariants": {
+    "cannot_override_core_fail_closed": true,
+    "cannot_weaken_proof_gates": true,
+    "cannot_weaken_audit_gates": true,
+    "cannot_promote_adapter_to_authority": true,
+    "cannot_require_extension_for_baseline_core": true
+  }
+}

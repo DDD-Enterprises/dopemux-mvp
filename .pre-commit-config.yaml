@@ -10,6 +10,20 @@ repos:
         files: ^(docs/|task-packets/|UPGRADES/|services/[^/]+/docs/|docker/[^/]+/docs/).*\.md$
         exclude: (^docs/archive/|node_modules/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
 
+      - id: memory-command-refs-guard
+        name: Block deprecated memory backends in slash commands
+        entry: python3 scripts/validate_memory_command_refs.py
+        language: system
+        files: ^\.claude/commands/.*\.md$
+        pass_filenames: false
+
+      - id: skill-frontmatter-guard
+        name: Validate templates/skills SKILL.md frontmatter
+        entry: python3 scripts/validate_skill_frontmatter.py
+        language: system
+        files: ^templates/skills/.*/SKILL\.md$
+        pass_filenames: false
+
       # Graph schema validation
       - id: docs-graph-validator
         name: Validate documentation against knowledge graph schema

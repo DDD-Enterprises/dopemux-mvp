@@ -32,6 +32,13 @@
       "reason": "No fixture path requested this lane"
     },
     {
+      "lane_id": "identity-merge",
+      "scope": "PROJECT",
+      "match": "fixture-no-match",
+      "result": "PASS",
+      "reason": "No fixture path requested this lane"
+    },
+    {
       "lane_id": "forbidden-worktree",
       "scope": "PROJECT",
       "match": "fixture-no-match",

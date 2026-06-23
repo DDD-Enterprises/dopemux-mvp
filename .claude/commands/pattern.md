@@ -1,5 +1,6 @@
-Save a reusable pattern/snippet in repo docs (`docs/**`) + ConPort decision/progress.
-Call: /mcp memory_bank add "docs/patterns/<name>.md" "<bullet list + code snippet>"
+Save a reusable pattern/snippet in repo `docs/patterns/` + **ConPort** decision link (Memory Trinity).
 
-> Token thrift:
-- **ConPort**: prefer summaries/search with small `limit` (3–5) before full context.
+1. Write `docs/patterns/<name>.md` with bullet list + code snippet.
+2. Log decision: `mcp__conport__log_decision` with `tags: ["pattern"]` and rationale linking the file path.
+
+> Token thrift: prefer ConPort FTS search with `limit` 3–5 before full context.

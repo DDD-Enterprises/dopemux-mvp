@@ -5,10 +5,10 @@ type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-11'
-last_review: '2026-03-11'
-next_review: '2026-06-09'
+last_review: '2026-06-19'
+next_review: '2026-09-19'
 prelude: Make dope-memory the canonical chronicle-memory layer while excluding it from PM, workflow, and canonical decision authority.
-status: proposed
+status: accepted
 graph_metadata:
   node_type: ADR
   impact: high
@@ -23,7 +23,7 @@ graph_metadata:
 
 # ADR: dope-memory as chronicle memory authority
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-03-11
 **Owners:** Dopemux Memory Plane / PM Plane / Context Plane
 **Decision Type:** Authority Boundary / Memory Architecture

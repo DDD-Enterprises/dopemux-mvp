@@ -1,0 +1,94 @@
+{
+  "_comment": "Load plan for Claude Code automation validation & design (dopemux-mvp). Run as task-orchestrator create_work_tree FROM A DOPEMUX-MVP-ROOTED SESSION after scripts/mcp-wrappers/task-orchestrator-http-singleton.sh reports http://127.0.0.1:7890/mcp healthy. Scope: validate + design only — no .claude/ implementation packets. Spec: claudedocs/spec-claude-code-automation-design-2026-06-16.md. Proof: proof/TP-DMX-CLAUDE-AUTO-VALIDATION-001/.",
+  "root": {
+    "title": "DMX-CLAUDE-AUTO — Claude Code automation validation & design",
+    "priority": "high",
+    "tags": "dopemux,claude,automation,validation,supervised-only",
+    "summary": "Validate the unified Claude automation catalog (existing platform surface + adOps child-repo extensions), produce design spec + deferred implementation plan, and gate future MVP scaffold work. PAL evidence in proof/TP-DMX-CLAUDE-AUTO-VALIDATION-001/pal/. Child-repo template target: adOps and other worktrees via dopemux mcp init."
+  },
+  "children": [
+    {
+      "ref": "c_catalog",
+      "title": "Compile unified automation catalog",
+      "priority": "high",
+      "tags": "dopemux,claude,catalog",
+      "summary": "Merge existing dopemux-mvp surface (.claude/hooks, commands, agents, mcp_catalog.yaml) with adOps-derived gaps (child-repo task-packet skill, verify-gates, project-conventions). Map each item to repo evidence paths."
+    },
+    {
+      "ref": "c_pal_arch",
+      "title": "PAL analyze: platform automation architecture",
+      "priority": "high",
+      "tags": "dopemux,claude,pal,analyze",
+      "summary": "pal.analyze on native_hooks dispatcher, DCP seam, orchestrator integration, mcp_catalog scope model. Output: proof/TP-DMX-CLAUDE-AUTO-VALIDATION-001/pal/01_ANALYZE.md"
+    },
+    {
+      "ref": "c_pal_integrate",
+      "title": "PAL thinkdeep: TaskX + orchestrator + child-repo alignment",
+      "priority": "high",
+      "tags": "dopemux,claude,pal,thinkdeep",
+      "summary": "Validate automations respect AGENTS.md truth order, task-orchestrator actor attribution, and do not bypass DCP-RED-MERGE-SEAM-0001. Output: pal/02_THINKDEEP.md"
+    },
+    {
+      "ref": "c_pal_security",
+      "title": "PAL secaudit: hooks, secrets, MCP exposure",
+      "priority": "high",
+      "tags": "dopemux,claude,pal,secaudit",
+      "summary": "Audit dcp_surface_guard, proof_tracking_guard, mcp_health_probe, .env blocking posture, per-worktree MCP port isolation. Output: pal/03_SECAUDIT.md"
+    },
+    {
+      "ref": "c_pal_challenge",
+      "title": "PAL challenge: contested automation choices",
+      "priority": "medium",
+      "tags": "dopemux,claude,pal,challenge",
+      "summary": "Stress-test: packet-scope-guard hook for child repos, auto-pytest PostToolUse perf, Playwright MCP vs Python playwright, duplicating dx commands with new skills. Output: pal/04_CHALLENGE.md"
+    },
+    {
+      "ref": "c_pal_plan",
+      "title": "PAL planner: phased rollout breakdown",
+      "priority": "medium",
+      "tags": "dopemux,claude,pal,planner",
+      "summary": "Produce MVP→full implementation phases for platform + child-repo template. Output: pal/05_PLANNER.md"
+    },
+    {
+      "ref": "c_spec",
+      "title": "Write design spec (Superpowers-style)",
+      "priority": "high",
+      "tags": "dopemux,claude,design",
+      "summary": "Author claudedocs/spec-claude-code-automation-design-2026-06-16.md from validated matrix. Self-review for contradictions with design-dcp-mcp-skills-hooks-2026-06-10.md."
+    },
+    {
+      "ref": "c_impl_plan",
+      "title": "Write deferred implementation plan",
+      "priority": "medium",
+      "tags": "dopemux,claude,plan",
+      "summary": "Author claudedocs/plan-claude-code-automation-2026-06-16.md — bite-sized tasks for future TP series. Mark DEFERRED; no code changes in this tree."
+    },
+    {
+      "ref": "c_load_json",
+      "title": "Finalize validation matrix + load-plan JSON",
+      "priority": "medium",
+      "tags": "dopemux,claude,proof",
+      "summary": "Commit proof/TP-DMX-CLAUDE-AUTO-VALIDATION-001/VALIDATION_MATRIX.md and confirm this load-plan JSON matches orchestrator deps."
+    },
+    {
+      "ref": "c_orchestrator",
+      "title": "Confirm orchestrator work tree loaded",
+      "priority": "low",
+      "tags": "dopemux,orchestrator",
+      "summary": "Verify create_work_tree response; query_items for root DMX-CLAUDE-AUTO. Requires task-orchestrator HTTP healthy at :7890/mcp."
+    }
+  ],
+  "deps": [
+    { "from": "c_catalog", "to": "c_pal_arch", "type": "BLOCKS" },
+    { "from": "c_catalog", "to": "c_pal_integrate", "type": "BLOCKS" },
+    { "from": "c_catalog", "to": "c_pal_security", "type": "BLOCKS" },
+    { "from": "c_pal_arch", "to": "c_pal_challenge", "type": "BLOCKS" },
+    { "from": "c_pal_integrate", "to": "c_pal_challenge", "type": "BLOCKS" },
+    { "from": "c_pal_security", "to": "c_pal_challenge", "type": "BLOCKS" },
+    { "from": "c_pal_challenge", "to": "c_pal_plan", "type": "BLOCKS" },
+    { "from": "c_pal_plan", "to": "c_spec", "type": "BLOCKS" },
+    { "from": "c_spec", "to": "c_impl_plan", "type": "BLOCKS" },
+    { "from": "c_impl_plan", "to": "c_load_json", "type": "BLOCKS" },
+    { "from": "c_load_json", "to": "c_orchestrator", "type": "BLOCKS" }
+  ]
+}

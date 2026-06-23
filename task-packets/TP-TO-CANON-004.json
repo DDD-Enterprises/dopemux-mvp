@@ -1,0 +1,72 @@
+{
+  "id": "TP-TO-CANON-004",
+  "project": "dopemux-mvp",
+  "target": "Full dry-run canonical import of all 26 DBs",
+  "invariants": [
+    "No live current-tasks.db writes are allowed before supervised cutover.",
+    "Every imported or materialized row must preserve source provenance.",
+    "Raw note bodies and FTS row exports must remain excluded.",
+    "Task Orchestrator must not be promoted into single PM authority."
+  ],
+  "depends_on": [
+    "TP-TO-CANON-000"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TO-CANON",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/to-canon-intake-000",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(task-orchestrator): add canonical reconciliation dry run",
+    "allowlist": [
+      "task-packets/TP-TO-CANON-004.json",
+      "audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/IMPORT_REPORT.json",
+      "audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json",
+      "audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/CONFLICTS.json",
+      "docs/05-audit-reports/task-orchestrator/to-canon-004-dry-run-20260622.md"
+    ],
+    "verify": [
+      "python -m tools.task_orchestrator_reconcile.import_pack --input /tmp/to-all-dbs-20260622T192814Z --output /tmp/to-canonical-full-dryrun.sqlite --archive /private/tmp/to-all-dbs-20260622T192814Z.tar.gz --redacted-only --resolve-current --emit-report audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/IMPORT_REPORT.json --emit-coldstart audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json --emit-conflicts audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/CONFLICTS.json",
+      "sqlite3 /tmp/to-canonical-full-dryrun.sqlite 'PRAGMA integrity_check;'",
+      "python -m json.tool audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/IMPORT_REPORT.json",
+      "python -m json.tool audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json",
+      "python -m json.tool audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/CONFLICTS.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(task-orchestrator): add canonical reconciliation dry run",
+    "body": "## Summary\n- add offline canonical datastore schema and safe pack importer\n- add deterministic active-source resolver and coldstart reports\n- produce full dry-run reconciliation artifacts for the June 22 pack\n\n## Validation\n- python -m tools.task_orchestrator_reconcile.import_pack --input /tmp/to-all-dbs-20260622T192814Z --output /tmp/to-canonical-full-dryrun.sqlite --archive /private/tmp/to-all-dbs-20260622T192814Z.tar.gz --redacted-only --resolve-current --emit-report audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/IMPORT_REPORT.json --emit-coldstart audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json --emit-conflicts audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/CONFLICTS.json\n- sqlite3 /tmp/to-canonical-full-dryrun.sqlite 'PRAGMA integrity_check;'\n- python -m json.tool audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/IMPORT_REPORT.json\n- python -m json.tool audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/COLDSTART_RECONCILIATION.json\n- python -m json.tool audit_inputs/task-orchestrator-canon/to-all-dbs-20260622T192814Z/CONFLICTS.json\n- git diff --check",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "full-dry-run",
+      "task": "Run full pack import and emit import, coldstart, and conflict reports without live state mutation.",
+      "validation": [
+        "All 26 DBs represented; SQLite integrity check passes; reports parse."
+      ]
+    }
+  ]
+}
