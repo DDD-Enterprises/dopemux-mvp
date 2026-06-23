@@ -257,6 +257,7 @@ extension_manifest:
 | dopecon-bridge                  | Adapter/proxy/event transport mapping.                              | Any canonical authority.                                     | Upstream authority refs; transport proof.                         | ADAPTER_ONLY             | DCP extension mapping          |
 | ADHD Engine                     | Operator-support/cognitive-state hints.                             | PM/memory/retrieval/DCP authority.                           | Read-only signal proof.                                           | EXTENSION_READ           | DCP extension mapping          |
 | GitHub / CI readiness           | Evidence and checks intake.                                         | Semantic proof, merge authority replacement.                 | Current checks, head SHA, PR state, reviewer classification.      | PARTIAL                  | PR Steward proof-readiness     |
+| Leantime                        | PM metadata + sprint/project snapshot mapping.                      | Workflow legality/transitions, decision context, chronicle, technical context. | PM read receipts (canonical_backend=leantime).                    | PARTIAL                  | DCP extension mapping          |
 
 **OBSERVED_BY_FILE:** Dopemux is a mixed workspace, not a single-service monolith, and authority is split by function across dopemux, dopetask, Leantime, task-orchestrator, ConPort, dope-memory, dope-context, dopecon-bridge, ADHD Engine, and Repo-Truth-Extractor.
 
