@@ -1,0 +1,400 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/project_evidence_export.schema.json",
+  "title": "Project Control Plane Evidence Export",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_id",
+    "generated_from_fixture",
+    "profile_ref",
+    "repo_state",
+    "authority_docs",
+    "active_packet",
+    "status_ledger",
+    "proof_manifest",
+    "workflow_list",
+    "pr_review_state",
+    "red_lane_results",
+    "unknowns",
+    "dirty_state",
+    "forbidden_action_confirmation"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.project_evidence_export.v0"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "generated_from_fixture": {
+      "type": "boolean",
+      "default": false
+    },
+    "profile_ref": {
+      "type": "string"
+    },
+    "repo_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root_verified",
+        "worktree_state",
+        "head_sha",
+        "branch"
+      ],
+      "properties": {
+        "root_verified": {
+          "type": "boolean"
+        },
+        "worktree_state": {
+          "type": "string",
+          "enum": [
+            "CLEAN",
+            "DIRTY",
+            "FORBIDDEN",
+            "UNKNOWN"
+          ]
+        },
+        "head_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "authority_docs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "state"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "PRESENT",
+              "ABSENT"
+            ]
+          }
+        }
+      }
+    },
+    "active_packet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "packet_id",
+        "path"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "UNKNOWN",
+            "PRESENT",
+            "ABSENT"
+          ]
+        },
+        "packet_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "status_ledger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "path",
+        "entries"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "UNKNOWN",
+            "PRESENT",
+            "ABSENT"
+          ]
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "status"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "proof_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "path",
+        "freshness"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "UNKNOWN",
+            "PRESENT",
+            "ABSENT"
+          ]
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "freshness": {
+          "type": "string",
+          "enum": [
+            "CURRENT",
+            "STALE",
+            "UNKNOWN"
+          ]
+        }
+      }
+    },
+    "workflow_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "status",
+          "source"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "pr_review_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "authority_allowed",
+        "open_prs"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "UNKNOWN",
+            "PRESENT",
+            "ABSENT"
+          ]
+        },
+        "authority_allowed": {
+          "type": "boolean"
+        },
+        "open_prs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "red_lane_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lane_id",
+          "result",
+          "evidence"
+        ],
+        "properties": {
+          "lane_id": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "BLOCKED",
+              "NEEDS_SUPERVISOR",
+              "NEEDS_EVIDENCE_REFRESH",
+              "UNKNOWN"
+            ]
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "reason",
+          "result"
+        ],
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "BLOCKED",
+              "NEEDS_SUPERVISOR",
+              "NEEDS_EVIDENCE_REFRESH",
+              "UNKNOWN"
+            ]
+          }
+        }
+      }
+    },
+    "dirty_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "paths"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "CLEAN",
+            "DIRTY",
+            "UNKNOWN"
+          ]
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "forbidden_action_confirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "external_workflow_written",
+        "external_runner_executed",
+        "github_mutated",
+        "runtime_written"
+      ],
+      "properties": {
+        "external_workflow_written": {
+          "const": false
+        },
+        "external_runner_executed": {
+          "const": false
+        },
+        "github_mutated": {
+          "const": false
+        },
+        "runtime_written": {
+          "const": false
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "Runtime head_sha gate: a real (non-fixture) export must capture a real head_sha.",
+      "if": {
+        "properties": {
+          "generated_from_fixture": {
+            "const": false
+          }
+        },
+        "required": [
+          "generated_from_fixture"
+        ]
+      },
+      "then": {
+        "required": [
+          "repo_state"
+        ],
+        "properties": {
+          "repo_state": {
+            "required": [
+              "head_sha"
+            ],
+            "properties": {
+              "head_sha": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

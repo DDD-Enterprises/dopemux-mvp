@@ -1,0 +1,327 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/live_write_ready.schema.json",
+  "title": "PCP Live-Write Readiness Gate",
+  "description": "Fail-closed gate contract that every future live write must pass before execution. READY is granted ONLY when ALL preconditions are present and passing. Missing or false ANY precondition forces status to BLOCKED or NEEDS_SUPERVISOR. This contract is a readiness declaration only — it NEVER represents a performed write.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "assertion_id",
+    "operation_ref",
+    "target_surface",
+    "canonical_writer",
+    "allowlist",
+    "approval",
+    "idempotency",
+    "rollback",
+    "dry_run_proof",
+    "independent_audit",
+    "post_write_verification",
+    "status",
+    "blocked_reasons",
+    "live_write_performed",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "pcp.live_write_ready.v0",
+      "description": "Schema version sentinel. Must be exactly 'pcp.live_write_ready.v0'."
+    },
+    "assertion_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this readiness assertion."
+    },
+    "operation_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Reference to the write operation this gate governs (e.g. task-packet ID, PR ref, or operation slug)."
+    },
+    "target_surface": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The surface or resource that would be written (e.g. 'github.pr.merge', 'conport.progress_entry', 'dnh.artifact')."
+    },
+    "canonical_writer": {
+      "type": ["string", "null"],
+      "description": "The authorized canonical writer for this surface. null when the writer is unknown — which forces BLOCKED."
+    },
+    "allowlist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["paths", "diff_within_allowlist"],
+      "description": "Allowlist declaration: the paths the write is permitted to touch and whether the diff is contained.",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Declared allowlist paths the write operation is permitted to touch."
+        },
+        "diff_within_allowlist": {
+          "type": "boolean",
+          "description": "True iff every file the write will touch falls within the declared allowlist paths. False forces BLOCKED."
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approved"],
+      "description": "Human or operator approval for the write operation.",
+      "properties": {
+        "approved": {
+          "type": "boolean",
+          "description": "True iff the write has received required approval. False forces BLOCKED."
+        },
+        "approver": {
+          "type": ["string", "null"],
+          "description": "Identity of the approver (GitHub login, operator ID, etc.)."
+        },
+        "approval_ref": {
+          "type": ["string", "null"],
+          "description": "Reference to the approval artifact (PR comment URL, decision ID, etc.)."
+        }
+      }
+    },
+    "idempotency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["idempotent"],
+      "description": "Idempotency declaration for the write operation.",
+      "properties": {
+        "idempotent": {
+          "type": "boolean",
+          "description": "True iff the write operation is idempotent (safe to replay without side-effects). False forces BLOCKED."
+        },
+        "key": {
+          "type": ["string", "null"],
+          "description": "Idempotency key used to deduplicate replays, or null if not yet established."
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["available"],
+      "description": "Rollback capability declaration.",
+      "properties": {
+        "available": {
+          "type": "boolean",
+          "description": "True iff a concrete rollback path exists and has been identified. False forces BLOCKED."
+        },
+        "plan": {
+          "type": ["string", "null"],
+          "description": "Non-empty rollback plan/command. null is only permitted for non-READY status; a READY assertion requires a non-empty plan."
+        }
+      }
+    },
+    "dry_run_proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["performed"],
+      "description": "Evidence that a dry-run of the write was performed before live execution.",
+      "properties": {
+        "performed": {
+          "type": "boolean",
+          "description": "True iff a dry-run has been performed and its output inspected. False forces BLOCKED."
+        },
+        "proof_ref": {
+          "type": ["string", "null"],
+          "description": "Reference to the dry-run output artifact (path, URL, etc.)."
+        }
+      }
+    },
+    "independent_audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["performed", "independent", "status"],
+      "description": "Independent audit of the write operation (AIR Red Line #9: implementer is not the sole final auditor).",
+      "properties": {
+        "performed": {
+          "type": "boolean",
+          "description": "True iff an audit was performed. False forces BLOCKED."
+        },
+        "independent": {
+          "type": "boolean",
+          "description": "True iff the auditor is independent of the implementer. False forces BLOCKED."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PASS", "FAIL", "NOT_RUN"],
+          "description": "Audit verdict. FAIL or NOT_RUN forces BLOCKED."
+        },
+        "auditor": {
+          "type": ["string", "null"],
+          "description": "Identity of the auditor (model ID, GitHub login, tool name, etc.)."
+        }
+      }
+    },
+    "post_write_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["planned", "performed"],
+      "description": "Post-write verification plan and execution status.",
+      "properties": {
+        "planned": {
+          "type": "boolean",
+          "description": "True iff a post-write verification plan exists. False forces BLOCKED."
+        },
+        "performed": {
+          "type": "boolean",
+          "description": "True iff post-write verification has been performed (expected false at gate-assertion time)."
+        },
+        "verification_ref": {
+          "type": ["string", "null"],
+          "description": "Reference to the verification plan or result artifact."
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["READY", "BLOCKED", "NEEDS_SUPERVISOR"],
+      "description": "Readiness verdict. READY is fail-closed: withheld on ANY missing or false precondition."
+    },
+    "blocked_reasons": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "Enumerated reasons READY was withheld. Must be empty iff status is READY.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "MISSING_CANONICAL_WRITER",
+          "DIFF_OUTSIDE_ALLOWLIST",
+          "MISSING_APPROVAL",
+          "NOT_IDEMPOTENT",
+          "NO_ROLLBACK",
+          "MISSING_DRY_RUN_PROOF",
+          "MISSING_INDEPENDENT_AUDIT",
+          "AUDIT_NOT_INDEPENDENT",
+          "AUDIT_NOT_PASSED",
+          "MISSING_POST_WRITE_VERIFICATION",
+          "UNKNOWN"
+        ]
+      }
+    },
+    "live_write_performed": {
+      "type": "boolean",
+      "const": false,
+      "description": "Always false. This schema is a readiness gate contract only. It NEVER represents a performed write. Const-false is enforced by schema."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime at which this readiness assertion was assembled."
+    },
+    "valid_until": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "ISO 8601 expiry of this readiness assertion. null is permitted only for non-READY status; a READY assertion requires a non-null timestamp. The consuming bridge rejects with GATE_EXPIRED when now > valid_until — the schema enforces presence and format only, not the time comparison."
+    },
+    "payload_digest": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Lowercase SHA-256 hex of the canonical JSON of the exact operation this assertion authorizes. null is permitted only for non-READY status; a READY assertion requires a non-null digest. The consuming bridge rejects with PAYLOAD_DIGEST_MISMATCH when sha256(canonical(operation)) != payload_digest — the schema enforces presence and format only, not the hash comparison."
+    }
+  },
+  "allOf": [
+    {
+      "description": "Fail-closed READY gate: READY requires ALL preconditions satisfied and zero blocked_reasons.",
+      "if": {
+        "properties": { "status": { "const": "READY" } },
+        "required": ["status"]
+      },
+      "then": {
+        "required": [
+          "canonical_writer",
+          "allowlist",
+          "approval",
+          "idempotency",
+          "rollback",
+          "dry_run_proof",
+          "independent_audit",
+          "post_write_verification",
+          "blocked_reasons",
+          "valid_until",
+          "payload_digest"
+        ],
+        "properties": {
+          "canonical_writer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "allowlist": {
+            "properties": {
+              "diff_within_allowlist": { "const": true },
+              "paths": { "type": "array", "minItems": 1 }
+            },
+            "required": ["diff_within_allowlist", "paths"]
+          },
+          "approval": {
+            "properties": {
+              "approved": { "const": true }
+            },
+            "required": ["approved"]
+          },
+          "idempotency": {
+            "properties": {
+              "idempotent": { "const": true }
+            },
+            "required": ["idempotent"]
+          },
+          "rollback": {
+            "properties": {
+              "available": { "const": true },
+              "plan": { "type": "string", "minLength": 1 }
+            },
+            "required": ["available", "plan"]
+          },
+          "dry_run_proof": {
+            "properties": {
+              "performed": { "const": true }
+            },
+            "required": ["performed"]
+          },
+          "independent_audit": {
+            "properties": {
+              "performed": { "const": true },
+              "independent": { "const": true },
+              "status": { "const": "PASS" }
+            },
+            "required": ["performed", "independent", "status"]
+          },
+          "post_write_verification": {
+            "properties": {
+              "planned": { "const": true }
+            },
+            "required": ["planned"]
+          },
+          "blocked_reasons": {
+            "maxItems": 0
+          },
+          "valid_until": {
+            "type": "string",
+            "minLength": 1
+          },
+          "payload_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    {
+      "description": "Fail-closed BLOCKED gate: BLOCKED or NEEDS_SUPERVISOR requires at least one blocked_reason.",
+      "if": {
+        "properties": { "status": { "enum": ["BLOCKED", "NEEDS_SUPERVISOR"] } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "blocked_reasons": { "minItems": 1 }
+        }
+      }
+    }
+  ]
+}
