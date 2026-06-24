@@ -145,3 +145,7 @@
 ## 2026-05-30 - [MUI Tooltip Child Constraints and JSX Validity]
 **Learning:** Material UI `Tooltip` components require exactly one child element to correctly attach event listeners and ARIA attributes. Providing multiple children or failing to close the tag leads to React render errors and invalid JSX. Wrapping multiple elements in a single `Box` or `div` satisfies this requirement while maintaining the desired layout.
 **Action:** Always wrap multiple children of a `Tooltip` in a single container element and ensure component tags are properly closed to avoid UI breakage.
+
+## 2025-05-30 - [Preserving AI Context in Consolidated Tooltips]
+**Learning:** When refactoring multiple nested tooltips into a single "Card-Level" summary, it's easy to lose critical context like the "AI-generated" nature of suggestions. Explicitly labeling these summaries as "AI Insight" or "AI Recommendation" ensures transparency and maintains the user's understanding of the source of the information, which is crucial for building trust in automated systems.
+**Action:** When consolidating metadata into a single tooltip, ensure that the source and nature of suggestions (especially AI-driven ones) are explicitly labeled.
