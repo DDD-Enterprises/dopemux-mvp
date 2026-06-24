@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import pathlib
 from datetime import datetime, timezone
 from typing import Any, Callable, Protocol
 
@@ -34,20 +33,14 @@ from fastapi.responses import JSONResponse
 from jsonschema import Draft202012Validator
 from pydantic import BaseModel, StrictBool
 
-# ---------------------------------------------------------------------------
-# Schema loading — repo-root relative.
-# src/dopemux/pcp/bridge/fastapi_bridge.py -> parents[4] == repo root
-# (file -> bridge -> pcp -> dopemux -> src -> ROOT). One level deeper than the
-# sibling pcp modules (exporter/pr_steward use parents[3]).
-# ---------------------------------------------------------------------------
-_HERE = pathlib.Path(__file__).resolve()
-_REPO_ROOT = _HERE.parents[4]
-_SCHEMA_PATH = (
-    _REPO_ROOT / "schemas" / "project_control_plane" / "live_write_ready.schema.json"
-)
+from .._schemas import load_schema
 
-with _SCHEMA_PATH.open() as _fh:
-    _SCHEMA: dict = json.load(_fh)
+# ---------------------------------------------------------------------------
+# Schema — loaded from bundled package data (dopemux.pcp._schemas) so the
+# validator is available both from the source tree and from an installed wheel.
+# No repo-root-relative path is assumed.
+# ---------------------------------------------------------------------------
+_SCHEMA: dict = load_schema("live_write_ready.schema.json")
 
 _VALIDATOR = Draft202012Validator(_SCHEMA)
 

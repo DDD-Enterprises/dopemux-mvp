@@ -28,30 +28,15 @@ import tempfile
 
 from jsonschema import Draft202012Validator
 
-# ---------------------------------------------------------------------------
-# Schema loading — repo-root-relative, resolved from this file's location.
-# src/dopemux/pcp/negative_cases.py → 4 levels up = repo root
-# ---------------------------------------------------------------------------
-_HERE = pathlib.Path(__file__).resolve()
-_REPO_ROOT = _HERE.parent.parent.parent.parent
-_SCHEMA_PATH = (
-    _REPO_ROOT
-    / "schemas"
-    / "project_control_plane"
-    / "negative_case_result.schema.json"
-)
-_EVIDENCE_SCHEMA_PATH = (
-    _REPO_ROOT
-    / "schemas"
-    / "project_control_plane"
-    / "project_evidence_export.schema.json"
-)
+from ._schemas import load_schema
 
-with _SCHEMA_PATH.open() as _fh:
-    _SCHEMA: dict = json.load(_fh)
-
-with _EVIDENCE_SCHEMA_PATH.open() as _fh:
-    _EVIDENCE_SCHEMA: dict = json.load(_fh)
+# ---------------------------------------------------------------------------
+# Schemas — loaded from bundled package data (dopemux.pcp._schemas) so the
+# validators are available both from the source tree and from an installed
+# wheel. No repo-root-relative path is assumed.
+# ---------------------------------------------------------------------------
+_SCHEMA: dict = load_schema("negative_case_result.schema.json")
+_EVIDENCE_SCHEMA: dict = load_schema("project_evidence_export.schema.json")
 
 _VALIDATOR = Draft202012Validator(_SCHEMA)
 _EVIDENCE_VALIDATOR = Draft202012Validator(_EVIDENCE_SCHEMA)

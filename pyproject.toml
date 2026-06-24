@@ -183,6 +183,7 @@ packages = [
     "dopemux.orchestrator.ui",
     "dopemux.orchestrator.validation",
     "dopemux.pcp",
+    "dopemux.pcp._schemas",
     "dopemux.pcp.bridge",
     "dopemux.pm",
     "dopemux.pm.adapters",
@@ -252,6 +253,7 @@ packages = [
     "init/task-packets/TEMPLATE_TASK_PACKET.md",
 ]
 "dopemux.personas" = ["*.agent.md"]
+"dopemux.pcp._schemas" = ["*.json"]
 "dopemux_pr_steward" = ["config.schema.json"]
 "tools.pr_steward" = ["known_reviewers.json"]
 
