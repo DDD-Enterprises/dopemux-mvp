@@ -29,27 +29,19 @@ Usage::
 from __future__ import annotations
 
 import json
-import pathlib
 import subprocess
 from typing import Any, Callable
 
 from jsonschema import Draft202012Validator
 
-# ---------------------------------------------------------------------------
-# Schema loading — resolved relative to the repo root at import time.
-# src/dopemux/pcp/pr_steward.py  →  4 levels up = repo root
-# ---------------------------------------------------------------------------
-_HERE = pathlib.Path(__file__).resolve()
-_REPO_ROOT = _HERE.parent.parent.parent.parent
-_SCHEMA_PATH = (
-    _REPO_ROOT
-    / "schemas"
-    / "project_control_plane"
-    / "merge_readiness.schema.json"
-)
+from ._schemas import load_schema
 
-with _SCHEMA_PATH.open() as _fh:
-    _SCHEMA: dict = json.load(_fh)
+# ---------------------------------------------------------------------------
+# Schema — loaded from bundled package data (dopemux.pcp._schemas) so the
+# validator is available both from the source tree and from an installed wheel.
+# No repo-root-relative path is assumed.
+# ---------------------------------------------------------------------------
+_SCHEMA: dict = load_schema("merge_readiness.schema.json")
 
 _VALIDATOR = Draft202012Validator(_SCHEMA)
 
