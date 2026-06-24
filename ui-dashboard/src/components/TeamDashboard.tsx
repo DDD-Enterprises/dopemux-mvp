@@ -23,27 +23,29 @@ export default function TeamDashboard() {
   const teamStatus = deriveStatus(teamAverageLoad / 100);
   const teamStatusColor = statusStyles[teamStatus].color;
 
+  const teamInsight = 'Sequence handoffs while average load is below escalation threshold.';
+
   return (
-    <Paper
-      tabIndex={0}
-      aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}.`}
-      sx={{
-        p: 3,
-        borderRadius: 3,
-        background: brandTokens.gradients.focusCard,
-        border: '1px solid transparent',
-        outline: 'none',
-        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        '&:hover, &:focus-visible': {
-          transform: 'translateY(-4px)',
-          borderColor: teamStatusColor,
-          boxShadow: `0 0 20px ${alpha(teamStatusColor, 0.2)}`,
-        },
-      }}
+    <Tooltip
+      title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}
+      arrow
     >
-      <Tooltip
-        title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. Insight: Sequence handoffs while average load is below escalation threshold.`}
-        arrow
+      <Paper
+        tabIndex={0}
+        aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}
+        sx={{
+          p: 3,
+          borderRadius: 3,
+          background: brandTokens.gradients.focusCard,
+          border: '1px solid transparent',
+          outline: 'none',
+          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover, &:focus-visible': {
+            transform: 'translateY(-4px)',
+            borderColor: teamStatusColor,
+            boxShadow: `0 0 20px ${alpha(teamStatusColor, 0.2)}`,
+          },
+        }}
       >
         <Box sx={{ cursor: 'help' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
@@ -190,11 +192,9 @@ export default function TeamDashboard() {
           </Box>
         ))}
       </Box>
-      <Tooltip title="AI-generated team coordination insights" arrow>
-        <Typography variant="body2" color="text.secondary" tabIndex={0} sx={{ mb: 2 }}>
-          Sequence handoffs while average load is below escalation threshold.
-        </Typography>
-      </Tooltip>
+      <Typography variant="body2" color="text.secondary" tabIndex={0} sx={{ mb: 2 }}>
+        {teamInsight}
+      </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
         {teamSignals.map((signal) => (
           <Tooltip key={signal.label} title={`Team signal: ${signal.label} status`} arrow>
@@ -204,15 +204,24 @@ export default function TeamDashboard() {
               tabIndex={0}
               sx={{
                 color: signal.color,
-                border: `1px solid ${alpha(signal.color, 0.55)}`,
+                border: '1px solid transparent',
+                borderColor: alpha(signal.color, 0.55),
                 backgroundColor: alpha(signal.color, 0.08),
                 cursor: 'help',
+                transition: 'all 0.2s ease',
+                '&:hover, &:focus-visible': {
+                  bgcolor: alpha(signal.color, 0.12),
+                  borderColor: signal.color,
+                  boxShadow: `0 0 12px ${alpha(signal.color, 0.3)}`,
+                  transform: 'translateY(-1px)',
+                },
               }}
               variant="outlined"
             />
           </Tooltip>
         ))}
       </Box>
-    </Paper>
+      </Paper>
+    </Tooltip>
   );
 }
