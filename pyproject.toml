@@ -44,6 +44,7 @@ dependencies = [
     "sqlite-utils>=3.30.0",
     "psutil>=5.9.0",
     "pydantic>=2.7.0",
+    "jsonschema>=4.20.0",
     "toml>=0.10.0",
     "docker>=7.0.0",
     "litellm>=1.83.7",
@@ -183,6 +184,7 @@ packages = [
     "dopemux.orchestrator.ui",
     "dopemux.orchestrator.validation",
     "dopemux.pcp",
+    "dopemux.pcp._schemas",
     "dopemux.pcp.bridge",
     "dopemux.pm",
     "dopemux.pm.adapters",
@@ -252,6 +254,7 @@ packages = [
     "init/task-packets/TEMPLATE_TASK_PACKET.md",
 ]
 "dopemux.personas" = ["*.agent.md"]
+"dopemux.pcp._schemas" = ["*.json"]
 "dopemux_pr_steward" = ["config.schema.json"]
 "tools.pr_steward" = ["known_reviewers.json"]
 

@@ -17,7 +17,6 @@ Usage::
 
 from __future__ import annotations
 
-import json
 import os
 import pathlib
 import re
@@ -26,17 +25,14 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
-# ---------------------------------------------------------------------------
-# Schema location — resolved relative to the repo root at import time so the
-# validator is available even when the package is imported from any CWD.
-# ---------------------------------------------------------------------------
-_HERE = pathlib.Path(__file__).resolve()
-# src/dopemux/pcp/exporter.py  →  3 levels up = repo root
-_REPO_ROOT = _HERE.parent.parent.parent.parent
-_SCHEMA_PATH = _REPO_ROOT / "schemas" / "project_control_plane" / "project_evidence_export.schema.json"
+from ._schemas import load_schema
 
-with _SCHEMA_PATH.open() as _fh:
-    _SCHEMA: dict = json.load(_fh)
+# ---------------------------------------------------------------------------
+# Schema — loaded from bundled package data (dopemux.pcp._schemas) so the
+# validator is available both from the source tree and from an installed wheel.
+# No repo-root-relative path is assumed and no CWD is required.
+# ---------------------------------------------------------------------------
+_SCHEMA: dict = load_schema("project_evidence_export.schema.json")
 
 _VALIDATOR = Draft202012Validator(_SCHEMA)
 
