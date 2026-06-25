@@ -145,3 +145,7 @@
 ## 2026-05-30 - [MUI Tooltip Child Constraints and JSX Validity]
 **Learning:** Material UI `Tooltip` components require exactly one child element to correctly attach event listeners and ARIA attributes. Providing multiple children or failing to close the tag leads to React render errors and invalid JSX. Wrapping multiple elements in a single `Box` or `div` satisfies this requirement while maintaining the desired layout.
 **Action:** Always wrap multiple children of a `Tooltip` in a single container element and ensure component tags are properly closed to avoid UI breakage.
+
+## 2025-05-30 - [Consolidating Team Metadata]
+**Learning:** In multi-member dashboard panels (like a Team Signal Board), spreading tooltips across individual members and labels can lead to "hover fatigue." Consolidating member statuses and AI insights into a single root-level "Card-Level Interactive Surface" provides a high-bandwidth status overview in one movement while simplifying keyboard navigation.
+**Action:** Use root-level Tooltips and `aria-label` summaries for team-based dashboard panels to provide a concise, holistic status update.
