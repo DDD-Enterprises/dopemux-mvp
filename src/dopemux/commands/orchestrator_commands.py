@@ -1110,14 +1110,52 @@ def orchestrator_canonical_store():
     help="Cap the number of work items returned (full item_count still reported).",
 )
 @click.option(
+    "--role",
+    "role",
+    default=None,
+    help="Filter items by exact role value (e.g. work, queue, review).",
+)
+@click.option(
+    "--status",
+    "status",
+    default=None,
+    help="Filter items by exact status_label value (e.g. IN_PROGRESS, DONE).",
+)
+@click.option(
+    "--root",
+    "root",
+    default=None,
+    help="Filter items whose canonical_identity starts with this prefix.",
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["table", "json"], case_sensitive=False),
+    default="table",
+    show_default=True,
+    help="Output format: table (human-readable) or json.",
+)
+@click.option(
+    "--include-terminal",
+    "include_terminal",
+    is_flag=True,
+    default=False,
+    help="Include terminal-role items (done, cancelled, archived).",
+)
+@click.option(
     "--json-output",
     "json_output",
     is_flag=True,
-    help="Emit output as JSON.",
+    help="Emit output as JSON (alias for --format json).",
 )
 def orchestrator_canonical_store_inspect(
     db_path: Path,
     limit: Optional[int],
+    role: Optional[str],
+    status: Optional[str],
+    root: Optional[str],
+    output_format: str,
+    include_terminal: bool,
     json_output: bool,
 ):
     """Inspect the offline canonical reconciliation store (read-only, point-in-time).
@@ -1136,7 +1174,14 @@ def orchestrator_canonical_store_inspect(
     if not db_path.exists():
         raise click.ClickException(f"canonical store not found: {db_path}")
     try:
-        view = read_canonical_view(db_path, limit=limit)
+        view = read_canonical_view(
+            db_path,
+            limit=limit,
+            role=role,
+            status=status,
+            root=root,
+            include_terminal=include_terminal,
+        )
     except (ValueError, FileNotFoundError) as exc:
         raise click.ClickException(str(exc)) from exc
     except sqlite3.DatabaseError as exc:
@@ -1144,16 +1189,19 @@ def orchestrator_canonical_store_inspect(
             f"sqlite error reading canonical store: {exc}"
         ) from exc
 
-    if json_output:
+    if json_output or output_format.lower() == "json":
         click.echo(json.dumps(view, indent=2, sort_keys=True, default=str))
         return
 
-    # Human-readable banner — makes point-in-time nature explicit.
+    # Human-readable multi-line banner — makes the point-in-time, non-live nature explicit.
+    click.echo("CANONICAL RECONCILIATION VIEW")
+    click.echo("  mode: read-only")
+    click.echo("  source: offline sqlite")
+    click.echo(f"  valid_as_of: {view['valid_as_of']}")
+    click.echo("  live_state: false")
     click.echo(
-        f"[canonical-store] read-only point-in-time view | "
-        f"valid_as_of={view['valid_as_of']} | "
-        f"source_dbs={view['source_db_count']} | "
-        f"items={view['item_count']}"
+        f"  source_dbs={view['source_db_count']} | items={view['item_count']}"
+        f" | showing={len(view['items'])}"
     )
     for item in view["items"]:
         click.echo(
