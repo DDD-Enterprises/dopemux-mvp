@@ -422,3 +422,131 @@ def test_inspect_surfaces_sqlite_database_error(
     assert result.exit_code != 0
     output = (result.output or "") + str(result.exception or "")
     assert "sqlite error reading canonical store" in output.lower()
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Enhancements: live_state banner + filters (--role/--status/--root/--include-terminal/--format)
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+def _add_work_item(
+    db_path: Path,
+    *,
+    identity: str,
+    role: str,
+    status: str = "QUEUED",
+    title: str = "extra",
+) -> None:
+    """Insert an extra canonical_current_work_items row (read-write, test setup only)."""
+    conn = sqlite3.connect(str(db_path))
+    try:
+        decision_id = conn.execute(
+            "SELECT id FROM reconciliation_decisions LIMIT 1"
+        ).fetchone()[0]
+        conn.execute(
+            """
+            INSERT INTO canonical_current_work_items (
+                source_db_slug, source_database_path, source_schema_hash,
+                source_table, source_row_id, source_mtime_utc, import_run_id,
+                archive_sha256, canonical_identity, role, status_label, title, decision_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                _KNOWN_SLUG, "/fake/path/wt-test.db", "sha256-schema-hash-abc",
+                "work_items", identity, _KNOWN_MTIME, "run-001", "sha256-archive-abc",
+                identity, role, status, title, decision_id,
+            ),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _inspect_json(canonical_db: Path, *extra_args: str) -> dict:
+    monkey_runner = CliRunner()
+    result = monkey_runner.invoke(
+        orchestrator_group,
+        ["canonical-store", "inspect", "--db", str(canonical_db), "--json-output", *extra_args],
+    )
+    assert result.exit_code == 0, result.output
+    import json
+
+    return json.loads(result.output)
+
+
+def test_inspect_table_banner_states_read_only_and_live_state_false(
+    canonical_db: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The default (table) banner must state mode: read-only and live_state: false."""
+    monkeypatch.setenv("CANONICAL_STORE_READ_VIEW_ENABLED", "1")
+    runner = CliRunner()
+    result = runner.invoke(
+        orchestrator_group,
+        ["canonical-store", "inspect", "--db", str(canonical_db)],
+    )
+    assert result.exit_code == 0, result.output
+    out = result.output
+    assert "CANONICAL RECONCILIATION VIEW" in out
+    assert "mode: read-only" in out
+    assert "live_state: false" in out
+    assert f"valid_as_of: {_KNOWN_MTIME}" in out
+
+
+def test_inspect_role_filter(
+    canonical_db: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CANONICAL_STORE_READ_VIEW_ENABLED", "1")
+    match = _inspect_json(canonical_db, "--role", "work")
+    assert [i["canonical_identity"] for i in match["items"]] == [_KNOWN_IDENTITY]
+    miss = _inspect_json(canonical_db, "--role", "nonexistent")
+    assert miss["items"] == []
+    assert miss["item_count"] == 1  # store total unchanged by filter
+
+
+def test_inspect_status_filter(
+    canonical_db: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CANONICAL_STORE_READ_VIEW_ENABLED", "1")
+    assert _inspect_json(canonical_db, "--status", "IN_PROGRESS")["items"]
+    assert _inspect_json(canonical_db, "--status", "NOPE")["items"] == []
+
+
+def test_inspect_root_prefix_filter(
+    canonical_db: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CANONICAL_STORE_READ_VIEW_ENABLED", "1")
+    assert _inspect_json(canonical_db, "--root", "canon-id")["items"]
+    assert _inspect_json(canonical_db, "--root", "zzz-no-match")["items"] == []
+
+
+def test_inspect_excludes_terminal_by_default_includes_with_flag(
+    canonical_db: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CANONICAL_STORE_READ_VIEW_ENABLED", "1")
+    _add_work_item(canonical_db, identity="canon-id-done", role="done")
+    default = _inspect_json(canonical_db)
+    ids_default = {i["canonical_identity"] for i in default["items"]}
+    assert _KNOWN_IDENTITY in ids_default
+    assert "canon-id-done" not in ids_default  # terminal excluded by default
+    assert default["item_count"] == 2  # store total still counts it
+    with_terminal = _inspect_json(canonical_db, "--include-terminal")
+    ids_all = {i["canonical_identity"] for i in with_terminal["items"]}
+    assert "canon-id-done" in ids_all
+
+
+def test_inspect_format_json_matches_json_output(
+    canonical_db: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CANONICAL_STORE_READ_VIEW_ENABLED", "1")
+    import json
+
+    runner = CliRunner()
+    res = runner.invoke(
+        orchestrator_group,
+        ["canonical-store", "inspect", "--db", str(canonical_db), "--format", "json"],
+    )
+    assert res.exit_code == 0, res.output
+    payload = json.loads(res.output)
+    assert payload["valid_as_of"] == _KNOWN_MTIME
+    assert "summary" not in payload["items"][0]

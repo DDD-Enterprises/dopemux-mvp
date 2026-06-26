@@ -14,6 +14,9 @@ from typing import Any, Dict, List, Optional
 
 _EXPECTED_TABLES = frozenset({"source_databases", "canonical_current_work_items"})
 
+# Roles considered terminal — excluded from the operator view unless requested.
+_TERMINAL_ROLES = frozenset({"done", "cancelled", "archived"})
+
 
 def _connect_ro(db_path: Path) -> sqlite3.Connection:
     """Open *db_path* strictly read-only.
@@ -51,6 +54,10 @@ def read_canonical_view(
     db_path: Path,
     *,
     limit: Optional[int] = None,
+    role: Optional[str] = None,
+    status: Optional[str] = None,
+    root: Optional[str] = None,
+    include_terminal: bool = True,
 ) -> Dict[str, Any]:
     """Return a read-only point-in-time summary of the canonical reconciliation store.
 
@@ -69,10 +76,18 @@ def read_canonical_view(
     ``source_db_slug``, ``source_row_id``.  ``summary`` / note bodies are
     intentionally excluded.
 
+    All filter values are applied as parameterised ``?`` placeholders; no filter
+    value is ever interpolated into SQL.
+
     Args:
-        db_path: Path to the offline canonical reconciliation SQLite file.
-        limit:   Optional cap on the number of items returned (``ORDER BY
-                 canonical_identity``).
+        db_path:          Path to the offline canonical reconciliation SQLite file.
+        limit:            Optional cap on items returned (``ORDER BY canonical_identity``).
+        role:             Filter to items with this exact ``role``.
+        status:           Filter to items with this exact ``status_label``.
+        root:             Filter to items whose ``canonical_identity`` starts with
+                          this prefix.
+        include_terminal: When False, exclude terminal-role rows
+                          (``done``/``cancelled``/``archived``). Default True.
 
     Raises:
         FileNotFoundError: ``db_path`` does not exist.
@@ -96,7 +111,27 @@ def read_canonical_view(
             "SELECT COUNT(*) FROM canonical_current_work_items;"
         ).fetchone()[0]
 
-        query = """
+        # Parameterised filters — no filter value is interpolated into SQL.
+        conditions: List[str] = []
+        params: List[Any] = []
+        if not include_terminal:
+            placeholders = ",".join("?" for _ in _TERMINAL_ROLES)
+            conditions.append(f"role NOT IN ({placeholders})")
+            params.extend(sorted(_TERMINAL_ROLES))
+        if role is not None:
+            conditions.append("role = ?")
+            params.append(role)
+        if status is not None:
+            conditions.append("status_label = ?")
+            params.append(status)
+        if root is not None:
+            conditions.append("canonical_identity LIKE ? ESCAPE '\\'")
+            params.append(
+                root.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+            )
+        where_clause = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+
+        query = f"""
             SELECT
                 canonical_identity,
                 role,
@@ -108,12 +143,14 @@ def read_canonical_view(
                 source_db_slug,
                 source_row_id
             FROM canonical_current_work_items
+            {where_clause}
             ORDER BY canonical_identity
         """
         if limit is not None:
-            query += f" LIMIT {int(limit)}"
+            query += " LIMIT ?"
+            params.append(int(limit))
 
-        rows = conn.execute(query).fetchall()
+        rows = conn.execute(query, params).fetchall()
         items: List[Dict[str, Any]] = [dict(row) for row in rows]
     finally:
         conn.close()
