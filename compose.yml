@@ -2,13 +2,15 @@
 #
 # CANONICAL DEVELOPMENT ENTRYPOINT
 # This is the single source of truth for running Dopemux services.
+# SINGLETON TASK-ORCHESTRATOR: Only ONE instance should run across all worktrees.
 #
 # Services Included:
 # - Infrastructure: PostgreSQL (AGE), Redis (2x), Qdrant
 # - MCP Servers: ConPort, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Exa, Desktop Commander, Leantime Bridge
-# - Application Services: DopeconBridge, Task Orchestrator, ADHD Engine
+# - Application Services: DopeconBridge, Task Orchestrator (singleton), ADHD Engine
 #
 # Usage:
+#   export COMPOSE_FILE=compose.yml
 #   docker compose up -d                    # Start all services
 #   docker compose ps                       # View running services
 #   docker compose down                     # Stop all services
@@ -16,7 +18,8 @@
 #
 # Guidelines:
 # - `compose.yml` is the canonical runtime file for this repository.
-# - Do not add overlay compose files for normal runtime operation.
+# - DO NOT invoke `docker compose` from worktree subdirectories.
+# - Always use `COMPOSE_FILE=compose.yml` to lock to canonical file and prevent duplicate task-orchestrator instances.
 # - Instance-aware services must be parameterized through env overrides, not duplicated service definitions.
 
 name: dopemux

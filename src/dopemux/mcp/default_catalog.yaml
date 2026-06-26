@@ -91,13 +91,15 @@ servers:
   task-orchestrator:
     scope: per-worktree
     state_scope: per-repo
-    transport: stdio
-    command: scripts/mcp-wrappers/task-orchestrator-current-stdio.sh
-    args: []
+    transport: http
+    url_template: "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp"
+    port_var: TASK_ORCHESTRATOR_HTTP_PORT
+    default_port_base: 7890
     doctor_args: ["--print-resolution"]
     requires_env: ["TASK_ORCHESTRATOR_PROJECT_ROOT"]
     env_template:
       DOPEMUX_WORKSPACE_ROOT: "${DOPEMUX_WORKSPACE_ROOT:-}"
       DOPEMUX_PROJECT_ROOT: "${DOPEMUX_PROJECT_ROOT:-}"
       TASK_ORCHESTRATOR_PROJECT_ROOT: "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}"
-    description: "Current 13-tool MCP Task Orchestrator with repo-scoped SQLite state"
+      TASK_ORCHESTRATOR_HTTP_PORT: "${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
+    description: "HTTP singleton MCP Task Orchestrator with repo-scoped SQLite state"
