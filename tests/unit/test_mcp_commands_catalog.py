@@ -222,7 +222,7 @@ def test_load_catalog_falls_back_to_bundled_default(tmp_path, monkeypatch):
     catalog = mcp_commands._load_catalog()
 
     task_orchestrator = catalog["servers"]["task-orchestrator"]
-    assert task_orchestrator["transport"] == "stdio"
+    assert task_orchestrator["transport"] == "http"
     assert task_orchestrator["state_scope"] == "per-repo"
     assert task_orchestrator["doctor_args"] == ["--print-resolution"]
 
