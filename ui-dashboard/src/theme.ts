@@ -53,6 +53,38 @@ export const brandTokens = {
   },
 };
 
+export type MetricLabel = 'Energy Level' | 'Attention Focus' | 'Cognitive Load' | '15-min Prediction';
+
+export function deriveStatus(load: number): 'low' | 'optimal' | 'high' | 'critical' {
+  if (load > 0.8) {
+    return 'critical';
+  }
+  if (load > 0.6) {
+    return 'high';
+  }
+  if (load < 0.3) {
+    return 'low';
+  }
+  return 'optimal';
+}
+
+export const getDynamicRoast = (label: MetricLabel, value: number | null) => {
+  if (value === null) return 'Data ghosting. Refreshing...';
+  if (value > 0.8) {
+    if (label === 'Energy Level') return 'Hyperfocus or just vibrating? Slow down.';
+    if (label === 'Attention Focus') return 'Laser vision acquired. Don’t blink.';
+    if (label === 'Cognitive Load') return 'Brain cooking. Steam is visible.';
+    if (label === '15-min Prediction') return 'Future you screaming from the abyss.';
+  }
+  if (value > 0.5) {
+    if (label === 'Energy Level') return "You're sipping ambition like it's lukewarm coffee.";
+    if (label === 'Attention Focus') return 'Focus flirting with you; stop ghosting it.';
+    if (label === 'Cognitive Load') return 'Load creeping up like a brat testing limits.';
+    if (label === '15-min Prediction') return 'Future you pacing. Hydrate before they mutiny.';
+  }
+  return 'The ritual observes you silently. Logged. Hydrate.';
+};
+
 export const statusStyles = {
   low: {
     color: brandTokens.status.low,

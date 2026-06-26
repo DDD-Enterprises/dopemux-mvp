@@ -2,7 +2,7 @@ import { Avatar, Box, Chip, LinearProgress, Paper, Tooltip, Typography } from '@
 import { alpha } from '@mui/material/styles';
 import { Eye, Zap } from 'lucide-react';
 
-import { brandTokens, statusStyles } from '../theme';
+import { brandTokens, statusStyles, deriveStatus } from '../theme';
 
 const teamMembers = [
   { name: 'Operator', load: 42, energy: 78, attention: 82, status: 'optimal' },
@@ -20,14 +20,7 @@ export default function TeamDashboard() {
     teamMembers.reduce((total, member) => total + member.load, 0) / teamMembers.length
   );
 
-  const getStatusFromLoad = (load: number): keyof typeof statusStyles => {
-    if (load > 80) return 'critical';
-    if (load > 60) return 'high';
-    if (load < 30) return 'low';
-    return 'optimal';
-  };
-
-  const teamStatus = getStatusFromLoad(teamAverageLoad);
+  const teamStatus = deriveStatus(teamAverageLoad / 100);
   const teamStatusColor = statusStyles[teamStatus].color;
 
   return (
@@ -52,51 +45,54 @@ export default function TeamDashboard() {
         title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. Insight: Sequence handoffs while average load is below escalation threshold.`}
         arrow
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, cursor: 'help' }}>
-          <Zap size={20} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
-          <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
-            Team Signal Board
-          </Typography>
-          <Box
-            sx={{
-              ml: 'auto',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-            }}
-          >
-            <Typography variant="caption" sx={{ fontWeight: 'bold', color: teamStatusColor }}>
-              {teamAverageLoad}% AVG LOAD
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, cursor: 'help' }}>
+            <Zap size={20} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
+            <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
+              Team Signal Board
             </Typography>
-            <Chip
-              size="small"
-              label={statusStyles[teamStatus].label}
+            <Box
               sx={{
-                bgcolor: alpha(teamStatusColor, 0.1),
-                color: teamStatusColor,
-                border: `1px solid ${teamStatusColor}`,
-                fontWeight: 'bold',
-                fontSize: '0.65rem',
+                ml: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
               }}
-            />
+            >
+              <Typography variant="caption" sx={{ fontWeight: 'bold', color: teamStatusColor }}>
+                {teamAverageLoad}% AVG LOAD
+              </Typography>
+              <Chip
+                size="small"
+                label={statusStyles[teamStatus].label}
+                sx={{
+                  bgcolor: alpha(teamStatusColor, 0.1),
+                  color: teamStatusColor,
+                  border: `1px solid ${teamStatusColor}`,
+                  fontWeight: 'bold',
+                  fontSize: '0.65rem',
+                }}
+              />
+            </Box>
           </Box>
+          <LinearProgress
+            aria-label="Team Average Cognitive Load Percentage"
+            aria-valuetext={`${teamAverageLoad}%`}
+            variant="determinate"
+            value={teamAverageLoad}
+            sx={{
+              mb: 2,
+              height: 8,
+              borderRadius: 6,
+              bgcolor: alpha(teamStatusColor, 0.1),
+              '& .MuiLinearProgress-bar': {
+                bgcolor: teamStatusColor,
+                borderRadius: 3,
+              },
+            }}
+          />
         </Box>
-        <LinearProgress
-          aria-label="Team Average Cognitive Load Percentage"
-          aria-valuetext={`${teamAverageLoad}%`}
-          variant="determinate"
-          value={teamAverageLoad}
-          sx={{
-            mb: 2,
-            height: 8,
-            borderRadius: 6,
-            bgcolor: alpha(teamStatusColor, 0.1),
-            '& .MuiLinearProgress-bar': {
-              bgcolor: teamStatusColor,
-              borderRadius: 3,
-            },
-          }}
-        />
+      </Tooltip>
       <Box sx={{ display: 'grid', gap: 1.5, mb: 2 }}>
         {teamMembers.map((member) => (
           <Box
