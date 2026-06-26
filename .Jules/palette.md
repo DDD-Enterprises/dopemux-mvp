@@ -137,3 +137,7 @@
 ## 2025-05-29 - [Consolidating Interactive Surfaces]
 **Learning:** In high-density dashboards, nested tooltips (e.g., a card-level tooltip and an internal progress bar tooltip) can create visual clutter and "tooltip fighting." Consolidating metadata into a single, high-level Card-Level Interactive Surface provides a cleaner experience while maintaining accessibility.
 **Action:** When making a panel root focusable and adding a summary Tooltip, remove redundant nested Tooltips from internal metrics to reduce cognitive load.
+
+## 2025-05-30 - [Status-Driven Reactive Dashboard Harmonization]
+**Learning:** In personality-driven dashboards (e.g., using 'roasts' and status-coordinated colors), visual consistency across 'Current' and 'Predicted' states is vital for user trust. Centralizing status-derivation logic (`deriveStatus`) and feedback strings (`getDynamicRoast`) ensures that a critical forecast (e.g., 0.85 load) feels as urgent and brand-aligned as a current critical state, reducing cognitive dissonance during transitions between current and future data views.
+**Action:** Centralize status-to-styling logic in shared utilities to ensure all dashboard components—including predictive ones—share the same reactive thresholds, animations (e.g., `predictive-pulse`), and personality-driven feedback.

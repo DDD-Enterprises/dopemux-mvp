@@ -28,10 +28,12 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('aria-label="15-Minute Load Prediction Percentage"');
   expect(content).toContain('aria-valuetext');
   expect(content).toContain('Prediction Loading...');
-  expect(content).toMatch(/<Tooltip[^>]*title="15-minute forecast: AI-driven projection of your cognitive load"[^>]*arrow/);
+  expect(content).toMatch(/aria-label=\{\s*hasPrediction\s*\?\s*`Fifteen minute prediction \$\{value\} percent, \$\{statusMeta\.label\}\. \$\{roast\}`\s*:\s*'No prediction available'\s*\}/);
+  expect(content).toMatch(/<Tooltip[^>]*title=\{\s*hasPrediction\s*\?\s*`15-minute forecast: \$\{statusMeta\.label\} \(\$\{value\}%\)\. \$\{roast\}`\s*:\s*'15-minute forecast: AI-driven projection of your cognitive load'\s*\}/);
   expect(content).toContain('tabIndex={0}');
   expect(content).toContain("cursor: 'help'");
   expect(content).toContain('&:hover, &:focus-visible');
+  expect(content).toContain('@keyframes predictive-pulse');
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {

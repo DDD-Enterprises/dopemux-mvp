@@ -45,7 +45,7 @@ import { getNotificationColor } from './notificationColors';
 import PredictionPanel from './components/PredictionPanel';
 import TaskSequencer from './components/TaskSequencer';
 import TeamDashboard from './components/TeamDashboard';
-import theme, { brandTokens, statusStyles } from './theme';
+import theme, { brandTokens, statusStyles, deriveStatus, getDynamicRoast, MetricLabel } from './theme';
 
 interface CognitiveState {
   energy: number;
@@ -93,19 +93,6 @@ const attentionMap: Record<string, number> = {
   overwhelmed: 0.2,
 };
 
-function deriveStatus(load: number): CognitiveState['status'] {
-  if (load > 0.8) {
-    return 'critical';
-  }
-  if (load > 0.6) {
-    return 'high';
-  }
-  if (load < 0.3) {
-    return 'low';
-  }
-  return 'optimal';
-}
-
 function mapAggregateState(payload: AggregateDashboardState): CognitiveState {
   const load = payload.cognitive_load?.cognitive_load ?? 0.5;
   return {
@@ -135,25 +122,6 @@ export function mapRealtimeState(message: Record<string, unknown>): CognitiveSta
     recommendation: String(data.recommendation || 'No active recommendation'),
   };
 }
-
-type MetricLabel = 'Energy Level' | 'Attention Focus' | 'Cognitive Load' | '15-min Prediction';
-
-const getDynamicRoast = (label: MetricLabel, value: number | null) => {
-  if (value === null) return 'Data ghosting. Refreshing...';
-  if (value > 0.8) {
-    if (label === 'Energy Level') return 'Hyperfocus or just vibrating? Slow down.';
-    if (label === 'Attention Focus') return 'Laser vision acquired. Don’t blink.';
-    if (label === 'Cognitive Load') return 'Brain cooking. Steam is visible.';
-    if (label === '15-min Prediction') return 'Future you screaming from the abyss.';
-  }
-  if (value > 0.5) {
-    if (label === 'Energy Level') return "You're sipping ambition like it's lukewarm coffee.";
-    if (label === 'Attention Focus') return 'Focus flirting with you; stop ghosting it.';
-    if (label === 'Cognitive Load') return 'Load creeping up like a brat testing limits.';
-    if (label === '15-min Prediction') return 'Future you pacing. Hydrate before they mutiny.';
-  }
-  return 'The ritual observes you silently. Logged. Hydrate.';
-};
 
 const formatTimestamp = (dateStr: string) => {
   const date = new Date(dateStr);
@@ -398,8 +366,21 @@ function App() {
     {
       label: '15-min Prediction' as const,
       value: cognitiveState.prediction ?? null,
-      icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
-      accentColor: brandTokens.colors.giltEdge,
+      icon: (
+        <TrendingUp
+          color={
+            cognitiveState.prediction !== undefined
+              ? statusStyles[deriveStatus(cognitiveState.prediction)].color
+              : brandTokens.colors.giltEdge
+          }
+          size={24}
+          aria-hidden="true"
+        />
+      ),
+      accentColor:
+        cognitiveState.prediction !== undefined
+          ? statusStyles[deriveStatus(cognitiveState.prediction)].color
+          : brandTokens.colors.giltEdge,
       roast: getDynamicRoast('15-min Prediction', cognitiveState.prediction ?? null),
       tooltip: 'AI-driven forecast of your cognitive state for the next 15 minutes',
     },
