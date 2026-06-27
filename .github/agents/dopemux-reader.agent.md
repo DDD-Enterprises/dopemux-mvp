@@ -2,7 +2,7 @@
 description: 'Read-only Dopemux repo investigation on the cheap model lane — no edits, exact evidence'
 name: 'Dopemux Reader'
 tools: ['read', 'search']
-model: VERIFY_WITH_VENDOR_DOCS  # cheap_read lane — operator must replace with a supported cheap Copilot model
+model: 'Claude Sonnet 4.5'  # cheap_read lane baseline (repo-established Copilot model)
 target: 'vscode'
 infer: true
 handoffs:

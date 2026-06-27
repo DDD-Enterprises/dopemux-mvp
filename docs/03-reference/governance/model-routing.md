@@ -29,8 +29,8 @@ does not dispatch model calls.
 
 This policy assigns a **stage slot** (cheap_read → investigation → planner_strong →
 implementer_standard → judge_strong → self_audit) and an appropriate model tier to
-each AI development tool (Codex, Copilot, Claude Code, AGY, Gemini CLI, xAI,
-Moonshot, OpenRouter) operating on this repo.
+each AI development tool (Codex, OpenCode, Copilot, Claude Code, AGY, Gemini CLI,
+xAI, Moonshot, OpenRouter) operating on this repo.
 
 The goal is to ensure cheap models gather facts but never make architecture or
 security decisions, and that implementation and judgment always operate under approved
@@ -76,6 +76,7 @@ Verdict values for `self_audit`: `PASS` · `PASS_WITH_RISKS` · `FAIL` ·
 | Provider | cheap_read | planner_strong | implementer_standard | judge_strong / self_audit |
 |----------|-----------|---------------|---------------------|--------------------------|
 | Codex | VERIFY_WITH_VENDOR_DOCS (cheap_fast tier) | VERIFY_WITH_VENDOR_DOCS (strong_reasoning) | VERIFY_WITH_VENDOR_DOCS (coding_balanced) | VERIFY_WITH_VENDOR_DOCS (strong_reasoning / audit_strong) |
+| OpenCode | VERIFY_WITH_VENDOR_DOCS (session model / cheap_fast intent) | `.opencode/agents/pal-planner.md` | VERIFY_WITH_VENDOR_DOCS (session model / coding_balanced intent) | `.opencode/agents/pal-reviewer.md` |
 | Copilot | `dopemux-reader.agent.md` | `dopemux-planner.agent.md` | `dopemux-implementer.agent.md` | `dopemux-auditor.agent.md` |
 | Claude Code | VERIFY_WITH_VENDOR_DOCS (Haiku / Sonnet-low) | VERIFY_WITH_VENDOR_DOCS (opusplan: Opus plans, Sonnet implements) | VERIFY_WITH_VENDOR_DOCS (Sonnet) | VERIFY_WITH_VENDOR_DOCS (Opus) |
 | AGY | VERIFY_WITH_VENDOR_DOCS (Flash tier) | VERIFY_WITH_VENDOR_DOCS (Pro-high tier) | VERIFY_WITH_VENDOR_DOCS (Claude Sonnet in-AGY) | VERIFY_WITH_VENDOR_DOCS (Pro-high) |
@@ -84,6 +85,15 @@ Verdict values for `self_audit`: `PASS` · `PASS_WITH_RISKS` · `FAIL` ·
 | Moonshot | VERIFY_WITH_VENDOR_DOCS (Kimi thinking=off) | VERIFY_WITH_VENDOR_DOCS (Kimi thinking=on) | VERIFY_WITH_VENDOR_DOCS (coding_balanced) | VERIFY_WITH_VENDOR_DOCS (Kimi thinking=on) |
 | OpenRouter | VERIFY_WITH_VENDOR_DOCS (broker, pinned cheap) | VERIFY_WITH_VENDOR_DOCS (broker, pinned strong) | VERIFY_WITH_VENDOR_DOCS (broker, pinned coding) | VERIFY_WITH_VENDOR_DOCS (broker, pinned strong + deterministic provider) |
 
+> **Copilot baseline (OBSERVED):** all routed agents (`reader`, `planner`,
+> `implementer`, `auditor`) pin `model: 'Claude Sonnet 4.5'`; lane separation is
+> enforced by tool scope.
+>
+> **OpenCode baseline (OBSERVED):** `opencode.jsonc` loads `AGENTS.md` +
+> `config/instructions/pal-opencode-guide.md`; strong planning and self-audit are
+> routed through `.opencode/agents/pal-planner.md` and
+> `.opencode/agents/pal-reviewer.md`.
+>
 > **Note on OBSERVED model ids**: `gpt-5.4-mini`, `gpt-5.3-codex`, `gpt-5.2`,
 > `grok-code-fast-1`, `grok-4-1-fast` are OBSERVED in `model_map_v2_tp008.yaml` /
 > `tests/test_routing_config.py` as **RTE extraction lane selectors**. `gpt-5.5` is
@@ -207,10 +217,13 @@ same verdict space.
 
 ## 9. Known limitations / unresolved facts
 
-- **Copilot model tiers**: Whether VS Code Copilot accepts `model:` strings beyond
-  the repo's current `'Claude Sonnet 4.5'` (implementer) and what cheap/strong
-  alternatives are available is **UNKNOWN**. Cheap/strong intent is enforced via
-  tool scope (read+search vs. edit) rather than per-agent model selection.
+- **Copilot model tiers**: All four routed Copilot agents now pin
+  `'Claude Sonnet 4.5'` (**OBSERVED**). A distinct cheap-vs-strong model split in
+  VS Code Copilot remains **UNKNOWN** until vendor-verified alternatives are wired.
+
+- **OpenCode stage model binding**: OpenCode planner/audit stages are explicitly
+  routed through PAL subagents, but stage-specific model selector strings are still
+  operator-configurable and remain **VERIFY_WITH_VENDOR_DOCS**.
 
 - **Agent model naming drift**: The `auditor_model` schema enum lists
   `claude-sonnet-4.6` (`schemas/proof/embedded_audit.schema.json:45-54`) while
