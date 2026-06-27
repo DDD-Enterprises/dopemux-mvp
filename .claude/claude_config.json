@@ -10,14 +10,14 @@
         "DOPEMUX_INSTANCE_ID",
         "-e",
         "DOPEMUX_WORKSPACE_ID",
-        "mcp-conport_claude/pcp-conformance-repair-0001",
+        "mcp-conport_claude/tp-dmx-orch-followup-packets",
         "uvx",
         "--from",
         "context-portal-mcp",
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "claude/pcp-conformance-repair-0001",
+        "DOPEMUX_INSTANCE_ID": "claude/tp-dmx-orch-followup-packets",
         "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
       }
     },
