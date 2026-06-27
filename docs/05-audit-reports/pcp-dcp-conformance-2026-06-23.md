@@ -1,15 +1,15 @@
 ---
 id: AUD-PCP-DCP-CONFORMANCE-2026-06-23
-title: PCP/DCP Conformance Audit Classification — 2026-06-23
-type: audit-report
+title: "PCP/DCP Conformance Audit Classification \u2014 2026-06-23"
+type: reference
 owner: '@hu3mann'
 author: claude
 date: '2026-06-23'
 last_review: '2026-06-23'
 next_review: '2026-09-23'
-prelude: Classification of PCP/DCP conformance findings from external audit + local re-verification, with PAL multi-model validation and operator/supervisor rulings.
+prelude: Classification of PCP/DCP conformance findings from external audit + local
+  re-verification, with PAL multi-model validation and operator/supervisor rulings.
 ---
-
 # PCP/DCP Conformance Audit Classification — 2026-06-23
 
 **Audit basis:** External auditor reviewed PCP/DCP at `517e6dd4a` (GitHub API only). Local re-verification performed via 3 Explore agents + direct reads + greps + real wheel build/clean-venv install. PAL multi-model validation: gpt-5.2, gpt-5.5 (neutral 8/10), gemini-2.5-pro (adversarial 9/10, conceded all facts). Operator + supervisor issued the final classification.
