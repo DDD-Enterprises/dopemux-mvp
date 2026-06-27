@@ -493,6 +493,20 @@ def write_run_manifest(
     batch_poll_seconds = int(getattr(args, "batch_poll_seconds", 30))
     batch_wait_timeout_seconds = int(getattr(args, "batch_wait_timeout_seconds", 86400))
     batch_max_requests_per_job = int(getattr(args, "batch_max_requests_per_job", 2000))
+    cost_profile = str(getattr(args, "cost_profile", "") or "")
+    cost_profile_input = getattr(args, "_cost_profile_input", None)
+    model_alias_overrides = dict(
+        getattr(args, "_resolved_model_alias_overrides", ()) or ()
+    )
+    disabled_providers = list(
+        getattr(args, "_resolved_disabled_providers", ()) or ()
+    )
+    cost_profile_metadata: Dict[str, Any] = dict(
+        getattr(args, "_cost_profile_metadata", None) or {}
+    )
+    provider_surface_summary: str = str(
+        getattr(args, "_provider_surface_summary", None) or ""
+    )
     manifest = {
         "run_id": run_id,
         "generated_at": deps.now_iso(),
@@ -526,7 +540,11 @@ def write_run_manifest(
             "retry_max_seconds": args.retry_max_seconds,
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
             "partition_workers": args.partition_workers,
+            "cost_profile": cost_profile or None,
+            "cost_profile_input": cost_profile_input,
             "routing_policy": routing_policy,
+            "model_aliases": model_alias_overrides,
+            "disabled_providers": disabled_providers,
             "disable_escalation": disable_escalation,
             "escalation_max_hops": escalation_max_hops,
             "batch_mode": batch_mode,
@@ -591,8 +609,14 @@ def write_run_manifest(
         "run_status": RUN_STATUS_BLOCKED if run_blocked else RUN_STATUS_OK,
         "phase_status": "blocked_promptset" if run_blocked else "ready",
         "blocked_promptset": run_blocked,
+        "cost_profile": cost_profile or None,
+        "cost_profile_input": cost_profile_input,
+        "cost_profile_metadata": cost_profile_metadata or None,
+        "provider_surface_summary": provider_surface_summary or None,
         "routing_policy": routing_policy,
         "routing_policy_version": deps.routing_policy_version,
+        "model_aliases": model_alias_overrides,
+        "disabled_providers": disabled_providers,
         "routing_step_tiers": {
             phase: {
                 spec.step_id: deps.resolve_effective_step_tier(
