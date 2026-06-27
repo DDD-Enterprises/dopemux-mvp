@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import re
 import subprocess
 from typing import Any
 
@@ -68,6 +69,32 @@ def _proof_pointers(root: pathlib.Path) -> list[dict[str, Any]]:
     return pointers
 
 
+_HEAD_SHA_FIELDS = ("head", "head_sha", "git_sha", "commit_sha", "commit", "sha")
+_SHA_RE = re.compile(r"^[0-9a-f]{7,64}$")
+
+
+def _proof_freshness(proof_path: pathlib.Path, head_sha: str) -> str:
+    """Freshness of a proof artifact relative to the current repo head.
+
+    CURRENT when the artifact records the current head SHA, STALE when it records a
+    different one, UNKNOWN when it is not JSON or carries no recognizable head-SHA
+    field. Proof-bundle formats are heterogeneous; this reads only a recognized field
+    (dopemux ``PROOF.json`` uses ``head``) and never guesses freshness otherwise.
+    """
+    data = _load_json(proof_path)
+    if not data:
+        return "UNKNOWN"
+    current = head_sha.strip().lower()
+    for field in _HEAD_SHA_FIELDS:
+        recorded = data.get(field)
+        if isinstance(recorded, str) and _SHA_RE.match(recorded.strip().lower()):
+            recorded = recorded.strip().lower()
+            if recorded == current or current.startswith(recorded) or recorded.startswith(current):
+                return "CURRENT"
+            return "STALE"
+    return "UNKNOWN"
+
+
 def export_evidence_with_dcp(repo_path: str | os.PathLike = ".") -> dict:
     """Generic PCP export enriched with DCP proof-family data when the repo is a DCP project.
 
@@ -88,14 +115,16 @@ def export_evidence_with_dcp(repo_path: str | os.PathLike = ".") -> dict:
     ]
 
     if present:
+        proof_path = present[0]["path"]
+        freshness = _proof_freshness(root / proof_path, result["repo_state"]["head_sha"])
         result["proof_manifest"] = {
             "state": "PRESENT",
-            "path": present[0]["path"],
-            "freshness": "UNKNOWN",
+            "path": proof_path,
+            "freshness": freshness,
         }
         reason = (
             f"DCP proof-family mapping resolved: {len(present)}/{len(pointers)} declared "
-            "proof root(s) present; SHA-based freshness deferred."
+            f"proof root(s) present; freshness={freshness} (from recorded head SHA)."
         )
     else:
         result["proof_manifest"] = {"state": "ABSENT", "path": None, "freshness": "UNKNOWN"}

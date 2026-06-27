@@ -97,3 +97,27 @@ def test_dcp_with_absent_proof_root(tmp_path: pathlib.Path) -> None:
     assert _schema_errors(result) == []
     reasons = [u["reason"] for u in result["unknowns"] if u["field"] == "proof_manifest"]
     assert reasons and "no declared proof root present" in reasons[0]
+
+
+def _head_sha(path: pathlib.Path) -> str:
+    return subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=path, text=True
+    ).strip()
+
+
+def test_dcp_proof_freshness_current_when_head_matches(tmp_path: pathlib.Path) -> None:
+    _make_dcp_repo(tmp_path, with_proof=False)
+    (tmp_path / "PROOF.json").write_text(json.dumps({"head": _head_sha(tmp_path)}))
+    result = export_evidence_with_dcp(tmp_path)
+    pm = result["proof_manifest"]
+    assert pm["state"] == "PRESENT"
+    assert pm["freshness"] == "CURRENT"
+    assert _schema_errors(result) == []
+
+
+def test_dcp_proof_freshness_stale_when_head_differs(tmp_path: pathlib.Path) -> None:
+    _make_dcp_repo(tmp_path, with_proof=False)
+    (tmp_path / "PROOF.json").write_text(json.dumps({"head": "0" * 40}))
+    result = export_evidence_with_dcp(tmp_path)
+    assert result["proof_manifest"]["freshness"] == "STALE"
+    assert _schema_errors(result) == []
