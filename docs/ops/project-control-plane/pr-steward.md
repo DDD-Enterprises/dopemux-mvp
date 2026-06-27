@@ -4,6 +4,11 @@ title: Generic PCP PR Steward (Advisory)
 type: reference
 owner: '@hu3mann'
 date: '2026-06-23'
+author: '@hu3mann'
+last_review: '2026-06-26'
+next_review: '2026-09-24'
+prelude: Generic PCP PR Steward (Advisory) (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Generic PCP PR Steward
 

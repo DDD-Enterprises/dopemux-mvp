@@ -4,6 +4,11 @@ title: PCP/DCP Activation Readiness (Fail-Closed)
 type: reference
 owner: '@hu3mann'
 date: '2026-06-23'
+author: '@hu3mann'
+last_review: '2026-06-26'
+next_review: '2026-09-24'
+prelude: PCP/DCP Activation Readiness (Fail-Closed) (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # PCP/DCP Activation Readiness
 
