@@ -137,3 +137,7 @@
 ## 2025-05-29 - [Consolidating Interactive Surfaces]
 **Learning:** In high-density dashboards, nested tooltips (e.g., a card-level tooltip and an internal progress bar tooltip) can create visual clutter and "tooltip fighting." Consolidating metadata into a single, high-level Card-Level Interactive Surface provides a cleaner experience while maintaining accessibility.
 **Action:** When making a panel root focusable and adding a summary Tooltip, remove redundant nested Tooltips from internal metrics to reduce cognitive load.
+
+## 2026-05-30 - [MUI Tooltip Child Constraints and JSX Validity]
+**Learning:** Material UI `Tooltip` components require exactly one child element to correctly attach event listeners and ARIA attributes. Providing multiple children or failing to close the tag leads to React render errors and invalid JSX. Wrapping multiple elements in a single `Box` or `div` satisfies this requirement while maintaining the desired layout.
+**Action:** Always wrap multiple children of a `Tooltip` in a single container element and ensure component tags are properly closed to avoid UI breakage.
