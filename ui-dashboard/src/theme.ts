@@ -112,18 +112,6 @@ export const statusStyles = {
   },
 } as const;
 
-export function deriveStatus(load: number): keyof typeof statusStyles {
-  if (load > 0.8) {
-    return 'critical';
-  }
-  if (load > 0.6) {
-    return 'high';
-  }
-  if (load < 0.3) {
-    return 'low';
-  }
-  return 'optimal';
-}
 
 const theme = createTheme({
   palette: {
