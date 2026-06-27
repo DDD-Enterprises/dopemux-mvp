@@ -149,3 +149,8 @@
 ## 2025-05-30 - [Consolidating Team Metadata]
 **Learning:** In multi-member dashboard panels (like a Team Signal Board), spreading tooltips across individual members and labels can lead to "hover fatigue." Consolidating member statuses and AI insights into a single root-level "Card-Level Interactive Surface" provides a high-bandwidth status overview in one movement while simplifying keyboard navigation.
 **Action:** Use root-level Tooltips and `aria-label` summaries for team-based dashboard panels to provide a concise, holistic status update.
+
+## 2026-05-30 - [Status-Driven Reactive UX & Emotional Context]
+**Learning:** Purely numerical metrics can be abstract and "dry." Using a centralized status utility (`deriveStatus`) to drive a synchronized suite of visual cues—coordinated colors, dynamic borders, reactive animations (like pulses for critical states), and personality-driven text ("roasts")—creates a cohesive "at-a-glance" experience. This reduces the user's cognitive effort to interpret high-stakes metrics by providing both logical and emotional context.
+**Action:** Synchronize multiple visual and textual channels (color, animation, voice) using a shared status utility to provide high-bandwidth, intuitive feedback for critical dashboard metrics.
+
