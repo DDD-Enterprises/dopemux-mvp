@@ -123,6 +123,27 @@ def test_clean_ready_assertion_is_valid():
     assert errors == [], [str(e) for e in errors]
 
 
+def test_signed_ready_assertion_is_valid():
+    """Optional issuer/signature/authenticity fields are additive (A1 activation
+    readiness): a READY assertion carrying them validates. Authenticity is decided
+    by the bridge verifier, never by the schema (which only declares the slots)."""
+    signed = _ready_assertion(
+        issuer="trusted-issuer",
+        issued_at="2026-06-27T00:00:00Z",
+        key_id="key-1",
+        signature_alg="ed25519",
+        signature={"detached": "base64-signature"},
+        authenticity={
+            "required": True,
+            "verified": False,
+            "issuer": "trusted-issuer",
+            "verification_ref": None,
+        },
+    )
+    errors = _schema_errors(signed)
+    assert errors == [], [str(e) for e in errors]
+
+
 # ---------------------------------------------------------------------------
 # 3. Per-precondition rejection tests
 #    Each sets status="READY" with exactly ONE bad precondition → ≥1 schema error.
