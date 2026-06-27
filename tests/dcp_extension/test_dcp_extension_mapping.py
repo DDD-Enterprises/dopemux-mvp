@@ -212,9 +212,17 @@ class TestNegativeTamper:
 # 6. Packet-5 scope lock — exactly the ten target systems, manifest in sync
 # ---------------------------------------------------------------------------
 class TestPacketScope:
-    """Packet 5 maps its ten original target systems plus Leantime (added as a post-P5 loose-end
-    amendment, closing the AIR §7 gap). GitHub/CI readiness is still deferred to the PR Steward
-    proof-readiness packet. Guards against scope drift."""
+    """Packet-5 scope-lock, modelled as TWO planes:
+
+    - ADAPTER plane: the eleven MCP-system owners (ten Packet-5 targets + Leantime).
+      Their owners must equal EXPECTED_SYSTEMS and stay 1:1 with the manifest
+      adapter_mappings. This plane is unchanged by the proof-family work.
+    - PROOF-FAMILY plane: ``proof.*`` domains map repo proof artifacts (not an MCP
+      system) into PCP proof pointers; the project itself is the owner, so these
+      entries are guarded separately and are NOT part of adapter_mappings.
+
+    Entries are assigned to a plane by domain prefix (``proof.*`` → proof-family).
+    Guards against scope drift on both planes."""
 
     EXPECTED_SYSTEMS = {
         "task-orchestrator",
@@ -229,20 +237,45 @@ class TestPacketScope:
         "pr-steward",
         "leantime",
     }
+    EXPECTED_PROOF_OWNERS = {"dopemux"}
 
-    def test_mapped_systems_match_packet_target(self):
-        owners = {e["canonical_authority_owner"] for e in AUTHORITY_INST["entries"]}
+    @staticmethod
+    def _adapter_owners() -> set:
+        return {
+            e["canonical_authority_owner"]
+            for e in AUTHORITY_INST["entries"]
+            if not e["domain"].startswith("proof.")
+        }
+
+    @staticmethod
+    def _proof_owners() -> set:
+        return {
+            e["canonical_authority_owner"]
+            for e in AUTHORITY_INST["entries"]
+            if e["domain"].startswith("proof.")
+        }
+
+    def test_adapter_systems_match_packet_target(self):
+        owners = self._adapter_owners()
         assert owners == self.EXPECTED_SYSTEMS, (
-            f"DCP authority-map systems drifted from the Packet 5 target. "
+            f"DCP adapter-plane systems drifted from the Packet 5 target. "
             f"Unexpected: {owners - self.EXPECTED_SYSTEMS}; Missing: {self.EXPECTED_SYSTEMS - owners}"
         )
 
-    def test_manifest_adapter_mappings_match_authority_owners(self):
-        owners = {e["canonical_authority_owner"] for e in AUTHORITY_INST["entries"]}
+    def test_manifest_adapter_mappings_match_adapter_owners(self):
+        owners = self._adapter_owners()
         adapter_mappings = set(MANIFEST_INST["capabilities"]["adapter_mappings"])
         assert adapter_mappings == owners, (
-            f"manifest adapter_mappings out of sync with authority-map owners. "
+            f"manifest adapter_mappings out of sync with adapter-plane owners. "
             f"Only in manifest: {adapter_mappings - owners}; only in map: {owners - adapter_mappings}"
+        )
+
+    def test_proof_family_owners_locked(self):
+        owners = self._proof_owners()
+        assert owners == self.EXPECTED_PROOF_OWNERS, (
+            f"DCP proof-family plane drifted. "
+            f"Unexpected: {owners - self.EXPECTED_PROOF_OWNERS}; "
+            f"Missing: {self.EXPECTED_PROOF_OWNERS - owners}"
         )
 
 
@@ -281,3 +314,43 @@ class TestLeantimeEntry:
     def test_leantime_canonical_writer_is_null(self):
         entry = self._leantime_entry()
         assert entry["canonical_writer"] is None
+
+
+# ---------------------------------------------------------------------------
+# 8. Proof-family entry focused test — A2 proof-family follow-up
+# ---------------------------------------------------------------------------
+class TestProofFamilyEntry:
+    """Focused assertions for the proof.dopemux_family read ADAPTER entry.
+
+    The proof family is a distinct plane from the MCP adapter set: the project
+    itself owns its proof artifacts (PROOF.json / SUMMARY.md), so this entry is
+    NOT part of manifest.adapter_mappings, yet stays fully read-only/fail-closed."""
+
+    @staticmethod
+    def _proof_entry() -> dict:
+        entries = [
+            e for e in AUTHORITY_INST["entries"]
+            if e["domain"] == "proof.dopemux_family"
+        ]
+        assert len(entries) == 1, (
+            f"Expected exactly one proof.dopemux_family entry; found {len(entries)}"
+        )
+        return entries[0]
+
+    def test_proof_entry_exists_and_reads(self):
+        entry = self._proof_entry()
+        assert entry["action"] == "read"
+        assert entry["canonical_authority_owner"] == "dopemux"
+
+    def test_proof_entry_is_read_only_adapter(self):
+        entry = self._proof_entry()
+        assert entry["surface_class"] == "ADAPTER"
+        assert entry["live_write_allowed"] is False
+        assert entry["canonical_writer"] is None
+        assert entry["unknown_behavior"] == "BLOCK_OR_ESCALATE"
+
+    def test_proof_entry_not_in_adapter_mappings(self):
+        # Clean two-plane model: the proof family must NOT pollute the MCP adapter set.
+        adapter_mappings = set(MANIFEST_INST["capabilities"]["adapter_mappings"])
+        assert "dopemux" not in adapter_mappings
+        assert self._proof_entry()["canonical_authority_owner"] not in adapter_mappings
