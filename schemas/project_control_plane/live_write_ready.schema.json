@@ -223,6 +223,37 @@
       "type": ["string", "null"],
       "pattern": "^[0-9a-f]{64}$",
       "description": "Lowercase SHA-256 hex of the canonical JSON of the exact operation this assertion authorizes. null is permitted only for non-READY status; a READY assertion requires a non-null digest. The consuming bridge rejects with PAYLOAD_DIGEST_MISMATCH when sha256(canonical(operation)) != payload_digest — the schema enforces presence and format only, not the hash comparison."
+    },
+    "issuer": {
+      "type": ["string", "null"],
+      "description": "Trusted issuer identity for this assertion. Schema presence only — the bridge verifier confirms authenticity; the schema never asserts trust."
+    },
+    "issued_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "ISO 8601 issuance timestamp. Schema presence only — the bridge verifier confirms freshness and binding."
+    },
+    "key_id": {
+      "type": ["string", "null"],
+      "description": "Signing key identifier when cryptographic verification is used."
+    },
+    "signature_alg": {
+      "type": ["string", "null"],
+      "description": "Signature algorithm identifier when cryptographic verification is used."
+    },
+    "signature": {
+      "description": "Detached signature payload (object or string). Schema presence only — the bridge verifier confirms validity."
+    },
+    "authenticity": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Self-reported authenticity metadata. The bridge NEVER treats authenticity.verified as truth without an injected verifier PASS.",
+      "properties": {
+        "required": { "type": "boolean" },
+        "verified": { "type": "boolean" },
+        "issuer": { "type": ["string", "null"] },
+        "verification_ref": { "type": ["string", "null"] }
+      }
     }
   },
   "allOf": [

@@ -34,6 +34,16 @@ from jsonschema import Draft202012Validator
 from pydantic import BaseModel, StrictBool
 
 from .._schemas import load_schema
+from .assertion_auth import (
+    NoTrustedIssuerVerifier,
+    ReadyAssertionVerifier,
+    requires_assertion_verification,
+)
+from .authority_binding import (
+    AuthorityMapBinding,
+    FailClosedAuthorityBinding,
+    requires_authority_binding,
+)
 
 # ---------------------------------------------------------------------------
 # Schema — loaded from bundled package data (dopemux.pcp._schemas) so the
@@ -223,6 +233,8 @@ def route_mutation(
     execute: bool = False,
     writer_registry: dict[str, Writer] | None = None,
     dedup_store: "DedupStore | None" = None,
+    assertion_verifier: ReadyAssertionVerifier | None = None,
+    authority_binding: AuthorityMapBinding | None = None,
     now: datetime | None = None,
 ) -> dict:
     """Route a single mutation through the fail-closed live-write gate.
@@ -298,6 +310,47 @@ def route_mutation(
             reasons=["CANONICAL_WRITER_NOT_REGISTERED"], operation_ref=op_ref, target_surface=op_surface,
         )
 
+    # 6b. Assertion authentication — required when a writer registry is active.
+    if requires_assertion_verification(execute=execute, writer_registry=registry):
+        verifier = assertion_verifier or NoTrustedIssuerVerifier()
+        try:
+            auth_ok, auth_reasons = verifier.verify(gate, operation=operation)
+        except Exception as exc:  # noqa: BLE001 — fail-closed on verifier failure.
+            return _result(
+                mode=_MODE_REJECTED, permitted=True, executed=False,
+                reasons=["ASSERTION_VERIFY_FAILED:" + type(exc).__name__],
+                operation_ref=op_ref, target_surface=op_surface,
+            )
+        if not auth_ok:
+            return _result(
+                mode=_MODE_REJECTED, permitted=True, executed=False,
+                reasons=auth_reasons or ["ASSERTION_UNAUTHENTICATED"],
+                operation_ref=op_ref, target_surface=op_surface,
+            )
+
+    # 6c. Authority-map binding — required when a writer registry is active.
+    if requires_authority_binding(execute=execute, writer_registry=registry):
+        binding = authority_binding or FailClosedAuthorityBinding()
+        writer_name = canonical_writer_name if isinstance(canonical_writer_name, str) else ""
+        try:
+            bind_ok, bind_reasons = binding.authorize(
+                target_surface=op_surface,
+                canonical_writer=writer_name,
+                operation=operation,
+            )
+        except Exception as exc:  # noqa: BLE001 — fail-closed on binding failure.
+            return _result(
+                mode=_MODE_REJECTED, permitted=True, executed=False,
+                reasons=["AUTHORITY_BINDING_FAILED:" + type(exc).__name__],
+                operation_ref=op_ref, target_surface=op_surface,
+            )
+        if not bind_ok:
+            return _result(
+                mode=_MODE_REJECTED, permitted=True, executed=False,
+                reasons=bind_reasons or ["AUTHORITY_BINDING_DENIED"],
+                operation_ref=op_ref, target_surface=op_surface,
+            )
+
     # 7. Idempotency dedup on assertion_id (record BEFORE the call).
     key = gate.get("assertion_id")
     if not isinstance(key, str) or not key:
@@ -353,6 +406,8 @@ def create_bridge_router(
     *,
     writer_registry: dict[str, Writer] | None = None,
     dedup_store: "DedupStore | None" = None,
+    assertion_verifier: ReadyAssertionVerifier | None = None,
+    authority_binding: AuthorityMapBinding | None = None,
 ) -> APIRouter:
     """Build the bridge ``APIRouter``.
 
@@ -377,6 +432,8 @@ def create_bridge_router(
             execute=req.execute,
             writer_registry=writer_registry,
             dedup_store=_dedup_store,
+            assertion_verifier=assertion_verifier,
+            authority_binding=authority_binding,
         )
         code = (
             http_status.HTTP_403_FORBIDDEN
@@ -392,6 +449,8 @@ def create_bridge_app(
     *,
     writer_registry: dict[str, Writer] | None = None,
     dedup_store: "DedupStore | None" = None,
+    assertion_verifier: ReadyAssertionVerifier | None = None,
+    authority_binding: AuthorityMapBinding | None = None,
 ) -> FastAPI:
     """Build a standalone FastAPI app mounting the bridge router.
 
@@ -400,6 +459,11 @@ def create_bridge_app(
     """
     app = FastAPI(title="PCP Live-Write Bridge", version="0.1.0")
     app.include_router(
-        create_bridge_router(writer_registry=writer_registry, dedup_store=dedup_store)
+        create_bridge_router(
+            writer_registry=writer_registry,
+            dedup_store=dedup_store,
+            assertion_verifier=assertion_verifier,
+            authority_binding=authority_binding,
+        )
     )
     return app
