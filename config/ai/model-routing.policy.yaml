@@ -1,9 +1,9 @@
 # Dopemux Development Model-Routing Policy
 # ----------------------------------------------------------------------------
 # Machine-readable, repo-governed stage-routing policy for AI development
-# workflows across Codex, GitHub Copilot custom agents, Claude Code / CC,
-# AGY / Google Antigravity, Gemini CLI, xAI / Grok, Moonshot / Kimi,
-# and OpenRouter-backed routes.
+# workflows across Codex, OpenCode, GitHub Copilot custom agents,
+# Claude Code / CC, AGY / Google Antigravity, Gemini CLI, xAI / Grok,
+# Moonshot / Kimi, and OpenRouter-backed routes.
 #
 # STATUS: proposed governance policy. This file is ADVISORY GOVERNANCE, not a
 # runtime router. It records which *stage* (read / investigate / plan /
@@ -199,6 +199,18 @@ provider_routes:
       - "OBSERVED in config/pricing.yaml: gpt-5.5"
       - "Codex CLI model selector format and available model names require VERIFY_WITH_VENDOR_DOCS"
 
+  opencode:
+    cheap_read: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
+    investigation: VERIFY_WITH_VENDOR_DOCS  # tier intent: cheap_fast
+    planner_strong: .opencode/agents/pal-planner.md
+    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced
+    judge_strong: .opencode/agents/pal-reviewer.md
+    self_audit: .opencode/agents/pal-reviewer.md
+    notes:
+      - "OpenCode loads instruction surfaces from opencode.jsonc (AGENTS.md + config/instructions/pal-opencode-guide.md) — OBSERVED in repo."
+      - "planner_strong and self_audit are delegated through PAL subagents (.opencode/agents/pal-planner.md, .opencode/agents/pal-reviewer.md)."
+      - "OpenCode model selector strings are operator-configurable; exact stage bindings remain VERIFY_WITH_VENDOR_DOCS."
+
   copilot:
     cheap_read: .github/agents/dopemux-reader.agent.md
     investigation: .github/agents/dopemux-reader.agent.md
@@ -208,9 +220,9 @@ provider_routes:
     self_audit: .github/agents/dopemux-auditor.agent.md
     notes:
       - "Copilot routes to .github/agents/*.agent.md custom agents — OBSERVED in this repo"
-      - "Agent model: field is VERIFY_WITH_VENDOR_DOCS for read/plan/audit lanes; implementer uses repo-established Claude Sonnet 4.5"
-      - "Cheap/strong intent is enforced via tool scope: read+search only (reader/planner/auditor) vs read+edit (implementer)"
-      - "Whether VS Code Copilot accepts arbitrary model: strings beyond currently deployed values is UNKNOWN"
+      - "All routed Copilot agents pin model: Claude Sonnet 4.5 (reader, planner, implementer, auditor)."
+      - "Cheap/strong intent is primarily enforced via tool scope: read+search only (reader/planner/auditor) vs read+edit (implementer)."
+      - "Per-agent cheap/strong model tier split in VS Code Copilot remains UNKNOWN without vendor-verified model availability."
 
   claude_code:
     cheap_read: VERIFY_WITH_VENDOR_DOCS      # tier intent: cheap_fast (Haiku / Sonnet-low)
