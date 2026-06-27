@@ -527,3 +527,48 @@ def test_upgrades_validate_live_accepts_phase_slice_stage_and_provider() -> None
     config = mocked.call_args.args[0]
     assert config.stage == "phase_slice"
     assert config.selected_provider == "xai"
+
+
+def test_rte_run_forwards_cost_profile_controls() -> None:
+    runner = CliRunner()
+    with patch("dopemux.cli._run_extractor_runner") as mocked:
+        result = runner.invoke(
+            cli,
+            [
+                "rte",
+                "run",
+                "--pipeline-version",
+                "v5",
+                "--phase",
+                "A",
+                "--dry-run",
+                "--cost-profile",
+                "rte-cost-balanced",
+                "--model-alias",
+                "SYNTH_MODEL=openai/gpt-5.5",
+                "--disable-provider",
+                "openai",
+                "--max-cost-usd",
+                "12.5",
+                "--routing-policy",
+                "balanced_openrouter",
+            ],
+        )
+
+    assert result.exit_code == 0, result.output
+    mocked.assert_called_once()
+    args = mocked.call_args.kwargs["args"]
+    assert "--cost-profile" in args and "rte-cost-balanced" in args
+    assert "--model-alias" in args and "SYNTH_MODEL=openai/gpt-5.5" in args
+    assert "--disable-provider" in args and "openai" in args
+    assert "--max-cost-usd" in args and "12.5" in args
+    policy_index = args.index("--routing-policy")
+    assert args[policy_index + 1] == "balanced_openrouter"
+
+
+def test_rte_run_help_lists_cost_profile_controls() -> None:
+    runner = CliRunner()
+    result = runner.invoke(cli, ["rte", "run", "--help"])
+    assert result.exit_code == 0, result.output
+    for flag in ("--cost-profile", "--model-alias", "--disable-provider", "--max-cost-usd"):
+        assert flag in result.output

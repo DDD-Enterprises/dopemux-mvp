@@ -5150,24 +5150,29 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
 )
 @click.option(
     "--cost-profile",
+    type=str,
     default=None,
-    help="RTE cost profile or rte-cost-* alias to pass to the v5 runner.",
+    help="RTE cost profile or logical rte-cost-* alias (preferred over --routing-policy).",
 )
 @click.option(
     "--model-alias",
+    "model_aliases",
     multiple=True,
-    help="Override a runner cell alias as ALIAS=provider/model. Repeatable.",
+    metavar="KEY=ROUTE",
+    help="Override a cell alias (e.g. SYNTH_MODEL=openai/gpt-5.5). Repeatable.",
 )
 @click.option(
     "--disable-provider",
+    "disabled_providers",
     multiple=True,
-    help="Disable a provider route in the v5 runner. Repeatable.",
+    metavar="PROVIDER",
+    help="Disable a provider for this run (openai, gemini, xai, openrouter, anthropic).",
 )
 @click.option(
     "--max-cost-usd",
     type=float,
     default=None,
-    help="Forward a hard spend cap to the v5 runner.",
+    help="Maximum spend in USD for this run (profile default applied when unset).",
 )
 @click.option("--disable-escalation", is_flag=True, default=False, show_default=True)
 @click.option("--escalation-max-hops", type=int, default=2, show_default=True)
@@ -5224,8 +5229,8 @@ def extractor_run(
     max_partitions_per_step: Optional[int],
     routing_policy: Optional[str],
     cost_profile: Optional[str],
-    model_alias: tuple[str, ...],
-    disable_provider: tuple[str, ...],
+    model_aliases: tuple[str, ...],
+    disabled_providers: tuple[str, ...],
     max_cost_usd: Optional[float],
     disable_escalation: bool,
     escalation_max_hops: int,
@@ -5300,10 +5305,10 @@ def extractor_run(
         args.extend(["--routing-policy", effective_routing_policy])
     if cost_profile:
         args.extend(["--cost-profile", cost_profile])
-    for alias in model_alias:
-        args.extend(["--model-alias", alias])
-    for provider in disable_provider:
-        args.extend(["--disable-provider", provider])
+    for model_alias in model_aliases:
+        args.extend(["--model-alias", model_alias])
+    for disabled_provider in disabled_providers:
+        args.extend(["--disable-provider", disabled_provider])
     if max_cost_usd is not None:
         args.extend(["--max-cost-usd", str(float(max_cost_usd))])
     if disable_escalation:

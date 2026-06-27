@@ -15,6 +15,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[3]
 SERVICE_ROOT = ROOT / "services" / "repo-truth-extractor"
 if str(SERVICE_ROOT) not in sys.path:
@@ -86,6 +88,10 @@ def test_each_profile_has_required_fields() -> None:
         "cost_cap_mode",
         "notes",
         "cell_aliases",
+        "workload_class",
+        "governance_posture",
+        "provider_surface",
+        "allowed_payload_sensitivity",
     }
     for name, profile in runner.COST_PROFILES.items():
         missing = required - set(profile.keys())
@@ -101,10 +107,11 @@ def test_each_profile_has_required_fields() -> None:
 
 
 def test_new_profiles_set_a_cost_cap() -> None:
-    # value-default and quality are intentionally uncapped (operator explicitly
-    # accepts cost for the default + production go/no-go lanes). Every other
-    # profile — including all Plan B additions — MUST carry a numeric cap so we
-    # don't repeat the audit's uncapped-profile finding.
+    # value-default and quality carry their own caps but are excluded from this
+    # enforcement gate (the operator explicitly owns cost for the default and
+    # production go/no-go lanes). Every other profile — including all Plan B
+    # additions — MUST carry a numeric cap so we don't repeat the audit's
+    # uncapped-profile finding.
     uncapped_by_design = {"value-default", "quality"}
     for name, profile in runner.COST_PROFILES.items():
         if name in uncapped_by_design:
@@ -161,17 +168,46 @@ def test_resolve_cost_profile_handles_all_inputs() -> None:
     assert runner.resolve_cost_profile("Quality")[0] == "quality"
 
 
-def test_resolve_cost_profile_accepts_rte_cost_aliases() -> None:
-    assert runner.resolve_cost_profile("rte-cost-economy")[0] == "economy"
-    assert runner.resolve_cost_profile("rte-cost-value-default")[0] == "value-default"
-    assert runner.resolve_cost_profile("rte-cost-quality-mix")[0] == "quality-mix"
+@pytest.mark.parametrize(
+    ("alias", "expected"),
+    [
+        ("rte-cost-prescan-cheap", "economy"),
+        ("rte-cost-balanced", "value-default"),
+        ("rte-cost-structured", "openai-heavy"),
+        ("rte-cost-batch-backfill", "economy"),
+        ("rte-cost-high-reliability", "quality"),
+        ("rte-cost-governance-safe-direct", "openai-heavy"),
+        ("rte-cost-aggregator-benchmark", "openrouter-resilient"),
+    ],
+)
+def test_logical_cost_profile_aliases_resolve_to_canonical(alias: str, expected: str) -> None:
+    name, profile = runner.resolve_cost_profile(alias)
+    assert name == expected
+    assert profile is runner.COST_PROFILES[expected]
 
 
-def test_sandbox_free_profile_alias_is_blocked_until_enforceable() -> None:
-    import pytest
+def test_logical_alias_metadata_is_present_for_each_alias() -> None:
+    required = {
+        "workload_class",
+        "governance_posture",
+        "allowed_payload_sensitivity",
+        "provider_surface",
+        "fail_closed_if",
+        "profile_notes",
+    }
+    for alias in runner.COST_PROFILE_ALIAS_METADATA:
+        metadata = runner.COST_PROFILE_ALIAS_METADATA[alias]
+        assert required <= set(metadata.keys())
+        assert metadata["profile_notes"] == runner._OBSERVED_PROFILE_NOTES
 
-    assert "rte-cost-sandbox-free" not in runner.COST_PROFILES
-    with pytest.raises(ValueError, match="rte-cost-sandbox-free"):
+
+def test_unknown_rte_cost_alias_fails_closed() -> None:
+    with pytest.raises(ValueError, match="Unknown logical cost profile alias"):
+        runner.resolve_cost_profile("rte-cost-not-real")
+
+
+def test_sandbox_free_alias_is_blocked() -> None:
+    with pytest.raises(ValueError, match="BLOCKED"):
         runner.resolve_cost_profile("rte-cost-sandbox-free")
 
 
@@ -374,13 +410,17 @@ def test_cli_help_lists_new_flags() -> None:
         check=False,
     )
     help_text = result.stdout + result.stderr
+    help_text_clean = help_text.replace("\n", "").replace(" ", "")
     assert "--cost-profile" in help_text
     assert "--disable-provider" in help_text
     assert "--model-alias" in help_text
     assert "--routing-policy" in help_text  # legacy retained
     # Cost profile choices (dynamic from COST_PROFILES.keys()).
     for name in EXPECTED_PROFILES:
-        assert name in help_text, f"--cost-profile choice {name} missing from --help"
+        assert name in help_text_clean, f"--cost-profile choice {name} missing from --help"
+    # Logical rte-cost-* aliases must also appear in --help choices.
+    for alias in runner.COST_PROFILE_ALIAS_METADATA:
+        assert alias in help_text_clean, f"--cost-profile alias {alias} missing from --help"
 
 
 # ---------------------------------------------------------------------------
