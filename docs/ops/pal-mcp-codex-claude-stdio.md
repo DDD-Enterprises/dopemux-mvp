@@ -1,3 +1,15 @@
+---
+id: pal-mcp-codex-claude-stdio
+title: Pal Mcp Codex Claude Stdio
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-27'
+last_review: '2026-06-27'
+next_review: '2026-09-25'
+prelude: Pal Mcp Codex Claude Stdio (explanation) for dopemux documentation and developer
+  workflows.
+---
 # PAL MCP — Codex & Claude Code (operator runbook)
 
 Dopemux also ships `mcp-pal` / `mcp-pal-stdio` in `compose.yml` (HTTP :3003 and toolkit
