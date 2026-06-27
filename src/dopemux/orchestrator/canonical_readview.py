@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional
 _EXPECTED_TABLES = frozenset({"source_databases", "canonical_current_work_items"})
 
 # Roles considered terminal — excluded from the operator view unless requested.
-_TERMINAL_ROLES = frozenset({"done", "cancelled", "archived"})
+_TERMINAL_ROLES = frozenset({"done", "cancelled", "archived", "terminal"})
 
 
 def _connect_ro(db_path: Path) -> sqlite3.Connection:
@@ -57,7 +57,7 @@ def read_canonical_view(
     role: Optional[str] = None,
     status: Optional[str] = None,
     root: Optional[str] = None,
-    include_terminal: bool = True,
+    include_terminal: bool = False,
 ) -> Dict[str, Any]:
     """Return a read-only point-in-time summary of the canonical reconciliation store.
 
@@ -85,9 +85,9 @@ def read_canonical_view(
         role:             Filter to items with this exact ``role``.
         status:           Filter to items with this exact ``status_label``.
         root:             Filter to items whose ``canonical_identity`` starts with
-                          this prefix.
+          this prefix.
         include_terminal: When False, exclude terminal-role rows
-                          (``done``/``cancelled``/``archived``). Default True.
+          (``done``/``cancelled``/``archived``/``terminal``). Default False.
 
     Raises:
         FileNotFoundError: ``db_path`` does not exist.
