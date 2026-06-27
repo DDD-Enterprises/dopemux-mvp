@@ -94,7 +94,6 @@ export default function TeamDashboard() {
             }}
           />
         </Box>
-      </Tooltip>
       <Box sx={{ display: 'grid', gap: 1.5, mb: 2 }}>
         {teamMembers.map((member) => (
           <Box
