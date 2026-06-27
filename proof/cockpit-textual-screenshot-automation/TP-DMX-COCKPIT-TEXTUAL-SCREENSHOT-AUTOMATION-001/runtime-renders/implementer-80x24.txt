@@ -1,0 +1,37 @@
+# Dopemux Cockpit mode=Implementer
+STATIC DEMO  NO WRITES  no live PM mutations
+runtime_surface: artifact-derived static continuation
+READY_FOR_CLAUDE_DESIGN: not approved
+viewport: 80x24
+modes:   PM   | [ Implementer ] |   Overview   |   Services   |   Events
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[chrome] top_level_modes: PM | Implementer | Overview | Services | Events
+[chrome] secondary_surfaces: Command Palette | Settings/Admin/Runtime | Safe Act
+[chrome] SRC omitted on chrome; data rows below carry SRC labels
+[implementer] task packet execution handoff; no runtime mutation
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃LEFT RAIL  task packet queue                                                  ┃
+┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃
+┃domain: implementation_queue                                                  ┃
+┃authority: dopetask external execution runtime                                ┃
+┃role: derived                                                                 ┃
+┃next_action: inspect_packet                                                   ┃
+┃SRC=dopetask                                                                  ┃
+┃[LOGGED] task packet TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001 status=planni┃
+┃[EDGE] execution agent requires validated packet and clean worktree           ┃
+┃task packet handoff: commit-sized scope, proof bundle required                ┃
+┃UNKNOWN: supervisor approval freshness must be rechecked before mutation      ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃CENTER  proof and validation lane                                             ┃
+┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃
+┃domain: implementation_evidence                                               ┃
+┃authority: proof bundle and repo tests                                        ┃
+┃role: canonical                                                               ┃
+┃next_action: validate                                                         ┃
+┃SRC=proof-bundle                                                              ┃
+┃[LOGGED] proof bundle records commands, exit codes, residual risks            ┃
+┃[BLOCKED] final design readiness remains not approved                         ┃
+┃required checks: packet schema, focused pytest, compileall, diff check        ┃
+┃no service start/stop, workflow transition, or PM mutation is executable here ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
