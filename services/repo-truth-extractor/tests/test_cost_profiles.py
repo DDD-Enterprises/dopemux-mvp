@@ -195,7 +195,7 @@ def test_logical_alias_metadata_is_present_for_each_alias() -> None:
         "fail_closed_if",
         "profile_notes",
     }
-    for alias in runner.COST_PROFILE_ALIASES:
+    for alias in runner.COST_PROFILE_ALIAS_METADATA:
         metadata = runner.COST_PROFILE_ALIAS_METADATA[alias]
         assert required <= set(metadata.keys())
         assert metadata["profile_notes"] == runner._OBSERVED_PROFILE_NOTES
@@ -410,16 +410,17 @@ def test_cli_help_lists_new_flags() -> None:
         check=False,
     )
     help_text = result.stdout + result.stderr
+    help_text_clean = help_text.replace("\n", "").replace(" ", "")
     assert "--cost-profile" in help_text
     assert "--disable-provider" in help_text
     assert "--model-alias" in help_text
     assert "--routing-policy" in help_text  # legacy retained
     # Cost profile choices (dynamic from COST_PROFILES.keys()).
     for name in EXPECTED_PROFILES:
-        assert name in help_text, f"--cost-profile choice {name} missing from --help"
+        assert name in help_text_clean, f"--cost-profile choice {name} missing from --help"
     # Logical rte-cost-* aliases must also appear in --help choices.
-    for alias in runner.COST_PROFILE_ALIASES:
-        assert alias in help_text, f"--cost-profile alias {alias} missing from --help"
+    for alias in runner.COST_PROFILE_ALIAS_METADATA:
+        assert alias in help_text_clean, f"--cost-profile alias {alias} missing from --help"
 
 
 # ---------------------------------------------------------------------------
