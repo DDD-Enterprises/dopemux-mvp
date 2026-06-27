@@ -29,6 +29,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from dopemux.pcp.bridge import fastapi_bridge as bridge
+from dopemux.pcp.bridge.authority_binding import binding_from_entries
 from dopemux.pcp.bridge.fastapi_bridge import (
     InProcessDedupStore,
     RedisDedupStore,
@@ -91,6 +92,46 @@ def _ready_gate_for(operation: dict, **overrides) -> dict:
     }
     gate.update(overrides)
     return gate
+
+
+class _PassVerifier:
+    def verify(self, assertion: dict, *, operation: dict) -> tuple[bool, list[str]]:
+        _ = (assertion, operation)
+        return (True, [])
+
+
+def _authority_entry(
+    *,
+    domain: str = "github.pr.merge",
+    canonical_writer: str = "dopemux.test_writer",
+) -> dict:
+    return {
+        "domain": domain,
+        "action": "mutate",
+        "canonical_authority_owner": "test-owner",
+        "canonical_writer": canonical_writer,
+        "surface_class": "SOURCE",
+        "reader_or_projection_surface": domain,
+        "source_truth_refs": ["test-fixture"],
+        "proof_required": True,
+        "live_write_allowed": True,
+        "approval_required": True,
+        "rollback_required": True,
+        "unknown_behavior": "BLOCK_OR_ESCALATE",
+    }
+
+
+def _activation_kwargs(
+    writer_name: str = "dopemux.test_writer",
+    *,
+    domain: str = "github.pr.merge",
+) -> dict:
+    return {
+        "assertion_verifier": _PassVerifier(),
+        "authority_binding": binding_from_entries(
+            [_authority_entry(domain=domain, canonical_writer=writer_name)]
+        ),
+    }
 
 
 class _SpyWriter:
@@ -223,8 +264,15 @@ class TestRoute:
         spy = _SpyWriter(result={"merged": True})
         op = _operation()
         gate = _ready_gate_for(op)
-        r = route_mutation(op, live_write_ready=gate, execute=True,
-                           writer_registry=self._writer_reg(spy), dedup_store=InProcessDedupStore(), now=_NOW)
+        r = route_mutation(
+            op,
+            live_write_ready=gate,
+            execute=True,
+            writer_registry=self._writer_reg(spy),
+            dedup_store=InProcessDedupStore(),
+            now=_NOW,
+            **_activation_kwargs(),
+        )
         assert r["mode"] == "LIVE" and r["executed"] is True
         assert r["writer_result"] == {"merged": True}
         assert len(spy.calls) == 1 and spy.calls[0] == op
@@ -242,8 +290,15 @@ class TestRoute:
         spy = _SpyWriter(raises=RuntimeError("boom"))
         op = _operation()
         gate = _ready_gate_for(op)
-        r = route_mutation(op, live_write_ready=gate, execute=True,
-                           writer_registry=self._writer_reg(spy), dedup_store=InProcessDedupStore(), now=_NOW)
+        r = route_mutation(
+            op,
+            live_write_ready=gate,
+            execute=True,
+            writer_registry=self._writer_reg(spy),
+            dedup_store=InProcessDedupStore(),
+            now=_NOW,
+            **_activation_kwargs(),
+        )
         assert r["mode"] == "REJECTED" and r["executed"] is False
         assert any(reason.startswith("WRITER_RAISED") for reason in r["reasons"])
 
@@ -299,8 +354,15 @@ class TestBinding:
         spy = _SpyWriter()
         op = _operation(pr_id=42, head_sha="abc123")
         gate = _ready_gate_for(op)
-        r = route_mutation(op, live_write_ready=gate, execute=True,
-                           writer_registry={"dopemux.test_writer": spy}, dedup_store=InProcessDedupStore(), now=_NOW)
+        r = route_mutation(
+            op,
+            live_write_ready=gate,
+            execute=True,
+            writer_registry={"dopemux.test_writer": spy},
+            dedup_store=InProcessDedupStore(),
+            now=_NOW,
+            **_activation_kwargs(),
+        )
         assert r["mode"] == "LIVE" and len(spy.calls) == 1
 
 
@@ -323,8 +385,15 @@ class TestRegistry:
         spy = _SpyWriter()
         op = _operation()
         gate = _ready_gate_for(op, canonical_writer="dopemux.real_writer")
-        r = route_mutation(op, live_write_ready=gate, execute=True,
-                           writer_registry={"dopemux.real_writer": spy}, dedup_store=InProcessDedupStore(), now=_NOW)
+        r = route_mutation(
+            op,
+            live_write_ready=gate,
+            execute=True,
+            writer_registry={"dopemux.real_writer": spy},
+            dedup_store=InProcessDedupStore(),
+            now=_NOW,
+            **_activation_kwargs(writer_name="dopemux.real_writer"),
+        )
         assert r["mode"] == "LIVE" and len(spy.calls) == 1
 
 
@@ -339,10 +408,25 @@ class TestDedup:
         gate = _ready_gate_for(op, assertion_id="assert-dedup-1")
         store = InProcessDedupStore()
         reg = {"dopemux.test_writer": spy}
-        first = route_mutation(op, live_write_ready=gate, execute=True,
-                               writer_registry=reg, dedup_store=store, now=_NOW)
-        second = route_mutation(op, live_write_ready=gate, execute=True,
-                                writer_registry=reg, dedup_store=store, now=_NOW)
+        activation = _activation_kwargs()
+        first = route_mutation(
+            op,
+            live_write_ready=gate,
+            execute=True,
+            writer_registry=reg,
+            dedup_store=store,
+            now=_NOW,
+            **activation,
+        )
+        second = route_mutation(
+            op,
+            live_write_ready=gate,
+            execute=True,
+            writer_registry=reg,
+            dedup_store=store,
+            now=_NOW,
+            **activation,
+        )
         assert first["mode"] == "LIVE"
         assert second["mode"] == "REJECTED" and "DUPLICATE_SUPPRESSED" in second["reasons"]
         assert len(spy.calls) == 1  # writer called exactly once total
@@ -415,10 +499,25 @@ class TestRedisDedupStore:
         client = _FakeRedisClient()
         redis_store = RedisDedupStore(client)
         reg = {"dopemux.test_writer": spy}
-        first = route_mutation(op, live_write_ready=gate, execute=True,
-                               writer_registry=reg, dedup_store=redis_store, now=_NOW)
-        second = route_mutation(op, live_write_ready=gate, execute=True,
-                                writer_registry=reg, dedup_store=redis_store, now=_NOW)
+        activation = _activation_kwargs()
+        first = route_mutation(
+            op,
+            live_write_ready=gate,
+            execute=True,
+            writer_registry=reg,
+            dedup_store=redis_store,
+            now=_NOW,
+            **activation,
+        )
+        second = route_mutation(
+            op,
+            live_write_ready=gate,
+            execute=True,
+            writer_registry=reg,
+            dedup_store=redis_store,
+            now=_NOW,
+            **activation,
+        )
         assert first["mode"] == "LIVE" and first["executed"] is True
         assert second["mode"] == "REJECTED" and "DUPLICATE_SUPPRESSED" in second["reasons"]
         assert len(spy.calls) == 1  # writer called exactly once
@@ -429,9 +528,9 @@ class TestRedisDedupStore:
 # ===========================================================================
 
 class TestHttp:
-    def _client(self, writer_registry=None) -> TestClient:
+    def _client(self, writer_registry=None, **router_kwargs) -> TestClient:
         app = FastAPI()
-        app.include_router(create_bridge_router(writer_registry=writer_registry))
+        app.include_router(create_bridge_router(writer_registry=writer_registry, **router_kwargs))
         return TestClient(app)
 
     def test_no_gate_returns_403(self):
@@ -464,7 +563,10 @@ class TestHttp:
         spy = _SpyWriter(result={"merged": True})
         op = _operation()
         gate = _ready_gate_for(op)
-        client = self._client(writer_registry={"dopemux.test_writer": spy})
+        client = self._client(
+            writer_registry={"dopemux.test_writer": spy},
+            **_activation_kwargs(),
+        )
         resp = client.post("/bridge/mutate", json={"operation": op, "live_write_ready": gate, "execute": True})
         assert resp.status_code == 200
         body = resp.json()
@@ -475,7 +577,10 @@ class TestHttp:
         spy = _SpyWriter()
         op = _operation()
         gate = _ready_gate_for(op, assertion_id="assert-http-dedup")
-        client = self._client(writer_registry={"dopemux.test_writer": spy})
+        client = self._client(
+            writer_registry={"dopemux.test_writer": spy},
+            **_activation_kwargs(),
+        )
         payload = {"operation": op, "live_write_ready": gate, "execute": True}
         first = client.post("/bridge/mutate", json=payload)
         second = client.post("/bridge/mutate", json=payload)
@@ -507,7 +612,10 @@ class TestHttp:
         spy = _SpyWriter()
         op = _operation()
         gate = _ready_gate_for(op)
-        client = self._client(writer_registry={"dopemux.test_writer": spy})
+        client = self._client(
+            writer_registry={"dopemux.test_writer": spy},
+            **_activation_kwargs(),
+        )
         live = client.post("/bridge/mutate", json={"operation": op, "live_write_ready": gate, "execute": True})
         assert live.status_code == 200 and live.json()["mode"] == "LIVE"
         # a fresh gate (new assertion_id) for the dry-run path to avoid dedup
@@ -553,7 +661,15 @@ class TestStructural:
         results = [
             route_mutation(op, live_write_ready=None, execute=True, writer_registry=reg, now=_NOW),  # REJECTED
             route_mutation(op, live_write_ready=gate, execute=False, writer_registry=reg, now=_NOW),  # DRY_RUN
-            route_mutation(op, live_write_ready=gate, execute=True, writer_registry=reg, dedup_store=InProcessDedupStore(), now=_NOW),  # LIVE
+            route_mutation(
+                op,
+                live_write_ready=gate,
+                execute=True,
+                writer_registry=reg,
+                dedup_store=InProcessDedupStore(),
+                now=_NOW,
+                **_activation_kwargs(),
+            ),  # LIVE
         ]
         assert {r["mode"] for r in results} == {"REJECTED", "DRY_RUN", "LIVE"}
         for r in results:
@@ -566,11 +682,24 @@ class TestStructural:
         reg = {"dopemux.test_writer": spy}
         rejected = route_mutation(op, live_write_ready=None, execute=True, writer_registry=reg, now=_NOW)
         dry = route_mutation(op, live_write_ready=gate, execute=False, writer_registry=reg, now=_NOW)
-        live = route_mutation(op, live_write_ready=gate, execute=True, writer_registry=reg, dedup_store=InProcessDedupStore(), now=_NOW)
+        live = route_mutation(
+            op,
+            live_write_ready=gate,
+            execute=True,
+            writer_registry=reg,
+            dedup_store=InProcessDedupStore(),
+            now=_NOW,
+            **_activation_kwargs(),
+        )
         for r in (rejected, dry, live):
             assert r["executed"] is (r["mode"] == "LIVE")
 
     def test_allowlist_files_only(self):
         bridge_dir = _REPO_ROOT / "src" / "dopemux" / "pcp" / "bridge"
         py_files = sorted(p.name for p in bridge_dir.glob("*.py"))
-        assert py_files == ["__init__.py", "fastapi_bridge.py"]
+        assert py_files == [
+            "__init__.py",
+            "assertion_auth.py",
+            "authority_binding.py",
+            "fastapi_bridge.py",
+        ]
