@@ -64,24 +64,27 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('aria-label={`${member.name}\'s current energy level: ${member.energy}%`}');
   expect(content).toContain('aria-label={`${member.name}\'s current attention focus: ${member.attention}%`}');
   expect(content).toContain('<Tooltip title={statusStyles[member.status].label} arrow>');
-  expect(content).toContain('<Tooltip title="Current energy level" arrow>');
-  expect(content).toContain('<Tooltip title="Current attention focus" arrow>');
   expect(content).toContain('tabIndex={0}');
-  expect(content).toMatch(/<Tooltip title="Current energy level"[\s\S]*tabIndex=\{0\}/);
-  expect(content).toMatch(/<Tooltip title="Current attention focus"[\s\S]*tabIndex=\{0\}/);
   // Verify team signal chips
-  expect(content).toMatch(/<Tooltip key=\{signal\.label\} title=\{`Team signal: \$\{signal\.label\} status`\} arrow>/);
   expect(content).toContain('aria-label={`Team signal: ${signal.label} is ${signal.value}`}');
   expect(content).toContain("cursor: 'help'");
 
   // Verify TeamDashboard root interactive surface and summary Tooltip
   expect(content).toContain('tabIndex={0}');
-  expect(content).toMatch(/<Tooltip[^>]*title=\{`Average Team Load: \$\{teamAverageLoad\}% • \$\{statusStyles\[teamStatus\]\.label\}\. AI Insight: \$\{teamInsight\}`\}[^>]*arrow/);
-  expect(content).toContain('aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}');
+  expect(content).toMatch(/<Tooltip[^>]*title=\{isInsightCopied \? 'Insight copied!' : `Average Team Load: \$\{teamAverageLoad\}% • \$\{statusStyles\[teamStatus\]\.label\}\. AI Insight: \$\{teamInsight\}`\}[^>]*arrow/);
+  expect(content).toContain('aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}${isInsightCopied ? \' (Copied)\' : \'\'}`}');
   expect(content).toContain("letterSpacing: '0.16em'");
   expect(content).toContain('AVG LOAD');
   expect(content).toContain('borderColor: teamStatusColor');
   expect(content).toContain('boxShadow: `0 0 20px ${alpha(teamStatusColor, 0.2)}`');
+
+  // Verify AI Insight copyable surface
+  expect(content).toMatch(/<Tooltip title=\{isInsightCopied \? 'Copied!' : 'Click to copy AI insight'\} arrow>/);
+  expect(content).toContain('onClick={handleCopyInsight}');
+  expect(content).toContain('role="button"');
+  expect(content).toContain('aria-label={isInsightCopied ? \'AI Insight copied\' : \'Copy AI Insight to clipboard\'}');
+  expect(content).toContain('AI INSIGHT');
+  expect(content).toMatch(/animation: `\$\{insightCopyPulse\} 0.4s ease-out`/);
 });
 
 test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {

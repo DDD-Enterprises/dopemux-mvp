@@ -1,8 +1,15 @@
-import { Avatar, Box, Chip, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Avatar, Box, Chip, LinearProgress, Paper, Tooltip, Typography, keyframes } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Eye, Zap } from 'lucide-react';
+import { Check, Copy, Eye, Zap } from 'lucide-react';
 
 import { brandTokens, statusStyles } from '../theme';
+
+const insightCopyPulse = keyframes({
+  '0%': { transform: 'scale(1)' },
+  '50%': { transform: 'scale(1.02)', boxShadow: `0 0 15px ${alpha(brandTokens.colors.ritualCyan, 0.3)}` },
+  '100%': { transform: 'scale(1)' },
+});
 
 const teamMembers = [
   { name: 'Operator', load: 42, energy: 78, attention: 82, status: 'optimal' },
@@ -16,6 +23,9 @@ const teamSignals = [
 ];
 
 export default function TeamDashboard() {
+  const [isInsightCopied, setIsInsightCopied] = useState(false);
+  const insightCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const teamAverageLoad = Math.round(
     teamMembers.reduce((total, member) => total + member.load, 0) / teamMembers.length
   );
@@ -32,14 +42,35 @@ export default function TeamDashboard() {
 
   const teamInsight = 'Sequence handoffs while average load is below escalation threshold.';
 
+  const handleCopyInsight = useCallback(async () => {
+    if (!navigator.clipboard?.writeText) return;
+    try {
+      await navigator.clipboard.writeText(teamInsight);
+      setIsInsightCopied(true);
+      if (insightCopyTimeoutRef.current) clearTimeout(insightCopyTimeoutRef.current);
+      insightCopyTimeoutRef.current = setTimeout(() => {
+        setIsInsightCopied(false);
+        insightCopyTimeoutRef.current = null;
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy team insight', err);
+    }
+  }, [teamInsight]);
+
+  useEffect(() => {
+    return () => {
+      if (insightCopyTimeoutRef.current) clearTimeout(insightCopyTimeoutRef.current);
+    };
+  }, []);
+
   return (
     <Tooltip
-      title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}
+      title={isInsightCopied ? 'Insight copied!' : `Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}
       arrow
     >
       <Paper
         tabIndex={0}
-        aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}
+        aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}${isInsightCopied ? ' (Copied)' : ''}`}
         sx={{
           p: 3,
           borderRadius: 3,
@@ -153,77 +184,118 @@ export default function TeamDashboard() {
               }}
             />
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              <Tooltip title="Current energy level" arrow>
-                <Chip
-                  size="small"
-                  tabIndex={0}
-                  icon={<Zap size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />}
-                  label={`Energy ${member.energy}%`}
-                  aria-label={`${member.name}'s current energy level: ${member.energy}%`}
-                  sx={{
-                    cursor: 'help',
-                    transition: 'all 0.2s ease',
-                    border: '1px solid transparent',
-                    '&:hover, &:focus-visible': {
-                      bgcolor: alpha(brandTokens.colors.serumMint, 0.12),
-                      borderColor: brandTokens.colors.serumMint,
-                      boxShadow: `0 0 12px ${alpha(brandTokens.colors.serumMint, 0.3)}`,
-                      transform: 'translateY(-1px)',
-                    },
-                  }}
-                />
-              </Tooltip>
-              <Tooltip title="Current attention focus" arrow>
-                <Chip
-                  size="small"
-                  tabIndex={0}
-                  icon={<Eye size={14} color={brandTokens.colors.ritualCyan} aria-hidden="true" />}
-                  label={`Attention ${member.attention}%`}
-                  aria-label={`${member.name}'s current attention focus: ${member.attention}%`}
-                  sx={{
-                    cursor: 'help',
-                    transition: 'all 0.2s ease',
-                    border: '1px solid transparent',
-                    '&:hover, &:focus-visible': {
-                      bgcolor: alpha(brandTokens.colors.ritualCyan, 0.12),
-                      borderColor: brandTokens.colors.ritualCyan,
-                      boxShadow: `0 0 12px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
-                      transform: 'translateY(-1px)',
-                    },
-                  }}
-                />
-              </Tooltip>
+              <Chip
+                size="small"
+                tabIndex={0}
+                icon={<Zap size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />}
+                label={`Energy ${member.energy}%`}
+                aria-label={`${member.name}'s current energy level: ${member.energy}%`}
+                sx={{
+                  cursor: 'help',
+                  transition: 'all 0.2s ease',
+                  border: '1px solid transparent',
+                  '&:hover, &:focus-visible': {
+                    bgcolor: alpha(brandTokens.colors.serumMint, 0.12),
+                    borderColor: brandTokens.colors.serumMint,
+                    boxShadow: `0 0 12px ${alpha(brandTokens.colors.serumMint, 0.3)}`,
+                    transform: 'translateY(-1px)',
+                  },
+                }}
+              />
+              <Chip
+                size="small"
+                tabIndex={0}
+                icon={<Eye size={14} color={brandTokens.colors.ritualCyan} aria-hidden="true" />}
+                label={`Attention ${member.attention}%`}
+                aria-label={`${member.name}'s current attention focus: ${member.attention}%`}
+                sx={{
+                  cursor: 'help',
+                  transition: 'all 0.2s ease',
+                  border: '1px solid transparent',
+                  '&:hover, &:focus-visible': {
+                    bgcolor: alpha(brandTokens.colors.ritualCyan, 0.12),
+                    borderColor: brandTokens.colors.ritualCyan,
+                    boxShadow: `0 0 12px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
+                    transform: 'translateY(-1px)',
+                  },
+                }}
+              />
             </Box>
           </Box>
         ))}
       </Box>
-      <Typography variant="body2" color="text.secondary" tabIndex={0} sx={{ mb: 2 }}>
-        {teamInsight}
-      </Typography>
+      <Tooltip title={isInsightCopied ? 'Copied!' : 'Click to copy AI insight'} arrow>
+        <Box
+          onClick={handleCopyInsight}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleCopyInsight();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label={isInsightCopied ? 'AI Insight copied' : 'Copy AI Insight to clipboard'}
+          sx={{
+            mb: 2,
+            p: 1.5,
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: isInsightCopied ? brandTokens.colors.serumMint : alpha(brandTokens.text.secondary, 0.3),
+            bgcolor: alpha(isInsightCopied ? brandTokens.colors.serumMint : brandTokens.text.secondary, 0.04),
+            cursor: 'copy',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            ...(isInsightCopied && {
+              animation: `${insightCopyPulse} 0.4s ease-out`,
+            }),
+            '&:hover, &:focus-visible': {
+              borderColor: isInsightCopied ? brandTokens.colors.serumMint : brandTokens.colors.ritualCyan,
+              bgcolor: alpha(isInsightCopied ? brandTokens.colors.serumMint : brandTokens.colors.ritualCyan, 0.08),
+              transform: 'translateY(-2px)',
+            },
+          }}
+        >
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', color: brandTokens.colors.ritualCyan, mb: 0.5, letterSpacing: '0.1em' }}>
+              AI INSIGHT
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {teamInsight}
+            </Typography>
+          </Box>
+          {isInsightCopied ? (
+            <Check size={16} color={brandTokens.colors.serumMint} aria-hidden="true" />
+          ) : (
+            <Copy size={16} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
+          )}
+        </Box>
+      </Tooltip>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
         {teamSignals.map((signal) => (
-          <Tooltip key={signal.label} title={`Team signal: ${signal.label} status`} arrow>
-            <Chip
-              label={`${signal.label}: ${signal.value}`}
-              aria-label={`Team signal: ${signal.label} is ${signal.value}`}
-              tabIndex={0}
-              sx={{
-                color: signal.color,
-                border: '1px solid transparent',
-                borderColor: alpha(signal.color, 0.55),
-                backgroundColor: alpha(signal.color, 0.08),
-                cursor: 'help',
-                transition: 'all 0.2s ease',
-                '&:hover, &:focus-visible': {
-                  bgcolor: alpha(signal.color, 0.12),
-                  borderColor: signal.color,
-                  boxShadow: `0 0 12px ${alpha(signal.color, 0.3)}`,
-                  transform: 'translateY(-1px)',
-                },
-              }}
-              variant="outlined"
-            />
-          </Tooltip>
+          <Chip
+            key={signal.label}
+            label={`${signal.label}: ${signal.value}`}
+            aria-label={`Team signal: ${signal.label} is ${signal.value}`}
+            tabIndex={0}
+            sx={{
+              color: signal.color,
+              border: '1px solid transparent',
+              borderColor: alpha(signal.color, 0.55),
+              backgroundColor: alpha(signal.color, 0.08),
+              cursor: 'help',
+              transition: 'all 0.2s ease',
+              '&:hover, &:focus-visible': {
+                bgcolor: alpha(signal.color, 0.12),
+                borderColor: signal.color,
+                boxShadow: `0 0 12px ${alpha(signal.color, 0.3)}`,
+                transform: 'translateY(-1px)',
+              },
+            }}
+            variant="outlined"
+          />
         ))}
       </Box>
       </Paper>
