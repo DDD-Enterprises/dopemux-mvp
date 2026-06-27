@@ -45,8 +45,8 @@ export default function TeamDashboard() {
         title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. Insight: Sequence handoffs while average load is below escalation threshold.`}
         arrow
       >
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, cursor: 'help' }}>
+        <Box sx={{ cursor: 'help' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
             <Zap size={20} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
             <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
               Team Signal Board
