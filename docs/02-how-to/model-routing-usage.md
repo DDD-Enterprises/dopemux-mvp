@@ -104,10 +104,10 @@ stage slots. These are `OBSERVED` in the repo.
 
 | Stage | Agent file | Tools | Model |
 |-------|-----------|-------|-------|
-| `cheap_read` / `investigation` | `dopemux-reader.agent.md` | read, search | VERIFY_WITH_VENDOR_DOCS |
-| `planner_strong` | `dopemux-planner.agent.md` | read, search | VERIFY_WITH_VENDOR_DOCS |
+| `cheap_read` / `investigation` | `dopemux-reader.agent.md` | read, search | Claude Sonnet 4.5 (OBSERVED) |
+| `planner_strong` | `dopemux-planner.agent.md` | read, search | Claude Sonnet 4.5 (OBSERVED) |
 | `implementer_standard` | `dopemux-implementer.agent.md` | read, edit, search | Claude Sonnet 4.5 (OBSERVED) |
-| `judge_strong` / `self_audit` | `dopemux-auditor.agent.md` | read, search | VERIFY_WITH_VENDOR_DOCS |
+| `judge_strong` / `self_audit` | `dopemux-auditor.agent.md` | read, search | Claude Sonnet 4.5 (OBSERVED) |
 
 **How tool scope enforces stage boundaries:**
 - Reader, planner, and auditor agents have `tools: ['read', 'search']` — they
@@ -115,15 +115,15 @@ stage slots. These are `OBSERVED` in the repo.
 - The implementer has `tools: ['read', 'edit', 'search']` — it can edit, but is
   bound to the Task Packet file allowlist.
 
-**Replacing VERIFY_WITH_VENDOR_DOCS model values:**
-To activate per-agent model tiering, an operator must:
-1. Consult VS Code Copilot documentation for currently supported `model:` values.
-2. Replace `VERIFY_WITH_VENDOR_DOCS` in the agent frontmatter with a supported
-   cheap model (reader/planner) and a supported strong model (auditor).
-3. Verify the replacement does not break existing Copilot agent invocation.
+**Pinned baseline (OBSERVED):**
+Reader, planner, implementer, and auditor all pin `model: 'Claude Sonnet 4.5'`.
+Cheap/strong separation is therefore enforced primarily by tool scope
+(`read/search` vs. `read/edit/search`), not by per-agent model tiering.
 
-Until replaced, `VERIFY_WITH_VENDOR_DOCS` is a sentinel — Copilot will use its
-default model, and cheap/strong differentiation relies on tool scope alone.
+If you want model-tier separation later:
+1. Verify currently supported Copilot `model:` values from vendor docs.
+2. Update the targeted `.github/agents/*.agent.md` frontmatter values.
+3. Verify each updated agent can still be invoked from VS Code.
 
 **Handoffs:**
 The reader agent includes handoffs to `dopemux-planner` (escalate for planning) and
@@ -132,7 +132,29 @@ The reader agent includes handoffs to `dopemux-planner` (escalate for planning) 
 
 ---
 
-## 4. How to use the policy in AGY / Gemini audit flows
+## 4. How to use the policy in OpenCode
+
+OpenCode in this repo is configured by `opencode.jsonc` and two PAL subagents in
+`.opencode/agents/`.
+
+**Stage mapping (repo baseline):**
+
+| Stage | Route |
+|-------|-------|
+| `cheap_read` / `investigation` | Main OpenCode session model (operator-configured, `VERIFY_WITH_VENDOR_DOCS`) |
+| `planner_strong` | `.opencode/agents/pal-planner.md` |
+| `implementer_standard` | Main OpenCode session model with `AGENTS.md` + Task Packet allowlist discipline |
+| `judge_strong` / `self_audit` | `.opencode/agents/pal-reviewer.md` |
+
+**Usage pattern:**
+1. Perform read-only inventory in the main OpenCode session.
+2. Delegate non-trivial planning to `pal-planner`.
+3. Implement in the main session under packet allowlist constraints.
+4. Run `pal-reviewer` for codereview/precommit before readiness claims.
+
+---
+
+## 5. How to use the policy in AGY / Gemini audit flows
 
 AGY (Antigravity) and Gemini CLI route through Google's Gemini model family.
 All model selector strings require `VERIFY_WITH_VENDOR_DOCS`.
@@ -170,7 +192,7 @@ The `auditor_verdict` field in `PROOF.json` aligns with the verdict enum in
 
 ---
 
-## 5. Example Task Packet model_routing block
+## 6. Example Task Packet model_routing block
 
 Include this section in every Task Packet before implementation begins.
 Operators fill in the actual model/tier used per stage; entries that are not yet
@@ -196,7 +218,7 @@ Escalate to strong model if:
 
 ---
 
-## 6. Example proof block
+## 7. Example proof block
 
 This is the structure required in `proof/<TP-ID>/PROOF.json` for a substantive
 run. Fields marked `actual_*` capture what was used, not just what was intended.

@@ -2,7 +2,7 @@
 description: 'Independent strong-lane readiness audit of Dopemux work — read-only, formal verdict, no edits'
 name: 'Dopemux Auditor'
 tools: ['read', 'search']
-model: VERIFY_WITH_VENDOR_DOCS  # self_audit lane — operator must replace with a supported strong Copilot model
+model: 'Claude Sonnet 4.5'  # self_audit lane baseline (repo-established Copilot model)
 target: 'vscode'
 infer: true
 handoffs:
