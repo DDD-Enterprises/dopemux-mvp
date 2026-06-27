@@ -1,7 +1,8 @@
 import asyncio
 import json
 import os
-from typing import Optional, List
+from typing import Any, Optional, List
+from urllib.parse import quote, quote_plus, urlencode
 
 import aiohttp
 from mcp.server.fastmcp import FastMCP
@@ -28,6 +29,13 @@ async def _post_json(url: str, payload: dict):
 async def _put_json(url: str, payload: dict):
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
         async with session.put(url, json=payload) as resp:
+            resp.raise_for_status()
+            return await resp.json()
+
+
+async def _delete_json(url: str):
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        async with session.delete(url) as resp:
             resp.raise_for_status()
             return await resp.json()
 
@@ -162,6 +170,49 @@ async def log_progress(workspace_id: str, description: str, status: str = "IN_PR
     url = f"{CONPORT_URL}/api/progress"
     data = await _post_json(url, payload)
     return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def get_custom_data(workspace_id: str, category: Optional[str] = None, key: Optional[str] = None) -> str:
+    """Retrieve custom data for a workspace, optionally filtered by category and key."""
+    query = {"workspace_id": workspace_id}
+    if category is not None:
+        query["category"] = category
+    if key is not None:
+        query["key"] = key
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        data = await _get_json(session, f"{CONPORT_URL}/api/custom_data?{urlencode(query)}")
+        return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def save_custom_data(workspace_id: str, category: str, key: str, value: Any) -> str:
+    """Save or update custom data for a workspace."""
+    payload = {
+        "workspace_id": workspace_id,
+        "category": category,
+        "key": key,
+        "value": value,
+    }
+    data = await _post_json(f"{CONPORT_URL}/api/custom_data", payload)
+    return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def delete_custom_data(workspace_id: str, category: str, key: str) -> str:
+    """Delete custom data for a workspace."""
+    query = urlencode({"workspace_id": workspace_id, "category": category, "key": key})
+    data = await _delete_json(f"{CONPORT_URL}/api/custom_data?{query}")
+    return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def search_content(workspace_id: str, query: str) -> str:
+    """Search decisions and progress entries in a workspace."""
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        url = f"{CONPORT_URL}/api/search/{quote(workspace_id, safe='')}?q={quote_plus(query)}"
+        data = await _get_json(session, url)
+        return json.dumps(data, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":

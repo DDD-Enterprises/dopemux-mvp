@@ -15,7 +15,7 @@ from typing import Dict, Any, Optional, List
 import subprocess
 from pathlib import Path
 from datetime import datetime, timedelta
-from urllib.parse import urlparse
+from urllib.parse import quote, quote_plus, urlencode, urlparse
 
 # Setup logging first
 logging.basicConfig(level=logging.INFO)
@@ -1757,6 +1757,10 @@ class EnhancedConPortServer:
             'conport_update_progress': self._update_progress_tool,
             'conport_get_recent_activity': self._get_recent_activity_tool,
             'conport_get_active_work': self._get_active_work_tool,
+            'conport_get_custom_data': self._get_custom_data_tool,
+            'conport_save_custom_data': self._save_custom_data_tool,
+            'conport_delete_custom_data': self._delete_custom_data_tool,
+            'conport_search_content': self._search_content_tool,
             # Instance management
             'conport_fork_instance': self._fork_instance,
             'conport_promote': self._promote_progress,
@@ -1797,6 +1801,61 @@ class EnhancedConPortServer:
 
     async def _get_active_work_tool(self, args):
         return await self._get_active_work(args.get('workspace_id'))
+
+    async def _request_custom_data_tool(self, method: str, args: Dict[str, Any]) -> Dict[str, Any]:
+        query = {"workspace_id": args.get("workspace_id")}
+        if args.get("category") is not None:
+            query["category"] = args.get("category")
+        if args.get("key") is not None:
+            query["key"] = args.get("key")
+
+        url = f"http://127.0.0.1:{self.port}/api/custom_data"
+        if method in {"GET", "DELETE"}:
+            url = f"{url}?{urlencode(query)}"
+
+        timeout = aiohttp.ClientTimeout(total=10)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            if method == "GET":
+                response_ctx = session.get(url)
+            elif method == "POST":
+                payload = {
+                    "workspace_id": args.get("workspace_id"),
+                    "category": args.get("category"),
+                    "key": args.get("key"),
+                    "value": args.get("value"),
+                }
+                response_ctx = session.post(url, json=payload)
+            elif method == "DELETE":
+                response_ctx = session.delete(url)
+            else:
+                return {"error": f"unsupported custom_data method: {method}"}
+
+            async with response_ctx as resp:
+                data = await resp.json()
+                if resp.status >= 400:
+                    return {"error": data.get("error", f"custom_data {method} failed")}
+                return data
+
+    async def _get_custom_data_tool(self, args):
+        return await self._request_custom_data_tool("GET", args)
+
+    async def _save_custom_data_tool(self, args):
+        return await self._request_custom_data_tool("POST", args)
+
+    async def _delete_custom_data_tool(self, args):
+        return await self._request_custom_data_tool("DELETE", args)
+
+    async def _search_content_tool(self, args):
+        workspace_id = args.get('workspace_id')
+        query = args.get('query')
+        url = f"http://127.0.0.1:{self.port}/api/search/{quote(workspace_id or '', safe='')}?q={quote_plus(query or '')}"
+        timeout = aiohttp.ClientTimeout(total=10)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url) as resp:
+                data = await resp.json()
+                if resp.status >= 400:
+                    return {"error": data.get("error", "search_content failed")}
+                return data
 
     def _get_tool_schemas(self) -> List[Dict[str, Any]]:
         """Returns the list of supported tools with their JSON schemas"""
@@ -1925,6 +1984,58 @@ class EnhancedConPortServer:
                         "workspace_id": {"type": "string"}
                     },
                     "required": ["workspace_id"]
+                }
+            },
+            {
+                "name": "conport_get_custom_data",
+                "description": "Retrieve custom data for a workspace",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "category": {"type": "string"},
+                        "key": {"type": "string"}
+                    },
+                    "required": ["workspace_id"]
+                }
+            },
+            {
+                "name": "conport_save_custom_data",
+                "description": "Save or update custom data for a workspace",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "category": {"type": "string"},
+                        "key": {"type": "string"},
+                        "value": {}
+                    },
+                    "required": ["workspace_id", "category", "key", "value"]
+                }
+            },
+            {
+                "name": "conport_delete_custom_data",
+                "description": "Delete custom data for a workspace",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "category": {"type": "string"},
+                        "key": {"type": "string"}
+                    },
+                    "required": ["workspace_id", "category", "key"]
+                }
+            },
+            {
+                "name": "conport_search_content",
+                "description": "Search decisions and progress entries in a workspace",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "query": {"type": "string"}
+                    },
+                    "required": ["workspace_id", "query"]
                 }
             }
         ]
