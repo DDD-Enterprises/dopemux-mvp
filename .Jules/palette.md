@@ -154,3 +154,7 @@
 **Learning:** Purely numerical metrics can be abstract and "dry." Using a centralized status utility (`deriveStatus`) to drive a synchronized suite of visual cues—coordinated colors, dynamic borders, reactive animations (like pulses for critical states), and personality-driven text ("roasts")—creates a cohesive "at-a-glance" experience. This reduces the user's cognitive effort to interpret high-stakes metrics by providing both logical and emotional context.
 **Action:** Synchronize multiple visual and textual channels (color, animation, voice) using a shared status utility to provide high-bandwidth, intuitive feedback for critical dashboard metrics.
 
+## 2025-05-30 - [Preserving AI Context in Consolidated Tooltips]
+**Learning:** When refactoring multiple nested tooltips into a single "Card-Level" summary, it's easy to lose critical context like the "AI-generated" nature of suggestions. Explicitly labeling these summaries as "AI Insight" or "AI Recommendation" ensures transparency and maintains the user's understanding of the source of the information, which is crucial for building trust in automated systems.
+**Action:** When consolidating metadata into a single tooltip, ensure that the source and nature of suggestions (especially AI-driven ones) are explicitly labeled.
+

@@ -76,8 +76,8 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
 
   // Verify TeamDashboard root interactive surface and summary Tooltip
   expect(content).toContain('tabIndex={0}');
-  expect(content).toMatch(/<Tooltip[^>]*title=\{\s*`Average Team Load: \$\{teamAverageLoad\}% • \$\{statusStyles\[teamStatus\]\.label\}\. Insight: Sequence handoffs while average load is below escalation threshold\.`\s*\}[^>]*arrow/);
-  expect(content).toContain('aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}. Insight: Sequence handoffs while average load is below escalation threshold.`}');
+  expect(content).toMatch(/<Tooltip[^>]*title=\{`Average Team Load: \$\{teamAverageLoad\}% • \$\{statusStyles\[teamStatus\]\.label\}\. AI Insight: \$\{teamInsight\}`\}[^>]*arrow/);
+  expect(content).toContain('aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}');
   expect(content).toContain("letterSpacing: '0.16em'");
   expect(content).toContain('AVG LOAD');
   expect(content).toContain('borderColor: teamStatusColor');
