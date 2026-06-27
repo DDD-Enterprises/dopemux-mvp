@@ -116,7 +116,7 @@
       "then": {
         "properties": {
           "selected_route_id": { "type": "string", "minLength": 1 },
-          "selected_provider": { "type": "string", "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple", "unknown"] },
+          "selected_provider": { "type": "string", "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple"] },
           "selected_model": { "type": "string", "minLength": 1 },
           "access_path": { "$ref": "#/$defs/access_path" },
           "blocked_reasons": { "maxItems": 0 }

@@ -212,3 +212,20 @@ class TestOpenClawRouteContract:
         tampered["live_write_runner"] = True
         errs = errors(OPENCLAW_ROUTE_SCHEMA, tampered)
         assert errs, "OpenClaw route contract must not define live-write runners"
+
+
+class TestSelectedProviderResidual:
+    """STRICT routing residual (#968/#967): a SELECTED route decision may not carry an
+    unknown provider. A chosen route must name a real provider; 'unknown' was previously
+    permitted under SELECTED. Minimal STRICT change — only the SELECTED-branch enum drops
+    'unknown'; the base enum is unchanged."""
+
+    def test_selected_decision_rejects_unknown_provider(self):
+        doc = valid_selected_route_decision()
+        doc["selected_provider"] = "unknown"
+        assert errors(ROUTE_DECISION_SCHEMA, doc), (
+            "SELECTED + selected_provider=='unknown' must be schema-invalid"
+        )
+
+    def test_valid_selected_route_decision_still_valid(self):
+        assert errors(ROUTE_DECISION_SCHEMA, valid_selected_route_decision()) == []
