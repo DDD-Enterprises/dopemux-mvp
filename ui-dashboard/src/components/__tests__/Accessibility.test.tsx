@@ -76,12 +76,19 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
 
   // Verify TeamDashboard root interactive surface and summary Tooltip
   expect(content).toContain('tabIndex={0}');
-  expect(content).toMatch(/<Tooltip[^>]*title=\{`Average Team Load: \$\{teamAverageLoad\}% • \$\{statusStyles\[teamStatus\]\.label\}\. AI Insight: \$\{teamInsight\}`\}[^>]*arrow/);
+  expect(content).toMatch(/<Tooltip[^>]*title=\{`Average Team Load: \$\{teamAverageLoad\}% • \$\{statusStyles\[teamStatus\]\.label\}\. AI Insight available\.`\}[^>]*arrow/);
   expect(content).toContain('aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}');
   expect(content).toContain("letterSpacing: '0.16em'");
   expect(content).toContain('AVG LOAD');
   expect(content).toContain('borderColor: teamStatusColor');
   expect(content).toContain('boxShadow: `0 0 20px ${alpha(teamStatusColor, 0.2)}`');
+
+  // Verify interactive AI insight block
+  expect(content).toContain('role="button"');
+  expect(content).toContain('onClick={handleCopyInsight}');
+  expect(content).toContain('aria-label={isInsightCopied ? `AI Insight: ${teamInsight} (Copied)` : `Copy AI Insight: ${teamInsight}`}');
+  expect(content).toContain('animation: \'insight-copy-pulse 0.4s ease-out\'');
+  expect(content).toContain('{isInsightCopied ? <Check size={16} /> : <Copy size={16} />}');
 });
 
 test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {

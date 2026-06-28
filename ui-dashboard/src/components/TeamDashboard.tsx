@@ -1,6 +1,7 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Avatar, Box, Chip, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Eye, Zap } from 'lucide-react';
+import { Check, Copy, Eye, Zap } from 'lucide-react';
 
 import { brandTokens, statusStyles } from '../theme';
 
@@ -16,6 +17,9 @@ const teamSignals = [
 ];
 
 export default function TeamDashboard() {
+  const [isInsightCopied, setIsInsightCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const teamAverageLoad = Math.round(
     teamMembers.reduce((total, member) => total + member.load, 0) / teamMembers.length
   );
@@ -32,9 +36,30 @@ export default function TeamDashboard() {
 
   const teamInsight = 'Sequence handoffs while average load is below escalation threshold.';
 
+  const handleCopyInsight = useCallback(async () => {
+    if (!navigator.clipboard?.writeText) return;
+    try {
+      await navigator.clipboard.writeText(teamInsight);
+      setIsInsightCopied(true);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => {
+        setIsInsightCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy team insight:', err);
+    }
+  }, [teamInsight]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
+
   return (
     <Tooltip
-      title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}
+      title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. AI Insight available.`}
       arrow
     >
       <Paper
@@ -197,9 +222,52 @@ export default function TeamDashboard() {
           </Box>
         ))}
       </Box>
-      <Typography variant="body2" color="text.secondary" tabIndex={0} sx={{ mb: 2 }}>
-        {teamInsight}
-      </Typography>
+      <Box
+        role="button"
+        tabIndex={0}
+        onClick={handleCopyInsight}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleCopyInsight();
+          }
+        }}
+        aria-label={isInsightCopied ? `AI Insight: ${teamInsight} (Copied)` : `Copy AI Insight: ${teamInsight}`}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          p: 1.5,
+          mb: 2,
+          borderRadius: 2,
+          cursor: 'copy',
+          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          border: `1px solid ${alpha(teamStatusColor, 0.3)}`,
+          bgcolor: alpha(teamStatusColor, 0.05),
+          '@keyframes insight-copy-pulse': {
+            '0%': { transform: 'scale(1)' },
+            '50%': { transform: 'scale(1.02)', boxShadow: `0 0 15px ${alpha(teamStatusColor, 0.3)}` },
+            '100%': { transform: 'scale(1)' },
+          },
+          ...(isInsightCopied && {
+            animation: 'insight-copy-pulse 0.4s ease-out',
+          }),
+          '&:hover, &:focus-visible': {
+            bgcolor: alpha(teamStatusColor, 0.08),
+            borderColor: teamStatusColor,
+            transform: 'translateY(-2px)',
+            boxShadow: `0 4px 12px ${alpha(teamStatusColor, 0.15)}`,
+            outline: 'none',
+          },
+        }}
+      >
+        <Box sx={{ color: isInsightCopied ? brandTokens.colors.serumMint : teamStatusColor, display: 'flex', alignItems: 'center' }}>
+          {isInsightCopied ? <Check size={16} /> : <Copy size={16} />}
+        </Box>
+        <Typography variant="body2" color="text.secondary">
+          {teamInsight}
+        </Typography>
+      </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
         {teamSignals.map((signal) => (
           <Tooltip key={signal.label} title={`Team signal: ${signal.label} status`} arrow>
