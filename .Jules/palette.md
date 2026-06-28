@@ -158,3 +158,6 @@
 **Learning:** When refactoring multiple nested tooltips into a single "Card-Level" summary, it's easy to lose critical context like the "AI-generated" nature of suggestions. Explicitly labeling these summaries as "AI Insight" or "AI Recommendation" ensures transparency and maintains the user's understanding of the source of the information, which is crucial for building trust in automated systems.
 **Action:** When consolidating metadata into a single tooltip, ensure that the source and nature of suggestions (especially AI-driven ones) are explicitly labeled.
 
+## 2026-06-01 - [Interactive AI Insight Blocks]
+**Learning:** AI-generated team insights in high-density dashboards can be transformed from static footer text into active utility blocks by adding "Copy to Clipboard" functionality. Implementing the "Tactile Confirmation" pattern (icon swap, tooltip update, and pulse animation) provides immediate reinforcement. Using `alpha` for status-coordinated background shifts during interaction maintains visual harmony with the team's overall status.
+**Action:** Implement interactive, copyable surfaces for all block-level AI insights, using color-coordinated tactile feedback to confirm successful actions.
