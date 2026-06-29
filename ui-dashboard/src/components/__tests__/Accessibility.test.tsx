@@ -19,8 +19,11 @@ test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Toolti
   const content = fs.readFileSync(filePath, 'utf8');
   expect(content).toContain('aria-label="Cognitive Load Percentage"');
   expect(content).toContain('aria-valuetext');
-  expect(content).toContain('<Tooltip title={`Recommendation: ${recommendation}`} arrow>');
+  expect(content).toContain('<Tooltip title={`AI Recommendation: ${recommendation}. ${roast}`} arrow>');
   expect(content).toContain('tabIndex={0}');
+  expect(content).toContain('const roast = getDynamicRoast(\'Cognitive Load\', load);');
+  expect(content).toContain('aria-label={`Cognitive load ${normalizedLoad} percent, ${statusMeta.label}. AI Recommendation: ${recommendation}. ${roast}`}');
+  expect(content).toContain('className="dopemux-roast"');
 });
 
 test('PredictionPanel.tsx rendered accessibility and state feedback', () => {

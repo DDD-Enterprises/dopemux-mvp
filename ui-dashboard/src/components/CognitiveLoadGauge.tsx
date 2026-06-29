@@ -2,7 +2,7 @@ import { Box, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { Brain } from 'lucide-react';
 
-import { brandTokens, statusStyles } from '../theme';
+import { brandTokens, statusStyles, getDynamicRoast } from '../theme';
 
 interface CognitiveLoadGaugeProps {
   load: number;
@@ -17,12 +17,13 @@ export default function CognitiveLoadGauge({
 }: CognitiveLoadGaugeProps) {
   const statusMeta = statusStyles[status];
   const normalizedLoad = Math.max(0, Math.min(100, Math.round(load * 100)));
+  const roast = getDynamicRoast('Cognitive Load', load);
 
   return (
-    <Tooltip title={`Recommendation: ${recommendation}`} arrow>
+    <Tooltip title={`AI Recommendation: ${recommendation}. ${roast}`} arrow>
       <Paper
         tabIndex={0}
-        aria-label={`Cognitive load ${normalizedLoad} percent, ${statusMeta.label}. Recommendation: ${recommendation}`}
+        aria-label={`Cognitive load ${normalizedLoad} percent, ${statusMeta.label}. AI Recommendation: ${recommendation}. ${roast}`}
         sx={{
           p: 3,
           minHeight: 300,
@@ -65,6 +66,9 @@ export default function CognitiveLoadGauge({
         />
         <Box sx={{ mt: 3 }}>
           <Typography variant="h6">{statusMeta.label}</Typography>
+          <Typography variant="body2" className="dopemux-roast" sx={{ mb: 1 }}>
+            {roast}
+          </Typography>
           <Typography variant="body2" color="text.secondary">
             {recommendation}
           </Typography>

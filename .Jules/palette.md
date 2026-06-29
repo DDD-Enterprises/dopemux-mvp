@@ -158,3 +158,6 @@
 **Learning:** When refactoring multiple nested tooltips into a single "Card-Level" summary, it's easy to lose critical context like the "AI-generated" nature of suggestions. Explicitly labeling these summaries as "AI Insight" or "AI Recommendation" ensures transparency and maintains the user's understanding of the source of the information, which is crucial for building trust in automated systems.
 **Action:** When consolidating metadata into a single tooltip, ensure that the source and nature of suggestions (especially AI-driven ones) are explicitly labeled.
 
+## 2026-05-31 - [AI Context & Personality Harmonization]
+**Learning:** In a personality-driven dashboard, components that lack the established "voice" (e.g., roasts) and clear attribution (e.g., "AI Recommendation") feel like legacy artifacts and can cause cognitive dissonance. Harmonizing these elements across all metric cards—specifically the Cognitive Load Gauge—reinforces the brand identity and ensures users have consistent expectations for feedback and accessibility.
+**Action:** Always ensure new or legacy metric components are updated to include both the "Dopemux" personality and explicit AI attribution to maintain interface cohesion.
