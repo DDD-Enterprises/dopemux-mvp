@@ -19,10 +19,10 @@ export default function CognitiveLoadGauge({
   const normalizedLoad = Math.max(0, Math.min(100, Math.round(load * 100)));
 
   return (
-    <Tooltip title={`Recommendation: ${recommendation}`} arrow>
+    <Tooltip title={`AI Recommendation: ${recommendation}`} arrow>
       <Paper
         tabIndex={0}
-        aria-label={`Cognitive load ${normalizedLoad} percent, ${statusMeta.label}. Recommendation: ${recommendation}`}
+        aria-label={`Cognitive load ${normalizedLoad} percent, ${statusMeta.label}. AI Recommendation: ${recommendation}`}
         sx={{
           p: 3,
           minHeight: 300,
@@ -32,6 +32,15 @@ export default function CognitiveLoadGauge({
           cursor: 'help',
           outline: 'none',
           transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+          '@keyframes load-pulse': {
+            '0%': { boxShadow: `0 0 0 0px ${alpha(statusMeta.color, 0.4)}` },
+            '70%': { boxShadow: `0 0 0 12px ${alpha(statusMeta.color, 0)}` },
+            '100%': { boxShadow: `0 0 0 0px ${alpha(statusMeta.color, 0)}` },
+          },
+          animation: status === 'high' || status === 'critical' ? 'load-pulse 2s infinite' : 'none',
+          '@media (prefers-reduced-motion: reduce)': {
+            animation: 'none',
+          },
           '&:hover, &:focus-visible': {
             transform: 'translateY(-4px)',
             borderColor: statusMeta.color,
@@ -64,7 +73,10 @@ export default function CognitiveLoadGauge({
           }}
         />
         <Box sx={{ mt: 3 }}>
-          <Typography variant="h6">{statusMeta.label}</Typography>
+          <Typography variant="h6" sx={{ mb: 0.5 }}>{statusMeta.label}</Typography>
+          <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 0.5, lineHeight: 1.2 }}>
+            AI Recommendation
+          </Typography>
           <Typography variant="body2" color="text.secondary">
             {recommendation}
           </Typography>

@@ -19,7 +19,7 @@ test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Toolti
   const content = fs.readFileSync(filePath, 'utf8');
   expect(content).toContain('aria-label="Cognitive Load Percentage"');
   expect(content).toContain('aria-valuetext');
-  expect(content).toContain('<Tooltip title={`Recommendation: ${recommendation}`} arrow>');
+  expect(content).toContain('<Tooltip title={`AI Recommendation: ${recommendation}`} arrow>');
   expect(content).toContain('tabIndex={0}');
 });
 
