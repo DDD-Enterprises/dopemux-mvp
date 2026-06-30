@@ -158,3 +158,11 @@
 **Learning:** When refactoring multiple nested tooltips into a single "Card-Level" summary, it's easy to lose critical context like the "AI-generated" nature of suggestions. Explicitly labeling these summaries as "AI Insight" or "AI Recommendation" ensures transparency and maintains the user's understanding of the source of the information, which is crucial for building trust in automated systems.
 **Action:** When consolidating metadata into a single tooltip, ensure that the source and nature of suggestions (especially AI-driven ones) are explicitly labeled.
 
+
+## 2025-05-31 - [Transparency in AI Guidance]
+**Learning:** Explicitly labeling AI-generated content (e.g., prefixing recommendations with "AI Recommendation") in Tooltips, ARIA labels, and UI text improves transparency and helps users distinguish between raw system metrics and automated guidance.
+**Action:** Always prefix AI-driven insights or suggestions with "AI Recommendation" or "AI-driven projection" to provide clear context on the source of the information.
+
+## 2025-05-31 - [Urgency Cues and Motion Sensitivity]
+**Learning:** Adding a status-driven pulse animation (e.g., a coordinated box-shadow glow) to critical dashboard metrics provides an effective visual cue for high-urgency states. However, these animations must respect user preferences for reduced motion to ensure accessibility for motion-sensitive users.
+**Action:** Implement status-coordinated pulse animations for critical thresholds and always include a `@media (prefers-reduced-motion: reduce)` block to disable them when requested.
