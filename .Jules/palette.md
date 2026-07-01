@@ -70,7 +70,7 @@
 **Learning:** For users with ADHD, relative durations (e.g., "45 minutes remaining") can feel abstract and fail to trigger a realistic sense of time ("time blindness"). Providing an absolute completion time (e.g., "Estimated completion: 14:30") grounds the relative effort in the real world, making the remaining workload feel more tangible and manageable.
 **Action:** Always supplement relative duration displays with an absolute estimated completion time to provide a concrete temporal anchor.
 
-## 2026-05-14 - [Temporal Grounding for Task Management]
+## 2025-05-14 - [Temporal Grounding for Task Management]
 **Learning:** Displaying relative durations (e.g., "45m remaining") is helpful but can still feel abstract to users with ADHD who experience "time blindness." Providing an absolute wall-clock finish estimate (e.g., "Finish at 14:30") grounds the relative duration in real-world time, making the workload feel more concrete and manageable.
 **Action:** Supplement relative duration counters with absolute estimated completion times to improve temporal grounding and reduce cognitive load.
 
@@ -94,7 +94,7 @@
 **Learning:** For destructive actions using a multi-step "soft" confirmation (e.g., "Reset Ritual"), a static label change might be too subtle for users in high-stimulation dashboard environments. Adding a rhythmic scale-and-glow pulse animation during the confirmation window provides a clear "active warning" state that reduces accidental progress loss while increasing the perceived safety of the interaction.
 **Action:** Use subtle `reset-pulse` animations for button components during time-limited confirmation windows to provide stronger visual feedback for destructive actions.
 
-## 2026-05-07 - [Progressive Ritual Awareness]
+## 2025-05-07 - [Progressive Ritual Awareness]
 **Learning:** For users with ADHD, seeing a list of tasks without a clear progress fraction (e.g., "1/3") can contribute to a sense of being lost in a sequence. Prefixing duration indicators with a task completion counter provides immediate spatial and temporal grounding. Additionally, providing tactile feedback (vertical lift and shadows) on list item hover/focus bridges the gap between static content and interactive ritual steps.
 **Action:** Always provide a clear "n/m tasks" counter in sequential task managers and use subtle vertical transforms for interactive list elements.
 
@@ -158,3 +158,6 @@
 **Learning:** When refactoring multiple nested tooltips into a single "Card-Level" summary, it's easy to lose critical context like the "AI-generated" nature of suggestions. Explicitly labeling these summaries as "AI Insight" or "AI Recommendation" ensures transparency and maintains the user's understanding of the source of the information, which is crucial for building trust in automated systems.
 **Action:** When consolidating metadata into a single tooltip, ensure that the source and nature of suggestions (especially AI-driven ones) are explicitly labeled.
 
+## 2026-05-31 - [Block-Level Interactive AI Insights]
+**Learning:** AI-generated "Team Insights" that appear as static text blocks can be overlooked as "just another label." Transforming these blocks into focusable, copyable surfaces with tactile feedback (hover lift, status-coordinated glow) and icon-swapping success states (Brain -> Check) increases their perceived value and utility. This turns a passive reading experience into an actionable utility while maintaining "AI Recommendation" transparency.
+**Action:** Implement block-level interactive patterns (hover transforms, copy-to-clipboard, tactile animations) for summary-style AI insights to encourage user engagement and utility.
