@@ -158,3 +158,10 @@
 **Learning:** When refactoring multiple nested tooltips into a single "Card-Level" summary, it's easy to lose critical context like the "AI-generated" nature of suggestions. Explicitly labeling these summaries as "AI Insight" or "AI Recommendation" ensures transparency and maintains the user's understanding of the source of the information, which is crucial for building trust in automated systems.
 **Action:** When consolidating metadata into a single tooltip, ensure that the source and nature of suggestions (especially AI-driven ones) are explicitly labeled.
 
+## 2025-05-30 - [Tab Stop Consolidation in Multi-Item Panels]
+**Learning:** In panels displaying multiple team members or items, having 4+ tab stops per item (e.g., name, energy, attention, status) leads to significant "tab fatigue" and slows down navigation for keyboard users. Consolidating all status and metric information into a single root-level `aria-label` and `Tooltip` on the container card reduces the interaction cost to one stop per item while improving the clarity of the announced context.
+**Action:** Consolidate multiple interactive metadata points into a single, comprehensive `aria-label` on a focusable container to streamline keyboard navigation in multi-item dashboard views.
+
+## 2025-05-30 - [Tactile AI Insight Copy Feedback]
+**Learning:** AI-generated suggestions benefit from a "Copyable Surface" pattern. Using a dashed border (`2px dashed`) signals a focusable interaction area that isn't a standard button, providing a distinct visual cue for interactive insights. Combining this with icon swapping, time-limited success states, and a tactile pulse animation (`insight-copy-pulse`) gives users immediate confidence that the recommendation was captured.
+**Action:** Use dashed borders and localized pulse animations to provide tactile confirmation for copying AI-generated insights.

@@ -67,8 +67,6 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('<Tooltip title="Current energy level" arrow>');
   expect(content).toContain('<Tooltip title="Current attention focus" arrow>');
   expect(content).toContain('tabIndex={0}');
-  expect(content).toMatch(/<Tooltip title="Current energy level"[\s\S]*tabIndex=\{0\}/);
-  expect(content).toMatch(/<Tooltip title="Current attention focus"[\s\S]*tabIndex=\{0\}/);
   // Verify team signal chips
   expect(content).toMatch(/<Tooltip key=\{signal\.label\} title=\{`Team signal: \$\{signal\.label\} status`\} arrow>/);
   expect(content).toContain('aria-label={`Team signal: ${signal.label} is ${signal.value}`}');
@@ -82,6 +80,16 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('AVG LOAD');
   expect(content).toContain('borderColor: teamStatusColor');
   expect(content).toContain('boxShadow: `0 0 20px ${alpha(teamStatusColor, 0.2)}`');
+
+  // Verify Member Card consolidation
+  expect(content).toMatch(/aria-label=\{\s*`\$\{member\.name\}: \$\{statusStyles\[member\.status\]\.label\}, \$\{member\.load\}% load, \$\{member\.energy\}% energy, \$\{member\.attention\}% attention`\s*\}/);
+
+  // Verify AI Insight Copyable Surface
+  expect(content).toMatch(/<Tooltip title=\{isCopied \? 'Copied!' : 'Copy team insight'\} arrow>/);
+  expect(content).toMatch(/aria-label=\{\s*isCopied \? `Team insight: \$\{teamInsight\} \(Copied\)` : `Copy team insight: \$\{teamInsight\}`\s*\}/);
+  expect(content).toContain('role="button"');
+  expect(content).toContain('onKeyDown=');
+  expect(content).toContain("animation: 'insight-copy-pulse 0.4s ease-out'");
 });
 
 test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
