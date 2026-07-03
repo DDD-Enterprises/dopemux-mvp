@@ -216,3 +216,145 @@ def test_native_hook_activity_emit_failure_does_not_block_hook(tmp_path, monkeyp
     )
 
     assert response.get("decision") != "block"
+
+
+def test_post_tool_use_failure_emits_error_encountered_capture_event(tmp_path, monkeypatch):
+    """PostToolUseFailure with real error text maps to the WMA-promotable
+    "error.encountered" event type via capture_client.emit_capture_event."""
+    monkeypatch.setattr(
+        native_hooks,
+        "_open_activity_redis_client",
+        lambda: FakeRedisClient(),
+        raising=False,
+    )
+
+    captured_events = []
+
+    def fake_emit_capture_event(event, **kwargs):
+        captured_events.append((event, kwargs))
+        return None
+
+    monkeypatch.setattr(
+        "dopemux.memory.capture_client.emit_capture_event",
+        fake_emit_capture_event,
+    )
+
+    handle_event(
+        "PostToolUseFailure",
+        {
+            "cwd": str(tmp_path),
+            "session_id": "session-1",
+            "tool_name": "Bash",
+            "error": "Command exited with status 1",
+            "env": {"DOPEMUX_INSTANCE_ID": "main"},
+        },
+    )
+
+    assert len(captured_events) == 1
+    event, kwargs = captured_events[0]
+    assert event["event_type"] == "error.encountered"
+    assert event["payload"]["message"] == "Command exited with status 1"
+    assert event["payload"]["error_kind"] == "Bash"
+    assert event["session_id"] == "session-1"
+    assert kwargs["repo_root"] == tmp_path.resolve()
+    assert kwargs["emit_event_bus"] is True
+
+
+def test_post_tool_use_failure_without_error_text_does_not_capture(tmp_path, monkeypatch):
+    """No error message present -> no promotable event manufactured (anti-spam)."""
+    monkeypatch.setattr(
+        native_hooks,
+        "_open_activity_redis_client",
+        lambda: FakeRedisClient(),
+        raising=False,
+    )
+
+    captured_events = []
+
+    def fake_emit_capture_event(event, **kwargs):
+        captured_events.append(event)
+        return None
+
+    monkeypatch.setattr(
+        "dopemux.memory.capture_client.emit_capture_event",
+        fake_emit_capture_event,
+    )
+
+    handle_event(
+        "PostToolUseFailure",
+        {
+            "cwd": str(tmp_path),
+            "session_id": "session-1",
+            "tool_name": "Bash",
+            "error": "",
+            "env": {"DOPEMUX_INSTANCE_ID": "main"},
+        },
+    )
+
+    assert captured_events == []
+
+
+def test_post_tool_use_success_does_not_emit_promotable_capture_event(tmp_path, monkeypatch):
+    """Routine PostToolUse success must not flood the promotable capture path."""
+    monkeypatch.setattr(
+        native_hooks,
+        "_open_activity_redis_client",
+        lambda: FakeRedisClient(),
+        raising=False,
+    )
+
+    captured_events = []
+
+    def fake_emit_capture_event(event, **kwargs):
+        captured_events.append(event)
+        return None
+
+    monkeypatch.setattr(
+        "dopemux.memory.capture_client.emit_capture_event",
+        fake_emit_capture_event,
+    )
+
+    handle_event(
+        "PostToolUse",
+        {
+            "cwd": str(tmp_path),
+            "session_id": "session-1",
+            "tool_name": "Read",
+            "tool_response": {"content": "ok"},
+            "env": {"DOPEMUX_INSTANCE_ID": "main"},
+        },
+    )
+
+    assert captured_events == []
+
+
+def test_post_tool_use_failure_capture_exception_does_not_propagate(tmp_path, monkeypatch):
+    """A capture_client failure must never break the hook (fail-open)."""
+    monkeypatch.setattr(
+        native_hooks,
+        "_open_activity_redis_client",
+        lambda: FakeRedisClient(),
+        raising=False,
+    )
+
+    def raising_emit_capture_event(event, **kwargs):
+        raise RuntimeError("sqlite locked / redis down / whatever")
+
+    monkeypatch.setattr(
+        "dopemux.memory.capture_client.emit_capture_event",
+        raising_emit_capture_event,
+    )
+
+    # Must not raise, and hook must still return its normal allow response.
+    response = handle_event(
+        "PostToolUseFailure",
+        {
+            "cwd": str(tmp_path),
+            "session_id": "session-1",
+            "tool_name": "Bash",
+            "error": "boom",
+            "env": {"DOPEMUX_INSTANCE_ID": "main"},
+        },
+    )
+
+    assert response.get("decision") != "block"
