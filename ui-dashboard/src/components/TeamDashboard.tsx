@@ -1,8 +1,14 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Avatar, Box, Chip, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
-import { Eye, Zap } from 'lucide-react';
-
+import { alpha, keyframes } from '@mui/material/styles';
+import { Check, Copy, Eye, Zap } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
+
+const copyPulse = keyframes({
+  '0%': { transform: 'scale(1)' },
+  '50%': { transform: 'scale(1.02)', boxShadow: `0 0 15px ${alpha(brandTokens.colors.serumMint, 0.3)}`, borderColor: brandTokens.colors.serumMint },
+  '100%': { transform: 'scale(1)' },
+});
 
 const teamMembers = [
   { name: 'Operator', load: 42, energy: 78, attention: 82, status: 'optimal' },
@@ -31,15 +37,24 @@ export default function TeamDashboard() {
   const teamStatusColor = statusStyles[teamStatus].color;
 
   const teamInsight = 'Sequence handoffs while average load is below escalation threshold.';
+  const [isCopied, setIsCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current); }, []);
+
+  const handleCopyInsight = useCallback(async (e: React.MouseEvent | React.KeyboardEvent) => {
+    if ('key' in e && !['Enter', ' '].includes(e.key)) return;
+    if ('key' in e && e.key === ' ') e.preventDefault();
+    await navigator.clipboard.writeText(teamInsight);
+    setIsCopied(true);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setIsCopied(false), 2000);
+  }, [teamInsight]);
 
   return (
-    <Tooltip
-      title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}
-      arrow
-    >
+    <Tooltip title={`Average Team Load: ${teamAverageLoad}% • ${statusStyles[teamStatus].label}`} arrow>
       <Paper
         tabIndex={0}
-        aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}
+        aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}`}
         sx={{
           p: 3,
           borderRadius: 3,
@@ -197,9 +212,26 @@ export default function TeamDashboard() {
           </Box>
         ))}
       </Box>
-      <Typography variant="body2" color="text.secondary" tabIndex={0} sx={{ mb: 2 }}>
-        {teamInsight}
-      </Typography>
+      <Tooltip title={isCopied ? 'Insight copied!' : 'Click to copy AI insight'} arrow>
+        <Box
+          role="button" tabIndex={0} onClick={handleCopyInsight} onKeyDown={handleCopyInsight}
+          aria-label={isCopied ? `AI Insight: ${teamInsight} (Copied)` : `Copy AI Insight: ${teamInsight}`}
+          sx={{
+            mb: 2, p: 1.5, borderRadius: 2, cursor: 'copy', display: 'flex', gap: 1.5,
+            border: '1px solid transparent', bgcolor: alpha(brandTokens.colors.voidNavy, 0.4),
+            transition: 'all 0.2s ease', animation: isCopied ? `${copyPulse} 0.4s ease-out` : 'none',
+            '&:hover, &:focus-visible': { bgcolor: alpha(brandTokens.colors.voidNavy, 0.6), outline: 'none', borderColor: isCopied ? brandTokens.colors.serumMint : alpha(brandTokens.colors.ritualCyan, 0.4) },
+          }}
+        >
+          <Box sx={{ mt: 0.25, color: isCopied ? brandTokens.colors.serumMint : alpha(brandTokens.text.primary, 0.4) }}>
+            {isCopied ? <Check size={16} /> : <Copy size={16} />}
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            <Typography component="span" variant="caption" sx={{ display: 'block', fontWeight: 'bold', color: isCopied ? brandTokens.colors.serumMint : brandTokens.colors.ritualCyan, mb: 0.5, letterSpacing: '0.05em', textTransform: 'uppercase' }}>AI Recommendation</Typography>
+            {teamInsight}
+          </Typography>
+        </Box>
+      </Tooltip>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
         {teamSignals.map((signal) => (
           <Tooltip key={signal.label} title={`Team signal: ${signal.label} status`} arrow>
