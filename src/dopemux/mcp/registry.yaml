@@ -42,16 +42,6 @@ servers:
       port: 3012
       health_url: http://localhost:3012/health
 
-  dopemux-desktop-commander:
-    transport: http
-    default_enabled: false
-    required_for_auto: false
-    docker:
-      service: desktop-commander
-      compose_file: compose.yml
-      port: 3012
-      health_url: http://localhost:3012/health
-
   dopemux-gpt-researcher:
     transport: http
     default_enabled: true
@@ -62,29 +52,9 @@ servers:
       port: 3009
       health_url: http://localhost:3009/health
 
-  dopemux-gpt-researcher:
-    transport: http
-    default_enabled: false
-    required_for_auto: false
-    docker:
-      service: gptr-mcp
-      compose_file: compose.yml
-      port: 3009
-      health_url: http://localhost:3009/health
-
   dopemux-leantime-bridge:
     transport: http-sse
     default_enabled: true
-    required_for_auto: false
-    docker:
-      service: leantime-bridge
-      compose_file: compose.yml
-      port: 3015
-      health_url: http://localhost:3015/health
-
-  dopemux-leantime-bridge:
-    transport: http-sse
-    default_enabled: false
     required_for_auto: false
     docker:
       service: leantime-bridge
@@ -127,15 +97,6 @@ servers:
         - pal-mcp-server
         - start
 
-  dopemux-pal:
-    transport: stdio
-    default_enabled: false
-    required_for_auto: false
-    local:
-      command: uvx
-      args:
-        - pal-mcp-server
-        - start
   dopemux-zen:
     transport: stdio
     default_enabled: false
