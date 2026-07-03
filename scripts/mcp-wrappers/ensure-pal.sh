@@ -82,8 +82,9 @@ fi
 # No container by this name at all — need to create it. Requires the image.
 if ! docker image inspect "${IMAGE_REF}" >/dev/null 2>&1; then
   echo "❌ ensure-pal: image '${IMAGE_REF}' not found locally" >&2
-  echo "💡 Build it via the PAL checkout's compose file (produces ${IMAGE_REF} with /opt/venv/bin/python, matching what clients exec):" >&2
-  echo "   cd ~/code/pal-mcp-server && docker compose up -d --build" >&2
+  echo "💡 Build it from your PAL MCP checkout using its compose file, which produces" >&2
+  echo "   '${IMAGE_REF}' with /opt/venv/bin/python (the interpreter clients exec into):" >&2
+  echo "     docker compose up -d --build   # run from your pal-mcp-server checkout dir" >&2
   echo "   Note: docker/mcp-servers-source/pal/Dockerfile in this repo builds a different, non-exec-compatible layout (/app/.venv) — not a substitute." >&2
   exit 1
 fi
