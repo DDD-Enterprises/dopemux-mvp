@@ -717,6 +717,12 @@ def _ensure_fast_problems(catalog: Dict[str, Any], repo_path: Path, project_root
 
 DEFAULT_ENSURE_TIMEOUT_SECONDS = 120
 DEFAULT_COMPOSE_WAIT_TIMEOUT_SECONDS = 90
+# `docker compose up` also BUILDS any missing local images before the health
+# wait begins, and a cold multi-image build easily exceeds the health-wait
+# budget. Give the compose step its own generous (but still bounded) subprocess
+# budget so a first-run build isn't killed, while --wait-timeout still bounds
+# the post-build health wait.
+DEFAULT_COMPOSE_UP_TIMEOUT_SECONDS = 900
 
 
 def _catalog_compose_services(catalog: Dict[str, Any]) -> List[str]:
@@ -857,8 +863,10 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
     compose_services = _catalog_compose_services(catalog)
     if compose_services:
         # --wait blocks until dependent services report healthy (bounded by
-        # --wait-timeout); the Python-side timeout= is a backstop in case the
-        # docker CLI itself hangs, so it must exceed the compose wait budget.
+        # --wait-timeout). The Python-side timeout= is a backstop against a
+        # hung CLI and must cover BOTH a cold first-run image build AND the
+        # health wait, so it uses the generous compose-up budget rather than
+        # the short health-wait one.
         _run_checked(
             [
                 "docker", "compose", "-f", "compose.yml", "up", "-d",
@@ -867,7 +875,7 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
             ],
             cwd=repo_path,
             label="compose",
-            timeout=DEFAULT_COMPOSE_WAIT_TIMEOUT_SECONDS + 30,
+            timeout=DEFAULT_COMPOSE_UP_TIMEOUT_SECONDS,
         )
 
     # ensure-pal.sh owns the off-compose Codex pal-mcp-server container only;
