@@ -65,3 +65,6 @@ NOT_RUN:
   - `.claude/commands` MCP tool-surface extraction now includes wildcard references such as `mcp__conport__*`.
   - `exa` stdio catalog entry now passes `MCP_RUN_MODE=stdio` to `docker exec`.
   - Proof preflight records commit SHA and PR URL.
+- PR #995 merge unblock follow-up addressed additional review feedback:
+  - `.claude/commands/dx/implement.md` now references `mcp__pal__*` instead of the unregistered historical `mcp__zen__*` surface.
+  - `mcp_catalog.yaml` no longer suppresses that command-surface drift with a `zen` alias.

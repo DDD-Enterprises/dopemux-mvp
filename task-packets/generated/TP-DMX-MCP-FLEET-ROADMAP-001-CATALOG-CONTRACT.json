@@ -33,6 +33,7 @@
       "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-*.json",
       "task-packets/INDEX.md",
       "task-packets/STATUS.md",
+      ".claude/commands/dx/implement.md",
       "mcp_catalog.yaml",
       "src/dopemux/mcp/registry.yaml",
       "schemas/mcp/fleet-catalog.schema.json",

@@ -44,7 +44,6 @@ servers:
     transport: http
     url: "http://localhost:3003/mcp"
     docker_compose_service: pal
-    tool_aliases: ["zen"]
     description: "Multi-model reasoning suite (thinkdeep, planner, consensus, debug, codereview)"
 
   serena:
