@@ -51,6 +51,59 @@
         "transport": {
           "enum": ["http", "sse", "stdio"]
         },
+        "plane": {
+          "enum": [
+            "automation",
+            "code-intelligence",
+            "gateway",
+            "memory",
+            "pm",
+            "reasoning",
+            "research",
+            "retrieval",
+            "workflow"
+          ]
+        },
+        "authority_role": {
+          "enum": [
+            "chronicle-authority",
+            "code-intelligence",
+            "deep-research",
+            "desktop-automation",
+            "docker-gateway",
+            "pm-adapter",
+            "reasoning-infrastructure",
+            "retrieval-projection",
+            "structured-context-authority",
+            "web-search",
+            "workflow-authority"
+          ]
+        },
+        "lifecycle": {
+          "enum": ["active", "decision-required", "operator-managed"]
+        },
+        "management_model": {
+          "enum": [
+            "compose-service",
+            "docker-exec",
+            "docker-mcp-gateway",
+            "operator-managed",
+            "wrapper-singleton"
+          ]
+        },
+        "identity_scope": {
+          "enum": [
+            "external-provider",
+            "host-session",
+            "per-call-workspace",
+            "per-repo",
+            "per-worktree",
+            "singleton"
+          ]
+        },
+        "follow_on_decision": {
+          "enum": ["delete-or-host-run", "none", "wire-or-retire"]
+        },
         "url": {
           "type": "string",
           "minLength": 1

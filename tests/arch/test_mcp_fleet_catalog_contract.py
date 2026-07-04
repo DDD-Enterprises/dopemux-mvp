@@ -51,6 +51,42 @@ def test_catalog_compose_service_and_port_alignment():
     assert errors == []
 
 
+def test_required_server_personalities_are_static_contract():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+
+    errors = fleet_catalog.validate_catalog_personality_contract(catalog)
+
+    assert errors == []
+
+
+def test_personality_contract_catches_authority_role_drift():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+    catalog["servers"]["dope-context"]["authority_role"] = "structured-context-authority"
+
+    errors = fleet_catalog.validate_catalog_personality_contract(catalog)
+
+    assert any("dope-context: authority_role" in error for error in errors)
+
+
+def test_decision_required_servers_must_name_follow_on_decision():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+    catalog["servers"]["temporary-search"] = {
+        "scope": "singleton",
+        "transport": "http",
+        "plane": "research",
+        "authority_role": "web-search",
+        "lifecycle": "decision-required",
+        "management_model": "compose-service",
+        "identity_scope": "external-provider",
+        "follow_on_decision": "none",
+        "url": "http://localhost:3999/mcp",
+    }
+
+    errors = fleet_catalog.validate_catalog_personality_contract(catalog)
+
+    assert any("temporary-search: decision-required lifecycle" in error for error in errors)
+
+
 def test_legacy_registry_has_unique_keys_and_compose_health_contracts():
     errors = fleet_catalog.validate_legacy_registry_contract(REPO_ROOT)
 

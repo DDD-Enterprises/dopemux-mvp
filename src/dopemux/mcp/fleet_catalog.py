@@ -30,6 +30,74 @@ _ENV_RE = re.compile(r"\$\{[^}]+\}")
 _MCP_TOOL_SURFACE_RE = re.compile(r"\bmcp__([A-Za-z0-9_-]+)__(?:[A-Za-z0-9_-]+|\*)")
 
 
+REQUIRED_SERVER_PERSONALITIES: dict[str, dict[str, str]] = {
+    "conport": {
+        "plane": "memory",
+        "authority_role": "structured-context-authority",
+        "lifecycle": "active",
+        "management_model": "compose-service",
+        "identity_scope": "per-worktree",
+        "follow_on_decision": "none",
+    },
+    "dope-memory": {
+        "plane": "memory",
+        "authority_role": "chronicle-authority",
+        "lifecycle": "active",
+        "management_model": "compose-service",
+        "identity_scope": "per-worktree",
+        "follow_on_decision": "none",
+    },
+    "dope-context": {
+        "plane": "retrieval",
+        "authority_role": "retrieval-projection",
+        "lifecycle": "active",
+        "management_model": "compose-service",
+        "identity_scope": "per-call-workspace",
+        "follow_on_decision": "none",
+    },
+    "task-orchestrator": {
+        "plane": "workflow",
+        "authority_role": "workflow-authority",
+        "lifecycle": "active",
+        "management_model": "wrapper-singleton",
+        "identity_scope": "per-repo",
+        "follow_on_decision": "none",
+    },
+    "pal": {
+        "plane": "reasoning",
+        "authority_role": "reasoning-infrastructure",
+        "lifecycle": "active",
+        "management_model": "compose-service",
+        "identity_scope": "singleton",
+        "follow_on_decision": "none",
+    },
+    "pal-stdio": {
+        "plane": "reasoning",
+        "authority_role": "reasoning-infrastructure",
+        "lifecycle": "operator-managed",
+        "management_model": "docker-exec",
+        "identity_scope": "singleton",
+        "follow_on_decision": "none",
+    },
+    "exa": {
+        "plane": "research",
+        "authority_role": "web-search",
+        "lifecycle": "decision-required",
+        "management_model": "docker-exec",
+        "identity_scope": "external-provider",
+        "follow_on_decision": "wire-or-retire",
+    },
+    "desktop-commander": {
+        "plane": "automation",
+        "authority_role": "desktop-automation",
+        "lifecycle": "decision-required",
+        "management_model": "compose-service",
+        "identity_scope": "host-session",
+        "follow_on_decision": "delete-or-host-run",
+    },
+}
+
+
 def load_yaml_no_duplicate_keys(path: Path) -> Any:
     """Load YAML while rejecting duplicate mapping keys at any depth."""
 
@@ -149,8 +217,14 @@ def render_health_probe_list(catalog: dict[str, Any]) -> list[dict[str, Any]]:
             continue
         probes.append(
             {
+                "authority_role": spec.get("authority_role"),
                 "docker_compose_service": spec.get("docker_compose_service"),
+                "follow_on_decision": spec.get("follow_on_decision"),
+                "identity_scope": spec.get("identity_scope"),
+                "lifecycle": spec.get("lifecycle"),
+                "management_model": spec.get("management_model"),
                 "name": name,
+                "plane": spec.get("plane"),
                 "scope": spec.get("scope"),
                 "transport": spec.get("transport", "http"),
                 "url": url,
@@ -187,8 +261,8 @@ def render_mcp_doctrine_doc(catalog: dict[str, Any]) -> str:
             "",
             "## Servers",
             "",
-            "| Server | Scope | Transport | Health URL | Compose Service |",
-            "| --- | --- | --- | --- | --- |",
+            "| Server | Plane | Authority Role | Lifecycle | Identity | Follow-on | Scope | Transport | Health URL | Compose Service |",
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
         ]
     )
     for name, spec in sorted(catalog.get("servers", {}).items()):
@@ -199,6 +273,11 @@ def render_mcp_doctrine_doc(catalog: dict[str, Any]) -> str:
             + " | ".join(
                 [
                     f"`{name}`",
+                    str(spec.get("plane", "")),
+                    str(spec.get("authority_role", "")),
+                    str(spec.get("lifecycle", "")),
+                    str(spec.get("identity_scope", "")),
+                    str(spec.get("follow_on_decision", "")),
                     str(spec.get("scope", "")),
                     str(spec.get("transport", "")),
                     f"`{health_url}`" if health_url else "",
@@ -246,6 +325,38 @@ def find_unknown_command_tool_surfaces(
                 if surface not in known:
                     unknown.append(f"{path}:{index}:{surface}")
     return unknown
+
+
+def validate_catalog_personality_contract(catalog: dict[str, Any]) -> list[str]:
+    """Validate high-risk MCP server role and lifecycle metadata.
+
+    This is a static gate. It does not prove the runtime is healthy; it prevents
+    authority and lifecycle semantics from drifting out of the catalog.
+    """
+
+    errors: list[str] = []
+    servers = catalog.get("servers") or {}
+    for name, expected in REQUIRED_SERVER_PERSONALITIES.items():
+        spec = servers.get(name)
+        if not spec:
+            errors.append(f"{name}: required server missing from catalog")
+            continue
+        for field, expected_value in expected.items():
+            actual = spec.get(field)
+            if actual != expected_value:
+                errors.append(
+                    f"{name}: {field} must be `{expected_value}` for MCP personality contract "
+                    f"(found `{actual}`)"
+                )
+
+    for name, spec in sorted(servers.items()):
+        follow_on_decision = spec.get("follow_on_decision")
+        if spec.get("lifecycle") == "decision-required" and follow_on_decision in {None, "none"}:
+            errors.append(f"{name}: decision-required lifecycle must name a follow_on_decision")
+        if follow_on_decision not in {None, "none"} and spec.get("lifecycle") != "decision-required":
+            errors.append(f"{name}: follow_on_decision requires lifecycle `decision-required`")
+
+    return errors
 
 
 def load_compose(repo_root: Path) -> dict[str, Any]:
