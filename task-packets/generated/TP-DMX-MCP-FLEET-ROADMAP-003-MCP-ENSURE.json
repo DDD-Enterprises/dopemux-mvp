@@ -1,0 +1,84 @@
+{
+  "id": "TP-DMX-MCP-FLEET-ROADMAP-003-MCP-ENSURE",
+  "project": "dopemux-mvp",
+  "target": "Add `dopemux mcp ensure --fast/--full` as an idempotent remediation layer over the catalog after generated config surfaces are stable.",
+  "invariants": [
+    "Depends on packets 001 and 002.",
+    "`doctor` diagnoses and `ensure` remediates; do not collapse the commands.",
+    "`--fast` must not start containers or make network/provider calls.",
+    "`--full` must fail closed when Docker, PAL image, or Task Orchestrator singleton prerequisites are unavailable.",
+    "No secrets may be printed."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT",
+    "TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-FLEET-ROADMAP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-fleet-ensure-command",
+    "base_branch": "main",
+    "stacked_because": "Ensure needs catalog-backed config generation and drift gates."
+  },
+  "commit": {
+    "message": "feat(mcp): add fleet ensure command",
+    "allowlist": [
+      "src/dopemux/commands/mcp_commands.py",
+      "src/dopemux/mcp/fleet_catalog.py",
+      "scripts/mcp-wrappers/ensure-pal.sh",
+      "tests/unit/test_mcp_commands_catalog.py",
+      "tests/unit/test_mcp_fleet_catalog.py",
+      "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-003-MCP-ENSURE.json",
+      "proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-003-MCP-ENSURE/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-003-MCP-ENSURE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_mcp_commands_catalog.py tests/unit/test_mcp_fleet_catalog.py -q",
+      "bash -n scripts/mcp-wrappers/ensure-pal.sh",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(mcp): add fleet ensure command",
+    "body": "Add idempotent MCP fleet remediation with fast and full modes. Live runtime validation remains separately recorded.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "fast_mode",
+      "task": "Implement `dopemux mcp ensure --fast` for local prerequisite and cached health checks only.",
+      "validation": [
+        "Unit tests prove fast mode does not invoke Docker start or live MCP probes."
+      ]
+    },
+    {
+      "id": "full_mode",
+      "task": "Implement `dopemux mcp ensure --full` with compose startup, PAL ensure, Task Orchestrator singleton ensure, and bounded tool-surface probes.",
+      "validation": [
+        "Unit tests cover command construction and fail-closed prerequisite errors; live Docker validation is recorded separately when available."
+      ]
+    }
+  ]
+}

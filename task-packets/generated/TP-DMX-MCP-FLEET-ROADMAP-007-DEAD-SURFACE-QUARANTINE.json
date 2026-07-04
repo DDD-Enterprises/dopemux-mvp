@@ -1,0 +1,87 @@
+{
+  "id": "TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE",
+  "project": "dopemux-mvp",
+  "target": "Quarantine or deprecate dead MCP fleet surfaces only after reverse dependency scans and CI prove no active generated config references them.",
+  "invariants": [
+    "Depends on catalog gates, generated outputs, and server-personality convergence.",
+    "No destructive deletion without reverse dependency proof.",
+    "Deprecated surfaces must not remain startable from generated configs.",
+    "Security-sensitive dead surfaces must be disabled fail-closed before any archive/delete step."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT",
+    "TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS",
+    "TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-FLEET-ROADMAP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-fleet-dead-surface-quarantine",
+    "base_branch": "main",
+    "stacked_because": "Dead-surface quarantine is unsafe until canonical configs and server personality decisions are enforced."
+  },
+  "commit": {
+    "message": "chore(mcp): quarantine dead fleet surfaces",
+    "allowlist": [
+      "SYSTEM_ARCHIVE/**",
+      "mcp_catalog.yaml",
+      "services/registry.yaml",
+      "src/dopemux/mcp/**",
+      "scripts/mcp/**",
+      "docker/mcp-servers-source/**",
+      "services/**",
+      "tests/arch/test_mcp_fleet_catalog_contract.py",
+      "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE.json",
+      "proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/arch/test_mcp_fleet_catalog_contract.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "chore(mcp): quarantine dead fleet surfaces",
+    "body": "Quarantine dead MCP surfaces after reverse dependency proof and generated-config drift gates.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "reverse_deps",
+      "task": "Run reverse dependency scans for each proposed dead surface and classify references as active, generated, docs-only, or archive.",
+      "validation": [
+        "Proof records zero active generated config references before quarantine."
+      ]
+    },
+    {
+      "id": "quarantine",
+      "task": "Quarantine or deprecate dead surfaces with tests proving generated configs cannot start them.",
+      "validation": [
+        "Catalog drift gates pass and no startable dead surface remains in generated config."
+      ]
+    }
+  ]
+}

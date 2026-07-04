@@ -1,0 +1,83 @@
+{
+  "id": "TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES",
+  "project": "dopemux-mvp",
+  "target": "Converge MCP server personality and lifecycle contracts through the canonical fleet catalog without deleting or rewriting runtime surfaces.",
+  "invariants": [
+    "Depends on packet 001 catalog gates and must not bypass catalog validation.",
+    "ConPort, task-orchestrator, dope-memory, and dope-context roles must preserve repo authority boundaries.",
+    "PAL must remain explicitly operator-managed as standalone reasoning infrastructure.",
+    "Exa and desktop-commander must remain decision-gated until wire-or-retire and host-run/delete decisions are proven by follow-on scans."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-FLEET-ROADMAP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-fleet-server-personalities",
+    "base_branch": "main",
+    "stacked_because": "Server personality convergence needs catalog gates from packet 001 and follows memory capture repair."
+  },
+  "commit": {
+    "message": "feat(mcp): declare fleet server personalities",
+    "allowlist": [
+      "mcp_catalog.yaml",
+      "src/dopemux/mcp/default_catalog.yaml",
+      "schemas/mcp/fleet-catalog.schema.json",
+      "src/dopemux/mcp/fleet_catalog.py",
+      "tests/unit/test_mcp_fleet_catalog.py",
+      "tests/arch/test_mcp_fleet_catalog_contract.py",
+      "docs/03-reference/mcp/fleet-generated-outputs.md",
+      "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES.json",
+      "proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_mcp_fleet_catalog.py tests/arch/test_mcp_fleet_catalog_contract.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(mcp): declare fleet server personalities",
+    "body": "Add catalog-backed MCP server role, lifecycle, identity, and decision metadata with static gates for high-risk fleet personalities.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "catalog_personalities",
+      "task": "Add schema-backed server personality metadata for authority role, lifecycle, management model, identity scope, and unresolved follow-on decisions.",
+      "validation": [
+        "Catalog schema validation accepts only declared metadata fields and rejects unknown values."
+      ]
+    },
+    {
+      "id": "drift_gate",
+      "task": "Add static drift checks for required MCP personality contracts and render metadata into generated outputs.",
+      "validation": [
+        "Focused fleet catalog tests prove required role/lifecycle decisions cannot drift silently."
+      ]
+    }
+  ]
+}

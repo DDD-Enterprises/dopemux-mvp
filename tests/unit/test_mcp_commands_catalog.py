@@ -315,6 +315,196 @@ def test_sync_globals_prune_removes_unknown_entries(tmp_path, monkeypatch):
     assert "exa" in written
 
 
+def test_mcp_generate_dry_run_reports_outputs_without_writing(tmp_path, monkeypatch):
+    catalog = _singleton_catalog()
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp_generate_cmd,
+        ["--output-dir", str(tmp_path)],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Dry-run only" in result.output
+    assert "local/.mcp.json" in result.output
+    assert "claude/mcpServers.json" in result.output
+    assert not any(tmp_path.iterdir())
+
+
+def test_mcp_generate_apply_requires_output_dir(monkeypatch):
+    catalog = _singleton_catalog()
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+
+    result = CliRunner().invoke(mcp_commands.mcp_generate_cmd, ["--apply"])
+
+    assert result.exit_code != 0
+    assert "--apply requires --output-dir" in result.output
+
+
+def test_mcp_generate_apply_writes_only_under_output_dir(tmp_path, monkeypatch):
+    catalog = _singleton_catalog()
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp_generate_cmd,
+        ["--apply", "--output-dir", str(tmp_path)],
+    )
+
+    assert result.exit_code == 0, result.output
+    expected = {
+        "local/.mcp.json",
+        "claude/mcpServers.json",
+        "codex/config.toml",
+        "health/mcp-health-probes.json",
+        "docs/mcp-fleet.md",
+    }
+    written = {
+        str(path.relative_to(tmp_path))
+        for path in tmp_path.rglob("*")
+        if path.is_file()
+    }
+    assert written == expected
+    assert json.loads((tmp_path / "claude/mcpServers.json").read_text())["mcpServers"].keys() == {
+        "exa",
+        "gpt-researcher",
+    }
+
+
+def test_mcp_ensure_fast_uses_local_checks_without_subprocess(tmp_path, monkeypatch):
+    catalog = _catalog()
+    (tmp_path / mcp_commands.PROJECT_MCP_FILENAME).write_text(
+        json.dumps(mcp_commands._build_local_mcp_json(["conport"], catalog), indent=2) + "\n"
+    )
+    (tmp_path / mcp_commands.ENVRC_FILENAME).write_text("export CONPORT_MCP_PORT=3005\n")
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("DOPEMUX_WORKSPACE_ROOT", raising=False)
+    monkeypatch.delenv("DOPEMUX_PROJECT_ROOT", raising=False)
+    monkeypatch.delenv("TASK_ORCHESTRATOR_PROJECT_ROOT", raising=False)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(
+        mcp_commands,
+        "resolve_project_identity",
+        lambda **_: pytest.fail("fast ensure must not resolve git project identity"),
+    )
+    monkeypatch.setattr(
+        mcp_commands.subprocess,
+        "run",
+        lambda *args, **kwargs: pytest.fail("fast ensure must not run subprocesses"),
+    )
+    monkeypatch.setattr(
+        mcp_commands,
+        "_run_mcp_tools_list_probes",
+        lambda *_args, **_kwargs: pytest.fail("fast ensure must not run live MCP probes"),
+        raising=False,
+    )
+
+    result = CliRunner().invoke(mcp_commands.mcp_ensure_cmd, ["--fast"])
+
+    assert result.exit_code == 0, result.output
+    assert "Fast MCP ensure checks green" in result.output
+
+
+def test_mcp_ensure_fast_reports_missing_local_config(tmp_path, monkeypatch):
+    catalog = _catalog()
+    (tmp_path / ".git").mkdir()
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("DOPEMUX_WORKSPACE_ROOT", raising=False)
+    monkeypatch.delenv("DOPEMUX_PROJECT_ROOT", raising=False)
+    monkeypatch.delenv("TASK_ORCHESTRATOR_PROJECT_ROOT", raising=False)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(
+        mcp_commands,
+        "resolve_project_identity",
+        lambda **_: pytest.fail("fast ensure must not resolve git project identity"),
+    )
+
+    result = CliRunner().invoke(mcp_commands.mcp_ensure_cmd, ["--fast"])
+
+    assert result.exit_code == 1
+    assert "Missing" in result.output
+    assert mcp_commands.PROJECT_MCP_FILENAME in result.output
+    assert mcp_commands.ENVRC_FILENAME in result.output
+
+
+def test_mcp_ensure_full_fails_closed_when_docker_missing(tmp_path, monkeypatch):
+    catalog = _catalog()
+    (tmp_path / mcp_commands.PROJECT_MCP_FILENAME).write_text(
+        json.dumps(mcp_commands._build_local_mcp_json(["conport"], catalog), indent=2) + "\n"
+    )
+    (tmp_path / mcp_commands.ENVRC_FILENAME).write_text("export CONPORT_MCP_PORT=3005\n")
+
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
+    monkeypatch.setattr(mcp_commands.shutil, "which", lambda name: None)
+
+    result = CliRunner().invoke(mcp_commands.mcp_ensure_cmd, ["--full"])
+
+    assert result.exit_code == 1
+    assert "docker is required" in result.output
+
+
+def test_mcp_ensure_full_runs_bounded_remediation_sequence(tmp_path, monkeypatch):
+    catalog = {
+        "version": 1,
+        "defaults": {"per_worktree": ["task-orchestrator"]},
+        "servers": {
+            "pal": {
+                "scope": "singleton",
+                "transport": "http",
+                "url": "http://localhost:3003/mcp",
+                "docker_compose_service": "pal",
+            },
+            "task-orchestrator": {
+                "scope": "per-worktree",
+                "state_scope": "per-repo",
+                "transport": "http",
+                "url_template": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
+                "port_var": "TASK_ORCHESTRATOR_HTTP_PORT",
+                "default_port_base": 7890,
+                "docker_compose_service": "task-orchestrator",
+                "requires_env": ["TASK_ORCHESTRATOR_PROJECT_ROOT"],
+            },
+        },
+    }
+    (tmp_path / "compose.yml").write_text("services: {}\n")
+    (tmp_path / mcp_commands.PROJECT_MCP_FILENAME).write_text(
+        json.dumps(mcp_commands._build_local_mcp_json(["task-orchestrator"], catalog), indent=2) + "\n"
+    )
+    (tmp_path / mcp_commands.ENVRC_FILENAME).write_text("export TASK_ORCHESTRATOR_HTTP_PORT=7890\n")
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append((cmd, kwargs.get("cwd")))
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
+    monkeypatch.setattr(mcp_commands.shutil, "which", lambda name: f"/usr/bin/{name}")
+    monkeypatch.setattr(mcp_commands.subprocess, "run", fake_run)
+    monkeypatch.setattr(mcp_commands, "_run_mcp_tools_list_probes", lambda catalog: [])
+
+    result = CliRunner().invoke(mcp_commands.mcp_ensure_cmd, ["--full"])
+
+    assert result.exit_code == 0, result.output
+    assert calls[0][0] == [
+        "docker",
+        "compose",
+        "-f",
+        "compose.yml",
+        "up",
+        "-d",
+        "pal",
+        "task-orchestrator",
+    ]
+    assert calls[1][0][-1].endswith("ensure-pal.sh")
+    assert calls[2][0][-1].endswith("task-orchestrator-http-singleton.sh")
+    assert "Full MCP ensure checks green" in result.output
+
+
 def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
     """`doctor` reports every issue it finds and exits 1 if any are present."""
     catalog = {
