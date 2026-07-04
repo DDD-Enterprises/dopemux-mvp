@@ -1,0 +1,119 @@
+import re
+from pathlib import Path
+
+import jsonschema
+import pytest
+
+from dopemux.mcp import fleet_catalog
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_root_catalog_conforms_to_schema():
+    schema = fleet_catalog.load_json_schema(REPO_ROOT / "schemas/mcp/fleet-catalog.schema.json")
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+
+    jsonschema.validate(catalog, schema)
+
+
+def test_root_catalog_defaults_are_declared_per_worktree_servers():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+    servers = catalog["servers"]
+
+    invalid = [
+        name
+        for name in catalog["defaults"]["per_worktree"]
+        if name not in servers or servers[name].get("scope") != "per-worktree"
+    ]
+
+    assert invalid == []
+
+
+def test_catalog_compose_service_and_port_alignment():
+    errors = fleet_catalog.validate_catalog_compose_alignment(REPO_ROOT)
+
+    assert errors == []
+
+
+def test_legacy_registry_has_unique_keys_and_compose_health_contracts():
+    errors = fleet_catalog.validate_legacy_registry_contract(REPO_ROOT)
+
+    assert errors == []
+
+
+def test_generated_mcp_json_parity_is_checked_against_catalog_renderer():
+    errors = fleet_catalog.validate_generated_mcp_json_parity(REPO_ROOT)
+
+    assert errors == []
+
+
+def test_claude_command_tool_surfaces_are_catalog_known_or_explicit_aliases():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+    command_dir = REPO_ROOT / ".claude/commands"
+
+    unknown = fleet_catalog.find_unknown_command_tool_surfaces(command_dir, catalog)
+
+    assert unknown == []
+
+
+def test_unknown_command_tool_surfaces_are_reported(tmp_path):
+    command_dir = tmp_path / "commands"
+    command_dir.mkdir()
+    (command_dir / "bad.md").write_text("Call `mcp__missing-server__do_work`.\n")
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+
+    unknown = fleet_catalog.find_unknown_command_tool_surfaces(command_dir, catalog)
+
+    assert unknown == [f"{command_dir / 'bad.md'}:1:missing-server"]
+
+
+def test_mcp_tool_surface_regex_rejects_partial_mentions():
+    matches = fleet_catalog.extract_mcp_tool_surfaces("mcp__conport__ok mcp__bad mcp____x")
+
+    assert matches == ["conport"]
+
+
+def test_no_duplicate_catalog_server_names_in_sample_fixture(tmp_path):
+    duplicate = tmp_path / "legacy.yaml"
+    duplicate.write_text(
+        """
+servers:
+  one:
+    transport: http
+  one:
+    transport: stdio
+""".lstrip()
+    )
+
+    with pytest.raises(fleet_catalog.DuplicateKeyError):
+        fleet_catalog.load_yaml_no_duplicate_keys(duplicate)
+
+
+def test_catalog_contract_finds_docker_exec_container_drift(tmp_path):
+    compose = {
+        "services": {
+            "exa": {
+                "container_name": "mcp-exa",
+                "ports": ["${EXA_PORT:-3011}:3011"],
+                "healthcheck": {"test": ["CMD", "true"]},
+            }
+        }
+    }
+    catalog = {
+        "version": 1,
+        "defaults": {"per_worktree": []},
+        "servers": {
+            "exa": {
+                "scope": "singleton",
+                "transport": "stdio",
+                "command": "docker",
+                "args": ["exec", "-i", "mcp-litellm", "python", "/app/exa_server.py"],
+                "docker_compose_service": "exa",
+            }
+        },
+    }
+
+    errors = fleet_catalog.validate_catalog_compose_alignment_data(catalog, compose)
+
+    assert re.search(r"exa.*mcp-litellm.*mcp-exa", "\n".join(errors))

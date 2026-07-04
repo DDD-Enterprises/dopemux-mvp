@@ -1,0 +1,83 @@
+{
+  "id": "TP-DMX-MCP-FLEET-ROADMAP-004-MEMORY-SPINE",
+  "project": "dopemux-mvp",
+  "target": "Repair memory spine capture at source events rather than heartbeat spam, with bounded hook failure capture and promotable decision/task/workflow event emission.",
+  "invariants": [
+    "Depends on packet 001 and must not depend on PR 993 hook fan-out behavior unless corrected or isolated.",
+    "Hooks must fail open and must not synchronously block on unbounded Redis fan-out.",
+    "Only WMA promotion allowlist event types may be emitted as promotable capture events.",
+    "ConPort remains structured decision/progress authority; dope-memory receives chronicle receipts and does not become PM truth."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-FLEET-ROADMAP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-fleet-memory-spine",
+    "base_branch": "main",
+    "stacked_because": "Memory capture repair needs the catalog risk framing but can run parallel to ensure work."
+  },
+  "commit": {
+    "message": "fix(memory): capture promotable source events",
+    "allowlist": [
+      "src/dopemux/claude/native_hooks.py",
+      "src/dopemux/memory/capture_client.py",
+      "src/dopemux/pm/**",
+      "services/working-memory-assistant/**",
+      "docker/mcp-servers-source/conport/**",
+      "tests/unit/test_memory_capture_client.py",
+      "tests/test_native_hooks_workflow.py",
+      "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-004-MEMORY-SPINE.json",
+      "proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-004-MEMORY-SPINE/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-004-MEMORY-SPINE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/test_native_hooks_workflow.py tests/unit/test_memory_capture_client.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(memory): capture promotable source events",
+    "body": "Repair source-event capture for chronicle promotion while preserving fail-open hooks and split memory authority.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "bounded_errors",
+      "task": "Emit bounded `error.encountered` from hook failures without unbounded Redis fan-out.",
+      "validation": [
+        "Tests prove Redis blackhole or capture exceptions do not block hook responses."
+      ]
+    },
+    {
+      "id": "source_events",
+      "task": "Emit `decision.logged`, `task.*`, and `workflow.phase_changed` at their authoritative source paths.",
+      "validation": [
+        "Tests prove promotable events are written with correct authority labels and no PM authority escalation."
+      ]
+    }
+  ]
+}

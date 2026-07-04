@@ -84,6 +84,13 @@ A packet is superseded by another packet
 | TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS | Infra | Gate core MCP compose dependencies on healthchecked services | Active | N/A |
 | TP-BETA-MCP-03-ADHD-REDIS-ISOLATION | ADHD Engine | Isolate ADHD Engine Redis keys by instance | Active | N/A |
 | TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001 | Infra / MCP | Restore GPT Researcher MCP container entrypoint and update package pin | Active | N/A |
+| TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT | MCP Fleet | Canonical catalog contract and static drift gates | Active | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS | MCP Fleet | Generated MCP config outputs from canonical catalog | Ready | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-003-MCP-ENSURE | MCP Fleet | Add `dopemux mcp ensure --fast/--full` remediation layer | Ready | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-004-MEMORY-SPINE | MCP Fleet / Memory | Capture promotable source events for chronicle spine | Ready | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES | MCP Fleet | Converge server personalities after catalog gates | Ready | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-006-DCP-ACTIVATION | DCP / MCP | Activate read-only DCP facade follow-ons | Ready | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE | MCP Fleet | Quarantine dead MCP surfaces after reverse dependency proof | Ready | PR #993 audit input |
 | TP-SEC-COMPOSE-LITELLM-LOCALHOST-001 | Security | Externalize LiteLLM healthcheck key and localize compose service ports | Active | N/A |
 | TP-SEC-WEAK-DEFAULT-SECRETS-001 | Security | Reject weak default secrets in env template and installer | Active | N/A |
 | TP-DMX-ADHD-SIGNAL-E2E-WIRING-001 | ADHD Engine / Dashboard | Prove synthetic ADHD state updates reach the dashboard UI band | Active | N/A |

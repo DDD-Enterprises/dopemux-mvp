@@ -44,6 +44,7 @@ servers:
     transport: http
     url: "http://localhost:3003/mcp"
     docker_compose_service: pal
+    tool_aliases: ["zen"]
     description: "Multi-model reasoning suite (thinkdeep, planner, consensus, debug, codereview)"
 
   serena:
@@ -81,7 +82,7 @@ servers:
     scope: singleton
     transport: stdio
     command: docker
-    args: ["exec", "-i", "mcp-litellm", "python", "/app/exa_server.py"]
+    args: ["exec", "-i", "mcp-exa", "python", "/app/exa_server.py"]
     docker_compose_service: exa
     requires_env: ["EXA_API_KEY"]
     description: "Neural web search"

@@ -71,6 +71,21 @@ None (design investigation only)
 Notes:
 Ranking determinism flagged for review
 Embedding lifecycle not yet audited
+────────────────────
+MCP Fleet
+Status: 🟡 In Progress
+Active Packets:
+TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT — Canonical catalog contract and static drift gates
+Ready Follow-ons:
+TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS
+TP-DMX-MCP-FLEET-ROADMAP-003-MCP-ENSURE
+TP-DMX-MCP-FLEET-ROADMAP-004-MEMORY-SPINE
+TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES
+TP-DMX-MCP-FLEET-ROADMAP-006-DCP-ACTIVATION
+TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE
+Risk Notes:
+PR #993 remains open and blocked; its audit is advisory input, not merged runtime truth
+Live Docker/MCP/provider validation is not part of the first catalog-gates packet
 ────────────────────────────────────────────────────────────
 ⚠️ Cross-Cutting Risks
 Multi-capture source convergence correctness
