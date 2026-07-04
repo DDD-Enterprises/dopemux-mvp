@@ -574,8 +574,46 @@ def _build_local_mcp_json(server_names: List[str], catalog: Dict[str, Any]) -> D
 
 
 # ---------------------------------------------------------------------------
-# `mcp init` / `add` / `remove` / `list` / `doctor` / `sync-globals`
+# `mcp generate` / `init` / `add` / `remove` / `list` / `doctor` / `sync-globals`
 # ---------------------------------------------------------------------------
+
+
+@mcp.command("generate")
+@click.option("--apply", is_flag=True, help="Write generated outputs. Default is dry-run.")
+@click.option(
+    "--output-dir",
+    type=click.Path(path_type=Path, file_okay=False, dir_okay=True),
+    help="Directory for generated output files when --apply is set.",
+)
+def mcp_generate_cmd(apply: bool, output_dir: Optional[Path]):
+    """
+    🧾 Project Fleet: Render catalog-backed MCP config fragments
+
+    Generates reviewable projections for local .mcp.json, Claude globals,
+    Codex config, health probes, and MCP doctrine docs. Dry-run is the default;
+    writes require both --apply and --output-dir.
+    """
+    from dopemux.mcp import fleet_catalog
+
+    catalog = _load_catalog()
+    outputs = fleet_catalog.generate_fleet_output_files(catalog)
+
+    if not apply:
+        console.logger.info("[info]Dry-run only. No files were written.[/info]")
+        for relative_path, content in outputs.items():
+            line_count = len(content.splitlines())
+            console.logger.info(f"[info]Would write {relative_path} ({line_count} lines)[/info]")
+        return
+
+    if output_dir is None:
+        raise click.ClickException("--apply requires --output-dir to bound generated writes.")
+
+    for relative_path, content in outputs.items():
+        target = output_dir / relative_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+        console.logger.info(f"[success]Wrote {target}[/success]")
+
 
 @mcp.command("init")
 @click.option("--force", is_flag=True, help="Overwrite existing .mcp.json and env file without prompting.")

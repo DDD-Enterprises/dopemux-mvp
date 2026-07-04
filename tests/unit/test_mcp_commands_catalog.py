@@ -315,6 +315,61 @@ def test_sync_globals_prune_removes_unknown_entries(tmp_path, monkeypatch):
     assert "exa" in written
 
 
+def test_mcp_generate_dry_run_reports_outputs_without_writing(tmp_path, monkeypatch):
+    catalog = _singleton_catalog()
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp_generate_cmd,
+        ["--output-dir", str(tmp_path)],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Dry-run only" in result.output
+    assert "local/.mcp.json" in result.output
+    assert "claude/mcpServers.json" in result.output
+    assert not any(tmp_path.iterdir())
+
+
+def test_mcp_generate_apply_requires_output_dir(monkeypatch):
+    catalog = _singleton_catalog()
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+
+    result = CliRunner().invoke(mcp_commands.mcp_generate_cmd, ["--apply"])
+
+    assert result.exit_code != 0
+    assert "--apply requires --output-dir" in result.output
+
+
+def test_mcp_generate_apply_writes_only_under_output_dir(tmp_path, monkeypatch):
+    catalog = _singleton_catalog()
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp_generate_cmd,
+        ["--apply", "--output-dir", str(tmp_path)],
+    )
+
+    assert result.exit_code == 0, result.output
+    expected = {
+        "local/.mcp.json",
+        "claude/mcpServers.json",
+        "codex/config.toml",
+        "health/mcp-health-probes.json",
+        "docs/mcp-fleet.md",
+    }
+    written = {
+        str(path.relative_to(tmp_path))
+        for path in tmp_path.rglob("*")
+        if path.is_file()
+    }
+    assert written == expected
+    assert json.loads((tmp_path / "claude/mcpServers.json").read_text())["mcpServers"].keys() == {
+        "exa",
+        "gpt-researcher",
+    }
+
+
 def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
     """`doctor` reports every issue it finds and exits 1 if any are present."""
     catalog = {
