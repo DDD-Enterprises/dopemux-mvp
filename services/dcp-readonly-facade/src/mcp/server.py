@@ -99,6 +99,48 @@ async def replay_chronicle_session(
     return tools.replay_chronicle_session(_REGISTRY, project_id, session_id, mode, top_k)
 
 
+@mcp.tool()
+async def search_code_docs(
+    project_id: str,
+    query: str,
+    top_k: int = 20,
+    kind: str = "code",
+    profile: Optional[str] = None,
+    filter_doc_type: Optional[str] = None,
+) -> dict:
+    """Search dope-context code/docs through the read-only facade.
+
+    Phase 1 registers the tool for operator-run stdio discovery, but the pure
+    facade function returns BLOCKED until a dope-context MCP JSON-RPC bridge is
+    implemented and inventoried.
+    """
+    return tools.search_code_docs(
+        _REGISTRY,
+        project_id,
+        query,
+        top_k,
+        kind=kind,
+        profile=profile,
+        filter_doc_type=filter_doc_type,
+    )
+
+
+@mcp.tool()
+async def get_index_status(project_id: str) -> dict:
+    """Return dope-context index status envelope.
+
+    Phase 1 fail-closes because the dope-context transport bridge and formal
+    inventory classification are not complete.
+    """
+    return tools.get_index_status(_REGISTRY, project_id)
+
+
+@mcp.tool()
+async def get_workflow_status_snapshot(project_id: str) -> dict:
+    """Read task-orchestrator workflow queue/blockers/state as a snapshot."""
+    return tools.get_workflow_status_snapshot(_REGISTRY, project_id)
+
+
 def main() -> None:
     transport = os.getenv("DCP_FACADE_TRANSPORT", "stdio")
     mcp.run(transport=transport)
