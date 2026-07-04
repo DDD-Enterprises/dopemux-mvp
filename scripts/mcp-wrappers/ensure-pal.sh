@@ -73,12 +73,15 @@ if [[ -n "${stopped_id}" ]]; then
 fi
 
 if ! docker image inspect "${IMAGE_REF}" >/dev/null 2>&1; then
-  die "image ${IMAGE_REF} not found locally. Build it from your standalone \
-pal-mcp-server checkout, which produces the /opt/venv stdio image Codex execs \
-into — from that checkout directory run: docker compose up -d --build. \
+  die "image ${IMAGE_REF} not found locally. Build the /opt/venv stdio image \
+that Codex execs into and tag it exactly ${IMAGE_REF} (the name this script and \
+~/.codex/config.toml use), e.g. from your standalone pal-mcp-server checkout: \
+docker build -t ${IMAGE_REF} . \
+NOTE: some pal/zen compose files tag the build 'zen-mcp-server:latest' rather \
+than ${IMAGE_REF} — if you build via 'docker compose up -d --build', re-tag it: \
+docker tag zen-mcp-server:latest ${IMAGE_REF}. \
 (The in-repo docker/mcp-servers/pal/Dockerfile builds a different /app/.venv \
-HTTP-wrapper image for the compose 'pal' service and is NOT a substitute for \
-this container.)"
+HTTP-wrapper image for the compose 'pal' service and is NOT a substitute.)"
 fi
 
 # Build the run args as an always-non-empty array and append --env-file only
