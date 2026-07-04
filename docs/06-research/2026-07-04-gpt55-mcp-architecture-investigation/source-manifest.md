@@ -72,6 +72,11 @@ prelude: Source manifest for GPT-5.5 MCP architecture packet.
 - `docs/06-research/2026-07-04-dopemux-service-investigation/implementation-backlog.md`
 - `docs/06-research/2026-07-04-dopemux-service-investigation/ux-integration-spec.md`
 
+## Current Pre-Run Evidence
+
+- `docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/pre-run-evidence.md`
+  - Current branch/ref, PR #1002, service inventory, Docker compose config, `dopemux mcp status`, and targeted validation results collected before running GPT-5.5 Phase 0.
+
 ## Recent External Synthesis Attachments
 
 - `/Users/hue/.codex/attachments/252931e6-3387-4b90-a8c0-47fa3f942310/pasted-text.txt`

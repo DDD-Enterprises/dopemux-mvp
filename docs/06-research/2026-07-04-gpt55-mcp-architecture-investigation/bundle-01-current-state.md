@@ -20,8 +20,9 @@ Let GPT-5.5 reconstruct the observed service/server surface before designing a t
 1. `prompt-01-current-state.md`
 2. Phase 0 GPT-5.5 output
 3. `source-manifest.md`
-4. `docs/06-research/2026-07-04-dopemux-service-investigation/research.md`
-5. `docs/06-research/2026-07-04-dopemux-service-investigation/service-gap-matrix.md`
+4. `pre-run-evidence.md`
+5. `docs/06-research/2026-07-04-dopemux-service-investigation/research.md`
+6. `docs/06-research/2026-07-04-dopemux-service-investigation/service-gap-matrix.md`
 
 ## Source Files To Attach Or Paste In Chunks
 

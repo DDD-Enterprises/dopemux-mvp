@@ -23,9 +23,10 @@ Give GPT-5.5 enough input to classify evidence quality and ask for missing input
 4. `branch-work-audit.md`
 5. `transcript-digest.md`
 6. `source-manifest.md`
-7. `docs/06-research/2026-07-04-dopemux-service-investigation/research.md`
-8. Recent synthesis attachment `252931e6-3387-4b90-a8c0-47fa3f942310/pasted-text.txt`
-9. Recent synthesis attachment `ad6a0ce8-671c-4ddc-9dda-a6c7d93ed2f8/pasted-text.txt`
+7. `pre-run-evidence.md`
+8. `docs/06-research/2026-07-04-dopemux-service-investigation/research.md`
+9. Recent synthesis attachment `252931e6-3387-4b90-a8c0-47fa3f942310/pasted-text.txt`
+10. Recent synthesis attachment `ad6a0ce8-671c-4ddc-9dda-a6c7d93ed2f8/pasted-text.txt`
 
 ## Optional Uploads
 
