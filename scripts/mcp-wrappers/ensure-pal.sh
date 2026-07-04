@@ -48,6 +48,21 @@ if [[ "${RECREATE}" == "true" ]]; then
   fi
 fi
 
+# A container's environment is fixed at create time, so a container created
+# keyless (no .env existed then) can never pick up provider keys later — Codex's
+# `docker exec ... server.py` would still see none. If an existing container is
+# labelled keyless but .env now exists, remove it so the paths below recreate it
+# with --env-file. (Only acts on the definitive "none" label this script sets;
+# unlabelled/manually-created containers are left alone.)
+if [[ -f "${ENV_FILE}" ]] && docker ps -aq --filter "name=^${CONTAINER_NAME}$" | grep -q .; then
+  env_state="$(docker inspect -f '{{ index .Config.Labels "dopemux.pal.env" }}' "${CONTAINER_NAME}" 2>/dev/null || true)"
+  if [[ "${env_state}" == "none" ]]; then
+    printf 'ensure-pal: %s was created keyless but %s now exists; recreating with keys\n' \
+      "${CONTAINER_NAME}" "${ENV_FILE}" >&2
+    docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
+  fi
+fi
+
 running_id="$(docker ps -q --filter "name=^${CONTAINER_NAME}$" || true)"
 if [[ -n "${running_id}" ]]; then
   printf 'ensure-pal: %s already running (Codex consumer)\n' "${CONTAINER_NAME}" >&2
@@ -87,10 +102,13 @@ fi
 # Build the run args as an always-non-empty array and append --env-file only
 # when .env exists. This avoids the empty-array expansion trap (which can emit
 # a stray empty argument that docker misreads as the image name) entirely.
+# Label the container with its env state so a later run can detect a keyless
+# container once .env appears and recreate it (see the keyless check above).
 run_args=(-d --name "${CONTAINER_NAME}" --restart unless-stopped)
 if [[ -f "${ENV_FILE}" ]]; then
-  run_args+=(--env-file "${ENV_FILE}")
+  run_args+=(--env-file "${ENV_FILE}" --label dopemux.pal.env=loaded)
 else
+  run_args+=(--label dopemux.pal.env=none)
   printf 'ensure-pal: warning: no .env file at %s — starting %s without --env-file\n' \
     "${ENV_FILE}" "${CONTAINER_NAME}" >&2
 fi
