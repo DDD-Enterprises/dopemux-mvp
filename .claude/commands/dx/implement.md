@@ -6,7 +6,7 @@ allowed-tools: [
   "mcp__conport__*",
   "mcp__serena__*",
   "mcp__pal__apilookup",
-  "mcp__zen__thinkdeep", "mcp__zen__debug", "mcp__zen__codereview"
+  "mcp__pal__thinkdeep", "mcp__pal__debug", "mcp__pal__codereview"
 ]
 model: "claude-sonnet-4-5-20250929"
 ---

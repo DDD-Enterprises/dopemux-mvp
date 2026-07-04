@@ -1,0 +1,82 @@
+{
+  "id": "TP-DMX-MCP-FLEET-ROADMAP-006-DCP-ACTIVATION",
+  "project": "dopemux-mvp",
+  "target": "Activate DCP follow-ons: close facade tool-contract gaps, add read-only dope-context bridge, add inventory freshness CI, and register the facade as operator-run stdio.",
+  "invariants": [
+    "Depends on catalog contract and generated outputs.",
+    "DCP facade remains read-only and untrusted-by-default.",
+    "No live writes, provider calls, or secure tunnel mutation without explicit validation authorization.",
+    "dope-context remains retrieval/index authority only and does not become source truth."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT",
+    "TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-FLEET-ROADMAP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-fleet-dcp-activation",
+    "base_branch": "main",
+    "stacked_because": "DCP facade registration depends on canonical catalog generation."
+  },
+  "commit": {
+    "message": "feat(dcp): activate read-only facade follow-ons",
+    "allowlist": [
+      "services/dcp-readonly-facade/**",
+      "src/dopemux/mcp/**",
+      "mcp_catalog.yaml",
+      "tests/dcp/**",
+      "tests/unit/dcp/**",
+      "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-006-DCP-ACTIVATION.json",
+      "proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-006-DCP-ACTIVATION/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-006-DCP-ACTIVATION.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/dcp tests/dcp -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): activate read-only facade follow-ons",
+    "body": "Close read-only DCP facade contract gaps and register the facade through the canonical MCP catalog.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "facade_contract",
+      "task": "Close facade exposed-tool contract gaps and add contract equality tests.",
+      "validation": [
+        "DCP facade exposed tools exactly match the declared contract."
+      ]
+    },
+    {
+      "id": "dope_context_bridge",
+      "task": "Add read-only dope-context bridge and register facade as operator-run stdio in catalog.",
+      "validation": [
+        "Tests prove no mutating methods or live-write bypass exists."
+      ]
+    }
+  ]
+}
