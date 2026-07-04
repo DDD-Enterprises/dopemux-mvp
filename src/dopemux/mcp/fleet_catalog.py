@@ -86,6 +86,141 @@ def render_singleton_mcp_servers(catalog: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _json_dumps(data: Any) -> str:
+    return json.dumps(data, indent=2, sort_keys=True) + "\n"
+
+
+def _toml_string(value: Any) -> str:
+    return json.dumps(str(value))
+
+
+def _toml_string_array(values: list[Any]) -> str:
+    return "[" + ", ".join(_toml_string(value) for value in values) + "]"
+
+
+def render_codex_config_fragment(catalog: dict[str, Any]) -> str:
+    """Render singleton MCP servers in Codex `config.toml` syntax.
+
+    Codex currently supports stdio and streamable HTTP MCP servers. SSE-only
+    singleton entries stay represented in Claude/global and health outputs.
+    """
+
+    lines = [
+        "# Generated from mcp_catalog.yaml by `dopemux mcp generate`.",
+        "# Dry-run is the default; review before copying into .codex/config.toml.",
+    ]
+    for name, spec in sorted(catalog.get("servers", {}).items()):
+        if spec.get("scope") != "singleton":
+            continue
+        transport = spec.get("transport", "http")
+        if transport not in {"stdio", "http"}:
+            continue
+
+        lines.extend(["", f"[mcp_servers.{_toml_string(name)}]"])
+        if transport == "stdio":
+            command = spec.get("command")
+            if not command:
+                raise MCPFleetCatalogError(f"Singleton `{name}` requires `command` for Codex stdio.")
+            lines.append(f"command = {_toml_string(command)}")
+            if spec.get("args"):
+                lines.append(f"args = {_toml_string_array(list(spec['args']))}")
+        else:
+            url = spec.get("url")
+            if not url:
+                raise MCPFleetCatalogError(f"Singleton `{name}` requires `url` for Codex HTTP.")
+            lines.append(f"url = {_toml_string(url)}")
+
+        env_keys = list(spec.get("requires_env", []) or []) + list(spec.get("optional_env", []) or [])
+        if env_keys:
+            lines.extend(["", f"[mcp_servers.{_toml_string(name)}.env]"])
+            for key in sorted(env_keys):
+                lines.append(f"{key} = {_toml_string(f'${{{key}:-}}')}")
+
+    return "\n".join(lines) + "\n"
+
+
+def render_health_probe_list(catalog: dict[str, Any]) -> list[dict[str, Any]]:
+    probes: list[dict[str, Any]] = []
+    for name, spec in sorted(catalog.get("servers", {}).items()):
+        url = spec.get("url") or spec.get("url_template")
+        if not url:
+            continue
+        probes.append(
+            {
+                "docker_compose_service": spec.get("docker_compose_service"),
+                "name": name,
+                "scope": spec.get("scope"),
+                "transport": spec.get("transport", "http"),
+                "url": url,
+            }
+        )
+    return probes
+
+
+def render_mcp_doctrine_doc(catalog: dict[str, Any]) -> str:
+    lines = [
+        "# MCP Fleet Catalog Outputs",
+        "",
+        "<!-- Generated from mcp_catalog.yaml by `dopemux mcp generate`. -->",
+        "",
+        "## Contract",
+        "",
+        "- `mcp_catalog.yaml` is the source for generated MCP config fragments.",
+        "- Dry-run is the default; writes require `dopemux mcp generate --apply --output-dir <dir>`.",
+        "- Generated outputs are projections, not user-global authority.",
+        "- Unknown external config entries are preserved by sync flows unless pruning is explicit.",
+        "",
+        "## Default Per-Worktree Servers",
+        "",
+    ]
+    defaults = catalog.get("defaults", {}).get("per_worktree") or []
+    if defaults:
+        for name in defaults:
+            lines.append(f"- `{name}`")
+    else:
+        lines.append("- None")
+
+    lines.extend(
+        [
+            "",
+            "## Servers",
+            "",
+            "| Server | Scope | Transport | Health URL | Compose Service |",
+            "| --- | --- | --- | --- | --- |",
+        ]
+    )
+    for name, spec in sorted(catalog.get("servers", {}).items()):
+        health_url = spec.get("url") or spec.get("url_template") or ""
+        compose_service = spec.get("docker_compose_service") or ""
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    f"`{name}`",
+                    str(spec.get("scope", "")),
+                    str(spec.get("transport", "")),
+                    f"`{health_url}`" if health_url else "",
+                    f"`{compose_service}`" if compose_service else "",
+                ]
+            )
+            + " |"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def generate_fleet_output_files(catalog: dict[str, Any]) -> dict[str, str]:
+    defaults = catalog.get("defaults", {}).get("per_worktree") or []
+    return {
+        "local/.mcp.json": _json_dumps(render_per_worktree_mcp_json(defaults, catalog)),
+        "claude/mcpServers.json": _json_dumps(
+            {"mcpServers": render_singleton_mcp_servers(catalog)}
+        ),
+        "codex/config.toml": render_codex_config_fragment(catalog),
+        "health/mcp-health-probes.json": _json_dumps(render_health_probe_list(catalog)),
+        "docs/mcp-fleet.md": render_mcp_doctrine_doc(catalog),
+    }
+
+
 def known_tool_surfaces(catalog: dict[str, Any]) -> set[str]:
     surfaces: set[str] = set(catalog.get("servers", {}))
     for spec in catalog.get("servers", {}).values():
