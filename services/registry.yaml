@@ -140,15 +140,6 @@ services:
     category: mcp
     description: "Dope-Context MCP"
 
-  - name: exa
-    port: 3011
-    container_port: 3011
-    health_path: /health
-    compose_service_name: exa
-    enabled_in_smoke: false
-    category: mcp
-    description: "Exa Search MCP"
-
   - name: desktop-commander
     port: 3012
     container_port: 3012

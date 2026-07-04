@@ -5,7 +5,7 @@
 #
 # Services Included:
 # - Infrastructure: PostgreSQL (AGE), Redis (2x), Qdrant
-# - MCP Servers: ConPort, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Exa, Desktop Commander, Leantime Bridge
+# - MCP Servers: ConPort, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Desktop Commander, Leantime Bridge
 # - Application Services: DopeconBridge, Task Orchestrator, ADHD Engine
 #
 # Usage:
@@ -603,25 +603,6 @@ services:
       interval: 30s
 
   # Leantime Bridge - Project management integration
-  exa:
-    build:
-      context: .
-      dockerfile: docker/mcp-servers/exa/Dockerfile
-    container_name: mcp-exa
-    restart: unless-stopped
-    networks:
-      - dopemux-network
-    ports:
-      - "${EXA_PORT:-3011}:3011"
-    environment:
-      - EXA_API_KEY=${EXA_API_KEY:-}
-      - MCP_SERVER_PORT=${EXA_PORT:-3011}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3011/health"]
-      timeout: 5s
-      retries: 3
-      interval: 30s
-
   leantime-bridge:
     build:
       context: .

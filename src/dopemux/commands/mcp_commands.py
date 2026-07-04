@@ -732,7 +732,7 @@ def _catalog_compose_services(catalog: Dict[str, Any]) -> List[str]:
     both are consumed by clients (e.g. ``pal-stdio`` is the ``mcp-pal-stdio``
     container that Claude/Codex configs exec into), so ensure must bring them up
     or it would report green while a configured server is down. Only
-    ``decision-required`` servers (e.g. desktop-commander, exa) — quarantined
+    ``decision-required`` servers (e.g. desktop-commander) — quarantined
     out of generated startable config pending an operator decision — are
     excluded, along with any server missing a lifecycle field.
     """
