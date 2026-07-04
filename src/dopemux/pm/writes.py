@@ -225,16 +225,34 @@ class PMWriteConfig(BaseModel):
     project_id: str = "default"
 
 
+def _is_capture_capable_root(path: Path) -> bool:
+    """Whether ``path`` actually exposes what ``emit_capture_event`` needs.
+
+    A bare existing directory is not enough — e.g. the composed Task Orchestrator
+    container's default ``WORKSPACE_ID=/app`` exists but the image excludes
+    ``.dopemux`` and ``services/working-memory-assistant``, so passing it as a
+    repo root only defers the failure into WMA schema/redactor loading (which is
+    then swallowed). Require a repo/workspace marker or the WMA schema.
+    """
+    return (
+        (path / ".git").exists()
+        or (path / ".dopemux").exists()
+        or (path / "services" / "working-memory-assistant" / "chronicle" / "schema.sql").exists()
+    )
+
+
 def _resolve_capture_repo_root(repo_root: Optional[Path], project_id: str) -> Optional[Path]:
     """Resolve the workspace root for capture ledger resolution.
 
     ``emit_capture_event`` otherwise falls back to ``Path.cwd()``, which fails
     in the composed Task Orchestrator container (runs from ``/app`` with
     ``.git``/``.dopemux`` excluded from the build), silently dropping PM source
-    events even when the event bus is enabled. Prefer an explicit root, then the
-    configured-workspace env vars the container sets, then ``project_id`` when it
-    is itself a filesystem path. Returns ``None`` to let capture fall back to
-    cwd (correct for the in-repo dopemux CLI runtime).
+    events even when the event bus is enabled. Prefer an explicit root (trusted
+    to the caller), then the configured-workspace env vars the container sets,
+    then ``project_id`` when it is a filesystem path — but only accept an
+    env/project_id candidate that is actually capture-capable, so a bare
+    ``/app`` is rejected rather than deferring the failure downstream. Returns
+    ``None`` to let capture fall back to cwd (correct for the in-repo CLI).
     """
     if repo_root is not None:
         return repo_root
@@ -247,7 +265,7 @@ def _resolve_capture_repo_root(repo_root: Optional[Path], project_id: str) -> Op
     for value in candidates:
         if value:
             candidate = Path(value)
-            if candidate.exists():
+            if candidate.exists() and _is_capture_capable_root(candidate):
                 return candidate
     return None
 
