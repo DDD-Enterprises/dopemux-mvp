@@ -71,6 +71,7 @@
           "DIFF_OUTSIDE_ALLOWLIST",
           "MISSING_SECURITY_RELEASE_APPROVAL",
           "MISSING_REQUIRED_INTAKE",
+          "INCOMPLETE_INTAKE",
           "UNKNOWN"
         ]
       }
@@ -80,6 +81,7 @@
       "additionalProperties": false,
       "description": "Harvested evidence from the PR at read-only intake time.",
       "required": [
+        "intake_completeness",
         "changed_files",
         "commits",
         "checks",
@@ -94,6 +96,43 @@
         "security_release_approved"
       ],
       "properties": {
+        "intake_completeness": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Completeness classification for every evidence category required before READY. Every category must be COMPLETE before READY can be emitted.",
+          "required": [
+            "pr_metadata",
+            "head_sha",
+            "changed_files",
+            "commits",
+            "reviews",
+            "review_comments",
+            "review_threads",
+            "issue_comments",
+            "checks",
+            "proof_refs",
+            "proof_freshness",
+            "reviewer_classifications",
+            "allowlist",
+            "security_release_approval"
+          ],
+          "properties": {
+            "pr_metadata": { "$ref": "#/$defs/completeness_state" },
+            "head_sha": { "$ref": "#/$defs/completeness_state" },
+            "changed_files": { "$ref": "#/$defs/completeness_state" },
+            "commits": { "$ref": "#/$defs/completeness_state" },
+            "reviews": { "$ref": "#/$defs/completeness_state" },
+            "review_comments": { "$ref": "#/$defs/completeness_state" },
+            "review_threads": { "$ref": "#/$defs/completeness_state" },
+            "issue_comments": { "$ref": "#/$defs/completeness_state" },
+            "checks": { "$ref": "#/$defs/completeness_state" },
+            "proof_refs": { "$ref": "#/$defs/completeness_state" },
+            "proof_freshness": { "$ref": "#/$defs/completeness_state" },
+            "reviewer_classifications": { "$ref": "#/$defs/completeness_state" },
+            "allowlist": { "$ref": "#/$defs/completeness_state" },
+            "security_release_approval": { "$ref": "#/$defs/completeness_state" }
+          }
+        },
         "changed_files": {
           "type": "array",
           "items": { "type": "string" },
@@ -226,6 +265,12 @@
       "description": "ISO 8601 datetime at which this signal was assembled."
     }
   },
+  "$defs": {
+    "completeness_state": {
+      "type": "string",
+      "enum": ["COMPLETE", "MISSING", "UNKNOWN", "NOT_REQUIRED"]
+    }
+  },
   "allOf": [
     {
       "description": "Fail-closed gate (a): READY requires zero blocked_reasons, FRESH proof, and diff within allowlist.",
@@ -238,6 +283,40 @@
           "blocked_reasons": { "maxItems": 0 },
           "intake": {
             "properties": {
+              "intake_completeness": {
+                "properties": {
+                  "pr_metadata": { "const": "COMPLETE" },
+                  "head_sha": { "const": "COMPLETE" },
+                  "changed_files": { "const": "COMPLETE" },
+                  "commits": { "const": "COMPLETE" },
+                  "reviews": { "const": "COMPLETE" },
+                  "review_comments": { "const": "COMPLETE" },
+                  "review_threads": { "const": "COMPLETE" },
+                  "issue_comments": { "const": "COMPLETE" },
+                  "checks": { "const": "COMPLETE" },
+                  "proof_refs": { "const": "COMPLETE" },
+                  "proof_freshness": { "const": "COMPLETE" },
+                  "reviewer_classifications": { "const": "COMPLETE" },
+                  "allowlist": { "const": "COMPLETE" },
+                  "security_release_approval": { "const": "COMPLETE" }
+                },
+                "required": [
+                  "pr_metadata",
+                  "head_sha",
+                  "changed_files",
+                  "commits",
+                  "reviews",
+                  "review_comments",
+                  "review_threads",
+                  "issue_comments",
+                  "checks",
+                  "proof_refs",
+                  "proof_freshness",
+                  "reviewer_classifications",
+                  "allowlist",
+                  "security_release_approval"
+                ]
+              },
               "proof_freshness": { "const": "FRESH" },
               "diff_escapes_allowlist": { "const": false }
             }
