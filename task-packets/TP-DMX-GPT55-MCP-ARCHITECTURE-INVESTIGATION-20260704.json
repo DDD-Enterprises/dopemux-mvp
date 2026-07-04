@@ -1,0 +1,93 @@
+{
+  "id": "TP-DMX-GPT55-MCP-ARCHITECTURE-INVESTIGATION-20260704",
+  "project": "dopemux-mvp",
+  "target": "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation",
+  "invariants": [
+    "Transcript-derived material is advisory unless confirmed by repo source, config, tests, or branch diffs.",
+    "Do not copy raw private transcripts into tracked artifacts.",
+    "Memory Trinity authority boundaries remain fixed: ConPort, dope-memory, and dope-context are distinct planes.",
+    "MCP server architecture recommendations must preserve fail-closed behavior, explicit provenance, and generated-config drift gates.",
+    "GPT-5.5 Pro prompt must ask for architecture and implementation design, not runtime completion claims."
+  ],
+  "depends_on": [
+    "TP-DMX-SERVICE-INVESTIGATION-20260704"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-GPT55-MCP-ARCHITECTURE-INVESTIGATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-SERVICE-INVESTIGATION-20260704",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/gpt55-mcp-architecture-investigation-20260704",
+    "base_branch": "main",
+    "stacked_because": ""
+  },
+  "commit": {
+    "message": "docs(mcp): package GPT-5.5 architecture investigation",
+    "allowlist": [
+      "task-packets/TP-DMX-GPT55-MCP-ARCHITECTURE-INVESTIGATION-20260704.json",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/readme.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/research.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/branch-work-audit.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/transcript-digest.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/source-manifest.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/gpt55-web-prompt.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-GPT55-MCP-ARCHITECTURE-INVESTIGATION-20260704.json >/dev/null",
+      "python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom jsonschema import validate\nroot = Path.cwd()\nvalidate(json.loads((root / 'task-packets/TP-DMX-GPT55-MCP-ARCHITECTURE-INVESTIGATION-20260704.json').read_text()), json.loads((root / 'docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()))\nPY",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(mcp): package GPT-5.5 architecture investigation",
+    "body": "Adds a transcript-aware, repo-grounded investigation packet and GPT-5.5 Pro prompt for designing the optimal MCP/service architecture and integration roadmap.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "packet",
+      "task": "Build a GPT-5.5 Pro upload packet from Claude transcript digests, branch work, and repo evidence.",
+      "requirements": [
+        "Digest work on claude/trusting-engelbart-d2fbfe and claude/mcp-fleet-audit-complete.",
+        "Separate transcript-derived advisory claims from branch/source evidence.",
+        "Provide a GPT-5.5 Pro web prompt that asks for optimal service/server architecture and integration design."
+      ],
+      "validation": [
+        "Task Packet validates against dopetask canonical schema.",
+        "Markdown artifacts pass pre-commit documentation hooks.",
+        "git diff --check passes."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        "claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md",
+        "docs/06-research/2026-07-04-dopemux-service-investigation/research.md",
+        "mcp_catalog.yaml",
+        "compose.yml",
+        "services/registry.yaml",
+        "src/dopemux/mcp/fleet_catalog.py",
+        "src/dopemux/commands/mcp_commands.py"
+      ]
+    }
+  ]
+}
