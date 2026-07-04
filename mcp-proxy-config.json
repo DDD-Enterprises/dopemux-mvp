@@ -99,17 +99,6 @@
       "env": {},
       "type": "stdio"
     },
-    "exa": {
-      "command": "uvx",
-      "args": [
-        "mcp-proxy",
-        "--transport",
-        "sse",
-        "http://127.0.0.1:3011/sse"
-      ],
-      "env": {},
-      "type": "stdio"
-    },
     "leantime": {
       "command": "leantime-mcp",
       "args": ["https://leantime.local/mcp", "--token", "${LEAN_MCP_TOKEN}"],

@@ -68,6 +68,34 @@ def test_emit_pm_promotable_source_event_passes_emit_event_bus_none(monkeypatch)
     assert captured_kwargs["emit_event_bus"] is None
 
 
+def test_emit_pm_promotable_source_event_resolves_repo_root_from_workspace_env(
+    tmp_path, monkeypatch
+):
+    """In the composed Task Orchestrator container (runs from /app, no .git/.dopemux),
+    capture must resolve the configured workspace root rather than cwd, or the
+    event is silently dropped."""
+
+    captured_kwargs: Dict[str, Any] = {}
+
+    def _fake_try_emit(event_type, payload, **kwargs):
+        captured_kwargs.update(kwargs)
+        return None
+
+    monkeypatch.setattr(pm_writes, "try_emit_promotable_capture_event", _fake_try_emit)
+    monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
+
+    pm_writes.emit_pm_promotable_source_event(
+        "decision.logged",
+        project_id="proj-1",
+        work_item_id="task-1",
+        canonical_system="conport",
+        operation_type="decision_log",
+        payload={"decision_id": "task-1", "title": "t", "rationale": "r"},
+    )
+
+    assert captured_kwargs["repo_root"] == tmp_path
+
+
 def test_pm_transition_work_item_uses_emit_event_bus_none_end_to_end(monkeypatch):
     """pm_transition_work_item's downstream emits also carry emit_event_bus=None."""
 
