@@ -75,7 +75,7 @@ check_container_health "mcp-qdrant"
 
 # Start MCP servers
 echo "🔧 Starting MCP servers..."
-docker compose -p dopemux -f "$PROJECT_ROOT/compose.yml" up -d conport pal serena dope-context exa gptr-mcp leantime-bridge desktop-commander task-orchestrator
+docker compose -p dopemux -f "$PROJECT_ROOT/compose.yml" up -d conport pal serena dope-context gptr-mcp leantime-bridge desktop-commander task-orchestrator
 
 # Wait for MCP servers to be ready
 echo "🏥 Checking MCP server health..."
@@ -92,10 +92,6 @@ check_container_health "${SERENA_CONTAINER_NAME:-dopemux-mcp-serena}"
 
 check_container_health "mcp-dope-context"
 check_port_health "localhost" "3010" "Dope Context"
-
-# Additional servers (may not be critical)
-check_container_health "mcp-exa" || echo "⚠️ Exa MCP container not healthy, but continuing..."
-check_port_health "localhost" "3011" "Exa" || echo "⚠️ Exa MCP not responding, but continuing..."
 
 check_container_health "dopemux-mcp-gptr-mcp" || echo "⚠️ GPT Researcher container not healthy, but continuing..."
 check_port_health "localhost" "3009" "GPT Researcher" || echo "⚠️ GPT Researcher not responding, but continuing..."
