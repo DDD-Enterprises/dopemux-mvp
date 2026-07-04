@@ -18,6 +18,9 @@ Implemented Lane 2 generated MCP fleet projections from the canonical
 - Added unit coverage proving dry-run does not write and apply is bounded to
   the requested output directory.
 - Added reference documentation for generated outputs.
+- Addressed PR review feedback by rendering Codex stdio environment forwarding
+  with `env_vars`, deduplicating env names, and avoiding literal placeholder
+  env values in generated Codex config.
 
 ## Validation
 
@@ -32,6 +35,10 @@ PASS:
 - `PYTHONPATH=src python -m dopemux.cli mcp generate --apply --output-dir /tmp/dmx-mcp-generated-smoke-lane2`
 - `find /tmp/dmx-mcp-generated-smoke-lane2 -type f | sort`
 - `python -c 'import pathlib, tomllib; tomllib.loads(pathlib.Path("/tmp/dmx-mcp-generated-smoke-lane2/codex/config.toml").read_text())'`
+- `python -m pytest tests/unit/test_mcp_fleet_catalog.py tests/unit/test_mcp_commands_catalog.py -q`
+- `python -m py_compile src/dopemux/mcp/fleet_catalog.py src/dopemux/commands/mcp_commands.py`
+- `PYTHONPATH=src python -m dopemux.cli mcp generate --apply --output-dir /tmp/dmx-mcp-generated-smoke-lane2-review`
+- `python -c 'import pathlib, tomllib; tomllib.loads(pathlib.Path("/tmp/dmx-mcp-generated-smoke-lane2-review/codex/config.toml").read_text())'`
 
 FAIL:
 

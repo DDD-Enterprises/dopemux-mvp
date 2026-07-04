@@ -1,4 +1,5 @@
 import json
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -128,11 +129,13 @@ def test_codex_fragment_renders_stdio_and_streamable_http_servers():
                 "command": "docker",
                 "args": ["exec", "-i", "stdio-one", "server"],
                 "requires_env": ["TOKEN"],
+                "optional_env": ["TOKEN", "OPTIONAL_TOKEN"],
             },
             "http-one": {
                 "scope": "singleton",
                 "transport": "http",
                 "url": "http://localhost:1234/mcp",
+                "requires_env": ["HTTP_TOKEN"],
             },
             "sse-one": {
                 "scope": "singleton",
@@ -147,10 +150,12 @@ def test_codex_fragment_renders_stdio_and_streamable_http_servers():
     assert '[mcp_servers."stdio-one"]' in fragment
     assert 'command = "docker"' in fragment
     assert 'args = ["exec", "-i", "stdio-one", "server"]' in fragment
-    assert '[mcp_servers."stdio-one".env]' in fragment
-    assert 'TOKEN = "${TOKEN:-}"' in fragment
+    assert 'env_vars = ["OPTIONAL_TOKEN", "TOKEN"]' in fragment
+    assert fragment.count('"TOKEN"') == 1
+    assert "${TOKEN:-}" not in fragment
     assert '[mcp_servers."http-one"]' in fragment
     assert 'url = "http://localhost:1234/mcp"' in fragment
+    assert "HTTP_TOKEN" not in tomllib.loads(fragment)["mcp_servers"]["http-one"]
     assert "sse-one" not in fragment
 
 

@@ -98,6 +98,11 @@ def _toml_string_array(values: list[Any]) -> str:
     return "[" + ", ".join(_toml_string(value) for value in values) + "]"
 
 
+def _codex_env_vars(spec: dict[str, Any]) -> list[str]:
+    env_keys = list(spec.get("requires_env", []) or []) + list(spec.get("optional_env", []) or [])
+    return sorted(set(env_keys))
+
+
 def render_codex_config_fragment(catalog: dict[str, Any]) -> str:
     """Render singleton MCP servers in Codex `config.toml` syntax.
 
@@ -124,17 +129,14 @@ def render_codex_config_fragment(catalog: dict[str, Any]) -> str:
             lines.append(f"command = {_toml_string(command)}")
             if spec.get("args"):
                 lines.append(f"args = {_toml_string_array(list(spec['args']))}")
+            env_vars = _codex_env_vars(spec)
+            if env_vars:
+                lines.append(f"env_vars = {_toml_string_array(env_vars)}")
         else:
             url = spec.get("url")
             if not url:
                 raise MCPFleetCatalogError(f"Singleton `{name}` requires `url` for Codex HTTP.")
             lines.append(f"url = {_toml_string(url)}")
-
-        env_keys = list(spec.get("requires_env", []) or []) + list(spec.get("optional_env", []) or [])
-        if env_keys:
-            lines.extend(["", f"[mcp_servers.{_toml_string(name)}.env]"])
-            for key in sorted(env_keys):
-                lines.append(f"{key} = {_toml_string(f'${{{key}:-}}')}")
 
     return "\n".join(lines) + "\n"
 
