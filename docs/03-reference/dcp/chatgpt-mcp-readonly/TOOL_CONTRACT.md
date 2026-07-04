@@ -45,11 +45,20 @@ prelude: Phase-1 tool contract, allowed/denied routes, and authority labels for 
 
 | Tool | Backing surface | Source | Transport | Authority | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `search_code_docs` | dope-context `search_code` + `docs_search` | `OBSERVED` (inventory) | MCP | DERIVED | **Phase 1: BLOCKED** — MCP JSON-RPC transport not yet bridged in facade (REST-only client). Hits will be DERIVED until transport bridge + exact-source fetch exist. |
-| `get_index_status` | dope-context index status | `PROPOSED` (load-pack 0006 scope; **not** in inventory) | MCP | DERIVED | **Phase 1: BLOCKED** — MCP transport gap + not in inventory. ⚠️ requires formal inventory + classification before allowlist wiring (Phase 2). |
-| `get_workflow_status_snapshot` | task-orchestrator `/queue` + `/blockers` + `/state` (GET) | `OBSERVED` (inventory + TP-0006 gap resolved) | HTTP | CANONICAL | workflow-view only, **not** PM truth; strip identities. `/state` classified CONFIRMED_READ_ONLY in TP-0006 (see note below). |
+| `search_code_docs` | dope-context `search_code` + `docs_search` | `OBSERVED` (inventory) | MCP | DERIVED | Registered on the operator-run stdio facade; **returns BLOCKED in Phase 1** because MCP JSON-RPC transport is not yet bridged in the facade (REST-only client). Hits will be DERIVED until transport bridge + exact-source fetch exist. |
+| `get_index_status` | dope-context index status | `PROPOSED` (load-pack 0006 scope; **not** in inventory) | MCP | DERIVED | Registered on the operator-run stdio facade; **returns BLOCKED in Phase 1** because of the MCP transport gap + missing inventory classification. Requires formal inventory + classification before live allowlist wiring (Phase 2). |
+| `get_workflow_status_snapshot` | task-orchestrator `/queue` + `/blockers` + `/state` (GET) | `OBSERVED` (inventory + TP-0006 gap resolved) | HTTP | CANONICAL | Registered on the operator-run stdio facade; workflow-view only, **not** PM truth; strip identities. `/state` classified CONFIRMED_READ_ONLY in TP-0006 (see note below). |
 
-> **`get_index_status` (Phase 1 BLOCKED):** dope-context exposes all tools via MCP JSON-RPC at `/mcp` — not REST. The facade's `ReadOnlyHttpClient` speaks REST only; no REST routes exist at `/search/code`, `/search/docs`, or `/index/status`. `get_index_status` is additionally `PROPOSED`-only (not in the discovery inventory). Both gaps must be closed before Phase 2 can expose it: (1) transport bridge from facade to MCP JSON-RPC, (2) formal inventory + classification of `get_index_status` with read-only + side-effect evidence.
+> **dope-context registration is fail-closed.** `search_code_docs` and
+> `get_index_status` are registered on the operator-run stdio MCP facade so
+> clients can discover the full packet 0006 surface, but both return BLOCKED in
+> Phase 1. dope-context exposes tools via MCP JSON-RPC at `/mcp` — not REST. The
+> facade's `ReadOnlyHttpClient` speaks REST only; no REST routes exist at
+> `/search/code`, `/search/docs`, or `/index/status`. `get_index_status` is
+> additionally `PROPOSED`-only (not in the discovery inventory). Both gaps must
+> be closed before Phase 2 can return live data: (1) transport bridge from facade
+> to MCP JSON-RPC, (2) formal inventory + classification of `get_index_status`
+> with read-only + side-effect evidence.
 
 > **`/state` gap resolved (TP-0006):** task-orchestrator exposes `/api/projects/{project_id}/workflow/state` as a first-class GET read endpoint (`project_workflow.py:385`, `@router.get("/state", response_model=WorkflowStateResult)`). Evidence: (1) confirmed GET at line 385; (2) existing PM adapter calls it (`src/dopemux/pm/adapters/orchestrator.py:48`); (3) no write path or side effects observed. **Classified CONFIRMED_READ_ONLY.** Added to `get_workflow_status_snapshot` backing-surface row above. The 0001 inventory gap is noted but not retroactively modified (0001 is a committed artifact).
 
