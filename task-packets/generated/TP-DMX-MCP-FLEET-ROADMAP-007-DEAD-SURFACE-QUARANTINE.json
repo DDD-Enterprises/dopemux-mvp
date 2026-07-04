@@ -37,11 +37,13 @@
       "SYSTEM_ARCHIVE/**",
       "mcp_catalog.yaml",
       "services/registry.yaml",
+      "src/dopemux/commands/mcp_commands.py",
       "src/dopemux/mcp/**",
       "scripts/mcp/**",
       "docker/mcp-servers-source/**",
       "services/**",
       "tests/arch/test_mcp_fleet_catalog_contract.py",
+      "tests/unit/test_mcp_fleet_catalog.py",
       "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE.json",
       "proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE/**"
     ],
