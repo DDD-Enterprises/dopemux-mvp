@@ -41,6 +41,7 @@ def server_module(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules, "fastmcp", types.SimpleNamespace(FastMCP=RecordingFastMCP))
     sys.modules.pop("mcp.server", None)
     module = importlib.import_module("mcp.server")
+    assert RecordingFastMCP.instances, "mcp.server import did not instantiate FastMCP"
     yield module, RecordingFastMCP.instances[-1]
     sys.modules.pop("mcp.server", None)
 
