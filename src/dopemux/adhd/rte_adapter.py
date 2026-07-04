@@ -1,8 +1,9 @@
+import asyncio
 import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 import httpx
 
@@ -64,7 +65,13 @@ class RTEAdapter:
             response.raise_for_status()
             result = response.json()
 
-        self._emit_decision_logged_event(decision_data, result)
+        # The capture emit writes SQLite synchronously; run it off the event
+        # loop so async callers never eat a filesystem-latency spike. Fail-open:
+        # a scheduling error must never surface as a ConPort write failure.
+        try:
+            await asyncio.to_thread(self._emit_decision_logged_event, decision_data, result)
+        except Exception as exc:  # pragma: no cover - defensive, emit is best-effort
+            logger.debug("decision.logged capture dispatch failed: %s", exc)
         return result
 
     def _emit_decision_logged_event(
