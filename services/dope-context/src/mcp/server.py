@@ -146,10 +146,17 @@ def _normalize_decision_limit(limit_value: Any) -> int:
     return max(1, min(parsed, TRINITY_DECISION_MAX_LIMIT))
 
 
-# # @mcp.custom_route("/health", methods=["GET"])
+@mcp.custom_route("/health", methods=["GET"])
 async def health_check(_: Request) -> JSONResponse:
-    """Basic health endpoint for container probes."""
-    return JSONResponse({"status": "ok"})
+    """Health endpoint per registry contract (matches fleet health shape)."""
+    return JSONResponse(
+        {
+            "status": "healthy",
+            "service": "dope-context",
+            "version": "1.0.0",
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+        }
+    )
 
 
 # # @mcp.custom_route("/info", methods=["GET"])

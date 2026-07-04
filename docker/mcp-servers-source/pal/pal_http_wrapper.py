@@ -26,11 +26,10 @@ shutdown_requested = threading.Event()
 class PalServerHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/health':
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-
-            # Check if MCP process is still running
+            # Determine health BEFORE sending the status line: the MCP
+            # subprocess can die after the wrapper starts, and a container
+            # probe (curl -f) only fails on a non-2xx code. Return 503 when
+            # unhealthy so Docker/health collectors actually see the failure.
             if hasattr(self.server, 'mcp_process') and self.server.mcp_process.poll() is None:
                 status = {
                     "status": "healthy",
@@ -38,13 +37,17 @@ class PalServerHandler(BaseHTTPRequestHandler):
                     "mcp_process_running": True,
                     "mcp_pid": self.server.mcp_process.pid
                 }
+                self.send_response(200)
             else:
                 status = {
                     "status": "unhealthy",
                     "timestamp": time.time(),
                     "mcp_process_running": False
                 }
+                self.send_response(503)
 
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
             self.wfile.write(json.dumps(status).encode())
         elif self.path == '/sse':
             session_id = str(uuid.uuid4())
