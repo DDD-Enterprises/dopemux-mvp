@@ -101,6 +101,11 @@ class RTEAdapter:
                 source="dopemux.rte_adapter",
                 mode="auto",
                 emit_event_bus=None,
+                # Resolve the capture ledger against the adapter's own
+                # workspace, not the process cwd — otherwise a caller running
+                # outside this repo would silently drop the decision.logged
+                # event (capture_client falls back to Path.cwd()).
+                repo_root=self.workspace_root,
             )
         except Exception as exc:  # pragma: no cover - defensive, fail-open
             logger.debug("decision.logged capture emit failed: %s", exc)

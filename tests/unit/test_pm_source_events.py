@@ -203,6 +203,8 @@ async def test_rte_adapter_emits_decision_logged_on_success(monkeypatch):
     assert payload["title"] == "RTE Truth Decomposed"
     assert payload["rationale"] == "Automated breakdown"
     assert kwargs["emit_event_bus"] is None
+    # capture must resolve against the adapter's workspace, not the process cwd
+    assert kwargs["repo_root"] == Path("/tmp/does-not-matter")
 
 
 @pytest.mark.asyncio
