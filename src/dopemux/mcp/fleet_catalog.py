@@ -27,7 +27,7 @@ class DuplicateKeyError(MCPFleetCatalogError):
 
 _ENV_DEFAULT_RE = re.compile(r"\$\{[^:}]+:-([0-9]+)\}")
 _ENV_RE = re.compile(r"\$\{[^}]+\}")
-_MCP_TOOL_SURFACE_RE = re.compile(r"\bmcp__([A-Za-z0-9_-]+)__[A-Za-z0-9_-]+")
+_MCP_TOOL_SURFACE_RE = re.compile(r"\bmcp__([A-Za-z0-9_-]+)__(?:[A-Za-z0-9_-]+|\*)")
 
 
 def load_yaml_no_duplicate_keys(path: Path) -> Any:
@@ -158,11 +158,37 @@ def _url_port(value: str | None) -> int | None:
     return parsed.port
 
 
+_DOCKER_EXEC_VALUE_FLAGS = {
+    "--detach-keys",
+    "--env",
+    "--env-file",
+    "--user",
+    "--workdir",
+    "-e",
+    "-u",
+    "-w",
+}
+
+
 def _docker_exec_target(args: list[str]) -> str | None:
     if not args or args[0] != "exec":
         return None
+    skip_next = False
     for token in args[1:]:
+        if skip_next:
+            skip_next = False
+            continue
+        if token in _DOCKER_EXEC_VALUE_FLAGS:
+            skip_next = True
+            continue
+        if token.startswith("--"):
+            if "=" in token:
+                continue
+            continue
         if token.startswith("-"):
+            # Short Docker exec flags that take attached values, e.g. -u1000 or -eKEY=VAL.
+            if len(token) > 2 and token[1] in {"e", "u", "w"}:
+                continue
             continue
         return token
     return None

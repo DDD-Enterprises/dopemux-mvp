@@ -87,3 +87,9 @@ servers:
     )
 
     assert fleet_catalog.known_tool_surfaces(catalog) == {"conport", "pal", "zen"}
+
+
+def test_extract_mcp_tool_surfaces_includes_wildcard_references():
+    assert fleet_catalog.extract_mcp_tool_surfaces(
+        "`mcp__conport__*` and `mcp__task-orchestrator__get_context`"
+    ) == ["conport", "task-orchestrator"]

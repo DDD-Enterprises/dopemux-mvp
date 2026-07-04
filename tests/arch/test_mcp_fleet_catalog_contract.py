@@ -69,9 +69,11 @@ def test_unknown_command_tool_surfaces_are_reported(tmp_path):
 
 
 def test_mcp_tool_surface_regex_rejects_partial_mentions():
-    matches = fleet_catalog.extract_mcp_tool_surfaces("mcp__conport__ok mcp__bad mcp____x")
+    matches = fleet_catalog.extract_mcp_tool_surfaces(
+        "mcp__conport__ok mcp__dope-memory__* mcp__bad mcp____x"
+    )
 
-    assert matches == ["conport"]
+    assert matches == ["conport", "dope-memory"]
 
 
 def test_no_duplicate_catalog_server_names_in_sample_fixture(tmp_path):
@@ -117,3 +119,43 @@ def test_catalog_contract_finds_docker_exec_container_drift(tmp_path):
     errors = fleet_catalog.validate_catalog_compose_alignment_data(catalog, compose)
 
     assert re.search(r"exa.*mcp-litellm.*mcp-exa", "\n".join(errors))
+
+
+def test_catalog_contract_parses_docker_exec_options_with_values():
+    compose = {
+        "services": {
+            "exa": {
+                "container_name": "mcp-exa",
+                "ports": ["${EXA_PORT:-3011}:3011"],
+                "healthcheck": {"test": ["CMD", "true"]},
+            }
+        }
+    }
+    catalog = {
+        "version": 1,
+        "defaults": {"per_worktree": []},
+        "servers": {
+            "exa": {
+                "scope": "singleton",
+                "transport": "stdio",
+                "command": "docker",
+                "args": [
+                    "exec",
+                    "-i",
+                    "-e",
+                    "MCP_RUN_MODE=stdio",
+                    "--user",
+                    "1000:1000",
+                    "--workdir=/app",
+                    "mcp-exa",
+                    "python",
+                    "/app/exa_server.py",
+                ],
+                "docker_compose_service": "exa",
+            }
+        },
+    }
+
+    errors = fleet_catalog.validate_catalog_compose_alignment_data(catalog, compose)
+
+    assert errors == []

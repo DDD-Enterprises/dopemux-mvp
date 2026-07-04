@@ -82,7 +82,7 @@ servers:
     scope: singleton
     transport: stdio
     command: docker
-    args: ["exec", "-i", "mcp-exa", "python", "/app/exa_server.py"]
+    args: ["exec", "-i", "-e", "MCP_RUN_MODE=stdio", "mcp-exa", "python", "/app/exa_server.py"]
     docker_compose_service: exa
     requires_env: ["EXA_API_KEY"]
     description: "Neural web search"

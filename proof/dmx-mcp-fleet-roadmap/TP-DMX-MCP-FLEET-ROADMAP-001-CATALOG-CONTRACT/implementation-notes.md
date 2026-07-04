@@ -16,6 +16,8 @@ Implemented Lane 1 of the MCP fleet roadmap: catalog contract, static drift gate
 - Worktree: `/Users/hue/code/dopemux-mvp/.worktrees/mcp-fleet-contract-gates`
 - Branch: `codex/mcp-fleet-contract-gates`
 - Base: `origin/main`
+- Commit SHA: `fa748f585314790e8b18e9ab1f94a9937c29ef2e`
+- PR URL: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/995`
 - PR 993 state observed before implementation: open, blocked; audit content treated as advisory input.
 - Unrelated worktree-generated dirty file observed before scoped edits: `.claude/claude_config.json`.
 
@@ -55,3 +57,11 @@ NOT_RUN:
 - Static gates prove committed-surface parity only; they do not prove services are running or that live MCP tool lists match implementation.
 - `zen` is now an explicit alias for command-surface compatibility, but runtime alias availability still requires later live probe work.
 - Task Orchestrator remains split between compose service port `8000` and per-repo singleton catalog port `7890`; Lane 1 records static boundaries and does not resolve runtime personality convergence.
+
+## Review Follow-up
+
+- PR #995 review unblock addressed static review feedback:
+  - `docker exec` target parsing now skips options with attached or following values before selecting the container token.
+  - `.claude/commands` MCP tool-surface extraction now includes wildcard references such as `mcp__conport__*`.
+  - `exa` stdio catalog entry now passes `MCP_RUN_MODE=stdio` to `docker exec`.
+  - Proof preflight records commit SHA and PR URL.
