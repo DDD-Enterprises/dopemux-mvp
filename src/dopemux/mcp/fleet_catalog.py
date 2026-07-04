@@ -382,6 +382,14 @@ def find_unknown_command_tool_surfaces(
     return unknown
 
 
+_REQUIRED_PERSONALITY_FIELDS = (
+    "authority_role",
+    "lifecycle",
+    "management_model",
+    "identity_scope",
+)
+
+
 def validate_catalog_personality_contract(catalog: dict[str, Any]) -> list[str]:
     """Validate high-risk MCP server role and lifecycle metadata.
 
@@ -403,6 +411,19 @@ def validate_catalog_personality_contract(catalog: dict[str, Any]) -> list[str]:
                     f"{name}: {field} must be `{expected_value}` for MCP personality contract "
                     f"(found `{actual}`)"
                 )
+
+    for name, spec in sorted(servers.items()):
+        if not isinstance(spec, dict):
+            continue
+        missing_fields = [
+            field for field in _REQUIRED_PERSONALITY_FIELDS if spec.get(field) is None
+        ]
+        if missing_fields:
+            errors.append(
+                f"{name}: missing required personality field(s) {missing_fields} "
+                "(every catalog server must carry authority_role, lifecycle, "
+                "management_model, identity_scope)"
+            )
 
     for name, spec in sorted(servers.items()):
         follow_on_decision = spec.get("follow_on_decision")
