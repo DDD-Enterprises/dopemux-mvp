@@ -39,6 +39,7 @@
       "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/branch-work-audit.md",
       "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/transcript-digest.md",
       "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/source-manifest.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/pre-run-evidence.md",
       "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/gpt55-web-prompt.md",
       "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/phased-runbook.md",
       "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/bundle-00-evidence-triage.md",
@@ -85,13 +86,15 @@
       "requirements": [
         "Digest work on claude/trusting-engelbart-d2fbfe and claude/mcp-fleet-audit-complete.",
         "Separate transcript-derived advisory claims from branch/source evidence.",
-        "Provide GPT-5.5 Pro web prompts and input-bundle manifests split into phases so no detail is lost."
+        "Provide GPT-5.5 Pro web prompts and input-bundle manifests split into phases so no detail is lost.",
+        "Collect pre-run branch, PR, inventory, and validation evidence before GPT-5.5 Phase 0."
       ],
       "validation": [
         "Task Packet validates against dopetask canonical schema.",
         "Markdown artifacts pass pre-commit documentation hooks.",
         "git diff --check passes.",
-        "Phase prompts preserve stop gates between evidence triage, current-state inventory, branch adjudication, target architecture, roadmap, UX, and final synthesis."
+        "Phase prompts preserve stop gates between evidence triage, current-state inventory, branch adjudication, target architecture, roadmap, UX, and final synthesis.",
+        "Pre-run evidence records PASS, FAIL, and UNKNOWN/NOT_RUN states without converting advisory synthesis into runtime truth."
       ],
       "context_files": [
         "AGENTS.md",
