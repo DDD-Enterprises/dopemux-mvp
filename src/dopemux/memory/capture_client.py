@@ -352,7 +352,18 @@ def _emit_to_event_stream(event: dict[str, Any]) -> None:
     redis_password = os.getenv("REDIS_PASSWORD")
 
     try:
-        client = redis.Redis.from_url(redis_url, password=redis_password, decode_responses=True)
+        # Bounded socket timeouts so an unreachable / blackholed REDIS_URL
+        # cannot stall a synchronous caller (e.g. a fail-open Claude hook) on
+        # the OS TCP timeout. Mirrors native_hooks._open_activity_redis_client. The
+        # ledger write has already happened before this fan-out, so a slow or
+        # dead Redis degrades to a fast best-effort skip, never a hang.
+        client = redis.Redis.from_url(
+            redis_url,
+            password=redis_password,
+            decode_responses=True,
+            socket_connect_timeout=1,
+            socket_timeout=2,
+        )
         envelope = {
             "id": event["id"],
             "ts": event["ts_utc"],
