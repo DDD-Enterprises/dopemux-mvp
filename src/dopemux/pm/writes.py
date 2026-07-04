@@ -64,6 +64,19 @@ TASK_ORCHESTRATOR_TRANSITIONS = {
     PMTaskStatus.DONE: "done",
 }
 
+# NOTE: task.failed enum add DEFERRED (contract risk). PMTaskStatus has an
+# enforced 5-value invariant (see models.py docstring "Exactly 5 values" and
+# tests/unit/pm/test_pm_models.py::TestPMTaskStatus.test_exactly_five_values /
+# test_canonical_values) plus exhaustive CANONICAL_TO_ORCHESTRATOR /
+# CANONICAL_TO_CONPORT dialect maps in pm/mapping.py and an exhaustive
+# TASK_ORCHESTRATOR_TRANSITIONS above (only IN_PROGRESS/BLOCKED/DONE have a
+# proven orchestrator transition trigger — no "fail" trigger exists). Adding
+# PMTaskStatus.FAILED would break that invariant test and require touching
+# pm/mapping.py (out of scope here) with no proven transition semantics.
+# The WMA promotion engine already has a ready _promote_task_failed handler
+# (services/working-memory-assistant/promotion/promotion.py) waiting for a
+# producer once a FAILED status (or an equivalent producer) is introduced
+# under its own contract review.
 TASK_STATUS_CAPTURE_EVENTS = {
     PMTaskStatus.BLOCKED: "task.blocked",
     PMTaskStatus.DONE: "task.completed",
@@ -219,7 +232,14 @@ def emit_pm_promotable_source_event(
     operation_type: str,
     payload: Dict[str, Any],
 ) -> None:
-    """Emit a best-effort promotable capture event without changing PM authority."""
+    """Emit a best-effort promotable capture event without changing PM authority.
+
+    Source events become promotion-CAPABLE when the event bus is provisioned
+    (ENABLE_EVENTBUS + REDIS_URL, via DOPEMUX_CAPTURE_EMIT_EVENTBUS); default
+    dev environments remain ledger-only. ``emit_event_bus=None`` defers the
+    fan-out decision to ``emit_capture_event``'s env resolution instead of
+    hardcoding it off, so this is a no-op unless an operator opts in.
+    """
 
     event_payload = {
         **payload,
@@ -235,7 +255,7 @@ def emit_pm_promotable_source_event(
         event_payload,
         source="dopemux.pm",
         mode="auto",
-        emit_event_bus=False,
+        emit_event_bus=None,
     )
 
 

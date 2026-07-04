@@ -26,6 +26,13 @@ from .writes import (
 class PMWriteBoundary:
     """
     Enforces the split between PM metadata writes and workflow-significant writes.
+
+    Referenced directly by tests/test_pm_api.py and
+    tests/unit/test_memory_capture_client.py (not dead code) even though no
+    production caller instantiates it today. It delegates all promotable
+    source-event emission to writes.emit_pm_promotable_source_event, so it
+    already inherits that helper's emit_event_bus=None (env-deferred,
+    default-disabled) behavior without needing its own fix.
     """
 
     def __init__(self, leantime_client=None, orchestrator_client=None, conport_client=None, memory_client=None, project_id: str = "default"):
