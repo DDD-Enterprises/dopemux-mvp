@@ -1,16 +1,15 @@
 {
   "id": "TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES",
   "project": "dopemux-mvp",
-  "target": "Converge MCP server personalities after catalog gates exist: ConPort in-repo surface, Kotlin Task Orchestrator as workflow MCP, dope-memory/dope-context identity handling, PAL standalone management, exa wire-or-retire, and desktop commander decision.",
+  "target": "Converge MCP server personality and lifecycle contracts through the canonical fleet catalog without deleting or rewriting runtime surfaces.",
   "invariants": [
-    "Depends on catalog gates from packet 001 and generated outputs from packet 002.",
-    "No destructive deletion in this packet without reverse dependency proof.",
-    "Do not treat dopecon-bridge as canonical authority.",
-    "Do not widen write surfaces or activate unsanctioned Serena write tools."
+    "Depends on packet 001 catalog gates and must not bypass catalog validation.",
+    "ConPort, task-orchestrator, dope-memory, and dope-context roles must preserve repo authority boundaries.",
+    "PAL must remain explicitly operator-managed as standalone reasoning infrastructure.",
+    "Exa and desktop-commander must remain decision-gated until wire-or-retire and host-run/delete decisions are proven by follow-on scans."
   ],
   "depends_on": [
-    "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT",
-    "TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS"
+    "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT"
   ],
   "repo_binding": {
     "project_id": "DDD-Enterprises/dopemux-mvp",
@@ -21,38 +20,37 @@
   "series": {
     "id": "DMX-MCP-FLEET-ROADMAP",
     "base_branch": "main",
-    "parent_tp_id": "TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS",
+    "parent_tp_id": "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT",
     "final_packet": false
   },
   "execution": {
     "agent": "codex",
     "branch": "codex/mcp-fleet-server-personalities",
     "base_branch": "main",
-    "stacked_because": "Server convergence must ride on catalog drift gates to avoid resurrecting shadow surfaces."
+    "stacked_because": "Server personality convergence needs catalog gates from packet 001 and follows memory capture repair."
   },
   "commit": {
-    "message": "fix(mcp): converge fleet server personalities",
+    "message": "feat(mcp): declare fleet server personalities",
     "allowlist": [
       "mcp_catalog.yaml",
-      "services/registry.yaml",
-      "src/dopemux/mcp/**",
-      "docker/mcp-servers-source/conport/**",
-      "services/dope-context/**",
-      "services/working-memory-assistant/**",
-      "scripts/mcp-wrappers/**",
-      "tests/**/test_mcp*.py",
+      "src/dopemux/mcp/default_catalog.yaml",
+      "schemas/mcp/fleet-catalog.schema.json",
+      "src/dopemux/mcp/fleet_catalog.py",
+      "tests/unit/test_mcp_fleet_catalog.py",
+      "tests/arch/test_mcp_fleet_catalog_contract.py",
+      "docs/03-reference/mcp/fleet-generated-outputs.md",
       "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES.json",
       "proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES/**"
     ],
     "verify": [
       "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
-      "python -m pytest tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_fleet_catalog.py -q",
+      "python -m pytest tests/unit/test_mcp_fleet_catalog.py tests/arch/test_mcp_fleet_catalog_contract.py -q",
       "git diff --check"
     ]
   },
   "pr": {
-    "title": "fix(mcp): converge fleet server personalities",
-    "body": "Converge MCP server personalities behind the canonical catalog without destructive deletion.",
+    "title": "feat(mcp): declare fleet server personalities",
+    "body": "Add catalog-backed MCP server role, lifecycle, identity, and decision metadata with static gates for high-risk fleet personalities.",
     "base": "main"
   },
   "pal_chain": {
@@ -62,24 +60,23 @@
       "thinkdeep",
       "challenge",
       "planner",
-      "challenge",
       "codereview",
       "precommit"
     ]
   },
   "steps": [
     {
-      "id": "decision_matrix",
-      "task": "Document each server's chosen personality, rejected alternatives, authority label, and residual UNKNOWNs.",
+      "id": "catalog_personalities",
+      "task": "Add schema-backed server personality metadata for authority role, lifecycle, management model, identity scope, and unresolved follow-on decisions.",
       "validation": [
-        "Decision matrix preserves Memory Trinity and PM-plane authority boundaries."
+        "Catalog schema validation accepts only declared metadata fields and rejects unknown values."
       ]
     },
     {
-      "id": "converge_configs",
-      "task": "Apply non-destructive config and wrapper convergence for chosen personalities.",
+      "id": "drift_gate",
+      "task": "Add static drift checks for required MCP personality contracts and render metadata into generated outputs.",
       "validation": [
-        "Catalog drift gates pass and no generated config references rejected surfaces."
+        "Focused fleet catalog tests prove required role/lifecycle decisions cannot drift silently."
       ]
     }
   ]
