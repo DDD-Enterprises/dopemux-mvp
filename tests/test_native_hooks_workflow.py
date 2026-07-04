@@ -216,3 +216,59 @@ def test_native_hook_activity_emit_failure_does_not_block_hook(tmp_path, monkeyp
     )
 
     assert response.get("decision") != "block"
+
+
+def test_post_tool_failure_emits_bounded_error_capture(tmp_path, monkeypatch):
+    captured = []
+    monkeypatch.setattr(native_hooks, "_open_activity_redis_client", lambda: FailingRedisClient(), raising=False)
+    monkeypatch.setattr(
+        native_hooks,
+        "try_emit_promotable_capture_event",
+        lambda event_type, payload, **kwargs: captured.append((event_type, payload, kwargs)),
+    )
+
+    response = handle_event(
+        "PostToolUseFailure",
+        {
+            "cwd": str(tmp_path),
+            "session_id": "session-secret",
+            "tool_name": "Bash",
+            "error": "secret failure with private path /tmp/secret",
+            "env": {"DOPEMUX_INSTANCE_ID": "main"},
+        },
+    )
+
+    assert response.get("decision") != "block"
+    assert captured
+    event_type, payload, kwargs = captured[0]
+    assert event_type == "error.encountered"
+    assert payload["message"] == "Claude native hook tool failure"
+    assert payload["error_kind"] == "hook_tool_failure"
+    assert payload["tool_name"] == "Bash"
+    assert kwargs["source"] == "dopemux.native_hooks"
+    assert kwargs["emit_event_bus"] is False
+    assert kwargs["session_id"] is None
+
+    serialized = json.dumps(captured, sort_keys=True, default=str)
+    assert "secret failure" not in serialized
+    assert "session-secret" not in serialized
+
+
+def test_post_tool_failure_capture_exception_does_not_block_hook(tmp_path, monkeypatch):
+    def fail_capture(*_args, **_kwargs):
+        raise RuntimeError("capture offline")
+
+    monkeypatch.setattr(native_hooks, "_open_activity_redis_client", lambda: FailingRedisClient(), raising=False)
+    monkeypatch.setattr(native_hooks, "try_emit_promotable_capture_event", fail_capture)
+
+    response = handle_event(
+        "PostToolUseFailure",
+        {
+            "cwd": str(tmp_path),
+            "tool_name": "Bash",
+            "error": "secret failure",
+            "env": {"DOPEMUX_INSTANCE_ID": "main"},
+        },
+    )
+
+    assert response.get("decision") != "block"

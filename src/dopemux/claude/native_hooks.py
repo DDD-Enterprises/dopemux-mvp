@@ -75,6 +75,7 @@ except ImportError:
 
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
+from dopemux.memory.capture_client import try_emit_promotable_capture_event  # noqa: E402
 
 # Claude Code command hook exit codes
 EXIT_SUCCESS = 0
@@ -160,6 +161,37 @@ def _truncate(value: Any, limit: int = 400) -> Any:
     if isinstance(value, list):
         return [_truncate(item, limit=limit) for item in value[:10]]
     return value
+
+
+def _emit_bounded_hook_error_capture(
+    *,
+    project_root: Path,
+    session_id: Optional[str],
+    hook_event_name: str,
+    tool_name: str,
+) -> None:
+    """Capture a promotable hook failure without persisting raw hook payloads."""
+
+    try:
+        try_emit_promotable_capture_event(
+            "error.encountered",
+            {
+                "message": "Claude native hook tool failure",
+                "error_kind": "hook_tool_failure",
+                "service": "claude_native_hooks",
+                "hook_event_name": hook_event_name,
+                "tool_name": _truncate(tool_name, limit=80),
+                "authority": "dope-memory",
+                "canonical_system": "dope-memory",
+            },
+            source="dopemux.native_hooks",
+            mode="plugin",
+            repo_root=project_root,
+            emit_event_bus=False,
+            session_id=None,
+        )
+    except Exception:
+        return None
 
 
 def _response_text(payload: Dict[str, Any]) -> str:
@@ -503,6 +535,12 @@ class NativeHookAdapter:
         _emit_activity_event(
             hook_event_name="PostToolUseFailure",
             status="failure",
+            tool_name=tool_name,
+        )
+        _emit_bounded_hook_error_capture(
+            project_root=self.project_root,
+            session_id=self.session_id,
+            hook_event_name="PostToolUseFailure",
             tool_name=tool_name,
         )
         state = self._active_state()
