@@ -127,17 +127,6 @@
         "CONPORT_URL": "http://localhost:3005"
       }
     },
-    "exa": {
-      "command": "uvx",
-      "args": [
-        "mcp-proxy",
-        "--transport",
-        "streamablehttp",
-        "http://127.0.0.1:3007/sse"
-      ],
-      "env": {},
-      "type": "stdio"
-    },
     "task-orchestrator": {
       "command": "python",
       "args": [
