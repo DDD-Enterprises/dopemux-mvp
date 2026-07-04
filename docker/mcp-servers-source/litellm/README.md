@@ -123,6 +123,24 @@ If port 4000 is in use:
 - SQLite database for request logging (optional)
 - No PII stored in logs by default
 
+### Accepted CVE Risk (base image)
+
+Docker Scout flags three perl CVEs in this image — CVE-2026-12087 (critical),
+CVE-2026-48959 and CVE-2026-48962 (high). These come from `perl-base` in the
+`python:3.11-slim` (Debian trixie) base image and are marked **Not Fixed** by
+Debian. `perl-base` is an `Essential: yes` package and cannot be removed from
+Debian-based images. CVE-2026-12087 is an out-of-bounds heap read in Perl's
+`Socket.xs`, exploitable only by running perl code on attacker-controlled
+input; this container runs no perl at runtime (python entrypoint only), so the
+vulnerable code path is unreachable. **Accepted risk** — re-evaluate when
+Debian publishes fixed packages (`apt-get upgrade` in the Dockerfile will pick
+them up automatically on the next rebuild).
+
+Note on `cryptography`: `litellm[proxy]` pins `cryptography<47.0`, but
+GHSA-537c-gmf6-5ccf is only fixed in 48.0.1, so the Dockerfile force-upgrades
+cryptography in a second `pip install` step. `pip check` inside the image will
+report this mismatch by design; runtime startup is verified after each bump.
+
 ## Monitoring
 
 - Health endpoint: `http://localhost:4000/health`
