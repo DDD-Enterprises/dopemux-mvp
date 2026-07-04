@@ -69,6 +69,26 @@ def test_personality_contract_catches_authority_role_drift():
     assert any("dope-context: authority_role" in error for error in errors)
 
 
+def test_personality_contract_requires_presence_of_all_personality_fields_on_every_server():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+    del catalog["servers"]["serena"]["identity_scope"]
+
+    errors = fleet_catalog.validate_catalog_personality_contract(catalog)
+
+    assert any(
+        "serena: missing required personality field(s)" in error and "identity_scope" in error
+        for error in errors
+    )
+
+
+def test_all_catalog_servers_carry_full_personality_metadata():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+
+    errors = fleet_catalog.validate_catalog_personality_contract(catalog)
+
+    assert errors == []
+
+
 def test_decision_required_servers_must_name_follow_on_decision():
     catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
     catalog["servers"]["temporary-search"] = {
@@ -227,6 +247,46 @@ def test_decision_required_quarantine_gate_validates_provided_empty_outputs():
     )
 
     assert errors == ["defaults.per_worktree includes decision-required server `quarantined-local`"]
+
+
+def test_dead_fleet_service_names_are_not_compose_services():
+    compose = fleet_catalog.load_compose(REPO_ROOT)
+    services = set(compose.get("services") or {})
+
+    # Kill-list: dead service directories that must never become startable via
+    # compose. These exist on disk (services/mcp-integration-bridge, etc.) but
+    # must not be wired into compose.yml.
+    dead_service_names = {"mcp-integration-bridge", "mcp-client", "router"}
+    assert dead_service_names.isdisjoint(services)
+
+    # Positive control: known-live compose services must actually be present,
+    # otherwise the assertion above would be vacuous.
+    assert {"dopecon-bridge", "task-orchestrator", "conport"}.issubset(services)
+
+
+def test_generated_fleet_outputs_never_reference_dead_service_paths_or_scripts():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+    outputs = fleet_catalog.generate_fleet_output_files(catalog)
+    combined = "\n".join(outputs.values())
+
+    dead_references = [
+        "services/mcp-integration-bridge",
+        "services/mcp-client",
+        "services/router",
+        "services/serena/v2/mcp_server.py",
+        "services/dope-context/src/mcp/simple_server.py",
+        "wire_claude_mcp.py",
+        "manage-mcp-servers.sh",
+        "conport-wrapper.sh",
+        "serena-wrapper.sh",
+    ]
+    found = [ref for ref in dead_references if ref in combined]
+
+    assert found == []
+
+
+def test_mcp_integration_bridge_dockerfile_does_not_exist():
+    assert not (REPO_ROOT / "services/mcp-integration-bridge/Dockerfile").exists()
 
 
 def test_claude_command_tool_surfaces_are_catalog_known_or_explicit_aliases():

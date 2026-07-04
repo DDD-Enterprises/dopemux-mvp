@@ -76,3 +76,51 @@ NOT_RUN:
 - `scripts/orchestrator/perpacket_codereview.py`; the helper exits before review because
   this generated Lane 7 packet is not present in `config/orchestrator/perpacket_test_map.yaml`.
   Manual bounded diff review was performed instead.
+
+## Scope clarification / addendum (2026-07-04)
+
+A later audit of this merged TP correctly flagged that the scope above is narrower than
+the phrase "dead fleet surfaces" can imply. Stating it plainly, truth over fluency:
+
+TP-007's static gate (`validate_decision_required_generated_config_quarantine`) quarantines
+only **decision-required catalog SERVERS** — concretely `desktop-commander` and `exa` — from
+the startable generated config outputs (`local/.mcp.json`, `claude/mcpServers.json`,
+`codex/config.toml`). That is the entire proven scope of this lane, and the validation
+results above are accurate for that scope.
+
+It does **not** quarantine, delete, or otherwise touch the broader audit kill-list of dead
+service directories, scripts, and compose variants identified separately. As of this
+addendum, the following remain live on disk and were never in scope for TP-007:
+
+- `services/mcp-integration-bridge/` (service directory; superseded by `dopecon-bridge`)
+- `services/mcp-client/`
+- `services/router/`
+- the in-repo `gpt-researcher`/`gptr` server sources under
+  `docker/mcp-servers-source/gptr-mcp` and `docker/mcp-servers-source/gpt-researcher`
+- `services/dope-memory` stdio shim
+- `services/dope-context/src/mcp/simple_server.py`
+- dead config writers: `scripts/mcp/wire_claude_mcp.py`,
+  `scripts/mcp/manage-mcp-servers.sh`
+- `scripts/mcp-wrappers/conport-wrapper.sh` (upstream ConPort wrapper)
+- 2 unconsumed PAL compose variants
+- `scripts/mcp-wrappers/serena-wrapper.sh`, which `exec`s a nonexistent path
+  (`services/serena/v2/mcp_server.py` does not exist on disk — confirmed by direct
+  filesystem check) — a phantom wrapper, not merely unconsumed
+
+None of these names or paths appear in `compose.yml` services, and none are referenced by
+any of the generated fleet output files (`generate_fleet_output_files`), so they were
+already non-startable via the canonical catalog/compose path before this addendum — but
+that was incidental (they were simply never wired in), not something TP-007 verified or
+enforced. This addendum is followed by non-startability regression tests
+(`tests/arch/test_mcp_fleet_catalog_contract.py`) that lock in the absence of the
+compose-service names `mcp-integration-bridge`, `mcp-client`, and `router`, and assert the
+generated outputs never reference the dead paths/scripts above, so the quarantine boundary
+cannot silently regress. Source-file deletion of the remaining kill-list items is held for
+an explicit follow-on decision; this change deletes only
+`services/mcp-integration-bridge/Dockerfile` (see follow-on TP scope) to make that one
+service concretely non-buildable rather than merely absent from compose.
+
+This correction does not change the PASS results recorded above — those validations were
+run against the claimed scope (decision-required servers) and are accurate for it. The
+overstatement was in the surrounding prose ("dead fleet surfaces"), not in the test
+evidence.
