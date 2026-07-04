@@ -63,6 +63,7 @@ _HEAD_SHA = "a" * 40
 def _clean_intake(**overrides: Any) -> dict:
     """Return a clean (all-gates-clear) intake dict, with optional field overrides."""
     base: dict[str, Any] = {
+        "intake_completeness": _complete_intake_completeness(),
         "changed_files": ["src/foo.py"],
         "commits": ["deadbeef" * 5],
         "checks": [
@@ -80,6 +81,27 @@ def _clean_intake(**overrides: Any) -> dict:
     }
     base.update(overrides)
     return base
+
+
+def _complete_intake_completeness(**overrides: str) -> dict[str, str]:
+    completeness = {
+        "pr_metadata": "COMPLETE",
+        "head_sha": "COMPLETE",
+        "changed_files": "COMPLETE",
+        "commits": "COMPLETE",
+        "reviews": "COMPLETE",
+        "review_comments": "COMPLETE",
+        "review_threads": "COMPLETE",
+        "issue_comments": "COMPLETE",
+        "checks": "COMPLETE",
+        "proof_refs": "COMPLETE",
+        "proof_freshness": "COMPLETE",
+        "reviewer_classifications": "COMPLETE",
+        "allowlist": "COMPLETE",
+        "security_release_approval": "COMPLETE",
+    }
+    completeness.update(overrides)
+    return completeness
 
 
 def _assess(intake: dict | None = None, **kwargs: Any) -> dict:
@@ -117,6 +139,43 @@ class TestCleanIntakeReady:
     def test_schema_version_sentinel(self) -> None:
         result = _assess()
         assert result["schema_version"] == "pcp.merge_readiness.v0"
+
+
+class TestIntakeCompleteness:
+    @pytest.mark.parametrize(
+        "category",
+        [
+            "proof_refs",
+            "review_comments",
+            "issue_comments",
+            "checks",
+            "allowlist",
+            "security_release_approval",
+        ],
+    )
+    def test_incomplete_intake_category_blocks_ready(self, category: str) -> None:
+        intake = _clean_intake(
+            intake_completeness=_complete_intake_completeness(**{category: "MISSING"})
+        )
+        result = _assess(intake)
+        assert result["status"] == "BLOCKED"
+        assert "INCOMPLETE_INTAKE" in result["blocked_reasons"]
+        assert result["intake"]["intake_completeness"][category] == "MISSING"
+        assert _schema_errors(result) == []
+
+    def test_missing_intake_completeness_blocks_ready(self) -> None:
+        intake = _clean_intake()
+        del intake["intake_completeness"]
+        result = _assess(intake)
+        assert result["status"] == "BLOCKED"
+        assert "INCOMPLETE_INTAKE" in result["blocked_reasons"]
+        assert _schema_errors(result) == []
+
+    def test_handcrafted_ready_with_incomplete_intake_fails_schema(self) -> None:
+        signal = _assess()
+        signal["intake"]["intake_completeness"]["proof_refs"] = "MISSING"
+        errors = _schema_errors(signal)
+        assert errors, "READY with incomplete intake must be schema-invalid"
 
 
 # ---------------------------------------------------------------------------
@@ -425,6 +484,11 @@ class TestHarvestPrIntakeWithFakeRunner:
         )
         errors = _schema_errors(signal)
         assert errors == [], f"Schema errors: {errors}"
+        assert signal["status"] == "BLOCKED"
+        assert "INCOMPLETE_INTAKE" in signal["blocked_reasons"]
+        assert signal["intake"]["intake_completeness"]["proof_refs"] == "MISSING"
+        assert signal["intake"]["intake_completeness"]["review_comments"] == "MISSING"
+        assert signal["intake"]["intake_completeness"]["issue_comments"] == "MISSING"
 
     def test_invalid_pr_number_raises(self) -> None:
         _, fake_runner = self._make_runner()
@@ -499,6 +563,7 @@ class TestSchemaRejectsReadyWithUnapprovedSecurityGate:
                     {"name": "ci/test", "conclusion": "SUCCESS", "stale_to_head": False}
                 ],
                 "reviews": [],
+                "intake_completeness": _complete_intake_completeness(),
                 "review_threads": [],
                 "reviewer_classifications": [{"actor": "alice", "kind": "HUMAN"}],
                 "unclassified_review_items": [],
