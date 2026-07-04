@@ -42,6 +42,12 @@ servers:
   pal:
     scope: singleton
     transport: http
+    plane: reasoning
+    authority_role: reasoning-infrastructure
+    lifecycle: active
+    management_model: compose-service
+    identity_scope: singleton
+    follow_on_decision: none
     url: "http://localhost:3003/mcp"
     docker_compose_service: pal
     description: "Multi-model reasoning suite (thinkdeep, planner, consensus, debug, codereview)"
@@ -49,6 +55,12 @@ servers:
   serena:
     scope: singleton
     transport: http
+    plane: code-intelligence
+    authority_role: code-intelligence
+    lifecycle: active
+    management_model: compose-service
+    identity_scope: per-call-workspace
+    follow_on_decision: none
     url: "http://localhost:3006/mcp"
     docker_compose_service: serena
     description: "Semantic code intelligence (LSP + Tree-sitter); workspace auto-detected from cwd"
@@ -56,6 +68,12 @@ servers:
   dope-context:
     scope: singleton
     transport: http
+    plane: retrieval
+    authority_role: retrieval-projection
+    lifecycle: active
+    management_model: compose-service
+    identity_scope: per-call-workspace
+    follow_on_decision: none
     url: "http://localhost:3010/mcp"
     docker_compose_service: dope-context
     description: "AST-aware semantic code & docs search; per-call workspace_path"
@@ -63,6 +81,12 @@ servers:
   desktop-commander:
     scope: singleton
     transport: sse
+    plane: automation
+    authority_role: desktop-automation
+    lifecycle: decision-required
+    management_model: compose-service
+    identity_scope: host-session
+    follow_on_decision: delete-or-host-run
     url: "http://localhost:3012/sse"
     docker_compose_service: desktop-commander
     description: "Desktop automation (PR #575: pinned fastmcp==2.14.7, Starlette /health)"
@@ -70,6 +94,12 @@ servers:
   gpt-researcher:
     scope: singleton
     transport: stdio
+    plane: research
+    authority_role: deep-research
+    lifecycle: active
+    management_model: docker-exec
+    identity_scope: external-provider
+    follow_on_decision: none
     command: docker
     args: ["exec", "-i", "dopemux-mcp-gptr-mcp", "python", "/app/server.py"]
     docker_compose_service: gptr-mcp
@@ -80,6 +110,12 @@ servers:
   exa:
     scope: singleton
     transport: stdio
+    plane: research
+    authority_role: web-search
+    lifecycle: decision-required
+    management_model: docker-exec
+    identity_scope: external-provider
+    follow_on_decision: wire-or-retire
     command: docker
     args: ["exec", "-i", "-e", "MCP_RUN_MODE=stdio", "mcp-exa", "python", "/app/exa_server.py"]
     docker_compose_service: exa
@@ -89,6 +125,12 @@ servers:
   pal-stdio:
     scope: singleton
     transport: stdio
+    plane: reasoning
+    authority_role: reasoning-infrastructure
+    lifecycle: operator-managed
+    management_model: docker-exec
+    identity_scope: singleton
+    follow_on_decision: none
     command: docker
     args: ["exec", "-i", "mcp-pal-stdio", "/app/.venv/bin/python", "server.py"]
     docker_compose_service: pal-stdio
@@ -98,6 +140,12 @@ servers:
   MCP_DOCKER:
     scope: singleton
     transport: stdio
+    plane: gateway
+    authority_role: docker-gateway
+    lifecycle: operator-managed
+    management_model: docker-mcp-gateway
+    identity_scope: host-session
+    follow_on_decision: none
     command: docker
     args: ["mcp", "gateway", "run"]
     description: "Docker MCP gateway — surfaces containerized MCPs from Docker MCP Toolkit"
@@ -107,6 +155,12 @@ servers:
   conport:
     scope: per-worktree
     transport: sse
+    plane: memory
+    authority_role: structured-context-authority
+    lifecycle: active
+    management_model: compose-service
+    identity_scope: per-worktree
+    follow_on_decision: none
     # Port var names match compose.yml conventions so `init` writes env that
     # `docker compose up` reads directly.
     url_template: "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"
@@ -127,6 +181,12 @@ servers:
   dope-memory:
     scope: per-worktree
     transport: http
+    plane: memory
+    authority_role: chronicle-authority
+    lifecycle: active
+    management_model: compose-service
+    identity_scope: per-worktree
+    follow_on_decision: none
     url_template: "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp"
     port_var: DOPE_MEMORY_PORT
     default_port_base: 3020
@@ -138,6 +198,12 @@ servers:
     scope: per-worktree
     state_scope: per-repo
     transport: http
+    plane: workflow
+    authority_role: workflow-authority
+    lifecycle: active
+    management_model: wrapper-singleton
+    identity_scope: per-repo
+    follow_on_decision: none
     url_template: "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp"
     port_var: TASK_ORCHESTRATOR_HTTP_PORT
     default_port_base: 7890

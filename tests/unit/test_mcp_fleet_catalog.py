@@ -182,17 +182,49 @@ def test_health_probe_list_uses_catalog_urls_and_compose_services():
 
     assert fleet_catalog.render_health_probe_list(catalog) == [
         {
+            "authority_role": None,
             "docker_compose_service": "http-one",
+            "follow_on_decision": None,
+            "identity_scope": None,
+            "lifecycle": None,
+            "management_model": None,
             "name": "http-one",
+            "plane": None,
             "scope": "singleton",
             "transport": "http",
             "url": "http://localhost:1234/mcp",
         },
         {
+            "authority_role": None,
             "docker_compose_service": None,
+            "follow_on_decision": None,
+            "identity_scope": None,
+            "lifecycle": None,
+            "management_model": None,
             "name": "local-one",
+            "plane": None,
             "scope": "per-worktree",
             "transport": "sse",
             "url": "http://localhost:${LOCAL_ONE_PORT:-4321}/sse",
         },
     ]
+
+
+def test_health_probe_list_carries_personality_metadata():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+    probes = {
+        probe["name"]: probe
+        for probe in fleet_catalog.render_health_probe_list(catalog)
+    }
+
+    assert probes["conport"]["authority_role"] == "structured-context-authority"
+    assert probes["task-orchestrator"]["identity_scope"] == "per-repo"
+    assert probes["desktop-commander"]["lifecycle"] == "decision-required"
+
+
+def test_mcp_doctrine_doc_carries_decision_gated_servers():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+    doc = fleet_catalog.render_mcp_doctrine_doc(catalog)
+
+    assert "`exa` | research | web-search | decision-required" in doc
+    assert "`desktop-commander` | automation | desktop-automation | decision-required" in doc
