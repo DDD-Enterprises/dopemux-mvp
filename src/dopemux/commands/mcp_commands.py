@@ -715,23 +715,44 @@ def _ensure_fast_problems(catalog: Dict[str, Any], repo_path: Path, project_root
     return problems
 
 
+DEFAULT_ENSURE_TIMEOUT_SECONDS = 120
+DEFAULT_COMPOSE_WAIT_TIMEOUT_SECONDS = 90
+
+
 def _catalog_compose_services(catalog: Dict[str, Any]) -> List[str]:
+    """Compose services that `ensure --full` may auto-start.
+
+    Only ``lifecycle: active`` servers qualify. ``operator-managed`` (e.g.
+    pal-stdio) and ``decision-required`` (e.g. desktop-commander, exa) servers
+    are excluded so ensure never silently starts something awaiting an
+    operator decision.
+    """
     services = {
         str(spec["docker_compose_service"])
         for spec in catalog.get("servers", {}).values()
-        if spec.get("docker_compose_service")
+        if spec.get("docker_compose_service") and spec.get("lifecycle") == "active"
     }
     return sorted(services)
 
 
-def _run_checked(cmd: List[str], *, cwd: Path, label: str) -> None:
+def _run_checked(
+    cmd: List[str],
+    *,
+    cwd: Path,
+    label: str,
+    timeout: int = DEFAULT_ENSURE_TIMEOUT_SECONDS,
+) -> None:
     console.logger.info(f"[info]{label}: {' '.join(cmd)}[/info]")
     try:
-        subprocess.run(cmd, cwd=cwd, check=True)
+        subprocess.run(cmd, cwd=cwd, check=True, timeout=timeout)
     except FileNotFoundError as exc:
         raise click.ClickException(f"{label}: command not found: {cmd[0]}") from exc
     except CalledProcessError as exc:
         raise click.ClickException(f"{label} failed with exit code {exc.returncode}.") from exc
+    except subprocess.TimeoutExpired as exc:
+        raise click.ClickException(
+            f"{label} timed out after {exc.timeout}s (command: {' '.join(cmd)})."
+        ) from exc
 
 
 _ENV_TEMPLATE_RE = re.compile(r"\$\{([A-Z][A-Z0-9_]*)(?::-([^}]*))?\}")
@@ -788,15 +809,22 @@ def _report_ensure_problems(problems: List[str]) -> None:
 
 
 @mcp.command("ensure")
-@click.option("--fast", is_flag=True, help="Run local/static prerequisite checks only.")
+@click.option(
+    "--fast",
+    is_flag=True,
+    help="Static prerequisite checks only (config/env presence) — no daemon probes, no health checks.",
+)
 @click.option("--full", "full_mode", is_flag=True, help="Run local checks plus bounded service remediation/probes.")
 def mcp_ensure_cmd(fast: bool, full_mode: bool):
     """
     🛠️ Stabilize Fleet: Check or remediate catalog-backed MCP prerequisites
 
-    `--fast` performs local/static checks only. `--full` starts catalog compose
-    services, ensures PAL and the Task Orchestrator singleton, then runs bounded
-    local HTTP MCP tools-list probes.
+    `--fast` performs static prerequisite checks only: it verifies `.mcp.json`
+    matches catalog defaults, `.envrc.dopemux-mcp` exists, and required env
+    vars are present. It does not probe any daemon, container, or HTTP
+    endpoint, live or cached. `--full` additionally starts catalog compose
+    services (lifecycle: active only), ensures PAL and the Task Orchestrator
+    singleton, then runs bounded local HTTP MCP tools-list probes.
     """
     if fast and full_mode:
         raise click.ClickException("Choose exactly one of --fast or --full.")
@@ -824,12 +852,23 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
 
     compose_services = _catalog_compose_services(catalog)
     if compose_services:
+        # --wait blocks until dependent services report healthy (bounded by
+        # --wait-timeout); the Python-side timeout= is a backstop in case the
+        # docker CLI itself hangs, so it must exceed the compose wait budget.
         _run_checked(
-            ["docker", "compose", "-f", "compose.yml", "up", "-d", *compose_services],
+            [
+                "docker", "compose", "-f", "compose.yml", "up", "-d",
+                "--wait", "--wait-timeout", str(DEFAULT_COMPOSE_WAIT_TIMEOUT_SECONDS),
+                *compose_services,
+            ],
             cwd=repo_path,
             label="compose",
+            timeout=DEFAULT_COMPOSE_WAIT_TIMEOUT_SECONDS + 30,
         )
 
+    # ensure-pal.sh owns the off-compose Codex pal-mcp-server container only;
+    # the compose step above already (re)started the compose `pal` service
+    # that Claude Code talks to, so there is no overlap between the two.
     _run_checked(["bash", "scripts/mcp-wrappers/ensure-pal.sh"], cwd=repo_path, label="pal")
     _run_checked(
         ["bash", "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh"],

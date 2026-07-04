@@ -455,6 +455,7 @@ def test_mcp_ensure_full_runs_bounded_remediation_sequence(tmp_path, monkeypatch
                 "scope": "singleton",
                 "transport": "http",
                 "url": "http://localhost:3003/mcp",
+                "lifecycle": "active",
                 "docker_compose_service": "pal",
             },
             "task-orchestrator": {
@@ -464,6 +465,7 @@ def test_mcp_ensure_full_runs_bounded_remediation_sequence(tmp_path, monkeypatch
                 "url_template": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
                 "port_var": "TASK_ORCHESTRATOR_HTTP_PORT",
                 "default_port_base": 7890,
+                "lifecycle": "active",
                 "docker_compose_service": "task-orchestrator",
                 "requires_env": ["TASK_ORCHESTRATOR_PROJECT_ROOT"],
             },
@@ -477,7 +479,7 @@ def test_mcp_ensure_full_runs_bounded_remediation_sequence(tmp_path, monkeypatch
     calls = []
 
     def fake_run(cmd, **kwargs):
-        calls.append((cmd, kwargs.get("cwd")))
+        calls.append((cmd, kwargs.get("cwd"), kwargs.get("timeout")))
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
@@ -497,12 +499,80 @@ def test_mcp_ensure_full_runs_bounded_remediation_sequence(tmp_path, monkeypatch
         "compose.yml",
         "up",
         "-d",
+        "--wait",
+        "--wait-timeout",
+        str(mcp_commands.DEFAULT_COMPOSE_WAIT_TIMEOUT_SECONDS),
         "pal",
         "task-orchestrator",
     ]
+    # Every subprocess.run call in the ensure path must carry a bounded timeout
+    # so a stuck compose dependency (or hung wrapper script) cannot hang forever.
+    assert all(call[2] is not None for call in calls), calls
     assert calls[1][0][-1].endswith("ensure-pal.sh")
     assert calls[2][0][-1].endswith("task-orchestrator-http-singleton.sh")
     assert "Full MCP ensure checks green" in result.output
+
+
+def test_catalog_compose_services_excludes_non_active_lifecycle():
+    catalog = {
+        "servers": {
+            "pal": {"docker_compose_service": "pal", "lifecycle": "active"},
+            "pal-stdio": {"docker_compose_service": "pal-stdio", "lifecycle": "operator-managed"},
+            "desktop-commander": {
+                "docker_compose_service": "desktop-commander",
+                "lifecycle": "decision-required",
+            },
+            "no-lifecycle": {"docker_compose_service": "no-lifecycle"},
+        }
+    }
+
+    result = mcp_commands._catalog_compose_services(catalog)
+
+    assert result == ["pal"]
+
+
+def test_mcp_ensure_full_subprocess_timeout_surfaces_as_click_exception(tmp_path, monkeypatch):
+    catalog = {
+        "version": 1,
+        "defaults": {"per_worktree": ["task-orchestrator"]},
+        "servers": {
+            "pal": {
+                "scope": "singleton",
+                "transport": "http",
+                "url": "http://localhost:3003/mcp",
+                "lifecycle": "active",
+                "docker_compose_service": "pal",
+            },
+            "task-orchestrator": {
+                "scope": "per-worktree",
+                "state_scope": "per-repo",
+                "transport": "http",
+                "url_template": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
+                "port_var": "TASK_ORCHESTRATOR_HTTP_PORT",
+                "default_port_base": 7890,
+                "requires_env": ["TASK_ORCHESTRATOR_PROJECT_ROOT"],
+            },
+        },
+    }
+    (tmp_path / "compose.yml").write_text("services: {}\n")
+    (tmp_path / mcp_commands.PROJECT_MCP_FILENAME).write_text(
+        json.dumps(mcp_commands._build_local_mcp_json(["task-orchestrator"], catalog), indent=2) + "\n"
+    )
+    (tmp_path / mcp_commands.ENVRC_FILENAME).write_text("export TASK_ORCHESTRATOR_HTTP_PORT=7890\n")
+
+    def fake_run(cmd, **kwargs):
+        raise subprocess.TimeoutExpired(cmd=cmd, timeout=kwargs.get("timeout"))
+
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
+    monkeypatch.setattr(mcp_commands.shutil, "which", lambda name: f"/usr/bin/{name}")
+    monkeypatch.setattr(mcp_commands.subprocess, "run", fake_run)
+
+    result = CliRunner().invoke(mcp_commands.mcp_ensure_cmd, ["--full"])
+
+    assert result.exit_code != 0
+    assert "timed out" in result.output
 
 
 def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
