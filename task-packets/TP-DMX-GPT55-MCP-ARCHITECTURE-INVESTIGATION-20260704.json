@@ -39,7 +39,22 @@
       "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/branch-work-audit.md",
       "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/transcript-digest.md",
       "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/source-manifest.md",
-      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/gpt55-web-prompt.md"
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/gpt55-web-prompt.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/phased-runbook.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/bundle-00-evidence-triage.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/bundle-01-current-state.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/bundle-02-branch-adjudication.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/bundle-03-target-architecture.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/bundle-04-roadmap.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/bundle-05-operator-ux.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/bundle-06-final-synthesis.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/prompt-00-evidence-triage.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/prompt-01-current-state.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/prompt-02-branch-adjudication.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/prompt-03-target-architecture.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/prompt-04-roadmap.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/prompt-05-operator-ux.md",
+      "docs/06-research/2026-07-04-gpt55-mcp-architecture-investigation/prompt-06-final-synthesis.md"
     ],
     "verify": [
       "python -m json.tool task-packets/TP-DMX-GPT55-MCP-ARCHITECTURE-INVESTIGATION-20260704.json >/dev/null",
@@ -70,12 +85,13 @@
       "requirements": [
         "Digest work on claude/trusting-engelbart-d2fbfe and claude/mcp-fleet-audit-complete.",
         "Separate transcript-derived advisory claims from branch/source evidence.",
-        "Provide a GPT-5.5 Pro web prompt that asks for optimal service/server architecture and integration design."
+        "Provide GPT-5.5 Pro web prompts and input-bundle manifests split into phases so no detail is lost."
       ],
       "validation": [
         "Task Packet validates against dopetask canonical schema.",
         "Markdown artifacts pass pre-commit documentation hooks.",
-        "git diff --check passes."
+        "git diff --check passes.",
+        "Phase prompts preserve stop gates between evidence triage, current-state inventory, branch adjudication, target architecture, roadmap, UX, and final synthesis."
       ],
       "context_files": [
         "AGENTS.md",
