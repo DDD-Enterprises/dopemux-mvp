@@ -135,7 +135,7 @@ def test_decision_required_servers_are_quarantined_from_startable_generated_conf
         re.findall(r'^\[mcp_servers\."([^"]+)"\]$', outputs["codex/config.toml"], re.MULTILINE)
     )
 
-    assert decision_required >= {"desktop-commander", "exa"}
+    assert decision_required >= {"desktop-commander"}
     assert local_servers.isdisjoint(decision_required)
     assert claude_servers.isdisjoint(decision_required)
     assert codex_servers.isdisjoint(decision_required)
@@ -255,8 +255,11 @@ def test_dead_fleet_service_names_are_not_compose_services():
 
     # Kill-list: dead service directories that must never become startable via
     # compose. These exist on disk (services/mcp-integration-bridge, etc.) but
-    # must not be wired into compose.yml.
-    dead_service_names = {"mcp-integration-bridge", "mcp-client", "router"}
+    # must not be wired into compose.yml. `exa`/`mcp-exa` was retired by
+    # ADR-223 (PR #1002 audit found zero client consumers and a broken exec
+    # target); it must never come back as a compose service without a fresh
+    # catalog entry + wiring + a superseding ADR.
+    dead_service_names = {"mcp-integration-bridge", "mcp-client", "router", "exa", "mcp-exa"}
     assert dead_service_names.isdisjoint(services)
 
     # Positive control: known-live compose services must actually be present,
@@ -287,6 +290,12 @@ def test_generated_fleet_outputs_never_reference_dead_service_paths_or_scripts()
 
 def test_mcp_integration_bridge_dockerfile_does_not_exist():
     assert not (REPO_ROOT / "services/mcp-integration-bridge/Dockerfile").exists()
+
+
+def test_exa_mcp_server_source_does_not_exist():
+    """exa was retired by ADR-223: source tree must stay deleted."""
+    assert not (REPO_ROOT / "docker/mcp-servers-source/exa").exists()
+    assert not (REPO_ROOT / "docker/mcp-servers/exa").exists()
 
 
 def test_claude_command_tool_surfaces_are_catalog_known_or_explicit_aliases():
