@@ -68,3 +68,6 @@ NOT_RUN:
 - PR #995 merge unblock follow-up addressed additional review feedback:
   - `.claude/commands/dx/implement.md` now references `mcp__pal__*` instead of the unregistered historical `mcp__zen__*` surface.
   - `mcp_catalog.yaml` no longer suppresses that command-surface drift with a `zen` alias.
+- PR #995 merge unblock follow-up also synced the bundled fallback catalog:
+  - `src/dopemux/mcp/default_catalog.yaml` matches the root `mcp_catalog.yaml`.
+  - The architecture gate now validates bundled catalog schema, root parity, and compose alignment.

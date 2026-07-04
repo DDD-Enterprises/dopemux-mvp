@@ -17,6 +17,21 @@ def test_root_catalog_conforms_to_schema():
     jsonschema.validate(catalog, schema)
 
 
+def test_bundled_default_catalog_stays_in_sync_with_root_catalog():
+    schema = fleet_catalog.load_json_schema(REPO_ROOT / "schemas/mcp/fleet-catalog.schema.json")
+    root_catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+    bundled_catalog = fleet_catalog.load_yaml_no_duplicate_keys(
+        REPO_ROOT / "src/dopemux/mcp/default_catalog.yaml"
+    )
+
+    jsonschema.validate(bundled_catalog, schema)
+    assert bundled_catalog == root_catalog
+    assert fleet_catalog.validate_catalog_compose_alignment_data(
+        bundled_catalog,
+        fleet_catalog.load_compose(REPO_ROOT),
+    ) == []
+
+
 def test_root_catalog_defaults_are_declared_per_worktree_servers():
     catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
     servers = catalog["servers"]

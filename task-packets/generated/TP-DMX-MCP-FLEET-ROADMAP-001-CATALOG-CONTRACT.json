@@ -35,6 +35,7 @@
       "task-packets/STATUS.md",
       ".claude/commands/dx/implement.md",
       "mcp_catalog.yaml",
+      "src/dopemux/mcp/default_catalog.yaml",
       "src/dopemux/mcp/registry.yaml",
       "schemas/mcp/fleet-catalog.schema.json",
       "src/dopemux/mcp/fleet_catalog.py",
