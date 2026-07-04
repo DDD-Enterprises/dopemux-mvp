@@ -11,6 +11,8 @@ prelude: Ready-to-paste GPT-5.5 Pro prompt for MCP architecture design.
 ---
 # GPT-5.5 Pro Web Prompt
 
+This is the one-shot fallback prompt. Prefer `phased-runbook.md` plus the numbered `prompt-*` and `bundle-*` files when context limits or decision risk matter.
+
 You are GPT-5.5 Pro acting as an independent architecture reviewer for the Dopemux MCP/service fleet.
 
 ## Goal
@@ -27,6 +29,7 @@ Use these packet files first:
 4. `transcript-digest.md`
 5. `source-manifest.md`
 6. prior all-services audit package under `docs/06-research/2026-07-04-dopemux-service-investigation/`
+7. recent synthesis attachments listed in `source-manifest.md`, treated as advisory reconciliation notes
 
 Use any raw transcript path only as optional provenance. Do not treat transcript claims as proof unless the source tree, config, tests, or branch diffs support them.
 
@@ -70,6 +73,7 @@ Mark every important claim as `OBSERVED`, `INFERRED`, `PROPOSED`, or `UNKNOWN`.
 10. What should Cockpit/UI surface implicitly, and what should require explicit operator confirmation?
 11. What tests and drift gates prove the architecture?
 12. What is the minimal packetized implementation roadmap, ordered by dependency and risk?
+13. Which decisions must wait for PR #1002 and live reconciliation evidence instead of being designed as if they are merged?
 
 ## Required Output
 
