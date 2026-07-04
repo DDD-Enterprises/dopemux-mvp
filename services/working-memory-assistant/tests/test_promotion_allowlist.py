@@ -123,6 +123,21 @@ class TestPromotionAllowlist:
         """task_failed (underscore) should normalize and promote."""
         assert engine.is_promotable("task_failed") is True
 
+    def test_legacy_call_ids_are_payload_distinct(self, engine):
+        """Legacy call compatibility must not collapse same-type entries."""
+        first = engine.promote(
+            "task.completed",
+            {"task_id": "task-1", "title": "First"},
+        )
+        second = engine.promote(
+            "task.completed",
+            {"task_id": "task-2", "title": "Second"},
+        )
+
+        assert first is not None
+        assert second is not None
+        assert first.source_event_id != second.source_event_id
+
     # ─────────────────────────────────────────────────────────────────
     # Non-allowlisted types should NOT promote
     # ─────────────────────────────────────────────────────────────────

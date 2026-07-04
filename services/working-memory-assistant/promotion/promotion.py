@@ -5,6 +5,8 @@ Converts raw events into curated work log entries based on
 the Phase 1 promotion rules defined in spec 05_promotion_redaction.md.
 """
 
+import hashlib
+import json
 from dataclasses import dataclass
 from typing import Any, Optional
 
@@ -110,7 +112,9 @@ class PromotionEngine:
         return normalized in PROMOTABLE_EVENT_TYPES
 
     def promote(
-        self, event: dict[str, Any]
+        self,
+        event: dict[str, Any] | str,
+        payload: Optional[dict[str, Any]] = None,
     ) -> Optional[PromotedEntry]:
         """Promote a raw event to a work log entry.
 
@@ -123,6 +127,25 @@ class PromotionEngine:
         Raises:
             ValueError: If required provenance fields are missing or contain sentinel values
         """
+        if isinstance(event, str):
+            legacy_payload = payload or {}
+            legacy_fingerprint = json.dumps(
+                legacy_payload,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=True,
+            )
+            legacy_event_id = hashlib.sha256(
+                f"{normalize_event_type(event)}|{legacy_fingerprint}".encode("utf-8")
+            ).hexdigest()
+            event = {
+                "id": f"legacy-{legacy_event_id}",
+                "event_type": event,
+                "source": "promotion_legacy_call",
+                "ts_utc": "1970-01-01T00:00:00+00:00",
+                "payload": legacy_payload,
+            }
+
         # Extract provenance fields from event envelope (Packet D §4.3)
         event_id = event.get("id") or event.get("event_id")
         event_type = event.get("event_type") or event.get("type", "")
