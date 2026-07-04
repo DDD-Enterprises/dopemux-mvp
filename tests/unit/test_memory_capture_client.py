@@ -530,6 +530,11 @@ def test_mode_resolution_config_overrides_context_and_heuristics(monkeypatch):
 
 
 def test_pm_log_decision_emits_decision_logged_after_conport_write(monkeypatch):
+    # Deterministic repo_root resolution: clear workspace env so it resolves to
+    # None (project_id is not a path), independent of the CI/host environment.
+    for _var in ("DOPEMUX_WORKSPACE_ROOT", "WORKSPACE_ID", "DOPEMUX_PROJECT_ROOT"):
+        monkeypatch.delenv(_var, raising=False)
+
     emitted: list[tuple[str, dict, dict]] = []
     conport_calls: list[tuple] = []
 
@@ -576,6 +581,10 @@ def test_pm_log_decision_emits_decision_logged_after_conport_write(monkeypatch):
                 "source": "dopemux.pm",
                 "mode": "auto",
                 "emit_event_bus": None,
+                # Resolved workspace root (None here: no workspace env set and
+                # project_id is not a filesystem path) — threaded so the composed
+                # Task Orchestrator container doesn't drop the event via cwd.
+                "repo_root": None,
             },
         )
     ]
