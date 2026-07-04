@@ -5,10 +5,21 @@ from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
+TRANSITION_PHASE_CAPTURE_DEFAULTS = {
+    "start": "implementation",
+    "started": "implementation",
+    "done": "deployment",
+    "complete": "deployment",
+    "completed": "deployment",
+    "block": "review",
+    "blocked": "review",
+}
+
 from .writes import (
     PMActionKind,
     classify_pm_action,
     classify_pm_write,
+    emit_pm_promotable_source_event,
     is_workflow_significant_payload,
 )
 
@@ -97,6 +108,48 @@ class PMWriteBoundary:
                 transition,
                 payload or {},
             )
+            normalized_transition = str(transition).strip().lower()
+            if normalized_transition in {"done", "complete", "completed"}:
+                emit_pm_promotable_source_event(
+                    "task.completed",
+                    project_id=self.project_id,
+                    work_item_id=work_item_id,
+                    canonical_system="task-orchestrator",
+                    operation_type="transition",
+                    payload={
+                        "title": f"Workflow item {work_item_id}",
+                        "transition": transition,
+                    },
+                )
+            elif normalized_transition in {"block", "blocked"}:
+                emit_pm_promotable_source_event(
+                    "task.blocked",
+                    project_id=self.project_id,
+                    work_item_id=work_item_id,
+                    canonical_system="task-orchestrator",
+                    operation_type="transition",
+                    payload={
+                        "title": f"Workflow item {work_item_id}",
+                        "transition": transition,
+                        "reason": (payload or {}).get("reason", ""),
+                    },
+                )
+            emit_pm_promotable_source_event(
+                "workflow.phase_changed",
+                project_id=self.project_id,
+                work_item_id=work_item_id,
+                canonical_system="task-orchestrator",
+                operation_type="transition",
+                payload={
+                    "from_phase": "unknown",
+                    "to_phase": (payload or {}).get("phase")
+                    or TRANSITION_PHASE_CAPTURE_DEFAULTS.get(
+                        normalized_transition,
+                        "implementation",
+                    ),
+                    "transition": transition,
+                },
+            )
 
             return {
                 "success": True,
@@ -143,7 +196,21 @@ class PMWriteBoundary:
             }
 
         try:
-            await self.conport.record_progress(work_item_id, description, False, payload.get("idempotency_key"))
+            is_decision = payload.get("is_decision") is True
+            await self.conport.record_progress(work_item_id, description, is_decision, payload.get("idempotency_key"))
+            if is_decision:
+                emit_pm_promotable_source_event(
+                    "decision.logged",
+                    project_id=self.project_id,
+                    work_item_id=work_item_id,
+                    canonical_system="conport",
+                    operation_type="log_progress",
+                    payload={
+                        "decision_id": work_item_id,
+                        "title": f"Decision for {work_item_id}",
+                        "rationale": description,
+                    },
+                )
         except Exception as exc:
             logger.error("ConPort progress write failed: %s", exc)
             return {

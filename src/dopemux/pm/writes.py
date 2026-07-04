@@ -7,6 +7,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from dopemux.memory.capture_client import try_emit_promotable_capture_event
+
 from .models import PMTaskStatus, WORKFLOW_SIGNIFICANT_FIELDS
 
 # Phase-1 metadata writes are limited to the fields proven on the active
@@ -60,6 +62,17 @@ TASK_ORCHESTRATOR_TRANSITIONS = {
     PMTaskStatus.IN_PROGRESS: "start",
     PMTaskStatus.BLOCKED: "block",
     PMTaskStatus.DONE: "done",
+}
+
+TASK_STATUS_CAPTURE_EVENTS = {
+    PMTaskStatus.BLOCKED: "task.blocked",
+    PMTaskStatus.DONE: "task.completed",
+}
+
+WORKFLOW_PHASE_CAPTURE_BY_STATUS = {
+    PMTaskStatus.IN_PROGRESS: "implementation",
+    PMTaskStatus.BLOCKED: "review",
+    PMTaskStatus.DONE: "deployment",
 }
 
 
@@ -193,6 +206,35 @@ class PMWriteConfig(BaseModel):
     project_id: str = "default"
 
 
+def emit_pm_promotable_source_event(
+    event_type: str,
+    *,
+    project_id: str,
+    work_item_id: str,
+    canonical_system: str,
+    operation_type: str,
+    payload: Dict[str, Any],
+) -> None:
+    """Emit a best-effort promotable capture event without changing PM authority."""
+
+    event_payload = {
+        **payload,
+        "project_id": project_id,
+        "task_id": work_item_id,
+        "work_item_id": work_item_id,
+        "canonical_system": canonical_system,
+        "operation_type": operation_type,
+        "authority": canonical_system,
+    }
+    try_emit_promotable_capture_event(
+        event_type,
+        event_payload,
+        source="dopemux.pm",
+        mode="auto",
+        emit_event_bus=False,
+    )
+
+
 def pm_update_work_item(
     config: PMWriteConfig,
     task_id: str,
@@ -273,6 +315,37 @@ def pm_transition_work_item(
     except Exception as exc:
         raise RuntimeError(f"Canonical write failed: {exc}") from exc
 
+    emit_pm_promotable_source_event(
+        "workflow.phase_changed",
+        project_id=config.project_id,
+        work_item_id=task_id,
+        canonical_system="task-orchestrator",
+        operation_type=PMActionKind.WORKFLOW_TRANSITION.value,
+        payload={
+            "from_phase": "unknown",
+            "to_phase": WORKFLOW_PHASE_CAPTURE_BY_STATUS.get(new_status, "maintenance"),
+            "status": new_status.value,
+            "transition": transition_name,
+            "reason": reason,
+            "expected_version": expected_version,
+        },
+    )
+    task_event_type = TASK_STATUS_CAPTURE_EVENTS.get(new_status)
+    if task_event_type:
+        emit_pm_promotable_source_event(
+            task_event_type,
+            project_id=config.project_id,
+            work_item_id=task_id,
+            canonical_system="task-orchestrator",
+            operation_type=PMActionKind.WORKFLOW_TRANSITION.value,
+            payload={
+                "title": f"Workflow item {task_id}",
+                "status": new_status.value,
+                "transition": transition_name,
+                "reason": reason,
+            },
+        )
+
     return CanonicalReceipt(
         canonical_system="task-orchestrator",
         canonical_id=task_id,
@@ -309,6 +382,20 @@ def pm_log_progress(
         )
     except Exception as exc:
         raise RuntimeError(f"Canonical write failed: {exc}") from exc
+
+    if is_decision:
+        emit_pm_promotable_source_event(
+            "decision.logged",
+            project_id=config.project_id,
+            work_item_id=task_id,
+            canonical_system="conport",
+            operation_type=operation_type,
+            payload={
+                "decision_id": task_id,
+                "title": f"Decision for {task_id}",
+                "rationale": progress_notes,
+            },
+        )
 
     mirror_success = True
     mirror_error = None
