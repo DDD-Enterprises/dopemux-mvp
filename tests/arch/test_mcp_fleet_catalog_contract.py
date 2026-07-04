@@ -1,3 +1,4 @@
+import json
 import re
 from pathlib import Path
 
@@ -97,6 +98,79 @@ def test_generated_mcp_json_parity_is_checked_against_catalog_renderer():
     errors = fleet_catalog.validate_generated_mcp_json_parity(REPO_ROOT)
 
     assert errors == []
+
+
+def test_decision_required_servers_are_quarantined_from_startable_generated_configs():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+    outputs = fleet_catalog.generate_fleet_output_files(catalog)
+    decision_required = {
+        name
+        for name, spec in catalog["servers"].items()
+        if spec.get("lifecycle") == "decision-required"
+    }
+
+    local_servers = set(json.loads(outputs["local/.mcp.json"])["mcpServers"])
+    claude_servers = set(json.loads(outputs["claude/mcpServers.json"])["mcpServers"])
+    codex_servers = set(
+        re.findall(r'^\[mcp_servers\."([^"]+)"\]$', outputs["codex/config.toml"], re.MULTILINE)
+    )
+
+    assert decision_required == {"desktop-commander", "exa"}
+    assert local_servers.isdisjoint(decision_required)
+    assert claude_servers.isdisjoint(decision_required)
+    assert codex_servers.isdisjoint(decision_required)
+    assert fleet_catalog.validate_decision_required_generated_config_quarantine(
+        catalog,
+        outputs,
+    ) == []
+
+
+def test_decision_required_quarantine_gate_reports_generated_config_drift():
+    catalog = {
+        "version": 1,
+        "defaults": {"per_worktree": ["quarantined-local"]},
+        "servers": {
+            "active-stdio": {
+                "scope": "singleton",
+                "transport": "stdio",
+                "command": "python",
+                "args": ["server.py"],
+                "lifecycle": "active",
+            },
+            "quarantined-stdio": {
+                "scope": "singleton",
+                "transport": "stdio",
+                "command": "python",
+                "args": ["server.py"],
+                "lifecycle": "decision-required",
+                "follow_on_decision": "wire-or-retire",
+            },
+            "quarantined-local": {
+                "scope": "per-worktree",
+                "transport": "http",
+                "url_template": "http://localhost:3999/mcp",
+                "lifecycle": "decision-required",
+                "follow_on_decision": "delete-or-host-run",
+            },
+        },
+    }
+    outputs = {
+        "local/.mcp.json": json.dumps({"mcpServers": {"quarantined-local": {}}}),
+        "claude/mcpServers.json": json.dumps({"mcpServers": {"quarantined-stdio": {}}}),
+        "codex/config.toml": '[mcp_servers."quarantined-stdio"]\ncommand = "python"\n',
+    }
+
+    errors = fleet_catalog.validate_decision_required_generated_config_quarantine(
+        catalog,
+        outputs,
+    )
+
+    assert errors == [
+        "defaults.per_worktree includes decision-required server `quarantined-local`",
+        "local/.mcp.json includes decision-required server `quarantined-local`",
+        "claude/mcpServers.json includes decision-required server `quarantined-stdio`",
+        "codex/config.toml includes decision-required server `quarantined-stdio`",
+    ]
 
 
 def test_claude_command_tool_surfaces_are_catalog_known_or_explicit_aliases():

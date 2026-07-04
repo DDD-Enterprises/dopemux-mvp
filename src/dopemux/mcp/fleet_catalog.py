@@ -28,6 +28,7 @@ class DuplicateKeyError(MCPFleetCatalogError):
 _ENV_DEFAULT_RE = re.compile(r"\$\{[^:}]+:-([0-9]+)\}")
 _ENV_RE = re.compile(r"\$\{[^}]+\}")
 _MCP_TOOL_SURFACE_RE = re.compile(r"\bmcp__([A-Za-z0-9_-]+)__(?:[A-Za-z0-9_-]+|\*)")
+_CODEX_SERVER_HEADING_RE = re.compile(r'^\[mcp_servers\."([^"]+)"\]$', re.MULTILINE)
 
 
 REQUIRED_SERVER_PERSONALITIES: dict[str, dict[str, str]] = {
@@ -146,11 +147,19 @@ def render_per_worktree_mcp_json(
     return mcp_commands._build_local_mcp_json(server_names, catalog)
 
 
+def _is_decision_required(spec: dict[str, Any]) -> bool:
+    return spec.get("lifecycle") == "decision-required"
+
+
+def _is_startable_generated_server(spec: dict[str, Any]) -> bool:
+    return not _is_decision_required(spec)
+
+
 def render_singleton_mcp_servers(catalog: dict[str, Any]) -> dict[str, Any]:
     return {
         name: mcp_commands._render_global_entry(name, spec)
         for name, spec in catalog["servers"].items()
-        if spec.get("scope") == "singleton"
+        if spec.get("scope") == "singleton" and _is_startable_generated_server(spec)
     }
 
 
@@ -184,6 +193,8 @@ def render_codex_config_fragment(catalog: dict[str, Any]) -> str:
     ]
     for name, spec in sorted(catalog.get("servers", {}).items()):
         if spec.get("scope") != "singleton":
+            continue
+        if not _is_startable_generated_server(spec):
             continue
         transport = spec.get("transport", "http")
         if transport not in {"stdio", "http"}:
@@ -245,6 +256,7 @@ def render_mcp_doctrine_doc(catalog: dict[str, Any]) -> str:
         "- Dry-run is the default; writes require `dopemux mcp generate --apply --output-dir <dir>`.",
         "- Generated outputs are projections, not user-global authority.",
         "- Unknown external config entries are preserved by sync flows unless pruning is explicit.",
+        "- `decision-required` servers stay visible in audit outputs but are excluded from startable generated configs.",
         "",
         "## Default Per-Worktree Servers",
         "",
@@ -300,6 +312,49 @@ def generate_fleet_output_files(catalog: dict[str, Any]) -> dict[str, str]:
         "health/mcp-health-probes.json": _json_dumps(render_health_probe_list(catalog)),
         "docs/mcp-fleet.md": render_mcp_doctrine_doc(catalog),
     }
+
+
+def _json_mcp_server_names(payload: str) -> set[str]:
+    data = json.loads(payload)
+    servers = data.get("mcpServers") or {}
+    if not isinstance(servers, dict):
+        return set()
+    return set(servers)
+
+
+def validate_decision_required_generated_config_quarantine(
+    catalog: dict[str, Any],
+    outputs: dict[str, str] | None = None,
+) -> list[str]:
+    """Ensure unresolved MCP surfaces cannot be started from generated configs."""
+
+    errors: list[str] = []
+    servers = catalog.get("servers") or {}
+    decision_required = {
+        name
+        for name, spec in servers.items()
+        if isinstance(spec, dict) and _is_decision_required(spec)
+    }
+
+    for name in catalog.get("defaults", {}).get("per_worktree") or []:
+        if name in decision_required:
+            errors.append(f"defaults.per_worktree includes decision-required server `{name}`")
+
+    rendered = outputs or generate_fleet_output_files(catalog)
+    startable_outputs = {
+        "local/.mcp.json": _json_mcp_server_names(rendered.get("local/.mcp.json", "{}")),
+        "claude/mcpServers.json": _json_mcp_server_names(
+            rendered.get("claude/mcpServers.json", "{}")
+        ),
+        "codex/config.toml": set(
+            _CODEX_SERVER_HEADING_RE.findall(rendered.get("codex/config.toml", ""))
+        ),
+    }
+    for output_path, names in startable_outputs.items():
+        for name in sorted(names & decision_required):
+            errors.append(f"{output_path} includes decision-required server `{name}`")
+
+    return errors
 
 
 def known_tool_surfaces(catalog: dict[str, Any]) -> set[str]:
