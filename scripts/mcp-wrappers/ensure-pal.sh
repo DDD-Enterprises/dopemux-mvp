@@ -56,14 +56,29 @@ fi
 
 stopped_id="$(docker ps -aq --filter "name=^${CONTAINER_NAME}$" || true)"
 if [[ -n "${stopped_id}" ]]; then
-  docker start "${CONTAINER_NAME}" >/dev/null
-  printf 'ensure-pal: started existing (stopped) %s (Codex consumer)\n' "${CONTAINER_NAME}" >&2
-  exit 0
+  # Try to start the existing container, then VERIFY it stayed up. A stale
+  # container created before this script with the image's default stdio
+  # command (`python server.py`) exits immediately on closed stdin when
+  # started detached, so `docker start` returning 0 does NOT mean the Codex
+  # consumer is actually running. Only report success if it is still running;
+  # otherwise remove it and fall through to recreate with the sleep entrypoint.
+  docker start "${CONTAINER_NAME}" >/dev/null 2>&1 || true
+  sleep 1
+  if [[ -n "$(docker ps -q --filter "name=^${CONTAINER_NAME}$" || true)" ]]; then
+    printf 'ensure-pal: started existing (stopped) %s (Codex consumer)\n' "${CONTAINER_NAME}" >&2
+    exit 0
+  fi
+  printf 'ensure-pal: existing %s exited after start (stale command); recreating\n' "${CONTAINER_NAME}" >&2
+  docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
 fi
 
 if ! docker image inspect "${IMAGE_REF}" >/dev/null 2>&1; then
-  die "image ${IMAGE_REF} not found locally. Build it first, e.g.: \
-docker build -t ${IMAGE_REF} -f docker/mcp-servers/pal/Dockerfile ${ROOT_DIR}"
+  die "image ${IMAGE_REF} not found locally. Build it from your standalone \
+pal-mcp-server checkout, which produces the /opt/venv stdio image Codex execs \
+into — from that checkout directory run: docker compose up -d --build. \
+(The in-repo docker/mcp-servers/pal/Dockerfile builds a different /app/.venv \
+HTTP-wrapper image for the compose 'pal' service and is NOT a substitute for \
+this container.)"
 fi
 
 env_file_args=()
@@ -77,7 +92,7 @@ fi
 docker run -d \
   --name "${CONTAINER_NAME}" \
   --restart unless-stopped \
-  "${env_file_args[@]}" \
+  "${env_file_args[@]+"${env_file_args[@]}"}" \
   --entrypoint sleep \
   "${IMAGE_REF}" \
   infinity >/dev/null
