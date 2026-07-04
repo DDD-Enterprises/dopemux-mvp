@@ -82,6 +82,8 @@ def test_emit_pm_promotable_source_event_resolves_repo_root_from_workspace_env(
         return None
 
     monkeypatch.setattr(pm_writes, "try_emit_promotable_capture_event", _fake_try_emit)
+    # A capture-capable root has a marker; a bare dir must be rejected.
+    (tmp_path / ".dopemux").mkdir()
     monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
 
     pm_writes.emit_pm_promotable_source_event(
@@ -94,6 +96,34 @@ def test_emit_pm_promotable_source_event_resolves_repo_root_from_workspace_env(
     )
 
     assert captured_kwargs["repo_root"] == tmp_path
+
+
+def test_emit_pm_promotable_source_event_rejects_bare_non_repo_workspace_root(
+    tmp_path, monkeypatch
+):
+    """A bare existing dir (e.g. the container's /app) is not capture-capable and
+    must resolve to None rather than deferring the failure into WMA loading."""
+
+    captured_kwargs: Dict[str, Any] = {}
+
+    def _fake_try_emit(event_type, payload, **kwargs):
+        captured_kwargs.update(kwargs)
+        return None
+
+    monkeypatch.setattr(pm_writes, "try_emit_promotable_capture_event", _fake_try_emit)
+    # tmp_path exists but has no .git/.dopemux/WMA schema — not capture-capable.
+    monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
+
+    pm_writes.emit_pm_promotable_source_event(
+        "decision.logged",
+        project_id="proj-1",
+        work_item_id="task-1",
+        canonical_system="conport",
+        operation_type="decision_log",
+        payload={"decision_id": "task-1", "title": "t", "rationale": "r"},
+    )
+
+    assert captured_kwargs["repo_root"] is None
 
 
 def test_pm_transition_work_item_uses_emit_event_bus_none_end_to_end(monkeypatch):
