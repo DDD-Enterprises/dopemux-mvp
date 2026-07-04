@@ -68,7 +68,7 @@ def test_global_command_renderer_excludes_decision_required_singletons():
 
     servers = mcp_commands._build_global_mcp_servers(catalog)
 
-    assert {"desktop-commander", "exa"}.isdisjoint(servers)
+    assert {"desktop-commander"}.isdisjoint(servers)
     assert servers == fleet_catalog.render_singleton_mcp_servers(catalog)
 
 
@@ -231,5 +231,4 @@ def test_mcp_doctrine_doc_carries_decision_gated_servers():
     catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
     doc = fleet_catalog.render_mcp_doctrine_doc(catalog)
 
-    assert "`exa` | research | web-search | decision-required" in doc
     assert "`desktop-commander` | automation | desktop-automation | decision-required" in doc

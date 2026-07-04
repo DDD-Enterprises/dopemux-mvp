@@ -80,14 +80,6 @@ REQUIRED_SERVER_PERSONALITIES: dict[str, dict[str, str]] = {
         "identity_scope": "singleton",
         "follow_on_decision": "none",
     },
-    "exa": {
-        "plane": "research",
-        "authority_role": "web-search",
-        "lifecycle": "decision-required",
-        "management_model": "docker-exec",
-        "identity_scope": "external-provider",
-        "follow_on_decision": "wire-or-retire",
-    },
     "desktop-commander": {
         "plane": "automation",
         "authority_role": "desktop-automation",
