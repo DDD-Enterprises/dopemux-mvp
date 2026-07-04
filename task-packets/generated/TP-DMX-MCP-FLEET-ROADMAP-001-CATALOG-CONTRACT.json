@@ -1,0 +1,144 @@
+{
+  "id": "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT",
+  "project": "dopemux-mvp",
+  "target": "Establish the first mergeable MCP fleet roadmap slice: a canonical catalog contract and static drift gates that prevent config, compose, registry, and command/tool-surface divergence before later runtime remediation.",
+  "invariants": [
+    "No live MCP server calls, provider calls, Docker mutation, Task Orchestrator writes, ConPort writes, dope-memory writes, dope-context index mutation, or GitHub mutation.",
+    "Do not change runtime server behavior in this packet.",
+    "Do not delete, archive, or deprecate server implementations in this packet.",
+    "Treat PR 993 audit content as advisory evidence unless runtime code, config, tests, or committed docs support the claim.",
+    "Preserve split authority across dopemux, task-orchestrator, ConPort, dope-memory, dope-context, dopecon-bridge, and DCP."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-FLEET-ROADMAP",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-fleet-contract-gates",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "test(mcp): gate canonical fleet catalog drift",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-*.json",
+      "task-packets/INDEX.md",
+      "task-packets/STATUS.md",
+      ".claude/commands/dx/implement.md",
+      "mcp_catalog.yaml",
+      "src/dopemux/mcp/default_catalog.yaml",
+      "src/dopemux/mcp/registry.yaml",
+      "schemas/mcp/fleet-catalog.schema.json",
+      "src/dopemux/mcp/fleet_catalog.py",
+      "tests/arch/test_mcp_fleet_catalog_contract.py",
+      "tests/unit/test_mcp_fleet_catalog.py",
+      "proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-003-MCP-ENSURE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-004-MEMORY-SPINE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-006-DCP-ACTIVATION.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -c \"import json; from pathlib import Path; from jsonschema.validators import Draft202012Validator; Draft202012Validator.check_schema(json.loads(Path('schemas/mcp/fleet-catalog.schema.json').read_text()))\"",
+      "python -m pytest tests/unit/test_mcp_fleet_catalog.py tests/arch/test_mcp_fleet_catalog_contract.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "test(mcp): gate canonical fleet catalog drift",
+    "body": "## Summary\n- Adds the MCP fleet roadmap packet series derived from PR 993 investigation.\n- Adds a canonical MCP fleet catalog contract and static drift gates for catalog, compose, registry, and generated config surfaces.\n- Keeps runtime remediation out of this first slice.\n\n## Validation\n- Task packets validate against dopetask-canonical-spec.json.\n- Fleet catalog schema validates.\n- Focused MCP catalog tests pass.\n- git diff --check passes.\n\n## NOT_RUN\n- Live MCP handshakes.\n- Docker health checks.\n- Provider/network validation.\n\n@codex review",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "preflight",
+      "task": "Verify dedicated worktree identity, branch, dirty state, repo marker, PR 993 live state, and relevant catalog/runtime surfaces before editing.",
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "PM_PLANE.md",
+        "mcp_catalog.yaml",
+        "services/registry.yaml",
+        "src/dopemux/mcp/registry.yaml",
+        "src/dopemux/commands/mcp_commands.py",
+        "tests/arch/test_registry_compose_alignment.py",
+        "tests/unit/test_mcp_commands_catalog.py"
+      ],
+      "validation": [
+        "Repo identity, branch, worktree path, and PR 993 state are recorded in implementation proof."
+      ]
+    },
+    {
+      "id": "packet_series",
+      "task": "Create the seven-packet MCP fleet roadmap series with packet 001 scoped to catalog contract and static drift gates.",
+      "expected_files": [
+        "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT.json",
+        "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS.json",
+        "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-003-MCP-ENSURE.json",
+        "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-004-MEMORY-SPINE.json",
+        "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES.json",
+        "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-006-DCP-ACTIVATION.json",
+        "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE.json"
+      ],
+      "validation": [
+        "All seven packets validate against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json."
+      ]
+    },
+    {
+      "id": "red_tests",
+      "task": "Add failing tests for canonical catalog loading, duplicate-key rejection, compose alignment, legacy registry parity, health URL contract, generated .mcp.json parity, singleton rendering parity, and command/tool-surface drift placeholders.",
+      "expected_files": [
+        "tests/unit/test_mcp_fleet_catalog.py",
+        "tests/arch/test_mcp_fleet_catalog_contract.py"
+      ],
+      "validation": [
+        "Focused tests fail before implementation for missing fleet catalog module/schema."
+      ]
+    },
+    {
+      "id": "contract",
+      "task": "Implement the minimal fleet catalog schema and loader/validator needed to pass static drift-gate tests without changing runtime behavior.",
+      "expected_files": [
+        "schemas/mcp/fleet-catalog.schema.json",
+        "src/dopemux/mcp/fleet_catalog.py"
+      ],
+      "validation": [
+        "Focused tests pass and detect intentionally invalid duplicate or drift fixtures."
+      ]
+    },
+    {
+      "id": "proof",
+      "task": "Create implementation notes and run focused validation plus diff checks.",
+      "expected_files": [
+        "proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT/implementation-notes.md"
+      ],
+      "validation": [
+        "Validation output records PASS/FAIL/NOT_RUN truthfully.",
+        "git diff --check passes."
+      ]
+    }
+  ]
+}
