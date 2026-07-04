@@ -45,6 +45,23 @@ _SCHEMA: dict = load_schema("merge_readiness.schema.json")
 
 _VALIDATOR = Draft202012Validator(_SCHEMA)
 
+_INTAKE_COMPLETENESS_CATEGORIES = (
+    "pr_metadata",
+    "head_sha",
+    "changed_files",
+    "commits",
+    "reviews",
+    "review_comments",
+    "review_threads",
+    "issue_comments",
+    "checks",
+    "proof_refs",
+    "proof_freshness",
+    "reviewer_classifications",
+    "allowlist",
+    "security_release_approval",
+)
+
 # ---------------------------------------------------------------------------
 # Write-operation prohibition — this module is READ-ONLY.
 # No merge, push, commit, or PR-state-mutation commands are issued here.
@@ -83,6 +100,20 @@ def _default_runner(args: list[str]) -> str:
             f"gh command failed (exit {result.returncode}): {result.stderr.strip()}"
         )
     return result.stdout.strip()
+
+
+def _derive_intake_completeness(intake: dict) -> dict[str, str]:
+    explicit = intake.get("intake_completeness")
+    if not isinstance(explicit, dict):
+        explicit = {}
+
+    completeness: dict[str, str] = {}
+    for category in _INTAKE_COMPLETENESS_CATEGORIES:
+        value = explicit.get(category, "MISSING")
+        if value not in {"COMPLETE", "MISSING", "UNKNOWN", "NOT_REQUIRED"}:
+            value = "UNKNOWN"
+        completeness[category] = value
+    return completeness
 
 
 # ---------------------------------------------------------------------------
@@ -137,6 +168,10 @@ def assess_merge_readiness(
         blocked.append("MISSING_REQUIRED_INTAKE")
     if not isinstance(intake, dict):
         intake = {}
+
+    intake_completeness = _derive_intake_completeness(intake)
+    if any(state != "COMPLETE" for state in intake_completeness.values()):
+        blocked.append("INCOMPLETE_INTAKE")
 
     # ------------------------------------------------------------------
     # Rule 1: proof_freshness != FRESH → STALE_PROOF
@@ -224,6 +259,7 @@ def assess_merge_readiness(
     # ------------------------------------------------------------------
     canonical_intake: dict[str, Any] = {
         "changed_files": intake.get("changed_files", []),
+        "intake_completeness": intake_completeness,
         "commits": intake.get("commits", []),
         "checks": checks,
         "reviews": intake.get("reviews", []),
@@ -378,6 +414,22 @@ def harvest_pr_intake(
     proof_freshness = "MISSING"
 
     intake: dict[str, Any] = {
+        "intake_completeness": {
+            "pr_metadata": "COMPLETE",
+            "head_sha": "COMPLETE",
+            "changed_files": "COMPLETE",
+            "commits": "COMPLETE",
+            "reviews": "COMPLETE",
+            "review_comments": "MISSING",
+            "review_threads": "COMPLETE",
+            "issue_comments": "MISSING",
+            "checks": "COMPLETE",
+            "proof_refs": "MISSING",
+            "proof_freshness": "MISSING",
+            "reviewer_classifications": "COMPLETE",
+            "allowlist": "MISSING",
+            "security_release_approval": "MISSING",
+        },
         "changed_files": changed_files,
         "commits": commits,
         "checks": checks,

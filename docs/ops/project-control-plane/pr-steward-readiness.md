@@ -45,6 +45,7 @@ Module: `src/dopemux/pcp/pr_steward.py`
 
 | Field | Type | Description |
 |---|---|---|
+| `intake_completeness` | object | Category-level completeness states for PR metadata, SHA, diff, review, comment, check, proof, allowlist, and security/release evidence |
 | `changed_files` | array of string | Paths changed in the PR diff |
 | `commits` | array of string | Commit SHAs in the PR |
 | `checks` | array of objects | CI check results with `name`, `conclusion`, `stale_to_head` |
@@ -77,6 +78,7 @@ READY is withheld when **any** of the following conditions holds.
 | `DIFF_OUTSIDE_ALLOWLIST` | `diff_escapes_allowlist == true` |
 | `MISSING_SECURITY_RELEASE_APPROVAL` | `security_release_required == true` and `security_release_approved == false` |
 | `MISSING_REQUIRED_INTAKE` | `intake` is `null`, missing, or `head_sha` is falsy |
+| `INCOMPLETE_INTAKE` | Any `intake_completeness` category is not `COMPLETE` |
 | `UNKNOWN` | Reserved for unclassifiable blocking conditions |
 
 ### Status derivation
@@ -91,7 +93,7 @@ READY is withheld when **any** of the following conditions holds.
 
 The schema enforces these rules structurally via `allOf` if/then constraints:
 
-- **Gate (a)**: `status == READY` requires `blocked_reasons maxItems 0`, `proof_freshness const "FRESH"`, and `diff_escapes_allowlist const false`.
+- **Gate (a)**: `status == READY` requires `blocked_reasons maxItems 0`, every `intake_completeness` category `const "COMPLETE"`, `proof_freshness const "FRESH"`, and `diff_escapes_allowlist const false`.
 - **Gate (b)**: `status` in `{BLOCKED, NEEDS_SUPERVISOR}` requires `blocked_reasons minItems 1`.
 - **Gate (c)**: `proof_freshness` in `{STALE, MISSING, UNKNOWN}` forces `status` to `{BLOCKED, NEEDS_SUPERVISOR}`.
 - **Gate (d)**: `diff_escapes_allowlist == true` forces `status` to `{BLOCKED, NEEDS_SUPERVISOR}`.
@@ -131,7 +133,7 @@ result = harvest_pr_intake(
 
 Read-only harvester using `gh pr view`. Returns `{pr_ref, head_sha, intake}`. The `runner` parameter accepts a callable for injecting a fake in tests — no real subprocess runs in unit tests.
 
-> **Note**: The raw harvest always returns `proof_freshness="MISSING"` because proof artifact references are not available from `gh pr view`. A harvested-only signal therefore can never be `READY` — callers must supply proof freshness externally (e.g., by reading a proof artifact and comparing its recorded `head_sha` against the PR head SHA before calling `assess_merge_readiness`).
+> **Note**: The raw harvest marks proof refs, proof freshness, review comments, issue comments, allowlist, and security/release approval as incomplete because `gh pr view` alone does not prove those categories. A harvested-only signal therefore can never be `READY` — callers must supply complete category evidence externally (for example, by reading proof artifacts, review/comment surfaces, allowlist results, and security/release approvals before calling `assess_merge_readiness`).
 
 > **Note**: `stale_to_head` is derived from check conclusion only (`STALE`, `PENDING`, or `UNKNOWN` conclusions set it to `true`). The `gh statusCheckRollup` response is semantically head-scoped, so per-check SHA comparison is not attempted — `gh` does not expose an individual check-run SHA.
 

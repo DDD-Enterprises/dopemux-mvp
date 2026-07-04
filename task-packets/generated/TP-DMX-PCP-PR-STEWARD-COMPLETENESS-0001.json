@@ -1,0 +1,95 @@
+{
+  "id": "TP-DMX-PCP-PR-STEWARD-COMPLETENESS-0001",
+  "project": "dopemux-mvp",
+  "target": "Harden PCP Core PR Steward so READY requires explicit completeness for proof, review/comment, check, allowlist, and security/release evidence categories. PR Steward remains advisory and read-only.",
+  "invariants": [
+    "Runtime, GitHub, and PR truth outrank this packet; re-pull live state before execution.",
+    "PR Steward is advisory only and must not merge, ready, push, or mutate GitHub or repository state.",
+    "Green CI is not semantic proof.",
+    "READY must be withheld when required evidence categories are missing, unknown, or not proven complete.",
+    "Harvested-only gh pr view intake is incomplete by design and must not emit READY.",
+    "Bundled PCP schemas must stay in parity with canonical project-control-plane schemas for installed-wheel behavior."
+  ],
+  "depends_on": [
+    "TP-DMX-PCP-PR-STEWARD-PROOF-READINESS-0001"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PCP-DCP-ROUTING",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PCP-PR-STEWARD-PROOF-READINESS-0001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/pcp-pr-steward-completeness",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(pcp): block readiness on incomplete PR Steward intake",
+    "allowlist": [
+      "src/dopemux/pcp/pr_steward.py",
+      "schemas/project_control_plane/merge_readiness.schema.json",
+      "src/dopemux/pcp/_schemas/merge_readiness.schema.json",
+      "tests/project_control_plane/test_pr_steward.py",
+      "docs/ops/project-control-plane/pr-steward-readiness.md",
+      "task-packets/generated/TP-DMX-PCP-PR-STEWARD-COMPLETENESS-0001.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-PCP-PR-STEWARD-COMPLETENESS-0001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-PCP-PR-STEWARD-COMPLETENESS-0001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest -q tests/project_control_plane/test_pr_steward.py",
+      "python -m pytest -q tests/project_control_plane",
+      "python -m compileall -q src/dopemux/pcp tests/project_control_plane",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(pcp): block readiness on incomplete PR Steward intake",
+    "body": "Adds intake completeness gating to PCP Core PR Steward. READY remains advisory and is blocked unless required evidence categories are complete. Harvested-only gh pr view intake stays incomplete and cannot become merge authority.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Add tests proving incomplete evidence categories block READY and schema rejects handcrafted READY with incomplete intake.",
+      "validation": [
+        "python -m pytest -q tests/project_control_plane/test_pr_steward.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add fail-closed intake_completeness derivation to PR Steward runtime and schema, including bundled schema parity.",
+      "validation": [
+        "python -m pytest -q tests/project_control_plane",
+        "python -m compileall -q src/dopemux/pcp tests/project_control_plane"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Document that harvested-only PR Steward intake is incomplete and advisory, not merge authority.",
+      "validation": [
+        "pre-commit run --files src/dopemux/pcp/pr_steward.py schemas/project_control_plane/merge_readiness.schema.json src/dopemux/pcp/_schemas/merge_readiness.schema.json tests/project_control_plane/test_pr_steward.py docs/ops/project-control-plane/pr-steward-readiness.md"
+      ]
+    }
+  ]
+}
