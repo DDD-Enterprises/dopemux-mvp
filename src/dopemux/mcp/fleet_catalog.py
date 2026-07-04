@@ -151,16 +151,8 @@ def _is_decision_required(spec: dict[str, Any]) -> bool:
     return spec.get("lifecycle") == "decision-required"
 
 
-def _is_startable_generated_server(spec: dict[str, Any]) -> bool:
-    return not _is_decision_required(spec)
-
-
 def render_singleton_mcp_servers(catalog: dict[str, Any]) -> dict[str, Any]:
-    return {
-        name: mcp_commands._render_global_entry(name, spec)
-        for name, spec in catalog["servers"].items()
-        if spec.get("scope") == "singleton" and _is_startable_generated_server(spec)
-    }
+    return mcp_commands._build_global_mcp_servers(catalog)
 
 
 def _json_dumps(data: Any) -> str:
@@ -194,7 +186,7 @@ def render_codex_config_fragment(catalog: dict[str, Any]) -> str:
     for name, spec in sorted(catalog.get("servers", {}).items()):
         if spec.get("scope") != "singleton":
             continue
-        if not _is_startable_generated_server(spec):
+        if _is_decision_required(spec):
             continue
         transport = spec.get("transport", "http")
         if transport not in {"stdio", "http"}:
@@ -317,9 +309,17 @@ def generate_fleet_output_files(catalog: dict[str, Any]) -> dict[str, str]:
 def _json_mcp_server_names(payload: str) -> set[str]:
     data = json.loads(payload)
     servers = data.get("mcpServers") or {}
-    if not isinstance(servers, dict):
-        return set()
-    return set(servers)
+    if isinstance(servers, dict):
+        return set(servers)
+    if isinstance(servers, list):
+        names: set[str] = set()
+        for server in servers:
+            if isinstance(server, str):
+                names.add(server)
+            elif isinstance(server, dict) and isinstance(server.get("name"), str):
+                names.add(server["name"])
+        return names
+    return set()
 
 
 def validate_decision_required_generated_config_quarantine(
@@ -340,7 +340,7 @@ def validate_decision_required_generated_config_quarantine(
         if name in decision_required:
             errors.append(f"defaults.per_worktree includes decision-required server `{name}`")
 
-    rendered = outputs or generate_fleet_output_files(catalog)
+    rendered = outputs if outputs is not None else generate_fleet_output_files(catalog)
     startable_outputs = {
         "local/.mcp.json": _json_mcp_server_names(rendered.get("local/.mcp.json", "{}")),
         "claude/mcpServers.json": _json_mcp_server_names(

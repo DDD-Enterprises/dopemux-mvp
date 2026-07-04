@@ -438,6 +438,20 @@ def _render_global_entry(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
     return entry
 
 
+def _is_startable_global_entry(spec: Dict[str, Any]) -> bool:
+    return spec.get("lifecycle") != "decision-required"
+
+
+def _build_global_mcp_servers(catalog: Dict[str, Any]) -> Dict[str, Any]:
+    """Construct startable singleton MCP entries for global client config."""
+
+    return {
+        name: _render_global_entry(name, spec)
+        for name, spec in catalog["servers"].items()
+        if spec.get("scope") == "singleton" and _is_startable_global_entry(spec)
+    }
+
+
 def _read_json(path: Path) -> Dict[str, Any]:
     if not path.exists():
         return {}
@@ -1151,11 +1165,7 @@ def mcp_sync_globals_cmd(apply: bool, prune: bool):
     Pass --prune to remove existing globals that aren't in the catalog.
     """
     catalog = _load_catalog()
-    desired = {
-        name: _render_global_entry(name, spec)
-        for name, spec in catalog["servers"].items()
-        if spec.get("scope") == "singleton"
-    }
+    desired = _build_global_mcp_servers(catalog)
 
     global_path = _claude_global_path()
     global_data = _read_json(global_path) if global_path.exists() else {}

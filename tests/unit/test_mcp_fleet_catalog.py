@@ -58,13 +58,18 @@ def test_fleet_renderer_matches_existing_mcp_command_renderer():
 def test_singleton_fragment_matches_existing_mcp_command_renderer():
     catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
 
-    expected = {
-        name: mcp_commands._render_global_entry(name, spec)
-        for name, spec in catalog["servers"].items()
-        if spec["scope"] == "singleton" and spec.get("lifecycle") != "decision-required"
-    }
+    expected = mcp_commands._build_global_mcp_servers(catalog)
 
     assert fleet_catalog.render_singleton_mcp_servers(catalog) == expected
+
+
+def test_global_command_renderer_excludes_decision_required_singletons():
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+
+    servers = mcp_commands._build_global_mcp_servers(catalog)
+
+    assert {"desktop-commander", "exa"}.isdisjoint(servers)
+    assert servers == fleet_catalog.render_singleton_mcp_servers(catalog)
 
 
 def test_known_tool_surfaces_include_catalog_servers_and_explicit_aliases():
@@ -98,11 +103,6 @@ def test_extract_mcp_tool_surfaces_includes_wildcard_references():
 
 def test_generate_fleet_output_files_are_deterministic_and_catalog_backed():
     catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
-    startable_singletons = {
-        name: spec
-        for name, spec in catalog["servers"].items()
-        if spec.get("scope") == "singleton" and spec.get("lifecycle") != "decision-required"
-    }
 
     outputs = fleet_catalog.generate_fleet_output_files(catalog)
 
@@ -118,10 +118,7 @@ def test_generate_fleet_output_files_are_deterministic_and_catalog_backed():
         catalog,
     )
     assert json.loads(outputs["claude/mcpServers.json"]) == {
-        "mcpServers": {
-            name: mcp_commands._render_global_entry(name, spec)
-            for name, spec in startable_singletons.items()
-        }
+        "mcpServers": fleet_catalog.render_singleton_mcp_servers(catalog)
     }
     assert outputs == fleet_catalog.generate_fleet_output_files(catalog)
 

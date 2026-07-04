@@ -50,6 +50,15 @@ The static gate `validate_decision_required_generated_config_quarantine` fails i
 - `claude/mcpServers.json`
 - `codex/config.toml`
 
+Review follow-up:
+
+- `dopemux mcp sync-globals --apply` now uses the same startable singleton
+  renderer as generated Claude global config, so it cannot reintroduce
+  `decision-required` singletons into `~/.claude.json`.
+- The quarantine validator treats caller-provided empty output maps as real
+  validation input and recognizes both mapping-shaped and list-shaped
+  `mcpServers` payloads.
+
 ## Validation
 
 PASS:
@@ -57,9 +66,9 @@ PASS:
 - `python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`
 - `python -m pytest tests/arch/test_mcp_fleet_catalog_contract.py -q`
 - `python -m pytest tests/unit/test_mcp_fleet_catalog.py -q`
-- `python -m py_compile src/dopemux/mcp/fleet_catalog.py`
+- `python -m py_compile src/dopemux/mcp/fleet_catalog.py src/dopemux/commands/mcp_commands.py`
 - `git diff --check`
-- `pre-commit run --files src/dopemux/mcp/fleet_catalog.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_fleet_catalog.py task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE.json proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE/implementation-notes.md`
+- `pre-commit run --files src/dopemux/commands/mcp_commands.py src/dopemux/mcp/fleet_catalog.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_fleet_catalog.py task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE.json proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE/implementation-notes.md`
 
 NOT_RUN:
 

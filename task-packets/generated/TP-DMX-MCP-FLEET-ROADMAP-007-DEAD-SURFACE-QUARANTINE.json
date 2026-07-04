@@ -37,6 +37,7 @@
       "SYSTEM_ARCHIVE/**",
       "mcp_catalog.yaml",
       "services/registry.yaml",
+      "src/dopemux/commands/mcp_commands.py",
       "src/dopemux/mcp/**",
       "scripts/mcp/**",
       "docker/mcp-servers-source/**",
