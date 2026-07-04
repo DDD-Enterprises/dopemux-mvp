@@ -14,16 +14,24 @@ Covers TP-DMX-MCP-FLEET-ROADMAP-004-MEMORY-SPINE Step 2 follow-up:
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any, Dict
-from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from dopemux.pm import writes as pm_writes
 from dopemux.pm.models import PMTaskStatus
-from dopemux.pm.writes import PMWriteConfig, pm_log_decision, pm_transition_work_item
+from dopemux.pm.writes import PMWriteConfig, pm_transition_work_item
+
+
+@pytest.fixture(autouse=True)
+def _hermetic_capture_ledger(tmp_path, monkeypatch):
+    """Redirect the capture ledger to a temp path so tests that exercise the
+    real emit path never create/modify ``.dopemux/chronicle.sqlite`` under the
+    working tree."""
+    monkeypatch.setenv(
+        "DOPEMUX_CAPTURE_LEDGER_PATH", str(tmp_path / "chronicle.sqlite")
+    )
 
 
 class _RecordingOrchestrator:
