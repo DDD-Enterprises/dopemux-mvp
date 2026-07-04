@@ -575,7 +575,7 @@ def test_pm_log_decision_emits_decision_logged_after_conport_write(monkeypatch):
             {
                 "source": "dopemux.pm",
                 "mode": "auto",
-                "emit_event_bus": False,
+                "emit_event_bus": None,
             },
         )
     ]

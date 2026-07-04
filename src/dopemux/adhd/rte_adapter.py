@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Optional
 
 import httpx
 
+from dopemux.memory.capture_client import try_emit_promotable_capture_event
+
 try:
     from src.dopemux.adhd.attention_monitor import AttentionMonitor
     from src.dopemux.adhd.task_decomposer import TaskDecomposer
@@ -46,13 +48,55 @@ class RTEAdapter:
     async def write_decision_to_conport(
         self, decision_data: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Write truth artifacts as 'decisions' into ConPort KG."""
+        """Write truth artifacts as 'decisions' into ConPort KG.
+
+        On success, also emits a best-effort ``decision.logged`` promotable
+        source event so this write is promotion-CAPABLE when the event bus is
+        provisioned (ENABLE_EVENTBUS + REDIS_URL); default dev environments
+        remain ledger-only (see ``pm.writes.emit_pm_promotable_source_event``
+        for the same pattern). Emission is fail-open: a capture failure never
+        surfaces as a ConPort write failure.
+        """
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.conport_url}/api/decisions", json=decision_data, timeout=10.0
             )
             response.raise_for_status()
-            return response.json()
+            result = response.json()
+
+        self._emit_decision_logged_event(decision_data, result)
+        return result
+
+    def _emit_decision_logged_event(
+        self, decision_data: Dict[str, Any], conport_result: Dict[str, Any]
+    ) -> None:
+        """Best-effort, fail-open emit of the decision.logged source event."""
+        try:
+            decision_id = (
+                conport_result.get("decision_id")
+                or conport_result.get("id")
+                or decision_data.get("decision_id")
+                or decision_data.get("id")
+                or decision_data.get("title")
+            )
+            title = decision_data.get("title") or "RTE decision"
+            rationale = decision_data.get("rationale") or decision_data.get("summary") or ""
+            try_emit_promotable_capture_event(
+                "decision.logged",
+                {
+                    "decision_id": str(decision_id) if decision_id is not None else title,
+                    "title": title,
+                    "rationale": rationale,
+                    "canonical_system": "conport",
+                    "operation_type": "decision_log",
+                    "authority": "conport",
+                },
+                source="dopemux.rte_adapter",
+                mode="auto",
+                emit_event_bus=None,
+            )
+        except Exception as exc:  # pragma: no cover - defensive, fail-open
+            logger.debug("decision.logged capture emit failed: %s", exc)
 
     async def process_truth_with_adhd_context(
         self, artifact_type: str = "doctor/DOCTOR_FULL"
