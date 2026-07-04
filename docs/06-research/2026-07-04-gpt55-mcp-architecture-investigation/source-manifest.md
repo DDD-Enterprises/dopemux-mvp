@@ -72,6 +72,13 @@ prelude: Source manifest for GPT-5.5 MCP architecture packet.
 - `docs/06-research/2026-07-04-dopemux-service-investigation/implementation-backlog.md`
 - `docs/06-research/2026-07-04-dopemux-service-investigation/ux-integration-spec.md`
 
+## Recent External Synthesis Attachments
+
+- `/Users/hue/.codex/attachments/252931e6-3387-4b90-a8c0-47fa3f942310/pasted-text.txt`
+  - Advisory synthesis verdict: packetize correctness/read-only/provenance slices now; defer mutating UX until F001 callable surface and degraded-state contracts are honest.
+- `/Users/hue/.codex/attachments/ad6a0ce8-671c-4ddc-9dda-a6c7d93ed2f8/pasted-text.txt`
+  - Advisory synthesis verdict: perform live reconciliation first, especially around PR #1002, Docker Scout, PAL ensure, live Redis promotion, Exa retirement, and unresolved review threads.
+
 ## Validation Surfaces
 
 - `tests/arch/test_mcp_fleet_catalog_contract.py`

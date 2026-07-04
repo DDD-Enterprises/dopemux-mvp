@@ -13,26 +13,25 @@ prelude: Upload guide for the GPT-5.5 MCP architecture investigation packet.
 
 Use this directory as the upload/paste package for GPT-5.5 Pro web when asking it to design the optimal Dopemux MCP/service architecture and implementation roadmap.
 
-## Upload Order
+## Preferred Phased Upload Order
 
-1. `gpt55-web-prompt.md`
-2. `research.md`
-3. `branch-work-audit.md`
-4. `transcript-digest.md`
-5. `source-manifest.md`
-6. The prior all-services audit package, especially `docs/06-research/2026-07-04-dopemux-service-investigation/research.md` and `service-gap-matrix.md`
-7. Source files listed in `source-manifest.md` only when GPT-5.5 asks for deeper code inspection
+1. Start with `phased-runbook.md`.
+2. Run `prompt-00-evidence-triage.md` with `bundle-00-evidence-triage.md`.
+3. Continue through `prompt-01-current-state.md` to `prompt-06-final-synthesis.md`, uploading only the matching bundle and carry-forward output for each phase.
+4. Use `gpt55-web-prompt.md` only as a one-shot fallback if the phased run is not possible.
+5. Upload source files listed in `source-manifest.md` only when GPT-5.5 asks for deeper code inspection.
 
 ## Evidence Rules
 
 - Treat `claudedocs/*` and transcript digests as advisory unless backed by source/config/tests.
 - Treat `origin/main` at `8f71ab9af` as the current merged baseline for this packet.
 - Treat `claude/mcp-fleet-audit-complete` as later Claude work that is not the current baseline until merged.
+- Treat the two recent synthesis attachments listed in `source-manifest.md` as advisory reconciliation inputs. They are useful for PR #1002 and packetization strategy, but they do not outrank live repo/GitHub/runtime evidence.
 - Do not paste raw transcript JSONL unless a specific claim must be adjudicated; the digest provides hashes and paths for auditability.
 
 ## Desired GPT-5.5 Output
 
-Ask GPT-5.5 Pro for:
+Across the phased run, ask GPT-5.5 Pro for:
 
 - optimal architecture by service/server
 - canonical writer and authority boundaries
