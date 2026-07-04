@@ -75,6 +75,7 @@ except ImportError:
 
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
+from dopemux.memory.capture_client import try_emit_promotable_capture_event  # noqa: E402
 
 # Claude Code command hook exit codes
 EXIT_SUCCESS = 0
@@ -149,48 +150,6 @@ def _emit_activity_event(
                 pass
 
 
-def _emit_promotable_capture_event(
-    *,
-    project_root: Path,
-    session_id: Optional[str],
-    event_type: str,
-    payload: Dict[str, Any],
-) -> bool:
-    """Best-effort structured capture for events the WMA promotion layer accepts.
-
-    Unlike ``_emit_activity_event`` (content-free heartbeat pings on
-    ``dopemux:events``), this writes a structured, promotable event through
-    ``dopemux.memory.capture_client.emit_capture_event``. That helper writes
-    the deterministic per-project SQLite chronicle directly and fans out to
-    the ``activity.events.v1`` Redis stream (dedupe + redaction built in),
-    which is the only path the dope-memory promotion engine's allowlist
-    (``services/working-memory-assistant/promotion/promotion.py``) actually
-    consumes. Only call this with event types on that allowlist — anything
-    else is silently dropped by promotion and just adds noise to the raw
-    ledger.
-
-    Fails open: any error (missing deps, no repo markers, schema init
-    failure, Redis unavailable) is caught and swallowed so a capture problem
-    can never break the hook or the user's session.
-    """
-    try:
-        from dopemux.memory.capture_client import emit_capture_event
-
-        emit_capture_event(
-            {
-                "event_type": event_type,
-                "session_id": session_id,
-                "payload": payload,
-                "source": "claude_hook",
-            },
-            repo_root=project_root,
-            emit_event_bus=True,
-        )
-        return True
-    except Exception:
-        return False
-
-
 def _truncate(value: Any, limit: int = 400) -> Any:
     """Trim overly large hook payloads before persisting them."""
     if value is None:
@@ -202,6 +161,37 @@ def _truncate(value: Any, limit: int = 400) -> Any:
     if isinstance(value, list):
         return [_truncate(item, limit=limit) for item in value[:10]]
     return value
+
+
+def _emit_bounded_hook_error_capture(
+    *,
+    project_root: Path,
+    session_id: Optional[str],
+    hook_event_name: str,
+    tool_name: str,
+) -> None:
+    """Capture a promotable hook failure without persisting raw hook payloads."""
+
+    try:
+        try_emit_promotable_capture_event(
+            "error.encountered",
+            {
+                "message": "Claude native hook tool failure",
+                "error_kind": "hook_tool_failure",
+                "service": "claude_native_hooks",
+                "hook_event_name": hook_event_name,
+                "tool_name": _truncate(tool_name, limit=80),
+                "authority": "dope-memory",
+                "canonical_system": "dope-memory",
+            },
+            source="dopemux.native_hooks",
+            mode="plugin",
+            repo_root=project_root,
+            emit_event_bus=False,
+            session_id=None,
+        )
+    except Exception:
+        return None
 
 
 def _response_text(payload: Dict[str, Any]) -> str:
@@ -547,30 +537,12 @@ class NativeHookAdapter:
             status="failure",
             tool_name=tool_name,
         )
-
-        # Structured, promotable capture: PostToolUseFailure carries a real
-        # error message, which maps cleanly onto the WMA promotion engine's
-        # "error.encountered" handler (only requires a non-empty `message`).
-        # Skip when there is no actual error text so we don't manufacture
-        # promotable spam out of a bare failure signal.
-        error_value = data.get("error")
-        error_message = (
-            error_value.get("message")
-            if isinstance(error_value, dict)
-            else error_value
+        _emit_bounded_hook_error_capture(
+            project_root=self.project_root,
+            session_id=self.session_id,
+            hook_event_name="PostToolUseFailure",
+            tool_name=tool_name,
         )
-        error_message = str(error_message).strip() if error_message else ""
-        if error_message:
-            _emit_promotable_capture_event(
-                project_root=self.project_root,
-                session_id=self.session_id,
-                event_type="error.encountered",
-                payload={
-                    "message": _truncate(error_message, limit=2000),
-                    "error_kind": tool_name,
-                },
-            )
-
         state = self._active_state()
         if not state:
             return self._allow()

@@ -9,9 +9,15 @@ from dopemux.memory import capture_client as capture_client_module
 from dopemux.memory.capture_client import (
     CaptureError,
     emit_capture_event,
+    emit_promotable_capture_event,
     resolve_capture_mode,
     resolve_repo_root_strict,
 )
+from dopemux.pm import writes as pm_writes
+from dopemux.pm import api as pm_api
+from dopemux.pm.models import PMTaskStatus
+from dopemux.pm.api import PMWriteBoundary
+from dopemux.pm.writes import PMWriteConfig, pm_log_decision, pm_transition_work_item
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -23,6 +29,19 @@ def _count_events(ledger_path: Path) -> int:
         return int(conn.execute("SELECT COUNT(*) FROM raw_activity_events").fetchone()[0])
     finally:
         conn.close()
+
+
+def _event_payload(ledger_path: Path, event_id: str) -> dict:
+    conn = sqlite3.connect(str(ledger_path))
+    try:
+        row = conn.execute(
+            "SELECT payload_json FROM raw_activity_events WHERE id = ?",
+            (event_id,),
+        ).fetchone()
+    finally:
+        conn.close()
+    assert row is not None
+    return json.loads(row[0])
 
 
 def test_plugin_and_cli_modes_share_single_ledger(tmp_path, monkeypatch):
@@ -99,6 +118,67 @@ def test_duplicate_retry_is_ignored(tmp_path, monkeypatch):
     assert first.inserted is True
     assert second.inserted is False
     assert _count_events(first.ledger_path) == 1
+
+
+def test_promotable_capture_event_rejects_non_allowlisted_type(tmp_path, monkeypatch):
+    ledger_path = tmp_path / "chronicle.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+
+    with pytest.raises(CaptureError, match="Unsupported promotable"):
+        emit_promotable_capture_event(
+            "file.saved",
+            {"path": "secret.py"},
+            source="test",
+            mode="cli",
+            repo_root=REPO_ROOT,
+        )
+
+    assert not ledger_path.exists()
+
+
+def test_promotable_capture_event_writes_authority_labeled_decision(tmp_path, monkeypatch):
+    ledger_path = tmp_path / "chronicle.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+
+    result = emit_promotable_capture_event(
+        "decision.logged",
+        {
+            "decision_id": "dec-1",
+            "title": "Keep memory planes split",
+            "rationale": "ConPort is decision authority; dope-memory is chronicle authority.",
+            "authority": "conport",
+        },
+        source="dopemux.pm",
+        mode="cli",
+        repo_root=REPO_ROOT,
+        emit_event_bus=False,
+    )
+
+    payload = _event_payload(ledger_path, result.event_id)
+    assert result.event_type == "decision.logged"
+    assert payload["authority"] == "conport"
+    assert payload["decision_id"] == "dec-1"
+
+
+def test_promotable_capture_event_accepts_underscore_event_type(tmp_path, monkeypatch):
+    ledger_path = tmp_path / "chronicle.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+
+    result = emit_promotable_capture_event(
+        "decision_logged",
+        {
+            "decision_id": "dec-underscore",
+            "title": "Normalize event type",
+            "rationale": "WMA promotion accepts underscore and dotted variants.",
+        },
+        source="dopemux.pm",
+        mode="cli",
+        repo_root=REPO_ROOT,
+        emit_event_bus=False,
+    )
+
+    assert result.event_type == "decision.logged"
+    assert _count_events(ledger_path) == 1
 
 
 def test_raw_activity_event_id_is_primary_key(tmp_path, monkeypatch):
@@ -447,6 +527,123 @@ def test_mode_resolution_config_overrides_context_and_heuristics(monkeypatch):
     )
 
     assert resolve_capture_mode("auto", repo_root=REPO_ROOT) == "mcp"
+
+
+def test_pm_log_decision_emits_decision_logged_after_conport_write(monkeypatch):
+    emitted: list[tuple[str, dict, dict]] = []
+    conport_calls: list[tuple] = []
+
+    class ConPort:
+        def record_progress(self, *args, **kwargs):
+            conport_calls.append((args, kwargs))
+
+    monkeypatch.setattr(
+        pm_writes,
+        "try_emit_promotable_capture_event",
+        lambda event_type, payload, **kwargs: emitted.append((event_type, payload, kwargs)),
+    )
+
+    receipt = pm_log_decision(
+        PMWriteConfig(
+            leantime_client=None,
+            orchestrator_client=None,
+            conport_client=ConPort(),
+            memory_client=None,
+            project_id="proj-1",
+        ),
+        task_id="task-1",
+        decision_notes="Use source-event capture instead of hook spam.",
+        idempotency_key="idem-1",
+    )
+
+    assert receipt.success is True
+    assert conport_calls
+    assert emitted == [
+        (
+            "decision.logged",
+            {
+                "decision_id": "task-1",
+                "title": "Decision for task-1",
+                "rationale": "Use source-event capture instead of hook spam.",
+                "project_id": "proj-1",
+                "task_id": "task-1",
+                "work_item_id": "task-1",
+                "canonical_system": "conport",
+                "operation_type": "decision_log",
+                "authority": "conport",
+            },
+            {
+                "source": "dopemux.pm",
+                "mode": "auto",
+                "emit_event_bus": False,
+            },
+        )
+    ]
+
+
+def test_pm_transition_emits_workflow_and_task_events_after_orchestrator_write(monkeypatch):
+    emitted: list[tuple[str, dict, dict]] = []
+    transition_calls: list[dict] = []
+
+    class Orchestrator:
+        def transition(self, **kwargs):
+            transition_calls.append(kwargs)
+
+    monkeypatch.setattr(
+        pm_writes,
+        "try_emit_promotable_capture_event",
+        lambda event_type, payload, **kwargs: emitted.append((event_type, payload, kwargs)),
+    )
+
+    receipt = pm_transition_work_item(
+        PMWriteConfig(
+            leantime_client=None,
+            orchestrator_client=Orchestrator(),
+            conport_client=None,
+            memory_client=None,
+            project_id="proj-1",
+        ),
+        task_id="task-2",
+        new_status=PMTaskStatus.DONE,
+        reason="implementation merged",
+        idempotency_key="idem-2",
+        expected_version=4,
+    )
+
+    assert receipt.success is True
+    assert transition_calls
+    assert [event_type for event_type, _payload, _kwargs in emitted] == [
+        "workflow.phase_changed",
+        "task.completed",
+    ]
+    assert emitted[0][1]["canonical_system"] == "task-orchestrator"
+    assert emitted[0][1]["to_phase"] == "deployment"
+    assert emitted[1][1]["status"] == "DONE"
+    assert emitted[0][2]["mode"] == "auto"
+
+
+@pytest.mark.asyncio
+async def test_async_pm_transition_maps_done_to_deployment_phase(monkeypatch):
+    emitted: list[tuple[str, dict]] = []
+
+    class Orchestrator:
+        async def transition_task(self, *_args, **_kwargs):
+            return {"success": True}
+
+    monkeypatch.setattr(
+        pm_api,
+        "emit_pm_promotable_source_event",
+        lambda event_type, **kwargs: emitted.append((event_type, kwargs["payload"])),
+    )
+
+    boundary = PMWriteBoundary(orchestrator_client=Orchestrator(), project_id="proj-1")
+    result = await boundary.pm_transition_work_item("task-3", "done")
+
+    assert result["success"] is True
+    workflow_events = [
+        payload for event_type, payload in emitted if event_type == "workflow.phase_changed"
+    ]
+    assert workflow_events[0]["to_phase"] == "deployment"
 
 
 def test_no_implicit_injection_defaults_in_memory_capture_surfaces():

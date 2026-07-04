@@ -36,6 +36,18 @@ CAPTURE_MODES = {
     CAPTURE_MODE_AUTO,
 }
 
+PROMOTABLE_CAPTURE_EVENT_TYPES = frozenset(
+    {
+        "decision.logged",
+        "task.completed",
+        "task.failed",
+        "task.blocked",
+        "error.encountered",
+        "workflow.phase_changed",
+        "manual.memory_store",
+    }
+)
+
 
 class CaptureError(RuntimeError):
     """Raised when capture cannot proceed safely."""
@@ -288,6 +300,13 @@ def _stable_json(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
+def _normalize_promotable_event_type(event_type: str) -> str:
+    normalized = event_type.strip().lower()
+    if "." not in normalized:
+        normalized = normalized.replace("_", ".")
+    return normalized
+
+
 def _deterministic_event_id(
     *,
     event_type: str,
@@ -358,6 +377,73 @@ def _emit_to_event_stream(event: dict[str, Any]) -> None:
         client.xadd(stream_name, envelope)
     except Exception as exc:  # pragma: no cover - best effort
         LOGGER.debug("event stream emit failed: %s", exc)
+
+
+def emit_promotable_capture_event(
+    event_type: str,
+    payload: dict[str, Any],
+    *,
+    source: str,
+    mode: str = CAPTURE_MODE_AUTO,
+    repo_root: Optional[Path] = None,
+    emit_event_bus: Optional[bool] = False,
+    lane: Optional[str] = None,
+    session_id: Optional[str] = None,
+    ttl_days: int = 7,
+) -> CaptureResult:
+    """Write a high-signal capture event only when WMA can promote its type."""
+
+    normalized_type = _normalize_promotable_event_type(event_type)
+    if normalized_type not in PROMOTABLE_CAPTURE_EVENT_TYPES:
+        raise CaptureError(f"Unsupported promotable capture event type: {event_type}")
+
+    event: dict[str, Any] = {
+        "event_type": normalized_type,
+        "source": source,
+        "payload": payload,
+        "ttl_days": ttl_days,
+    }
+    if session_id:
+        event["session_id"] = session_id
+
+    return emit_capture_event(
+        event,
+        mode=mode,
+        repo_root=repo_root,
+        emit_event_bus=emit_event_bus,
+        lane=lane,
+    )
+
+
+def try_emit_promotable_capture_event(
+    event_type: str,
+    payload: dict[str, Any],
+    *,
+    source: str,
+    mode: str = CAPTURE_MODE_AUTO,
+    repo_root: Optional[Path] = None,
+    emit_event_bus: Optional[bool] = False,
+    lane: Optional[str] = None,
+    session_id: Optional[str] = None,
+    ttl_days: int = 7,
+) -> Optional[CaptureResult]:
+    """Best-effort wrapper for source-event capture; callers stay authoritative."""
+
+    try:
+        return emit_promotable_capture_event(
+            event_type,
+            payload,
+            source=source,
+            mode=mode,
+            repo_root=repo_root,
+            emit_event_bus=emit_event_bus,
+            lane=lane,
+            session_id=session_id,
+            ttl_days=ttl_days,
+        )
+    except Exception as exc:
+        LOGGER.debug("promotable capture emit failed for %s: %s", event_type, exc)
+        return None
 
 
 def emit_capture_event(

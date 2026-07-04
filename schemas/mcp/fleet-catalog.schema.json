@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/fleet-catalog.schema.json",
+  "title": "Dopemux MCP Fleet Catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "defaults", "servers"],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["per_worktree"],
+      "properties": {
+        "per_worktree": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "servers": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/server"
+      }
+    }
+  },
+  "$defs": {
+    "envVar": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+    },
+    "server": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "transport"],
+      "properties": {
+        "scope": {
+          "enum": ["singleton", "per-worktree"]
+        },
+        "state_scope": {
+          "enum": ["per-repo", "per-worktree"]
+        },
+        "transport": {
+          "enum": ["http", "sse", "stdio"]
+        },
+        "plane": {
+          "enum": [
+            "automation",
+            "code-intelligence",
+            "gateway",
+            "memory",
+            "pm",
+            "reasoning",
+            "research",
+            "retrieval",
+            "workflow"
+          ]
+        },
+        "authority_role": {
+          "enum": [
+            "chronicle-authority",
+            "code-intelligence",
+            "deep-research",
+            "desktop-automation",
+            "docker-gateway",
+            "pm-adapter",
+            "reasoning-infrastructure",
+            "retrieval-projection",
+            "structured-context-authority",
+            "web-search",
+            "workflow-authority"
+          ]
+        },
+        "lifecycle": {
+          "enum": ["active", "decision-required", "operator-managed"]
+        },
+        "management_model": {
+          "enum": [
+            "compose-service",
+            "docker-exec",
+            "docker-mcp-gateway",
+            "operator-managed",
+            "wrapper-singleton"
+          ]
+        },
+        "identity_scope": {
+          "enum": [
+            "external-provider",
+            "host-session",
+            "per-call-workspace",
+            "per-repo",
+            "per-worktree",
+            "singleton"
+          ]
+        },
+        "follow_on_decision": {
+          "enum": ["delete-or-host-run", "none", "wire-or-retire"]
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url_template": {
+          "type": "string",
+          "minLength": 1
+        },
+        "port_var": {
+          "$ref": "#/$defs/envVar"
+        },
+        "default_port_base": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "extra_port_vars": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["var", "base"],
+            "properties": {
+              "var": {
+                "$ref": "#/$defs/envVar"
+              },
+              "base": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+              }
+            }
+          }
+        },
+        "docker_compose_service": {
+          "type": "string",
+          "minLength": 1
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requires_env": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/envVar"
+          },
+          "uniqueItems": true
+        },
+        "optional_env": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/envVar"
+          },
+          "uniqueItems": true
+        },
+        "doctor_args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "env_template": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "tool_aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "transport": {
+                "enum": ["http", "sse"]
+              }
+            },
+            "required": ["transport"]
+          },
+          "then": {
+            "anyOf": [
+              {
+                "required": ["url"]
+              },
+              {
+                "required": ["url_template"]
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "transport": {
+                "const": "stdio"
+              }
+            },
+            "required": ["transport"]
+          },
+          "then": {
+            "required": ["command"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "per-worktree"
+              },
+              "default_port_base": {}
+            },
+            "required": ["scope", "default_port_base"]
+          },
+          "then": {
+            "required": ["port_var"]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "id": "TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS",
+  "project": "dopemux-mvp",
+  "target": "Generate per-worktree MCP config, Claude globals fragment, Codex config fragment, health probe lists, and MCP doctrine docs from the canonical MCP fleet catalog with dry-run defaults and explicit apply gates.",
+  "invariants": [
+    "Depends on TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT.",
+    "Generators default to dry-run and must not write user-global files without explicit apply.",
+    "No live MCP calls, Docker mutation, provider calls, or destructive config pruning.",
+    "Generated outputs must preserve user-owned descriptions and unknown external entries unless prune is explicitly requested."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-FLEET-ROADMAP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-fleet-generated-outputs",
+    "base_branch": "main",
+    "stacked_because": "Generated outputs require the canonical catalog contract and drift gates from packet 001."
+  },
+  "commit": {
+    "message": "feat(mcp): generate fleet config outputs",
+    "allowlist": [
+      "src/dopemux/commands/mcp_commands.py",
+      "src/dopemux/mcp/fleet_catalog.py",
+      "tests/unit/test_mcp_commands_catalog.py",
+      "tests/unit/test_mcp_fleet_catalog.py",
+      "docs/03-reference/mcp/**",
+      "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS.json",
+      "proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/test_mcp_commands_catalog.py tests/unit/test_mcp_fleet_catalog.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(mcp): generate fleet config outputs",
+    "body": "Generate MCP config fragments and docs from the canonical catalog. Dry-run remains the default; explicit apply is required for writes.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect_generators",
+      "task": "Inspect current mcp init/add/sync-globals rendering behavior and identify generated output surfaces.",
+      "validation": [
+        "Existing dry-run/apply behavior and user-preservation semantics are documented."
+      ],
+      "context_files": [
+        "src/dopemux/commands/mcp_commands.py",
+        "tests/unit/test_mcp_commands_catalog.py"
+      ]
+    },
+    {
+      "id": "generate_outputs",
+      "task": "Add catalog-backed dry-run generators for local MCP config, Claude globals, Codex config fragment, health probe list, and MCP doctrine docs.",
+      "validation": [
+        "Golden tests prove generated outputs are deterministic and dry-run by default."
+      ]
+    }
+  ]
+}

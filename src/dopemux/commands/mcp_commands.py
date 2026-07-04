@@ -9,10 +9,13 @@ scaffolding driven by repo-local or bundled ``mcp_catalog.yaml`` data
 The ``servers`` group is an alias for ``mcp`` for backward compatibility.
 """
 
+import asyncio
 import hashlib
 import importlib.resources
 import json
 import os
+import re
+import shutil
 import socket
 import sys
 import subprocess
@@ -20,6 +23,7 @@ from datetime import datetime
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlparse
 
 import click
 import yaml
@@ -574,8 +578,255 @@ def _build_local_mcp_json(server_names: List[str], catalog: Dict[str, Any]) -> D
 
 
 # ---------------------------------------------------------------------------
-# `mcp init` / `add` / `remove` / `list` / `doctor` / `sync-globals`
+# `mcp generate` / `ensure` / `init` / `add` / `remove` / `list` / `doctor` / `sync-globals`
 # ---------------------------------------------------------------------------
+
+
+@mcp.command("generate")
+@click.option("--apply", is_flag=True, help="Write generated outputs. Default is dry-run.")
+@click.option(
+    "--output-dir",
+    type=click.Path(path_type=Path, file_okay=False, dir_okay=True),
+    help="Directory for generated output files when --apply is set.",
+)
+def mcp_generate_cmd(apply: bool, output_dir: Optional[Path]):
+    """
+    🧾 Project Fleet: Render catalog-backed MCP config fragments
+
+    Generates reviewable projections for local .mcp.json, Claude globals,
+    Codex config, health probes, and MCP doctrine docs. Dry-run is the default;
+    writes require both --apply and --output-dir.
+    """
+    from dopemux.mcp import fleet_catalog
+
+    catalog = _load_catalog()
+    outputs = fleet_catalog.generate_fleet_output_files(catalog)
+
+    if not apply:
+        console.logger.info("[info]Dry-run only. No files were written.[/info]")
+        for relative_path, content in outputs.items():
+            line_count = len(content.splitlines())
+            console.logger.info(f"[info]Would write {relative_path} ({line_count} lines)[/info]")
+        return
+
+    if output_dir is None:
+        raise click.ClickException("--apply requires --output-dir to bound generated writes.")
+
+    for relative_path, content in outputs.items():
+        target = output_dir / relative_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+        console.logger.info(f"[success]Wrote {target}[/success]")
+
+
+def _ensure_context() -> tuple[Path, Any]:
+    repo = get_repo_root(fallback_cwd=False)
+    if not repo:
+        raise click.ClickException("Not inside a git repository.")
+    repo_path = Path(repo)
+    identity_env = dict(os.environ)
+    identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
+    try:
+        identity = resolve_project_identity(cwd=repo_path, env=identity_env)
+    except ProjectIdentityError as exc:
+        raise click.ClickException(f"Could not resolve project identity: {exc}") from exc
+    return repo_path, identity
+
+
+def _ensure_fast_context() -> tuple[Path, Path]:
+    env_repo = os.environ.get("DOPEMUX_WORKSPACE_ROOT") or os.environ.get("DOPEMUX_PROJECT_ROOT")
+    if env_repo:
+        repo_path = Path(env_repo).expanduser().resolve()
+        if not repo_path.is_dir():
+            raise click.ClickException(f"MCP workspace root does not point to a directory: {repo_path}")
+    else:
+        start = Path.cwd().resolve()
+        repo_path = next(
+            (
+                candidate
+                for candidate in (start, *start.parents)
+                if (candidate / PROJECT_MCP_FILENAME).exists() or (candidate / ".git").exists()
+            ),
+            None,
+        )
+        if repo_path is None:
+            raise click.ClickException(
+                "Could not determine MCP workspace root without subprocess; "
+                "set DOPEMUX_WORKSPACE_ROOT or run from the repository root."
+            )
+
+    project_override = os.environ.get("TASK_ORCHESTRATOR_PROJECT_ROOT") or os.environ.get("DOPEMUX_PROJECT_ROOT")
+    if project_override:
+        project_root = Path(project_override).expanduser().resolve()
+        if not project_root.is_dir():
+            raise click.ClickException(f"MCP project root does not point to a directory: {project_root}")
+    else:
+        project_root = repo_path
+    return repo_path, project_root
+
+
+def _ensure_fast_problems(catalog: Dict[str, Any], repo_path: Path, project_root: Path) -> List[str]:
+    problems: List[str] = []
+    mcp_json_path = repo_path / PROJECT_MCP_FILENAME
+    envrc_path = repo_path / ENVRC_FILENAME
+
+    if not mcp_json_path.exists():
+        problems.append(
+            f"Missing {PROJECT_MCP_FILENAME} at {mcp_json_path} — run `dopemux mcp init`."
+        )
+    else:
+        defaults = catalog.get("defaults", {}).get("per_worktree", []) or []
+        try:
+            expected = _build_local_mcp_json(list(defaults), catalog)
+            actual = _read_json(mcp_json_path)
+        except (json.JSONDecodeError, click.ClickException) as exc:
+            problems.append(f"{mcp_json_path} is not a valid catalog-backed MCP config: {exc}")
+        else:
+            if actual != expected:
+                problems.append(f"{mcp_json_path} does not match catalog defaults.")
+
+    if not envrc_path.exists():
+        problems.append(f"Missing {ENVRC_FILENAME} at {envrc_path} — run `dopemux mcp init`.")
+
+    local_env = {
+        **os.environ,
+        **_project_env_exports(str(repo_path), str(project_root)),
+    }
+    for name in catalog.get("defaults", {}).get("per_worktree", []) or []:
+        spec = catalog.get("servers", {}).get(name) or {}
+        for env_key in spec.get("requires_env", []) or []:
+            if not local_env.get(env_key):
+                problems.append(f"`{name}`: required env `{env_key}` is unavailable.")
+    return problems
+
+
+def _catalog_compose_services(catalog: Dict[str, Any]) -> List[str]:
+    services = {
+        str(spec["docker_compose_service"])
+        for spec in catalog.get("servers", {}).values()
+        if spec.get("docker_compose_service")
+    }
+    return sorted(services)
+
+
+def _run_checked(cmd: List[str], *, cwd: Path, label: str) -> None:
+    console.logger.info(f"[info]{label}: {' '.join(cmd)}[/info]")
+    try:
+        subprocess.run(cmd, cwd=cwd, check=True)
+    except FileNotFoundError as exc:
+        raise click.ClickException(f"{label}: command not found: {cmd[0]}") from exc
+    except CalledProcessError as exc:
+        raise click.ClickException(f"{label} failed with exit code {exc.returncode}.") from exc
+
+
+_ENV_TEMPLATE_RE = re.compile(r"\$\{([A-Z][A-Z0-9_]*)(?::-([^}]*))?\}")
+
+
+def _resolve_env_template(value: str, env: Dict[str, str]) -> str:
+    def repl(match: re.Match[str]) -> str:
+        name = match.group(1)
+        default = match.group(2) or ""
+        return env.get(name) or default
+
+    return _ENV_TEMPLATE_RE.sub(repl, value)
+
+
+def _probeable_http_servers(catalog: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    env = dict(os.environ)
+    servers: Dict[str, Dict[str, Any]] = {}
+    for name, spec in sorted(catalog.get("servers", {}).items()):
+        if spec.get("transport") != "http":
+            continue
+        raw_url = spec.get("url") or spec.get("url_template")
+        if not raw_url:
+            continue
+        url = _resolve_env_template(str(raw_url), env)
+        parsed = urlparse(url)
+        if parsed.hostname not in {"localhost", "127.0.0.1"}:
+            continue
+        servers[name] = {"url": url}
+    return servers
+
+
+def _run_mcp_tools_list_probes(catalog: Dict[str, Any]) -> List[str]:
+    servers = _probeable_http_servers(catalog)
+    if not servers:
+        return []
+    try:
+        from dopemux.mcp.discovery import ToolDiscoveryClient
+    except ModuleNotFoundError as exc:
+        return [f"MCP probe client unavailable: missing dependency `{exc.name}`."]
+
+    report = asyncio.run(ToolDiscoveryClient(timeout=2.0).discover(servers))
+    return [
+        f"`{server['name']}`: MCP tools-list probe failed ({server.get('status', 'unknown')})."
+        for server in report.get("servers", [])
+        if not server.get("reachable")
+    ]
+
+
+def _report_ensure_problems(problems: List[str]) -> None:
+    console.logger.info(f"[warning]{len(problems)} ensure issue(s) found:[/warning]")
+    for problem in problems:
+        console.logger.info(f"  • {problem}")
+    sys.exit(1)
+
+
+@mcp.command("ensure")
+@click.option("--fast", is_flag=True, help="Run local/static prerequisite checks only.")
+@click.option("--full", "full_mode", is_flag=True, help="Run local checks plus bounded service remediation/probes.")
+def mcp_ensure_cmd(fast: bool, full_mode: bool):
+    """
+    🛠️ Stabilize Fleet: Check or remediate catalog-backed MCP prerequisites
+
+    `--fast` performs local/static checks only. `--full` starts catalog compose
+    services, ensures PAL and the Task Orchestrator singleton, then runs bounded
+    local HTTP MCP tools-list probes.
+    """
+    if fast and full_mode:
+        raise click.ClickException("Choose exactly one of --fast or --full.")
+    if not fast and not full_mode:
+        fast = True
+
+    catalog = _load_catalog()
+    if fast:
+        repo_path, project_root = _ensure_fast_context()
+    else:
+        repo_path, identity = _ensure_context()
+        project_root = identity.project_root
+    problems = _ensure_fast_problems(catalog, repo_path, project_root)
+    if problems:
+        _report_ensure_problems(problems)
+
+    if fast:
+        console.logger.info("[success]Fast MCP ensure checks green.[/success]")
+        return
+
+    if shutil.which("docker") is None:
+        raise click.ClickException("docker is required for `dopemux mcp ensure --full`.")
+    if not (repo_path / "compose.yml").exists():
+        raise click.ClickException(f"Missing {repo_path / 'compose.yml'} for compose remediation.")
+
+    compose_services = _catalog_compose_services(catalog)
+    if compose_services:
+        _run_checked(
+            ["docker", "compose", "-f", "compose.yml", "up", "-d", *compose_services],
+            cwd=repo_path,
+            label="compose",
+        )
+
+    _run_checked(["bash", "scripts/mcp-wrappers/ensure-pal.sh"], cwd=repo_path, label="pal")
+    _run_checked(
+        ["bash", "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh"],
+        cwd=repo_path,
+        label="task-orchestrator",
+    )
+
+    probe_problems = _run_mcp_tools_list_probes(catalog)
+    if probe_problems:
+        _report_ensure_problems(probe_problems)
+    console.logger.info("[success]Full MCP ensure checks green.[/success]")
+
 
 @mcp.command("init")
 @click.option("--force", is_flag=True, help="Overwrite existing .mcp.json and env file without prompting.")

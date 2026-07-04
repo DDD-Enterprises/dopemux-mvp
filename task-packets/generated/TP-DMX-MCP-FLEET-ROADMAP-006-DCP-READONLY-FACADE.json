@@ -1,0 +1,81 @@
+{
+  "id": "TP-DMX-MCP-FLEET-ROADMAP-006-DCP-READONLY-FACADE",
+  "project": "dopemux-mvp",
+  "target": "Activate DCP read-only facade follow-ons by exposing already implemented packet 0006 tools through the operator-run stdio MCP facade without adding write authority.",
+  "invariants": [
+    "DCP v1 remains read/export/pointer/dry-run only.",
+    "No mutating DCP, task-orchestrator, ConPort, dope-memory, dope-context, GitHub, shell, or event-store route may be exposed.",
+    "dope-context remains fail-closed until a real MCP JSON-RPC bridge is implemented and inventoried.",
+    "task-orchestrator facade results are workflow-view snapshots only, not PM metadata truth."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT",
+    "TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-FLEET-ROADMAP",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-fleet-dcp-readonly-facade",
+    "base_branch": "main",
+    "stacked_because": "DCP facade activation follows server-personality catalog gates and stays read-only."
+  },
+  "commit": {
+    "message": "feat(dcp): expose read-only facade packet tools",
+    "allowlist": [
+      "services/dcp-readonly-facade/src/mcp/server.py",
+      "services/dcp-readonly-facade/tests/test_mcp_server.py",
+      "services/dcp-readonly-facade/README.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+      "task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-006-DCP-READONLY-FACADE.json",
+      "proof/dmx-mcp-fleet-roadmap/TP-DMX-MCP-FLEET-ROADMAP-006-DCP-READONLY-FACADE/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-MCP-FLEET-ROADMAP-006-DCP-READONLY-FACADE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest services/dcp-readonly-facade/tests/test_mcp_server.py services/dcp-readonly-facade/tests/test_packet_0006.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): expose read-only facade packet tools",
+    "body": "Expose packet 0006 read-only facade tools over the DCP stdio MCP server while preserving fail-closed dope-context behavior and workflow-view-only task-orchestrator snapshots.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "mcp_tool_registration",
+      "task": "Register packet 0006 read-only facade functions in the stdio MCP server.",
+      "validation": [
+        "Tests prove the MCP server exposes the expected tool names and delegates to pure facade functions."
+      ]
+    },
+    {
+      "id": "docs_and_proof",
+      "task": "Document the operator-run stdio registration and preserve dope-context transport limitations.",
+      "validation": [
+        "Focused DCP facade tests and diff checks pass; live MCP/provider checks are explicitly NOT_RUN if not exercised."
+      ]
+    }
+  ]
+}

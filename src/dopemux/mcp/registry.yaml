@@ -34,7 +34,7 @@ servers:
 
   dopemux-desktop-commander:
     transport: http
-    default_enabled: true
+    default_enabled: false
     required_for_auto: false
     docker:
       service: desktop-commander
@@ -44,7 +44,7 @@ servers:
 
   dopemux-gpt-researcher:
     transport: http
-    default_enabled: true
+    default_enabled: false
     required_for_auto: false
     docker:
       service: gptr-mcp
@@ -54,7 +54,7 @@ servers:
 
   dopemux-leantime-bridge:
     transport: http-sse
-    default_enabled: true
+    default_enabled: false
     required_for_auto: false
     docker:
       service: leantime-bridge
@@ -96,7 +96,6 @@ servers:
       args:
         - pal-mcp-server
         - start
-
   dopemux-zen:
     transport: stdio
     default_enabled: false
