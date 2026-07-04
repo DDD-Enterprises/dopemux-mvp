@@ -81,20 +81,18 @@ HTTP-wrapper image for the compose 'pal' service and is NOT a substitute for \
 this container.)"
 fi
 
-env_file_args=()
+# Build the run args as an always-non-empty array and append --env-file only
+# when .env exists. This avoids the empty-array expansion trap (which can emit
+# a stray empty argument that docker misreads as the image name) entirely.
+run_args=(-d --name "${CONTAINER_NAME}" --restart unless-stopped)
 if [[ -f "${ENV_FILE}" ]]; then
-  env_file_args=(--env-file "${ENV_FILE}")
+  run_args+=(--env-file "${ENV_FILE}")
 else
   printf 'ensure-pal: warning: no .env file at %s — starting %s without --env-file\n' \
     "${ENV_FILE}" "${CONTAINER_NAME}" >&2
 fi
+run_args+=(--entrypoint sleep "${IMAGE_REF}" infinity)
 
-docker run -d \
-  --name "${CONTAINER_NAME}" \
-  --restart unless-stopped \
-  "${env_file_args[@]+"${env_file_args[@]}"}" \
-  --entrypoint sleep \
-  "${IMAGE_REF}" \
-  infinity >/dev/null
+docker run "${run_args[@]}" >/dev/null
 
 printf 'ensure-pal: created %s from %s (Codex consumer)\n' "${CONTAINER_NAME}" "${IMAGE_REF}" >&2

@@ -722,15 +722,19 @@ DEFAULT_COMPOSE_WAIT_TIMEOUT_SECONDS = 90
 def _catalog_compose_services(catalog: Dict[str, Any]) -> List[str]:
     """Compose services that `ensure --full` may auto-start.
 
-    Only ``lifecycle: active`` servers qualify. ``operator-managed`` (e.g.
-    pal-stdio) and ``decision-required`` (e.g. desktop-commander, exa) servers
-    are excluded so ensure never silently starts something awaiting an
-    operator decision.
+    Includes ``lifecycle: active`` and ``lifecycle: operator-managed`` servers —
+    both are consumed by clients (e.g. ``pal-stdio`` is the ``mcp-pal-stdio``
+    container that Claude/Codex configs exec into), so ensure must bring them up
+    or it would report green while a configured server is down. Only
+    ``decision-required`` servers (e.g. desktop-commander, exa) — quarantined
+    out of generated startable config pending an operator decision — are
+    excluded, along with any server missing a lifecycle field.
     """
     services = {
         str(spec["docker_compose_service"])
         for spec in catalog.get("servers", {}).values()
-        if spec.get("docker_compose_service") and spec.get("lifecycle") == "active"
+        if spec.get("docker_compose_service")
+        and spec.get("lifecycle") in ("active", "operator-managed")
     }
     return sorted(services)
 

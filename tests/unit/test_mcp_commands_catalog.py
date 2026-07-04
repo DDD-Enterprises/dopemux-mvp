@@ -513,22 +513,26 @@ def test_mcp_ensure_full_runs_bounded_remediation_sequence(tmp_path, monkeypatch
     assert "Full MCP ensure checks green" in result.output
 
 
-def test_catalog_compose_services_excludes_non_active_lifecycle():
+def test_catalog_compose_services_includes_consumed_excludes_quarantined():
     catalog = {
         "servers": {
             "pal": {"docker_compose_service": "pal", "lifecycle": "active"},
+            # operator-managed IS consumed (Claude/Codex exec into mcp-pal-stdio),
+            # so ensure must start it — excluding it would report false-green.
             "pal-stdio": {"docker_compose_service": "pal-stdio", "lifecycle": "operator-managed"},
+            # decision-required is quarantined pending an operator decision.
             "desktop-commander": {
                 "docker_compose_service": "desktop-commander",
                 "lifecycle": "decision-required",
             },
+            # a server missing a lifecycle field must not be auto-started.
             "no-lifecycle": {"docker_compose_service": "no-lifecycle"},
         }
     }
 
     result = mcp_commands._catalog_compose_services(catalog)
 
-    assert result == ["pal"]
+    assert result == ["pal", "pal-stdio"]
 
 
 def test_mcp_ensure_full_subprocess_timeout_surfaces_as_click_exception(tmp_path, monkeypatch):
