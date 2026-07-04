@@ -3,6 +3,8 @@
 Date: 2026-07-04
 Branch: `codex/mcp-fleet-dcp-readonly-facade`
 Worktree: `/Users/hue/code/dopemux-mvp/.worktrees/mcp-fleet-dcp-readonly-facade`
+Implementation commit: `b7df66d8e5b4b1e90b32022f19a624f6856ec625`
+PR: `https://github.com/DDD-Enterprises/dopemux-mvp/pull/1000`
 
 ## Scope
 
