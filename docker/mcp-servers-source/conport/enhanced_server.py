@@ -471,8 +471,15 @@ class EnhancedConPortServer:
                 """
             )
         if not exists2:
-            logger.warning("⚠️  Schema verification query returned no rows; proceeding anyway")
-            logger.info("✅ Schema verification OK")
+            logger.error(
+                "❌ Schema verification failed after applying schema.sql: "
+                "expected table 'workspace_contexts' not found"
+            )
+            raise RuntimeError(
+                "Schema verification failed: 'workspace_contexts' table not found "
+                "after applying schema.sql"
+            )
+        logger.info("✅ Schema verification OK")
 
         logger.info(
             "Enhanced ConPort migrations are operator-gated; run "
