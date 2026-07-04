@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import os
 from enum import Enum
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
@@ -223,6 +225,33 @@ class PMWriteConfig(BaseModel):
     project_id: str = "default"
 
 
+def _resolve_capture_repo_root(repo_root: Optional[Path], project_id: str) -> Optional[Path]:
+    """Resolve the workspace root for capture ledger resolution.
+
+    ``emit_capture_event`` otherwise falls back to ``Path.cwd()``, which fails
+    in the composed Task Orchestrator container (runs from ``/app`` with
+    ``.git``/``.dopemux`` excluded from the build), silently dropping PM source
+    events even when the event bus is enabled. Prefer an explicit root, then the
+    configured-workspace env vars the container sets, then ``project_id`` when it
+    is itself a filesystem path. Returns ``None`` to let capture fall back to
+    cwd (correct for the in-repo dopemux CLI runtime).
+    """
+    if repo_root is not None:
+        return repo_root
+    candidates = [
+        os.getenv("DOPEMUX_WORKSPACE_ROOT", "").strip(),
+        os.getenv("WORKSPACE_ID", "").strip(),
+        os.getenv("DOPEMUX_PROJECT_ROOT", "").strip(),
+        project_id.strip() if isinstance(project_id, str) else "",
+    ]
+    for value in candidates:
+        if value:
+            candidate = Path(value)
+            if candidate.exists():
+                return candidate
+    return None
+
+
 def emit_pm_promotable_source_event(
     event_type: str,
     *,
@@ -231,6 +260,7 @@ def emit_pm_promotable_source_event(
     canonical_system: str,
     operation_type: str,
     payload: Dict[str, Any],
+    repo_root: Optional[Path] = None,
 ) -> None:
     """Emit a best-effort promotable capture event without changing PM authority.
 
@@ -239,6 +269,11 @@ def emit_pm_promotable_source_event(
     dev environments remain ledger-only. ``emit_event_bus=None`` defers the
     fan-out decision to ``emit_capture_event``'s env resolution instead of
     hardcoding it off, so this is a no-op unless an operator opts in.
+
+    Passes an explicit workspace root (from ``repo_root`` or the configured
+    workspace env vars) so the composed Task Orchestrator container — which runs
+    from ``/app`` without ``.git``/``.dopemux`` — doesn't silently drop the event
+    via a failed ``Path.cwd()`` resolution.
     """
 
     event_payload = {
@@ -256,6 +291,7 @@ def emit_pm_promotable_source_event(
         source="dopemux.pm",
         mode="auto",
         emit_event_bus=None,
+        repo_root=_resolve_capture_repo_root(repo_root, project_id),
     )
 
 

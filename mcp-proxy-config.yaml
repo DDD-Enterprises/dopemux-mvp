@@ -7,11 +7,6 @@ mcp_servers:
     port: 8001
     supports_workspace: false  # Legacy service
 
-  exa:
-    command: ["uvx", "mcp-proxy", "--transport", "sse", "http://127.0.0.1:3011/sse"]
-    port: 3011
-    supports_workspace: false  # Search service (global)
-
   pal:
     command: ["uvx", "mcp-proxy", "--transport", "sse", "http://127.0.0.1:3003/sse"]
     port: 3003

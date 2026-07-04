@@ -94,15 +94,6 @@ mcpServers:
       - /app/conport_mcp_stdio.py
     env:
       CONPORT_URL: "http://localhost:3005"
-  exa:
-    type: stdio
-    command: uvx
-    args:
-      - mcp-proxy
-      - --transport
-      - sse
-      - http://127.0.0.1:3011/sse
-    env: {}
   task-orchestrator:
     type: stdio
     command: python
