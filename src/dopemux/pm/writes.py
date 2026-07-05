@@ -69,10 +69,14 @@ TASK_STATUS_CAPTURE_EVENTS = {
     PMTaskStatus.DONE: "task.completed",
 }
 
+# Values must stay within chronicle VALID_WORKFLOW_PHASES
+# (services/working-memory-assistant/chronicle/store.py).
 WORKFLOW_PHASE_CAPTURE_BY_STATUS = {
+    PMTaskStatus.TODO: "planning",
     PMTaskStatus.IN_PROGRESS: "implementation",
     PMTaskStatus.BLOCKED: "review",
     PMTaskStatus.DONE: "deployment",
+    PMTaskStatus.CANCELED: "maintenance",
 }
 
 
@@ -303,7 +307,7 @@ def pm_transition_work_item(
         )
 
     try:
-        config.orchestrator_client.transition(
+        transition_result = config.orchestrator_client.transition(
             project_id=config.project_id,
             workflow_id=task_id,
             transition_name=transition_name,
@@ -315,6 +319,22 @@ def pm_transition_work_item(
     except Exception as exc:
         raise RuntimeError(f"Canonical write failed: {exc}") from exc
 
+    # Derive the prior phase from the orchestrator's receipt when available;
+    # "unknown" only when the backend didn't report from_status.
+    from_status = None
+    if isinstance(transition_result, dict):
+        receipt = transition_result.get("transition_receipt")
+        if isinstance(receipt, dict):
+            from_status = receipt.get("from_status")
+    from_phase = "unknown"
+    if from_status:
+        try:
+            from_phase = WORKFLOW_PHASE_CAPTURE_BY_STATUS.get(
+                PMTaskStatus(from_status), "unknown"
+            )
+        except ValueError:
+            from_phase = "unknown"
+
     emit_pm_promotable_source_event(
         "workflow.phase_changed",
         project_id=config.project_id,
@@ -322,7 +342,8 @@ def pm_transition_work_item(
         canonical_system="task-orchestrator",
         operation_type=PMActionKind.WORKFLOW_TRANSITION.value,
         payload={
-            "from_phase": "unknown",
+            "from_phase": from_phase,
+            "from_status": from_status,
             "to_phase": WORKFLOW_PHASE_CAPTURE_BY_STATUS.get(new_status, "maintenance"),
             "status": new_status.value,
             "transition": transition_name,
