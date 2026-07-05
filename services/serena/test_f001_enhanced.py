@@ -18,7 +18,7 @@ try:
     from services.serena.revival_suggester import RevivalSuggester
     from services.serena.priority_context_builder import PriorityContextBuilder
     print("✅ All modules imported successfully\n")
-except ImportError:
+except ImportError as orig_e:
     try:
         from untracked_work_detector import UntrackedWorkDetector
         from false_starts_aggregator import FalseStartsAggregator
@@ -28,7 +28,7 @@ except ImportError:
         print("✅ All modules imported successfully (script-style)\n")
     except ImportError as e:
         print(f"❌ Import failed: {e}")
-        raise AssertionError(f"Import failed: {e}")
+        raise AssertionError(f"Import failed: {e}") from orig_e
 
 
 async def test_false_starts_aggregator():

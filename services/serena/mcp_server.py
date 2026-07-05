@@ -1215,14 +1215,17 @@ class SerenaV2MCPServer:
                         "properties": {
                             "session_number": {
                                 "type": "integer",
+                                "description": "Current session number for adaptive thresholds (default: 1)",
                                 "minimum": 1,
                                 "default": 1
                             },
                             "show_details": {
                                 "type": "boolean",
+                                "description": "Show detailed confidence breakdown (default: false)",
                                 "default": False
                             }
                         },
+                        "required": [],
                         "additionalProperties": False
                     }
                 ),

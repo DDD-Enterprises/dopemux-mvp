@@ -92,8 +92,12 @@ async def test_detect_untracked_work_enhanced_registration():
     assert "ignore_untracked_work" in tool_names
 
     server.detect_untracked_work_enhanced_tool = AsyncMock(return_value="mock_result")
-    await call_tool_func("detect_untracked_work_enhanced", {"session_number": 2})
+    result = await call_tool_func("detect_untracked_work_enhanced", {"session_number": 2})
     server.detect_untracked_work_enhanced_tool.assert_called_once_with(session_number=2)
+
+    assert len(result) == 1
+    assert result[0].type == "text"
+    assert "mock_result" in result[0].text
 
     result = await call_tool_func("not_a_real_tool", {})
     assert len(result) == 1
