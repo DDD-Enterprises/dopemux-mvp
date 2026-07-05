@@ -3762,18 +3762,25 @@ class SerenaV2MCPServer:
 
         except ImportError as e:
             # Feature 1 enhanced components not available
-            envelope = _f001_provenance(
-                status="DEGRADED",
-                data_state="unavailable",
-                degraded=True,
-                reason="dependency_unavailable",
-                fallback_used=False
-            )
-            envelope["result"] = {
-                "error": "F001 Enhanced components not fully integrated",
-                "message": "Missing enhancement modules (E1-E4)",
-                "details": str(e),
-                "fallback": "Use detect_untracked_work_tool instead"
+            from datetime import datetime, timezone
+            envelope = {
+                "status": "DEGRADED",
+                "authority": "serena",
+                "authority_role": "advisory",
+                "data_state": "unavailable",
+                "provenance": {
+                    "degraded": True,
+                    "reason": "dependency_unavailable",
+                    "fallback_used": False,
+                    "source": "serena-f001-enhanced",
+                    "checked_at": datetime.now(timezone.utc).isoformat()
+                },
+                "result": {
+                    "error": "F001 Enhanced components not fully integrated",
+                    "message": "Missing enhancement modules (E1-E4)",
+                    "details": str(e),
+                    "fallback": "Use detect_untracked_work_tool instead"
+                }
             }
             return json.dumps(envelope, indent=2)
         except (OSError, RuntimeError) as e:
