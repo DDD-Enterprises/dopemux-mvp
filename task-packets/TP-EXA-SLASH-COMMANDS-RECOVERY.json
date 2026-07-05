@@ -1,0 +1,61 @@
+{
+  "id": "TP-EXA-SLASH-COMMANDS-RECOVERY",
+  "project": "dopemux-mvp",
+  "target": "Update active slash commands to remove Exa references after retirement",
+  "invariants": [
+    "No production routing behavior is wired.",
+    "Exa MCP server is retired.",
+    "Slash commands are updated to use generic web search fallback."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TP-EXA-SLASH-COMMANDS-RECOVERY-SERIES",
+    "base_branch": "claude/mcp-fleet-audit-complete",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "gemini"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "docs(mcp): resolve Exa retirement blocker in active slash commands",
+    "allowlist": [
+      "task-packets/TP-EXA-SLASH-COMMANDS-RECOVERY.json",
+      ".claude/commands/docs/find.md",
+      ".claude/commands/web/triage.md",
+      ".claude/commands/web/spec-to-commit.md",
+      ".claude/commands/research.md",
+      ".claude/commands/bootstrap.md",
+      ".claude/commands/implement.md"
+    ]
+  },
+  "pr": {
+    "title": "Resolve Exa retirement blocker in active slash commands",
+    "body": "Removes outdated references to the retired Exa MCP server in the active Claude slash commands (.claude/commands/*), replacing them with generic web search references.",
+    "base": "claude/mcp-fleet-audit-complete"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Update .claude/commands/docs/find.md, .claude/commands/web/triage.md, .claude/commands/web/spec-to-commit.md, .claude/commands/research.md, .claude/commands/bootstrap.md, and .claude/commands/implement.md to use generic web search.",
+      "validation": [
+        "No occurrences of Exa remain in the updated slash commands except for historical ADR docs."
+      ]
+    }
+  ]
+}
