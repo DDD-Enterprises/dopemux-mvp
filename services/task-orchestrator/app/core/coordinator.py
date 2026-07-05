@@ -491,10 +491,14 @@ class PlaneCoordinator:
     async def _check_adhd_engine_health(self) -> str:
         """Check ADHD Engine health."""
         try:
-            # Simple HTTP health check
+            # Simple HTTP health check. 8080 is Leantime — the engine listens
+            # on 8095 in-container (host 3025); compose network name wins.
+            import os
+
             import aiohttp
+            base_url = os.getenv("ADHD_ENGINE_URL", "http://adhd-engine:8095")
             async with aiohttp.ClientSession() as session:
-                async with session.get("http://localhost:8080/health") as response:
+                async with session.get(f"{base_url.rstrip('/')}/health") as response:
                     return "healthy" if response.status == 200 else "unhealthy"
         except Exception as e:
             return "unhealthy"
