@@ -587,6 +587,8 @@ class SerenaV2MCPServer:
 
         except (ImportError, ConnectionError, OSError) as e:
             logger.warning(f"ConPort client initialization failed: {e}")
+            self.initialization_errors["conport"] = str(e)
+            self.conport_client = None
         except Exception as exc:
             logger.exception("Unexpected ConPort client initialization error")
             self.initialization_errors["conport"] = str(exc)
