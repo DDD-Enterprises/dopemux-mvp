@@ -3569,12 +3569,47 @@ class SerenaV2MCPServer:
             # Ensure ConPort client connected
             await self._ensure_conport_client()
             conport_available = self.conport_client is not None
+            proxy_client = None
+            conport_query_failed = False
+
+            if conport_available:
+                class ConPortClientProxy:
+                    def __init__(self, client):
+                        self._client = client
+                        self.had_error = False
+
+                    def __getattr__(self, name):
+                        attr = getattr(self._client, name)
+                        if callable(attr):
+                            def wrapper(*args, **kwargs):
+                                try:
+                                    result = attr(*args, **kwargs)
+                                    if hasattr(result, "__await__"):
+                                        async def await_result():
+                                            try:
+                                                return await result
+                                            except Exception:
+                                                self.had_error = True
+                                                raise
+                                        return await_result()
+                                    return result
+                                except Exception:
+                                    self.had_error = True
+                                    raise
+                            return wrapper
+                        return attr
+
+                proxy_client = ConPortClientProxy(self.conport_client)
 
             # Run enhanced detection with ConPort integration
             detection = await detector.detect_with_enhancements(
-                conport_client=self.conport_client,
+                conport_client=proxy_client if conport_available else None,
                 session_number=session_number
             )
+            
+            if proxy_client and proxy_client.had_error:
+                conport_available = False
+                conport_query_failed = True
             enhancements = detection.get("enhancements", {})
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
