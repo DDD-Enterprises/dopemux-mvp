@@ -413,7 +413,7 @@ class SerenaV2MCPServer:
             "adhd_features": False,
             "conport": False,  # F001/F002: ConPort connection tracking
         }
-        
+
         # dopeCode Layers
         self.dopecode_runtime = None
         self.ast_engine = None
@@ -490,7 +490,7 @@ class SerenaV2MCPServer:
 
         # Enhanced: Start background services (file watcher)
         await self._ensure_component("file_watcher")
-        
+
         # Initialize dopeCode Layers
         from dopecode.runtime import DopeCodeRuntime
         workspace_id = os.environ.get("DOPEMUX_WORKSPACE_ID", "default_workspace")
@@ -3086,7 +3086,7 @@ class SerenaV2MCPServer:
 
         # Single workspace mode
         start_time = datetime.now()
-        
+
         # Ensure database is available
         if not await self._ensure_component("database"):
             return json.dumps({
@@ -3103,14 +3103,14 @@ class SerenaV2MCPServer:
                 },
                 "error": "Intelligence database unavailable. Please ensure PostgreSQL is running.",
             })
-            
+
         from intelligence import NavigationMode
 
         relationships = []
         try:
             # 1. Resolve symbol to element ID
             search_results = await self.graph_operations.find_elements_by_name(symbol)
-            
+
             if not search_results:
                 elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
                 return json.dumps({
@@ -3120,10 +3120,10 @@ class SerenaV2MCPServer:
                     "note": f"Symbol '{symbol}' not found in intelligence graph. Use sync_codebase_to_graph to populate.",
                     "performance": {"latency_ms": round(elapsed_ms, 2)}
                 })
-                
+
             # Use the most relevant matching element
             element = search_results[0]
-            
+
             # 2. Get relationships from graph (ADHD optimized by default)
             related_elements = await self.graph_operations.get_related_elements(
                 element.id,
@@ -3131,7 +3131,7 @@ class SerenaV2MCPServer:
                 mode=NavigationMode.EXPLORE,
                 max_results=10
             )
-            
+
             # 3. Format results
             for rel_element, edge in related_elements:
                 relationships.append({
@@ -3215,7 +3215,7 @@ class SerenaV2MCPServer:
                 },
                 "error": "Intelligence database unavailable. Please ensure PostgreSQL is running.",
             })
-            
+
         start_time = datetime.now()
 
         try:
@@ -3234,9 +3234,9 @@ class SerenaV2MCPServer:
                 ORDER BY frequency DESC, avg_effectiveness DESC
                 LIMIT 10
             """
-            
+
             pattern_results = await self.database.execute_query(query, (days_back,), complexity_filter=False)
-            
+
             patterns = []
             for row in pattern_results:
                 patterns.append({
@@ -3246,7 +3246,7 @@ class SerenaV2MCPServer:
                     "cognitive_fatigue": round(row["avg_fatigue"], 2) if row["avg_fatigue"] else 0.0,
                     "last_seen": row["last_seen"].isoformat() if row["last_seen"] else None
                 })
-                
+
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
             result = {
@@ -3265,7 +3265,7 @@ class SerenaV2MCPServer:
 
             logger.info(f"get_navigation_patterns: found {len(patterns)} patterns ({elapsed_ms:.1f}ms)")
             return json.dumps(result, indent=2)
-            
+
         except Exception as e:
             logger.error(f"get_navigation_patterns failed: {e}")
             return json.dumps({"error": str(e)})
@@ -3289,7 +3289,7 @@ class SerenaV2MCPServer:
             JSON with updated focus state
         """
         start_time = datetime.now()
-        
+
         # Update in-memory state
         old_mode = self.current_focus_mode
         self.current_focus_mode = mode
@@ -3300,12 +3300,12 @@ class SerenaV2MCPServer:
             "scattered": 3,
             "transitioning": 5
         }
-        
+
         limit = limits.get(mode, 10)
         complexity_pref = "complex" if mode == "focused" else "simple" if mode == "scattered" else "moderate"
-        
+
         db_persisted = False
-        
+
         # Persist to database if available
         if await self._ensure_component("database"):
             try:
@@ -3556,7 +3556,7 @@ class SerenaV2MCPServer:
 
         try:
             # Import Feature 1 enhanced components
-            from .untracked_work_detector import UntrackedWorkDetector
+            from .untracked_work_detector import UntrackedWorkDetector, _f001_provenance
 
             # Initialize detector (includes E1-E4)
             detector = UntrackedWorkDetector(
@@ -3566,6 +3566,7 @@ class SerenaV2MCPServer:
 
             # Ensure ConPort client connected
             await self._ensure_conport_client()
+            conport_available = self.conport_client is not None
 
             # Run enhanced detection with ConPort integration
             detection = await detector.detect_with_enhancements(
@@ -3691,25 +3692,102 @@ class SerenaV2MCPServer:
                 f"E4={bool(enhancements.get('priority'))}, "
                 f"{elapsed_ms:.1f}ms)"
             )
-            return json.dumps(result, indent=2)
+
+            # Determine provenance state
+            prov_status = "LIVE"
+            degraded = False
+            fallback_used = False
+            reason = None
+
+            if not conport_available:
+                prov_status = "DEGRADED"
+                data_state = "unavailable"
+                degraded = True
+                fallback_used = True
+                reason = "conport_unavailable"
+            elif not detection["has_untracked_work"]:
+                data_state = "no_data"
+            else:
+                data_state = "available"
+
+            provenance_envelope = _f001_provenance(
+                status=prov_status,
+                data_state=data_state,
+                degraded=degraded,
+                reason=reason,
+                fallback_used=fallback_used
+            )
+
+            # Wrap the original result inside the provenance envelope to preserve backward compatibility
+            provenance_envelope["result"] = result
+
+            return json.dumps(provenance_envelope, indent=2)
 
         except ImportError as e:
             # Feature 1 enhanced components not available
-            return json.dumps({
-                "error": "F001 Enhanced components not fully integrated",
-                "message": "Missing enhancement modules (E1-E4)",
-                "details": str(e),
-                "fallback": "Use detect_untracked_work_tool instead"
-            }, indent=2)
-        except ImportError as e:
-            logger.error(f"detect_untracked_work_enhanced missing dependency: {e}")
-            return json.dumps({"error": str(e), "fallback": "Install enhancement modules"}, indent=2)
+            from datetime import datetime, timezone
+            envelope = {
+                "status": "DEGRADED",
+                "authority": "serena",
+                "authority_role": "advisory",
+                "data_state": "unavailable",
+                "provenance": {
+                    "degraded": True,
+                    "reason": "dependency_unavailable",
+                    "fallback_used": False,
+                    "source": "serena-f001-enhanced",
+                    "checked_at": datetime.now(timezone.utc).isoformat()
+                },
+                "result": {
+                    "error": "F001 Enhanced components not fully integrated",
+                    "message": "Missing enhancement modules (E1-E4)",
+                    "details": str(e),
+                    "fallback": "Use detect_untracked_work_tool instead"
+                }
+            }
+            return json.dumps(envelope, indent=2)
         except (OSError, RuntimeError) as e:
             logger.error(f"detect_untracked_work_enhanced failed: {e}")
-            return json.dumps({"error": str(e), "fallback": "Use base detect_untracked_work_tool"}, indent=2)
-        except Exception:
+            from datetime import datetime, timezone
+            envelope = {
+                "status": "DEGRADED",
+                "authority": "serena",
+                "authority_role": "advisory",
+                "data_state": "unknown",
+                "provenance": {
+                    "degraded": True,
+                    "reason": "unknown_error",
+                    "fallback_used": False,
+                    "source": "serena-f001-enhanced",
+                    "checked_at": datetime.now(timezone.utc).isoformat()
+                },
+                "result": {
+                    "error": str(e),
+                    "fallback": "Use base detect_untracked_work_tool"
+                }
+            }
+            return json.dumps(envelope, indent=2)
+        except Exception as e:
             logger.exception("detect_untracked_work_enhanced unexpected error")
-            return json.dumps({"error": "unexpected error", "fallback": "manual investigation"}, indent=2)
+            from datetime import datetime, timezone
+            envelope = {
+                "status": "UNKNOWN",
+                "authority": "serena",
+                "authority_role": "advisory",
+                "data_state": "unknown",
+                "provenance": {
+                    "degraded": True,
+                    "reason": "unknown_error",
+                    "fallback_used": False,
+                    "source": "serena-f001-enhanced",
+                    "checked_at": datetime.now(timezone.utc).isoformat()
+                },
+                "result": {
+                    "error": "unexpected error",
+                    "fallback": "manual investigation"
+                }
+            }
+            return json.dumps(envelope, indent=2)
 
     async def initialize_session_tool(
         self,
