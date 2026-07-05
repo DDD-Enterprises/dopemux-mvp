@@ -3766,7 +3766,10 @@ class SerenaV2MCPServer:
 
         except ImportError as e:
             # Feature 1 enhanced components not available
-            from datetime import datetime, timezone
+            # NOTE: import only `timezone` — a local `from datetime import datetime`
+            # here would make `datetime` function-local, breaking `start_time =
+            # datetime.now()` above with UnboundLocalError. `datetime` is module-level.
+            from datetime import timezone
             envelope = {
                 "status": "DEGRADED",
                 "authority": "serena",
