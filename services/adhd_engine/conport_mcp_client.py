@@ -6,6 +6,7 @@ Simple client for ConPort integration with circuit breaker protection.
 
 import asyncio
 import logging
+import os
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timezone
 
@@ -42,7 +43,8 @@ class ConPortMCPClient:
     """
 
     def __init__(self):
-        self.conport_url = "http://localhost:3010"  # ConPort MCP server
+        # ConPort MCP server; 3010 is dope-context, never default there.
+        self.conport_url = os.getenv("CONPORT_URL", "http://localhost:3005")
         self.session: Optional[Any] = None
 
     async def initialize(self):
