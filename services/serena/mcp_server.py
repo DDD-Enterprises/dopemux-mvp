@@ -1208,6 +1208,28 @@ class SerenaV2MCPServer:
                     }
                 ),
                 Tool(
+                    name="detect_untracked_work_enhanced",
+                    description="Read-only enhanced untracked-work detection with advisory context. Does not track, snooze, ignore, or create workflow items.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "session_number": {
+                                "type": "integer",
+                                "description": "Current session number for adaptive thresholds (default: 1)",
+                                "minimum": 1,
+                                "default": 1
+                            },
+                            "show_details": {
+                                "type": "boolean",
+                                "description": "Show detailed confidence breakdown (default: false)",
+                                "default": False
+                            }
+                        },
+                        "required": [],
+                        "additionalProperties": False
+                    }
+                ),
+                Tool(
                     name="track_untracked_work",
                     description="Feature 1 Action: Create ConPort task from untracked work (Feature tool). Converts detected orphaned work into tracked ConPort progress_entry. Pre-fills task description, complexity, metadata from detection.",
                     inputSchema={
@@ -1792,6 +1814,8 @@ class SerenaV2MCPServer:
                     result = await self.update_focus_mode_tool(**arguments)
                 elif name == "detect_untracked_work":
                     result = await self.detect_untracked_work_tool(**arguments)
+                elif name == "detect_untracked_work_enhanced":
+                    result = await self.detect_untracked_work_enhanced_tool(**arguments)
                 elif name == "track_untracked_work":
                     result = await self.track_untracked_work_tool(**arguments)
                 elif name == "snooze_untracked_work":
