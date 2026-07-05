@@ -120,3 +120,35 @@ async def test_detect_enhanced_unknown_exception(MockDetector, mcp_server):
     assert result["provenance"]["degraded"] is True
     assert result["provenance"]["reason"] == "unknown_error"
     assert "error" in result["result"]
+
+@pytest.mark.asyncio
+@patch('services.serena.untracked_work_detector.UntrackedWorkDetector')
+async def test_detect_enhanced_conport_query_failure(MockDetector, mcp_server):
+    mock_instance = MockDetector.return_value
+    
+    # We simulate that detector calls some method on conport_client which fails
+    async def side_effect_detect(conport_client=None, session_number=1):
+        if conport_client:
+            # Simulate the detector calling a client method that fails
+            await conport_client.get_tasks()
+        return {
+            "has_untracked_work": False,
+            "confidence_score": 0.0,
+            "threshold_used": 0.5
+        }
+        
+    mock_instance.detect_with_enhancements = AsyncMock(side_effect=side_effect_detect)
+    
+    # Mock ConPort client so it raises an exception when get_tasks is called
+    mcp_server.conport_client = MagicMock()
+    mcp_server.conport_client.get_tasks = AsyncMock(side_effect=RuntimeError("Query failed"))
+    mcp_server._ensure_conport_client = AsyncMock()
+    
+    result_str = await mcp_server.detect_untracked_work_enhanced_tool()
+    result = json.loads(result_str)
+    
+    # Assert degraded state because the query failed
+    assert result["status"] == "DEGRADED"
+    assert result["data_state"] == "unavailable"
+    assert result["provenance"]["degraded"] is True
+    assert result["provenance"]["reason"] == "conport_unavailable"
