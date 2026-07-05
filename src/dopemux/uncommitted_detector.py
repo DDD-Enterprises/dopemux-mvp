@@ -24,10 +24,12 @@ class ChangesSummary:
     untracked_count: int
     stashed_count: int
     total_files: int
+    detection_failed: bool = False
 
     def is_clean(self) -> bool:
         """Check if worktree is completely clean (no changes, no stash)."""
-        return not self.has_changes and self.stashed_count == 0
+        # Unknown state is never "clean" — fail closed.
+        return not self.detection_failed and not self.has_changes and self.stashed_count == 0
 
     def format_summary(self) -> str:
         """
@@ -65,7 +67,9 @@ class ChangesSummary:
         Returns:
             True if should suggest worktree creation
         """
-        return self.has_changes or self.stashed_count > 0
+        # Fail closed: if we could not determine state, protect rather than
+        # silently assume main is clean.
+        return self.has_changes or self.stashed_count > 0 or self.detection_failed
 
 
 class UncommittedChangeDetector:
@@ -133,14 +137,15 @@ class UncommittedChangeDetector:
         status_output = self._run_git_command(["status", "--porcelain"])
 
         if status_output is None:
-            logger.warning("Failed to get git status - assuming no changes")
+            logger.warning("Failed to get git status - treating state as unknown (fail closed)")
             return ChangesSummary(
                 has_changes=False,
                 staged_count=0,
                 unstaged_count=0,
                 untracked_count=0,
                 stashed_count=0,
-                total_files=0
+                total_files=0,
+                detection_failed=True
             )
 
         # Parse status output
@@ -167,6 +172,9 @@ class UncommittedChangeDetector:
                 x_status = line[0]  # Staged status
                 y_status = line[1]  # Unstaged status
                 filename = line[3:].strip()
+                # Rename entries are "old -> new"; track the new path.
+                if " -> " in filename:
+                    filename = filename.split(" -> ")[-1]
 
                 if filename not in seen_files:
                     seen_files.add(filename)

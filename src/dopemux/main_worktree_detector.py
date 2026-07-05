@@ -92,7 +92,9 @@ class MainWorktreeDetector:
             return None
 
         # Determine trigger reason
-        if changes.staged_count > 0:
+        if changes.detection_failed:
+            reason = "could not verify main is clean (git status failed)"
+        elif changes.staged_count > 0:
             reason = "staged changes in main"
         elif changes.unstaged_count > 0:
             reason = "uncommitted modifications in main"
@@ -106,7 +108,7 @@ class MainWorktreeDetector:
         # Create protection trigger
         return ProtectionTrigger(
             workspace_path=str(self.workspace_path),
-            git_branch=self.detector._run_git_command(["branch", "--show-current"]).strip(),
+            git_branch=(self.detector._run_git_command(["branch", "--show-current"]) or "").strip() or "unknown",
             changes=changes,
             trigger_reason=reason,
             suggested_action=(

@@ -86,7 +86,9 @@ class Settings:
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
     
     # ConPort / DopeconBridge
-    conport_url: str = os.getenv("CONPORT_URL", "http://localhost:3010")
+    # 3005 = ConPort MCP HTTP (compose sets CONPORT_URL=http://conport:3005);
+    # 3010 is dope-context — never default there.
+    conport_url: str = os.getenv("CONPORT_URL", "http://localhost:3005")
     pal_url: str = os.getenv("PAL_URL", os.getenv("ZEN_URL", "http://localhost:3003"))  # Backward compat with ZEN_URL
     workspace_id: str = os.getenv("ADHD_WORKSPACE_ID", os.getcwd())
     operator_id_path: str = os.getenv(
