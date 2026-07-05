@@ -158,3 +158,6 @@
 **Learning:** When refactoring multiple nested tooltips into a single "Card-Level" summary, it's easy to lose critical context like the "AI-generated" nature of suggestions. Explicitly labeling these summaries as "AI Insight" or "AI Recommendation" ensures transparency and maintains the user's understanding of the source of the information, which is crucial for building trust in automated systems.
 **Action:** When consolidating metadata into a single tooltip, ensure that the source and nature of suggestions (especially AI-driven ones) are explicitly labeled.
 
+## 2025-05-30 - [Interactive AI Insights in Team Dashboards]
+**Learning:** AI-generated team insights are often static and easily missed. Transforming them into "Copyable Surfaces" with tactile feedback (icon swap, pulse, label change) makes them actionable and delightful. To avoid "screen reader noise," it is critical to remove the redundant insight text from the parent card's summary attributes once the insight becomes its own interactive focusable element.
+**Action:** Implement the three-tier tactile confirmation loop for AI insights and ensure parent container accessibility is streamlined to reflect the new interactive hierarchy.
