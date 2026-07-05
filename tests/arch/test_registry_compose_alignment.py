@@ -57,12 +57,16 @@ def parse_port_mapping(port_str: str) -> Optional[tuple[int, int]]:
     - "3004:3004"
     - "${CONPORT_PORT:-3004}:${CONPORT_CONTAINER_PORT:-3004}"
     - "${CONPORT_PORT:-3004}:3004"
+    - "127.0.0.1:${ADHD_ENGINE_PORT:-3025}:8095" (loopback-bound mappings)
     """
     # Remove env var syntax and extract default values
     cleaned = re.sub(r'\$\{[^:}]+:-([0-9]+)\}', r'\1', port_str)
     cleaned = re.sub(r'\$\{[^}]+\}', '', cleaned)  # Remove remaining vars
-    
+
     parts = cleaned.split(":")
+    if len(parts) == 3:
+        # IP:HOST:CONTAINER form (loopback binds are the fleet target)
+        parts = parts[1:]
     if len(parts) != 2:
         return None
     
