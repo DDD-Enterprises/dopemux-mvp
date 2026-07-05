@@ -126,11 +126,18 @@ async def test_detect_enhanced_unknown_exception(MockDetector, mcp_server):
 async def test_detect_enhanced_conport_query_failure(MockDetector, mcp_server):
     mock_instance = MockDetector.return_value
     
-    # We simulate that detector calls some method on conport_client which fails
+    # Emulate the real detector path: the E1/E3/E4 aggregators call a ConPort
+    # client method through ConPortClientProxy and fail-open on error. The proxy
+    # records had_error before the aggregator swallows the exception, so detection
+    # still returns normally (mirrors false_starts_aggregator._load_records).
     async def side_effect_detect(conport_client=None, session_number=1):
         if conport_client:
-            # Simulate the detector calling a client method that fails
-            await conport_client.get_tasks()
+            try:
+                await conport_client.get_custom_data(
+                    workspace_id="ws", category="untracked_work"
+                )
+            except Exception:
+                pass  # aggregator fail-open; proxy has already flagged had_error
         return {
             "has_untracked_work": False,
             "confidence_score": 0.0,
@@ -139,9 +146,11 @@ async def test_detect_enhanced_conport_query_failure(MockDetector, mcp_server):
         
     mock_instance.detect_with_enhancements = AsyncMock(side_effect=side_effect_detect)
     
-    # Mock ConPort client so it raises an exception when get_tasks is called
+    # Mock ConPort client so the wrapped query raises. Target get_custom_data,
+    # the method the real aggregator issues through the proxy (get_tasks is never
+    # called by F001), so the proxy's had_error path is genuinely exercised.
     mcp_server.conport_client = MagicMock()
-    mcp_server.conport_client.get_tasks = AsyncMock(side_effect=RuntimeError("Query failed"))
+    mcp_server.conport_client.get_custom_data = AsyncMock(side_effect=RuntimeError("Query failed"))
     mcp_server._ensure_conport_client = AsyncMock()
     
     result_str = await mcp_server.detect_untracked_work_enhanced_tool()
