@@ -3588,11 +3588,15 @@ class SerenaV2MCPServer:
                                         async def await_result():
                                             try:
                                                 return await result
+                                            except TypeError:
+                                                raise
                                             except Exception:
                                                 self.had_error = True
                                                 raise
                                         return await_result()
                                     return result
+                                except TypeError:
+                                    raise
                                 except Exception:
                                     self.had_error = True
                                     raise
