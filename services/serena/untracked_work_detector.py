@@ -39,6 +39,30 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+def _f001_provenance(
+    *,
+    status: str,
+    data_state: str,
+    degraded: bool,
+    reason: Optional[str] = None,
+    fallback_used: bool = False,
+) -> Dict[str, Any]:
+    from datetime import timezone
+    return {
+        "status": status,
+        "authority": "serena",
+        "authority_role": "advisory",
+        "data_state": data_state,
+        "provenance": {
+            "degraded": degraded,
+            "reason": reason,
+            "fallback_used": fallback_used,
+            "source": "serena-f001-enhanced",
+            "checked_at": datetime.now(timezone.utc).isoformat(),
+        },
+    }
+
+
 class UntrackedWorkDetector:
     """Detect untracked work and provide ADHD-friendly recommendation signals."""
 
