@@ -515,6 +515,9 @@ async def execute_transition_project_workflow(
                 "transition": payload.transition,
                 "canonical_backend": "task-orchestrator",
                 "version_after": pm_task.version,
+                # Prior status so PM capture events can report a real
+                # from_phase instead of "unknown" (additive, free-form dict).
+                "from_status": current_status.value,
             },
             resulting_state={
                 "workflow_id": payload.workflow_id,

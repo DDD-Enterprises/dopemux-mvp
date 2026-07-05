@@ -335,3 +335,83 @@ def test_pm_log_decision_marks_conport_decision_and_memory_mirror():
         )
     ]
     assert receipt.mirror_receipts[0].persisted_id == "chron-1"
+
+
+def test_pm_transition_emits_real_from_phase_from_receipt(monkeypatch):
+    """workflow.phase_changed carries the backend-reported prior phase."""
+    import src.dopemux.pm.writes as writes_module
+
+    emitted = []
+    monkeypatch.setattr(
+        writes_module,
+        "try_emit_promotable_capture_event",
+        lambda event_type, payload, **kwargs: emitted.append((event_type, payload)),
+    )
+
+    class ReceiptOrchestratorClient(MockOrchestratorClient):
+        def transition(self, **kwargs):
+            super().transition(**kwargs)
+            return {
+                "transition_receipt": {
+                    "status": "success",
+                    "from_status": "TODO",
+                    "version_after": 2,
+                }
+            }
+
+    config = PMWriteConfig(
+        leantime_client=MockLeantimeClient(),
+        orchestrator_client=ReceiptOrchestratorClient(),
+        conport_client=None,
+        memory_client=None,
+        project_id="proj-7",
+    )
+
+    pm_transition_work_item(
+        config=config,
+        task_id="task-1",
+        new_status=PMTaskStatus.IN_PROGRESS,
+        reason="starting work",
+        idempotency_key="key-3",
+        expected_version=1,
+    )
+
+    phase_events = [p for (t, p) in emitted if t == "workflow.phase_changed"]
+    assert len(phase_events) == 1
+    assert phase_events[0]["from_phase"] == "planning"
+    assert phase_events[0]["from_status"] == "TODO"
+    assert phase_events[0]["to_phase"] == "implementation"
+
+
+def test_pm_transition_from_phase_unknown_without_receipt(monkeypatch):
+    """Clients that return no receipt keep the honest 'unknown' fallback."""
+    import src.dopemux.pm.writes as writes_module
+
+    emitted = []
+    monkeypatch.setattr(
+        writes_module,
+        "try_emit_promotable_capture_event",
+        lambda event_type, payload, **kwargs: emitted.append((event_type, payload)),
+    )
+
+    config = PMWriteConfig(
+        leantime_client=MockLeantimeClient(),
+        orchestrator_client=MockOrchestratorClient(),
+        conport_client=None,
+        memory_client=None,
+        project_id="proj-7",
+    )
+
+    pm_transition_work_item(
+        config=config,
+        task_id="task-1",
+        new_status=PMTaskStatus.DONE,
+        reason="done",
+        idempotency_key="key-4",
+        expected_version=3,
+    )
+
+    phase_events = [p for (t, p) in emitted if t == "workflow.phase_changed"]
+    assert len(phase_events) == 1
+    assert phase_events[0]["from_phase"] == "unknown"
+    assert phase_events[0]["from_status"] is None
