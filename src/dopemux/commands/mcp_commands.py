@@ -204,11 +204,9 @@ def mcp_start_all_cmd(verify: bool):
             console.logger.info("[info]Starting MCP servers...[/info]")
             subprocess.run(["docker", "compose", "-f", "compose.yml", "up", "-d"], check=True)
 
-            console.logger.info("[info]Starting Integration Bridge...[/info]")
-            subprocess.run(
-                ["bash", "-lc", "cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"],
-                check=True,
-            )
+            # NOTE: the legacy docker/conport-kg integration-bridge is dead
+            # code (kill-list per the MCP fleet audit) and must not be
+            # resurrected here.
 
             console.logger.info("[info]Starting Task Orchestrator...[/info]")
             subprocess.run(
