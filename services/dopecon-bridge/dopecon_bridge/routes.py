@@ -199,6 +199,7 @@ def _normalize_custom_data_read(payload: Dict[str, Any]) -> Dict[str, Any]:
 
 async def _publish_event_internal(request: PublishEventRequest) -> Dict[str, Any]:
     from .event_bus import Event, EventBus
+    from .promotable_mirror import mirror_promotable_event
 
     event_bus = EventBus()
     await event_bus.initialize()
@@ -209,6 +210,15 @@ async def _publish_event_internal(request: PublishEventRequest) -> Dict[str, Any
             source=request.source or settings.service_name,
         )
         msg_id = await event_bus.publish(request.stream, event)
+        # Chronicle mirror: promotable events must also land on the
+        # dope-memory input stream or they never reach the promotion pipeline.
+        await mirror_promotable_event(
+            event_bus.redis_client,
+            stream=request.stream,
+            event_type=request.event_type,
+            data=request.data,
+            source=request.source or settings.service_name,
+        )
         return {
             "status": "published",
             "message_id": msg_id,
