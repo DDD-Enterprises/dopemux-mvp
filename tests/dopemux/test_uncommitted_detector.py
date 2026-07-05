@@ -391,3 +391,47 @@ def test_should_protect_main_non_git_repo():
     with tempfile.TemporaryDirectory() as tmpdir:
         # Should not raise, just return False
         assert should_protect_main(tmpdir) is False
+
+
+def test_check_changes_fail_closed_on_git_failure(git_repo, monkeypatch):
+    """Git status failure must NOT be reported as a clean worktree (fail closed)."""
+    detector = UncommittedChangeDetector(str(git_repo))
+    monkeypatch.setattr(detector, "_run_git_command", lambda *a, **kw: None)
+
+    changes = detector.check_changes()
+
+    assert changes.detection_failed is True
+    assert changes.is_clean() is False
+    assert changes.needs_worktree_suggestion() is True
+
+
+def test_changes_summary_detection_failed_defaults_false():
+    """Existing construction sites without the flag keep prior behavior."""
+    clean = ChangesSummary(
+        has_changes=False,
+        staged_count=0,
+        unstaged_count=0,
+        untracked_count=0,
+        stashed_count=0,
+        total_files=0,
+    )
+    assert clean.detection_failed is False
+    assert clean.is_clean() is True
+    assert clean.needs_worktree_suggestion() is False
+
+
+def test_rename_counts_single_staged_change(git_repo):
+    """A staged rename (R old -> new) counts once and tracks the new path."""
+    subprocess.run(
+        ["git", "mv", "README.md", "RENAMED.md"],
+        cwd=git_repo,
+        check=True,
+        capture_output=True,
+    )
+
+    detector = UncommittedChangeDetector(str(git_repo))
+    changes = detector.check_changes()
+
+    assert changes.has_changes is True
+    assert changes.staged_count == 1
+    assert changes.detection_failed is False
