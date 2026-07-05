@@ -38,6 +38,7 @@ SMOKE_CORE_SERVICES=(
     conport
     dopecon-bridge
     dope-memory
+    adhd-engine
 )
 SMOKE_NO_DEPS_SERVICES=(
     task-orchestrator

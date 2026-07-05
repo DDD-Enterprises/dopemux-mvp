@@ -194,7 +194,7 @@ services:
     container_port: 8095
     health_path: /health
     compose_service_name: adhd-engine
-    enabled_in_smoke: false
+    enabled_in_smoke: true
     category: cognitive
     description: "ADHD Engine (Multi-instance)"
 
