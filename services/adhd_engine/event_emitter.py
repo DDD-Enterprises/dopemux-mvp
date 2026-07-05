@@ -224,7 +224,11 @@ class ADHDEventEmitter:
                             data_str = msg_data.get(b"data", b"{}").decode("utf-8")
                             
                             event = Event(
-                                type=msg_data.get(b"event_type", b"").decode("utf-8"),
+                                # dopemux producers write "event_type";
+                                # dopecon-bridge Event.to_redis_fields writes
+                                # "type" — accept both so bridge events are
+                                # not dropped.
+                                type=(msg_data.get(b"event_type") or msg_data.get(b"type") or b"").decode("utf-8"),
                                 data=json.loads(data_str),
                                 timestamp=msg_data.get(b"timestamp", b"").decode("utf-8"),
                                 source=msg_data.get(b"source", b"").decode("utf-8")

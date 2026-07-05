@@ -33,9 +33,11 @@ from ..mcp.project_identity import ProjectIdentityError, resolve_project_identit
 from ..worktree_commands import get_repo_root
 
 
+# desktop-commander and exa are quarantined (lifecycle: decision-required)
+# and excluded from the default set; start them explicitly via --services.
 DEFAULT_MCP_SERVICES = {
+    "adhd-engine",
     "conport",
-    "desktop-commander",
     "dope-context",
     "dope-memory",
     "dopecon-bridge",
@@ -132,10 +134,11 @@ def mcp_down_cmd():
     and preserving ritual state in the Docker volume ledgers.
     """
     try:
-        mcp_services = [
-            "conport", "pal", "litellm", "dope-context",
-            "serena", "gptr-mcp", "desktop-commander", "leantime-bridge",
-        ]
+        # Derive from the default set so `down` stays symmetric with `up`
+        # (previously a hardcoded list that omitted several running services).
+        mcp_services = sorted(DEFAULT_MCP_SERVICES & _compose_services())
+        if not mcp_services:
+            mcp_services = sorted(DEFAULT_MCP_SERVICES)
         subprocess.run(
             ["docker", "compose", "-f", "compose.yml", "rm", "-f", "-s", "-v"] + mcp_services,
             check=True,

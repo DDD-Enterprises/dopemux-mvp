@@ -67,9 +67,16 @@ start_service "dope-context" "3010" "mcp-dope-context"
 start_service "serena" "3006" "${SERENA_CONTAINER_NAME:-dopemux-mcp-serena}"
 start_service "leantime-bridge" "3015" "dopemux-mcp-leantime-bridge"
 start_service "gptr-mcp" "3009" "dopemux-mcp-gptr-mcp"
-start_service "exa" "3011" "mcp-exa"
-start_service "desktop-commander" "3012" "dopemux-mcp-desktop-commander"
 start_service "pal" "3003" "mcp-pal"
+# exa + desktop-commander are quarantined (lifecycle: decision-required in
+# mcp_catalog.yaml) and intentionally NOT auto-started. Start explicitly with
+# `dopemux mcp up --services exa` if needed.
+
+# Start workflow + memory + cognitive plane
+echo "=== Workflow, Memory & Cognitive Services ==="
+start_service "task-orchestrator" "8000" "task-orchestrator"
+start_service "dope-memory" "3020" "dope-memory"
+start_service "adhd-engine" "3025" "adhd-engine"
 
 echo
 echo "✅ MCP Server startup complete!"
