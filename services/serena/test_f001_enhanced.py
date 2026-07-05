@@ -12,15 +12,23 @@ from datetime import datetime
 # Test imports
 print("Testing imports...")
 try:
-    from untracked_work_detector import UntrackedWorkDetector
-    from false_starts_aggregator import FalseStartsAggregator
-    from design_first_detector import DesignFirstDetector
-    from revival_suggester import RevivalSuggester
-    from priority_context_builder import PriorityContextBuilder
+    from services.serena.untracked_work_detector import UntrackedWorkDetector
+    from services.serena.false_starts_aggregator import FalseStartsAggregator
+    from services.serena.design_first_detector import DesignFirstDetector
+    from services.serena.revival_suggester import RevivalSuggester
+    from services.serena.priority_context_builder import PriorityContextBuilder
     print("✅ All modules imported successfully\n")
-except ImportError as e:
-    print(f"❌ Import failed: {e}")
-    exit(1)
+except ImportError:
+    try:
+        from untracked_work_detector import UntrackedWorkDetector
+        from false_starts_aggregator import FalseStartsAggregator
+        from design_first_detector import DesignFirstDetector
+        from revival_suggester import RevivalSuggester
+        from priority_context_builder import PriorityContextBuilder
+        print("✅ All modules imported successfully (script-style)\n")
+    except ImportError as e:
+        print(f"❌ Import failed: {e}")
+        raise AssertionError(f"Import failed: {e}")
 
 
 async def test_false_starts_aggregator():

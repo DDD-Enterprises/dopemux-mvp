@@ -55,3 +55,46 @@ async def test_get_navigation_patterns_reports_history_unavailable_without_datab
     assert payload["days_back"] == 14
     assert payload["patterns"] == []
     assert payload["provenance"]["degraded"] is True
+
+@pytest.mark.asyncio
+async def test_detect_untracked_work_enhanced_registration():
+    server = SerenaV2MCPServer()
+
+    list_tools_func = None
+    call_tool_func = None
+
+    def list_tools_mock():
+        def decorator(f):
+            nonlocal list_tools_func
+            list_tools_func = f
+            return f
+        return decorator
+
+    def call_tool_mock():
+        def decorator(f):
+            nonlocal call_tool_func
+            call_tool_func = f
+            return f
+        return decorator
+
+    server.server.list_tools = list_tools_mock
+    server.server.call_tool = call_tool_mock
+
+    server.register_tools()
+
+    tools = await list_tools_func()
+    tool_names = [t.name for t in tools]
+
+    assert tool_names.count("detect_untracked_work_enhanced") == 1
+    assert "detect_untracked_work" in tool_names
+    assert "track_untracked_work" in tool_names
+    assert "snooze_untracked_work" in tool_names
+    assert "ignore_untracked_work" in tool_names
+
+    server.detect_untracked_work_enhanced_tool = AsyncMock(return_value="mock_result")
+    await call_tool_func("detect_untracked_work_enhanced", {"session_number": 2})
+    server.detect_untracked_work_enhanced_tool.assert_called_once_with(session_number=2)
+
+    result = await call_tool_func("not_a_real_tool", {})
+    assert len(result) == 1
+    assert "Unknown tool: not_a_real_tool" in result[0].text
