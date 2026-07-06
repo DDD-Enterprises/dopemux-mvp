@@ -230,7 +230,15 @@ export default function TeamDashboard() {
           onClick={handleCopy}
           onKeyDown={(e) => {
             if (e.repeat) return;
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (e.key === ' ') e.preventDefault();
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              void handleCopy();
+            }
+          }}
+          onKeyUp={(e) => {
+            if (e.repeat) return;
+            if (e.key === ' ') {
               e.preventDefault();
               void handleCopy();
             }
