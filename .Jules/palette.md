@@ -158,3 +158,6 @@
 **Learning:** When refactoring multiple nested tooltips into a single "Card-Level" summary, it's easy to lose critical context like the "AI-generated" nature of suggestions. Explicitly labeling these summaries as "AI Insight" or "AI Recommendation" ensures transparency and maintains the user's understanding of the source of the information, which is crucial for building trust in automated systems.
 **Action:** When consolidating metadata into a single tooltip, ensure that the source and nature of suggestions (especially AI-driven ones) are explicitly labeled.
 
+## 2026-06-01 - [Copyable Insight Surfaces & Tooltip Fighting]
+**Learning:** Converting static AI insights into interactive, copyable button surfaces improves utility and provides positive reinforcement. However, when these surfaces are nested within a larger interactive card, it's critical to remove the insight's description from the parent's `Tooltip` and `aria-label`. This prevents "tooltip fighting" (where the parent tooltip obscures the child's feedback) and avoids redundant, confusing announcements for screen reader users.
+**Action:** When making internal elements like AI Insights copyable, ensure the parent container's accessibility metadata is pruned of the child's text to maintain clarity and focus.
