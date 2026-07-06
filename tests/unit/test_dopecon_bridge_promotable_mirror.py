@@ -6,6 +6,8 @@ using a capture_client-compatible envelope.
 """
 
 import importlib.util
+
+import pytest
 import json
 import sys
 from pathlib import Path
@@ -45,6 +47,7 @@ def test_normalize_event_type():
     assert MIRROR.normalize_event_type("decision.logged") == "decision.logged"
     assert MIRROR.normalize_event_type("  Task_Completed ") == "task.completed"
     assert MIRROR.normalize_event_type("") == "unknown"
+    assert MIRROR.normalize_event_type("work_untracked_detected") == "work.untracked.detected"
 
 
 def test_envelope_promotable_underscore_type():
@@ -67,6 +70,8 @@ def test_envelope_non_promotable_returns_none():
     assert MIRROR.build_mirror_envelope("session_started", {}, "bridge") is None
 
 
+
+@pytest.mark.asyncio
 async def test_mirror_writes_to_memory_stream():
     fake = _FakeRedis()
     written = await MIRROR.mirror_promotable_event(
@@ -84,6 +89,8 @@ async def test_mirror_writes_to_memory_stream():
     assert envelope["session_id"] == "s1"
 
 
+
+@pytest.mark.asyncio
 async def test_mirror_skips_when_already_on_memory_stream():
     fake = _FakeRedis()
     written = await MIRROR.mirror_promotable_event(
@@ -97,6 +104,8 @@ async def test_mirror_skips_when_already_on_memory_stream():
     assert fake.calls == []
 
 
+
+@pytest.mark.asyncio
 async def test_mirror_skips_non_promotable():
     fake = _FakeRedis()
     written = await MIRROR.mirror_promotable_event(
@@ -110,6 +119,8 @@ async def test_mirror_skips_non_promotable():
     assert fake.calls == []
 
 
+
+@pytest.mark.asyncio
 async def test_mirror_never_raises_on_redis_failure():
     fake = _FakeRedis(fail=True)
     written = await MIRROR.mirror_promotable_event(
