@@ -685,7 +685,7 @@
           "id": "adhd_conport_default_port_drift",
           "markers": [
             {
-              "contains": "http://localhost:3010",
+              "contains": "http://localhost:3005",
               "path": "services/adhd_engine/config.py"
             },
             {
@@ -693,7 +693,7 @@
               "path": "compose.yml"
             }
           ],
-          "summary": "ADHD Engine config defaults ConPort URL to 3010 while compose exposes ConPort HTTP on 3004."
+          "summary": "ADHD Engine config defaults ConPort MCP URL to localhost:3005 while compose exposes ConPort HTTP health on 3004 (MCP on 3005)."
         }
       ],
       "notes": [
