@@ -13,7 +13,7 @@ class DopeMemoryMCPAdapter:
     """MCP stdio adapter for Dope-Memory REST service"""
     
     def __init__(self):
-        self.base_url = "http://localhost:8096/tools"
+        self.base_url = "http://localhost:3054/tools"
         self.tools = {
             "memory_recap": self._memory_recap,
             "memory_search": self._memory_search,
@@ -96,35 +96,31 @@ class DopeMemoryMCPAdapter:
     def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """Handle MCP JSON-RPC request"""
         try:
-            # Check if it's a tool call
-            if request.get("method") in self.tools:
-                tool_name = request["method"]
-                params = request.get("params", {})
-                
-                result = self.tools[tool_name](params)
-                
-                if result["success"]:
-                    return {
-                        "jsonrpc": "2.0",
-                        "id": request.get("id", 1),
-                        "result": result["data"]
-                    }
-                else:
-                    return {
-                        "jsonrpc": "2.0",
-                        "id": request.get("id", 1),
-                        "error": {
-                            "code": -32603,
-                            "message": result["error"]
+            # Check if it's an initialization call
+            if request.get("method") == "initialize":
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request.get("id", 1),
+                    "result": {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": {
+                            "tools": {}
+                        },
+                        "serverInfo": {
+                            "name": "dope-memory",
+                            "version": "1.0.0"
                         }
                     }
-            elif request.get("method") == "list_tools":
+                }
+            elif request.get("method") == "notifications/initialized":
+                return None
+            elif request.get("method") == "tools/list":
                 # Return available tools
                 tool_list = [
                     {
                         "name": name,
                         "description": self._get_tool_description(name),
-                        "parameters": self._get_tool_schema(name)
+                        "inputSchema": self._get_tool_schema(name)
                     }
                     for name in self.tools.keys()
                 ]
@@ -133,13 +129,47 @@ class DopeMemoryMCPAdapter:
                     "id": request.get("id", 1),
                     "result": {"tools": tool_list}
                 }
+            elif request.get("method") == "tools/call":
+                params = request.get("params", {})
+                tool_name = params.get("name")
+                if tool_name in self.tools:
+                    arguments = params.get("arguments", {})
+                    result = self.tools[tool_name](arguments)
+                    
+                    if result["success"]:
+                        return {
+                            "jsonrpc": "2.0",
+                            "id": request.get("id", 1),
+                            "result": {
+                                "content": [{"type": "text", "text": json.dumps(result["data"])}],
+                                "isError": False
+                            }
+                        }
+                    else:
+                        return {
+                            "jsonrpc": "2.0",
+                            "id": request.get("id", 1),
+                            "result": {
+                                "content": [{"type": "text", "text": result["error"]}],
+                                "isError": True
+                            }
+                        }
+                else:
+                    return {
+                        "jsonrpc": "2.0",
+                        "id": request.get("id", 1),
+                        "error": {
+                            "code": -32601,
+                            "message": f"Tool not found: {tool_name}"
+                        }
+                    }
             else:
                 return {
                     "jsonrpc": "2.0",
                     "id": request.get("id", 1),
                     "error": {
                         "code": -32601,
-                        "message": "Method not found"
+                        "message": f"Method not found: {request.get('method')}"
                     }
                 }
         except Exception as e:
@@ -205,8 +235,8 @@ def main():
     """Main stdio server loop"""
     adapter = DopeMemoryMCPAdapter()
     
-    print("Dope-Memory MCP Adapter started")
-    print("Listening on stdin for MCP JSON-RPC requests...")
+    print("Dope-Memory MCP Adapter started", file=sys.stderr)
+    print("Listening on stdin for MCP JSON-RPC requests...", file=sys.stderr)
     
     try:
         while True:
@@ -218,8 +248,9 @@ def main():
             try:
                 request = json.loads(line.strip())
                 response = adapter.handle_request(request)
-                print(json.dumps(response))
-                sys.stdout.flush()
+                if response is not None:
+                    print(json.dumps(response))
+                    sys.stdout.flush()
             except json.JSONDecodeError:
                 # Not JSON, might be other MCP protocol
                 continue
