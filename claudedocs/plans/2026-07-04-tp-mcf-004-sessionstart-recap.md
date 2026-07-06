@@ -2,7 +2,7 @@
 
 > **For agentic workers:** Execute this plan task-by-task via superpowers:subagent-driven-development or superpowers:executing-plans if available; otherwise execute the checkbox (`- [ ]`) steps literally, in order, committing exactly where the plan says. Read the master plan first: `claudedocs/plans/2026-07-04-memory-context-fabric-build-plan.md` (global constraints + hand-off protocol).
 **Date**: 2026-07-04 · **Packet**: TP-MCF-004 (Memory Context Fabric, Injection Phase 1) · **Status**: PLAN (ready for execution)
-**Branch**: `claude/memory-context-fabric` · **Worktree**: `/Users/hue/code/dopemux-mvp/.claude/worktrees/trusting-engelbart-d2fbfe`
+**Branch**: `claude/memory-context-fabric` · **Worktree**: `<repo-root>/.claude/worktrees/<worktree-name>`
 **Interpreter**: `mise exec -- python` (Python 3.12.13 — verified; do NOT use bare `python3`, the harness one is 3.9)
 
 ---
@@ -100,7 +100,7 @@ Do **not** edit `src/dopemux/memory/__init__.py` (recap is imported lazily by th
 
 - **TDD**: write the failing test first, run it (RED), implement, run again (GREEN). Never skip the RED run.
 - **One commit per task**, staging only that task's files. Do not commit unrelated dirty files that may pre-exist in the worktree.
-- Run all commands **from the worktree root**: `/Users/hue/code/dopemux-mvp/.claude/worktrees/trusting-engelbart-d2fbfe`.
+- Run all commands **from the worktree root**: `<repo-root>/.claude/worktrees/<worktree-name>`.
 - **Hermetic tests**: no Redis, no HTTP, no Docker, no dope-memory service. Local SQLite + `tmp_path` only.
 - **Fail-open invariant**: no code path added to `native_hooks.py` may raise out of `_on_session_start`. Missing ledger / empty ledger / malformed rows / corrupt file → inject nothing.
 - **Read-only invariant (structural)**: recap opens the ledger via `file:...?mode=ro` URI only. No INSERT/UPDATE/DELETE anywhere in `recap.py`.
@@ -109,7 +109,7 @@ Do **not** edit `src/dopemux/memory/__init__.py` (recap is imported lazily by th
 ### Pre-flight (no commit)
 
 ```bash
-cd /Users/hue/code/dopemux-mvp/.claude/worktrees/trusting-engelbart-d2fbfe
+cd <repo-root>/.claude/worktrees/<worktree-name>
 git status --short            # note pre-existing dirty files; leave them alone
 git branch --show-current     # expected: claude/memory-context-fabric
 mise exec -- python --version # expected: Python 3.12.13
