@@ -415,3 +415,75 @@ def test_pm_transition_from_phase_unknown_without_receipt(monkeypatch):
     assert len(phase_events) == 1
     assert phase_events[0]["from_phase"] == "unknown"
     assert phase_events[0]["from_status"] is None
+
+
+def test_pm_transition_emits_blocker_cleared_when_leaving_blocked(monkeypatch):
+    """A transition out of BLOCKED emits a promotable blocker.cleared event."""
+    import src.dopemux.pm.writes as writes_module
+
+    emitted = []
+    monkeypatch.setattr(
+        writes_module,
+        "try_emit_promotable_capture_event",
+        lambda event_type, payload, **kwargs: emitted.append((event_type, payload)),
+    )
+
+    class BlockedReceiptClient(MockOrchestratorClient):
+        def transition(self, **kwargs):
+            super().transition(**kwargs)
+            return {"transition_receipt": {"status": "success", "from_status": "BLOCKED"}}
+
+    config = PMWriteConfig(
+        leantime_client=MockLeantimeClient(),
+        orchestrator_client=BlockedReceiptClient(),
+        conport_client=None,
+        memory_client=None,
+        project_id="proj-7",
+    )
+
+    pm_transition_work_item(
+        config=config,
+        task_id="task-9",
+        new_status=PMTaskStatus.IN_PROGRESS,
+        reason="unblocked by fix",
+        idempotency_key="key-5",
+        expected_version=2,
+    )
+
+    types = [t for (t, _p) in emitted]
+    assert "blocker.cleared" in types
+    cleared = [p for (t, p) in emitted if t == "blocker.cleared"][0]
+    assert cleared["task_id"] == "task-9"
+    # from_phase on the phase event should reflect BLOCKED -> review
+    phase = [p for (t, p) in emitted if t == "workflow.phase_changed"][0]
+    assert phase["from_phase"] == "review"
+
+
+def test_pm_transition_no_blocker_cleared_without_blocked_prior(monkeypatch):
+    import src.dopemux.pm.writes as writes_module
+
+    emitted = []
+    monkeypatch.setattr(
+        writes_module,
+        "try_emit_promotable_capture_event",
+        lambda event_type, payload, **kwargs: emitted.append(event_type),
+    )
+
+    config = PMWriteConfig(
+        leantime_client=MockLeantimeClient(),
+        orchestrator_client=MockOrchestratorClient(),
+        conport_client=None,
+        memory_client=None,
+        project_id="proj-7",
+    )
+
+    pm_transition_work_item(
+        config=config,
+        task_id="task-9",
+        new_status=PMTaskStatus.IN_PROGRESS,
+        reason="starting",
+        idempotency_key="key-6",
+        expected_version=1,
+    )
+
+    assert "blocker.cleared" not in emitted

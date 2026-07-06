@@ -14,16 +14,25 @@ from chronicle.store import VALID_CATEGORIES, VALID_OUTCOMES, VALID_WORKFLOW_PHA
 
 from .redactor import Redactor
 
-# Phase 1 promotable event types (canonical dotted form)
+# Phase 1 promotable event types (canonical dotted form).
+# Phase 1.1 extension (2026-07-04 service audit): task.created,
+# blocker.cleared, work.untracked_detected, work.untracked_converted.
+# Keep in sync with src/dopemux/memory/capture_client.py
+# PROMOTABLE_CAPTURE_EVENT_TYPES and services/dopecon-bridge/
+# dopecon_bridge/promotable_mirror.py PROMOTABLE_EVENT_TYPES.
 PROMOTABLE_EVENT_TYPES = frozenset(
     [
         "decision.logged",
+        "task.created",
         "task.completed",
         "task.failed",
         "task.blocked",
+        "blocker.cleared",
         "error.encountered",
         "workflow.phase_changed",
         "manual.memory_store",
+        "work.untracked_detected",
+        "work.untracked_converted",
     ]
 )
 
@@ -32,10 +41,14 @@ IMPORTANCE_SCORES = {
     "decision.logged": 7,
     "task.failed": 7,
     "task.blocked": 7,
+    "blocker.cleared": 6,
     "error.encountered": 6,
     "task.completed": 5,
+    "task.created": 4,
     "workflow.phase_changed": 5,
     "manual.memory_store": 6,  # default, can be overridden by payload
+    "work.untracked_detected": 5,
+    "work.untracked_converted": 6,
 }
 
 
@@ -323,6 +336,115 @@ class PromotionEngine:
             outcome="blocked",
             importance_score=7,
             details=self.redactor.redact_payload({"task_id": task_id, "reason": reason}),
+            tags=self._extract_tags(data),
+        )
+
+    def _promote_task_created(self, data: dict[str, Any]) -> Optional[PromotedEntry]:
+        """Promote task.created event."""
+        task_id = data.get("task_id")
+        title = data.get("title", "")
+
+        if not task_id and not title:
+            return None
+
+        return PromotedEntry(
+            category="planning",
+            entry_type="task_event",
+            summary=f"Created: {title or task_id}"[:500],
+            outcome="in_progress",
+            importance_score=4,
+            details=self.redactor.redact_payload({"task_id": task_id}),
+            tags=self._extract_tags(data),
+        )
+
+    def _promote_blocker_cleared(self, data: dict[str, Any]) -> Optional[PromotedEntry]:
+        """Promote blocker.cleared event (task left BLOCKED state)."""
+        task_id = data.get("task_id")
+        title = data.get("title", "")
+        reason = data.get("reason", "")
+
+        if not task_id and not title:
+            return None
+
+        summary = f"Blocker cleared: {title or task_id}"
+        if reason:
+            summary += f" - {reason[:100]}"
+
+        return PromotedEntry(
+            category="implementation",
+            entry_type="resolution",
+            summary=summary[:500],
+            outcome="success",
+            importance_score=6,
+            details=self.redactor.redact_payload({"task_id": task_id, "reason": reason}),
+            tags=self._extract_tags(data),
+        )
+
+    def _promote_work_untracked_detected(
+        self, data: dict[str, Any]
+    ) -> Optional[PromotedEntry]:
+        """Promote work.untracked_detected event.
+
+        Emitted when uncommitted work with no matching tracked task is
+        surfaced (session-start probe, `dopemux start`, or Serena F001).
+        """
+        branch = data.get("branch", "")
+        total_files = data.get("total_files")
+
+        if not branch and total_files is None:
+            return None
+
+        parts = []
+        for key, label in (
+            ("staged_count", "staged"),
+            ("unstaged_count", "unstaged"),
+            ("untracked_count", "untracked"),
+        ):
+            count = data.get(key)
+            if count:
+                parts.append(f"{count} {label}")
+        detail = f" ({', '.join(parts)})" if parts else ""
+        summary = (
+            f"Untracked work detected on {branch or 'unknown branch'}: "
+            f"{total_files if total_files is not None else '?'} files{detail}"
+        )
+
+        return PromotedEntry(
+            category="implementation",
+            entry_type="task_event",
+            summary=summary[:500],
+            outcome="in_progress",
+            importance_score=5,
+            details=self.redactor.redact_payload(
+                {"branch": branch, "total_files": total_files}
+            ),
+            tags=self._extract_tags(data),
+        )
+
+    def _promote_work_untracked_converted(
+        self, data: dict[str, Any]
+    ) -> Optional[PromotedEntry]:
+        """Promote work.untracked_converted event (untracked work → real task)."""
+        task_id = data.get("task_id")
+        title = data.get("title", "")
+        branch = data.get("branch", "")
+
+        if not task_id and not title:
+            return None
+
+        summary = f"Untracked work converted to task: {title or task_id}"
+        if branch:
+            summary += f" (from {branch})"
+
+        return PromotedEntry(
+            category="planning",
+            entry_type="milestone",
+            summary=summary[:500],
+            outcome="success",
+            importance_score=6,
+            details=self.redactor.redact_payload(
+                {"task_id": task_id, "branch": branch}
+            ),
             tags=self._extract_tags(data),
         )
 
