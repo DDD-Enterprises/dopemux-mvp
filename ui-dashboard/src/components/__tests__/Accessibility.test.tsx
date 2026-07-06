@@ -76,9 +76,15 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
 
   // Verify TeamDashboard root interactive surface and summary Tooltip
   expect(content).toContain('tabIndex={0}');
-  expect(content).toMatch(/<Tooltip[^>]*title=\{`Average Team Load: \$\{teamAverageLoad\}% • \$\{statusStyles\[teamStatus\]\.label\}\. AI Insight: \$\{teamInsight\}`\}[^>]*arrow/);
-  expect(content).toContain('aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}. AI Insight: ${teamInsight}`}');
+  expect(content).toMatch(/<Tooltip[^>]*title=\{`Average Team Load: \$\{teamAverageLoad\}% • \$\{statusStyles\[teamStatus\]\.label\}`\}[^>]*arrow/);
+  expect(content).toContain('aria-label={`Team dashboard signal summary. Average load: ${teamAverageLoad}%. Status: ${statusStyles[teamStatus].label}`}');
   expect(content).toContain("letterSpacing: '0.16em'");
+
+  // Verify copyable AI Insight block
+  expect(content).toContain('role="button"');
+  expect(content).toContain('aria-label={isCopied ? `AI Recommendation: ${teamInsight} (Copied)` : `Copy AI Recommendation: ${teamInsight}`}');
+  expect(content).toContain('animation: \'insight-copy-pulse 0.4s ease-out\'');
+  expect(content).toContain('cursor: \'copy\'');
   expect(content).toContain('AVG LOAD');
   expect(content).toContain('borderColor: teamStatusColor');
   expect(content).toContain('boxShadow: `0 0 20px ${alpha(teamStatusColor, 0.2)}`');
