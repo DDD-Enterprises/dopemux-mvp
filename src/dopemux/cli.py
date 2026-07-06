@@ -1969,6 +1969,19 @@ def start(
         except Exception as e:
             console.print(f"[warning]⚠️ Protection check unavailable: {e}[/warning]")
 
+        # Untracked-work surfacing (lite probe; Serena F001 owns the
+        # actionable lifecycle). Advisory only — no prompt, fail-open.
+        try:
+            from .untracked_work import probe_untracked_work
+
+            advisory = probe_untracked_work(
+                str(project_path), source_probe="dopemux_start"
+            )
+            if advisory:
+                console.logger.info(f"[warning]{advisory}[/warning]")
+        except Exception:
+            logger.debug("untracked-work probe unavailable", exc_info=True)
+
     instance_id = None
     port_base = None
     worktree_path = None

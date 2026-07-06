@@ -63,6 +63,11 @@ except ImportError:
     def emit_mcp_health(_root): return None  # type: ignore[misc]
 
 try:
+    from untracked_work_probe import emit_untracked_work_advisory
+except ImportError:
+    def emit_untracked_work_advisory(_root, _sid=None): return None  # type: ignore[misc]
+
+try:
     from dcp_surface_guard import surface_guard_block, surface_guard_warnings
 except ImportError:
     def surface_guard_block(_tool, _inp, _root): return None  # type: ignore[misc]
@@ -336,14 +341,15 @@ class NativeHookAdapter:
         reset_edit_counter(self.project_root, self.session_id)
         mcp_health = emit_mcp_health(self.project_root)
         orch_ctx = emit_session_context(self.project_root)
+        untracked_ctx = emit_untracked_work_advisory(self.project_root, self.session_id)
         state = self._active_state()
         if not state:
-            combined = "\n\n".join(filter(None, [mcp_health, orch_ctx]))
+            combined = "\n\n".join(filter(None, [mcp_health, orch_ctx, untracked_ctx]))
             if combined:
                 return self._allow(additional_context=combined, hook_event_name="SessionStart")
             return self._allow()
         workflow_ctx = _workflow_context_lines(state, include_gates=True)
-        combined = "\n\n".join(filter(None, [mcp_health, orch_ctx, workflow_ctx]))
+        combined = "\n\n".join(filter(None, [mcp_health, orch_ctx, workflow_ctx, untracked_ctx]))
         return self._allow(
             system_message=f"Dopemux workflow mode: {state.mode}",
             additional_context=combined or None,
