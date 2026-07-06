@@ -12,6 +12,7 @@
   "depends_on": [
     "TP-DMX-SERVICE-INVESTIGATION-20260704"
   ],
+  "depends_on_note": "Parent packet lands on main via PR #1004; rebase this branch after that merge.",
   "repo_binding": {
     "project_id": "dopemux-mvp",
     "repo_marker": "AGENTS.md",

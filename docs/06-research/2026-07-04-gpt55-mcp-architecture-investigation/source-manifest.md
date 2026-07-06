@@ -79,9 +79,9 @@ prelude: Source manifest for GPT-5.5 MCP architecture packet.
 
 ## Recent External Synthesis Attachments
 
-- `/Users/hue/.codex/attachments/252931e6-3387-4b90-a8c0-47fa3f942310/pasted-text.txt`
+- `~/.codex/attachments/<attachment-id>/pasted-text.txt (local-only; see pre-run-evidence.md summary)`
   - Advisory synthesis verdict: packetize correctness/read-only/provenance slices now; defer mutating UX until F001 callable surface and degraded-state contracts are honest.
-- `/Users/hue/.codex/attachments/ad6a0ce8-671c-4ddc-9dda-a6c7d93ed2f8/pasted-text.txt`
+- `~/.codex/attachments/<attachment-id>/pasted-text.txt (local-only; see pre-run-evidence.md summary)`
   - Advisory synthesis verdict: perform live reconciliation first, especially around PR #1002, Docker Scout, PAL ensure, live Redis promotion, Exa retirement, and unresolved review threads.
 
 ## Validation Surfaces
@@ -99,5 +99,5 @@ prelude: Source manifest for GPT-5.5 MCP architecture packet.
 
 ## External Transcript Paths
 
-- Main transcript: `/Users/hue/.claude/projects/-Users-hue-code-dopemux-mvp--claude-worktrees-trusting-engelbart-d2fbfe/b05cfc29-976f-4323-8bdc-ee9a341fd6bb.jsonl`
-- Subagents: `/Users/hue/.claude/projects/-Users-hue-code-dopemux-mvp--claude-worktrees-trusting-engelbart-d2fbfe/b05cfc29-976f-4323-8bdc-ee9a341fd6bb/subagents/*.jsonl`
+- Main transcript: `~/.claude/projects/<project-slug>/b05cfc29-976f-4323-8bdc-ee9a341fd6bb.jsonl`
+- Subagents: `~/.claude/projects/<project-slug>/b05cfc29-976f-4323-8bdc-ee9a341fd6bb/subagents/*.jsonl`

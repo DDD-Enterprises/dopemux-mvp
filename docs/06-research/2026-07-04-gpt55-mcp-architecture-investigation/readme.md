@@ -11,7 +11,7 @@ prelude: Upload guide for the GPT-5.5 MCP architecture investigation packet.
 ---
 # GPT-5.5 MCP Architecture Investigation Packet
 
-Use this directory as the upload/paste package for GPT-5.5 Pro web when asking it to design the optimal Dopemux MCP/service architecture and implementation roadmap.
+Use this directory as the evidence package for GPT-5.5 Pro web (paste prompts; upload bundle markdown files) when asking it to design the optimal Dopemux MCP/service architecture and implementation roadmap.
 
 ## Preferred Phased Upload Order
 
@@ -19,7 +19,7 @@ Use this directory as the upload/paste package for GPT-5.5 Pro web when asking i
 2. Upload `pre-run-evidence.md` with Phase 0 so GPT-5.5 sees current branch, PR, service, and validation state.
 3. Run `prompt-00-evidence-triage.md` with `bundle-00-evidence-triage.md`.
 4. Continue through `prompt-01-current-state.md` to `prompt-06-final-synthesis.md`, uploading only the matching bundle and carry-forward output for each phase.
-5. Use `gpt55-web-prompt.md` only as a one-shot fallback if the phased run is not possible.
+5. Paste `gpt55-web-prompt.md` into the web UI as a one-shot fallback if the phased run is not possible (do not upload it as a file attachment).
 6. Upload source files listed in `source-manifest.md` only when GPT-5.5 asks for deeper code inspection.
 
 ## Evidence Rules
