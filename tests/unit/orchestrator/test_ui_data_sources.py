@@ -150,8 +150,10 @@ class TestUIDataSources:
         assert data["kind"] == "pr_queue"
 
     def test_get_context_data(self, monkeypatch):
+        from dopemux.orchestrator.ui import data_sources
         monkeypatch.setattr(
-            "dopemux.orchestrator.ui.data_sources.context_status",
+            data_sources,
+            "context_status",
             lambda *args, **kwargs: {"dope-context": {"fresh": True}, "ConPort": {"fresh": True}}
         )
         data = get_context_data()

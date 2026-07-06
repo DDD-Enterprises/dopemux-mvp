@@ -752,34 +752,46 @@ class ContextManager:
         open_files = []
 
         try:
-            # Find recently modified files with security validation
-            for file_path in self.project_path.rglob("*"):
-                # Validate path is within project boundaries
-                if not self._validate_project_path(file_path):
-                    continue
-
-                if (
-                    file_path.is_file()
-                    and not any(part.startswith(".") for part in file_path.parts)
-                    and file_path.suffix
-                    in [".py", ".js", ".ts", ".rs", ".md", ".yaml", ".json"]
-                ):
-
-                    # Check if modified in last hour
-                    mtime = file_path.stat().st_mtime
-                    if time.time() - mtime < 3600:  # 1 hour
-                        open_files.append(
-                            {
-                                "path": str(file_path.relative_to(self.project_path)),
-                                "absolute_path": str(file_path),
-                                "last_modified": datetime.fromtimestamp(
-                                    mtime
-                                ).isoformat(),
-                                "cursor_position": {"line": 1, "column": 1},  # Default
-                                "scroll_position": 0,
-                                "unsaved_changes": False,
-                            }
-                        )
+            # Find recently modified files efficiently by pruning hidden directories
+            import os
+            now = time.time()
+            valid_exts = {".py", ".js", ".ts", ".rs", ".md", ".yaml", ".json"}
+            
+            for root, dirs, files in os.walk(self.project_path):
+                # Prune hidden directories (like .claude, .git, .venv) and node_modules
+                dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ("node_modules", "venv", "env")]
+                
+                for file_name in files:
+                    if file_name.startswith("."):
+                        continue
+                        
+                    file_path = Path(root) / file_name
+                    if file_path.suffix not in valid_exts:
+                        continue
+                        
+                    # Validate path is within project boundaries
+                    if not self._validate_project_path(file_path):
+                        continue
+                        
+                    try:
+                        mtime = file_path.stat().st_mtime
+                        if now - mtime < 3600:  # 1 hour
+                            open_files.append(
+                                {
+                                    "path": str(file_path.relative_to(self.project_path)),
+                                    "absolute_path": str(file_path),
+                                    "last_modified": datetime.fromtimestamp(
+                                        mtime
+                                    ).isoformat(),
+                                    "cursor_position": {"line": 1, "column": 1},  # Default
+                                    "scroll_position": 0,
+                                    "unsaved_changes": False,
+                                }
+                            )
+                            if len(open_files) >= 10:
+                                return open_files
+                    except OSError:
+                        pass
 
         except Exception as e:
             console.print(f"[yellow]Warning: Could not get open files: {e}[/yellow]")
