@@ -36,15 +36,21 @@ CAPTURE_MODES = {
     CAPTURE_MODE_AUTO,
 }
 
+# Keep in sync with services/working-memory-assistant/promotion/promotion.py
+# PROMOTABLE_EVENT_TYPES (the promotion engine is the canonical contract).
 PROMOTABLE_CAPTURE_EVENT_TYPES = frozenset(
     {
         "decision.logged",
+        "task.created",
         "task.completed",
         "task.failed",
         "task.blocked",
+        "blocker.cleared",
         "error.encountered",
         "workflow.phase_changed",
         "manual.memory_store",
+        "work.untracked_detected",
+        "work.untracked_converted",
     }
 )
 

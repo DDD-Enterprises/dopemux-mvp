@@ -120,3 +120,18 @@ async def test_mirror_never_raises_on_redis_failure():
         source="conport",
     )
     assert written is False
+
+
+def test_new_contract_types_are_promotable():
+    """Phase 1.1 extension types mirror correctly."""
+    for event_type in (
+        "task.created",
+        "blocker.cleared",
+        "work.untracked_detected",
+        "work.untracked_converted",
+    ):
+        envelope = MIRROR.build_mirror_envelope(
+            event_type, {"workspace_id": "/ws"}, "test"
+        )
+        assert envelope is not None, event_type
+        assert envelope["type"] == event_type
