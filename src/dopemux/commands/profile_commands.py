@@ -18,15 +18,16 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ..console import console
 from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
+from ..profile_parser import ProfileParser, ProfileParseError
 
 @click.group()
 def profile():
     """
     📋 Contextual Attunement: Manage MCP profiles for tool selection
 
-    Orchestrates the selection and application of ritual profiles. These 
-    profiles define the cognitive capabilities of the cockpit, mounting specific 
-    MCP servers and tuning ADHD-optimized attention parameters to align with 
+    Orchestrates the selection and application of ritual profiles. These
+    profiles define the cognitive capabilities of the cockpit, mounting specific
+    MCP servers and tuning ADHD-optimized attention parameters to align with
     the active mission profile.
 
     Capabilities:
@@ -44,7 +45,7 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
     """
     📋 Catalog Rituals: List all available cognitive profiles
 
-    Displays the full index of registered profiles, detailing their 
+    Displays the full index of registered profiles, detailing their
     prescribed MCP server stacks and behavioral metadata.
     """
     try:
@@ -96,6 +97,14 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
     except FileNotFoundError as e:
         console.logger.error(f"[error]Error: {e}[/error]")
         sys.exit(1)
+    except ProfileParseError as e:
+        console.logger.error(f"[error]Parse Error:[/error] {e.message}")
+        if e.errors:
+            for err in e.errors:
+                loc = " → ".join(str(l) for l in err.get("loc", []))
+                msg = err.get("msg", "Unknown error")
+                console.logger.info(f"  • {loc}: {msg}")
+        sys.exit(1)
     except Exception as e:
         console.logger.error(f"[error]Unexpected error: {e}[/error]")
         if ctx.obj.get("verbose"):
@@ -111,7 +120,7 @@ def profile_init_cmd(ctx, profile_name: Optional[str], output_dir: Optional[str]
     """
     ✨ Forge Persona: Create a personalized profile using history analysis
 
-    Launches the profile synthesis wizard to generate a new ritual profile 
+    Launches the profile synthesis wizard to generate a new ritual profile
     based on git history patterns and cognitive preferences.
     """
     try:
@@ -147,7 +156,7 @@ def profile_auto_enable_cmd(ctx, check_interval: Optional[int], threshold: Optio
     """
     🔍 Engage Suggestion Daemon: Enable context-aware profile detection
 
-    Activates the background monitoring daemon to suggest profile transitions 
+    Activates the background monitoring daemon to suggest profile transitions
     based on active directory coordinates and file system rituals.
     """
     try:
@@ -189,7 +198,7 @@ def profile_auto_disable_cmd(ctx):
     """
     ⏸️  Silence Suggestion Daemon: Disable auto-detection rituals
 
-    Deactivates the background monitoring daemon, halting all automatic 
+    Deactivates the background monitoring daemon, halting all automatic
     profile transition suggestions.
     """
     try:
@@ -218,7 +227,7 @@ def profile_auto_status_cmd(ctx):
     """
     📊 Monitoring HUD: Show auto-detection configuration and status
 
-    Displays the current operational state and configuration parameters 
+    Displays the current operational state and configuration parameters
     of the profile suggestion daemon.
     """
     try:
@@ -260,7 +269,7 @@ def profile_stats_cmd(ctx, days: int):
     """
     📊 Ritual Analytics: Show profile usage trends and patterns
 
-    Renders a high-fidelity dashboard of profile transition history, 
+    Renders a high-fidelity dashboard of profile transition history,
     accuracy metrics, and optimization suggestions.
     """
     try:
@@ -320,7 +329,7 @@ def profile_analyze_usage_cmd(ctx, days_back: int, max_commits: int, repo_path: 
     """
     🔬 Pattern Synthesis: Analyze git usage to suggest profile defaults
 
-    Performs deep inspection of repository history to identify common 
+    Performs deep inspection of repository history to identify common
     rituals and suggest the most effective default profiles.
     """
     try:
@@ -345,12 +354,14 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
     """
     📄 Inspect Persona: Show detailed profile information
 
-    Displays the complete architectural specification for a single 
+    Displays the complete architectural specification for a single
     ritual profile, including all cognitive constraints and MCP servers.
     """
     try:
-        parser = ProfileParser(Path(profile_dir) if profile_dir else None)
-        profile_paths = parser.discover_profiles()
+        from ..profile_commands import get_profiles_directory
+        profiles_directory = Path(profile_dir) if profile_dir else get_profiles_directory()
+        parser = ProfileParser()
+        profile_paths = list(profiles_directory.glob("*.yaml"))
 
         # Find matching profile
         profile_path = None
@@ -361,7 +372,7 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
 
         if not profile_path:
             console.logger.info(f"[error]Profile '{profile_name}' not found[/error]")
-            console.logger.info(f"\nAvailable profiles in {parser.profile_dir}:")
+            console.logger.info(f"\nAvailable profiles in {profiles_directory}:")
             for path in profile_paths:
                 console.logger.info(f"  • {path.stem}")
             sys.exit(1)
@@ -375,7 +386,10 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
             return
 
         # Load and validate profile
-        p = parser.load_profile(profile_path)
+        collection = parser.parse_file(profile_path)
+        p = collection.profiles[0] if collection.profiles else None
+        if not p:
+            raise ProfileParseError("No profile found in file", file_path=profile_path)
 
         # Display formatted profile info
         console.logger.info(f"\n[mint]Profile: {p.display_name}[/mint]")
@@ -418,10 +432,13 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
 
         console.logger.info(f"\n[success]✓ Profile is valid[/success]")
 
-    except ProfileValidationError as e:
-        console.logger.error(f"[error]Validation Error:[/error] {e.reason}")
-        if e.fix_suggestion:
-            console.logger.info(f"[warning]Suggestion:[/warning] {e.fix_suggestion}")
+    except ProfileParseError as e:
+        console.logger.error(f"[error]Validation Error:[/error] {e.message}")
+        if e.errors:
+            for err in e.errors:
+                loc = " → ".join(str(l) for l in err.get("loc", []))
+                msg = err.get("msg", "Unknown error")
+                console.logger.info(f"  • {loc}: {msg}")
         sys.exit(1)
     except FileNotFoundError as e:
         console.logger.error(f"[error]Error: {e}[/error]")
@@ -442,16 +459,26 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
     """
     ✅ Verify Integrity: Validate profile YAML and configuration
 
-    Performs a strict structural audit of profile artifacts to ensure 
+    Performs a strict structural audit of profile artifacts to ensure
     schema compliance and system compatibility.
     """
     try:
-        parser = ProfileParser(Path(profile_dir) if profile_dir else None)
+        from ..profile_commands import get_profiles_directory
+        profiles_directory = Path(profile_dir) if profile_dir else get_profiles_directory()
+        parser = ProfileParser(validate_mcps=False)
 
         if all:
             # Validate all profiles
             console.logger.info("[info]Validating all profiles...[/info]\n")
-            profile_set = parser.load_all_profiles(fail_fast=False)
+            valid_profiles = []
+            errors = []
+
+            for path in profiles_directory.glob("*.yaml"):
+                try:
+                    collection = parser.parse_file(path)
+                    valid_profiles.extend(collection.profiles)
+                except ProfileParseError as e:
+                    errors.append((path, e))
 
             # Show results
             table = styled_table(
@@ -461,23 +488,19 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
                 ("Message", {"style": "text", "no_wrap": False}),
             )
 
-            for p in profile_set.profiles:
+            for p in valid_profiles:
                 table.add_row(p.name, "[success]✓ Valid[/success]", f"{len(p.mcps)} MCP servers")
 
-            for path, error in profile_set.errors:
-                error_msg = str(error)
-                if isinstance(error, ProfileValidationError):
-                    error_msg = f"{error.reason}"
-                table.add_row(path.stem, "[error]✗ Invalid[/error]", error_msg)
+            for path, error in errors:
+                table.add_row(path.stem, "[error]✗ Invalid[/error]", error.message)
 
             console.logger.info(table)
 
             # Summary
-            total = len(profile_set.profiles) + len(profile_set.errors)
-            valid = len(profile_set.profiles)
-            console.logger.info(f"\n[bold]Summary:[/bold] {valid}/{total} profiles valid")
+            total = len(valid_profiles) + len(errors)
+            console.logger.info(f"\n[bold]Summary:[/bold] {len(valid_profiles)}/{total} profiles valid")
 
-            if profile_set.errors:
+            if errors:
                 sys.exit(1)
 
         else:
@@ -488,7 +511,7 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
                 console.logger.info("   or: dopemux profile validate --all")
                 sys.exit(1)
 
-            profile_paths = parser.discover_profiles()
+            profile_paths = list(profiles_directory.glob("*.yaml"))
             profile_path = None
             for path in profile_paths:
                 if path.stem == profile_name:
@@ -502,7 +525,10 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
             console.logger.info(f"[info]Validating profile: {profile_name}[/info]\n")
 
             # Load and validate
-            p = parser.load_profile(profile_path)
+            collection = parser.parse_file(profile_path)
+            p = collection.profiles[0] if collection.profiles else None
+            if not p:
+                raise ProfileParseError("No profile found in file", file_path=profile_path)
 
             console.logger.info(f"[success]✓ YAML syntax is valid[/success]")
             console.logger.info(f"[success]✓ Profile schema is valid[/success]")
@@ -514,7 +540,7 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
 
             console.logger.info(f"\n[success]Profile '{profile_name}' is valid ✓[/success]")
 
-    except ProfileValidationError as e:
+    except ProfileParseError as e:
         console.logger.error(f"[error]✗ Validation failed:[/error] {e.reason}")
         if e.fix_suggestion:
             console.logger.info(f"[warning]💡 Suggestion:[/warning] {e.fix_suggestion}")
