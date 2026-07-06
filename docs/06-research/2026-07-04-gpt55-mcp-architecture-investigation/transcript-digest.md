@@ -20,7 +20,7 @@ Raw Claude transcript JSONL is not tracked in this packet. It can contain privat
 Path:
 
 ```text
-/Users/hue/.claude/projects/-Users-hue-code-dopemux-mvp--claude-worktrees-trusting-engelbart-d2fbfe/b05cfc29-976f-4323-8bdc-ee9a341fd6bb.jsonl
+~/.claude/projects/<project-slug>/b05cfc29-976f-4323-8bdc-ee9a341fd6bb.jsonl
 ```
 
 Digest:
@@ -31,7 +31,7 @@ lines: 1797
 bytes: 4421978
 first: 2026-07-03T07:50:33.696Z
 last: 2026-07-04T18:45:33.258Z
-cwd: /Users/hue/code/dopemux-mvp/.claude/worktrees/trusting-engelbart-d2fbfe
+cwd: <repo-root>/.claude/worktrees/<worktree-name>
 branches observed: claude/trusting-engelbart-d2fbfe, claude/mcp-fleet-audit-complete
 ```
 

@@ -12,7 +12,7 @@ prelude: Current pre-run evidence for the GPT-5.5 MCP architecture packet.
 # Pre-Run Evidence
 
 Collected at `2026-07-04T19:50:15Z` from worktree:
-`/Users/hue/code/dopemux-mvp/.worktrees/gpt55-mcp-architecture-investigation-20260704`
+`<repo-root>/.worktrees/gpt55-mcp-architecture-investigation-20260704`
 
 This file is an upload companion for Phase 0 and Phase 1. It records current
 repo, branch, PR, service-inventory, and validation evidence before running the
@@ -32,8 +32,8 @@ do not outrank repo source, live GitHub state, tests, config, or runtime output.
 
 | Attachment | Lines | SHA-256 | Pre-run use |
 | --- | ---: | --- | --- |
-| `/Users/hue/.codex/attachments/252931e6-3387-4b90-a8c0-47fa3f942310/pasted-text.txt` | 643 | `16d34204631fc84cc05b50b5de5476b7f31d0b7d0897158a39357d0b0f0814e7` | `ADVISORY`: P0/P1 packetization warning; defer mutating UX until F001 callable/degraded contracts are honest. |
-| `/Users/hue/.codex/attachments/ad6a0ce8-671c-4ddc-9dda-a6c7d93ed2f8/pasted-text.txt` | 1007 | `dcff43f7b4ac6cfc0d96aaddf380faed1fa35cd00a72098dc4a3085199f54b47` | `ADVISORY`: PR #1002/live reconciliation warning; especially Docker Scout, PAL, Redis promotion, Exa, and review-thread state. |
+| `~/.codex/attachments/<attachment-id>/pasted-text.txt (local-only; see pre-run-evidence.md summary)` | 643 | `16d34204631fc84cc05b50b5de5476b7f31d0b7d0897158a39357d0b0f0814e7` | `ADVISORY`: P0/P1 packetization warning; defer mutating UX until F001 callable/degraded contracts are honest. |
+| `~/.codex/attachments/<attachment-id>/pasted-text.txt (local-only; see pre-run-evidence.md summary)` | 1007 | `dcff43f7b4ac6cfc0d96aaddf380faed1fa35cd00a72098dc4a3085199f54b47` | `ADVISORY`: PR #1002/live reconciliation warning; especially Docker Scout, PAL, Redis promotion, Exa, and review-thread state. |
 
 ## Ref Refresh
 
