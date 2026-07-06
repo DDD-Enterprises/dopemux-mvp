@@ -49,7 +49,7 @@ Claude Code writes session transcripts under `~/.claude/projects/<project-slug>/
 ls ~/.claude/projects/ | grep -i "$(basename "$(git rev-parse --show-toplevel)" | tr '[:upper:]' '[:lower:]')"
 ```
 
-Expected output: one or more directory names containing your repo's basename (e.g. `-Users-hue-code-dopemux-mvp`). Pick the directory that matches your actual working tree (main repo root, not a worktree subpath, unless you are actively in a worktree session with its own recorded transcripts).
+Expected output: one or more directory names containing your repo's basename (e.g. `<project-slug>`). Pick the directory that matches your actual working tree (main repo root, not a worktree subpath, unless you are actively in a worktree session with its own recorded transcripts).
 
 Then list transcript files in that directory, newest first:
 
@@ -364,7 +364,7 @@ def test_parse_missing_timestamp_returns_turn_with_ts_none():
 - [ ] **2.2 — Run the test file and confirm it fails on import** (module doesn't exist yet):
 
 ```bash
-cd /Users/hue/code/dopemux-mvp/.claude/worktrees/trusting-engelbart-d2fbfe
+cd <repo-root>/.claude/worktrees/<worktree-name>
 mise exec -- python -m pytest tests/unit/test_transcript_ingest.py -v
 ```
 
@@ -524,7 +524,7 @@ def parse_transcript_line(line: str) -> Optional[TranscriptTurn]:
 mise exec -- python -m pytest tests/unit/test_transcript_ingest.py -v
 ```
 
-Expected output: 10 tests pass (`test_parse_user_prompt_line`, `test_parse_assistant_response_line`, `test_parse_tool_call_line`, `test_parse_tool_result_line`, `test_parse_skips_non_turn_attachment_record`, `test_parse_skips_queue_operation_record`, `test_parse_skips_blank_line`, `test_parse_skips_malformed_json_never_raises`, `test_parse_missing_timestamp_returns_turn_with_ts_none`) — 9 test functions, some with multiple asserts; `9 passed`.
+Expected output: 9 tests pass (`test_parse_user_prompt_line`, `test_parse_assistant_response_line`, `test_parse_tool_call_line`, `test_parse_tool_result_line`, `test_parse_skips_non_turn_attachment_record`, `test_parse_skips_queue_operation_record`, `test_parse_skips_blank_line`, `test_parse_skips_malformed_json_never_raises`, `test_parse_missing_timestamp_returns_turn_with_ts_none`) — 9 test functions, some with multiple asserts; `9 passed`.
 
 - [ ] **2.5 — Commit.**
 
@@ -1476,7 +1476,7 @@ EOF
 ### 7.1 Run the full targeted suite
 
 ```bash
-cd /Users/hue/code/dopemux-mvp/.claude/worktrees/trusting-engelbart-d2fbfe
+cd <repo-root>/.claude/worktrees/<worktree-name>
 mise exec -- python -m pytest tests/unit/test_transcript_ingest.py tests/unit/test_cli_memory_ingest_transcript.py tests/unit/test_memory_capture_client.py -v
 ```
 
@@ -1543,6 +1543,6 @@ Task 7 is verification-only — there is nothing to commit. If any check fails, 
 
 ## Governance footer
 
-**Authority used**: `claudedocs/memory-context-fabric-design-2026-07-04.md` (v3), `claudedocs/tp-mcf-001-authority-map-2026-07-04.md`, `claudedocs/memory-context-fabric-interfaces-2026-07-04.md`; runtime code `src/dopemux/memory/capture_client.py`, `services/working-memory-assistant/promotion/redactor.py`, `src/dopemux/commands/memory_commands.py`, `src/dopemux/cli.py`; existing test patterns in `tests/unit/test_memory_capture_client.py` and `tests/unit/test_cli_capture_commands.py`; a real 660-line Claude Code session transcript (`~/.claude/projects/-Users-hue-code-dopemux-mvp/6e030b42-66a3-46e3-9588-f1c3cceb683f.jsonl`) inspected directly to verify the JSONL schema and validate the turn-classification rule (counts reconciled: `user_prompt=11, assistant_response=167, tool_call=92, tool_result=92, skipped=298`, total 660).
+**Authority used**: `claudedocs/memory-context-fabric-design-2026-07-04.md` (v3), `claudedocs/tp-mcf-001-authority-map-2026-07-04.md`, `claudedocs/memory-context-fabric-interfaces-2026-07-04.md`; runtime code `src/dopemux/memory/capture_client.py`, `services/working-memory-assistant/promotion/redactor.py`, `src/dopemux/commands/memory_commands.py`, `src/dopemux/cli.py`; existing test patterns in `tests/unit/test_memory_capture_client.py` and `tests/unit/test_cli_capture_commands.py`; a real 660-line Claude Code session transcript (`~/.claude/projects/<project-slug>/6e030b42-66a3-46e3-9588-f1c3cceb683f.jsonl`) inspected directly to verify the JSONL schema and validate the turn-classification rule (counts reconciled: `user_prompt=11, assistant_response=167, tool_call=92, tool_result=92, skipped=298`, total 660).
 **Validation**: plan-authoring only — the code in this plan has not been executed; every "expected output" above is a prediction based on the parser logic and existing `capture_client` behavior, not an observed test run. The implementing agent must actually run every command and confirm PASS before proceeding to the next step — do not mark a step done without having seen the real output.
 **Rollback**: `git reset --hard <commit-before-task-1>` or, per-task, `git revert <task-commit-sha>`; no schema/migration changes are made, so rollback is a pure file/commit reversal with no data-shape cleanup required. The one stateful artifact this packet introduces (`.dopemux/quarantine/transcript/*.json` files) is git-ignorable and safe to delete manually if a real repo run needs to be undone.
