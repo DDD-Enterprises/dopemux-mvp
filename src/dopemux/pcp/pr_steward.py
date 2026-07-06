@@ -102,6 +102,18 @@ def _default_runner(args: list[str]) -> str:
     return result.stdout.strip()
 
 
+_ALLOWED_COMPLETENESS_STATES = frozenset(
+    {"COMPLETE", "MISSING", "UNKNOWN", "NOT_REQUIRED"}
+)
+_SATISFIED_COMPLETENESS_STATES = frozenset({"COMPLETE", "NOT_REQUIRED"})
+
+
+def _normalize_completeness_value(value: object) -> str:
+    if isinstance(value, str) and value in _ALLOWED_COMPLETENESS_STATES:
+        return value
+    return "UNKNOWN"
+
+
 def _derive_intake_completeness(intake: dict) -> dict[str, str]:
     explicit = intake.get("intake_completeness")
     if not isinstance(explicit, dict):
@@ -110,9 +122,7 @@ def _derive_intake_completeness(intake: dict) -> dict[str, str]:
     completeness: dict[str, str] = {}
     for category in _INTAKE_COMPLETENESS_CATEGORIES:
         value = explicit.get(category, "MISSING")
-        if value not in {"COMPLETE", "MISSING", "UNKNOWN", "NOT_REQUIRED"}:
-            value = "UNKNOWN"
-        completeness[category] = value
+        completeness[category] = _normalize_completeness_value(value)
     return completeness
 
 
@@ -170,7 +180,7 @@ def assess_merge_readiness(
         intake = {}
 
     intake_completeness = _derive_intake_completeness(intake)
-    if any(state != "COMPLETE" for state in intake_completeness.values()):
+    if any(state not in _SATISFIED_COMPLETENESS_STATES for state in intake_completeness.values()):
         blocked.append("INCOMPLETE_INTAKE")
 
     # ------------------------------------------------------------------
