@@ -13,14 +13,14 @@ prelude: Research (reference) for dopemux documentation and developer workflows.
 
 Date: 2026-07-04
 Task Packet: `TP-DMX-SERVICE-INVESTIGATION-20260704`
-Worktree: `/Users/hue/code/dopemux-mvp/.worktrees/dopemux-service-investigation-20260704`
+Worktree: `<repo-root>/.worktrees/dopemux-service-investigation-20260704` (see `git worktree list`)
 Branch: `codex/dopemux-service-investigation-20260704`
 
 ## Executive Summary
 
 This audit inspected the live repo shape, not only the curated service catalog. The observed service surface is larger than the Tier 1-4 catalog summary:
 
-- OBSERVED: `43` top-level `services/*` directories exist in this checkout, including non-service artifacts such as `services/.claude` and `services/__pycache__`.
+- OBSERVED: `42` tracked top-level `services/*` directories exist in git (`git ls-tree -d --name-only HEAD services/`), including non-service artifacts such as `services/.claude`.
 - OBSERVED: `24` services are declared in `compose.yml`.
 - OBSERVED: `21` service rows exist in `services/registry.yaml`.
 - OBSERVED: `SERVICE_CATALOG.md` already separates canonical systems from support, adapter, duplicate, legacy, drifted, and unknown surfaces.
@@ -40,7 +40,7 @@ The strongest current architecture remains a multi-plane control stack, not a un
 OBSERVED from live tree/config:
 
 ```text
-top-level services directories: 43
+top-level services directories: 42
 compose services: 24
 registry services: 21
 ```
@@ -48,7 +48,7 @@ registry services: 21
 Top-level `services/*` candidates observed:
 
 ```text
-.claude, __pycache__, activity-capture, adhd-dashboard, adhd-engine,
+.claude, activity-capture, adhd-dashboard, adhd-engine,
 adhd-notifier, adhd_engine, adhd_notifier, agents, claude_brain,
 complexity_coordinator, conport_kg, conport_kg_ui, copilot_transcript_ingester,
 dcp-readonly-facade, dddpg, dope-context, dope-memory, dope-query,
@@ -155,7 +155,7 @@ CONCLUSION: The UX needs a naming reconciliation layer that names canonical runt
 PASS:
 
 - `python -m json.tool task-packets/TP-DMX-SERVICE-INVESTIGATION-20260704.json >/dev/null` exited `0`.
-- `python - <<'PY' ... jsonschema.validate(...) ... PY` exited `0` and printed `schema_ok`.
+- `python - <<'PY' ... jsonschema.validate(...) ... PY` exited `0`.
 - `docker compose -f compose.yml config` exited `0`. Raw output is not reproduced because it rendered sensitive-looking environment values from local compose configuration.
 - `dopemux mcp status` exited `0`. It reported the already-running Dopemux containers, including healthy ConPort, Serena, dope-context, dope-memory, dopecon-bridge, Task Orchestrator, Leantime, PAL, Exa, desktop-commander, Redis, Postgres, and Qdrant surfaces, plus an unhealthy LiteLLM container.
 - `pytest -q tests/mcp tests/unit/dopemux/ui/cockpit` exited `0` with `183` passing tests.

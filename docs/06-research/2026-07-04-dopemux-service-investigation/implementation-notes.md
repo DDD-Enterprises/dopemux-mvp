@@ -18,7 +18,7 @@ Task Packet: `TP-DMX-SERVICE-INVESTIGATION-20260704`.
 
 ## Scope Executed
 
-- Created a dedicated worktree at `/Users/hue/code/dopemux-mvp/.worktrees/dopemux-service-investigation-20260704`.
+- Created a dedicated worktree at `<repo-root>/.worktrees/dopemux-service-investigation-20260704` (see `git worktree list`).
 - Created the repo-bound Task Packet for this audit.
 - Wrote the requested read-only investigation package under `docs/06-research/2026-07-04-dopemux-service-investigation/`.
 - Runtime systems were not started for this audit.

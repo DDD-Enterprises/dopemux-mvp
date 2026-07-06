@@ -1,13 +1,13 @@
 ---
 id: adhd-untracked-work-design
-title: Adhd Untracked Work Design
+title: ADHD Untracked Work Design
 type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-07-04'
 last_review: '2026-07-04'
 next_review: '2026-10-02'
-prelude: Adhd Untracked Work Design (reference) for dopemux documentation and developer
+prelude: ADHD Untracked Work Design (reference) for dopemux documentation and developer
   workflows.
 ---
 # ADHD + Serena/F001 + Task Orchestrator + Cockpit Integration Design
