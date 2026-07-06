@@ -163,6 +163,28 @@ class TestIntakeCompleteness:
         assert result["intake"]["intake_completeness"][category] == "MISSING"
         assert _schema_errors(result) == []
 
+
+    def test_not_required_intake_category_allows_ready(self) -> None:
+        intake = _clean_intake(
+            intake_completeness=_complete_intake_completeness(
+                security_release_approval="NOT_REQUIRED"
+            )
+        )
+        result = _assess(intake)
+        assert result["status"] == "READY"
+        assert "INCOMPLETE_INTAKE" not in result["blocked_reasons"]
+        assert result["intake"]["intake_completeness"]["security_release_approval"] == "NOT_REQUIRED"
+        assert _schema_errors(result) == []
+
+    def test_unhashable_intake_completeness_value_fails_closed(self) -> None:
+        intake = _clean_intake()
+        intake["intake_completeness"]["proof_refs"] = {"bad": "object"}
+        result = _assess(intake)
+        assert result["status"] == "BLOCKED"
+        assert "INCOMPLETE_INTAKE" in result["blocked_reasons"]
+        assert result["intake"]["intake_completeness"]["proof_refs"] == "UNKNOWN"
+        assert _schema_errors(result) == []
+
     def test_missing_intake_completeness_blocks_ready(self) -> None:
         intake = _clean_intake()
         del intake["intake_completeness"]

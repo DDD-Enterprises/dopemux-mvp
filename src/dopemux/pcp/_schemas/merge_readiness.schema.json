@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dopemux.dev/schemas/project_control_plane/merge_readiness.schema.json",
   "title": "PCP Core PR Steward Merge Readiness Signal",
-  "description": "Generic, project-agnostic MERGE_READINESS signal emitted by the PCP-Core PR Steward readiness intake. This signal is ADVISORY only — it NEVER merges, sets PR ready, or mutates any resource. READY is fail-closed: withheld on ANY blocking condition.",
+  "description": "Generic, project-agnostic MERGE_READINESS signal emitted by the PCP-Core PR Steward readiness intake. This signal is ADVISORY only \u2014 it NEVER merges, sets PR ready, or mutates any resource. READY is fail-closed: withheld on ANY blocking condition.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -24,7 +24,12 @@
     "pr_ref": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["repo", "number", "head_ref", "base_ref"],
+      "required": [
+        "repo",
+        "number",
+        "head_ref",
+        "base_ref"
+      ],
       "properties": {
         "repo": {
           "type": "string",
@@ -52,7 +57,11 @@
     },
     "status": {
       "type": "string",
-      "enum": ["READY", "BLOCKED", "NEEDS_SUPERVISOR"],
+      "enum": [
+        "READY",
+        "BLOCKED",
+        "NEEDS_SUPERVISOR"
+      ],
       "description": "Merge readiness verdict. READY is withheld on any blocking condition."
     },
     "blocked_reasons": {
@@ -117,30 +126,62 @@
             "security_release_approval"
           ],
           "properties": {
-            "pr_metadata": { "$ref": "#/$defs/completeness_state" },
-            "head_sha": { "$ref": "#/$defs/completeness_state" },
-            "changed_files": { "$ref": "#/$defs/completeness_state" },
-            "commits": { "$ref": "#/$defs/completeness_state" },
-            "reviews": { "$ref": "#/$defs/completeness_state" },
-            "review_comments": { "$ref": "#/$defs/completeness_state" },
-            "review_threads": { "$ref": "#/$defs/completeness_state" },
-            "issue_comments": { "$ref": "#/$defs/completeness_state" },
-            "checks": { "$ref": "#/$defs/completeness_state" },
-            "proof_refs": { "$ref": "#/$defs/completeness_state" },
-            "proof_freshness": { "$ref": "#/$defs/completeness_state" },
-            "reviewer_classifications": { "$ref": "#/$defs/completeness_state" },
-            "allowlist": { "$ref": "#/$defs/completeness_state" },
-            "security_release_approval": { "$ref": "#/$defs/completeness_state" }
+            "pr_metadata": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "head_sha": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "changed_files": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "commits": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "reviews": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "review_comments": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "review_threads": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "issue_comments": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "checks": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "proof_refs": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "proof_freshness": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "reviewer_classifications": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "allowlist": {
+              "$ref": "#/$defs/completeness_state"
+            },
+            "security_release_approval": {
+              "$ref": "#/$defs/completeness_state"
+            }
           }
         },
         "changed_files": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Paths of files changed in the PR diff."
         },
         "commits": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Commit SHAs included in the PR (head-to-merge-base)."
         },
         "checks": {
@@ -149,7 +190,11 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["name", "conclusion", "stale_to_head"],
+            "required": [
+              "name",
+              "conclusion",
+              "stale_to_head"
+            ],
             "properties": {
               "name": {
                 "type": "string",
@@ -157,7 +202,14 @@
               },
               "conclusion": {
                 "type": "string",
-                "enum": ["SUCCESS", "FAILURE", "NEUTRAL", "STALE", "PENDING", "UNKNOWN"],
+                "enum": [
+                  "SUCCESS",
+                  "FAILURE",
+                  "NEUTRAL",
+                  "STALE",
+                  "PENDING",
+                  "UNKNOWN"
+                ],
                 "description": "Normalised check conclusion. STALE = ran against an older SHA; PENDING = not yet complete; UNKNOWN = could not classify."
               },
               "stale_to_head": {
@@ -178,7 +230,10 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["resolved", "blocking"],
+            "required": [
+              "resolved",
+              "blocking"
+            ],
             "properties": {
               "resolved": {
                 "type": "boolean",
@@ -197,7 +252,10 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["actor", "kind"],
+            "required": [
+              "actor",
+              "kind"
+            ],
             "properties": {
               "actor": {
                 "type": "string",
@@ -205,7 +263,11 @@
               },
               "kind": {
                 "type": "string",
-                "enum": ["HUMAN", "KNOWN_BOT", "UNKNOWN"],
+                "enum": [
+                  "HUMAN",
+                  "KNOWN_BOT",
+                  "UNKNOWN"
+                ],
                 "description": "Identity classification. UNKNOWN triggers UNKNOWN_REVIEWER_OR_BOT blocker."
               }
             }
@@ -213,7 +275,9 @@
         },
         "unclassified_review_items": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Review item IDs or references that could not be classified. Non-empty triggers UNCLASSIFIED_REVIEW_ITEM blocker."
         },
         "proof_refs": {
@@ -222,14 +286,20 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["path", "head_sha"],
+            "required": [
+              "path",
+              "head_sha"
+            ],
             "properties": {
               "path": {
                 "type": "string",
                 "description": "Path or URL of the proof artifact."
               },
               "head_sha": {
-                "type": ["string", "null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "The head SHA recorded inside the proof artifact, or null if unreadable."
               }
             }
@@ -237,7 +307,12 @@
         },
         "proof_freshness": {
           "type": "string",
-          "enum": ["FRESH", "STALE", "MISSING", "UNKNOWN"],
+          "enum": [
+            "FRESH",
+            "STALE",
+            "MISSING",
+            "UNKNOWN"
+          ],
           "description": "Proof freshness classification. FRESH requires proof_refs[].head_sha == PR head_sha. STALE/MISSING/UNKNOWN withholds READY."
         },
         "diff_escapes_allowlist": {
@@ -257,7 +332,7 @@
     "advisory": {
       "type": "boolean",
       "const": true,
-      "description": "Always true. This signal is advisory only — it is NEVER a merge authority. Green CI is NOT semantic proof. See AIR Red Lines #7/#8."
+      "description": "Always true. This signal is advisory only \u2014 it is NEVER a merge authority. Green CI is NOT semantic proof. See AIR Red Lines #7/#8."
     },
     "created_at": {
       "type": "string",
@@ -268,37 +343,81 @@
   "$defs": {
     "completeness_state": {
       "type": "string",
-      "enum": ["COMPLETE", "MISSING", "UNKNOWN", "NOT_REQUIRED"]
+      "enum": [
+        "COMPLETE",
+        "MISSING",
+        "UNKNOWN",
+        "NOT_REQUIRED"
+      ]
     }
   },
   "allOf": [
     {
       "description": "Fail-closed gate (a): READY requires zero blocked_reasons, FRESH proof, and diff within allowlist.",
       "if": {
-        "properties": { "status": { "const": "READY" } },
-        "required": ["status"]
+        "properties": {
+          "status": {
+            "const": "READY"
+          }
+        },
+        "required": [
+          "status"
+        ]
       },
       "then": {
         "properties": {
-          "blocked_reasons": { "maxItems": 0 },
+          "blocked_reasons": {
+            "maxItems": 0
+          },
           "intake": {
             "properties": {
               "intake_completeness": {
                 "properties": {
-                  "pr_metadata": { "const": "COMPLETE" },
-                  "head_sha": { "const": "COMPLETE" },
-                  "changed_files": { "const": "COMPLETE" },
-                  "commits": { "const": "COMPLETE" },
-                  "reviews": { "const": "COMPLETE" },
-                  "review_comments": { "const": "COMPLETE" },
-                  "review_threads": { "const": "COMPLETE" },
-                  "issue_comments": { "const": "COMPLETE" },
-                  "checks": { "const": "COMPLETE" },
-                  "proof_refs": { "const": "COMPLETE" },
-                  "proof_freshness": { "const": "COMPLETE" },
-                  "reviewer_classifications": { "const": "COMPLETE" },
-                  "allowlist": { "const": "COMPLETE" },
-                  "security_release_approval": { "const": "COMPLETE" }
+                  "pr_metadata": {
+                    "const": "COMPLETE"
+                  },
+                  "head_sha": {
+                    "const": "COMPLETE"
+                  },
+                  "changed_files": {
+                    "const": "COMPLETE"
+                  },
+                  "commits": {
+                    "const": "COMPLETE"
+                  },
+                  "reviews": {
+                    "const": "COMPLETE"
+                  },
+                  "review_comments": {
+                    "const": "COMPLETE"
+                  },
+                  "review_threads": {
+                    "const": "COMPLETE"
+                  },
+                  "issue_comments": {
+                    "const": "COMPLETE"
+                  },
+                  "checks": {
+                    "const": "COMPLETE"
+                  },
+                  "proof_refs": {
+                    "const": "COMPLETE"
+                  },
+                  "proof_freshness": {
+                    "const": "COMPLETE"
+                  },
+                  "reviewer_classifications": {
+                    "const": "COMPLETE"
+                  },
+                  "allowlist": {
+                    "const": "COMPLETE"
+                  },
+                  "security_release_approval": {
+                    "enum": [
+                      "COMPLETE",
+                      "NOT_REQUIRED"
+                    ]
+                  }
                 },
                 "required": [
                   "pr_metadata",
@@ -317,8 +436,12 @@
                   "security_release_approval"
                 ]
               },
-              "proof_freshness": { "const": "FRESH" },
-              "diff_escapes_allowlist": { "const": false }
+              "proof_freshness": {
+                "const": "FRESH"
+              },
+              "diff_escapes_allowlist": {
+                "const": false
+              }
             }
           }
         }
@@ -327,12 +450,23 @@
     {
       "description": "Fail-closed gate (b): BLOCKED or NEEDS_SUPERVISOR requires at least one blocked_reason.",
       "if": {
-        "properties": { "status": { "enum": ["BLOCKED", "NEEDS_SUPERVISOR"] } },
-        "required": ["status"]
+        "properties": {
+          "status": {
+            "enum": [
+              "BLOCKED",
+              "NEEDS_SUPERVISOR"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
       },
       "then": {
         "properties": {
-          "blocked_reasons": { "minItems": 1 }
+          "blocked_reasons": {
+            "minItems": 1
+          }
         }
       }
     },
@@ -342,16 +476,31 @@
         "properties": {
           "intake": {
             "properties": {
-              "proof_freshness": { "enum": ["STALE", "MISSING", "UNKNOWN"] }
+              "proof_freshness": {
+                "enum": [
+                  "STALE",
+                  "MISSING",
+                  "UNKNOWN"
+                ]
+              }
             },
-            "required": ["proof_freshness"]
+            "required": [
+              "proof_freshness"
+            ]
           }
         },
-        "required": ["intake"]
+        "required": [
+          "intake"
+        ]
       },
       "then": {
         "properties": {
-          "status": { "enum": ["BLOCKED", "NEEDS_SUPERVISOR"] }
+          "status": {
+            "enum": [
+              "BLOCKED",
+              "NEEDS_SUPERVISOR"
+            ]
+          }
         }
       }
     },
@@ -361,41 +510,72 @@
         "properties": {
           "intake": {
             "properties": {
-              "diff_escapes_allowlist": { "const": true }
+              "diff_escapes_allowlist": {
+                "const": true
+              }
             },
-            "required": ["diff_escapes_allowlist"]
+            "required": [
+              "diff_escapes_allowlist"
+            ]
           }
         },
-        "required": ["intake"]
+        "required": [
+          "intake"
+        ]
       },
       "then": {
         "properties": {
-          "status": { "enum": ["BLOCKED", "NEEDS_SUPERVISOR"] }
+          "status": {
+            "enum": [
+              "BLOCKED",
+              "NEEDS_SUPERVISOR"
+            ]
+          }
         }
       }
     },
     {
       "description": "Fail-closed gate (e): READY with an unapproved security gate is rejected. If status is READY then intake must have security_release_required=false OR security_release_approved=true.",
       "if": {
-        "properties": { "status": { "const": "READY" } },
-        "required": ["status"]
+        "properties": {
+          "status": {
+            "const": "READY"
+          }
+        },
+        "required": [
+          "status"
+        ]
       },
       "then": {
         "properties": {
           "intake": {
             "anyOf": [
               {
-                "properties": { "security_release_required": { "const": false } },
-                "required": ["security_release_required"]
+                "properties": {
+                  "security_release_required": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "security_release_required"
+                ]
               },
               {
-                "properties": { "security_release_approved": { "const": true } },
-                "required": ["security_release_approved"]
+                "properties": {
+                  "security_release_approved": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "security_release_approved"
+                ]
               }
             ]
           }
         },
-        "required": ["intake"]
+        "required": [
+          "intake"
+        ]
       }
     }
   ]
