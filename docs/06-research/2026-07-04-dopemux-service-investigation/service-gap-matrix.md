@@ -25,7 +25,6 @@ Legend:
 | Candidate | Compose | Registry | Classification | Observed role | Gap / risk | Recommended next action |
 |---|---:|---:|---|---|---|---|
 | `services/.claude` | no | no | non-service artifact | Claude-local service subtree metadata. | Can inflate service counts if treated as runtime. | Exclude from operational health; keep in raw inventory only. |
-| `services/__pycache__` | no | no | non-service artifact | Python bytecode cache directory. | Not a service. | Exclude from operational UX. |
 | `activity-capture` | no | no | support/unknown | FastAPI service consumes `dopemux:events` and sends content-free activity to ADHD Engine. | Not compose/registry wired in canonical stack. | Promote to support service only after compose/registry wiring and smoke tests. |
 | `adhd-dashboard` | no | no | support/unknown | Backend proxies ADHD Engine, activity-capture metrics, Redis state streams, and dashboard WebSocket. | README references stale compose file; not active in canonical compose. | Add explicit registry/compose decision or mark source-only dashboard backend. |
 | `adhd-engine` | `adhd-engine` | `adhd-engine` | duplicate naming drift | Hyphenated tree contains only `auth.py` in inspected max-depth inventory. | Can be confused with active `adhd_engine`. | Retire, redirect, or document as duplicate residue. |
