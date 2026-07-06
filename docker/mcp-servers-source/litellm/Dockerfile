@@ -4,7 +4,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install system dependencies and upgrade OS packages to pick up security patches
-# (openssl CVE-2025-x: fixed in 3.5.6-1~deb13u2)
+# (openssl security patch level: 3.5.6-1~deb13u2 via apt upgrade)
 #
 # Accepted base-image risk: perl CVE-2026-12087 (critical), CVE-2026-48959,
 # CVE-2026-48962 (high) are marked "Not Fixed" by Debian for trixie. perl-base
