@@ -58,8 +58,10 @@ class TestUIDataSources:
             def __exit__(self, exc_type, exc, tb):
                 return False
 
+        from dopemux.orchestrator.ui import data_sources
         monkeypatch.setattr(
-            "dopemux.orchestrator.ui.data_sources.context_status",
+            data_sources,
+            "context_status",
             lambda *args, **kwargs: {"dope-context": {"fresh": True}, "ConPort": {"fresh": True}},
         )
         monkeypatch.setattr(tempfile, "gettempdir", lambda: str(tmp_path))

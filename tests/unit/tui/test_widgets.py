@@ -19,12 +19,15 @@ from dopemux.tui.widgets.do_not_touch import DoNotTouchPanel
 class TestTUIWidgets:
     @pytest.fixture(autouse=True)
     def mock_ui_data_sources(self, monkeypatch):
+        from dopemux.orchestrator.ui import data_sources
         monkeypatch.setattr(
-            "dopemux.orchestrator.ui.data_sources.build_pr_queue",
+            data_sources,
+            "build_pr_queue",
             lambda *args, **kwargs: {"kind": "pr_queue", "entries": []}
         )
         monkeypatch.setattr(
-            "dopemux.orchestrator.ui.data_sources.context_status",
+            data_sources,
+            "context_status",
             lambda *args, **kwargs: {"dope-context": {"fresh": True}}
         )
 
