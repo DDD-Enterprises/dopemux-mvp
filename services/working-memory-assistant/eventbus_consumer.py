@@ -57,12 +57,16 @@ REFLECTION_MAX_WINDOW_HOURS = DOPE_MEMORY_REFLECTION_MAX_WINDOW_HOURS
 # High-signal events that reset last_activity_at
 HIGH_SIGNAL_EVENTS = {
     "decision.logged",
+    "task.created",
     "task.completed",
     "task.failed",
     "task.blocked",
+    "blocker.cleared",
     "error.encountered",
     "manual.memory_store",
     "workflow.phase_changed",
+    "work.untracked_detected",
+    "work.untracked_converted",
 }
 
 # Heartbeat events: reset idle timer but don't trigger reflections

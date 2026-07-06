@@ -366,6 +366,21 @@ def pm_transition_work_item(
                 "reason": reason,
             },
         )
+    if from_status == PMTaskStatus.BLOCKED.value and new_status != PMTaskStatus.BLOCKED:
+        emit_pm_promotable_source_event(
+            "blocker.cleared",
+            project_id=config.project_id,
+            work_item_id=task_id,
+            canonical_system="task-orchestrator",
+            operation_type=PMActionKind.WORKFLOW_TRANSITION.value,
+            payload={
+                "task_id": task_id,
+                "title": f"Workflow item {task_id}",
+                "status": new_status.value,
+                "transition": transition_name,
+                "reason": reason,
+            },
+        )
 
     return CanonicalReceipt(
         canonical_system="task-orchestrator",

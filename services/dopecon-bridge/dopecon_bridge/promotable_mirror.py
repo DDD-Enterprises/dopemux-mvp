@@ -28,12 +28,16 @@ logger = logging.getLogger(__name__)
 PROMOTABLE_EVENT_TYPES = frozenset(
     {
         "decision.logged",
+        "task.created",
         "task.completed",
         "task.failed",
         "task.blocked",
+        "blocker.cleared",
         "error.encountered",
         "workflow.phase_changed",
         "manual.memory_store",
+        "work.untracked_detected",
+        "work.untracked_converted",
     }
 )
 
