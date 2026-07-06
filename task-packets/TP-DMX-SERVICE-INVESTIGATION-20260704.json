@@ -42,7 +42,7 @@
     "verify": [
       "python -m json.tool task-packets/TP-DMX-SERVICE-INVESTIGATION-20260704.json >/dev/null",
       "python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom jsonschema import validate\nroot = Path.cwd()\nvalidate(json.loads((root / 'task-packets/TP-DMX-SERVICE-INVESTIGATION-20260704.json').read_text()), json.loads((root / 'docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text()))\nPY",
-      "docker compose -f compose.yml config",
+      "docker compose -f compose.yml config >/dev/null",
       "dopemux mcp status",
       "pytest -q services/serena/test_f001_enhanced.py services/serena/tests/test_mcp_server_local.py",
       "pytest -q services/adhd_engine/tests tests/unit/test_adhd_*.py",

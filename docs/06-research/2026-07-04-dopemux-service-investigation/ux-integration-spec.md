@@ -1,13 +1,13 @@
 ---
 id: ux-integration-spec
-title: Ux Integration Spec
+title: UX Integration Spec
 type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-07-04'
 last_review: '2026-07-04'
 next_review: '2026-10-02'
-prelude: Ux Integration Spec (reference) for dopemux documentation and developer workflows.
+prelude: UX Integration Spec (reference) for dopemux documentation and developer workflows.
 ---
 # Seamless Operator UX Integration Spec
 
