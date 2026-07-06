@@ -1,6 +1,7 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Avatar, Box, Chip, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Eye, Zap } from 'lucide-react';
+import { Check, Copy, Eye, Zap } from 'lucide-react';
 
 import { brandTokens, statusStyles } from '../theme';
 
@@ -31,6 +32,33 @@ export default function TeamDashboard() {
   const teamStatusColor = statusStyles[teamStatus].color;
 
   const teamInsight = 'Sequence handoffs while average load is below escalation threshold.';
+
+  const [isCopied, setIsCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCopy = useCallback(async () => {
+    if (!navigator.clipboard?.writeText) return;
+    try {
+      await navigator.clipboard.writeText(teamInsight);
+      setIsCopied(true);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => {
+        setIsCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy team insight:', err);
+    }
+  }, [teamInsight]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+        copyTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <Tooltip
@@ -105,6 +133,7 @@ export default function TeamDashboard() {
           <Box
             key={member.name}
             tabIndex={0}
+            aria-label={`${member.name}: ${statusStyles[member.status].label}, ${member.load}% load, ${member.energy}% energy, ${member.attention}% attention`}
             sx={{
               display: 'grid',
               gap: 1,
@@ -131,7 +160,6 @@ export default function TeamDashboard() {
                   size="small"
                   label={statusStyles[member.status].label}
                   aria-label={`${member.name}'s current status: ${statusStyles[member.status].label}`}
-                  tabIndex={0}
                   sx={{ cursor: 'help' }}
                 />
               </Tooltip>
@@ -156,7 +184,6 @@ export default function TeamDashboard() {
               <Tooltip title="Current energy level" arrow>
                 <Chip
                   size="small"
-                  tabIndex={0}
                   icon={<Zap size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />}
                   label={`Energy ${member.energy}%`}
                   aria-label={`${member.name}'s current energy level: ${member.energy}%`}
@@ -176,7 +203,6 @@ export default function TeamDashboard() {
               <Tooltip title="Current attention focus" arrow>
                 <Chip
                   size="small"
-                  tabIndex={0}
                   icon={<Eye size={14} color={brandTokens.colors.ritualCyan} aria-hidden="true" />}
                   label={`Attention ${member.attention}%`}
                   aria-label={`${member.name}'s current attention focus: ${member.attention}%`}
@@ -197,9 +223,55 @@ export default function TeamDashboard() {
           </Box>
         ))}
       </Box>
-      <Typography variant="body2" color="text.secondary" tabIndex={0} sx={{ mb: 2 }}>
-        {teamInsight}
-      </Typography>
+      <Tooltip title={isCopied ? 'Copied!' : 'Copy team insight'} arrow>
+        <Box
+          role="button"
+          tabIndex={0}
+          onClick={handleCopy}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              void handleCopy();
+            }
+          }}
+          aria-label={isCopied ? `Team insight: ${teamInsight} (Copied)` : `Copy team insight: ${teamInsight}`}
+          sx={{
+            mb: 2,
+            p: 2,
+            borderRadius: 2,
+            bgcolor: alpha(brandTokens.colors.ritualCyan, 0.04),
+            border: `1px dashed ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
+            cursor: 'copy',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 1.5,
+            '&:hover, &:focus-visible': {
+              bgcolor: alpha(brandTokens.colors.ritualCyan, 0.08),
+              borderColor: brandTokens.colors.ritualCyan,
+              transform: 'translateY(-2px)',
+              boxShadow: `0 4px 12px ${alpha(brandTokens.colors.ritualCyan, 0.15)}`,
+            },
+            ...(isCopied && {
+              animation: 'insight-copy-pulse 0.4s ease-out',
+              '@keyframes insight-copy-pulse': {
+                '0%': { transform: 'scale(1)' },
+                '50%': { transform: 'scale(1.02)', boxShadow: `0 0 12px ${alpha(brandTokens.colors.serumMint, 0.4)}` },
+                '100%': { transform: 'scale(1)' },
+              }
+            }),
+          }}
+        >
+          {isCopied ? (
+            <Check size={16} color={brandTokens.colors.serumMint} style={{ marginTop: 2 }} aria-hidden="true" />
+          ) : (
+            <Copy size={16} color={brandTokens.colors.ritualCyan} style={{ marginTop: 2 }} aria-hidden="true" />
+          )}
+          <Typography variant="body2" color="text.secondary">
+            {teamInsight}
+          </Typography>
+        </Box>
+      </Tooltip>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
         {teamSignals.map((signal) => (
           <Tooltip key={signal.label} title={`Team signal: ${signal.label} status`} arrow>
