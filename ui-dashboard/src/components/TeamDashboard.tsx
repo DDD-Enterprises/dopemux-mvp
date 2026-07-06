@@ -229,6 +229,7 @@ export default function TeamDashboard() {
           tabIndex={0}
           onClick={handleCopy}
           onKeyDown={(e) => {
+            if (e.repeat) return;
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               void handleCopy();
