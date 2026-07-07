@@ -35,7 +35,7 @@ Author schema-valid dopeTask JSON packets. Schema: `docs/03-reference/spec/dopet
 - Every packet: "This packet must run from a fresh dedicated worktree based on origin/main." and "This packet must only touch files in its commit.allowlist."
 - Planning/ADR packets: "This packet must not change runtime code." Implementation packets touching contract surfaces (schemas, MCP manifests, event payloads, allowlists): "This packet must preserve the canonical writer and add a contract test."
 
-## Validate every packet you write (from repo root `/Users/hue/code/dopemux-mvp/.claude/worktrees/trusting-engelbart-d2fbfe`)
+## Validate every packet you write (from the repository root)
 ```bash
 mise exec -- python -m jsonschema -i task-packets/generated/<SERIES>/<id>.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json && echo "PASS <id>"
 ```
