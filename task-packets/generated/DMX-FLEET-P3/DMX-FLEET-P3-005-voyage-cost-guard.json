@@ -1,0 +1,103 @@
+{
+  "id": "DMX-FLEET-P3-005-voyage-cost-guard",
+  "project": "dopemux-mvp",
+  "target": "Wire the existing but dead rate_limits.voyage_api config (multi_index_config.yaml) into VoyageEmbedder and VoyageReranker and add an enforced spend/request cap on top of the existing unenforced CostTracker, so external Voyage embedding calls cannot exceed a configured budget.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must fail closed: once the configured cap is reached, further Voyage calls must be rejected, not silently degraded to a different provider or allowed through.",
+    "This packet must not remove or weaken the existing CostTracker accounting.",
+    "This packet must not hardcode pricing or limits that duplicate the existing multi_index_config.yaml rate_limits.voyage_api block."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p3",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P3-004-qdrant-gc",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/fleet-p3-005-voyage-cost-guard",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(dope-context): enforce Voyage embedding cost guard from existing config",
+    "allowlist": [
+      "services/dope-context/src/embeddings/voyage_embedder.py",
+      "services/dope-context/src/rerank/voyage_reranker.py",
+      "services/dope-context/config/multi_index_config.yaml",
+      "services/dope-context/tests/test_voyage_cost_guard.py",
+      "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-005-voyage-cost-guard.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p3-005-voyage-cost-guard/DMX-FLEET-P3-005-voyage-cost-guard/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-005-voyage-cost-guard.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-005-voyage-cost-guard.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest services/dope-context/tests/test_voyage_cost_guard.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(dope-context): enforce Voyage embedding cost guard from existing config",
+    "body": "multi_index_config.yaml already declares rate_limits.voyage_api (rpm/rpd/retry) but nothing reads it: VoyageEmbedder takes an unread rate_limit_rpm=2000 constructor default and CostTracker (in both voyage_embedder.py and the duplicate in voyage_reranker.py) tracks spend without ever capping it. Wires the existing YAML config into both classes and adds an enforced cap that rejects further calls once the configured rpm/rpd or spend threshold is hit, rather than accounting silently.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean baseline.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/backlog/_AUTHORING_CONTRACT.md",
+        "services/dope-context/src/embeddings/voyage_embedder.py",
+        "services/dope-context/src/rerank/voyage_reranker.py",
+        "services/dope-context/config/multi_index_config.yaml"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test at services/dope-context/tests/test_voyage_cost_guard.py asserting: (a) VoyageEmbedder reads rate_limits.voyage_api from multi_index_config.yaml instead of the hardcoded rate_limit_rpm=2000 default when no explicit override is passed; (b) once CostTracker.add_request accumulates requests/spend past the configured cap, the next embedding call raises a explicit guard exception rather than proceeding; (c) VoyageReranker enforces the same cap via the same config source (no independent duplicate limit).",
+      "validation": [
+        "The new test file fails because the cap is not currently enforced (CostTracker.add_request has no rejection path) and rate_limit_rpm is not sourced from YAML."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Modify VoyageEmbedder.__init__ (services/dope-context/src/embeddings/voyage_embedder.py) to load rate_limits.voyage_api from multi_index_config.yaml as the default rate_limit_rpm/rpd source, and extend CostTracker.add_request (same file) to raise a dedicated guard exception when the configured rpm/rpd or a spend cap is exceeded. Apply the equivalent change to VoyageReranker's CostTracker (services/dope-context/src/rerank/voyage_reranker.py), sourcing from the same config block rather than duplicating constants.",
+      "validation": [
+        "VoyageEmbedder and VoyageReranker both read the same multi_index_config.yaml rate_limits.voyage_api block.",
+        "Exceeding the configured cap raises before the outbound Voyage API call is made (fail closed, no silent pass-through).",
+        "Existing callers in src/mcp/server.py and src/pipeline/indexing_pipeline.py continue to construct VoyageEmbedder without required new arguments (backward compatible defaults)."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, create the proof bundle, run tests and packet validation, and commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "python -m pytest services/dope-context/tests/test_voyage_cost_guard.py -q passes.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

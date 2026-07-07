@@ -1,0 +1,99 @@
+{
+  "id": "DMX-MCF-009-proactive-injection-spec",
+  "project": "dopemux-mvp",
+  "target": "Spec proactive mid-session context injection (Injection Phase 2) built on top of the Fabric orchestrator, gated by a rate limit, a relevance threshold, and an operator kill switch, so a bad surfacing is never worse than none.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must specify a rate limit bounding how often proactive injection can fire per session.",
+    "This packet must specify a relevance threshold below which no injection occurs -- silence is the safe default, not a low-confidence surfacing.",
+    "This packet must specify an operator kill switch that disables proactive injection entirely, independent of the DMX-MCF-004 SessionStart recap kill switch.",
+    "This packet must depend on and reuse the context.recall/context.recap surface from DMX-MCF-007 rather than re-specifying retrieval fusion.",
+    "This packet must state explicitly that this is the last phase in the design spec's phasing matrix and must not be built before DMX-MCF-007 lands."
+  ],
+  "depends_on": [
+    "DMX-MCF-007-fabric-orchestrator-spec"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-mcf",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-MCF-008-summarizer-spec",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-mcf-009-proactive-injection-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(memory): proactive mid-session injection spec (rate limit + relevance threshold + kill switch)",
+    "allowlist": [
+      "claudedocs/specs/DMX-MCF-009-proactive-injection-spec.md",
+      "task-packets/generated/DMX-MCF/DMX-MCF-009-proactive-injection-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-mcf-009-proactive-injection-spec/DMX-MCF-009-proactive-injection-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-MCF/DMX-MCF-009-proactive-injection-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-MCF/DMX-MCF-009-proactive-injection-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-MCF-009-proactive-injection-spec.md",
+      "grep -q 'kill switch' claudedocs/specs/DMX-MCF-009-proactive-injection-spec.md",
+      "grep -q 'rate limit' claudedocs/specs/DMX-MCF-009-proactive-injection-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(memory): proactive mid-session injection spec (rate limit + relevance threshold + kill switch)",
+    "body": "Produces the TP-MCF-009 planning spec (no runtime code) per claudedocs/memory-context-fabric-design-2026-07-04.md section 4 (Injection Phase 2) and section 6: proactive mid-session context surfacing gated by a rate limit, a relevance threshold, and an independent kill switch. Depends on the DMX-MCF-007 orchestrator surface. This is the final packet in the DMX-MCF series.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read the design spec section 4 (Injection Phase 2) and section 6 (TP-MCF-007+ row), and the interfaces spec section 1.3 (injection). Inspect the DMX-MCF-004 native_hooks.py SessionStart wiring read-only to confirm the extension points and kill-switch pattern to mirror for a mid-session variant.",
+      "validation": [
+        "The spec's extension-point section cites the exact hook or event points a mid-session injector would attach to, grounded in the DMX-MCF-004 implementation.",
+        "No runtime code is changed in this step."
+      ],
+      "context_files": [
+        "claudedocs/memory-context-fabric-design-2026-07-04.md",
+        "claudedocs/memory-context-fabric-interfaces-2026-07-04.md",
+        "claudedocs/tp-mcf-001-authority-map-2026-07-04.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/DMX-MCF-009-proactive-injection-spec.md covering: scope (mid-session proactive surfacing), invariants (rate limit, relevance threshold, independent kill switch, silence-over-low-confidence default), interfaces (reuse of ContextBundle/ContextItem from DMX-MCF-007), acceptance criteria, and phasing (explicitly the last phase, blocked on DMX-MCF-007).",
+      "validation": [
+        "The spec file exists at claudedocs/specs/DMX-MCF-009-proactive-injection-spec.md.",
+        "The spec names concrete default values or bounds for the rate limit and relevance threshold (not left as an open question).",
+        "The spec states the kill switch is independent of DMX-MCF-004's DOPEMUX_RECAP_INJECTION switch."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the design spec and DMX-MCF-007 for consistency. Validate the packet JSON. Commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed.",
+        "No runtime code appears in the diff."
+      ]
+    }
+  ]
+}

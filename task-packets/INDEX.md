@@ -163,3 +163,64 @@ Superseded packets must reference the replacing packet
 ────────────────────────────────────────────────────────────
 Final Rule
 If it’s not indexed here, it didn’t happen.
+
+────────────────────────────────────────────────────────────
+
+## 🟡 Active Task Packets — DMX-BACKLOG-2026-07-07 (52)
+
+Backlog conversion of Memory Context Fabric + MCP fleet audit + forgotten-features + runtime-bug findings (PRs #1011/#1002/#1009). Decisions: `claudedocs/backlog/decisions-ledger.md`. Traceability: `claudedocs/backlog/README.md`. Load-plan: `claudedocs/backlog/loadplan.json`. All schema-valid; authored, not executed.
+
+| Packet ID | Series | Disp | Status | Depends On |
+| --- | --- | --- | --- | --- |
+| DMX-MCF-002-transcript-ingest | DMX-MCF | BUILD | Ready | — |
+| DMX-MCF-003-decision-candidate | DMX-MCF | BUILD | Ready | DMX-MCF-002-transcript-ingest |
+| DMX-MCF-004-sessionstart-recap | DMX-MCF | BUILD | Ready | DMX-MCF-003-decision-candidate |
+| DMX-MCF-005-semantic-projection-spec | DMX-MCF | SPEC | Ready | DMX-MCF-004-sessionstart-recap, DMX-ADR-001-semantic-memory-home |
+| DMX-MCF-006-conport-graph-spike-spec | DMX-MCF | SPEC | Ready | DMX-ADR-005-conport-graph-exposure |
+| DMX-MCF-007-fabric-orchestrator-spec | DMX-MCF | SPEC | Ready | DMX-MCF-002-transcript-ingest, DMX-MCF-003-decision-candidate, DMX-MCF-004-sessionstart-recap |
+| DMX-MCF-008-summarizer-spec | DMX-MCF | SPEC | Ready | DMX-MCF-003-decision-candidate, DMX-MCF-007-fabric-orchestrator-spec |
+| DMX-MCF-009-proactive-injection-spec | DMX-MCF | SPEC | Ready | DMX-MCF-007-fabric-orchestrator-spec |
+| DMX-FLEET-P0-001-real-healthchecks | DMX-FLEET-P0 | BUILD | Ready | — |
+| DMX-FLEET-P0-002-ensure-pal-managed | DMX-FLEET-P0 | BUILD | Ready | — |
+| DMX-FLEET-P0-003-conport-schema-verify-failclosed | DMX-FLEET-P0 | WIRE | Ready | — |
+| DMX-FLEET-P0-004-registry-dedup | DMX-FLEET-P0 | DELETE | Ready | — |
+| DMX-FLEET-P0-005-wrapper-path-fixes | DMX-FLEET-P0 | BUILD | Ready | — |
+| DMX-FLEET-P0-006-quarantine-killlist | DMX-FLEET-P0 | BUILD | Ready | — |
+| DMX-FLEET-P0-007-desktop-commander-upstream | DMX-FLEET-P0 | REBUILD | Ready | — |
+| DMX-FLEET-P1-001-unified-catalog-spec | DMX-FLEET-P1 | SPEC | Ready | DMX-FLEET-P0-004-registry-dedup |
+| DMX-FLEET-P1-002-codegen-pipeline-spec | DMX-FLEET-P1 | SPEC | Ready | DMX-FLEET-P1-001-unified-catalog-spec |
+| DMX-FLEET-P1-003-mcp-ensure-command | DMX-FLEET-P1 | SPEC | Ready | DMX-FLEET-P1-001-unified-catalog-spec, DMX-FLEET-P0-002-ensure-pal-managed |
+| DMX-FLEET-P1-004-ci-drift-gates | DMX-FLEET-P1 | BUILD | Ready | DMX-FLEET-P1-002-codegen-pipeline-spec |
+| DMX-FLEET-P1-005-orchestrator-autostart | DMX-FLEET-P1 | SPEC | Ready | — |
+| DMX-FLEET-P1-006-exa-retire-cleanup | DMX-FLEET-P1 | RETIRE | Ready | — |
+| DMX-FLEET-P1-007-token-truncation-utility-spec | DMX-FLEET-P1 | SPEC | Ready | — |
+| DMX-FLEET-P2-001-event-source-wiring | DMX-FLEET-P2 | WIRE | Ready | — |
+| DMX-FLEET-P2-002-heartbeat-ratelimit | DMX-FLEET-P2 | BUILD | Ready | — |
+| DMX-FLEET-P2-003-instance-identity-propagation | DMX-FLEET-P2 | SPEC | Ready | — |
+| DMX-FLEET-P2-004-skill-mirror-receipts | DMX-FLEET-P2 | BUILD | Ready | — |
+| DMX-FLEET-P2-005-dopecontext-indexing-enable | DMX-FLEET-P2 | BUILD | Ready | DMX-FLEET-P2-001-event-source-wiring |
+| DMX-FLEET-P3-001-conport-jsonrpc-parity | DMX-FLEET-P3 | SPEC | Ready | — |
+| DMX-FLEET-P3-002-serena-promotion | DMX-FLEET-P3 | WIRE | Ready | DMX-ADR-002-serena-promotion |
+| DMX-FLEET-P3-003-complexity-unify-spec | DMX-FLEET-P3 | SPEC | Ready | DMX-ADR-004-complexity-scorer |
+| DMX-FLEET-P3-004-qdrant-gc | DMX-FLEET-P3 | DELETE | Ready | — |
+| DMX-FLEET-P3-005-voyage-cost-guard | DMX-FLEET-P3 | WIRE | Ready | — |
+| DMX-FLEET-P3-006-loopback-binds | DMX-FLEET-P3 | BUILD | Ready | — |
+| DMX-FLEET-P4-001-facade-g1-contract-test | DMX-FLEET-P4 | WIRE | Ready | — |
+| DMX-FLEET-P4-002-dopecontext-bridge-spec | DMX-FLEET-P4 | SPEC | Ready | — |
+| DMX-FLEET-P4-003-lane-engine-wire | DMX-FLEET-P4 | WIRE | Ready | DMX-ADR-003-lane-engine-dispatch |
+| DMX-FLEET-P4-004-inventory-freshness-gate | DMX-FLEET-P4 | WIRE | Ready | DMX-FLEET-P4-001-facade-g1-contract-test |
+| DMX-FLEET-P4-005-facade-catalog-register | DMX-FLEET-P4 | WIRE | Ready | DMX-FLEET-P1-001-unified-catalog-spec |
+| DMX-FLEET-P5-001-e2e-acceptance | DMX-FLEET-P5 | SPEC | Ready | DMX-FLEET-P1-003-mcp-ensure-command, DMX-FLEET-P2-005-dopecontext-indexing-enable |
+| DMX-FLEET-P5-002-docs-reconciliation | DMX-FLEET-P5 | WIRE | Ready | — |
+| DMX-FLEET-P5-003-proof-discipline | DMX-FLEET-P5 | BUILD | Ready | — |
+| DMX-ADHD-WIRE-001-predictive-risk-hook | DMX-ADHD-WIRE | WIRE | Ready | — |
+| DMX-ADHD-WIRE-002-context-preservation-display | DMX-ADHD-WIRE | WIRE | Ready | — |
+| DMX-ADHD-WIRE-003-overwhelm-snapshot | DMX-ADHD-WIRE | WIRE | Ready | — |
+| DMX-ADHD-WIRE-004-relationship-vocab-widening | DMX-ADHD-WIRE | WIRE | Ready | DMX-FLEET-P3-001-conport-jsonrpc-parity |
+| DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec | DMX-ADHD-WIRE | SPEC | Ready | DMX-FLEET-P3-002-serena-promotion |
+| DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec | DMX-ADHD-WIRE | SPEC | Ready | DMX-FLEET-P3-002-serena-promotion, DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec |
+| DMX-ADR-001-semantic-memory-home | DMX-ADR | ADR | Ready | — |
+| DMX-ADR-002-serena-promotion | DMX-ADR | ADR | Ready | — |
+| DMX-ADR-003-lane-engine-dispatch | DMX-ADR | ADR | Ready | — |
+| DMX-ADR-004-complexity-scorer | DMX-ADR | ADR | Ready | — |
+| DMX-ADR-005-conport-graph-exposure | DMX-ADR | ADR | Ready | — |

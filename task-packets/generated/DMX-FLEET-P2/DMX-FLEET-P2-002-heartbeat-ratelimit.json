@@ -1,0 +1,106 @@
+{
+  "id": "DMX-FLEET-P2-002-heartbeat-ratelimit",
+  "project": "dopemux-mvp",
+  "target": "Rate-limit session-active heartbeat events in the dope-memory eventbus consumer to stop chronicle spam, and normalize/backfill instance_id so heartbeat and promotable events carry a consistent, non-default identity.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change promotion semantics for non-heartbeat promotable events.",
+    "This packet must preserve fail-open capture semantics: a rate-limit or normalization failure must never break the emitting caller's turn.",
+    "This packet must not introduce a new default instance_id value beyond the existing documented default; normalization must make identity explicit, not silently invent one.",
+    "This packet must preserve the canonical writer for raw_activity_events and add a regression test for the rate-limit and normalization behavior."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p2",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P2-001-event-source-wiring",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p2-002-heartbeat-ratelimit",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(dope-memory): rate-limit session-active heartbeats + normalize instance_id",
+    "allowlist": [
+      "services/working-memory-assistant/eventbus_consumer.py",
+      "services/working-memory-assistant/tests/**",
+      "src/dopemux/memory/capture_client.py",
+      "tests/unit/dopemux/memory/**",
+      "task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-002-heartbeat-ratelimit.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P2-002-heartbeat-ratelimit/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-002-heartbeat-ratelimit.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-002-heartbeat-ratelimit.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m py_compile services/working-memory-assistant/eventbus_consumer.py src/dopemux/memory/capture_client.py",
+      "python3 -m pytest -q services/working-memory-assistant/tests/test_eventbus_consumer_heartbeat_ratelimit.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(dope-memory): rate-limit session-active heartbeats + normalize instance_id",
+    "body": "Rate-limits session-active heartbeat spam in the dope-memory eventbus consumer and normalizes/backfills instance_id per mcp-fleet-canonical-audit-and-target-design-2026-07-03.md sec 7.2 item 2. Adds a regression test proving heartbeats are throttled without dropping non-heartbeat high-signal events and that instance_id is consistently populated rather than silently defaulted.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean baseline status.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Primary checkout remains untouched."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/backlog/_AUTHORING_CONTRACT.md",
+        "services/working-memory-assistant/eventbus_consumer.py",
+        "src/dopemux/memory/capture_client.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests before code. Add a test proving session-active heartbeat events emitted faster than the rate-limit window are throttled/dropped by the eventbus consumer while non-heartbeat activity updates are never throttled, and a test proving instance_id normalization backfills a missing or blank instance_id to the documented default without overwriting an explicitly supplied instance_id.",
+      "validation": [
+        "New tests fail against current code because no rate-limit or normalization logic exists yet.",
+        "Tests assert both the throttling behavior and the non-heartbeat pass-through behavior."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement a minimal rate limiter for session-active heartbeat updates in the eventbus consumer's session tracker (update_activity/is_heartbeat_only path) and normalize instance_id at the capture_client.emit_capture_event() boundary so downstream consumers see a consistent, non-blank identity.",
+      "validation": [
+        "Heartbeat events within the rate-limit window are suppressed at the consumer without affecting session idle/reflection timers incorrectly.",
+        "instance_id normalization applies only when the field is missing or blank; an explicit caller-supplied instance_id is never overwritten.",
+        "No change to the PROMOTABLE_EVENT_TYPES allowlist or promotion semantics for non-heartbeat events."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the packet, update task-packets/INDEX.md, create the proof bundle, validate, commit, push, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "New and existing tests pass; git diff --check passes.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "id": "DMX-FLEET-P3-004-qdrant-gc",
+  "project": "dopemux-mvp",
+  "target": "Add garbage collection for orphaned dope-context Qdrant collections (code_{workspace_hash}/docs_{workspace_hash}) whose source worktree no longer exists, so deleted worktrees stop leaking permanent collections.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not delete a Qdrant collection whose source worktree still exists.",
+    "This packet must fail closed (skip deletion, log, and report) when worktree liveness cannot be determined.",
+    "This packet must not run destructive deletion without an explicit dry-run mode that lists candidates first."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p3",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P3-003-complexity-unify-spec",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/fleet-p3-004-qdrant-gc",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(dope-context): garbage-collect orphaned Qdrant collections",
+    "allowlist": [
+      "services/dope-context/src/utils/workspace.py",
+      "services/dope-context/src/search/dense_search.py",
+      "services/dope-context/src/maintenance/__init__.py",
+      "services/dope-context/src/maintenance/collection_gc.py",
+      "services/dope-context/src/mcp/server.py",
+      "services/dope-context/tests/test_collection_gc.py",
+      "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-004-qdrant-gc.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p3-004-qdrant-gc/DMX-FLEET-P3-004-qdrant-gc/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-004-qdrant-gc.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-004-qdrant-gc.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest services/dope-context/tests/test_collection_gc.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(dope-context): garbage-collect orphaned Qdrant collections",
+    "body": "dope-context names collections code_{workspace_hash}/docs_{workspace_hash} keyed to the resolved worktree path (services/dope-context/src/utils/workspace.py get_collection_names) but nothing deletes them when the worktree is removed, so every deleted worktree leaks two permanent Qdrant collections. Adds a GC routine that lists collections via the Qdrant client, resolves each hash back to a worktree path (or a persisted workspace-path index), checks liveness against git worktree list, and deletes only provably orphaned collections behind a dry-run-first default. Fails closed (skip + report) when liveness cannot be determined.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean baseline.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/backlog/_AUTHORING_CONTRACT.md",
+        "services/dope-context/src/utils/workspace.py",
+        "services/dope-context/src/search/dense_search.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test at services/dope-context/tests/test_collection_gc.py asserting: (a) a collection whose worktree path exists is never returned as a GC candidate; (b) a collection whose worktree path does not exist is returned as a candidate in dry-run mode without being deleted; (c) actual deletion only occurs when dry_run=False is explicitly passed; (d) an unresolvable workspace hash (no recorded path mapping) is skipped and reported, never deleted.",
+      "validation": [
+        "The new test file fails because collection_gc.py does not yet exist."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement services/dope-context/src/maintenance/collection_gc.py: list collections via the existing Qdrant client call pattern in dense_search.py (self.client.get_collections()), resolve each code_{hash}/docs_{hash} back to a workspace path using the same hashing scheme as get_collection_names() in workspace.py (persisting or reusing an existing hash-to-path index if one exists; otherwise maintain one), check liveness with `git worktree list --porcelain` output, and delete only orphaned collections via the existing delete_collection() primitive in dense_search.py. Default to dry-run; require an explicit flag/argument to actually delete. Wire an optional GC invocation into src/mcp/server.py near the existing clear_index tool, gated the same way (approval-required).",
+      "validation": [
+        "Dry-run mode lists candidates without calling delete_collection().",
+        "Live-run mode deletes only collections confirmed orphaned by git worktree list.",
+        "Unresolvable hash-to-path mappings are skipped and logged, never deleted.",
+        "New code does not alter get_collection_names() or delete_collection() call contracts used elsewhere."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, create the proof bundle, run tests and packet validation, and commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "python -m pytest services/dope-context/tests/test_collection_gc.py -q passes.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

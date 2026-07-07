@@ -1,0 +1,132 @@
+{
+  "id": "DMX-MCF-003-decision-candidate",
+  "project": "dopemux-mvp",
+  "target": "Add the conversation.decision_candidate event type end-to-end through the existing capture-to-promotion pipeline (both allowlists kept in sync, a sync-guard test, and a deterministic non-LLM promotion handler) so transcript-derived decision-looking turns become trust-lower curated-chronicle candidates -- never a ConPort write, never decision.logged.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must use only deterministic regex/string-heuristic detection -- no LLM calls, no network calls anywhere in this packet.",
+    "This packet must never auto-write ConPort. No import of httpx, requests, aiohttp, or any ConPort client anywhere in the new detector or promotion-handler code.",
+    "This packet must never emit or promote to decision.logged -- the candidate event type is conversation.decision_candidate, always.",
+    "This packet must add conversation.decision_candidate to both PROMOTABLE_CAPTURE_EVENT_TYPES (capture_client.py) and PROMOTABLE_EVENT_TYPES (promotion.py) and keep them synced via a sync-guard test.",
+    "This packet must encode trust only in details_json.trust=\"conversation-derived\" with promotion_rule=\"conversation_candidate_v1\" -- no schema trust column exists.",
+    "This packet must give a conversation-derived candidate a strictly lower importance_score than a real decision.logged promotion.",
+    "This packet must preserve the canonical writer (dope-memory promotion path) and add a contract test asserting no ConPort write occurs for this event type.",
+    "This packet must not implement promotion of a candidate to a canonical ConPort decision -- that explicit-gate step is out of scope."
+  ],
+  "depends_on": [
+    "DMX-MCF-002-transcript-ingest"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-mcf",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-MCF-002-transcript-ingest",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-mcf-003-decision-candidate",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(memory): deterministic conversation.decision_candidate detection and promotion",
+    "allowlist": [
+      "src/dopemux/memory/conversation_promotion.py",
+      "src/dopemux/memory/capture_client.py",
+      "services/working-memory-assistant/promotion/promotion.py",
+      "services/working-memory-assistant/tests/test_event_type_normalization.py",
+      "services/working-memory-assistant/tests/unit/test_promotion_rule_precedence.py",
+      "services/working-memory-assistant/tests/unit/test_promote_conversation_decision_candidate.py",
+      "tests/unit/test_conversation_promotion_detector.py",
+      "tests/unit/test_promotable_allowlist_sync.py",
+      "tests/unit/test_conversation_decision_candidate_emit.py",
+      "task-packets/generated/DMX-MCF/DMX-MCF-003-decision-candidate.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-mcf-003-decision-candidate/DMX-MCF-003-decision-candidate/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-MCF/DMX-MCF-003-decision-candidate.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-MCF/DMX-MCF-003-decision-candidate.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "mise exec -- python -m pytest tests/unit/test_conversation_promotion_detector.py tests/unit/test_promotable_allowlist_sync.py tests/unit/test_conversation_decision_candidate_emit.py -q",
+      "cd services/working-memory-assistant && mise exec -- python -m pytest tests/test_event_type_normalization.py tests/test_promotion_allowlist.py tests/unit/test_promotion_rule_precedence.py tests/unit/test_promote_conversation_decision_candidate.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory): deterministic conversation.decision_candidate detection and promotion",
+    "body": "Implements TP-MCF-003 per claudedocs/plans/2026-07-04-tp-mcf-003-deterministic-promotion.md: a pure regex-based decision-marker detector (src/dopemux/memory/conversation_promotion.py), the new conversation.decision_candidate event type added to both promotable allowlists with a sync-guard test, a one-line promotion_rule dispatch-precedence fix (backward-compatible, regression-tested), and a deterministic promotion handler producing trust-lower candidates (importance_score=4 vs 7, promotion_rule=conversation_candidate_v1, trust encoded in details_json only). No LLM, no auto ConPort writes, never decision.logged.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean status. Confirm baseline WMA promotion test suite is green before touching code.",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "Baseline test run for services/working-memory-assistant/tests/test_promotion_allowlist.py and tests/test_event_type_normalization.py is green and recorded."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/plans/2026-07-04-tp-mcf-003-deterministic-promotion.md",
+        "claudedocs/tp-mcf-001-authority-map-2026-07-04.md",
+        "claudedocs/memory-context-fabric-interfaces-2026-07-04.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests for detect_decision_candidate (deterministic marker detection, anchored patterns, negative cases for questions/hedged hypotheticals) before implementation, per the build plan's Task 1.",
+      "validation": [
+        "Tests fail because the module does not exist yet.",
+        "Test coverage includes all six marker patterns, min/max length boundaries, question-form rejection, and hedged-hypothetical rejection."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement detect_decision_candidate in src/dopemux/memory/conversation_promotion.py (pure function, no I/O, no LLM). Fix the promotion_rule dispatch-precedence clobber in promotion.py (one line, backward-compatible, regression-tested). Add conversation.decision_candidate to both PROMOTABLE_CAPTURE_EVENT_TYPES and PROMOTABLE_EVENT_TYPES with a sync-guard test. Implement the _promote_conversation_decision_candidate handler per the build plan's field choices (category=planning, entry_type=decision, importance_score=4, promotion_rule=conversation_candidate_v1, trust in details_json only).",
+      "validation": [
+        "All detector, sync-guard, and promotion-handler tests pass.",
+        "The regression test proves the promotion_rule dispatch fix is backward-compatible for all 7 pre-existing handlers.",
+        "A candidate's importance_score is strictly less than a real decision.logged promotion's importance_score.",
+        "Static import-scan tests confirm conversation_promotion.py and capture_client.py import no httpx/requests/aiohttp/ConPort client."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add the emit-side acceptance tests proving emit_promotable_capture_event accepts the new type end-to-end through the real SQLite ledger, and that the emitted event_type is never decision.logged.",
+      "validation": [
+        "Emit-side tests pass against the real ledger path (tmp_path-isolated).",
+        "No ConPort write occurs anywhere in this packet's test suite (asserted structurally, not just by absence of a mock call)."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, create the proof bundle, run all validations (both the root and WMA test suites, using the scoped WMA command that excludes pre-existing unrelated collection errors), run PAL codereview and precommit, commit only allowlisted files, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "All commit.verify commands pass or exact blockers are recorded as FAIL/NOT_RUN.",
+        "Only allowlisted files are staged and committed.",
+        "Proof bundle records worktree path, branch, commit SHA, PR URL, validations with exit codes, and residual risks."
+      ]
+    }
+  ]
+}

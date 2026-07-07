@@ -1,0 +1,118 @@
+{
+  "id": "DMX-FLEET-P0-007-desktop-commander-upstream",
+  "project": "dopemux-mvp",
+  "target": "Replace the broken desktop-commander container facade (docker/mcp-servers-source/desktop-commander/server.py, which calls macOS osascript from inside a Linux container so every tool call fails while its healthcheck reports healthy) with the real upstream DesktopCommanderMCP run directly on the host, and repoint every registry/catalog/global-config reference away from the SSE container facade to the host stdio process.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not leave a healthcheck that reports healthy while every underlying tool call fails.",
+    "This packet must remove the container facade's build/compose entrypoints so nothing dead is startable, per the kill-list decommissioning protocol used across this series.",
+    "This packet must not claim host-level desktop automation was exercised in this execution context if the host is not macOS or the upstream binary is unavailable -- mark that verification NOT_RUN with the exact reason."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p0",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P0-006-quarantine-killlist",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p0-007-desktop-commander-upstream",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(mcp): replace desktop-commander container facade with host upstream",
+    "allowlist": [
+      "compose.yml",
+      "docker/mcp-servers/desktop-commander/Dockerfile",
+      "docker/mcp-servers-source/desktop-commander/**",
+      "src/dopemux/mcp/registry.yaml",
+      "docs/03-reference/mcp/desktop-commander.md",
+      "tests/arch/test_mcp_fleet_catalog_contract.py",
+      "tests/unit/mcp/test_desktop_commander_not_containerized.py",
+      "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-007-desktop-commander-upstream.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P0-007-desktop-commander-upstream/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-007-desktop-commander-upstream.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-007-desktop-commander-upstream.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "pytest -q tests/unit/mcp/test_desktop_commander_not_containerized.py tests/arch/test_mcp_fleet_catalog_contract.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): run desktop-commander as real upstream on host, retire facade",
+    "body": "Fleet audit (claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md section 4 'GPT-Researcher / exa / desktop-commander' verdict and section 7.1 target-fleet table) and decisions-ledger.md ('FLEET / desktop-commander' row) both settle this: run real upstream DesktopCommanderMCP on the host, replacing the broken container facade. Direct inspection confirms docker/mcp-servers-source/desktop-commander/server.py:65,89,113 shells out to `osascript`, which does not exist inside the Linux container built by docker/mcp-servers/desktop-commander/Dockerfile, so every tool call (screenshot, window_list, focus_window, type_text) fails at runtime while compose.yml:599-603's healthcheck only curls /health and reports healthy regardless. The operator's Claude global config (~/.claude.json mcpServers.desktop-commander) already points at this broken facade (http://localhost:3012/sse). This packet removes the container facade's build/compose entrypoints, documents the host-run upstream replacement (the same DesktopCommanderMCP package already available as host-side MCP tools in operator sessions), and repoints the registry/catalog/doctrine references so the facade cannot be silently restarted.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: fresh dedicated worktree from origin/main, verify repo marker/origin/clean baseline. Re-confirm the facade is broken by direct inspection: docker/mcp-servers-source/desktop-commander/server.py's osascript calls, compose.yml's health-only healthcheck, the src/dopemux/mcp/registry.yaml dopemux-desktop-commander entry, and any reference to desktop-commander in Claude/Codex global config (read-only inspection of ~/.claude.json and ~/.codex/config.toml; do not edit files outside the repo).",
+      "commands": [
+        "grep -n 'osascript' docker/mcp-servers-source/desktop-commander/server.py",
+        "grep -n -A5 '^  desktop-commander:' compose.yml",
+        "grep -n -A6 'dopemux-desktop-commander' src/dopemux/mcp/registry.yaml"
+      ],
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Proof cites exact file:line evidence that the facade's tool calls depend on osascript inside a container image that has no macOS runtime, and that the healthcheck does not exercise any tool call."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docker/mcp-servers-source/desktop-commander/server.py",
+        "compose.yml",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test at tests/unit/mcp/test_desktop_commander_not_containerized.py asserting: (a) docker/mcp-servers/desktop-commander/Dockerfile no longer exists (the facade is not buildable), and (b) compose.yml contains no 'desktop-commander:' service block. Extend tests/arch/test_mcp_fleet_catalog_contract.py's dead-service-path list to include the desktop-commander container facade path. Run both now to confirm they fail against the current repo state (the facade still exists and builds).",
+      "expected_files": [
+        "tests/unit/mcp/test_desktop_commander_not_containerized.py"
+      ],
+      "validation": [
+        "The new test fails against the current repo because the facade's Dockerfile and compose service still exist."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Remove the desktop-commander service block from compose.yml and remove docker/mcp-servers/desktop-commander/Dockerfile (and, if it is a dead symlink target with no other consumer, docker/mcp-servers-source/desktop-commander/ source files, after confirming via grep that nothing else imports them). Update src/dopemux/mcp/registry.yaml's dopemux-desktop-commander entry to describe a host-run stdio launcher (local.command/args invoking the real upstream DesktopCommanderMCP package) instead of a docker block, keeping default_enabled/required_for_auto as they were (false) unless evidence shows otherwise. Author docs/03-reference/mcp/desktop-commander.md documenting the host-run replacement, the tool surface it exposes, and that it requires running on the operator's actual desktop OS (not inside a Linux container).",
+      "validation": [
+        "compose.yml no longer defines a desktop-commander service.",
+        "docker/mcp-servers/desktop-commander/Dockerfile does not exist.",
+        "src/dopemux/mcp/registry.yaml's desktop-commander entry describes a host/local launcher, not a docker block, and still parses as valid YAML.",
+        "docs/03-reference/mcp/desktop-commander.md exists and documents the host-run replacement and its tool surface."
+      ],
+      "context_files": [
+        "compose.yml",
+        "src/dopemux/mcp/registry.yaml"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the packet: finalize this TP JSON, add it to task-packets/INDEX.md, run schema validation, write the proof bundle (preflight, before/after test evidence, PAL step outputs), commit only allowlisted files, open the PR, and move the corresponding task-orchestrator item to review. Explicitly mark host-level desktop-automation smoke testing (actually invoking the real upstream DesktopCommanderMCP tool calls) as NOT_RUN if this execution context is not the operator's interactive desktop, with the reason stated, and note that ~/.claude.json / ~/.codex/config.toml are outside this repo and are not modified by this packet -- the operator must repoint their global MCP config to the host launcher documented in docs/03-reference/mcp/desktop-commander.md as a manual follow-up.",
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-007-desktop-commander-upstream.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "pytest -q tests/unit/mcp/test_desktop_commander_not_containerized.py tests/arch/test_mcp_fleet_catalog_contract.py exits 0.",
+        "Only files in commit.allowlist are staged.",
+        "Proof bundle exists under proof/DMX-FLEET-P0-007-desktop-commander-upstream/ with PASS/FAIL/NOT_RUN per validation item, including an explicit NOT_RUN entry for any host-level desktop automation smoke test that could not run in this execution context."
+      ],
+      "context_files": [
+        "task-packets/generated/DMX-CONPORT-OPTIMAL/_AUTHORING_KIT.md"
+      ]
+    }
+  ]
+}

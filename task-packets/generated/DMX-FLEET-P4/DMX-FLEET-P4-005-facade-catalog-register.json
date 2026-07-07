@@ -1,0 +1,107 @@
+{
+  "id": "DMX-FLEET-P4-005-facade-catalog-register",
+  "project": "dopemux-mvp",
+  "target": "Register dcp-readonly-facade as an operator-run stdio entry in the unified MCP catalog, closing the gap where the facade is confirmed absent from mcp_catalog.yaml, services/registry.yaml, and src/dopemux/mcp/registry.yaml despite being a real, tested MCP server.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must register the facade as operator-run stdio, matching its actual deployment posture (not auto-started via compose).",
+    "This packet must not change any facade tool behavior, route_manifest.py data, or the facade's own registry.example.yaml.",
+    "This packet must not grant the facade any write capability or elevate its authority label beyond DERIVED/CANONICAL as already documented per tool in TOOL_CONTRACT.md.",
+    "This packet must preserve the canonical writer and add a contract test asserting the catalog entry exists and matches the facade's real tool count."
+  ],
+  "depends_on": [
+    "DMX-FLEET-P1-001-unified-catalog-spec"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p4",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P4-004-inventory-freshness-gate",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p4-005-facade-catalog-register",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(mcp-catalog): register dcp-readonly-facade as operator-run stdio",
+    "allowlist": [
+      "mcp_catalog.yaml",
+      "tests/unit/dopemux/mcp/test_catalog_dcp_facade_entry.py",
+      "task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-005-facade-catalog-register.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p4-005-facade-catalog-register/DMX-FLEET-P4-005-facade-catalog-register/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-005-facade-catalog-register.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-005-facade-catalog-register.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/dopemux/mcp/test_catalog_dcp_facade_entry.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(mcp-catalog): register dcp-readonly-facade in the unified catalog",
+    "body": "Adds an operator-run stdio catalog entry for services/dcp-readonly-facade, which the fleet audit confirmed is absent from mcp_catalog.yaml, services/registry.yaml, and src/dopemux/mcp/registry.yaml despite being a real, 12-tool, 537/539-test MCP server. Closes the fleet audit's Phase 4.5 item; depends on DMX-FLEET-P1-001's unified catalog schema landing first, and is the final packet of the DMX-FLEET-P4 series.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Confirm DMX-FLEET-P1-001's unified catalog schema has landed; if the schema is not yet available, record the current mcp_catalog.yaml schema shape actually in use and proceed against that shape, noting the gap in proof. Read an existing stdio catalog entry (e.g. dope-context or pal-stdio) as the format template.",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "Proof records whether DMX-FLEET-P1-001's unified schema was available and which catalog schema shape this packet targets."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "mcp_catalog.yaml",
+        "services/dcp-readonly-facade/README.md",
+        "services/dcp-readonly-facade/registry.example.yaml",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test in tests/unit/dopemux/mcp/test_catalog_dcp_facade_entry.py asserting mcp_catalog.yaml contains a dcp-readonly-facade entry with transport stdio, an operator-run marker/annotation, and a tool count or tool list matching TOOL_CONTRACT.md's 12 tools.",
+      "validation": [
+        "The test fails before the catalog entry exists.",
+        "The test does not require Docker or a live process; it parses the static YAML."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add the minimal dcp-readonly-facade entry to mcp_catalog.yaml following the existing stdio entry format, marked as operator-run (not docker_compose_service-backed) so it is not mistaken for an auto-started server.",
+      "validation": [
+        "The new catalog test passes.",
+        "No existing catalog entry is modified or reordered beyond the minimal insertion.",
+        "The entry does not declare docker_compose_service or auto-start behavior inconsistent with the facade's actual operator-run deployment."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, create the proof bundle, run the full verify list, commit only allowlisted files, push, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "The new catalog entry test passes.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

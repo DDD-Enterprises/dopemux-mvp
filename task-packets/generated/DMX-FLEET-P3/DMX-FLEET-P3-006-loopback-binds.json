@@ -1,0 +1,103 @@
+{
+  "id": "DMX-FLEET-P3-006-loopback-binds",
+  "project": "dopemux-mvp",
+  "target": "Close 0.0.0.0 exposure fleet-wide for conport, dope-memory, serena, and gptr-mcp by adding loopback-bind port publishing in compose.yml, matching the pattern already used by dope-context, adhd-engine, desktop-commander, leantime-bridge, and webhook-receiver.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change any exposed container port number, only the host bind address.",
+    "This packet must not remove or weaken any existing healthcheck.",
+    "This packet must preserve inter-container communication on the compose network (only host-published ports are restricted to loopback)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p3",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P3-005-voyage-cost-guard",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/fleet-p3-006-loopback-binds",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(compose): bind conport/dope-memory/serena/gptr-mcp published ports to loopback",
+    "allowlist": [
+      "compose.yml",
+      "tests/unit/compose/test_loopback_binds.py",
+      "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-006-loopback-binds.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p3-006-loopback-binds/DMX-FLEET-P3-006-loopback-binds/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-006-loopback-binds.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-006-loopback-binds.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/compose/test_loopback_binds.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(compose): bind conport/dope-memory/serena/gptr-mcp ports to loopback",
+    "body": "compose.yml already uses a 127.0.0.1:PORT:PORT loopback-bind pattern for dope-context (line 367), adhd-engine (484), desktop-commander (595), leantime-bridge (615), and webhook-receiver (642), but conport (253-255), dope-memory (504), serena (547-548), and gptr-mcp (574) still publish with a bare PORT:PORT mapping, which Docker binds to 0.0.0.0 by default. Adds the same 127.0.0.1: prefix to these four services' port mappings, closing the standing 0.0.0.0 exposure family called out in the fleet audit (§7.3, §8 Phase 3.5). In-container app-level 0.0.0.0 binds (e.g. enhanced_server.py, dope_memory_main.py, serena wrapper.py, gptr wrapper.py) are unaffected by this packet since only the host-published port controls host-network exposure; that residual is noted as a follow-up if a hardening pass wants defense-in-depth inside the container.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean baseline. Re-grep compose.yml to confirm current line numbers for the four target services' port blocks before editing (line numbers may have drifted since the audit).",
+      "commands": [
+        "grep -n 'CONPORT_HTTP_PORT\\|CONPORT_MCP_PORT\\|CONPORT_INFO_PORT\\|DOPE_MEMORY_PORT\\|SERENA_PORT\\|SERENA_HTTP_PORT\\|GPT_RESEARCHER_PORT' compose.yml"
+      ],
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Current exact line numbers for all four services' port mappings are recorded in proof."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/backlog/_AUTHORING_CONTRACT.md",
+        "compose.yml"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test at tests/unit/compose/test_loopback_binds.py that parses compose.yml and asserts every published port mapping for conport, dope-memory, serena, and gptr-mcp includes a 127.0.0.1: host-bind prefix (matching the existing pattern already used by dope-context, adhd-engine, desktop-commander, leantime-bridge, and webhook-receiver).",
+      "validation": [
+        "The new test fails against the current compose.yml because conport/dope-memory/serena/gptr-mcp port mappings lack the 127.0.0.1: prefix."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Edit compose.yml to add the 127.0.0.1: prefix to the port mappings for conport (CONPORT_HTTP_PORT, CONPORT_MCP_PORT, CONPORT_INFO_PORT), dope-memory (DOPE_MEMORY_PORT), serena (SERENA_PORT, SERENA_HTTP_PORT), and gptr-mcp (GPT_RESEARCHER_PORT), following the exact syntax already used at the dope-context/adhd-engine/desktop-commander/leantime-bridge/webhook-receiver entries. Do not change port numbers, service names, healthchecks, or any other compose fields.",
+      "validation": [
+        "All four services' published ports now carry the 127.0.0.1: prefix.",
+        "No port numbers, healthcheck definitions, or other compose fields changed for these or any other service.",
+        "docker compose config (or equivalent static parse) still parses compose.yml without error."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, create the proof bundle, run tests and packet validation, and commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "python -m pytest tests/unit/compose/test_loopback_binds.py -q passes.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

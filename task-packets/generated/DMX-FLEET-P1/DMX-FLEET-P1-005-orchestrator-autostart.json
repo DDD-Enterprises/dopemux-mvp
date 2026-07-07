@@ -1,0 +1,103 @@
+{
+  "id": "DMX-FLEET-P1-005-orchestrator-autostart",
+  "project": "dopemux-mvp",
+  "target": "Spec auto-starting the task-orchestrator singleton at session start and refreshing its repo truth-pack to the deployed version: scripts/mcp-wrappers/task-orchestrator-http-singleton.sh already implements an idempotent singleton launcher (container-name and data-dir matching, per-worktree scoping) but is only invoked manually or as an H3 remediation suggestion string (.claude/hooks/mcp_health_probe.py's _SERVER_REMEDIATION), never auto-run; and no automation refreshes the deployed task-orchestrator's truth-pack when its version changes.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must preserve scripts/mcp-wrappers/task-orchestrator-http-singleton.sh's existing idempotent singleton semantics (container-name + data-dir matching to distinguish legit per-repo singletons from leaks) rather than replacing it.",
+    "This packet must preserve H3's fail-open, non-blocking SessionStart contract if autostart fails or times out.",
+    "This packet must not silently mutate a running task-orchestrator's data or state during a truth-pack refresh; refresh must be read-only against live task data."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p1",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P1-004-ci-drift-gates",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p1-005-orchestrator-autostart",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(orchestrator): spec autostart + truth-pack refresh",
+    "allowlist": [
+      "claudedocs/specs/DMX-FLEET-P1-005-orchestrator-autostart.md",
+      "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-005-orchestrator-autostart.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p1-005-orchestrator-autostart/DMX-FLEET-P1-005-orchestrator-autostart/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-005-orchestrator-autostart.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-005-orchestrator-autostart.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-FLEET-P1-005-orchestrator-autostart.md",
+      "grep -q 'task-orchestrator-http-singleton' claudedocs/specs/DMX-FLEET-P1-005-orchestrator-autostart.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(orchestrator): spec autostart + truth-pack refresh",
+    "body": "Authors the spec for DMX-FLEET-P1-005. The 2026-07-03 audit (mcp-fleet-canonical-audit-and-target-design-2026-07-03.md §7.1/§8 Phase 1.5) asks for task-orchestrator auto-start via ensure and truth-pack regen at the deployed version. scripts/mcp-wrappers/task-orchestrator-http-singleton.sh already provides an idempotent singleton launcher, but it is invoked manually or only surfaced as advisory remediation text by the H3 SessionStart hook (.claude/hooks/mcp_health_probe.py) — never auto-run — and no mechanism refreshes the truth-pack when the deployed orchestrator version changes. This packet is genuinely unbuilt (confirmed by inspection, unlike several sibling P1 packets whose foundations already shipped) and specs the autostart + truth-pack-refresh wiring.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md §7.1 (task-orchestrator target-state row) and §8 Phase 1.5. Inspect scripts/mcp-wrappers/task-orchestrator-http-singleton.sh and scripts/mcp-wrappers/task-orchestrator-current-stdio.sh in full (container naming, singleton detection, dry-run mode). Inspect .claude/hooks/mcp_health_probe.py's _SERVER_REMEDIATION and confirm it never shells out. Search for any existing truth-pack regeneration automation (services/repo-truth-extractor/, reports/task-orchestratorrepo-truth-pack) and determine whether it runs on a schedule, on version change, or only manually.",
+      "validation": [
+        "Proof confirms with file:line citations that the singleton launcher exists but is not auto-invoked at SessionStart.",
+        "Proof confirms whether any truth-pack refresh automation exists today and its trigger (manual/scheduled/none), citing services/repo-truth-extractor/ and reports/ paths inspected.",
+        "Proof states the current deployed task-orchestrator version reference point (e.g. v3.8.0 snapshot in scripts/external-references/) so the spec can define what 'refresh to the deployed version' means concretely."
+      ],
+      "context_files": [
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+        "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
+        ".claude/hooks/mcp_health_probe.py",
+        "scripts/external-references/README.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/DMX-FLEET-P1-005-orchestrator-autostart.md covering: (a) current-state summary of the singleton launcher and H3's advisory-only behavior; (b) scope: wiring H3 (or `dopemux mcp ensure --full`, whichever the DMX-FLEET-P1-003 spec designates as the autostart entrypoint) to actually invoke task-orchestrator-http-singleton.sh when the orchestrator is down, respecting the existing leak-vs-singleton distinction; (c) truth-pack refresh design: trigger condition (version mismatch detection against the deployed jar/image), read-only extraction process, and where the refreshed pack is written; (d) interfaces (script invocation contract, exit codes, output surfaced to the operator); (e) invariants (idempotent, fail-open from hooks, no data mutation during refresh, no duplicate containers); (f) acceptance criteria; (g) phasing relative to DMX-FLEET-P1-003's ensure-command wiring (this may fold into that command rather than being a separate autostart path — the spec must state which).",
+      "validation": [
+        "Spec file exists at claudedocs/specs/DMX-FLEET-P1-005-orchestrator-autostart.md.",
+        "Spec explicitly decides whether autostart is a new standalone mechanism or folds into `dopemux mcp ensure --full`'s existing task-orchestrator-http-singleton.sh call, avoiding duplicate remediation paths.",
+        "Spec covers scope, invariants, interfaces, acceptance criteria, and phasing as distinct sections.",
+        "Spec does not propose runtime code changes; it is planning-only."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the source audit doc and the runtime evidence gathered in S1. Validate the packet JSON, update task-packets/INDEX.md, assemble the proof bundle, and commit only allowlisted files.",
+      "validation": [
+        "Spec is internally consistent with S1's evidence.",
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

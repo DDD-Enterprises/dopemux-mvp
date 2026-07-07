@@ -1,0 +1,81 @@
+{
+  "id": "DMX-ADR-001-semantic-memory-home",
+  "project": "dopemux-mvp",
+  "target": "Author docs/90-adr/adr-224-semantic-memory-home.md recording the accepted decision that semantic memory lives in dope-context (memory_{hash} projection, provisionally Option A, deferred final go/no-go until after DMX-MCF-002..004 land) and that ConPort does not own semantic vector search (mem.* in memory_server.py is closed, not to be built).",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-adr",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-adr-001-semantic-memory-home",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(adr): ADR-224 semantic memory home (dope-context, deferred)",
+    "allowlist": [
+      "docs/90-adr/adr-224-semantic-memory-home.md",
+      "task-packets/generated/DMX-ADR/DMX-ADR-001-semantic-memory-home.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-adr-001-semantic-memory-home/DMX-ADR-001-semantic-memory-home/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-ADR/DMX-ADR-001-semantic-memory-home.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-ADR/DMX-ADR-001-semantic-memory-home.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "grep -q 'status: accepted' docs/90-adr/adr-224-semantic-memory-home.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(adr): ADR-224 semantic memory home (dope-context, deferred)",
+    "body": "Authors ADR-224 recording the backlog decisions-ledger MCF-005 gate: semantic memory home is dope-context's memory_{hash} projection (provisionally Option A, deferred final go/no-go until DMX-MCF-002..004 land with real chronicle data), and closes the ConPort vector-search question (mem.* in memory_server.py is not to be built; dope-context owns semantic per the Memory Trinity). No runtime change.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Author docs/90-adr/adr-224-semantic-memory-home.md with frontmatter matching the repo's accepted-ADR convention (see docs/90-adr/adr-223-retire-exa-mcp-server.md for the exact key set: id, title, type: adr, owner, author, date, last_review, next_review, status: accepted, prelude, graph_metadata). Body must record, copied verbatim from claudedocs/backlog/decisions-ledger.md row 'MCF-005 | Semantic memory home': Decision = 'Defer, provisionally Option A (dope-context memory_{hash} projection); decide after 002-004 with real chronicle data' and Rationale = 'Recall-quality gap only measurable once chronicle has content; Voyage is external -> privacy gate'. Also copy verbatim from the 'FLEET | ConPort vector search (mem.* in memory_server.py)' row: Decision = 'Do not build in ConPort -- dope-context owns semantic (per MCF-005)' and Rationale = 'Trinity law assigns semantic retrieval to dope-context; avoid a second authority'. Author (not copied, since the ledger has no consequences column) a Consequences section describing: dope-context remains provisional/deferred pending real chronicle data from DMX-MCF-002..004; ConPort must not grow a mem.* vector-search surface; this ADR supersedes 'DECISION REQUIRED' language in claudedocs/plans/2026-07-04-memory-context-fabric-build-plan.md for gates 005/006 as it pertains to gate 005 only (006 is ADR-005's scope). Also author an Alternatives Considered section noting Option B/C semantic-memory-home candidates were not selected pending real usage data.",
+      "validation": [
+        "docs/90-adr/adr-224-semantic-memory-home.md exists.",
+        "grep -q 'status: accepted' docs/90-adr/adr-224-semantic-memory-home.md exits 0.",
+        "The Decision section contains the MCF-005 decision string verbatim and the ConPort-vector-search closure string verbatim from decisions-ledger.md.",
+        "The Rationale text for both rows is present verbatim.",
+        "A Consequences section is present and is authored prose, not a ledger copy."
+      ],
+      "context_files": [
+        "claudedocs/backlog/decisions-ledger.md",
+        "claudedocs/backlog/README.md",
+        "docs/90-adr/adr-223-retire-exa-mcp-server.md",
+        "claudedocs/plans/2026-07-04-memory-context-fabric-build-plan.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Validate the packet JSON against the dopeTask canonical schema, add a row for DMX-ADR-001-semantic-memory-home to task-packets/INDEX.md's active packets table (Packet ID, subsystem 'Memory / ADR', title, status 'Ready', related ADR = adr-224-semantic-memory-home), then stage only the allowlisted files and commit.",
+      "validation": [
+        "python3 -m jsonschema -i task-packets/generated/DMX-ADR/DMX-ADR-001-semantic-memory-home.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "task-packets/INDEX.md contains a row referencing DMX-ADR-001-semantic-memory-home.",
+        "git diff --check reports no whitespace errors.",
+        "Only allowlisted paths appear in the commit."
+      ]
+    }
+  ]
+}

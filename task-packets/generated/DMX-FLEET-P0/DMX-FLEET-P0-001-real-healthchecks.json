@@ -1,0 +1,111 @@
+{
+  "id": "DMX-FLEET-P0-001-real-healthchecks",
+  "project": "dopemux-mvp",
+  "target": "Prove that every MCP server healthcheck in the fleet is a real capability probe (non-2xx/unreachable = unhealthy) and add a regression test that fails closed if a fake exit-0-style healthcheck is reintroduced for pal or dope-context.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not weaken any existing healthcheck to pass trivially (no reintroducing `|| exit 0` or bare `exit 0`).",
+    "This packet must fail closed: the regression test must fail if any compose service or MCP-server Dockerfile healthcheck can report healthy without a real reachability/response check."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p0",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p0-001-real-healthchecks",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "test(mcp): add regression gate against fake exit-0 healthchecks",
+    "allowlist": [
+      "docker/mcp-servers-source/pal/Dockerfile",
+      "services/dope-context/Dockerfile",
+      "compose.yml",
+      "tests/mcp/test_no_fake_healthchecks.py",
+      "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-001-real-healthchecks.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P0-001-real-healthchecks/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-001-real-healthchecks.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-001-real-healthchecks.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "pytest -q tests/mcp/test_no_fake_healthchecks.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "test(mcp): lock in real healthchecks for pal and dope-context",
+    "body": "Fleet audit (claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md §8 Phase 0.1) flagged fake `exit 0` / `|| exit 0` healthchecks for pal and dope-context. Direct inspection at authoring time shows both Dockerfiles already carry a real `curl -f ... || exit 1` HEALTHCHECK (docker/mcp-servers-source/pal/Dockerfile:28-29, services/dope-context/Dockerfile:39-40, fixed by prior commits 4974015c3/b63b4b4a7 area). This packet adds a permanent regression test asserting no fake healthcheck pattern exists for any MCP server Dockerfile or compose healthcheck block, so the bug the audit found cannot silently return.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: create a fresh dedicated worktree based on origin/main, verify the .dopetaskroot repo marker, origin identity, and a clean baseline status. Record the baseline HEAD SHA in proof.",
+      "validation": [
+        "Worktree path, branch, origin remote, repo marker, and base HEAD SHA are recorded in proof/DMX-FLEET-P0-001-real-healthchecks/preflight.md.",
+        "git status --porcelain is empty before any edit."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test at tests/mcp/test_no_fake_healthchecks.py that scans docker/mcp-servers-source/**/Dockerfile, docker/mcp-servers/**/Dockerfile, services/*/Dockerfile, and compose.yml for HEALTHCHECK/healthcheck blocks and asserts none of them use a fake pattern (bare `exit 0` as the sole check, or `|| exit 0` suffix masking curl failure). Confirm the test currently passes against the pal and dope-context Dockerfiles (already fixed) but would fail if either regressed; add one deliberately-broken fixture case inline in the test (a string literal, not a file) to prove the detector actually triggers on the fake pattern before asserting the real files are clean.",
+      "commands": [
+        "grep -rn 'HEALTHCHECK' docker/mcp-servers-source/pal/Dockerfile services/dope-context/Dockerfile",
+        "grep -rn 'exit 0' docker/mcp-servers-source/*/Dockerfile services/*/Dockerfile compose.yml || true"
+      ],
+      "expected_files": [
+        "tests/mcp/test_no_fake_healthchecks.py"
+      ],
+      "validation": [
+        "The self-test fixture case inside test_no_fake_healthchecks.py demonstrably fails the fake-pattern check (proves the detector is not a no-op).",
+        "Running pytest against the real repo files (pal, dope-context Dockerfiles, compose.yml) passes because no fake pattern is present."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "If any Dockerfile or compose healthcheck for pal or dope-context still contains a fake exit-0 pattern (re-verify at implementation time; do not assume the S1 finding is unchanged), replace it with a real capability probe following the pattern already used in services/dope-context/Dockerfile:39-40 (curl -f <health_url> || exit 1). If both are already fixed, this step is a no-op and proof must state so explicitly with file:line citations.",
+      "validation": [
+        "Every pal and dope-context healthcheck (Dockerfile HEALTHCHECK and any compose.yml healthcheck: block) performs a real request and treats non-2xx/unreachable as failure.",
+        "Proof states PASS/NO-OP per file with exact file:line evidence; no claim is made without a citation."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/pal/Dockerfile",
+        "services/dope-context/Dockerfile",
+        "compose.yml"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the packet: finalize this TP JSON, add it to task-packets/INDEX.md, run schema validation, write the proof bundle (preflight, test output, file:line evidence, PAL step outputs), commit only allowlisted files, open the PR, and move the corresponding task-orchestrator item to review.",
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-001-real-healthchecks.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "pytest -q tests/mcp/test_no_fake_healthchecks.py exits 0.",
+        "Only files in commit.allowlist are staged.",
+        "Proof bundle exists under proof/DMX-FLEET-P0-001-real-healthchecks/ with PASS/FAIL/NOT_RUN per validation item."
+      ],
+      "context_files": [
+        "task-packets/generated/DMX-CONPORT-OPTIMAL/_AUTHORING_KIT.md"
+      ]
+    }
+  ]
+}

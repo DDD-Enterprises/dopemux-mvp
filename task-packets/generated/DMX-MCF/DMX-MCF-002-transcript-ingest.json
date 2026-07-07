@@ -1,0 +1,137 @@
+{
+  "id": "DMX-MCF-002-transcript-ingest",
+  "project": "dopemux-mvp",
+  "target": "Build a one-shot, idempotent transcript-file ingest adapter that parses Claude Code session transcript JSONL into turn events and writes only to the dope-memory raw ledger (raw_activity_events) via the existing capture spine, with deterministic ids, stable-timestamp-or-quarantine, and a non-queryable dope-memory quarantine table (schema migration) for redaction failures.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not modify capture_client.py, redactor.py, promotion.py, or PROMOTABLE_CAPTURE_EVENT_TYPES.",
+    "This packet must write only to raw_activity_events via capture_client.emit_capture_event() -- no ConPort writes, no dope-context writes, no Redis requirement.",
+    "This packet must never ingest a turn lacking a source timestamp with datetime.now() -- it must quarantine that turn instead.",
+    "This packet must quarantine on redaction failure into a non-queryable dope-memory table (schema migration), never the queryable ledger.",
+    "This packet must never search, promote, mirror, or project quarantined records.",
+    "This packet must be idempotent: re-ingesting the same transcript file must not grow the ledger or the quarantine table.",
+    "This packet must fail open for the session: a malformed line or ingest error must never raise out of ingest_transcript_file.",
+    "This packet must preserve the canonical writer (dope-memory) and add a contract test proving the quarantine table is excluded from search/promotion/mirror/projection paths.",
+    "This packet must not build a file-watcher daemon or Codex transcript support -- both are explicitly out of scope."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-mcf",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-mcf-002-transcript-ingest",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(memory): transcript-file ingest into raw ledger with non-queryable quarantine table",
+    "allowlist": [
+      "src/dopemux/memory/transcript_ingest.py",
+      "src/dopemux/commands/memory_commands.py",
+      "tests/unit/test_transcript_ingest.py",
+      "tests/unit/test_cli_memory_ingest_transcript.py",
+      "services/working-memory-assistant/chronicle/migrations/v1_3_0_add_quarantine_table.sql",
+      "services/working-memory-assistant/chronicle/schema.sql",
+      "services/working-memory-assistant/tests/unit/test_chronicle_quarantine_table.py",
+      "task-packets/generated/DMX-MCF/DMX-MCF-002-transcript-ingest.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-mcf-002-transcript-ingest/DMX-MCF-002-transcript-ingest/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-MCF/DMX-MCF-002-transcript-ingest.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-MCF/DMX-MCF-002-transcript-ingest.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "mise exec -- python -m pytest tests/unit/test_transcript_ingest.py tests/unit/test_cli_memory_ingest_transcript.py -q",
+      "cd services/working-memory-assistant && mise exec -- python -m pytest tests/unit/test_chronicle_quarantine_table.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory): transcript-file ingest into raw ledger with non-queryable quarantine",
+    "body": "Implements TP-MCF-002 per claudedocs/plans/2026-07-04-tp-mcf-002-transcript-ingest.md: a one-shot, idempotent transcript-file ingest adapter (src/dopemux/memory/transcript_ingest.py) that parses Claude Code session JSONL into TranscriptTurn records and writes only to raw_activity_events via the existing capture spine. Per claudedocs/backlog/decisions-ledger.md (MCF-002 gate), redaction-failure and missing-source-timestamp turns are quarantined into a new non-queryable dope-memory table added via a chronicle schema migration -- superseding the build plan's filesystem-quarantine-directory draft. No ConPort or dope-context writes; no file-watcher daemon.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean status. Run the Task 1 transcript-format spike from the build plan (locate a real Claude Code transcript JSONL, inspect the schema, confirm the parse contract still holds; note any drift).",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "The observed transcript record-type distribution and message.content shapes are recorded in proof, with any drift from the plan's baseline schema noted explicitly."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/plans/2026-07-04-tp-mcf-002-transcript-ingest.md",
+        "claudedocs/tp-mcf-001-authority-map-2026-07-04.md",
+        "claudedocs/memory-context-fabric-interfaces-2026-07-04.md",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests for parse_transcript_line, turn_to_capture_envelope, and ingest_transcript_file before implementation, per the build plan's Tasks 2, 3, and 5 (TDD: red then green, one commit per task). The build plan's Task 4/5 tests that assert a filesystem quarantine_dir (e.g. write_quarantine_record, test_ingest_transcript_file_quarantines_missing_timestamp_turn) are superseded by the table-based contract test written in S4 of this packet -- do not port the filesystem-quarantine assertions verbatim; assert against the quarantine table instead.",
+      "validation": [
+        "Tests fail for the correct reason (module or attribute not found) before implementation exists.",
+        "Test coverage includes: user_prompt/assistant_response/tool_call/tool_result classification, non-turn/malformed-line skip, missing-timestamp handling, idempotent replay, and the no-ConPort/no-dope-context import structural test.",
+        "No test in this step asserts a filesystem quarantine directory or file -- quarantine assertions target the table added in S4."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement parse_transcript_line, turn_to_capture_envelope, and ingest_transcript_file in src/dopemux/memory/transcript_ingest.py per the build plan, plus the CLI subcommand dopemux memory ingest-transcript in src/dopemux/commands/memory_commands.py.",
+      "validation": [
+        "All transcript_ingest tests pass.",
+        "The module imports neither conport nor dope_context (structural import-scan test passes).",
+        "Re-running ingest_transcript_file against the same file is idempotent (ledger row count unchanged, ingested count 0 on the second run)."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Per claudedocs/backlog/decisions-ledger.md (MCF-002 gate: non-queryable dope-memory table, not a file path), add a chronicle schema migration (services/working-memory-assistant/chronicle/migrations/v1_3_0_add_quarantine_table.sql, applied via the existing apply_chronicle_migrations/sqlite_migrations.py mechanism) that creates a quarantine table holding only {event_id, ts, session_id, reason, original_keys, source_path, source_line} -- no payload content. Wire transcript_ingest.py's quarantine writer to insert into this table instead of a filesystem directory. Add a contract test proving the table is never referenced by any search, promotion, mirror, or dope-context-projection code path.",
+      "validation": [
+        "The migration is idempotent and additive (does not alter existing chronicle tables) and is picked up by apply_chronicle_migrations.",
+        "The quarantine table has no full-text/search index and is not referenced by promotion.py, capture_client.py's promotable paths, recap.py, or any dope-context indexing code.",
+        "A missing-source-timestamp turn and a redaction-failure turn both insert exactly one row into the quarantine table and zero rows into raw_activity_events.",
+        "Re-quarantining the same event_id is idempotent (no duplicate row)."
+      ],
+      "context_files": [
+        "services/working-memory-assistant/chronicle/schema.sql",
+        "services/working-memory-assistant/chronicle/sqlite_migrations.py",
+        "services/working-memory-assistant/chronicle/migrations/v1_2_1_scope_supersession_unique_index.sql"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, create the proof bundle, run all validations, run PAL codereview and precommit, commit only allowlisted files, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "All commit.verify commands pass or exact blockers are recorded as FAIL/NOT_RUN.",
+        "Only allowlisted files are staged and committed.",
+        "Proof bundle records worktree path, branch, commit SHA, PR URL, validations with exit codes, and residual risks."
+      ]
+    }
+  ]
+}

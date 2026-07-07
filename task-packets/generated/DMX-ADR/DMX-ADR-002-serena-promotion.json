@@ -1,0 +1,80 @@
+{
+  "id": "DMX-ADR-002-serena-promotion",
+  "project": "dopemux-mvp",
+  "target": "Author docs/90-adr/adr-225-serena-promotion.md recording the accepted decision to promote the local 45-tool Serena surface to canonical, with 6 write tools carved out of the default profile.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-adr",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-ADR-001-semantic-memory-home",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-adr-002-serena-promotion",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(adr): ADR-225 Serena local surface promotion",
+    "allowlist": [
+      "docs/90-adr/adr-225-serena-promotion.md",
+      "task-packets/generated/DMX-ADR/DMX-ADR-002-serena-promotion.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-adr-002-serena-promotion/DMX-ADR-002-serena-promotion/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-ADR/DMX-ADR-002-serena-promotion.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-ADR/DMX-ADR-002-serena-promotion.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "grep -q 'status: accepted' docs/90-adr/adr-225-serena-promotion.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(adr): ADR-225 Serena local surface promotion",
+    "body": "Authors ADR-225 recording the backlog decisions-ledger 'Serena surface' gate: promote the local 45-tool Serena candidate to canonical, carving 6 write tools out of the default profile. Unblocks DMX-FLEET-P3-002 (consolidation) and DMX-ADHD-WIRE-005/006 (dormant ADHD module resurrection). No runtime change.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Author docs/90-adr/adr-225-serena-promotion.md with frontmatter matching the repo's accepted-ADR convention (see docs/90-adr/adr-223-retire-exa-mcp-server.md for the exact key set: id, title, type: adr, owner, author, date, last_review, next_review, status: accepted, prelude, graph_metadata). Body must record, copied verbatim from claudedocs/backlog/decisions-ledger.md row 'FLEET | Serena surface': Decision = 'Promote local 45-tool candidate via ADR (6 write tools out of default profile)' and Rationale = 'Canonicalizes the richer surface; unblocks dormant ADHD-module resurrections'. Author (not copied) a Consequences section describing: the wrapper split (local candidate vs whatever surface is currently canonical) must be archived/retired per DMX-FLEET-P3-002; the 6 write tools carved out of the default profile must be named and profile-gated (do not silently expose write tools by default); DMX-ADHD-WIRE-005 (Adaptive Learning resurrect-spec) and DMX-ADHD-WIRE-006 (Fatigue/Context-Switch/Untracked-Work resurrect-spec) are unblocked by this decision and depend on it. Author an Alternatives Considered section noting: keep the narrower canonical surface and drop the local 45-tool candidate (rejected -- would strand the richer surface and keep ADHD module resurrection blocked).",
+      "validation": [
+        "docs/90-adr/adr-225-serena-promotion.md exists.",
+        "grep -q 'status: accepted' docs/90-adr/adr-225-serena-promotion.md exits 0.",
+        "The Decision and Rationale text for the 'Serena surface' ledger row is present verbatim.",
+        "A Consequences section is present and is authored prose, not a ledger copy, and names the 6-write-tool profile carve-out.",
+        "The ADR text references DMX-FLEET-P3-002 and DMX-ADHD-WIRE-005/006 as downstream-unblocked packets."
+      ],
+      "context_files": [
+        "claudedocs/backlog/decisions-ledger.md",
+        "claudedocs/backlog/README.md",
+        "docs/90-adr/adr-223-retire-exa-mcp-server.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Validate the packet JSON against the dopeTask canonical schema, add a row for DMX-ADR-002-serena-promotion to task-packets/INDEX.md's active packets table (Packet ID, subsystem 'Cognitive Plane / ADR', title, status 'Ready', related ADR = adr-225-serena-promotion), then stage only the allowlisted files and commit.",
+      "validation": [
+        "python3 -m jsonschema -i task-packets/generated/DMX-ADR/DMX-ADR-002-serena-promotion.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "task-packets/INDEX.md contains a row referencing DMX-ADR-002-serena-promotion.",
+        "git diff --check reports no whitespace errors.",
+        "Only allowlisted paths appear in the commit."
+      ]
+    }
+  ]
+}

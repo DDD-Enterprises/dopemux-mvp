@@ -1,0 +1,110 @@
+{
+  "id": "DMX-FLEET-P2-004-skill-mirror-receipts",
+  "project": "dopemux-mvp",
+  "target": "Append a dope-memory mirror-receipt confirmation to the /decision, /caveat, and /followup skill commands so each ConPort write is visibly mirrored into the chronicle at the point of use, closing Memory Trinity Rule 1 beyond the gated CLI path.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not make ConPort write success conditional on the mirror receipt; the ConPort write remains canonical and authoritative regardless of mirror outcome.",
+    "This packet must preserve fail-open mirror semantics: a mirror-receipt failure must never block or roll back the underlying ConPort write.",
+    "This packet must preserve the canonical writer (ConPort) for decisions/caveats/followups and add a contract test proving the mirror receipt never overrides or duplicates canonical state.",
+    "This packet must not introduce a new promotable event type without adding it to every PROMOTABLE_EVENT_TYPES synchronization point identified in DMX-FLEET-P2-001."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p2",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P2-003-instance-identity-propagation",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p2-004-skill-mirror-receipts",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(skills): append dope-memory mirror-receipt confirmations to decision/caveat/followup",
+    "allowlist": [
+      ".claude/commands/decision.md",
+      ".claude/commands/caveat.md",
+      ".claude/commands/followup.md",
+      "services/dopecon-bridge/dopecon_bridge/promotable_mirror.py",
+      "tests/unit/test_dopecon_bridge_promotable_mirror.py",
+      "task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-004-skill-mirror-receipts.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P2-004-skill-mirror-receipts/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-004-skill-mirror-receipts.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-004-skill-mirror-receipts.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m py_compile services/dopecon-bridge/dopecon_bridge/promotable_mirror.py",
+      "python3 -m pytest -q tests/unit/test_dopecon_bridge_promotable_mirror.py",
+      "grep -q 'mirror receipt' .claude/commands/decision.md .claude/commands/caveat.md .claude/commands/followup.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(skills): append dope-memory mirror-receipt confirmations to decision/caveat/followup",
+    "body": "Appends a visible dope-memory mirror-receipt confirmation step to the /decision, /caveat, and /followup skill commands per mcp-fleet-canonical-audit-and-target-design-2026-07-03.md sec 7.2 item 3 (Memory Trinity Rule 1). ConPort remains the sole canonical writer; the mirror receipt is a fail-open, non-authoritative confirmation surfaced to the operator at the point of use.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean baseline status.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Primary checkout remains untouched."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/backlog/_AUTHORING_CONTRACT.md",
+        ".claude/commands/decision.md",
+        ".claude/commands/caveat.md",
+        ".claude/commands/followup.md",
+        "services/dopecon-bridge/dopecon_bridge/promotable_mirror.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test before code proving that services/dopecon-bridge/dopecon_bridge/promotable_mirror.py exposes a queryable confirmation (e.g. a returned mirror-receipt id or status) for decision.logged-class events that the skill instructions can reference, and that mirror failure does not raise or block the caller.",
+      "validation": [
+        "The new test fails against current code because no queryable confirmation surface exists yet, or documents that one already exists and pivots to asserting the skill-doc wiring instead.",
+        "Test asserts fail-open behavior: a simulated mirror failure does not propagate as an exception to the ConPort write path."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement the minimal mirror-receipt confirmation surface if not already present, then update .claude/commands/decision.md, .claude/commands/caveat.md, and .claude/commands/followup.md to instruct the calling agent to report the dope-memory mirror-receipt confirmation (or its fail-open absence) alongside the ConPort write result.",
+      "validation": [
+        "Each of the three skill command docs explicitly instructs surfacing a mirror-receipt confirmation after the canonical ConPort write.",
+        "The skill docs make clear the ConPort write is canonical and the mirror is a non-authoritative confirmation.",
+        "No change alters which system is the canonical writer for decisions, caveats, or followups."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the packet, update task-packets/INDEX.md, create the proof bundle, validate, commit, push, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "New and existing tests pass; git diff --check passes.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

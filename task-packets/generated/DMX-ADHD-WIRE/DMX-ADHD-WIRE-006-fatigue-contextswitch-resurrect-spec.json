@@ -1,0 +1,108 @@
+{
+  "id": "DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec",
+  "project": "dopemux-mvp",
+  "target": "Produce a spec for resurrecting the dormant Serena Fatigue Detection Engine, Context Switching Optimizer, Untracked Work Detector, and Abandonment Tracker modules, sequenced after the Adaptive Learning Engine foundation and gated on the Serena single-surface promotion decision.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must not resurrect these modules into the local Serena candidate before both the Serena promotion (DMX-FLEET-P3-002) and the Adaptive Learning foundation spec (DMX-ADHD-WIRE-005) have landed; the spec must state this precondition explicitly and mark itself blocked until then."
+  ],
+  "depends_on": [
+    "DMX-FLEET-P3-002-serena-promotion",
+    "DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-adhd-wire",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-adhd-wire-006-fatigue-contextswitch-resurrect-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(specs): fatigue and context-switch modules resurrection spec",
+    "allowlist": [
+      "claudedocs/specs/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.md",
+      "task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-adhd-wire-006-fatigue-contextswitch-resurrect-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.md",
+      "grep -q '## Scope' claudedocs/specs/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.md",
+      "grep -q '## Invariants' claudedocs/specs/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.md",
+      "grep -q '## Interfaces' claudedocs/specs/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.md",
+      "grep -q '## Acceptance' claudedocs/specs/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.md",
+      "grep -q '## Phasing' claudedocs/specs/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(specs): fatigue and context-switch modules resurrection spec",
+    "body": "Adds a resurrection spec for the remaining Serena TOP-3/HIGH-priority dormant modules named in claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md sections 2.5 and 3c: the Fatigue Detection Engine (services/serena/intelligence/fatigue_detection_engine.py, 8 indicators + 8 adaptive responses), the Context Switching Optimizer (services/serena/intelligence/context_switching_optimizer.py), the Untracked Work Detector (services/serena/untracked_work_detector.py, 6 sub-detectors), and the Abandonment Tracker (services/serena/abandonment_tracker.py). Source estimates ~8h for fatigue+context-switch and ~4h for untracked+abandonment, all consuming the Adaptive Learning Engine foundation spec'd in DMX-ADHD-WIRE-005. This packet is spec-only, is the final packet in the DMX-ADHD-WIRE series, and makes no runtime code changes.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read the named source docs and inspect the current runtime paths read-only: the forgotten-features addendum sections 2.5 and 3c, the DMX-ADHD-WIRE-005 adaptive-learning spec deliverable (for the foundation interface this packet builds on), and the dormant fatigue_detection_engine.py, context_switching_optimizer.py, untracked_work_detector.py, and abandonment_tracker.py implementations.",
+      "validation": [
+        "Proof confirms all four dormant module files were located and read (both services/serena/intelligence and services/serena/v2/intelligence copies where duplicated).",
+        "Proof confirms the DMX-ADHD-WIRE-005 spec's Interfaces section was read to align this spec's consumption contract with the foundation."
+      ],
+      "context_files": [
+        "claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md",
+        "claudedocs/specs/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.md",
+        "services/serena/intelligence/fatigue_detection_engine.py",
+        "services/serena/v2/intelligence/fatigue_detection_engine.py",
+        "services/serena/intelligence/context_switching_optimizer.py",
+        "services/serena/v2/intelligence/context_switching_optimizer.py",
+        "services/serena/untracked_work_detector.py",
+        "services/serena/abandonment_tracker.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce the spec at claudedocs/specs/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.md covering: Scope (what each of the four modules does and their TOP-3/HIGH source priority per the addendum), Invariants (no build before DMX-FLEET-P3-002 and DMX-ADHD-WIRE-005 land; per-user data stays local; guilt-free framing for abandonment per source), Interfaces (how each module consumes the Adaptive Learning foundation and how Untracked Work Detector's ConPort-mismatch sub-detectors relate to existing ConPort tooling), Acceptance (concrete, testable criteria per module), and Phasing (fatigue+context-switch first per source's TOP-3 estimate, untracked+abandonment second).",
+      "validation": [
+        "Spec file exists at claudedocs/specs/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.md.",
+        "Spec contains all five required sections (Scope, Invariants, Interfaces, Acceptance, Phasing).",
+        "Spec explicitly states both the DMX-FLEET-P3-002 and DMX-ADHD-WIRE-005 preconditions and marks this packet's runtime work as blocked until both land."
+      ],
+      "expected_files": [
+        "claudedocs/specs/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the addendum source and against the current runtime read in S1, run packet validation, and run the Codex minimum PAL chain (analyze, planner, codereview, precommit) over the spec deliverable. As the final packet in the DMX-ADHD-WIRE series, confirm the full chain (001 through 006) is internally consistent before closing.",
+      "validation": [
+        "TP JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "PAL outputs are saved to proof, or recorded NOT_RUN with the exact tool error if PAL is unavailable.",
+        "Only allowlisted files are staged and committed; no runtime code is touched.",
+        "Proof confirms this packet's series.final_packet=true is consistent with it being the highest-numbered packet in DMX-ADHD-WIRE."
+      ]
+    }
+  ]
+}

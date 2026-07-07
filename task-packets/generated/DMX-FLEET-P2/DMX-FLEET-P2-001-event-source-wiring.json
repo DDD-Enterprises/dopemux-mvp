@@ -1,0 +1,116 @@
+{
+  "id": "DMX-FLEET-P2-001-event-source-wiring",
+  "project": "dopemux-mvp",
+  "target": "Produce the spec for wiring decision.logged/task.*/workflow.phase_changed at their real emission sources (ConPort decision-write path, workflow-kernel/task-orchestrator transitions) and for folding the standalone mcp-capture server into capture_client.py as a single capture path, reconciled against the current three-file PROMOTABLE_EVENT_TYPES synchronization runtime truth.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must ground every claim in current runtime code (capture_client.py, promotion.py, dopecon_bridge/promotable_mirror.py, native_hooks.py, services/mcp-capture/server.py), not in stale audit prose, and must cite exact file:line evidence for each authority-map row it revises.",
+    "This packet must reconcile the audit's two-file PROMOTABLE_EVENT_TYPES claim against the current three-file synchronization (capture_client.py, promotion.py, dopecon_bridge/promotable_mirror.py) and record the discrepancy explicitly.",
+    "This packet must not propose auto-writing ConPort from any non-canonical source.",
+    "This packet must preserve capture_client.emit_capture_event() as the single raw-capture entry point in its fold-in design."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p2",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p2-001-event-source-wiring",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(fleet-p2): spec event-source wiring + mcp-capture fold-in",
+    "allowlist": [
+      "claudedocs/specs/DMX-FLEET-P2-001-event-source-wiring.md",
+      "task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-001-event-source-wiring.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P2-001-event-source-wiring/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-001-event-source-wiring.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-001-event-source-wiring.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-FLEET-P2-001-event-source-wiring.md",
+      "grep -q 'mcp-capture' claudedocs/specs/DMX-FLEET-P2-001-event-source-wiring.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(fleet-p2): spec event-source wiring + mcp-capture fold-in",
+    "body": "Specs wiring decision.logged/task.*/workflow.phase_changed at their real emission sources (ConPort decision write, workflow-kernel/task-orchestrator transitions) per mcp-fleet-canonical-audit-and-target-design-2026-07-03.md sec 7.2, and specs folding the standalone mcp-capture server into capture_client.py per the backlog decisions ledger (FEAT/mcp-capture row). Reconciles the audit's two-file PROMOTABLE_EVENT_TYPES claim against the current three-file runtime (capture_client.py, promotion.py, dopecon_bridge/promotable_mirror.py). Planning-only; no runtime code changes.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean baseline status before any inspection begins.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Primary checkout remains untouched."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/backlog/_AUTHORING_CONTRACT.md",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Read-only inspect the current emission-source runtime truth: ConPort decision-write path (docker/mcp-servers-source/conport/enhanced_server.py log_decision/_log_decision), the dopecon-bridge mirror (services/dopecon-bridge/dopecon_bridge/routes.py and promotable_mirror.py), the promotion engine allowlist (services/working-memory-assistant/promotion/promotion.py PROMOTABLE_EVENT_TYPES), the capture client allowlist (src/dopemux/memory/capture_client.py PROMOTABLE_CAPTURE_EVENT_TYPES), native_hooks.py's existing PostToolUseFailure wiring, and the standalone mcp-capture server (services/mcp-capture/server.py, README.md). Identify exactly which promotable types already reach activity.events.v1 today versus which remain unwired at their real emission source, and confirm the current count and location of PROMOTABLE_EVENT_TYPES synchronization points (audit says two files; verify against runtime).",
+      "commands": [
+        "grep -n 'PROMOTABLE_EVENT_TYPES\\|PROMOTABLE_CAPTURE_EVENT_TYPES' src/dopemux/memory/capture_client.py services/working-memory-assistant/promotion/promotion.py services/dopecon-bridge/dopecon_bridge/promotable_mirror.py",
+        "grep -n 'decision.logged\\|progress.updated' services/dopecon-bridge/dopecon_bridge/routes.py",
+        "grep -n 'def log_decision\\|def _log_decision' docker/mcp-servers-source/conport/enhanced_server.py",
+        "sed -n '1,60p' services/mcp-capture/server.py"
+      ],
+      "validation": [
+        "Proof records the exact file:line evidence for each of the three (or however many are found) PROMOTABLE_EVENT_TYPES synchronization points, with any discrepancy from the two-file audit claim called out explicitly.",
+        "Proof records which promotable event types already have a real emission-source wire (e.g. decision.logged via dopecon-bridge mirror) versus which remain gap items (task.* at workflow-kernel/task-orchestrator transitions).",
+        "Proof records the standalone mcp-capture server's current capability surface (tools, entry points) as the fold-in source material."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the spec at claudedocs/specs/DMX-FLEET-P2-001-event-source-wiring.md covering: (a) scope — wiring decision.logged at the ConPort decision-write path if not already real per S2, task.created/task.completed/task.failed/task.blocked/workflow.phase_changed at workflow-kernel/task-orchestrator transition points, and folding mcp-capture's capability into capture_client.py as the single capture entry point with the standalone server retired; (b) invariants — no auto ConPort writes from non-canonical sources, capture_client.emit_capture_event() remains the sole raw-capture entry point, fail-open capture semantics preserved, PROMOTABLE_EVENT_TYPES stays synchronized across every file that declares it; (c) interfaces — exact call sites and function signatures to be touched at each emission source, and the capture_client.py surface that absorbs mcp-capture's capability; (d) acceptance criteria — a runtime test plan proving each wired event type reaches activity.events.v1 and is promoted, and proving the standalone mcp-capture server is no longer required for any consumer; (e) phasing — ordering of the wiring work relative to DMX-FLEET-P2-002 through 005 and any risk/rollback notes for touching the ConPort decision-write path and workflow-kernel transitions.",
+      "validation": [
+        "claudedocs/specs/DMX-FLEET-P2-001-event-source-wiring.md exists and contains scope, invariants, interfaces, acceptance criteria, and phasing sections.",
+        "The spec explicitly addresses folding mcp-capture into capture_client.py, not merely mentioning it in passing.",
+        "The spec cites file:line evidence from S2 rather than restating the audit narrative uncritically.",
+        "No runtime source file outside claudedocs/specs/ is modified."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Self-review the spec against the source audit (mcp-fleet-canonical-audit-and-target-design-2026-07-03.md sec 7.2) and the decisions ledger's mcp-capture fold-in row, validate the packet JSON, and commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Self-review confirms the spec covers every item in sec 7.2's numbered list (1-4) and the decisions ledger's mcp-capture row, or explicitly notes any item deferred to a later packet with rationale.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

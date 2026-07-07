@@ -1,0 +1,116 @@
+{
+  "id": "DMX-FLEET-P1-006-exa-retire-cleanup",
+  "project": "dopemux-mvp",
+  "target": "Finish the exa retirement (ADR-223, already merged to origin/main via commit 65313194a and enforced by tests/arch/test_mcp_fleet_catalog_contract.py's dead_service_names/quarantine assertions) by removing the remaining stale exa entries in scripts/mcp/wire_claude_mcp.py, scripts/utilities/fix_mcp_config.py, docker/mcp-servers-source/start-all-mcp-servers.sh, docker/mcp-servers-source/services/mcp-client/main.py, and scripts/ui/tmux_metamcp_controller.py, and confirming doctrine (~/.claude/MCP_Exa.md-equivalent project docs, .claude/modules) documents WebSearch as the fallback rather than exa.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not reintroduce exa as a startable, catalog-registered, or documented-as-live MCP server anywhere in the repo.",
+    "This packet must not delete a file that has live non-exa functionality still in use; remove only the exa-specific entries/lines within otherwise-live files, and only delete a whole file if it is exa-only and already named in tests/arch/test_mcp_fleet_catalog_contract.py's dead-surface list.",
+    "This packet must keep tests/arch/test_mcp_fleet_catalog_contract.py's existing exa-absence assertions green (test_exa_mcp_server_source_does_not_exist and dead_service_names checks) after the change, and may extend them.",
+    "This packet must preserve the canonical writer (dopemux fleet_catalog.py / catalog) as authoritative over any legacy script's server list."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p1",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P1-005-orchestrator-autostart",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p1-006-exa-retire-cleanup",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "chore(mcp): remove residual exa references (ADR-223 cleanup)",
+    "allowlist": [
+      "scripts/mcp/wire_claude_mcp.py",
+      "scripts/utilities/fix_mcp_config.py",
+      "docker/mcp-servers-source/start-all-mcp-servers.sh",
+      "docker/mcp-servers-source/services/mcp-client/main.py",
+      "scripts/ui/tmux_metamcp_controller.py",
+      "tests/arch/test_mcp_fleet_catalog_contract.py",
+      "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-006-exa-retire-cleanup.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p1-006-exa-retire-cleanup/DMX-FLEET-P1-006-exa-retire-cleanup/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-006-exa-retire-cleanup.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-006-exa-retire-cleanup.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/arch/test_mcp_fleet_catalog_contract.py -q",
+      "! grep -riE '\"exa\"|'\"'\"'exa'\"'\"'' scripts/mcp/wire_claude_mcp.py scripts/utilities/fix_mcp_config.py docker/mcp-servers-source/start-all-mcp-servers.sh docker/mcp-servers-source/services/mcp-client/main.py scripts/ui/tmux_metamcp_controller.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "chore(mcp): remove residual exa references (ADR-223 cleanup)",
+    "body": "Finishes the exa retirement started by ADR-223 (docs/90-adr/adr-223-retire-exa-mcp-server.md, commit 65313194a) which already removed exa from the canonical fleet catalog and added dead-surface CI assertions in tests/arch/test_mcp_fleet_catalog_contract.py. This packet closes the remaining decisions-ledger.md item ('exa: retire, already shipped in #1002') by deleting the stale exa entries still present in scripts/mcp/wire_claude_mcp.py, scripts/utilities/fix_mcp_config.py, docker/mcp-servers-source/start-all-mcp-servers.sh, docker/mcp-servers-source/services/mcp-client/main.py, and scripts/ui/tmux_metamcp_controller.py, none of which are covered by the existing CI dead-surface grep because they are legacy scripts outside the catalog's own generated-output check.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Confirm docs/90-adr/adr-223-retire-exa-mcp-server.md is accepted and commit 65313194a is an ancestor of HEAD. Grep the full repo tree (excluding docs/archive/, proof/, claudedocs/, reports/, and audit_inputs/ which are historical record and out of scope) for remaining live exa references: scripts/mcp/wire_claude_mcp.py, scripts/utilities/fix_mcp_config.py, docker/mcp-servers-source/start-all-mcp-servers.sh, docker/mcp-servers-source/services/mcp-client/main.py, scripts/ui/tmux_metamcp_controller.py.",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "Proof confirms ADR-223 is accepted and cites the commit that landed the catalog-level retirement.",
+        "Proof lists every remaining live exa reference outside docs/archive, proof/, claudedocs/, reports/, audit_inputs/ with file:line citations, distinguishing 'live code path' from 'historical record'."
+      ],
+      "context_files": [
+        "docs/90-adr/adr-223-retire-exa-mcp-server.md",
+        "claudedocs/backlog/decisions-ledger.md",
+        "tests/arch/test_mcp_fleet_catalog_contract.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Extend tests/arch/test_mcp_fleet_catalog_contract.py (or add a focused new test in the same file) asserting none of the five identified legacy scripts contain an 'exa' server/service entry, so this class of drift cannot silently return. Confirm this new assertion fails against current HEAD before cleanup.",
+      "validation": [
+        "New test fails before the cleanup step because at least one of the five files still references exa.",
+        "Test failure message names the specific file and line pattern matched."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Remove the exa-specific entries from each of the five files: delete the 'exa' key/block from wire_claude_mcp.py's server dict, fix_mcp_config.py's Fix-4 block, mcp-client/main.py's configs['exa'] block, and any exa reference in tmux_metamcp_controller.py's role tool-lists; delete the `start_service \"exa\" \"3011\" \"mcp-exa\"` line from start-all-mcp-servers.sh. Do not delete any of the five files themselves unless the file becomes entirely empty of functional content as a result (verify each file's remaining content before considering deletion).",
+      "validation": [
+        "Each of the five files still parses/lints (python -m py_compile for .py files, bash -n for .sh files) after the edit.",
+        "None of the five files reference exa's server name, port 3011, or its API key env var after the edit.",
+        "No non-exa functionality in any of the five files was altered or removed."
+      ],
+      "expected_files": [
+        "scripts/mcp/wire_claude_mcp.py",
+        "scripts/utilities/fix_mcp_config.py",
+        "docker/mcp-servers-source/start-all-mcp-servers.sh",
+        "docker/mcp-servers-source/services/mcp-client/main.py",
+        "scripts/ui/tmux_metamcp_controller.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run the extended tests/arch/test_mcp_fleet_catalog_contract.py suite, confirm the new assertion now passes, materialize the packet, update task-packets/INDEX.md, assemble the proof bundle, validate the packet JSON, and commit only allowlisted files.",
+      "validation": [
+        "python -m pytest tests/arch/test_mcp_fleet_catalog_contract.py -q exits 0, including the new/extended assertion.",
+        "The verify grep command confirms zero remaining exa references in the five targeted files.",
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}
