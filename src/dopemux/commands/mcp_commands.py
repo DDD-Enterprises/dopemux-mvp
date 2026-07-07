@@ -477,6 +477,30 @@ def _backup_path(path: Path) -> Path:
     return path.with_suffix(path.suffix + f".backup-{stamp}")
 
 
+def _singleton_reserved_ports(catalog: Dict[str, Any]) -> Dict[int, str]:
+    """
+    Return a map of {port: server_name} for all singleton servers that have a
+    statically-declared port in the catalog.  These ports must never be assigned
+    to per-worktree services regardless of what hash offset `_port_for` produces.
+    """
+    reserved: Dict[int, str] = {}
+    for name, spec in catalog.get("servers", {}).items():
+        if spec.get("scope") != "singleton":
+            continue
+        raw_url = spec.get("url")
+        if not raw_url:
+            continue
+        # Parse the port from a bare URL like "http://localhost:3009/mcp"
+        try:
+            from urllib.parse import urlparse as _up
+            port = _up(str(raw_url)).port
+            if port:
+                reserved[port] = name
+        except Exception:
+            pass
+    return reserved
+
+
 def _allocate_ports(
     worktree: str,
     names: List[str],
@@ -488,15 +512,26 @@ def _allocate_ports(
     Compute ports for each per-worktree server, including any `extra_port_vars`
     declared by the spec (e.g. conport exposes three host ports for one service).
     Same hash offset is reused across a single server's primary + extras.
+
+    Safety rules:
+    - ``wrapper-singleton`` services (one global instance, fixed port) are
+      assigned their ``default_port_base`` directly without any hash offset.
+    - All singleton-catalog reserved ports are pre-seeded into the collision
+      map so per-worktree hash offsets cannot land on them.
     """
     assignments: Dict[str, int] = {}
-    seen_ports: Dict[int, str] = {}
+    # Pre-seed with singleton reserved ports so per-worktree allocations
+    # cannot collide with statically-assigned singleton ports (e.g. gptr-mcp).
+    seen_ports: Dict[int, str] = {
+        port: f"singleton:{name}"
+        for port, name in _singleton_reserved_ports(catalog).items()
+    }
 
-    def _claim(var: str, base: int, owner: str, key_path: str) -> None:
-        port = _port_for(key_path, base)
+    def _claim(var: str, base: int, owner: str, key_path: str, *, fixed: bool = False) -> None:
+        port = base if fixed else _port_for(key_path, base)
         if port in seen_ports:
             raise click.ClickException(
-                f"Internal port collision: {owner}.{var} and {seen_ports[port]} both hashed to :{port}. "
+                f"Internal port collision: {owner}.{var} and {seen_ports[port]} both map to :{port}. "
                 f"Adjust the `default_port_base` for one of them in {CATALOG_FILENAME}."
             )
         seen_ports[port] = f"{owner}.{var}"
@@ -506,12 +541,15 @@ def _allocate_ports(
         spec = catalog["servers"].get(name)
         if not spec or spec.get("scope") != "per-worktree":
             continue
+        # wrapper-singleton: one global instance at a fixed port — no hash offset.
+        is_wrapper_singleton = spec.get("management_model") == "wrapper-singleton"
         key_path = project_root if spec.get("state_scope") == "per-repo" and project_root else worktree
         base = spec.get("default_port_base")
         if base:
-            _claim(spec["port_var"], base, name, key_path)
-        for extra in spec.get("extra_port_vars", []) or []:
-            _claim(extra["var"], extra["base"], name, key_path)
+            _claim(spec["port_var"], base, name, key_path, fixed=is_wrapper_singleton)
+        if not is_wrapper_singleton:
+            for extra in spec.get("extra_port_vars", []) or []:
+                _claim(extra["var"], extra["base"], name, key_path)
     return assignments
 
 

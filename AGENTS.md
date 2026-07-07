@@ -180,3 +180,85 @@ OpenCode does **not** behave like Claude Code regarding instruction files.
   - `AGENTS.md`
   - A file referenced via `"instructions"` in `opencode.jsonc`
 - Never rely on `~/.claude/*.md` files being loaded by OpenCode.
+
+## 12. MCP Setup, Transport, and Debug Rules
+
+### 12.1 Canonical Transport Architecture
+
+Do not change transport types without reading the server source.  The mapping is:
+
+| Server | `type` in .mcp.json | Protocol | Endpoint |
+|---|---|---|---|
+| `conport` | `sse` | Server-Sent Events | `GET /sse` |
+| `dope-memory` | `http` | Streamable HTTP (FastMCP `http_app()`) | `POST /mcp` |
+| `task-orchestrator` | `http` | Streamable HTTP (Ktor) | `POST /mcp` |
+| `pal`, `serena`, `dope-context` | `http` | Streamable HTTP | `POST /mcp` |
+| `desktop-commander` | `sse` | Server-Sent Events | `GET /sse` |
+
+**Critical invariant**: A `406 Not Acceptable: Client must accept text/event-stream`
+response to a `GET /mcp` is **correct server behaviour** for a Streamable HTTP
+endpoint.  It is NOT evidence that the server is SSE.  The fix is to use `POST`
+with a JSON-RPC body — not to change `"type"` to `"sse"`.
+
+### 12.2 Port Allocation Invariants
+
+`dopemux mcp init` computes per-worktree port offsets via:
+```
+port = default_port_base + sha1(workspace_path)[:4] % 100
+```
+
+**Invariants enforced by `_allocate_ports`** (as of 2026-07-06):
+- `wrapper-singleton` services (`management_model: wrapper-singleton`, e.g.
+  `task-orchestrator`) always use `default_port_base` directly — **no hash offset**.
+- All singleton catalog ports are pre-seeded in the collision map so a per-worktree
+  hash cannot silently land on a singleton-reserved port.
+- Collision detection raises an error before writing any config.
+
+### 12.3 Setting Up MCP in a New Repo
+
+```bash
+cd ~/code/target-repo    # must be a git repo
+dopemux mcp init         # generates .mcp.json + .envrc.dopemux-mcp
+source .envrc.dopemux-mcp
+dopemux mcp doctor       # verify env vars + port reachability
+```
+
+For full guidance including manual (non-dopemux) setup and vanilla Claude Code:
+→ `docs/02-how-to/mcp-setup-other-repos.md`
+
+### 12.4 MCP Debug Sequence
+
+When MCP servers fail to connect, follow this sequence in order:
+
+1. **Source the envrc**: `source .envrc.dopemux-mcp` — unset vars fall back to
+   catalog defaults which may not match running containers.
+
+2. **Run doctor**: `dopemux mcp doctor` — checks env vars and port reachability.
+
+3. **Probe with correct transport**:
+   ```bash
+   # Streamable HTTP (dope-memory, task-orchestrator, pal, serena):
+   curl -X POST http://localhost:$DOPE_MEMORY_PORT/mcp \
+     -H "Content-Type: application/json" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0.1"}}}'
+
+   # SSE (conport):
+   curl -N -s http://localhost:$CONPORT_MCP_PORT/sse -H "Accept: text/event-stream"
+   ```
+
+4. **Tail container logs** during connection attempt:
+   ```bash
+   docker logs -f dopemux-dope-memory-1 2>&1 | grep -i "mcp\|error"
+   docker logs -f dopemux-task-orchestrator 2>&1 | grep -i "mcp\|error"
+   ```
+
+5. **Run health report**: `./mcp_server_health_report.sh`
+
+6. **Check for port collisions**: If `dopemux mcp init` raises a collision error,
+   adjust `default_port_base` in `mcp_catalog.yaml` to create more spacing, or
+   use a workspace path with a different hash.
+
+**Reference docs**:
+- `docs/02-how-to/mcp-transport-and-port-bugs.md` — bug record + correct analysis
+- `docs/02-how-to/mcp-setup-other-repos.md` — human user guide for other repos
+- `docs/02-how-to/mcp-troubleshooting.md` — container-level troubleshooting

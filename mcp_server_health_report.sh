@@ -1,116 +1,191 @@
 #!/bin/bash
 # MCP Server Health Report
-# Checks all dopemux MCP servers and generates status report
-# Usage: ./mcp_server_health_report.sh [--workspace /path/to/workspace]
+#
+# Sources per-worktree port variables from .envrc.dopemux-mcp so that the
+# correct (potentially hash-offset) ports are tested, not hardcoded defaults.
+# Probes each transport type correctly:
+#   - Streamable HTTP ("type": "http"): POST JSON-RPC initialize
+#   - SSE           ("type": "sse"):   GET with Accept: text/event-stream
+#
+# Usage: ./mcp_server_health_report.sh [--workspace /path/to/workspace] [-v]
 
-# Parse arguments
+set -euo pipefail
+
 WORKSPACE_PATH=""
 VERBOSE=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --workspace|-w)
-            WORKSPACE_PATH="$2"
-            shift 2
-            ;;
-        --verbose|-v)
-            VERBOSE=true
-            shift
-            ;;
+        --workspace|-w) WORKSPACE_PATH="$2"; shift 2 ;;
+        --verbose|-v)   VERBOSE=true; shift ;;
         --help|-h)
-            cat << 'HELP'
+            cat <<'HELP'
 Usage: ./mcp_server_health_report.sh [OPTIONS]
 
 OPTIONS:
-    --workspace, -w PATH    Check servers for specific workspace
-    --verbose, -v           Show detailed information
-    --help, -h             Show this help message
+    --workspace, -w PATH    Workspace directory (default: current directory)
+    --verbose, -v           Show detailed curl output
+    --help, -h              Show this help message
 
 EXAMPLES:
-    ./mcp_server_health_report.sh                    # All workspaces
-    ./mcp_server_health_report.sh -w ~/code/project  # Specific workspace
+    ./mcp_server_health_report.sh
+    ./mcp_server_health_report.sh -w ~/code/other-project
 HELP
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 1
-            ;;
+            exit 0 ;;
+        *) echo "Unknown option: $1"; exit 1 ;;
     esac
 done
 
-# Determine workspace
-if [ -n "$WORKSPACE_PATH" ]; then
-    WORKSPACE_ID="$WORKSPACE_PATH"
-elif [ -n "$DEFAULT_WORKSPACE_PATH" ]; then
-    WORKSPACE_ID="$DEFAULT_WORKSPACE_PATH"
-else
-    WORKSPACE_ID="$(pwd)"
-fi
+WORKSPACE="${WORKSPACE_PATH:-$(pwd)}"
+ENVRC="$WORKSPACE/.envrc.dopemux-mcp"
 
 echo "=========================================="
 echo "MCP Server Health Report"
-if [ -n "$WORKSPACE_PATH" ]; then
-    echo "Workspace: $WORKSPACE_ID"
-fi
+echo "Workspace: $WORKSPACE"
 echo "=========================================="
 echo ""
 date
 echo ""
 
-echo "=== MCP Servers Status ==="
+# Source per-worktree port variables if available
+if [[ -f "$ENVRC" ]]; then
+    echo "Sourcing port variables from: $ENVRC"
+    # Use set -a so exported variables are available for subshells
+    set -a
+    # shellcheck source=/dev/null
+    source "$ENVRC"
+    set +a
+    echo ""
+else
+    echo "⚠️  No .envrc.dopemux-mcp found at $WORKSPACE — using catalog default ports."
+    echo "   Run: dopemux mcp init  (from inside the workspace)"
+    echo ""
+fi
+
+# Resolve ports (env vars take precedence over defaults)
+CONPORT_HTTP_PORT="${CONPORT_HTTP_PORT:-3004}"
+CONPORT_MCP_PORT="${CONPORT_MCP_PORT:-3005}"
+DOPE_MEMORY_PORT="${DOPE_MEMORY_PORT:-3020}"
+TASK_ORCHESTRATOR_HTTP_PORT="${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
+
+echo "=== Per-Worktree MCP Servers ==="
 echo ""
 
-# Function to test HTTP endpoint
-test_endpoint() {
-    local port=$1
-    local name=$2
+# ---------------------------------------------------------------------------
+# Helper: probe Streamable HTTP (type: "http") via JSON-RPC initialize POST
+# These servers speak the MCP Streamable HTTP protocol, NOT SSE.
+# A GET request returns 406; the correct probe is a POST.
+# ---------------------------------------------------------------------------
+probe_http() {
+    local name="$1"
+    local port="$2"
+    local path="${3:-/mcp}"
 
-    http_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port/health --max-time 2 2>/dev/null)
+    local response
+    response=$(curl -s --max-time 2 -o /tmp/mcp_probe_$$.json -w "%{http_code}" \
+        -X POST "http://localhost:${port}${path}" \
+        -H "Content-Type: application/json" \
+        -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"health-probe","version":"0.1"}}}' \
+        2>/dev/null) || response="000"
 
-    if [ "$http_code" = "200" ]; then
-        echo "✅ $name (port $port): Healthy (HTTP 200)"
-    elif [ "$http_code" = "404" ]; then
-        echo "✅ $name (port $port): Responding (HTTP 404 - no /health endpoint)"
+    if [[ "$response" =~ ^2 ]]; then
+        echo "✅ $name (port $port, HTTP/Streamable): OK (HTTP $response)"
+        if $VERBOSE; then
+            cat /tmp/mcp_probe_$$.json 2>/dev/null | head -3
+        fi
+    elif [[ "$response" == "000" ]]; then
+        echo "❌ $name (port $port, HTTP/Streamable): Connection refused — is the container running?"
     else
-        echo "⚠️  $name (port $port): Not responding or error"
+        echo "⚠️  $name (port $port, HTTP/Streamable): Unexpected HTTP $response"
+        if $VERBOSE; then
+            cat /tmp/mcp_probe_$$.json 2>/dev/null | head -3
+        fi
+    fi
+    rm -f /tmp/mcp_probe_$$.json
+}
+
+# ---------------------------------------------------------------------------
+# Helper: probe SSE (type: "sse") via GET with Accept: text/event-stream
+# ---------------------------------------------------------------------------
+probe_sse() {
+    local name="$1"
+    local port="$2"
+    local path="${3:-/sse}"
+
+    local response
+    response=$(curl -s --max-time 2 -o /dev/null -w "%{http_code}" \
+        -X GET "http://localhost:${port}${path}" \
+        -H "Accept: text/event-stream" \
+        2>/dev/null) || response="000"
+
+    if [[ "$response" =~ ^2 ]]; then
+        echo "✅ $name (port $port, SSE): OK (HTTP $response)"
+    elif [[ "$response" == "000" ]]; then
+        echo "❌ $name (port $port, SSE): Connection refused — is the container running?"
+    else
+        echo "⚠️  $name (port $port, SSE): Unexpected HTTP $response"
     fi
 }
 
-# Test each MCP server
-test_endpoint 3003 "pal        "
-test_endpoint 3004 "conport         "
-test_endpoint 3006 "serena          "
-test_endpoint 3008 "exa             "
-test_endpoint 3009 "gptr-mcp        "
-test_endpoint 3012 "desktop-commander"
+# ---------------------------------------------------------------------------
+# Helper: probe a /health REST endpoint
+# ---------------------------------------------------------------------------
+probe_health() {
+    local name="$1"
+    local port="$2"
+
+    local response
+    response=$(curl -s --max-time 2 -o /dev/null -w "%{http_code}" \
+        "http://localhost:${port}/health" 2>/dev/null) || response="000"
+
+    if [[ "$response" =~ ^2 ]]; then
+        echo "✅ $name (port $port, /health): OK"
+    elif [[ "$response" == "404" ]]; then
+        echo "✅ $name (port $port, /health): Responding (no /health endpoint)"
+    elif [[ "$response" == "000" ]]; then
+        echo "❌ $name (port $port, /health): Not responding"
+    else
+        echo "⚠️  $name (port $port, /health): HTTP $response"
+    fi
+}
+
+# --- Per-worktree servers ---
+# conport: SSE transport at /sse
+probe_sse "conport      " "$CONPORT_MCP_PORT"
+probe_health "conport (health)" "$CONPORT_HTTP_PORT"
+
+# dope-memory: Streamable HTTP at /mcp  (NOT SSE — POST only)
+probe_http "dope-memory  " "$DOPE_MEMORY_PORT"
+
+# task-orchestrator: Streamable HTTP at /mcp (wrapper-singleton, fixed port)
+probe_http "task-orch    " "$TASK_ORCHESTRATOR_HTTP_PORT"
 
 echo ""
-echo "=== MCP Server Containers ==="
+echo "=== Singleton MCP Servers (shared) ==="
 echo ""
 
-docker ps --filter "name=mcp-" --format "table {{.Names}}\t{{.Status}}"
+# Singletons have hardcoded ports declared in mcp_catalog.yaml
+probe_http "pal          " 3003
+probe_http "serena       " 3006
+probe_http "dope-context " 3010
+probe_sse  "desktop-cmd  " 3012
+
+echo ""
+echo "=== Docker Containers ==="
+echo ""
+docker ps --format "table {{.Names}}\t{{.Status}}" | grep -E "(conport|dope-memory|task-orchestrator|pal|serena|dope-context|desktop)" || echo "(no matching containers running)"
 
 echo ""
 echo "=== Port Listeners ==="
 echo ""
-
-lsof -iTCP -sTCP:LISTEN -n -P | grep -E ":(3001|3003|3004|3006|3007|3008|3009|3012)" | awk '{print $9}' | sort -t: -k2 -n || echo "None found"
+lsof -iTCP -sTCP:LISTEN -n -P 2>/dev/null | \
+    grep -E ":(${CONPORT_HTTP_PORT}|${CONPORT_MCP_PORT}|${DOPE_MEMORY_PORT}|${TASK_ORCHESTRATOR_HTTP_PORT}|3003|3006|3010|3012)" \
+    | awk '{print $9}' | sort -t: -k2 -n || echo "None found"
 
 echo ""
-echo "=== Summary ==="
-echo ""
-
-# Count healthy containers
-healthy_count=$(docker ps --filter "name=mcp-" --filter "health=healthy" | wc -l | tr -d ' ')
-total_count=$(docker ps --filter "name=mcp-" | grep -v "NAMES" | wc -l | tr -d ' ')
-
-echo "Healthy containers: $healthy_count/$total_count"
-echo ""
-
-# List ports listening
-listening_ports=$(lsof -iTCP -sTCP:LISTEN -n -P | grep -E ":(3001|3003|3004|3006|3007|3008|3009|3012)" | awk '{print $9}' | cut -d: -f2 | sort -n | tr '\n' ' ')
-
-echo "Ports listening: $listening_ports"
-echo ""
+echo "=========================================="
+echo "TRANSPORT REMINDER:"
+echo "  dope-memory, task-orchestrator → type: http (Streamable HTTP, POST /mcp)"
+echo "  conport, desktop-commander     → type: sse  (SSE, GET /sse)"
+echo "  pal, serena, dope-context      → type: http (Streamable HTTP, POST /mcp)"
 echo "=========================================="
