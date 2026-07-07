@@ -446,9 +446,8 @@ class ADHDOutputDispatcher:
             "tmux_popup": TmuxPopupChannel(),
             "voice": VoiceChannel(enabled=enable_voice),
             "dashboard": DashboardWebSocketChannel(ws_manager=ws_manager),
-            "push": NtfyPushChannel(enabled=enable_push),
             "desktop": DesktopNotificationChannel(
-                enabled=_os.getenv("ADHD_DESKTOP_NOTIFICATIONS", "true").lower() == "true"
+                enabled=_os.getenv("ADHD_DESKTOP_NOTIFICATIONS", "false").lower() == "true"
             ),
         }
         
