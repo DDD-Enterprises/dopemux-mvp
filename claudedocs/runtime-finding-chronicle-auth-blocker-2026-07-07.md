@@ -50,3 +50,19 @@ The mirror must move off the dead authenticated-HTTP path. Ranked:
 
 - `dopecon-bridge` now runs the **branch build** (`2b146bfb31d2`, healthy, backward-compatible superset) — the original `:latest` image was replaced by the rebuild and pruned, so it wasn't restorable. This is the code about to merge via PR #1009; rebuild from `main` or merge to normalize.
 - Test decision deleted from ConPort KG; `activity.events.v1` stream/group restored; `work_log_entries` back to 0. No other changes.
+
+---
+
+## RESOLVED — corrected fix implemented and runtime-PROVEN (2026-07-07)
+
+The corrected fix (Option 1) is implemented on branch `claude/service-audit-followup-2026-07-07` (PR #1018) and **proven live through the full production path**:
+
+- `docker/mcp-servers-source/conport/integration_bridge_client.py`: `build_chronicle_envelope` + `emit_decision_to_chronicle` — fail-open direct XADD to `activity.events.v1` on the events Redis (`DOPE_MEMORY_EVENTS_REDIS_URL`, default `redis://redis-events:6379`), off the dead bridge-auth path. Maps ConPort `summary` → the promotion handler's required `title` (a second latent bug: without this, decisions never promote even on a working transport).
+- `enhanced_server._log_decision`: calls the direct emit after insert (bridge HTTP publish retained for Dashboard/ADHD reactivity).
+- `compose.yml`: `DOPE_MEMORY_EVENTS_REDIS_URL` + `DOPE_MEMORY_INPUT_STREAM` for conport.
+
+**Runtime proof (real path, no injection)**: rebuilt + redeployed conport, then `POST /api/decisions` (HTTP 200, `status: logged`) → `activity.events.v1` 0→1 **and** `work_log_entries` 0→1 in 2s. Promoted row: `decision / planning / "Decided: ..." / source_event_type=decision.logged / source_adapter=conport`. Synthetic proof data cleaned; stream+group restored; live stack unchanged.
+
+Tests: 5 new (`tests/unit/test_conport_chronicle_emit.py`) — envelope shape, summary→title mapping, fail-open, defaults, stream/redis targets.
+
+**Remaining**: progress events (`log_progress`) use the same dead bridge path — extend the direct emit to `progress.updated` if progress should reach the chronicle (currently non-promotable anyway). PM-plane `task.*`/`workflow.phase_changed` already emit via capture_client (activity.events.v1) and were unaffected.
