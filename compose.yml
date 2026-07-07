@@ -248,6 +248,11 @@ services:
       - AGE_PORT=5432
       - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
       - REDIS_URL=redis://redis-primary:6379
+      # Events Redis for direct chronicle emit (decision.logged -> dope-memory
+      # input stream). Distinct from REDIS_URL (data/cache = redis-primary);
+      # the event stream lives on redis-events, where dope-memory consumes.
+      - DOPE_MEMORY_EVENTS_REDIS_URL=redis://redis-events:6379
+      - DOPE_MEMORY_INPUT_STREAM=activity.events.v1
       - QDRANT_URL=http://mcp-qdrant:6333
     ports:
       - "${CONPORT_HTTP_PORT:-3004}:3004"
