@@ -93,7 +93,7 @@ def test_dope_memory_port_drift_is_represented() -> None:
     dope_memory = systems_by_name()["dope-memory"]
     ports = {item["port"]: item["status"] for item in dope_memory["expected_ports"]}
     assert ports[3020] == "observed"
-    assert ports[8096] == "conflicting"
+    assert 8096 not in ports
     assert "dope_memory_3020_vs_8096" in conflict_ids(dope_memory)
 
 
