@@ -356,10 +356,70 @@ class NtfyPushChannel(OutputChannel):
             return False
 
 
+class DesktopNotificationChannel(OutputChannel):
+    """Native OS desktop notifications (macOS Notification Center / Linux notify-send).
+
+    Ported from services/adhd-notifier notify.py (the notifier service's one
+    capability the dispatcher lacked). Capability-detected at init: inside a
+    container (no osascript/notify-send) the channel disables itself cleanly
+    instead of failing every send. Only fires when the engine runs on the host.
+    """
+
+    def __init__(self, enabled: bool = True):
+        import shutil
+
+        self._tool: Optional[str] = None
+        if shutil.which("osascript"):
+            self._tool = "osascript"
+        elif shutil.which("notify-send"):
+            self._tool = "notify-send"
+        self.enabled = enabled and self._tool is not None
+        if enabled and self._tool is None:
+            logger.info("Desktop notifications unavailable (no osascript/notify-send) - channel disabled")
+
+    @property
+    def name(self) -> str:
+        return "desktop"
+
+    async def send(self, finding: ADHDFinding) -> bool:
+        if not self.enabled:
+            return False
+        title = _sanitize_text(f"ADHD: {finding.finding_type.replace('_', ' ')}", 60)
+        message = _sanitize_text(finding.message)
+        try:
+            if self._tool == "osascript":
+                # Escape double quotes so message content cannot break out of
+                # the AppleScript string (the original notifier interpolated raw).
+                esc_msg = message.replace('"', '\\"')
+                esc_title = title.replace('"', '\\"')
+                script = f'display notification "{esc_msg}" with title "{esc_title}"'
+                if finding.severity in {"high", "critical"}:
+                    script += ' sound name "Sosumi"'
+                cmd = ["osascript", "-e", script]
+            else:
+                urgency = "critical" if finding.severity in {"high", "critical"} else "normal"
+                cmd = ["notify-send", "-u", urgency, title, message]
+
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+            try:
+                await asyncio.wait_for(proc.wait(), timeout=3.0)
+            except asyncio.TimeoutError:
+                proc.kill()
+                return False
+            return proc.returncode == 0
+        except Exception as e:
+            logger.debug(f"Desktop notification failed: {e}")
+            return False
+
+
 class ADHDOutputDispatcher:
     """
     Central dispatcher for routing ADHD findings to output channels.
-    
+
     Routing rules determine which channels receive each finding type.
     Channels can be enabled/disabled at runtime.
     """
@@ -378,6 +438,8 @@ class ADHDOutputDispatcher:
             enable_push: Enable push notifications (default False)
             ws_manager: Optional WebSocket manager for dashboard
         """
+        import os as _os
+
         self.channels: Dict[str, OutputChannel] = {
             "console": ConsoleChannel(),
             "tmux_status": TmuxStatusChannel(),
@@ -385,6 +447,9 @@ class ADHDOutputDispatcher:
             "voice": VoiceChannel(enabled=enable_voice),
             "dashboard": DashboardWebSocketChannel(ws_manager=ws_manager),
             "push": NtfyPushChannel(enabled=enable_push),
+            "desktop": DesktopNotificationChannel(
+                enabled=_os.getenv("ADHD_DESKTOP_NOTIFICATIONS", "true").lower() == "true"
+            ),
         }
         
         # Routing rules: finding_type -> list of channel names
@@ -397,16 +462,16 @@ class ADHDOutputDispatcher:
             # Medium severity - console + selective voice
             "procrastination_detected": ["console", "tmux_status"],
             "energy_low": ["console", "voice", "tmux_status", "dashboard"],
-            "hyperfocus_warning_90": ["console", "voice", "tmux_status"],
+            "hyperfocus_warning_90": ["console", "voice", "tmux_status", "desktop"],
             "social_battery_low": ["console", "voice", "dashboard"],
-            
+
             # High severity - more aggressive channels
-            "hyperfocus_warning_120": ["console", "voice", "tmux_popup", "dashboard"],
+            "hyperfocus_warning_120": ["console", "voice", "tmux_popup", "dashboard", "desktop"],
             "hyperfocus_detected": ["console", "tmux_status", "dashboard"],
-            "overwhelm_detected": ["console", "voice", "tmux_popup", "dashboard"],
-            
+            "overwhelm_detected": ["console", "voice", "tmux_popup", "dashboard", "desktop"],
+
             # Critical - everything including push
-            "overwhelm_critical": ["console", "voice", "tmux_popup", "push", "dashboard"],
+            "overwhelm_critical": ["console", "voice", "tmux_popup", "push", "dashboard", "desktop"],
         }
         
         # Default routing for unknown finding types
