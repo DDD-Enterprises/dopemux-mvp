@@ -409,8 +409,8 @@ class DesktopNotificationChannel(OutputChannel):
                 await asyncio.wait_for(proc.wait(), timeout=3.0)
             except asyncio.TimeoutError:
                 proc.kill()
+                await proc.wait()
                 return False
-            return proc.returncode == 0
         except Exception as e:
             logger.debug(f"Desktop notification failed: {e}")
             return False
