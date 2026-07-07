@@ -1,189 +1,136 @@
 # MCP System Reference for Claude Code
 
-**Status**: ✅ Fully Operational - 9 servers, 50+ tools
-**Last Updated**: September 25, 2025
+**Status**: Operational — see `AGENTS.md §12` for transport rules and debug sequence
+**Last Updated**: 2026-07-06
+
+---
 
 ## System Overview
 
-This project has a **fully operational MCP ecosystem** specifically optimized for ADHD developers. The system provides structured access to documentation, context preservation, research, and task management through unified protocols.
+This project uses a Docker-based MCP ecosystem with two tiers:
 
-## Critical Usage Instructions for LLMs
+- **Singleton servers** — shared across all worktrees, declared in `~/.claude.json`
+- **Per-worktree servers** — isolated instances per workspace, declared in `.mcp.json`
 
-### 🚨 MANDATORY Session Start Protocol
-Every Claude Code session MUST begin with:
+The canonical server registry is [`mcp_catalog.yaml`](../mcp_catalog.yaml).
 
-1. **Check Active Context**
-   ```
-   mcp__conport__get_active_context --workspace_id "<repo-root>"
-   ```
+---
 
-2. **Review In-Progress Tasks**
-   ```
-   mcp__conport__get_progress --status_filter "IN_PROGRESS"
-   ```
+## Session Start Protocol
 
-3. **Understand Current State** before proceeding with any work
+Every session **should** begin with:
 
-### 🚨 MANDATORY Documentation-First Pattern
-Before implementing ANY new feature or using unfamiliar libraries:
+```
+mcp__conport__get_active_context --workspace_id "<repo-root>"
+mcp__conport__get_recent_activity_summary --workspace_id "<repo-root>" --hours_ago 24
+```
 
-1. **Resolve Library ID**
-   ```
-   mcp__context7__resolve_library_id "library-name"
-   ```
+Then: log decisions, track progress, preserve context before interruptions.
 
-2. **Get Focused Documentation**
-   ```
-   mcp__context7__get_library_docs "/org/library" --topic "specific-feature" --tokens 2000
-   ```
-
-3. **Never guess** - always get authoritative documentation first
-
-### 🚨 MANDATORY Context Preservation
-This user has ADHD - context loss is devastating:
-
-1. **Before ANY interruption or break**
-   ```
-   mcp__conport__update_active_context --workspace_id "<repo-root>" --patch_content '{"interruption_state": "what I was doing", "mental_model": "current understanding", "next_steps": "what to do next"}'
-   ```
-
-2. **Log ALL important decisions**
-   ```
-   mcp__conport__log_decision --workspace_id "<repo-root>" --summary "decision made" --rationale "why this choice" --implementation_details "how to implement"
-   ```
-
-3. **Track progress for motivation**
-   ```
-   mcp__conport__log_progress --workspace_id "<repo-root>" --status "IN_PROGRESS" --description "current task description"
-   ```
+---
 
 ## Available MCP Servers
 
-### Primary Servers (Always Available)
-- **Context7**: Documentation for 10,000+ libraries
-- **ConPort**: ADHD-optimized context & memory
-- **EXA**: High-signal developer research
+### Per-Worktree (in `.mcp.json`)
 
-### MetaMCP Broker System
-- **Endpoint**: `http://localhost:8090`
-- **Status**: 9 connected servers
-- **Features**: Role-based access, ADHD optimizations
-- **Total Tools**: 50+ specialized capabilities
+| Server | Transport | Port var | Purpose |
+|---|---|---|---|
+| `conport` | `sse` | `CONPORT_MCP_PORT` | Decisions, progress, knowledge graph |
+| `dope-memory` | `http` | `DOPE_MEMORY_PORT` | Temporal chronicle, working context |
+| `task-orchestrator` | `http` | `TASK_ORCHESTRATOR_HTTP_PORT` (fixed `7890`) | Workflow orchestration |
 
-### Role-Based Access Patterns
-- **Developer**: 5 tools max, fast iteration focus
-- **Researcher**: 5 tools max, controlled information gathering
-- **Architect**: 5 tools max, deep analysis (higher token budget)
+### Singleton (in `~/.claude.json`)
 
-## ADHD Accommodation Requirements
+| Server | Transport | Port | Purpose |
+|---|---|---|---|
+| `pal` | `http` | `3003` | Multi-model reasoning (thinkdeep, planner, codereview) |
+| `serena` | `http` | `3006` | Semantic code intelligence (LSP + Tree-sitter) |
+| `dope-context` | `http` | `3010` | Code/docs semantic search |
+| `pal-stdio` | `stdio` | — | PAL via Docker exec (fallback) |
+| `gpt-researcher` | `stdio` | — | Deep multi-source research |
 
-### Cognitive Load Management
-- ✅ Use focused Context7 queries with specific `--topic` and token limits
-- ✅ Never overwhelm with too much information at once
-- ✅ Use role-based tool limits to prevent decision paralysis
-- ✅ Store complex information in ConPort rather than keeping in memory
+---
 
-### Flow State Protection
-- ✅ Check/preserve context before any interruption
-- ✅ Use ConPort progress tracking for visual feedback
-- ✅ Make all decisions explicit and logged
-- ✅ Provide clear, actionable next steps
+## Transport Architecture — Do Not Change Without Verification
 
-### Executive Function Support
-- ✅ Break tasks into 25-minute chunks
-- ✅ Use ConPort task hierarchy for organization
-- ✅ Provide progress visualization
-- ✅ Maintain session continuity across interruptions
+> [!IMPORTANT]
+> `dope-memory` and `task-orchestrator` use `"type": "http"` (Streamable HTTP).
+> They are **not** SSE.  A `406 Not Acceptable` on `GET /mcp` is **correct behaviour**
+> — it means you used the wrong HTTP method.  Always `POST` with JSON-RPC body.
+
+| `type` value | Protocol | Client call |
+|---|---|---|
+| `"http"` | Streamable HTTP | `POST /mcp` + JSON-RPC body |
+| `"sse"` | Server-Sent Events | `GET /sse` + `Accept: text/event-stream` |
+
+---
+
+## Setup in a New Workspace
+
+```bash
+cd ~/code/target-repo        # must be a git repo
+dopemux mcp init             # scaffolds .mcp.json + .envrc.dopemux-mcp
+source .envrc.dopemux-mcp    # load port variables
+dopemux mcp doctor           # verify env + reachability
+```
+
+Full guide: [`docs/02-how-to/mcp-setup-other-repos.md`](../docs/02-how-to/mcp-setup-other-repos.md)
+
+---
+
+## Health Monitoring
+
+```bash
+# Quick status:
+dopemux mcp status
+
+# Port + transport-aware probe:
+./mcp_server_health_report.sh
+
+# Per-server doctor:
+dopemux mcp doctor
+
+# Singleton sync (global ~/.claude.json):
+dopemux mcp sync-globals
+```
+
+---
 
 ## Quick Command Reference
 
-### Documentation Access
-```bash
-mcp__context7__resolve_library_id "library-name"
-mcp__context7__get_library_docs "/org/lib" --topic "feature" --tokens 2000
-```
+### ConPort
 
-### Context Management
 ```bash
 mcp__conport__get_active_context --workspace_id "<repo-root>"
 mcp__conport__update_active_context --workspace_id "<repo-root>" --patch_content '{}'
 mcp__conport__log_decision --workspace_id "<repo-root>" --summary "" --rationale ""
 mcp__conport__log_progress --workspace_id "<repo-root>" --status "" --description ""
-```
-
-### Knowledge Storage
-```bash
 mcp__conport__log_system_pattern --workspace_id "<repo-root>" --name "" --description ""
-mcp__conport__log_custom_data --workspace_id "<repo-root>" --category "" --key "" --value ""
 ```
-
-## System Health Monitoring
-
-### Check Operational Status
-- Individual servers: `claude mcp list`
-- MetaMCP broker: `curl -s http://localhost:8090/health`
-- ConPort status: `mcp__conport__get_active_context` (should respond)
 
 ### Recovery Commands
+
 ```bash
-# Restart MetaMCP broker if needed
-cd <repo-root> && python3 start_metamcp_minimal.py &
+# Restart all MCP containers
+cd ~/code/dopemux-mvp && dopemux mcp up
 
-# Check broker process
-ps aux | grep python3 | grep start_metamcp
+# Single service restart
+docker compose -f compose.yml restart dope-memory
+
+# Tail logs during a connection attempt
+docker logs -f dopemux-dope-memory-1 2>&1 | grep -i "mcp\|error"
 ```
-
-## Integration Patterns
-
-### New Feature Development
-1. Check current context with ConPort
-2. Get documentation with Context7
-3. Log implementation decision
-4. Implement with context preservation
-5. Update progress and store learnings
-
-### Research Sessions
-1. Use focused Context7 queries
-2. Store findings in ConPort custom data
-3. Log research decisions and rationale
-4. Maintain structured notes for future reference
-
-### Context Switches
-1. Store current state in ConPort before switching
-2. Retrieve relevant context after switching
-3. Bridge between contexts with summaries
-4. Maintain awareness of previous work
-
-## Warning Signs & Responses
-
-### If User Shows Confusion
-- **Immediately check ConPort context**
-- **Review recent progress and decisions**
-- **Provide orientation summary**
-- **Break down next steps clearly**
-
-### If Session Seems Long
-- **Suggest storing current state**
-- **Check token usage and optimize**
-- **Consider role-based tool limiting**
-- **Encourage breaks with context preservation**
-
-### If Information Overwhelming
-- **Use more focused Context7 queries**
-- **Reduce token limits**
-- **Store information in ConPort instead of displaying**
-- **Switch to simpler role (e.g., developer vs architect)**
-
-## Success Metrics
-
-The MCP system is working properly when:
-- ✅ Context is preserved across interruptions
-- ✅ Documentation is accessed before implementation
-- ✅ Decisions are logged with clear rationale
-- ✅ Progress is visible and motivating
-- ✅ Cognitive load remains manageable
-- ✅ User maintains focus and productivity
 
 ---
 
-**Remember**: This system exists to support ADHD developers. Use it proactively and systematically to provide the best possible experience.
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `406 Not Acceptable` | Sent `GET` to Streamable HTTP endpoint | Change to `POST /mcp` with JSON-RPC |
+| Connection refused | Container not running | `dopemux mcp up` |
+| Port collision on `init` | Hash offset hit a singleton port | New version of `_allocate_ports` raises error with guidance |
+| `task-orchestrator` on wrong port | Old `init` applied hash offset to wrapper-singleton | Re-run `dopemux mcp init --force` |
+| Tools unavailable in session | Env vars not set at session start | `source .envrc.dopemux-mcp` before launching client |
+
+Full reference: [`docs/02-how-to/mcp-transport-and-port-bugs.md`](../docs/02-how-to/mcp-transport-and-port-bugs.md)

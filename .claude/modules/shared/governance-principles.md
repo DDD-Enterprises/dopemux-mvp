@@ -289,6 +289,24 @@ Before modifying any of these:
 
 Unknown contract implications = stop and investigate.
 
+### MCP Transport Invariants
+
+`*.yml`/`*.yaml` MCP server manifests and `.mcp.json` are contract-sensitive.
+Before changing any `transport` or `type` field, verify the **server implementation**:
+
+| Server | `.mcp.json` type | Implementation | Probe method |
+|---|---|---|---|
+| `conport` | `sse` | SSE endpoint at `/sse` | `GET /sse` + `Accept: text/event-stream` |
+| `dope-memory` | `http` | FastMCP `http_app()` — Streamable HTTP | `POST /mcp` JSON-RPC |
+| `task-orchestrator` | `http` | Ktor Streamable HTTP | `POST /mcp` JSON-RPC |
+| `pal`, `serena`, `dope-context` | `http` | Streamable HTTP | `POST /mcp` JSON-RPC |
+
+A `406 Not Acceptable: Client must accept text/event-stream` on `GET /mcp` is
+**correct behaviour** for Streamable HTTP. It does NOT mean the server is SSE.
+Do not change `"type": "http"` → `"type": "sse"` based on a 406 response.
+
+See [AGENTS.md §12](../../../AGENTS.md) for the full MCP setup and debug rules.
+
 ---
 
 ## Git / Worktree Discipline
