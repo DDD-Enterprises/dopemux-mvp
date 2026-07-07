@@ -69,10 +69,10 @@ def _get_adhd_state_hint(user_id: str = "default") -> Optional[dict]:
     if not ADHD_RECAP_ENABLED:
         return None
     try:
+        import urllib.parse
         import urllib.request
 
-        url = f"{ADHD_ENGINE_URL.rstrip('/')}/api/v1/state?user_id={user_id}"
-        with urllib.request.urlopen(url, timeout=1.0) as resp:  # noqa: S310 - internal service URL
+        url = f"{ADHD_ENGINE_URL.rstrip('/')}/api/v1/state?{urllib.parse.urlencode({'user_id': user_id})}"
             if resp.status != 200:
                 return None
             payload = json.loads(resp.read().decode("utf-8"))
