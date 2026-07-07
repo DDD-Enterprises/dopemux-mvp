@@ -73,7 +73,8 @@ def _get_adhd_state_hint(user_id: str = "default") -> Optional[dict]:
         import urllib.request
 
         url = f"{ADHD_ENGINE_URL.rstrip('/')}/api/v1/state?{urllib.parse.urlencode({'user_id': user_id})}"
-            if resp.status != 200:
+        with urllib.request.urlopen(url, timeout=3) as resp:
+            if resp.getcode() != 200:
                 return None
             payload = json.loads(resp.read().decode("utf-8"))
         return {
