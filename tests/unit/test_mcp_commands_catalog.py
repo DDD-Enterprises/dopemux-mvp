@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 from pathlib import Path
 from types import SimpleNamespace
@@ -732,8 +733,9 @@ def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
     assert result.exit_code == 1, result.output
     # Doctor reports multiple problems in a single run (envrc missing + ghost server +
     # missing required env + missing port var). Assert each surfaces, ignoring the
-    # logger's line-wrapping of long absolute paths.
-    assert "issue(s) found" in result.output
+    # logger's line-wrapping of long absolute paths and Rich ANSI markup.
+    plain_output = re.sub(r"\x1b\[[0-9;]*m", "", result.output)
+    assert "issue(s) found" in plain_output
     assert ".envrc" in result.output
     assert "ghost" in result.output
     assert "DOPEMUX_WORKSPACE_ID" in result.output
