@@ -11,12 +11,113 @@ Configuration:
 """
 
 import asyncio
+import json
 import os
+import uuid
+from datetime import datetime, timezone
 import logging
 from typing import Any, Dict, List, Optional
 import aiohttp
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Direct chronicle emit (bypasses the bridge HTTP publish path).
+#
+# The bridge /events endpoint requires a user JWT but its user store is empty,
+# so ConPort's HTTP publishes 401 and never reach dope-memory. This emitter
+# writes the promotable decision.logged event straight to the dope-memory
+# INPUT stream (activity.events.v1) on the *events* Redis — the same stream+
+# envelope dope-memory's EventBusConsumer + promotion engine consume. Fail-open:
+# a decision is never blocked by chronicle emission.
+#
+# Note: ConPort's own REDIS_URL points at the primary (data/cache) Redis; the
+# event stream lives on the dedicated events Redis, hence a separate URL.
+# ---------------------------------------------------------------------------
+try:  # redis.asyncio is already a ConPort dependency (see enhanced_server)
+    import redis.asyncio as _chronicle_redis
+except Exception:  # pragma: no cover - redis unavailable
+    _chronicle_redis = None  # type: ignore[assignment]
+
+CHRONICLE_STREAM = os.getenv("DOPE_MEMORY_INPUT_STREAM", "activity.events.v1")
+CHRONICLE_REDIS_URL = (
+    os.getenv("DOPE_MEMORY_EVENTS_REDIS_URL")
+    or os.getenv("EVENTS_REDIS_URL")
+    or "redis://redis-events:6379"
+)
+CHRONICLE_REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+
+
+def build_chronicle_envelope(
+    *,
+    event_type: str,
+    data: Dict[str, Any],
+    workspace_id: Optional[str],
+    instance_id: Optional[str] = "A",
+    session_id: Optional[str] = "",
+    source: str = "conport",
+) -> Dict[str, str]:
+    """Capture-envelope shape expected by dope-memory (see capture_client)."""
+    return {
+        "id": str(uuid.uuid4()),
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "workspace_id": str(workspace_id or "default"),
+        "instance_id": str(instance_id or "A"),
+        "session_id": str(session_id or ""),
+        "type": event_type,
+        "source": source,
+        "data": json.dumps(data, default=str, sort_keys=True),
+    }
+
+
+async def emit_decision_to_chronicle(
+    *,
+    decision_id: str,
+    summary: Optional[str],
+    rationale: Optional[str],
+    workspace_id: Optional[str],
+    tags: Optional[List[str]] = None,
+    instance_id: Optional[str] = None,
+) -> bool:
+    """Emit decision.logged to the dope-memory input stream. Never raises.
+
+    Maps ConPort's ``summary`` -> the promotion handler's required ``title``
+    field (the handler needs decision_id + title + choice|rationale).
+    """
+    if _chronicle_redis is None or not summary:
+        return False
+    client = None
+    try:
+        client = _chronicle_redis.from_url(
+            CHRONICLE_REDIS_URL,
+            password=CHRONICLE_REDIS_PASSWORD,
+            decode_responses=True,
+            socket_connect_timeout=1,
+            socket_timeout=2,
+        )
+        envelope = build_chronicle_envelope(
+            event_type="decision.logged",
+            data={
+                "decision_id": decision_id,
+                "title": summary,
+                "rationale": rationale or "",
+                "workspace_id": workspace_id,
+                "tags": tags or [],
+            },
+            workspace_id=workspace_id,
+            instance_id=instance_id,
+        )
+        await client.xadd(CHRONICLE_STREAM, envelope)
+        return True
+    except Exception as exc:  # pragma: no cover - best effort
+        logger.debug("chronicle emit failed: %s", exc)
+        return False
+    finally:
+        if client is not None:
+            try:
+                await client.aclose()
+            except Exception:
+                pass
 
 
 class DopeconBridgeClient:

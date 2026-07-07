@@ -705,9 +705,10 @@ class EnhancedConPortServer:
                 await self.redis.delete(f"decisions:{workspace_id}")
                 await self.redis.delete(f"recent_activity:{workspace_id}")
 
-            # Publish decision_logged event to DopeconBridge
+            # Publish decision_logged event to DopeconBridge (best-effort;
+            # feeds Dashboard/ADHD reactivity via the bridge event bus).
+            current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
             if self.dopecon_bridge:
-                current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
                 await self.dopecon_bridge.publish_decision_logged(
                     decision_id=decision_id,
                     summary=data.get('summary'),
@@ -715,6 +716,23 @@ class EnhancedConPortServer:
                     tags=data.get('tags', []),
                     extra={"instance_id": current_instance_id}
                 )
+
+            # Emit decision.logged straight to the dope-memory chronicle input
+            # stream. The bridge HTTP publish above cannot fill the chronicle
+            # (its /events endpoint 401s — empty user store), so this direct,
+            # fail-open Redis emit is what actually populates work_log_entries.
+            try:
+                from integration_bridge_client import emit_decision_to_chronicle
+                await emit_decision_to_chronicle(
+                    decision_id=decision_id,
+                    summary=data.get('summary'),
+                    rationale=data.get('rationale'),
+                    workspace_id=workspace_id,
+                    tags=data.get('tags', []),
+                    instance_id=current_instance_id,
+                )
+            except Exception as chronicle_exc:
+                logger.debug(f"chronicle emit skipped: {chronicle_exc}")
 
             logger.info(f"💡 Logged decision: {data.get('summary')}")
 
