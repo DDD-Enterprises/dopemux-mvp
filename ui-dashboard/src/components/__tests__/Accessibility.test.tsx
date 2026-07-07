@@ -217,8 +217,10 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('<Button color="inherit" size="small" onClick={handleReconnect}>');
   expect(appContent).toContain('RECONNECT');
 
-  // Verify notification chips are focusable
-  expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
-  expect(appContent).toContain('aria-label={notificationLabel}');
+  // Verify notification chips are focusable and copyable
+  expect(appContent).toMatch(/<Tooltip title=\{isNotificationCopied \? 'Copied!' : 'Click to copy message, click X to dismiss'\} arrow describeChild>/);
+  expect(appContent).toMatch(/aria-label=\{isNotificationCopied \? `\$\{notificationLabel\} \(Copied\)` : `Copy signal: \$\{notificationLabel\}`\}/);
+  expect(appContent).toContain('onClick={() => handleCopyNotification(notification)}');
+  expect(appContent).toMatch(/animation:\s*'copy-success 0.4s ease-out'/);
   expect(appContent).toContain('tabIndex={0}');
 });
