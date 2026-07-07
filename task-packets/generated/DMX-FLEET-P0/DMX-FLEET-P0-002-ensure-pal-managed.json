@@ -1,0 +1,108 @@
+{
+  "id": "DMX-FLEET-P0-002-ensure-pal-managed",
+  "project": "dopemux-mvp",
+  "target": "Bring the load-bearing off-compose pal-mcp-server container fully under managed startup: add a real MCP capability healthcheck (initialize + tools/list, not just `docker ps` running-state) to scripts/mcp-wrappers/ensure-pal.sh, and wire it into the H3 SessionStart remediation pointer so Codex's required=true PAL dependency is verified, not just started.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change the container name, image tag, or entrypoint contract that scripts/mcp-wrappers/ensure-pal.sh and ~/.codex/config.toml already depend on.",
+    "This packet must fail closed: ensure-pal.sh must exit non-zero if the container is running but does not respond to a real MCP tools/list call.",
+    "This packet must not silently swallow a PAL capability-check failure as success."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p0",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P0-001-real-healthchecks",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p0-002-ensure-pal-managed",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(mcp): add real capability healthcheck to ensure-pal.sh",
+    "allowlist": [
+      "scripts/mcp-wrappers/ensure-pal.sh",
+      "tests/mcp_wrappers/test_ensure_pal.sh",
+      "tests/mcp_wrappers/test_ensure_pal_healthcheck.py",
+      "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-002-ensure-pal-managed.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P0-002-ensure-pal-managed/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-002-ensure-pal-managed.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-002-ensure-pal-managed.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "bash -n scripts/mcp-wrappers/ensure-pal.sh",
+      "pytest -q tests/mcp_wrappers/test_ensure_pal_healthcheck.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(mcp): add real PAL capability healthcheck to ensure-pal.sh",
+    "body": "Decisions ledger (claudedocs/backlog/decisions-ledger.md, row 'FLEET / Canonical PAL management') resolves PAL management as: manage via ensure-pal.sh + real capability healthcheck + compose integration, because PAL is required=true for Codex and must not stay unmanaged. scripts/mcp-wrappers/ensure-pal.sh already exists and correctly creates/recreates the off-compose pal-mcp-server container, but only checks `docker ps` running-state (line 66-70, 82-85) -- a container can be 'running' while its stdio MCP process is wedged. This packet adds a real MCP initialize+tools/list probe as the definition of healthy, exercised via `docker exec` against the running container, and wires the check into ensure-pal.sh's exit status so a wedged container is treated as a failure, not a success.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: fresh dedicated worktree from origin/main, verify repo marker/origin/clean baseline, and re-read scripts/mcp-wrappers/ensure-pal.sh end to end to confirm current behavior (creates/recreates pal-mcp-server container, checks docker ps running-state only, no MCP-level probe).",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Proof states, with file:line citation, that ensure-pal.sh currently has no MCP-level capability check (only docker ps)."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "scripts/mcp-wrappers/ensure-pal.sh",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test at tests/mcp_wrappers/test_ensure_pal_healthcheck.py that stubs/mocks `docker exec pal-mcp-server ...` to simulate (a) a container that responds to an MCP initialize+tools/list call, and (b) a wedged container that is running but does not respond or returns an error. Assert the new healthcheck function distinguishes these two cases (must fail on (b)). Run it now to confirm it fails because the check does not yet exist.",
+      "expected_files": [
+        "tests/mcp_wrappers/test_ensure_pal_healthcheck.py"
+      ],
+      "validation": [
+        "pytest -q tests/mcp_wrappers/test_ensure_pal_healthcheck.py fails before implementation with a clear assertion (no such check / import error), proving the test targets real missing behavior."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement a real capability healthcheck in scripts/mcp-wrappers/ensure-pal.sh: after confirming the container is running (existing docker ps checks at lines 66-70 and 82-85), issue a minimal MCP JSON-RPC `initialize` followed by `tools/list` via `docker exec -i pal-mcp-server ...` (matching the existing stdio invocation contract documented in the script's header comment), with a bounded timeout. Treat a non-responding, malformed, or error response as unhealthy and exit non-zero with a clear diagnostic message (matching the script's existing `die`/printf error style). Preserve all existing idempotent create/recreate/--recreate behavior unchanged.",
+      "validation": [
+        "ensure-pal.sh still exits 0 (no-op) when the container is already up and responds to tools/list.",
+        "ensure-pal.sh exits non-zero with a clear diagnostic when the container is running but not responding to MCP calls (wedged case).",
+        "bash -n scripts/mcp-wrappers/ensure-pal.sh passes (no syntax errors).",
+        "No change to the container name, image tag, entrypoint, or --recreate contract."
+      ],
+      "context_files": [
+        "scripts/mcp-wrappers/ensure-pal.sh"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the packet: finalize this TP JSON, add it to task-packets/INDEX.md, run schema validation, write the proof bundle (preflight, before/after test evidence, PAL step outputs), commit only allowlisted files, open the PR, and move the corresponding task-orchestrator item to review. Note in proof that H3 SessionStart hook wiring to call this healthcheck via `ensure --fast` is tracked separately in DMX-FLEET-P1-003 (mcp ensure command) and is out of scope here.",
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-002-ensure-pal-managed.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "pytest -q tests/mcp_wrappers/test_ensure_pal_healthcheck.py exits 0.",
+        "Only files in commit.allowlist are staged.",
+        "Proof bundle exists under proof/DMX-FLEET-P0-002-ensure-pal-managed/ with PASS/FAIL/NOT_RUN per validation item."
+      ],
+      "context_files": [
+        "task-packets/generated/DMX-CONPORT-OPTIMAL/_AUTHORING_KIT.md"
+      ]
+    }
+  ]
+}

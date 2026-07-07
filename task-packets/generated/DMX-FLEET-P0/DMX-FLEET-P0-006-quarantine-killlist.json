@@ -1,0 +1,121 @@
+{
+  "id": "DMX-FLEET-P0-006-quarantine-killlist",
+  "project": "dopemux-mvp",
+  "target": "Quarantine the remaining startable kill-list dead code (services/mcp-integration-bridge, services/router, services/mcp-client, services/dope-context/src/mcp/simple_server.py) by removing their Dockerfiles and adding DEPRECATED headers, and rename the compose Python task-orchestrator service's container_name away from the shared 'task-orchestrator' name so it no longer collides with the real Kotlin-jar MCP task-orchestrator that /dx:* commands and the singleton launcher consume.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not delete source code outright where an existing test or doc still asserts on its content; add DEPRECATED markers and remove build entrypoints (Dockerfile) instead of deleting the directory, unless the source doc's kill-list explicitly says delete.",
+    "This packet must not change the real Kotlin-jar MCP task-orchestrator (external image ghcr.io/jpicklyk, HTTP singleton 127.0.0.1:7890) in any way.",
+    "This packet must not break any existing consumer of the in-repo Python task-orchestrator FastAPI service (services/task-orchestrator/) other than its container name/label."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p0",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P0-005-wrapper-path-fixes",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p0-006-quarantine-killlist",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "chore(mcp): quarantine dead kill-list code and rename workflow-api service",
+    "allowlist": [
+      "services/mcp-integration-bridge/Dockerfile",
+      "services/router/Dockerfile",
+      "services/mcp-client/Dockerfile",
+      "services/dope-context/src/mcp/simple_server.py",
+      "compose.yml",
+      "services/task-orchestrator/README.md",
+      "tests/arch/test_mcp_fleet_catalog_contract.py",
+      "tests/arch/test_workflow_api_service_naming.py",
+      "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-006-quarantine-killlist.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P0-006-quarantine-killlist/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-006-quarantine-killlist.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-006-quarantine-killlist.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "pytest -q tests/arch/test_mcp_fleet_catalog_contract.py tests/arch/test_workflow_api_service_naming.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "chore(mcp): quarantine kill-list dead code, rename workflow-api",
+    "body": "Fleet audit (claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md section 7.1 kill list and section 8 Phase 0.5) names services/mcp-integration-bridge, services/router, services/mcp-client, services/dope-context/src/mcp/simple_server.py, and the task-orchestrator Python/Kotlin name collision as dead-but-startable code. Direct inspection at authoring time finds tests/arch/test_mcp_fleet_catalog_contract.py already asserts generated fleet outputs never reference these paths and that services/mcp-integration-bridge/Dockerfile is absent -- both pass today -- but services/router/Dockerfile and services/mcp-client/Dockerfile still exist (buildable), and no DEPRECATED marker exists on any of the four dead modules. Separately, compose.yml:424 sets container_name: task-orchestrator for the in-repo Python FastAPI service (services/task-orchestrator/, REST :8000), which shares its name with the real Kotlin-jar MCP task-orchestrator (external image ghcr.io/jpicklyk, HTTP singleton 127.0.0.1:7890) consumed by 18 /dx:* commands -- exactly the audit's 'name collision' finding. This packet removes the two remaining live Dockerfiles, adds DEPRECATED headers to all four dead modules, and renames the compose service's container_name to workflow-api (matching the audit's target-state recommendation in section 7.1) without touching the real MCP task-orchestrator.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: fresh dedicated worktree from origin/main, verify repo marker/origin/clean baseline. Re-confirm the kill-list state: which of services/mcp-integration-bridge, services/router, services/mcp-client still have a Dockerfile; whether services/dope-context/src/mcp/simple_server.py is referenced by any live import; and confirm compose.yml's task-orchestrator service container_name collides in name (not in port/transport) with the real MCP task-orchestrator per the fleet inventory table.",
+      "commands": [
+        "find services/mcp-integration-bridge services/router services/mcp-client -iname 'Dockerfile*'",
+        "grep -rln 'simple_server' --include='*.py' services/dope-context/ | grep -v __pycache__",
+        "grep -n 'container_name: task-orchestrator' compose.yml",
+        "pytest -q tests/arch/test_mcp_fleet_catalog_contract.py"
+      ],
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Proof records exact file:line evidence for each kill-list item's current state (Dockerfile present/absent, DEPRECATED marker present/absent, import references) before any edit."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        "tests/arch/test_mcp_fleet_catalog_contract.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test at tests/arch/test_workflow_api_service_naming.py asserting compose.yml's task-orchestrator service block does not use container_name 'task-orchestrator' (must be distinct from the real MCP task-orchestrator name, e.g. 'workflow-api'), and extend tests/arch/test_mcp_fleet_catalog_contract.py (or add adjacent assertions) to require services/router/Dockerfile and services/mcp-client/Dockerfile do not exist. Run now to confirm both fail against the current repo state.",
+      "expected_files": [
+        "tests/arch/test_workflow_api_service_naming.py"
+      ],
+      "validation": [
+        "The new naming test fails against current compose.yml (container_name is still 'task-orchestrator').",
+        "The extended Dockerfile-absence assertions fail against the current repo state for services/router and services/mcp-client."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Remove services/router/Dockerfile and services/mcp-client/Dockerfile so neither is startable via docker build. Add a DEPRECATED header comment (matching an existing DEPRECATED convention in the repo if one exists, else a plain top-of-file docstring/comment) to services/mcp-integration-bridge/main.py, services/router/*.py entrypoint(s), services/mcp-client/main.py, and services/dope-context/src/mcp/simple_server.py, each naming the kill-list source (this audit finding) and the canonical replacement (capture_client.py for mcp-integration-bridge per decisions-ledger.md; the real dope-context server.py for simple_server.py). In compose.yml, rename the task-orchestrator service's container_name from 'task-orchestrator' to 'workflow-api' (service key and healthcheck/ports/env stay as-is; only the container_name value and any same-file cross-references to it change). Update services/task-orchestrator/README.md if it documents the old container name.",
+      "validation": [
+        "services/router/Dockerfile and services/mcp-client/Dockerfile no longer exist.",
+        "All four dead modules carry a DEPRECATED marker citing this packet and the kill-list source.",
+        "compose.yml's task-orchestrator service block has container_name: workflow-api (or equivalent non-colliding name) and no other field in that block changed.",
+        "The real MCP task-orchestrator (not present in compose.yml -- it is the external ghcr.io/jpicklyk singleton) is untouched."
+      ],
+      "context_files": [
+        "services/mcp-integration-bridge/main.py",
+        "compose.yml",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the packet: finalize this TP JSON, add it to task-packets/INDEX.md, run schema validation, write the proof bundle (preflight, before/after test evidence, PAL step outputs), commit only allowlisted files, open the PR, and move the corresponding task-orchestrator item to review.",
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-006-quarantine-killlist.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "pytest -q tests/arch/test_mcp_fleet_catalog_contract.py tests/arch/test_workflow_api_service_naming.py exits 0.",
+        "Only files in commit.allowlist are staged.",
+        "Proof bundle exists under proof/DMX-FLEET-P0-006-quarantine-killlist/ with PASS/FAIL/NOT_RUN per validation item."
+      ],
+      "context_files": [
+        "task-packets/generated/DMX-CONPORT-OPTIMAL/_AUTHORING_KIT.md"
+      ]
+    }
+  ]
+}

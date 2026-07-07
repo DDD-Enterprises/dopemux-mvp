@@ -1,0 +1,112 @@
+{
+  "id": "DMX-FLEET-P3-003-complexity-unify-spec",
+  "project": "dopemux-mvp",
+  "target": "Produce a spec that picks the canonical complexity scorer among the three unwired implementations (Serena's CodeComplexityAnalyzer, dope-context's scorer, and the orchestrator's ADR-207 ML risk module) per DMX-ADR-004, and defines the wiring plan so every consumer shares one scorer, without changing runtime code in this packet.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must not introduce a fourth complexity-scoring implementation.",
+    "This packet must classify missing or unresolved evidence as UNKNOWN rather than asserting it as fact."
+  ],
+  "depends_on": [
+    "DMX-ADR-004-complexity-scorer"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p3",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P3-002-serena-promotion",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/fleet-p3-003-complexity-unify-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(complexity): spec unification of the three unwired complexity scorers",
+    "allowlist": [
+      "claudedocs/specs/DMX-FLEET-P3-003-complexity-unify-spec.md",
+      "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-003-complexity-unify-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p3-003-complexity-unify-spec/DMX-FLEET-P3-003-complexity-unify-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-003-complexity-unify-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-003-complexity-unify-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-FLEET-P3-003-complexity-unify-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(complexity): spec unification of the three unwired complexity scorers",
+    "body": "Specs the complexity-scoring unification decided in DMX-ADR-004. Three separate, unwired complexity-scoring implementations exist today (Serena CodeComplexityAnalyzer, dope-context's ast-based scorer despite a Tree-sitter docstring claim, and the orchestrator's dormant ADR-207 ML risk module) and none is canonical. This packet picks one per the ADR and specs how every consumer (Serena, dope-context, task-orchestrator PRD scoring) wires to it. No runtime code changes in this packet.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean baseline. Confirm DMX-ADR-004-complexity-scorer has been authored and record its decision text.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "The ADR-004 decision text is quoted in proof, or proof records UNKNOWN if the ADR file is not yet present."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/backlog/_AUTHORING_CONTRACT.md",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Read the source findings (fleet audit §3.3 documented contradictions, §4 dope-context verdict on the Tree-sitter docstring claim, §7.1 target row; forgotten-features addendum §2.6 Task Complexity Scoring row) and read-only inspect all three current scorer implementations.",
+      "commands": [
+        "grep -n 'complexity' claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        "sed -n '113,116p' claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md",
+        "grep -rln 'class CodeComplexityAnalyzer' services/serena",
+        "grep -rln 'complexity' docker/mcp-servers-source/dope-context 2>/dev/null services/dope-context 2>/dev/null"
+      ],
+      "validation": [
+        "Proof records the exact file path, scoring method (ast vs Tree-sitter vs ML), and score-band contract (0.0-1.0, 0-1) for each of the three implementations, with file:line citations.",
+        "Proof records that none of the three is currently wired to a live consumer, or cites the counter-evidence if one is."
+      ],
+      "context_files": [
+        "services/serena",
+        "docker/mcp-servers-source/dope-context"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the spec at claudedocs/specs/DMX-FLEET-P3-003-complexity-unify-spec.md covering: scope (which scorer is canonical per ADR-004 and why); invariants (single scorer, no fourth implementation, shared 0.0-1.0 band contract used by Serena's 0.0-0.3/0.3-0.6/0.6-1.0 ADHD framing already referenced in doctrine); interfaces (the canonical scorer's function signature/API and how Serena, dope-context, and task-orchestrator PRD scoring each call it); acceptance criteria (all three consumers return identical scores for identical input; the two non-canonical implementations are archived or delegate to the canonical one); and a migration/wiring plan ordered by consumer.",
+      "validation": [
+        "claudedocs/specs/DMX-FLEET-P3-003-complexity-unify-spec.md exists and contains named sections: Scope, Invariants, Interfaces, Acceptance Criteria, Migration Plan.",
+        "The spec names exactly one canonical scorer per DMX-ADR-004 and lists the other two as archived or delegating.",
+        "The spec preserves the existing 0.0-0.3/0.3-0.6/0.6-1.0 ADHD complexity band convention rather than inventing a new one."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Self-review the spec against the source audit sections, the forgotten-features addendum, and the ADR, run packet validation, and commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Spec self-review confirms no runtime code files are included in the diff.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "id": "DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec",
+  "project": "dopemux-mvp",
+  "target": "Produce a spec for resurrecting the dormant Serena Adaptive Learning Engine foundation (per-user attention patterns, cross-session personalization) plus its Personal Learning Profile dependent, gated on the Serena single-surface promotion decision landing first.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must not resurrect the module into the local Serena candidate before the Serena promotion ADR/packet has landed; the spec must state this precondition explicitly and mark itself blocked until then."
+  ],
+  "depends_on": [
+    "DMX-FLEET-P3-002-serena-promotion"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-adhd-wire",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-ADHD-WIRE-004-relationship-vocab-widening",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-adhd-wire-005-adaptive-learning-resurrect-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(specs): adaptive learning engine resurrection spec",
+    "allowlist": [
+      "claudedocs/specs/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.md",
+      "task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-adhd-wire-005-adaptive-learning-resurrect-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.md",
+      "grep -q '## Scope' claudedocs/specs/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.md",
+      "grep -q '## Invariants' claudedocs/specs/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.md",
+      "grep -q '## Interfaces' claudedocs/specs/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.md",
+      "grep -q '## Acceptance' claudedocs/specs/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.md",
+      "grep -q '## Phasing' claudedocs/specs/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(specs): adaptive learning engine resurrection spec",
+    "body": "Adds a resurrection spec for services/serena/intelligence/adaptive_learning.py and its Personal Learning Profile dependent (services/serena/intelligence/learning_profile_manager.py), currently dormant in the local Serena candidate that the deployed wrapper cannot reach. Per claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md sections 2.5 and 3c, the source estimates a ~6h foundation build that other dormant modules (fatigue detection, context-switch optimizer, untracked work detector) build on, but resurrection is explicitly blocked on the Serena single-surface promotion (DMX-FLEET-P3-002) landing first, to avoid building into a candidate the wrapper cannot reach. This packet is spec-only; no runtime code changes.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read the named source docs and inspect the current runtime paths read-only: the forgotten-features addendum sections 2.5 and 3c, the fleet audit's Serena single-surface promotion decision (parent audit section 7.1), and the dormant adaptive_learning.py plus learning_profile_manager.py implementations in both services/serena/intelligence/ and services/serena/v2/intelligence/.",
+      "validation": [
+        "Proof confirms both copies (services/serena/intelligence and services/serena/v2/intelligence) were read and compared for drift.",
+        "Proof confirms the Serena wrapper's current mcp_server.py path mismatch (cited in the addendum) is independently verified, not merely cited."
+      ],
+      "context_files": [
+        "claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md",
+        "services/serena/intelligence/adaptive_learning.py",
+        "services/serena/v2/intelligence/adaptive_learning.py",
+        "services/serena/intelligence/learning_profile_manager.py",
+        "services/serena/v2/intelligence/learning_profile_manager.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce the spec at claudedocs/specs/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.md covering: Scope (what the Adaptive Learning Engine + Personal Learning Profile do and don't do), Invariants (no build before Serena promotion lands; per-user data stays local; no cross-workspace leakage), Interfaces (how other dormant modules, e.g. fatigue detection and context-switch optimizer, would consume this foundation), Acceptance (concrete, testable criteria for 'foundation resurrected'), and Phasing (foundation first, dependents in DMX-ADHD-WIRE-006 second, explicitly sequenced after DMX-FLEET-P3-002).",
+      "validation": [
+        "Spec file exists at claudedocs/specs/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.md.",
+        "Spec contains all five required sections (Scope, Invariants, Interfaces, Acceptance, Phasing).",
+        "Spec explicitly states the DMX-FLEET-P3-002 precondition and marks this packet's runtime work as blocked until that lands."
+      ],
+      "expected_files": [
+        "claudedocs/specs/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the addendum source and against the current runtime read in S1, run packet validation, and run the Codex minimum PAL chain (analyze, planner, codereview, precommit) over the spec deliverable.",
+      "validation": [
+        "TP JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "PAL outputs are saved to proof, or recorded NOT_RUN with the exact tool error if PAL is unavailable.",
+        "Only allowlisted files are staged and committed; no runtime code is touched."
+      ]
+    }
+  ]
+}

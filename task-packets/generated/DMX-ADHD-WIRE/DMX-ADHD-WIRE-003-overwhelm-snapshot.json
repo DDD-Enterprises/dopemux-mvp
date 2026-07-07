@@ -1,0 +1,118 @@
+{
+  "id": "DMX-ADHD-WIRE-003-overwhelm-snapshot",
+  "project": "dopemux-mvp",
+  "target": "Expose the existing overwhelm-detection telemetry already computed inside event_coordinator.py as a queryable snapshot on a PM/operator-facing surface, matching the same wire-existing shape as the context-preservation display.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not fabricate a consuming display surface path; it must locate the actual PM/dashboard consumer before wiring, or add a minimal read endpoint if none exists.",
+    "This packet must not change event_coordinator.py's telemetry computation; it only adds a read/snapshot path."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-adhd-wire",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-ADHD-WIRE-002-context-preservation-display",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-adhd-wire-003-overwhelm-snapshot",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(task-orchestrator): expose overwhelm telemetry snapshot",
+    "allowlist": [
+      "services/task-orchestrator/event_coordinator.py",
+      "services/task-orchestrator/tests/test_suppression_telemetry.py",
+      "task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-003-overwhelm-snapshot.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-adhd-wire-003-overwhelm-snapshot/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-003-overwhelm-snapshot.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-003-overwhelm-snapshot.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m py_compile services/task-orchestrator/event_coordinator.py",
+      "python -m pytest -q services/task-orchestrator/tests/test_suppression_telemetry.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(task-orchestrator): expose overwhelm telemetry snapshot",
+    "body": "event_coordinator.py (services/task-orchestrator/, 764 lines) already computes overwhelm-detection/suppression telemetry (see existing services/task-orchestrator/tests/test_suppression_telemetry.py and examples/telemetry_demo.py) but per claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md section 3a item 4, no PM surface exposes a queryable snapshot of it. This packet adds a minimal read accessor so the existing telemetry can be surfaced, without changing how overwhelm is computed.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean status.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Read event_coordinator.py in full to identify the exact class/method that computes or stores overwhelm-detection/suppression telemetry, and read services/task-orchestrator/examples/telemetry_demo.py and tests/test_suppression_telemetry.py to confirm current consumers. Determine whether any PM-facing surface (dashboard, CLI, API route) already queries this telemetry.",
+      "validation": [
+        "Proof documents, with file:line evidence, the exact telemetry accessor(s) in event_coordinator.py and confirms whether a PM-facing consumer already exists.",
+        "If a real gap is found, proof names the exact minimal addition (a get_overwhelm_snapshot()-style accessor plus its call site) rather than inventing a new display surface."
+      ],
+      "context_files": [
+        "services/task-orchestrator/event_coordinator.py",
+        "services/task-orchestrator/examples/telemetry_demo.py",
+        "services/task-orchestrator/tests/test_suppression_telemetry.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Extend services/task-orchestrator/tests/test_suppression_telemetry.py with a failing test asserting that a snapshot accessor returns the current overwhelm/suppression state (e.g. active suppression flags, recent trigger counts) in a stable, queryable shape.",
+      "validation": [
+        "New test fails against current HEAD before implementation.",
+        "Test asserts on real telemetry fields already computed by event_coordinator.py, not placeholders."
+      ],
+      "expected_files": [
+        "services/task-orchestrator/tests/test_suppression_telemetry.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add the minimal snapshot accessor to event_coordinator.py (or wire the identified existing accessor to the located PM-facing consumer from S2) so overwhelm telemetry is queryable without changing its computation logic.",
+      "validation": [
+        "New test from S3 passes.",
+        "Existing task-orchestrator test suite still passes (no regression).",
+        "No change to overwhelm-detection thresholds or suppression logic itself."
+      ],
+      "expected_files": [
+        "services/task-orchestrator/event_coordinator.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run packet validation, PAL analyze/planner/codereview/precommit per the Codex minimum chain, and finalize proof.",
+      "validation": [
+        "TP JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "PAL codereview and precommit outputs are saved to proof, or recorded NOT_RUN with the exact tool error if PAL is unavailable.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

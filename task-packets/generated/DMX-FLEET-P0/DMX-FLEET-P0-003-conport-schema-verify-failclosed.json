@@ -1,0 +1,113 @@
+{
+  "id": "DMX-FLEET-P0-003-conport-schema-verify-failclosed",
+  "project": "dopemux-mvp",
+  "target": "Verify that ConPort's _ensure_schema post-apply verification is fail-closed (raises, does not silently proceed, on an unverifiable schema), and wire its existing regression test suite into the repo's default pytest discovery path so a future regression is caught by ordinary `pytest -q` / CI runs instead of only by a test file nobody collects.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must preserve the canonical writer and add a contract test.",
+    "This packet must not reintroduce a warn-and-proceed path in _ensure_schema's post-apply verification.",
+    "This packet must not change idempotent 'already exists' apply behavior."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p0",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P0-002-ensure-pal-managed",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p0-003-conport-schema-verify-failclosed",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "test(conport): wire schema fail-closed regression into default pytest path",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/tests/test_ensure_schema.py",
+      "tests/mcp/test_conport_schema_verify_failclosed.py",
+      "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-003-conport-schema-verify-failclosed.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P0-003-conport-schema-verify-failclosed/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-003-conport-schema-verify-failclosed.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-003-conport-schema-verify-failclosed.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m py_compile docker/mcp-servers-source/conport/enhanced_server.py",
+      "pytest -q tests/mcp/test_conport_schema_verify_failclosed.py docker/mcp-servers-source/conport/tests/test_ensure_schema.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "test(conport): lock in fail-closed schema verify + wire into default pytest path",
+    "body": "Fleet audit (claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, section 4 ConPort verdict and section 8 Phase 0.3) flagged `_ensure_schema` post-apply verification as fail-open. Direct inspection at authoring time shows this was already fixed in commit 4974015c3 ('fix(conport): fail closed on unverifiable schema post-apply check'), which raises RuntimeError on verification failure and ships docker/mcp-servers-source/conport/tests/test_ensure_schema.py. However, the repo's testpaths (pyproject.toml:303, pytest.ini:8) point only at `tests/`, so this regression suite is never collected by a default `pytest -q` or CI run. This packet re-verifies the fail-closed behavior with a fresh assertion at tests/mcp/test_conport_schema_verify_failclosed.py (imports/exercises the same _ensure_schema code path) so the fix is protected inside the discoverable test path going forward.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: fresh dedicated worktree from origin/main, verify repo marker/origin/clean baseline. Re-read docker/mcp-servers-source/conport/enhanced_server.py:408-489 (_ensure_schema) and docker/mcp-servers-source/conport/tests/test_ensure_schema.py to confirm the fail-closed fix from commit 4974015c3 is present and unmodified, and confirm testpaths in pyproject.toml/pytest.ini do not include docker/mcp-servers-source/conport/tests.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Proof cites enhanced_server.py:473-482 showing RuntimeError is raised when the post-apply table check fails, with commit 4974015c3 referenced as the source of the fix.",
+        "Proof confirms, by grepping pyproject.toml and pytest.ini, that docker/mcp-servers-source/conport/tests/ is outside default testpaths."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/tests/test_ensure_schema.py",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a new failing/no-op-proving test at tests/mcp/test_conport_schema_verify_failclosed.py that imports the ConPort server module (via sys.path manipulation to docker/mcp-servers-source/conport/) and exercises _ensure_schema with a fake db pool + fake subprocess where the post-apply verification query returns no row, asserting RuntimeError is raised (not swallowed). Run it before any implementation change to confirm it currently fails only because the test file/module wiring does not exist yet, not because the underlying fix is missing.",
+      "commands": [
+        "pytest -q docker/mcp-servers-source/conport/tests/test_ensure_schema.py -k fail_closed || true"
+      ],
+      "expected_files": [
+        "tests/mcp/test_conport_schema_verify_failclosed.py"
+      ],
+      "validation": [
+        "The new test file exists and, once import wiring is correct, exercises the real _ensure_schema function (not a reimplementation).",
+        "Proof states explicitly whether the underlying fail-closed behavior was already correct (expected: yes, per commit 4974015c3) versus newly implemented in this packet."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "If the fail-closed behavior in _ensure_schema is confirmed intact (expected outcome), make no functional change to enhanced_server.py. If re-verification instead reveals a regression (the RuntimeError path was reverted or weakened since the audit), restore the fail-closed raise exactly as implemented in commit 4974015c3 and document the discrepancy in proof. Either way, ensure tests/mcp/test_conport_schema_verify_failclosed.py and docker/mcp-servers-source/conport/tests/test_ensure_schema.py both pass.",
+      "validation": [
+        "pytest -q tests/mcp/test_conport_schema_verify_failclosed.py docker/mcp-servers-source/conport/tests/test_ensure_schema.py passes with exit 0.",
+        "Proof states PASS (no regression found) or FAIL-THEN-FIXED (regression found and restored) with file:line evidence for whichever occurred.",
+        "No change to idempotent 'already exists' apply handling (enhanced_server.py:456-459)."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the packet: finalize this TP JSON, add it to task-packets/INDEX.md, run schema validation, write the proof bundle (preflight, test evidence, PAL step outputs), commit only allowlisted files, open the PR, and move the corresponding task-orchestrator item to review.",
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-003-conport-schema-verify-failclosed.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "pytest -q tests/mcp/test_conport_schema_verify_failclosed.py docker/mcp-servers-source/conport/tests/test_ensure_schema.py exits 0.",
+        "Only files in commit.allowlist are staged.",
+        "Proof bundle exists under proof/DMX-FLEET-P0-003-conport-schema-verify-failclosed/ with PASS/FAIL/NOT_RUN per validation item."
+      ],
+      "context_files": [
+        "task-packets/generated/DMX-CONPORT-OPTIMAL/_AUTHORING_KIT.md"
+      ]
+    }
+  ]
+}

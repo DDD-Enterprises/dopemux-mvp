@@ -1,0 +1,107 @@
+{
+  "id": "DMX-FLEET-P1-007-token-truncation-utility-spec",
+  "project": "dopemux-mvp",
+  "target": "Spec restoring the lost progressive-token-truncation pattern (docs/archive/mcp-servers/CONPORT_TOKEN_LIMIT_FIX.md: item-by-item token estimation, 9K budget stop, Zen-validated) as one shared fleet-wide utility applied at the MCP call_tool() boundary, rather than the current per-server, per-method reimplementation (ConPort's enhanced_server.py has its own _estimate_tokens/_truncate_decisions/_truncate_progress; other bulk-query servers have none), and distinct from src/dopemux/mcp/token_manager.py which is a role-based budget/quota tracker for MetaMCP, not a per-response truncation mechanism.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must not conflate this shared truncation utility with src/dopemux/mcp/token_manager.py's existing role-based budget tracking; the spec must state explicitly how the two relate (composed together, or kept as separate concerns) rather than merging them silently.",
+    "This packet must preserve ConPort's already-validated 9K-budget progressive-truncation behavior as the reference implementation to generalize, not replace with an unvalidated new algorithm.",
+    "This packet must specify deterministic, order-preserving truncation (same input always truncates to the same output) so results remain reproducible for audit/replay."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p1",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P1-006-exa-retire-cleanup",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p1-007-token-truncation-utility-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(mcp-fleet): spec shared token-truncation boundary utility",
+    "allowlist": [
+      "claudedocs/specs/DMX-FLEET-P1-007-token-truncation-utility-spec.md",
+      "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-007-token-truncation-utility-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p1-007-token-truncation-utility-spec/DMX-FLEET-P1-007-token-truncation-utility-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-007-token-truncation-utility-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-007-token-truncation-utility-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-FLEET-P1-007-token-truncation-utility-spec.md",
+      "grep -q 'call_tool' claudedocs/specs/DMX-FLEET-P1-007-token-truncation-utility-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(mcp-fleet): spec shared token-truncation boundary utility",
+    "body": "Authors the spec for DMX-FLEET-P1-007, restoring a lost architectural pattern identified in the forgotten-features addendum (mcp-fleet-forgotten-features-addendum-2026-07-04.md §3b, items 8-9). ConPort's enhanced_server.py has a validated progressive-truncation implementation (docs/archive/mcp-servers/CONPORT_TOKEN_LIMIT_FIX.md: item-by-item token estimation, 9K budget stop) but it is reimplemented per-server/per-method rather than shared, and other bulk-query MCP servers have no equivalent protection. This packet specs one fleet-wide utility applied at the call_tool() TextContent boundary, explicitly distinguished from src/dopemux/mcp/token_manager.py's separate role-based budget-quota concern. This is the final packet of the DMX-FLEET-P1 series.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md §3b (items 8-9) and docs/archive/mcp-servers/CONPORT_TOKEN_LIMIT_FIX.md in full. Inspect docker/mcp-servers-source/conport/enhanced_server.py's _estimate_tokens, _truncate_decisions, and _truncate_progress implementations and every call site. Inspect src/dopemux/mcp/token_manager.py in full and confirm its scope (role-based budget tracking) is distinct from per-response truncation. Inspect src/dopemux/mcp/broker.py's call_tool and src/dopemux/mcp/server_manager.py's call_tool to identify the actual MCP tool-call boundary where a shared utility could intercept TextContent responses. Check which other bulk-query-capable servers (dope-context, dope-memory, Serena) currently lack any truncation protection.",
+      "validation": [
+        "Proof cites the exact ConPort truncation algorithm (item-by-item token estimate, 9K stop, stats dict) with file:line references.",
+        "Proof states explicitly that src/dopemux/mcp/token_manager.py is a distinct role-based budget/quota system, not a response-truncation mechanism, with file:line citation.",
+        "Proof identifies the concrete call_tool() interception points in broker.py and server_manager.py where a shared utility could be applied.",
+        "Proof lists which servers besides ConPort currently have no bulk-response truncation protection."
+      ],
+      "context_files": [
+        "claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md",
+        "docs/archive/mcp-servers/CONPORT_TOKEN_LIMIT_FIX.md",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "src/dopemux/mcp/token_manager.py",
+        "src/dopemux/mcp/broker.py",
+        "src/dopemux/mcp/server_manager.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/DMX-FLEET-P1-007-token-truncation-utility-spec.md covering: (a) current-state summary of ConPort's validated but non-shared implementation and the absence of protection elsewhere; (b) scope: extract the algorithm into one shared module (proposed location under src/dopemux/mcp/, e.g. response_truncation.py) with a stable API (estimate_tokens, truncate_items, or a call_tool()-wrapping decorator/middleware); (c) interfaces: how ConPort and any other server would adopt the shared utility (import-and-call vs boundary middleware in broker.py/server_manager.py), migration path for ConPort's existing per-method calls without behavior regression; (d) relationship to token_manager.py (composed as two independent layers: token_manager for role/session budget enforcement, this utility for single-response-size safety; the spec must state they are not merged); (e) invariants (deterministic truncation, 9K default budget configurable per server, truncation stats surfaced to the caller so silent data loss is never hidden); (f) acceptance criteria (ConPort migrated to the shared utility with no test regression; at least one previously-unprotected bulk-query server gains protection); (g) phasing (land the shared module first with ConPort as the reference migration, then extend to other servers in follow-on packets).",
+      "validation": [
+        "Spec file exists at claudedocs/specs/DMX-FLEET-P1-007-token-truncation-utility-spec.md.",
+        "Spec names the call_tool() boundary in broker.py or server_manager.py as the interception point, per the addendum's item 9 framing.",
+        "Spec explicitly distinguishes this utility from token_manager.py's role-based budgets.",
+        "Spec covers scope, invariants, interfaces, acceptance criteria, and phasing as distinct sections.",
+        "Spec does not propose runtime code changes; it is planning-only."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the source addendum, the CONPORT_TOKEN_LIMIT_FIX reference implementation, and the runtime evidence gathered in S1. Validate the packet JSON, update task-packets/INDEX.md, assemble the proof bundle, and commit only allowlisted files. As this is the final packet of DMX-FLEET-P1, confirm the proof bundle also notes that the series' premise (per README) was reconciled against current origin/main runtime truth during this authoring pass, per the DMX-FLEET-P1-001 through -006 packets' proof bundles.",
+      "validation": [
+        "Spec is internally consistent with S1's evidence.",
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed.",
+        "Proof notes this packet's final_packet:true status and cross-references the series-wide reconciliation finding."
+      ]
+    }
+  ]
+}

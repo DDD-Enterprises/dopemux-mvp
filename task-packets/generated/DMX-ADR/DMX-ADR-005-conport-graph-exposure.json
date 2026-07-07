@@ -1,0 +1,80 @@
+{
+  "id": "DMX-ADR-005-conport-graph-exposure",
+  "project": "dopemux-mvp",
+  "target": "Author docs/90-adr/adr-228-conport-graph-exposure.md recording the accepted decision to expose graph.neighbors plus decision genealogy on the active Docker ConPort instance, gated on a mandatory AGE data-layer spike.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-adr",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-ADR-004-complexity-scorer",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-adr-005-conport-graph-exposure",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(adr): ADR-228 ConPort graph exposure (spike-gated)",
+    "allowlist": [
+      "docs/90-adr/adr-228-conport-graph-exposure.md",
+      "task-packets/generated/DMX-ADR/DMX-ADR-005-conport-graph-exposure.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-adr-005-conport-graph-exposure/DMX-ADR-005-conport-graph-exposure/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-ADR/DMX-ADR-005-conport-graph-exposure.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-ADR/DMX-ADR-005-conport-graph-exposure.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "grep -q 'status: accepted' docs/90-adr/adr-228-conport-graph-exposure.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(adr): ADR-228 ConPort graph exposure (spike-gated)",
+    "body": "Authors ADR-228 recording the backlog decisions-ledger MCF-006 gate: expose graph.neighbors plus decision genealogy on the active Docker ConPort instance (Option A), gated on a mandatory AGE data-layer spike as Task 1 of DMX-MCF-006 since the AGE writer path is unproven. Falls back to relationship-query if the spike fails. No runtime change.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Author docs/90-adr/adr-228-conport-graph-exposure.md with frontmatter matching the repo's accepted-ADR convention (see docs/90-adr/adr-223-retire-exa-mcp-server.md for the exact key set: id, title, type: adr, owner, author, date, last_review, next_review, status: accepted, prelude, graph_metadata). Body must record, copied verbatim from claudedocs/backlog/decisions-ledger.md row 'MCF-006 | ConPort graph exposure': Decision = 'Option A -- graph.neighbors + genealogy on active Docker ConPort, spike-gated (AGE data-layer spike is mandatory Task 1)' and Rationale = 'Decision-genealogy provenance is worth it; AGE writer path unproven -> de-risk first'. Author (not copied) a Consequences section describing: DMX-MCF-006 must run the AGE data-layer spike as its first task before any graph.neighbors or genealogy tool is implemented; if the spike fails, the fallback is a relationship-query-based approach (not full graph traversal) per the ledger; this ADR does not itself authorize implementation -- DMX-MCF-006 remains a spec/spike packet gated on this decision; DMX-ADHD-WIRE-004 (relationship vocabulary widening) is a related but separately-scoped packet building on ConPort's existing link_conport_items surface, not on this graph exposure. Author an Alternatives Considered section noting: build a new bespoke graph store outside ConPort's Postgres+AGE (rejected -- second authority, violates Memory Trinity boundaries); skip the spike and implement directly (rejected -- AGE writer path unproven, ledger explicitly requires de-risking first).",
+      "validation": [
+        "docs/90-adr/adr-228-conport-graph-exposure.md exists.",
+        "grep -q 'status: accepted' docs/90-adr/adr-228-conport-graph-exposure.md exits 0.",
+        "The Decision and Rationale text for the 'ConPort graph exposure' ledger row is present verbatim.",
+        "A Consequences section is present and is authored prose, not a ledger copy, and states the AGE spike is a mandatory precondition.",
+        "The ADR text references DMX-MCF-006 as the gated spike/spec packet."
+      ],
+      "context_files": [
+        "claudedocs/backlog/decisions-ledger.md",
+        "claudedocs/backlog/README.md",
+        "docs/90-adr/adr-223-retire-exa-mcp-server.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Validate the packet JSON against the dopeTask canonical schema, add a row for DMX-ADR-005-conport-graph-exposure to task-packets/INDEX.md's active packets table (Packet ID, subsystem 'Memory / ADR', title, status 'Ready', related ADR = adr-228-conport-graph-exposure), then stage only the allowlisted files and commit.",
+      "validation": [
+        "python3 -m jsonschema -i task-packets/generated/DMX-ADR/DMX-ADR-005-conport-graph-exposure.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "task-packets/INDEX.md contains a row referencing DMX-ADR-005-conport-graph-exposure.",
+        "git diff --check reports no whitespace errors.",
+        "Only allowlisted paths appear in the commit."
+      ]
+    }
+  ]
+}

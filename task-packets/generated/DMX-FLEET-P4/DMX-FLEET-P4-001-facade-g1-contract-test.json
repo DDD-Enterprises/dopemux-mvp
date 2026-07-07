@@ -1,0 +1,111 @@
+{
+  "id": "DMX-FLEET-P4-001-facade-g1-contract-test",
+  "project": "dopemux-mvp",
+  "target": "Close DCP read-only facade gap G1 by adding a CI contract test that asserts the MCP-registered tool set equals TOOL_CONTRACT.md's 12-tool contract, and by making the two transport-blocked tools (search_code_docs, get_index_status) fail-closed with an explicit pointer to the pending dope-context bridge rather than a bare BLOCKED envelope.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not implement the dope-context MCP-JSON-RPC bridge; that is DMX-FLEET-P4-002's scope.",
+    "This packet must not remove or weaken the BLOCKED fail-closed behavior for search_code_docs or get_index_status.",
+    "This packet must not change search_decisions list-mode behavior; the query-mode deferral (note in TOOL_CONTRACT.md section 1b) is out of scope.",
+    "This packet must preserve the canonical writer and add a contract test for this contract-sensitive MCP surface."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p4",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p4-001-facade-g1-contract-test",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "test(dcp-facade): add TOOL_CONTRACT parity gate for facade G1",
+    "allowlist": [
+      "services/dcp-readonly-facade/src/mcp/server.py",
+      "services/dcp-readonly-facade/src/dcp_facade/tools.py",
+      "services/dcp-readonly-facade/tests/test_mcp_server.py",
+      "services/dcp-readonly-facade/tests/test_tool_contract_parity.py",
+      "task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-001-facade-g1-contract-test.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p4-001-facade-g1-contract-test/DMX-FLEET-P4-001-facade-g1-contract-test/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-001-facade-g1-contract-test.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-001-facade-g1-contract-test.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest services/dcp-readonly-facade/tests/test_mcp_server.py services/dcp-readonly-facade/tests/test_tool_contract_parity.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "test(dcp-facade): close G1 with a TOOL_CONTRACT parity gate",
+    "body": "Adds a CI contract test asserting the facade's MCP-registered tool set (services/dcp-readonly-facade/src/mcp/server.py) equals the 12-tool set documented in docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md, closing the fleet audit's G1 finding (3 of 12 contracted tools unwired). Also hardens the two transport-blocked tools (search_code_docs, get_index_status) so their BLOCKED envelopes explicitly cite the pending dope-context MCP-JSON-RPC bridge (DMX-FLEET-P4-002) rather than a bare status.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean status. Re-confirm current facade state: run the existing test_mcp_server.py suite and read TOOL_CONTRACT.md section 1c to reconstruct the exact 12-tool set and the two BLOCKED tools.",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "The 12-tool set from TOOL_CONTRACT.md and the current @mcp.tool() registrations in server.py are recorded in proof and shown to match before any change."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+        "services/dcp-readonly-facade/src/mcp/server.py",
+        "services/dcp-readonly-facade/tests/test_mcp_server.py",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test in services/dcp-readonly-facade/tests/test_tool_contract_parity.py that parses (or hard-codes, if the doc has no machine-readable table) the tool names from TOOL_CONTRACT.md and asserts they equal set(mcp.tools) from server.py, plus a second assertion that search_code_docs and get_index_status envelopes include a limitations entry naming the dope-context bridge gap.",
+      "validation": [
+        "The new test fails before any source change because no assertion currently ties TOOL_CONTRACT.md's tool list to the live server.tools registration.",
+        "The test does not require live backend services (uses the RecordingFastMCP pattern already established in test_mcp_server.py)."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Make the minimal change needed to pass: if TOOL_CONTRACT.md already lists exactly the 12 registered tools, the parity assertion passes as-is and only the BLOCKED-envelope limitation text needs strengthening in tools.py for search_code_docs and get_index_status. Do not add, remove, or rename any tool function or its signature.",
+      "validation": [
+        "set(mcp.tools) in server.py still equals the 12 names in TOOL_CONTRACT.md after the change.",
+        "search_code_docs and get_index_status BLOCKED envelopes name the dope-context MCP transport bridge explicitly in their limitations field.",
+        "No tool signature, route_manifest.py ALLOWED_ROUTES/DENIED_ROUTES entry, or denylist token is altered."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, create the proof bundle, run the full verify list, commit only allowlisted files, push, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "services/dcp-readonly-facade/tests/test_mcp_server.py and the new parity test both pass.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,592 @@
+{
+  "program": "DMX-BACKLOG-2026-07-07",
+  "date": "2026-07-07",
+  "source_plan": "claudedocs/backlog/README.md",
+  "validation": "52/52 schema PASS; DAG acyclic=True; dangling=0",
+  "tag": "dmx-backlog,series,supervised-only,load-plan-only",
+  "note": "LOAD-PLAN ONLY \u2014 do not execute against the live task-orchestrator without operator confirmation. Items load as QUEUE; blocks encode the readiness DAG (get_blocked_items derives blocked state).",
+  "root": {
+    "ref": "root",
+    "title": "DMX Backlog \u2014 thread + PR findings (52 packets)",
+    "summary": "Task Packets converting all Memory Context Fabric + MCP fleet audit + forgotten-features + runtime-bug findings into governed execution units across 9 series."
+  },
+  "epics": [
+    {
+      "ref": "DMX-MCF",
+      "title": "DMX-MCF",
+      "phase": 1
+    },
+    {
+      "ref": "DMX-FLEET-P0",
+      "title": "DMX-FLEET-P0",
+      "phase": 2
+    },
+    {
+      "ref": "DMX-FLEET-P1",
+      "title": "DMX-FLEET-P1",
+      "phase": 3
+    },
+    {
+      "ref": "DMX-FLEET-P2",
+      "title": "DMX-FLEET-P2",
+      "phase": 4
+    },
+    {
+      "ref": "DMX-FLEET-P3",
+      "title": "DMX-FLEET-P3",
+      "phase": 5
+    },
+    {
+      "ref": "DMX-FLEET-P4",
+      "title": "DMX-FLEET-P4",
+      "phase": 6
+    },
+    {
+      "ref": "DMX-FLEET-P5",
+      "title": "DMX-FLEET-P5",
+      "phase": 7
+    },
+    {
+      "ref": "DMX-ADHD-WIRE",
+      "title": "DMX-ADHD-WIRE",
+      "phase": 8
+    },
+    {
+      "ref": "DMX-ADR",
+      "title": "DMX-ADR",
+      "phase": 9
+    }
+  ],
+  "leaves": [
+    {
+      "ref": "DMX-MCF-002-transcript-ingest",
+      "parent": "DMX-MCF",
+      "title": "Build a one-shot, idempotent transcript-file ingest adapter that parses Claude Code session transcript JSONL into turn events and writes only to the dope-memory raw ledger (raw_activity_events) via th",
+      "disp": "BUILD",
+      "accept": "Packet DMX-MCF-002-transcript-ingest executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-MCF/DMX-MCF-002-transcript-ingest.json"
+    },
+    {
+      "ref": "DMX-MCF-003-decision-candidate",
+      "parent": "DMX-MCF",
+      "title": "Add the conversation.decision_candidate event type end-to-end through the existing capture-to-promotion pipeline (both allowlists kept in sync, a sync-guard test, and a deterministic non-LLM promotion",
+      "disp": "BUILD",
+      "accept": "Packet DMX-MCF-003-decision-candidate executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-MCF/DMX-MCF-003-decision-candidate.json"
+    },
+    {
+      "ref": "DMX-MCF-004-sessionstart-recap",
+      "parent": "DMX-MCF",
+      "title": "Extend the existing native_hooks.py SessionStart injection path with a bounded, token-budgeted, authority-labeled Top-3 recap read directly from the local chronicle SQLite ledger, with a kill switch a",
+      "disp": "BUILD",
+      "accept": "Packet DMX-MCF-004-sessionstart-recap executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-MCF/DMX-MCF-004-sessionstart-recap.json"
+    },
+    {
+      "ref": "DMX-MCF-005-semantic-projection-spec",
+      "parent": "DMX-MCF",
+      "title": "Produce the semantic-memory projection spec for a derived dope-context memory_{hash} collection (privacy-safe embedding path), deferring the final go/no-go until real chronicle data exists from packet",
+      "disp": "SPEC",
+      "accept": "Packet DMX-MCF-005-semantic-projection-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-MCF/DMX-MCF-005-semantic-projection-spec.json"
+    },
+    {
+      "ref": "DMX-MCF-006-conport-graph-spike-spec",
+      "parent": "DMX-MCF",
+      "title": "Run the mandatory AGE data-layer spike against the active Docker ConPort runtime, then produce the spec for graph.neighbors plus decision-genealogy MCP tools, falling back to a relationship-query proj",
+      "disp": "SPEC",
+      "accept": "Packet DMX-MCF-006-conport-graph-spike-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-MCF/DMX-MCF-006-conport-graph-spike-spec.json"
+    },
+    {
+      "ref": "DMX-MCF-007-fabric-orchestrator-spec",
+      "parent": "DMX-MCF",
+      "title": "Spec the Fabric orchestrator and its context.recall / context.recap MCP surface, fusing whichever retrieval modalities (temporal, structural, semantic) exist at build time and degrading gracefully whe",
+      "disp": "SPEC",
+      "accept": "Packet DMX-MCF-007-fabric-orchestrator-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-MCF/DMX-MCF-007-fabric-orchestrator-spec.json"
+    },
+    {
+      "ref": "DMX-MCF-008-summarizer-spec",
+      "parent": "DMX-MCF",
+      "title": "Spec the LLM summarization worker that distills candidate-only conversation-derived content using a cheap default model under an explicit token/cost budget, never touching canonical ConPort decisions ",
+      "disp": "SPEC",
+      "accept": "Packet DMX-MCF-008-summarizer-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-MCF/DMX-MCF-008-summarizer-spec.json"
+    },
+    {
+      "ref": "DMX-MCF-009-proactive-injection-spec",
+      "parent": "DMX-MCF",
+      "title": "Spec proactive mid-session context injection (Injection Phase 2) built on top of the Fabric orchestrator, gated by a rate limit, a relevance threshold, and an operator kill switch, so a bad surfacing ",
+      "disp": "SPEC",
+      "accept": "Packet DMX-MCF-009-proactive-injection-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-MCF/DMX-MCF-009-proactive-injection-spec.json"
+    },
+    {
+      "ref": "DMX-FLEET-P0-001-real-healthchecks",
+      "parent": "DMX-FLEET-P0",
+      "title": "Prove that every MCP server healthcheck in the fleet is a real capability probe (non-2xx/unreachable = unhealthy) and add a regression test that fails closed if a fake exit-0-style healthcheck is rein",
+      "disp": "BUILD",
+      "accept": "Packet DMX-FLEET-P0-001-real-healthchecks executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-001-real-healthchecks.json"
+    },
+    {
+      "ref": "DMX-FLEET-P0-002-ensure-pal-managed",
+      "parent": "DMX-FLEET-P0",
+      "title": "Bring the load-bearing off-compose pal-mcp-server container fully under managed startup: add a real MCP capability healthcheck (initialize + tools/list, not just `docker ps` running-state) to scripts/",
+      "disp": "BUILD",
+      "accept": "Packet DMX-FLEET-P0-002-ensure-pal-managed executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-002-ensure-pal-managed.json"
+    },
+    {
+      "ref": "DMX-FLEET-P0-003-conport-schema-verify-failclosed",
+      "parent": "DMX-FLEET-P0",
+      "title": "Verify that ConPort's _ensure_schema post-apply verification is fail-closed (raises, does not silently proceed, on an unverifiable schema), and wire its existing regression test suite into the repo's ",
+      "disp": "WIRE",
+      "accept": "Packet DMX-FLEET-P0-003-conport-schema-verify-failclosed executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-003-conport-schema-verify-failclosed.json"
+    },
+    {
+      "ref": "DMX-FLEET-P0-004-registry-dedup",
+      "parent": "DMX-FLEET-P0",
+      "title": "Remove the competing PAL registry entries in src/dopemux/mcp/registry.yaml (dopemux-pal via uvx pal-mcp-server vs dopemux-zen via npx zen-mcp -- two definitions for one logical server) and add a CI-en",
+      "disp": "DELETE",
+      "accept": "Packet DMX-FLEET-P0-004-registry-dedup executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-004-registry-dedup.json"
+    },
+    {
+      "ref": "DMX-FLEET-P0-005-wrapper-path-fixes",
+      "parent": "DMX-FLEET-P0",
+      "title": "Fix the three broken MCP stdio wrapper scripts under scripts/mcp-wrappers/: conport-wrapper.sh and conport-codex-wrapper.sh exec the upstream context-portal-mcp package instead of bridging to the in-r",
+      "disp": "BUILD",
+      "accept": "Packet DMX-FLEET-P0-005-wrapper-path-fixes executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-005-wrapper-path-fixes.json"
+    },
+    {
+      "ref": "DMX-FLEET-P0-006-quarantine-killlist",
+      "parent": "DMX-FLEET-P0",
+      "title": "Quarantine the remaining startable kill-list dead code (services/mcp-integration-bridge, services/router, services/mcp-client, services/dope-context/src/mcp/simple_server.py) by removing their Dockerf",
+      "disp": "BUILD",
+      "accept": "Packet DMX-FLEET-P0-006-quarantine-killlist executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-006-quarantine-killlist.json"
+    },
+    {
+      "ref": "DMX-FLEET-P0-007-desktop-commander-upstream",
+      "parent": "DMX-FLEET-P0",
+      "title": "Replace the broken desktop-commander container facade (docker/mcp-servers-source/desktop-commander/server.py, which calls macOS osascript from inside a Linux container so every tool call fails while i",
+      "disp": "REBUILD",
+      "accept": "Packet DMX-FLEET-P0-007-desktop-commander-upstream executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-007-desktop-commander-upstream.json"
+    },
+    {
+      "ref": "DMX-FLEET-P1-001-unified-catalog-spec",
+      "parent": "DMX-FLEET-P1",
+      "title": "Produce a spec that closes the residual multi-registry drift: current origin/main already has a schema-validated fleet catalog (src/dopemux/mcp/fleet_catalog.py, schemas/mcp/fleet-catalog.schema.json,",
+      "disp": "SPEC",
+      "accept": "Packet DMX-FLEET-P1-001-unified-catalog-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-001-unified-catalog-spec.json"
+    },
+    {
+      "ref": "DMX-FLEET-P1-002-codegen-pipeline-spec",
+      "parent": "DMX-FLEET-P1",
+      "title": "Produce a spec that closes the residual codegen gap: src/dopemux/mcp/fleet_catalog.py already renders .mcp.json, a Codex config.toml fragment, health-probe lists, and a doctrine doc from the canonical",
+      "disp": "SPEC",
+      "accept": "Packet DMX-FLEET-P1-002-codegen-pipeline-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-002-codegen-pipeline-spec.json"
+    },
+    {
+      "ref": "DMX-FLEET-P1-003-mcp-ensure-command",
+      "parent": "DMX-FLEET-P1",
+      "title": "Produce a spec that closes the residual gap in `dopemux mcp ensure`: the command already exists on origin/main (src/dopemux/commands/mcp_commands.py, mcp_ensure_cmd) with --fast (static prerequisite c",
+      "disp": "SPEC",
+      "accept": "Packet DMX-FLEET-P1-003-mcp-ensure-command executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-003-mcp-ensure-command.json"
+    },
+    {
+      "ref": "DMX-FLEET-P1-004-ci-drift-gates",
+      "parent": "DMX-FLEET-P1",
+      "title": "Close the residual CI-drift-gate gap: tests/arch/test_mcp_fleet_catalog_contract.py already gates catalog-schema conformance, catalog-to-compose port alignment, personality-contract drift, dead-surfac",
+      "disp": "BUILD",
+      "accept": "Packet DMX-FLEET-P1-004-ci-drift-gates executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-004-ci-drift-gates.json"
+    },
+    {
+      "ref": "DMX-FLEET-P1-005-orchestrator-autostart",
+      "parent": "DMX-FLEET-P1",
+      "title": "Spec auto-starting the task-orchestrator singleton at session start and refreshing its repo truth-pack to the deployed version: scripts/mcp-wrappers/task-orchestrator-http-singleton.sh already impleme",
+      "disp": "SPEC",
+      "accept": "Packet DMX-FLEET-P1-005-orchestrator-autostart executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-005-orchestrator-autostart.json"
+    },
+    {
+      "ref": "DMX-FLEET-P1-006-exa-retire-cleanup",
+      "parent": "DMX-FLEET-P1",
+      "title": "Finish the exa retirement (ADR-223, already merged to origin/main via commit 65313194a and enforced by tests/arch/test_mcp_fleet_catalog_contract.py's dead_service_names/quarantine assertions) by remo",
+      "disp": "RETIRE",
+      "accept": "Packet DMX-FLEET-P1-006-exa-retire-cleanup executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-006-exa-retire-cleanup.json"
+    },
+    {
+      "ref": "DMX-FLEET-P1-007-token-truncation-utility-spec",
+      "parent": "DMX-FLEET-P1",
+      "title": "Spec restoring the lost progressive-token-truncation pattern (docs/archive/mcp-servers/CONPORT_TOKEN_LIMIT_FIX.md: item-by-item token estimation, 9K budget stop, Zen-validated) as one shared fleet-wid",
+      "disp": "SPEC",
+      "accept": "Packet DMX-FLEET-P1-007-token-truncation-utility-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-007-token-truncation-utility-spec.json"
+    },
+    {
+      "ref": "DMX-FLEET-P2-001-event-source-wiring",
+      "parent": "DMX-FLEET-P2",
+      "title": "Produce the spec for wiring decision.logged/task.*/workflow.phase_changed at their real emission sources (ConPort decision-write path, workflow-kernel/task-orchestrator transitions) and for folding th",
+      "disp": "WIRE",
+      "accept": "Packet DMX-FLEET-P2-001-event-source-wiring executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-001-event-source-wiring.json"
+    },
+    {
+      "ref": "DMX-FLEET-P2-002-heartbeat-ratelimit",
+      "parent": "DMX-FLEET-P2",
+      "title": "Rate-limit session-active heartbeat events in the dope-memory eventbus consumer to stop chronicle spam, and normalize/backfill instance_id so heartbeat and promotable events carry a consistent, non-de",
+      "disp": "BUILD",
+      "accept": "Packet DMX-FLEET-P2-002-heartbeat-ratelimit executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-002-heartbeat-ratelimit.json"
+    },
+    {
+      "ref": "DMX-FLEET-P2-003-instance-identity-propagation",
+      "parent": "DMX-FLEET-P2",
+      "title": "Produce the spec for moving workspace/instance identity into per-request parameters (tool arguments or headers) so worktree scoping is real for ConPort and dope-memory over shared HTTP servers, replac",
+      "disp": "SPEC",
+      "accept": "Packet DMX-FLEET-P2-003-instance-identity-propagation executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-003-instance-identity-propagation.json"
+    },
+    {
+      "ref": "DMX-FLEET-P2-004-skill-mirror-receipts",
+      "parent": "DMX-FLEET-P2",
+      "title": "Append a dope-memory mirror-receipt confirmation to the /decision, /caveat, and /followup skill commands so each ConPort write is visibly mirrored into the chronicle at the point of use, closing Memor",
+      "disp": "BUILD",
+      "accept": "Packet DMX-FLEET-P2-004-skill-mirror-receipts executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-004-skill-mirror-receipts.json"
+    },
+    {
+      "ref": "DMX-FLEET-P2-005-dopecontext-indexing-enable",
+      "parent": "DMX-FLEET-P2",
+      "title": "Flip ENABLE_DOPECONTEXT_INDEX=true with provenance pointers once the chronicle holds real curated content, completing the Memory Trinity loop by making decision/work-log entries semantically searchabl",
+      "disp": "BUILD",
+      "accept": "Packet DMX-FLEET-P2-005-dopecontext-indexing-enable executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-005-dopecontext-indexing-enable.json"
+    },
+    {
+      "ref": "DMX-FLEET-P3-001-conport-jsonrpc-parity",
+      "parent": "DMX-FLEET-P3",
+      "title": "Produce a spec for ConPort packets 106/107/201/202 that closes JSON-RPC tool parity (13 of 17 SSE tools currently advertised), eliminates the GET /api/progress side-effect mutation, and adds a product",
+      "disp": "SPEC",
+      "accept": "Packet DMX-FLEET-P3-001-conport-jsonrpc-parity executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-001-conport-jsonrpc-parity.json"
+    },
+    {
+      "ref": "DMX-FLEET-P3-002-serena-promotion",
+      "parent": "DMX-FLEET-P3",
+      "title": "Produce a spec that promotes the local 45-tool Serena candidate (services/serena/) to the canonical Serena surface per DMX-ADR-002, keeping the 6 write tools out of the default profile, and defines th",
+      "disp": "WIRE",
+      "accept": "Packet DMX-FLEET-P3-002-serena-promotion executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-002-serena-promotion.json"
+    },
+    {
+      "ref": "DMX-FLEET-P3-003-complexity-unify-spec",
+      "parent": "DMX-FLEET-P3",
+      "title": "Produce a spec that picks the canonical complexity scorer among the three unwired implementations (Serena's CodeComplexityAnalyzer, dope-context's scorer, and the orchestrator's ADR-207 ML risk module",
+      "disp": "SPEC",
+      "accept": "Packet DMX-FLEET-P3-003-complexity-unify-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-003-complexity-unify-spec.json"
+    },
+    {
+      "ref": "DMX-FLEET-P3-004-qdrant-gc",
+      "parent": "DMX-FLEET-P3",
+      "title": "Add garbage collection for orphaned dope-context Qdrant collections (code_{workspace_hash}/docs_{workspace_hash}) whose source worktree no longer exists, so deleted worktrees stop leaking permanent co",
+      "disp": "DELETE",
+      "accept": "Packet DMX-FLEET-P3-004-qdrant-gc executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-004-qdrant-gc.json"
+    },
+    {
+      "ref": "DMX-FLEET-P3-005-voyage-cost-guard",
+      "parent": "DMX-FLEET-P3",
+      "title": "Wire the existing but dead rate_limits.voyage_api config (multi_index_config.yaml) into VoyageEmbedder and VoyageReranker and add an enforced spend/request cap on top of the existing unenforced CostTr",
+      "disp": "WIRE",
+      "accept": "Packet DMX-FLEET-P3-005-voyage-cost-guard executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-005-voyage-cost-guard.json"
+    },
+    {
+      "ref": "DMX-FLEET-P3-006-loopback-binds",
+      "parent": "DMX-FLEET-P3",
+      "title": "Close 0.0.0.0 exposure fleet-wide for conport, dope-memory, serena, and gptr-mcp by adding loopback-bind port publishing in compose.yml, matching the pattern already used by dope-context, adhd-engine,",
+      "disp": "BUILD",
+      "accept": "Packet DMX-FLEET-P3-006-loopback-binds executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-006-loopback-binds.json"
+    },
+    {
+      "ref": "DMX-FLEET-P4-001-facade-g1-contract-test",
+      "parent": "DMX-FLEET-P4",
+      "title": "Close DCP read-only facade gap G1 by adding a CI contract test that asserts the MCP-registered tool set equals TOOL_CONTRACT.md's 12-tool contract, and by making the two transport-blocked tools (searc",
+      "disp": "WIRE",
+      "accept": "Packet DMX-FLEET-P4-001-facade-g1-contract-test executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-001-facade-g1-contract-test.json"
+    },
+    {
+      "ref": "DMX-FLEET-P4-002-dopecontext-bridge-spec",
+      "parent": "DMX-FLEET-P4",
+      "title": "Spec a minimal MCP-JSON-RPC read bridge that lets the DCP read-only facade's dope-context adapter issue real search_code/docs_search/index-status calls instead of permanently fail-closing to BLOCKED, ",
+      "disp": "SPEC",
+      "accept": "Packet DMX-FLEET-P4-002-dopecontext-bridge-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-002-dopecontext-bridge-spec.json"
+    },
+    {
+      "ref": "DMX-FLEET-P4-003-lane-engine-wire",
+      "parent": "DMX-FLEET-P4",
+      "title": "Wire the currently dead-code decide_lane() function into a real dispatch point (a `dopemux dcp lane` CLI subcommand plus task-packet intake) so DCP lane routing has at least one non-test consumer, per",
+      "disp": "WIRE",
+      "accept": "Packet DMX-FLEET-P4-003-lane-engine-wire executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-003-lane-engine-wire.json"
+    },
+    {
+      "ref": "DMX-FLEET-P4-004-inventory-freshness-gate",
+      "parent": "DMX-FLEET-P4",
+      "title": "Add a CI verification that fails when the DCP facade's backend-surface inventory (RUNTIME_SURFACE_INVENTORY.md / READ_ONLY_SURFACE_INVENTORY.json) is stale relative to the facade's actual route_manife",
+      "disp": "WIRE",
+      "accept": "Packet DMX-FLEET-P4-004-inventory-freshness-gate executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-004-inventory-freshness-gate.json"
+    },
+    {
+      "ref": "DMX-FLEET-P4-005-facade-catalog-register",
+      "parent": "DMX-FLEET-P4",
+      "title": "Register dcp-readonly-facade as an operator-run stdio entry in the unified MCP catalog, closing the gap where the facade is confirmed absent from mcp_catalog.yaml, services/registry.yaml, and src/dope",
+      "disp": "WIRE",
+      "accept": "Packet DMX-FLEET-P4-005-facade-catalog-register executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-005-facade-catalog-register.json"
+    },
+    {
+      "ref": "DMX-FLEET-P5-001-e2e-acceptance",
+      "parent": "DMX-FLEET-P5",
+      "title": "Spec the end-to-end fleet acceptance test: from a fresh worktree, `dopemux mcp ensure` brings every plane green, a decision logged in ConPort is mirrored to dope-memory and later recapped, and the chr",
+      "disp": "SPEC",
+      "accept": "Packet DMX-FLEET-P5-001-e2e-acceptance executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-001-e2e-acceptance.json"
+    },
+    {
+      "ref": "DMX-FLEET-P5-002-docs-reconciliation",
+      "parent": "DMX-FLEET-P5",
+      "title": "Regenerate the fleet's per-server doctrine docs (~/.claude/MCP_*.md sources and their in-repo equivalents) to match live tools/list surfaces, and explicitly mark aspirational ADHD automation claims (b",
+      "disp": "WIRE",
+      "accept": "Packet DMX-FLEET-P5-002-docs-reconciliation executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-002-docs-reconciliation.json"
+    },
+    {
+      "ref": "DMX-FLEET-P5-003-proof-discipline",
+      "parent": "DMX-FLEET-P5",
+      "title": "Establish a per-packet proof-bundle template and a checker script under proof/ that verifies every proof bundle contains the fields AGENTS.md sections 8 and 9 require (TP path/ID, worktree path, branc",
+      "disp": "BUILD",
+      "accept": "Packet DMX-FLEET-P5-003-proof-discipline executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-003-proof-discipline.json"
+    },
+    {
+      "ref": "DMX-ADHD-WIRE-001-predictive-risk-hook",
+      "parent": "DMX-ADHD-WIRE",
+      "title": "Wire the built-but-dormant predictive_risk_assessment.py into the task-orchestrator runtime path so its 8 risk categories (including hyperfocus burnout and context-switching) are actually evaluated an",
+      "disp": "WIRE",
+      "accept": "Packet DMX-ADHD-WIRE-001-predictive-risk-hook executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-001-predictive-risk-hook.json"
+    },
+    {
+      "ref": "DMX-ADHD-WIRE-002-context-preservation-display",
+      "parent": "DMX-ADHD-WIRE",
+      "title": "Surface the live adhd_engine/domains/attention/context_preserver.py output (pre-break mental-model snapshots) on a real PM/operator-facing display surface, so the existing backend capability stops bei",
+      "disp": "WIRE",
+      "accept": "Packet DMX-ADHD-WIRE-002-context-preservation-display executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-002-context-preservation-display.json"
+    },
+    {
+      "ref": "DMX-ADHD-WIRE-003-overwhelm-snapshot",
+      "parent": "DMX-ADHD-WIRE",
+      "title": "Expose the existing overwhelm-detection telemetry already computed inside event_coordinator.py as a queryable snapshot on a PM/operator-facing surface, matching the same wire-existing shape as the con",
+      "disp": "WIRE",
+      "accept": "Packet DMX-ADHD-WIRE-003-overwhelm-snapshot executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-003-overwhelm-snapshot.json"
+    },
+    {
+      "ref": "DMX-ADHD-WIRE-004-relationship-vocab-widening",
+      "parent": "DMX-ADHD-WIRE",
+      "title": "Widen the active ConPort MCP server's exposed relationship vocabulary beyond the current link_conport_items generic edge, so callers can express modeled-but-unexposed relationship types (affects, depe",
+      "disp": "WIRE",
+      "accept": "Packet DMX-ADHD-WIRE-004-relationship-vocab-widening executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-004-relationship-vocab-widening.json"
+    },
+    {
+      "ref": "DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec",
+      "parent": "DMX-ADHD-WIRE",
+      "title": "Produce a spec for resurrecting the dormant Serena Adaptive Learning Engine foundation (per-user attention patterns, cross-session personalization) plus its Personal Learning Profile dependent, gated ",
+      "disp": "SPEC",
+      "accept": "Packet DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec.json"
+    },
+    {
+      "ref": "DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec",
+      "parent": "DMX-ADHD-WIRE",
+      "title": "Produce a spec for resurrecting the dormant Serena Fatigue Detection Engine, Context Switching Optimizer, Untracked Work Detector, and Abandonment Tracker modules, sequenced after the Adaptive Learnin",
+      "disp": "SPEC",
+      "accept": "Packet DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec.json"
+    },
+    {
+      "ref": "DMX-ADR-001-semantic-memory-home",
+      "parent": "DMX-ADR",
+      "title": "Author docs/90-adr/adr-224-semantic-memory-home.md recording the accepted decision that semantic memory lives in dope-context (memory_{hash} projection, provisionally Option A, deferred final go/no-go",
+      "disp": "ADR",
+      "accept": "Packet DMX-ADR-001-semantic-memory-home executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-ADR/DMX-ADR-001-semantic-memory-home.json"
+    },
+    {
+      "ref": "DMX-ADR-002-serena-promotion",
+      "parent": "DMX-ADR",
+      "title": "Author docs/90-adr/adr-225-serena-promotion.md recording the accepted decision to promote the local 45-tool Serena surface to canonical, with 6 write tools carved out of the default profile.",
+      "disp": "ADR",
+      "accept": "Packet DMX-ADR-002-serena-promotion executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-ADR/DMX-ADR-002-serena-promotion.json"
+    },
+    {
+      "ref": "DMX-ADR-003-lane-engine-dispatch",
+      "parent": "DMX-ADR",
+      "title": "Author docs/90-adr/adr-226-lane-engine-dispatch.md recording the accepted decision to wire decide_lane() as the real DCP routing dispatch point (dopemux dcp lane + task-packet intake), replacing laten",
+      "disp": "ADR",
+      "accept": "Packet DMX-ADR-003-lane-engine-dispatch executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-ADR/DMX-ADR-003-lane-engine-dispatch.json"
+    },
+    {
+      "ref": "DMX-ADR-004-complexity-scorer",
+      "parent": "DMX-ADR",
+      "title": "Author docs/90-adr/adr-227-complexity-scorer.md recording the accepted decision to unify the three unwired complexity-scoring implementations onto one canonical scorer, with the specific scorer choice",
+      "disp": "ADR",
+      "accept": "Packet DMX-ADR-004-complexity-scorer executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-ADR/DMX-ADR-004-complexity-scorer.json"
+    },
+    {
+      "ref": "DMX-ADR-005-conport-graph-exposure",
+      "parent": "DMX-ADR",
+      "title": "Author docs/90-adr/adr-228-conport-graph-exposure.md recording the accepted decision to expose graph.neighbors plus decision genealogy on the active Docker ConPort instance, gated on a mandatory AGE d",
+      "disp": "ADR",
+      "accept": "Packet DMX-ADR-005-conport-graph-exposure executed per its steps; proof bundle attached.",
+      "packet": "task-packets/generated/DMX-ADR/DMX-ADR-005-conport-graph-exposure.json"
+    }
+  ],
+  "blocks": [
+    [
+      "DMX-MCF-002-transcript-ingest",
+      "DMX-MCF-003-decision-candidate"
+    ],
+    [
+      "DMX-MCF-003-decision-candidate",
+      "DMX-MCF-004-sessionstart-recap"
+    ],
+    [
+      "DMX-MCF-004-sessionstart-recap",
+      "DMX-MCF-005-semantic-projection-spec"
+    ],
+    [
+      "DMX-ADR-001-semantic-memory-home",
+      "DMX-MCF-005-semantic-projection-spec"
+    ],
+    [
+      "DMX-ADR-005-conport-graph-exposure",
+      "DMX-MCF-006-conport-graph-spike-spec"
+    ],
+    [
+      "DMX-MCF-002-transcript-ingest",
+      "DMX-MCF-007-fabric-orchestrator-spec"
+    ],
+    [
+      "DMX-MCF-003-decision-candidate",
+      "DMX-MCF-007-fabric-orchestrator-spec"
+    ],
+    [
+      "DMX-MCF-004-sessionstart-recap",
+      "DMX-MCF-007-fabric-orchestrator-spec"
+    ],
+    [
+      "DMX-MCF-003-decision-candidate",
+      "DMX-MCF-008-summarizer-spec"
+    ],
+    [
+      "DMX-MCF-007-fabric-orchestrator-spec",
+      "DMX-MCF-008-summarizer-spec"
+    ],
+    [
+      "DMX-MCF-007-fabric-orchestrator-spec",
+      "DMX-MCF-009-proactive-injection-spec"
+    ],
+    [
+      "DMX-FLEET-P0-004-registry-dedup",
+      "DMX-FLEET-P1-001-unified-catalog-spec"
+    ],
+    [
+      "DMX-FLEET-P1-001-unified-catalog-spec",
+      "DMX-FLEET-P1-002-codegen-pipeline-spec"
+    ],
+    [
+      "DMX-FLEET-P1-001-unified-catalog-spec",
+      "DMX-FLEET-P1-003-mcp-ensure-command"
+    ],
+    [
+      "DMX-FLEET-P0-002-ensure-pal-managed",
+      "DMX-FLEET-P1-003-mcp-ensure-command"
+    ],
+    [
+      "DMX-FLEET-P1-002-codegen-pipeline-spec",
+      "DMX-FLEET-P1-004-ci-drift-gates"
+    ],
+    [
+      "DMX-FLEET-P2-001-event-source-wiring",
+      "DMX-FLEET-P2-005-dopecontext-indexing-enable"
+    ],
+    [
+      "DMX-ADR-002-serena-promotion",
+      "DMX-FLEET-P3-002-serena-promotion"
+    ],
+    [
+      "DMX-ADR-004-complexity-scorer",
+      "DMX-FLEET-P3-003-complexity-unify-spec"
+    ],
+    [
+      "DMX-ADR-003-lane-engine-dispatch",
+      "DMX-FLEET-P4-003-lane-engine-wire"
+    ],
+    [
+      "DMX-FLEET-P4-001-facade-g1-contract-test",
+      "DMX-FLEET-P4-004-inventory-freshness-gate"
+    ],
+    [
+      "DMX-FLEET-P1-001-unified-catalog-spec",
+      "DMX-FLEET-P4-005-facade-catalog-register"
+    ],
+    [
+      "DMX-FLEET-P1-003-mcp-ensure-command",
+      "DMX-FLEET-P5-001-e2e-acceptance"
+    ],
+    [
+      "DMX-FLEET-P2-005-dopecontext-indexing-enable",
+      "DMX-FLEET-P5-001-e2e-acceptance"
+    ],
+    [
+      "DMX-FLEET-P3-001-conport-jsonrpc-parity",
+      "DMX-ADHD-WIRE-004-relationship-vocab-widening"
+    ],
+    [
+      "DMX-FLEET-P3-002-serena-promotion",
+      "DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec"
+    ],
+    [
+      "DMX-FLEET-P3-002-serena-promotion",
+      "DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec"
+    ],
+    [
+      "DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec",
+      "DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec"
+    ]
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "id": "DMX-FLEET-P1-004-ci-drift-gates",
+  "project": "dopemux-mvp",
+  "target": "Close the residual CI-drift-gate gap: tests/arch/test_mcp_fleet_catalog_contract.py already gates catalog-schema conformance, catalog-to-compose port alignment, personality-contract drift, dead-surface absence, and command-to-tool-surface drift for the canonical fleet catalog, but tests/arch/test_registry_compose_alignment.py independently gates services/registry.yaml against compose.yml using separate parsing logic with no shared assertions against the canonical catalog, so a drift between the legacy registry and the canonical catalog would not be caught by either suite; add a contract test asserting the two stay consistent (or, if DMX-FLEET-P1-001 retires the legacy registry first, delete the now-redundant suite).",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not weaken or delete tests/arch/test_mcp_fleet_catalog_contract.py's existing assertions.",
+    "This packet must not remove tests/arch/test_registry_compose_alignment.py unless DMX-FLEET-P1-001's registry-consolidation spec has been implemented and services/registry.yaml has no remaining readers; if that precondition is unmet, this packet must add a cross-consistency gate instead of deleting anything.",
+    "This packet must preserve the canonical writer (dopemux fleet_catalog.py) and treat services/registry.yaml as legacy/derived where both exist.",
+    "This packet must fail closed (CI red) on any newly-detected drift rather than warning only."
+  ],
+  "depends_on": [
+    "DMX-FLEET-P1-002-codegen-pipeline-spec"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p1",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P1-003-mcp-ensure-command",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p1-004-ci-drift-gates",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "test(mcp-fleet): gate catalog-vs-legacy-registry consistency",
+    "allowlist": [
+      "tests/arch/test_mcp_fleet_catalog_contract.py",
+      "tests/arch/test_registry_compose_alignment.py",
+      "src/dopemux/mcp/fleet_catalog.py",
+      "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-004-ci-drift-gates.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p1-004-ci-drift-gates/DMX-FLEET-P1-004-ci-drift-gates/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-004-ci-drift-gates.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-004-ci-drift-gates.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/arch/test_mcp_fleet_catalog_contract.py tests/arch/test_registry_compose_alignment.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "test(mcp-fleet): gate catalog-vs-legacy-registry consistency",
+    "body": "Closes the residual CI-drift-gate gap for DMX-FLEET-P1-004. The 2026-07-03 audit (mcp-fleet-canonical-audit-and-target-design-2026-07-03.md §6.1/§8 Phase 1.4) asked for catalog-to-generated-config and command-to-tool-surface drift gates; tests/arch/test_mcp_fleet_catalog_contract.py already implements both against the canonical fleet catalog. The residual gap is that tests/arch/test_registry_compose_alignment.py independently checks the legacy services/registry.yaml against compose.yml with no cross-check against the canonical catalog, so the two sources could silently diverge. This packet adds a contract test (or removes the now-redundant legacy suite if DMX-FLEET-P1-001's consolidation has landed) so drift between the legacy registry and canonical catalog fails CI.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean status. Record whether DMX-FLEET-P1-001's registry-consolidation spec has been implemented yet (check for services/registry.yaml's removal or a migration marker) to decide between the two allowed outcomes in this packet's target.",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "Proof records whether services/registry.yaml still exists and still has readers as of this run, deciding which of the two allowed remediations applies."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        "tests/arch/test_mcp_fleet_catalog_contract.py",
+        "tests/arch/test_registry_compose_alignment.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test first: assert every docker_compose_service+port pair present in the legacy services/registry.yaml (if it still exists) also appears in the canonical fleet catalog's servers, and vice versa for any active/operator-managed lifecycle entries, so a future edit to only one file trips CI.",
+      "validation": [
+        "New test fails against current HEAD before implementation (services/registry.yaml and the canonical catalog are not cross-checked today).",
+        "Test failure message names the specific service/port mismatch, not a generic assertion error."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "If services/registry.yaml still exists and has active readers: implement the minimal cross-consistency check (reuse fleet_catalog.py's load_compose/_compose_host_ports helpers rather than duplicating parsing logic) so the new test passes. If services/registry.yaml has no remaining readers per S1: remove tests/arch/test_registry_compose_alignment.py and services/registry.yaml in this same packet only if DMX-FLEET-P1-001's spec explicitly authorizes it; otherwise stop and report the precondition as unmet rather than deleting speculatively.",
+      "validation": [
+        "New cross-consistency test passes.",
+        "Existing tests/arch/test_mcp_fleet_catalog_contract.py assertions still pass unmodified in behavior.",
+        "No file is deleted without an explicit authorizing precondition recorded in proof."
+      ],
+      "expected_files": [
+        "tests/arch/test_mcp_fleet_catalog_contract.py",
+        "src/dopemux/mcp/fleet_catalog.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the packet, update task-packets/INDEX.md, assemble the proof bundle, run the full arch test suite, validate the packet JSON, and commit only allowlisted files.",
+      "validation": [
+        "python -m pytest tests/arch/test_mcp_fleet_catalog_contract.py tests/arch/test_registry_compose_alignment.py -q exits 0.",
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

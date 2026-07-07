@@ -1,0 +1,100 @@
+{
+  "id": "DMX-FLEET-P1-003-mcp-ensure-command",
+  "project": "dopemux-mvp",
+  "target": "Produce a spec that closes the residual gap in `dopemux mcp ensure`: the command already exists on origin/main (src/dopemux/commands/mcp_commands.py, mcp_ensure_cmd) with --fast (static prerequisite checks) and --full (compose up + ensure-pal.sh + task-orchestrator-http-singleton.sh + real MCP tools/list probes) modes, but the H3 SessionStart hook (.claude/hooks/mcp_health_probe.py) only prints remediation advice strings and never invokes `mcp ensure --fast` itself, so the audit's described end-to-end 'H3 calls ensure --fast instead of advising' behavior is not wired.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must treat src/dopemux/commands/mcp_commands.py's existing mcp_ensure_cmd as the canonical implementation and specify wiring/extension, not a parallel command.",
+    "This packet must preserve H3's fail-open behavior (advisory, non-blocking) if `mcp ensure --fast` is unavailable or errors.",
+    "This packet must not propose auto-remediating (--full behavior) from a SessionStart hook without explicit operator opt-in, given --full performs compose mutations."
+  ],
+  "depends_on": [
+    "DMX-FLEET-P1-001-unified-catalog-spec",
+    "DMX-FLEET-P0-002-ensure-pal-managed"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p1",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P1-002-codegen-pipeline-spec",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p1-003-mcp-ensure-command",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(mcp-fleet): spec H3-to-mcp-ensure wiring",
+    "allowlist": [
+      "claudedocs/specs/DMX-FLEET-P1-003-mcp-ensure-command.md",
+      "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-003-mcp-ensure-command.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p1-003-mcp-ensure-command/DMX-FLEET-P1-003-mcp-ensure-command/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-003-mcp-ensure-command.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-003-mcp-ensure-command.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-FLEET-P1-003-mcp-ensure-command.md",
+      "grep -q 'mcp_health_probe' claudedocs/specs/DMX-FLEET-P1-003-mcp-ensure-command.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(mcp-fleet): spec H3-to-mcp-ensure wiring",
+    "body": "Authors the residual-closure spec for DMX-FLEET-P1-003. The 2026-07-03 audit (mcp-fleet-canonical-audit-and-target-design-2026-07-03.md §6.1/§8 Phase 1.3) asked for an idempotent `dopemux mcp ensure` (+ --fast) with H3 calling it instead of advising. `mcp ensure --fast/--full` already ships on origin/main with the full daemon-check to compose-up to pal-recreate to orchestrator-singleton to capability-verify chain, but .claude/hooks/mcp_health_probe.py (H3) still only emits advisory remediation strings. This packet specs wiring H3 to actually invoke `mcp ensure --fast` and surface its structured result, fail-open.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md §6.1 and §8 Phase 1.3. Inspect src/dopemux/commands/mcp_commands.py's mcp_ensure_cmd, _ensure_fast_context, _ensure_fast_problems, _catalog_compose_services, and _run_mcp_tools_list_probes in full. Inspect .claude/hooks/mcp_health_probe.py end to end, including its cooldown cache mechanism, _SERVER_REMEDIATION mapping, and how its output reaches the model (SessionStart hook contract).",
+      "validation": [
+        "Proof confirms mcp_ensure_cmd's --fast and --full behavior with file:line citations, including exact timeout constants (DEFAULT_ENSURE_TIMEOUT_SECONDS, DEFAULT_COMPOSE_WAIT_TIMEOUT_SECONDS, DEFAULT_COMPOSE_UP_TIMEOUT_SECONDS).",
+        "Proof confirms mcp_health_probe.py never shells out to `dopemux mcp ensure` today (advisory-only), with file:line citation.",
+        "Proof measures or reasons about --fast's actual latency against the audit's '<2s cached fast-path' target using the static checks it performs (catalog load, .mcp.json diff, envrc presence, env var presence)."
+      ],
+      "context_files": [
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        "src/dopemux/commands/mcp_commands.py",
+        ".claude/hooks/mcp_health_probe.py",
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/DMX-FLEET-P1-003-mcp-ensure-command.md covering: (a) current-state summary of mcp_ensure_cmd's shipped --fast/--full behavior; (b) scope of the residual gap — H3 invoking `dopemux mcp ensure --fast` (subprocess or in-process import) at SessionStart and folding its structured problems list into the existing cooldown-cached advisory output, replacing or supplementing the current _SERVER_REMEDIATION guesswork; (c) interfaces: how H3 captures ensure's exit code/output within its existing timeout and cooldown budget, and the max-3-remediation-option ADHD-friendly output contract; (d) invariants (fail-open if `dopemux` CLI is unavailable or times out; never trigger --full's compose mutations from a hook without explicit config opt-in; preserve existing cooldown cache to avoid re-running ensure every prompt); (e) acceptance criteria (H3's advisory output reflects real `mcp ensure --fast` results, not static guesses); (f) phasing relative to DMX-FLEET-P0-002 (PAL managed startup) which this depends on for a stable --full remediation path.",
+      "validation": [
+        "Spec file exists at claudedocs/specs/DMX-FLEET-P1-003-mcp-ensure-command.md.",
+        "Spec explicitly states mcp_ensure_cmd already exists and scopes only the H3 wiring gap, not a new ensure command.",
+        "Spec covers scope, invariants, interfaces, acceptance criteria, and phasing as distinct sections.",
+        "Spec does not propose runtime code changes; it is planning-only."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the source audit doc and the runtime evidence gathered in S1. Validate the packet JSON, update task-packets/INDEX.md, assemble the proof bundle, and commit only allowlisted files.",
+      "validation": [
+        "Spec is internally consistent with S1's evidence.",
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "id": "DMX-FLEET-P5-003-proof-discipline",
+  "project": "dopemux-mvp",
+  "target": "Establish a per-packet proof-bundle template and a checker script under proof/ that verifies every proof bundle contains the fields AGENTS.md sections 8 and 9 require (TP path/ID, worktree path, branch, repo identity, files changed, validations with exit codes, codereview status, precommit status, commit SHA or exact blocker, residual risks, UNKNOWNs, cleanup status), so proof-bundle completeness is machine-checkable rather than reviewer-trusted.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change any existing proof bundle's content; it only adds a template and a checker.",
+    "This packet must fail closed: the checker must exit non-zero when a required proof field is missing, not warn-and-pass.",
+    "This packet must not become a canonical writer of proof content; it verifies structure only, and does not fabricate or infer field values on a packet's behalf."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p5",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P5-002-docs-reconciliation",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p5-003-proof-discipline",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(proof): add per-packet proof-bundle template and completeness checker",
+    "allowlist": [
+      "proof/_TEMPLATE/PROOF_BUNDLE_TEMPLATE.md",
+      "scripts/proof/check_proof_bundle.py",
+      "tests/unit/scripts/test_check_proof_bundle.py",
+      "task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-003-proof-discipline.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p5-003-proof-discipline/DMX-FLEET-P5-003-proof-discipline/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-003-proof-discipline.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-003-proof-discipline.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/scripts/test_check_proof_bundle.py -q",
+      "python scripts/proof/check_proof_bundle.py proof/dmx-fleet-p5-003-proof-discipline/DMX-FLEET-P5-003-proof-discipline",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(proof): add a proof-bundle template and fail-closed completeness checker",
+    "body": "Adds proof/_TEMPLATE/PROOF_BUNDLE_TEMPLATE.md and scripts/proof/check_proof_bundle.py, which verifies a proof bundle directory contains every field AGENTS.md sections 8 and 9 require and exits non-zero on any missing field. Closes the fleet audit's Phase 5.3 item ('proof bundles per packet per AGENTS.md sections 8/9') and is the final packet of the DMX-FLEET-P5 series.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Read AGENTS.md sections 8 and 9 for the exact required proof-bundle fields, and sample 2-3 existing proof/ directories (e.g. proof/TP-DCP-MCP-RO-0006, proof/DMX-DCP-MODEL-ROUTING-MVP-0001) to learn the current de-facto structure before designing the template and checker.",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "The exact required field list from AGENTS.md sections 8 and 9 is recorded in proof, along with which of the sampled existing bundles already satisfy it and which do not."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test in tests/unit/scripts/test_check_proof_bundle.py asserting the checker script exits non-zero when a required field (e.g. commit SHA, codereview status, residual risks) is missing from a proof bundle directory, and exits zero when all required fields are present.",
+      "validation": [
+        "The test fails before scripts/proof/check_proof_bundle.py exists.",
+        "The test covers at least one missing-field failure case and one complete-bundle success case."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement proof/_TEMPLATE/PROOF_BUNDLE_TEMPLATE.md (a markdown skeleton with every AGENTS.md section 8/9 field as a heading) and scripts/proof/check_proof_bundle.py (a script that scans a given proof bundle directory's files for the required field markers and fails closed on any gap).",
+      "validation": [
+        "The new checker test passes.",
+        "Running the checker against this packet's own proof bundle (built in S4) exits zero.",
+        "Running the checker against a deliberately incomplete sample bundle exits non-zero with a clear message naming the missing field."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, build this packet's own proof bundle using the new template, run the full verify list including the checker against its own bundle, commit only allowlisted files, push, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "The checker script exits 0 against this packet's own proof bundle.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

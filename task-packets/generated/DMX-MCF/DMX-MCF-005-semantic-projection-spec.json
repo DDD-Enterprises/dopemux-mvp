@@ -1,0 +1,99 @@
+{
+  "id": "DMX-MCF-005-semantic-projection-spec",
+  "project": "dopemux-mvp",
+  "target": "Produce the semantic-memory projection spec for a derived dope-context memory_{hash} collection (privacy-safe embedding path), deferring the final go/no-go until real chronicle data exists from packets 002-004.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must not implement or call any embedding provider.",
+    "This packet must resolve the privacy conflict named in the design spec: raw transcript content must never be sent to an external embedding provider (Voyage is external) without explicit redaction, approval, and provider policy.",
+    "This packet must name the exact ADR (DMX-ADR-001-semantic-memory-home) this spec depends on and reconcile with its decision (provisionally dope-context memory_{hash}, deferred).",
+    "This packet must state the deferred go/no-go criteria explicitly (recall-quality gap only measurable once the chronicle in packets 002-004 holds real content)."
+  ],
+  "depends_on": [
+    "DMX-MCF-004-sessionstart-recap",
+    "DMX-ADR-001-semantic-memory-home"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-mcf",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-MCF-004-sessionstart-recap",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-mcf-005-semantic-projection-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(memory): semantic-memory projection spec (deferred go/no-go)",
+    "allowlist": [
+      "claudedocs/specs/DMX-MCF-005-semantic-projection-spec.md",
+      "task-packets/generated/DMX-MCF/DMX-MCF-005-semantic-projection-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-mcf-005-semantic-projection-spec/DMX-MCF-005-semantic-projection-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-MCF/DMX-MCF-005-semantic-projection-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-MCF/DMX-MCF-005-semantic-projection-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-MCF-005-semantic-projection-spec.md",
+      "grep -q 'Privacy' claudedocs/specs/DMX-MCF-005-semantic-projection-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(memory): semantic-memory projection spec (deferred go/no-go)",
+    "body": "Produces the TP-MCF-005 planning spec (no runtime code) per claudedocs/memory-context-fabric-design-2026-07-04.md section 6 row TP-MCF-005: the derived dope-context memory_{hash} projection, its privacy-safe embedding options, and the explicit deferred go/no-go criteria tied to DMX-ADR-001 and real chronicle data from DMX-MCF-002/003/004.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read the design spec section 3 (Memory model) and section 6 (row TP-MCF-005), the interfaces spec section 3 (dope-context plane-interaction contract) and section 4 invariant 8 (locality), and DMX-ADR-001-semantic-memory-home once authored. Inspect the current dope-context runtime read-only: confirm code_{hash}/docs_{hash} collections exist and memory_{hash}/index_memory/search_memory do not (grep-verify, do not assume).",
+      "validation": [
+        "The spec's runtime-truth section cites exact file:line evidence for what dope-context does and does not support today.",
+        "No runtime code is changed in this step."
+      ],
+      "context_files": [
+        "claudedocs/memory-context-fabric-design-2026-07-04.md",
+        "claudedocs/memory-context-fabric-interfaces-2026-07-04.md",
+        "claudedocs/tp-mcf-001-authority-map-2026-07-04.md",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/DMX-MCF-005-semantic-projection-spec.md covering: scope (derived memory_{hash} collection, index_memory/search_memory surface), invariants (locality, provenance-only-lowers-trust, no external embedding of raw transcript without redaction+approval+policy), interfaces (request/response shapes matching ContextItem/ContextBundle), acceptance criteria, phasing, and the explicit deferred go/no-go gate (blocked until DMX-MCF-002/003/004 produce real chronicle content to measure recall quality against).",
+      "validation": [
+        "The spec file exists at claudedocs/specs/DMX-MCF-005-semantic-projection-spec.md.",
+        "The spec names the privacy conflict (Voyage is external) and resolves it with an explicit local-embedding-or-redaction-and-approval path, not a hand-wave.",
+        "The spec states the deferred go/no-go criteria and what unblocks it."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the design spec, interfaces spec, and decisions-ledger for consistency. Validate the packet JSON. Commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed.",
+        "No runtime code appears in the diff."
+      ]
+    }
+  ]
+}

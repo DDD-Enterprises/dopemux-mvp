@@ -1,0 +1,99 @@
+{
+  "id": "DMX-MCF-008-summarizer-spec",
+  "project": "dopemux-mvp",
+  "target": "Spec the LLM summarization worker that distills candidate-only conversation-derived content using a cheap default model under an explicit token/cost budget, never touching canonical ConPort decisions directly.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must not implement or call any LLM provider.",
+    "This packet must scope summarization to candidate-only content (conversation.decision_candidate and similar trust-lower classes) -- never canonical decisions or curated high-trust chronicle entries.",
+    "This packet must specify a cheap-model default and an explicit cost/token budget with a hard ceiling.",
+    "This packet must specify that summarizer output is itself trust-lower and carries provenance identifying it as LLM-derived, never silently merged into canonical fields.",
+    "This packet must depend on and reuse the conversation.decision_candidate schema from DMX-MCF-003 and the orchestrator surface from DMX-MCF-007 rather than re-specifying them."
+  ],
+  "depends_on": [
+    "DMX-MCF-003-decision-candidate",
+    "DMX-MCF-007-fabric-orchestrator-spec"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-mcf",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-MCF-007-fabric-orchestrator-spec",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-mcf-008-summarizer-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(memory): candidate-only LLM summarization worker spec (budgeted, cheap-model default)",
+    "allowlist": [
+      "claudedocs/specs/DMX-MCF-008-summarizer-spec.md",
+      "task-packets/generated/DMX-MCF/DMX-MCF-008-summarizer-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-mcf-008-summarizer-spec/DMX-MCF-008-summarizer-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-MCF/DMX-MCF-008-summarizer-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-MCF/DMX-MCF-008-summarizer-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-MCF-008-summarizer-spec.md",
+      "grep -q 'budget' claudedocs/specs/DMX-MCF-008-summarizer-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(memory): candidate-only LLM summarization worker spec (budgeted, cheap-model default)",
+    "body": "Produces the TP-MCF-008 planning spec (no runtime code) per claudedocs/memory-context-fabric-design-2026-07-04.md section 6 (Fabric orchestrator / summarizer / proactive injection row) and section 7 (summarization cost open decision): a candidate-only, cheap-model-default, budgeted LLM summarization worker. Depends on DMX-MCF-003's conversation.decision_candidate schema and DMX-MCF-007's orchestrator surface.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read the design spec section 6 (TP-MCF-007+ row) and section 7 (summarization cost open decision), and the interfaces spec section 2.3 (PromotedEntry trust encoding). Inspect the DMX-MCF-003 conversation_promotion.py and promotion.py handler read-only to confirm the exact candidate schema the summarizer will consume.",
+      "validation": [
+        "The spec's input-contract section cites the exact DecisionCandidate/PromotedEntry fields the summarizer consumes.",
+        "No runtime code is changed in this step."
+      ],
+      "context_files": [
+        "claudedocs/memory-context-fabric-design-2026-07-04.md",
+        "claudedocs/memory-context-fabric-interfaces-2026-07-04.md",
+        "claudedocs/tp-mcf-001-authority-map-2026-07-04.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/DMX-MCF-008-summarizer-spec.md covering: scope (candidate-only summarization, never canonical decisions), invariants (cheap-model default, hard token/cost ceiling, output is trust-lower and LLM-provenance-labeled, no silent merge into canonical fields), interfaces (input candidate schema, output summary schema with provenance), acceptance criteria, and phasing (what unblocks this: DMX-MCF-003 + DMX-MCF-007).",
+      "validation": [
+        "The spec file exists at claudedocs/specs/DMX-MCF-008-summarizer-spec.md.",
+        "The spec names an explicit cost/token budget mechanism, not just a stated intention.",
+        "The spec states the output provenance/trust labeling so a summarized entry can never be mistaken for a canonical one."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the design spec and DMX-MCF-003/007 for consistency. Validate the packet JSON. Commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed.",
+        "No runtime code appears in the diff."
+      ]
+    }
+  ]
+}

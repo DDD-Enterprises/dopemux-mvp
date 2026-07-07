@@ -1,0 +1,108 @@
+{
+  "id": "DMX-FLEET-P4-004-inventory-freshness-gate",
+  "project": "dopemux-mvp",
+  "target": "Add a CI verification that fails when the DCP facade's backend-surface inventory (RUNTIME_SURFACE_INVENTORY.md / READ_ONLY_SURFACE_INVENTORY.json) is stale relative to the facade's actual route_manifest.py and TOOL_CONTRACT.md, closing the fleet audit's 'surface inventory is point-in-time with no freshness gate' finding.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change route_manifest.py's ALLOWED_ROUTES or DENIED_ROUTES data.",
+    "This packet must not weaken any existing denylist test or the commit-verify grep for denied tokens.",
+    "This packet must fail closed (CI fails) when the inventory's recorded commit/date is older than the last change to route_manifest.py or TOOL_CONTRACT.md, rather than silently passing.",
+    "This packet must preserve the canonical writer and add a contract test for this contract-sensitive freshness surface."
+  ],
+  "depends_on": [
+    "DMX-FLEET-P4-001-facade-g1-contract-test"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p4",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P4-003-lane-engine-wire",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p4-004-inventory-freshness-gate",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "test(dcp-facade): add inventory freshness CI gate",
+    "allowlist": [
+      "services/dcp-readonly-facade/tests/test_inventory_freshness.py",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/RUNTIME_SURFACE_INVENTORY.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+      "task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-004-inventory-freshness-gate.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p4-004-inventory-freshness-gate/DMX-FLEET-P4-004-inventory-freshness-gate/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-004-inventory-freshness-gate.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-004-inventory-freshness-gate.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest services/dcp-readonly-facade/tests/test_inventory_freshness.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "test(dcp-facade): close the inventory freshness gap with a CI check",
+    "body": "Adds a CI test that fails when docs/03-reference/dcp/chatgpt-mcp-readonly/RUNTIME_SURFACE_INVENTORY.md and READ_ONLY_SURFACE_INVENTORY.json are older (by recorded commit or embedded date) than route_manifest.py or TOOL_CONTRACT.md, so the facade's backend-surface inventory cannot silently drift out of date. Closes the fleet audit's Phase 4.4 item; depends on DMX-FLEET-P4-001's contract-parity gate landing first.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Confirm DMX-FLEET-P4-001 has landed. Read the current inventory files' embedded date/commit markers and route_manifest.py's git history to determine a concrete, checkable freshness signal (e.g. embedded 'as of commit <sha>' front matter vs. git log of route_manifest.py since that sha).",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "The chosen freshness signal (embedded commit marker vs. git-log comparison) is recorded in proof with the exact fields/format it depends on."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/RUNTIME_SURFACE_INVENTORY.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+        "services/dcp-readonly-facade/src/dcp_facade/route_manifest.py",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test in services/dcp-readonly-facade/tests/test_inventory_freshness.py that parses the inventory's embedded freshness marker and compares it against route_manifest.py's last-modified commit (via `git log -1 --format=%H -- <path>`), failing when the inventory predates the manifest.",
+      "validation": [
+        "The test fails today because no such comparison exists.",
+        "The test does not require network access or a live database; it operates on the repo's git history and the two static files."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "If the inventory files lack a machine-readable freshness marker, add a minimal 'as of commit <sha>' front-matter field to each and set it to the current HEAD commit at authoring time. Do not alter any ALLOWED_ROUTES/DENIED_ROUTES tables or TOOL_CONTRACT.md's tool rows.",
+      "validation": [
+        "The new freshness test passes against the current repo state.",
+        "route_manifest.py and TOOL_CONTRACT.md content are byte-identical except for any added freshness marker in the inventory files themselves.",
+        "Existing denylist tests (test_route_denylist.py) still pass unchanged."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, create the proof bundle, run the full verify list, commit only allowlisted files, push, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "The new freshness test and the existing denylist/contract tests pass.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

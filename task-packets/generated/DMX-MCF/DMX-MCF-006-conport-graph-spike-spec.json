@@ -1,0 +1,100 @@
+{
+  "id": "DMX-MCF-006-conport-graph-spike-spec",
+  "project": "dopemux-mvp",
+  "target": "Run the mandatory AGE data-layer spike against the active Docker ConPort runtime, then produce the spec for graph.neighbors plus decision-genealogy MCP tools, falling back to a relationship-query projection only if the spike proves AGE traversal infeasible.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must run the AGE data-layer spike as its first task and record its outcome before writing the spec.",
+    "This packet must not claim graph.neighbors MCP parity exists today -- the authority map marks it dead code; this packet only specs implementing or verifying it.",
+    "This packet must name the fallback path (relationship-query projection via the existing GET /api/workspace-relationships -> get_related_decisions) if the spike shows AGE traversal is infeasible on the active runtime.",
+    "This packet must name the exact ADR (DMX-ADR-005-conport-graph-exposure) this spec depends on and reconcile with its decision."
+  ],
+  "depends_on": [
+    "DMX-ADR-005-conport-graph-exposure"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-mcf",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-MCF-005-semantic-projection-spec",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-mcf-006-conport-graph-spike-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(memory): ConPort graph spike results + graph.neighbors exposure spec",
+    "allowlist": [
+      "claudedocs/specs/DMX-MCF-006-conport-graph-spike-spec.md",
+      "task-packets/generated/DMX-MCF/DMX-MCF-006-conport-graph-spike-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-mcf-006-conport-graph-spike-spec/DMX-MCF-006-conport-graph-spike-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-MCF/DMX-MCF-006-conport-graph-spike-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-MCF/DMX-MCF-006-conport-graph-spike-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-MCF-006-conport-graph-spike-spec.md",
+      "grep -q 'Spike' claudedocs/specs/DMX-MCF-006-conport-graph-spike-spec.md",
+      "grep -q 'fallback' claudedocs/specs/DMX-MCF-006-conport-graph-spike-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(memory): ConPort graph spike results + graph.neighbors exposure spec",
+    "body": "Runs the mandatory AGE data-layer spike named as Task 1 in claudedocs/memory-context-fabric-design-2026-07-04.md section 6 row TP-MCF-006, then produces the spike-gated spec (no runtime code) for graph.neighbors + genealogy tools on the active Docker ConPort runtime, with an explicit relationship-query-projection fallback if the spike fails. Depends on DMX-ADR-005-conport-graph-exposure.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Run the AGE data-layer spike: read-only introspection of the active Docker ConPort runtime's AGE graph extension availability, existing workspace-relationships traversal (GET /api/workspace-relationships -> get_related_decisions), and the dead memory_server.py / quarantined conport_kg graph code, to determine whether graph.neighbors traversal is feasible to implement/verify on the active runtime. Mark live database introspection as NOT_RUN if no live ConPort database is available.",
+      "validation": [
+        "The spike outcome (feasible / infeasible / NOT_RUN with reason) is recorded in proof with exact evidence.",
+        "No runtime code is changed in this step; the spike is read-only introspection only."
+      ],
+      "context_files": [
+        "claudedocs/memory-context-fabric-design-2026-07-04.md",
+        "claudedocs/tp-mcf-001-authority-map-2026-07-04.md",
+        "claudedocs/backlog/decisions-ledger.md",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/DMX-MCF-006-conport-graph-spike-spec.md covering: the spike's methodology and outcome, scope for graph.neighbors + genealogy MCP tools (or the relationship-query-projection fallback if the spike failed), invariants (no fourth store, ConPort remains canonical writer for decisions/relationships), interfaces matching the ContextItem provenance shape, acceptance criteria, and phasing.",
+      "validation": [
+        "The spec file exists at claudedocs/specs/DMX-MCF-006-conport-graph-spike-spec.md.",
+        "The spec states the spike outcome explicitly and derives its recommended path (implement graph.neighbors vs relationship-query-projection-only) directly from that outcome, not from assumption.",
+        "The fallback path is fully specified, not just mentioned."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the design spec, authority map, and decisions-ledger for consistency. Validate the packet JSON. Commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed.",
+        "No runtime code appears in the diff."
+      ]
+    }
+  ]
+}

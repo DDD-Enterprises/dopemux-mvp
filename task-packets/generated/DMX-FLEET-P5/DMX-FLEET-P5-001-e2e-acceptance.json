@@ -1,0 +1,87 @@
+{
+  "id": "DMX-FLEET-P5-001-e2e-acceptance",
+  "project": "dopemux-mvp",
+  "target": "Spec the end-to-end fleet acceptance test: from a fresh worktree, `dopemux mcp ensure` brings every plane green, a decision logged in ConPort is mirrored to dope-memory and later recapped, and the chronicle content is retrievable via dope-context search, proving the memory spine and fleet-management loop actually close.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must not fabricate acceptance results; where a dependency (mcp ensure, dope-context indexing) is not yet implemented, the spec marks the corresponding acceptance step as NOT_RUN / blocked-pending-dependency rather than asserting a result.",
+    "This packet must define the acceptance test as read-only against production data — it may create and later clean up ephemeral test worktrees and test ConPort/chronicle entries, but must not touch unrelated project data."
+  ],
+  "depends_on": [
+    "DMX-FLEET-P1-003-mcp-ensure-command",
+    "DMX-FLEET-P2-005-dopecontext-indexing-enable"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p5",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p5-001-e2e-acceptance",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(fleet): spec the end-to-end fleet acceptance test",
+    "allowlist": [
+      "claudedocs/specs/dmx-fleet-p5-001-e2e-acceptance.md",
+      "task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-001-e2e-acceptance.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p5-001-e2e-acceptance/DMX-FLEET-P5-001-e2e-acceptance/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-001-e2e-acceptance.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-001-e2e-acceptance.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/dmx-fleet-p5-001-e2e-acceptance.md",
+      "grep -q 'Acceptance' claudedocs/specs/dmx-fleet-p5-001-e2e-acceptance.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(fleet): spec the fresh-worktree-to-recall end-to-end acceptance test",
+    "body": "Produces the acceptance-test spec for the fleet audit's Phase 5.1 item: fresh worktree -> `dopemux mcp ensure` -> all planes green -> decision logged -> mirrored to dope-memory -> recapped -> retrieved via dope-context. Spec-only; depends on DMX-FLEET-P1-003 (mcp ensure) and DMX-FLEET-P2-005 (dope-context indexing enabled) landing before the spec's acceptance steps can actually run end-to-end.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read the memory-spine fix plan (fleet audit section 7.2), the current capture_client event flow, the dope-memory recap tool, and the dope-context search tools, without modifying any runtime code. Confirm whether DMX-FLEET-P1-003 and DMX-FLEET-P2-005 have landed; record their status.",
+      "validation": [
+        "Proof records the current status (landed / not landed) of DMX-FLEET-P1-003 and DMX-FLEET-P2-005.",
+        "Proof records the exact promotable event types (decision.logged, task.*, workflow.phase_changed) and confirms which are currently wired at their real emission sources versus still pending."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/dmx-fleet-p5-001-e2e-acceptance.md covering: scope (single end-to-end run, not a general test-suite expansion), the exact ordered steps (fresh worktree creation -> `dopemux mcp ensure` -> per-plane health assertions -> log a test decision in ConPort -> assert dope-memory mirror receipt -> assert recap surfaces it -> assert dope-context search retrieves it with correct provenance pointer), invariants (read-only against real project data; ephemeral test artifacts cleaned up), acceptance criteria per step (pass/fail/not_run conditions), and phasing (which steps can run today vs. which are blocked on DMX-FLEET-P1-003/P2-005).",
+      "validation": [
+        "Spec file exists at claudedocs/specs/dmx-fleet-p5-001-e2e-acceptance.md.",
+        "Spec contains sections for Scope, Invariants, Ordered Steps, Acceptance, and Phasing.",
+        "Spec explicitly marks any step blocked on an unlanded dependency as NOT_RUN rather than assuming success."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the memory-spine fix plan and the DMX-FLEET-P5-002/003 packets' scope (docs reconciliation and proof discipline), validate the packet, and commit.",
+      "validation": [
+        "Spec's acceptance criteria are consistent with what DMX-FLEET-P5-003's proof-bundle template will need to capture.",
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

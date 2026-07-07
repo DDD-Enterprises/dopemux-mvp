@@ -1,0 +1,106 @@
+{
+  "id": "DMX-FLEET-P1-001-unified-catalog-spec",
+  "project": "dopemux-mvp",
+  "target": "Produce a spec that closes the residual multi-registry drift: current origin/main already has a schema-validated fleet catalog (src/dopemux/mcp/fleet_catalog.py, schemas/mcp/fleet-catalog.schema.json, src/dopemux/mcp/default_catalog.yaml, mcp_catalog.yaml, tests/arch/test_mcp_fleet_catalog_contract.py) but src/dopemux/mcp/registry.yaml and services/registry.yaml still coexist as separate, non-generated sources of server/service truth; the spec must define how the two legacy registries are folded into or superseded by the canonical fleet catalog with dopemux as sole canonical writer.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must treat runtime code (src/dopemux/mcp/fleet_catalog.py, tests/arch/test_mcp_fleet_catalog_contract.py) as higher authority than the 2026-07-03 audit doc where they conflict.",
+    "This packet must not propose deleting src/dopemux/mcp/registry.yaml or services/registry.yaml without first enumerating every current reader of each file.",
+    "This packet must preserve dopemux as the sole canonical writer of generated MCP configuration artifacts."
+  ],
+  "depends_on": [
+    "DMX-FLEET-P0-004-registry-dedup"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p1",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p1-001-unified-catalog-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(mcp-fleet): spec residual unified-catalog consolidation",
+    "allowlist": [
+      "claudedocs/specs/DMX-FLEET-P1-001-unified-catalog-spec.md",
+      "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-001-unified-catalog-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p1-001-unified-catalog-spec/DMX-FLEET-P1-001-unified-catalog-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-001-unified-catalog-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-001-unified-catalog-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-FLEET-P1-001-unified-catalog-spec.md",
+      "grep -q 'registry.yaml' claudedocs/specs/DMX-FLEET-P1-001-unified-catalog-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(mcp-fleet): spec residual unified-catalog consolidation",
+    "body": "Authors the residual-closure spec for DMX-FLEET-P1-001. The 2026-07-03 audit (mcp-fleet-canonical-audit-and-target-design-2026-07-03.md \u00a76.1/\u00a78 Phase 1.1) scoped a from-scratch unified catalog merging mcp_catalog.yaml, src/dopemux/mcp/registry.yaml, and services/registry.yaml. Since that audit, origin/main shipped a schema-validated fleet catalog (fleet_catalog.py, fleet-catalog.schema.json, default_catalog.yaml, mcp_catalog.yaml, and a CI drift test), but src/dopemux/mcp/registry.yaml and services/registry.yaml still exist as separate, non-generated registries. This packet specs how to fold or retire the two residual registries without breaking their current readers.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md \u00a76.1 and \u00a78 Phase 1.1, and claudedocs/backlog/README.md's DMX-FLEET-P1 row for this packet. Then inspect current origin/main runtime truth: src/dopemux/mcp/fleet_catalog.py, schemas/mcp/fleet-catalog.schema.json, src/dopemux/mcp/default_catalog.yaml, mcp_catalog.yaml, tests/arch/test_mcp_fleet_catalog_contract.py, src/dopemux/mcp/registry.yaml, and services/registry.yaml. Identify every current reader of src/dopemux/mcp/registry.yaml and services/registry.yaml (grep imports/opens across src/, tests/, scripts/, docker/).",
+      "validation": [
+        "Proof lists the exact commit(s) that introduced fleet_catalog.py/default_catalog.yaml/fleet-catalog.schema.json (git log) and confirms whether they are already on origin/main.",
+        "Proof enumerates every reader of src/dopemux/mcp/registry.yaml and services/registry.yaml with file:line citations.",
+        "Proof states explicitly that the audit doc's Phase 1.1 premise (no unified catalog exists yet) is stale relative to current runtime code, citing the specific commits/files that supersede it."
+      ],
+      "context_files": [
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        "claudedocs/backlog/README.md",
+        "claudedocs/backlog/decisions-ledger.md",
+        "src/dopemux/mcp/fleet_catalog.py",
+        "schemas/mcp/fleet-catalog.schema.json",
+        "tests/arch/test_mcp_fleet_catalog_contract.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/DMX-FLEET-P1-001-unified-catalog-spec.md covering: (a) current-state summary of what fleet_catalog.py already provides (schema, load/validate, compose-alignment check, codegen render functions) versus what the audit originally asked for; (b) scope of the residual gap \u2014 folding src/dopemux/mcp/registry.yaml and services/registry.yaml's still-needed fields (if any) into the canonical schema, or documenting why each remaining reader should migrate to the canonical catalog instead; (c) explicit interfaces: the canonical catalog's schema shape, the migration path for each identified reader, and the retirement plan (or justified keep-list) for the two legacy registry files; (d) invariants (dopemux as sole canonical writer; no silent drift; CI gate stays green throughout migration); (e) acceptance criteria (every legacy-registry reader migrated or the file is proven dead and removable; test_mcp_fleet_catalog_contract.py extended to cover any newly-folded fields); (f) phasing (safe order of migration per reader, coordinated with DMX-FLEET-P1-002 codegen and DMX-FLEET-P1-004 CI gates).",
+      "validation": [
+        "Spec file exists at claudedocs/specs/DMX-FLEET-P1-001-unified-catalog-spec.md.",
+        "Spec explicitly names src/dopemux/mcp/registry.yaml and services/registry.yaml and states their disposition (migrate fields / retire file / keep with justification) rather than assuming a greenfield build.",
+        "Spec covers scope, invariants, interfaces, acceptance criteria, and phasing as distinct sections.",
+        "Spec does not propose runtime code changes; it is planning-only."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the source audit doc and against the runtime evidence gathered in S1. Validate the packet JSON, update task-packets/INDEX.md, assemble the proof bundle, and commit only allowlisted files.",
+      "validation": [
+        "Spec is internally consistent with S1's evidence (no claim in the spec contradicts a cited file:line).",
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}
