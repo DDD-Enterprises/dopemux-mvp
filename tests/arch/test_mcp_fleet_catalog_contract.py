@@ -115,7 +115,9 @@ def test_decision_required_servers_are_quarantined_from_startable_generated_conf
         re.findall(r'^\[mcp_servers\."([^"]+)"\]$', outputs["codex/config.toml"], re.MULTILINE)
     )
 
-    assert decision_required >= {"desktop-commander", "exa"}
+    # exa retired 2026-07-04 (wire-or-retire → retire); desktop-commander
+    # remains the only decision-gated server.
+    assert decision_required >= {"desktop-commander"}
     assert local_servers.isdisjoint(decision_required)
     assert claude_servers.isdisjoint(decision_required)
     assert codex_servers.isdisjoint(decision_required)

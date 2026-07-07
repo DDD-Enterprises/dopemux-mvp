@@ -231,5 +231,6 @@ def test_mcp_doctrine_doc_carries_decision_gated_servers():
     catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
     doc = fleet_catalog.render_mcp_doctrine_doc(catalog)
 
-    assert "`exa` | research | web-search | decision-required" in doc
+    # exa retired 2026-07-04 — must NOT reappear in the doctrine doc.
+    assert "`exa`" not in doc
     assert "`desktop-commander` | automation | desktop-automation | decision-required" in doc

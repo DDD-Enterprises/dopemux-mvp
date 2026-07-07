@@ -38,10 +38,6 @@ volumes:
   leantime_userfiles:
   leantime_logs:
   leantime_config:
-  mcp_client_data:
-  mcp_client_logs:
-  mcp_plane_coordinator_data:
-  mcp_plane_coordinator_logs:
 
 
 services:
@@ -602,25 +598,9 @@ services:
       retries: 3
       interval: 30s
 
-  # Leantime Bridge - Project management integration
-  exa:
-    build:
-      context: .
-      dockerfile: docker/mcp-servers/exa/Dockerfile
-    container_name: mcp-exa
-    restart: unless-stopped
-    networks:
-      - dopemux-network
-    ports:
-      - "${EXA_PORT:-3011}:3011"
-    environment:
-      - EXA_API_KEY=${EXA_API_KEY:-}
-      - MCP_SERVER_PORT=${EXA_PORT:-3011}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3011/health"]
-      timeout: 5s
-      retries: 3
-      interval: 30s
+  # exa retired 2026-07-04 (follow_on_decision: wire-or-retire → retire;
+  # zero consumers, catalog/compose identity contradiction). Web search
+  # falls back to WebSearch / gptr-mcp per doctrine.
 
   leantime-bridge:
     build:
