@@ -1,12 +1,15 @@
 ---
 id: mcp-setup-other-repos
-title: "Running Dopemux MCP Servers in Other Projects"
+title: Running Dopemux MCP Servers in Other Projects
 type: how-to
 owner: dopemux-infra
 date: 2026-07-06
 author: '@hu3mann'
+last_review: '2026-07-07'
+next_review: '2026-10-05'
+prelude: Running Dopemux MCP Servers in Other Projects (how-to) for dopemux documentation
+  and developer workflows.
 ---
-
 # Running Dopemux MCP Servers in Other Projects
 
 This guide explains how to connect `conport`, `dope-memory`, and `task-orchestrator`
@@ -358,5 +361,5 @@ The `task-orchestrator` default is always `7890` with no offset.
 
 ---
 
-**Last updated**: 2026-07-06  
+**Last updated**: 2026-07-06
 **See also**: [mcp-transport-and-port-bugs.md](mcp-transport-and-port-bugs.md) · [mcp-troubleshooting.md](mcp-troubleshooting.md)
