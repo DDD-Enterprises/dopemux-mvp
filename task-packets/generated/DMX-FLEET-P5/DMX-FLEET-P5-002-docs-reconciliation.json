@@ -1,0 +1,94 @@
+{
+  "id": "DMX-FLEET-P5-002-docs-reconciliation",
+  "project": "dopemux-mvp",
+  "target": "Regenerate the fleet's per-server doctrine docs (~/.claude/MCP_*.md sources and their in-repo equivalents) to match live tools/list surfaces, and explicitly mark aspirational ADHD automation claims (break timers, forced hyperfocus pauses, automatic 30-minute checkpoints) as specification-only wherever they currently read as observed runtime behavior.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change any runtime code; it is a documentation-accuracy correction.",
+    "This packet must not remove documentation of a real capability; it may only correct claims that are currently false or unverified against the live surface.",
+    "This packet must distinguish, for every ADHD automation claim it touches, between 'observed runtime support' and 'planned/specification behavior' using those exact labels or equivalents already established in .claude/CLAUDE.md.",
+    "This packet must cite the specific file:line or tool-list evidence for every doctrine correction it makes."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p5",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P5-001-e2e-acceptance",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p5-002-docs-reconciliation",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(fleet): reconcile doctrine with live tool surfaces and mark aspirational ADHD automation",
+    "allowlist": [
+      "docs/03-reference/*.md",
+      ".claude/modules/shared/adhd-patterns.md",
+      "docs/systems/**/*.md",
+      "task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-002-docs-reconciliation.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p5-002-docs-reconciliation/DMX-FLEET-P5-002-docs-reconciliation/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-002-docs-reconciliation.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P5/DMX-FLEET-P5-002-docs-reconciliation.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(fleet): reconcile doctrine with reality; mark aspirational ADHD claims",
+    "body": "Corrects per-server doctrine docs to match live MCP tool surfaces (closing the fleet audit's 'commands reference tools no server exposes' finding, e.g. 6 broken ConPort references) and explicitly labels aspirational ADHD automation (break timers, forced hyperfocus pauses, automatic checkpoints) as specification-only rather than observed runtime behavior, per the fleet audit's Phase 5.2 item.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. For each dopemux-owned MCP server referenced in .claude/commands/* and docs/03-reference doctrine, compare documented tool names against the server's real tools/list output (or, if the server cannot be started live, its source-code tool registrations) to find drifted references.",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "A concrete list of drifted doctrine references (doc file, claimed tool, actual tool surface) is recorded in proof, including the ConPort references the fleet audit flagged as broken."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        ".claude/CLAUDE.md",
+        ".claude/modules/shared/adhd-patterns.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Correct each drifted doctrine reference to match the real tool surface, and for every ADHD automation claim identified as aspirational (not backed by a hook, `/loop`, or `ScheduleWakeup` schedule), rewrite it using the observed-vs-planned distinction already established in .claude/CLAUDE.md's Lifecycle Hooks section.",
+      "validation": [
+        "Every corrected doctrine reference cites the file:line or tools/list evidence it was checked against, recorded in proof.",
+        "No corrected doc claims automatic timer/break/checkpoint enforcement unless a specific hook or scheduled task actually implements it."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, create the proof bundle, run the verify list, commit only allowlisted files, push, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed.",
+        "git diff --check passes."
+      ]
+    }
+  ]
+}

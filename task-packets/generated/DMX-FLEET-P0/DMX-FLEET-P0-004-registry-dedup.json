@@ -1,0 +1,108 @@
+{
+  "id": "DMX-FLEET-P0-004-registry-dedup",
+  "project": "dopemux-mvp",
+  "target": "Remove the competing PAL registry entries in src/dopemux/mcp/registry.yaml (dopemux-pal via uvx pal-mcp-server vs dopemux-zen via npx zen-mcp -- two definitions for one logical server) and add a CI-enforced uniqueness gate so no future duplicate/competing server key can silently disable or shadow another.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must preserve the canonical writer and add a contract test.",
+    "This packet must not remove a registry entry that has a live, distinct, currently-consumed transport (verify consumers before deleting)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p0",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P0-003-conport-schema-verify-failclosed",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p0-004-registry-dedup",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(mcp): dedupe competing PAL registry entries in registry.yaml",
+    "allowlist": [
+      "src/dopemux/mcp/registry.yaml",
+      "tests/unit/mcp/test_registry_no_duplicate_servers.py",
+      "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-004-registry-dedup.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P0-004-registry-dedup/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-004-registry-dedup.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-004-registry-dedup.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -c \"import yaml; yaml.safe_load(open('src/dopemux/mcp/registry.yaml'))\"",
+      "pytest -q tests/unit/mcp/test_registry_no_duplicate_servers.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): dedupe competing PAL entries in registry.yaml",
+    "body": "Fleet audit (claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md section 1 finding 1 'shadow-twin syndrome' and section 8 Phase 0.4) flagged src/dopemux/mcp/registry.yaml as having duplicate YAML keys that silently disable servers via last-wins. Direct inspection at authoring time finds no literal duplicate top-level key, but two distinct keys (dopemux-pal: uvx pal-mcp-server, line 90-98; dopemux-zen: npx zen-mcp, line 99-107) both claim to be the local/stdio launcher for the same logical PAL server -- the same shadow-twin pattern the audit describes, expressed as two keys instead of one repeated key. This packet keeps exactly one PAL registry entry (dopemux-pal, matching the actually-consumed pal-mcp-server per decisions-ledger.md's 'Canonical PAL management' row and ensure-pal.sh), removes dopemux-zen, and adds a CI test asserting no two server entries in the registry share the same docker.service/port or local.command target.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: fresh dedicated worktree from origin/main, verify repo marker/origin/clean baseline. Re-read src/dopemux/mcp/registry.yaml in full and grep the codebase for any consumer referencing the 'dopemux-zen' registry key by name before deciding to remove it.",
+      "commands": [
+        "grep -rn 'dopemux-zen' --include='*.py' --include='*.sh' --include='*.yaml' --include='*.yml' --include='*.json' . 2>/dev/null | grep -v node_modules | grep -v '\\.git/'"
+      ],
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Proof lists every consumer (if any) of the 'dopemux-zen' key found by the grep, with file:line citations, before deletion is attempted."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "src/dopemux/mcp/registry.yaml",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write a failing test at tests/unit/mcp/test_registry_no_duplicate_servers.py that loads src/dopemux/mcp/registry.yaml and asserts (a) no two top-level server keys are byte-identical (guards against literal YAML duplicate-key silent overwrite), and (b) no two server entries resolve to the same effective launch target (same docker.service+port pair, or same local.command+args pair). Run it now to confirm it fails on the current file because dopemux-pal and dopemux-zen both target a PAL stdio launcher.",
+      "expected_files": [
+        "tests/unit/mcp/test_registry_no_duplicate_servers.py"
+      ],
+      "validation": [
+        "pytest -q tests/unit/mcp/test_registry_no_duplicate_servers.py fails against the current registry.yaml, citing dopemux-pal/dopemux-zen as the collision."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Remove the dopemux-zen entry from src/dopemux/mcp/registry.yaml (lines 99-107), keeping dopemux-pal as the single canonical PAL registry entry per decisions-ledger.md. If S1's grep found live consumers of dopemux-zen, do not delete; instead rename the entry to remove the collision (e.g. distinguish it as a genuinely separate, currently-consumed transport) and document the deviation in proof with the exact consumer citation.",
+      "validation": [
+        "Exactly one PAL-related server key remains in src/dopemux/mcp/registry.yaml, or a documented deviation explains why two remain.",
+        "python -c \"import yaml; yaml.safe_load(open('src/dopemux/mcp/registry.yaml'))\" parses without error.",
+        "No other server entry (conport, serena, desktop-commander, gpt-researcher, leantime-bridge, claude-context, dope-context) is altered."
+      ],
+      "context_files": [
+        "src/dopemux/mcp/registry.yaml"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the packet: finalize this TP JSON, add it to task-packets/INDEX.md, run schema validation, write the proof bundle (preflight, consumer grep, before/after test evidence, PAL step outputs), commit only allowlisted files, open the PR, and move the corresponding task-orchestrator item to review.",
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-004-registry-dedup.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "pytest -q tests/unit/mcp/test_registry_no_duplicate_servers.py exits 0.",
+        "Only files in commit.allowlist are staged.",
+        "Proof bundle exists under proof/DMX-FLEET-P0-004-registry-dedup/ with PASS/FAIL/NOT_RUN per validation item."
+      ],
+      "context_files": [
+        "task-packets/generated/DMX-CONPORT-OPTIMAL/_AUTHORING_KIT.md"
+      ]
+    }
+  ]
+}

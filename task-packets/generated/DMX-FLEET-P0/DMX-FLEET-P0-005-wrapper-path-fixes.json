@@ -1,0 +1,127 @@
+{
+  "id": "DMX-FLEET-P0-005-wrapper-path-fixes",
+  "project": "dopemux-mvp",
+  "target": "Fix the three broken MCP stdio wrapper scripts under scripts/mcp-wrappers/: conport-wrapper.sh and conport-codex-wrapper.sh exec the upstream context-portal-mcp package instead of bridging to the in-repo ConPort SSE server; dope-context-wrapper.sh execs a nonexistent /app/server.py path and exports the wrong workspace env var (DOPEMUX_WORKSPACE_ID instead of WORKSPACE_ID); serena-wrapper.sh points at a nonexistent services/serena/v2/mcp_server.py phantom path instead of the real services/serena/mcp_server.py.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must preserve the canonical writer and add a contract test.",
+    "This packet must fail closed with a clear diagnostic (not a silent wrong-target exec) if the target container/process is unavailable.",
+    "This packet must not change the compose-deployed SSE/HTTP surfaces for conport, dope-context, or serena -- only the stdio wrapper scripts that bridge to them."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p0",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P0-004-registry-dedup",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p0-005-wrapper-path-fixes",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(mcp): repair conport, dope-context, and serena stdio wrappers",
+    "allowlist": [
+      "scripts/mcp-wrappers/conport-wrapper.sh",
+      "scripts/mcp-wrappers/conport-codex-wrapper.sh",
+      "scripts/mcp-wrappers/dope-context-wrapper.sh",
+      "scripts/mcp-wrappers/serena-wrapper.sh",
+      "tests/mcp_wrappers/test_conport_wrapper_targets_inrepo_server.py",
+      "tests/mcp_wrappers/test_dope_context_wrapper_paths.py",
+      "tests/mcp_wrappers/test_serena_wrapper_real_path.py",
+      "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-005-wrapper-path-fixes.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P0-005-wrapper-path-fixes/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-005-wrapper-path-fixes.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-005-wrapper-path-fixes.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "bash -n scripts/mcp-wrappers/conport-wrapper.sh scripts/mcp-wrappers/conport-codex-wrapper.sh scripts/mcp-wrappers/dope-context-wrapper.sh scripts/mcp-wrappers/serena-wrapper.sh",
+      "pytest -q tests/mcp_wrappers/test_conport_wrapper_targets_inrepo_server.py tests/mcp_wrappers/test_dope_context_wrapper_paths.py tests/mcp_wrappers/test_serena_wrapper_real_path.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): repair broken conport/dope-context/serena stdio wrappers",
+    "body": "Fleet audit (claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md section 1 finding 1 and section 8 Phase 0.6) flagged three broken wrappers. Direct inspection confirms all three: (1) scripts/mcp-wrappers/conport-wrapper.sh:38-42 and conport-codex-wrapper.sh:25-29 both exec `uvx --from context-portal-mcp conport-mcp` -- the upstream shadow-twin -- against the in-repo ConPort container, which actually runs enhanced_server.py (aiohttp/SSE only, no stdio entrypoint), so `.claude/commands/*` referencing the real 17-tool surface get the wrong 6-tool upstream surface instead; (2) scripts/mcp-wrappers/dope-context-wrapper.sh:37-40 execs `/app/server.py`, which does not exist in the built image (the real module lives at /app/src/mcp/server.py per services/dope-context/Dockerfile:9,23), and exports DOPEMUX_WORKSPACE_ID while the server code (services/dope-context/src/mcp/server.py:871,899) reads WORKSPACE_ID; (3) scripts/mcp-wrappers/serena-wrapper.sh:13 points at services/serena/v2/mcp_server.py, which does not exist (services/serena/v2/ has no mcp_server.py; the real 45-tool candidate lives at services/serena/mcp_server.py). This packet repairs all three targets using the mcp-proxy stdio-to-SSE bridge pattern already established for serena's compose deployment (docker/mcp-servers-source/serena/wrapper.py) as the reference shape for the conport fix, corrects the dope-context exec path and env var name, and corrects the serena local-path fallback.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight: fresh dedicated worktree from origin/main, verify repo marker/origin/clean baseline. Re-confirm all three wrapper bugs by direct file inspection: conport-wrapper.sh/conport-codex-wrapper.sh exec target, dope-context-wrapper.sh exec path and env var name vs services/dope-context/src/mcp/server.py's actual os.getenv() calls, and serena-wrapper.sh's serena_path variable vs the actual filesystem layout under services/serena/.",
+      "commands": [
+        "grep -n 'conport-mcp' scripts/mcp-wrappers/conport-wrapper.sh scripts/mcp-wrappers/conport-codex-wrapper.sh",
+        "grep -n 'server.py\\|WORKSPACE_ID' scripts/mcp-wrappers/dope-context-wrapper.sh services/dope-context/src/mcp/server.py",
+        "grep -n 'serena_path' scripts/mcp-wrappers/serena-wrapper.sh; find services/serena/v2 -iname 'mcp_server.py'; find services/serena -maxdepth 1 -iname 'mcp_server.py'"
+      ],
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Proof cites exact file:line evidence for all three bugs before any edit is made."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "scripts/mcp-wrappers/conport-wrapper.sh",
+        "scripts/mcp-wrappers/conport-codex-wrapper.sh",
+        "scripts/mcp-wrappers/dope-context-wrapper.sh",
+        "scripts/mcp-wrappers/serena-wrapper.sh",
+        "docker/mcp-servers-source/serena/wrapper.py",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests before any wrapper edit: tests/mcp_wrappers/test_conport_wrapper_targets_inrepo_server.py asserts the wrapper scripts do not contain 'context-portal-mcp' or 'conport-mcp' (the upstream package invocation) and do reference a stdio bridge to the in-repo server; tests/mcp_wrappers/test_dope_context_wrapper_paths.py asserts dope-context-wrapper.sh execs a path that matches the real Dockerfile-copied location (src/mcp/server.py under /app) and exports WORKSPACE_ID (not only DOPEMUX_WORKSPACE_ID); tests/mcp_wrappers/test_serena_wrapper_real_path.py asserts serena-wrapper.sh's local fallback path exists on disk relative to repo root. Run all three now to confirm they fail against the current (broken) wrapper scripts.",
+      "expected_files": [
+        "tests/mcp_wrappers/test_conport_wrapper_targets_inrepo_server.py",
+        "tests/mcp_wrappers/test_dope_context_wrapper_paths.py",
+        "tests/mcp_wrappers/test_serena_wrapper_real_path.py"
+      ],
+      "validation": [
+        "All three new tests fail against the current wrapper scripts, each with an assertion message naming the specific broken target (upstream package name, wrong exec path, or nonexistent phantom path)."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Fix conport-wrapper.sh and conport-codex-wrapper.sh to bridge stdio to the in-repo ConPort SSE server (container mcp-conport / dopemux-mcp-conport, aiohttp SSE on :3005 per docker/mcp-servers-source/conport/enhanced_server.py) using the same mcp-proxy-based stdio<->SSE bridging pattern already used for serena (docker/mcp-servers-source/serena/wrapper.py), instead of exec'ing the upstream context-portal-mcp package. Fix dope-context-wrapper.sh to exec the real module path (python /app/src/mcp/server.py, matching services/dope-context/Dockerfile's COPY src/ src/ under WORKDIR /app) and export WORKSPACE_ID alongside the existing DOPEMUX_WORKSPACE_ID (keep the latter for any other consumer, add the former because that is what services/dope-context/src/mcp/server.py actually reads). Fix serena-wrapper.sh's serena_path to point at the real services/serena/mcp_server.py (remove the phantom v2/ segment), preserving the existing not-found error-and-exit behavior for genuinely missing files.",
+      "validation": [
+        "None of the four wrapper scripts references 'context-portal-mcp' or upstream 'conport-mcp' as the executed target after the fix.",
+        "dope-context-wrapper.sh execs a path that exists inside the built image per the Dockerfile's COPY instructions, and exports WORKSPACE_ID.",
+        "serena-wrapper.sh's local fallback path resolves to an existing file (services/serena/mcp_server.py) at authoring time.",
+        "bash -n passes on all four edited scripts (no syntax errors)."
+      ],
+      "context_files": [
+        "scripts/mcp-wrappers/conport-wrapper.sh",
+        "scripts/mcp-wrappers/conport-codex-wrapper.sh",
+        "scripts/mcp-wrappers/dope-context-wrapper.sh",
+        "scripts/mcp-wrappers/serena-wrapper.sh",
+        "docker/mcp-servers-source/serena/wrapper.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the packet: finalize this TP JSON, add it to task-packets/INDEX.md, run schema validation, write the proof bundle (preflight evidence, before/after test results, PAL step outputs), commit only allowlisted files, open the PR, and move the corresponding task-orchestrator item to review. Note in proof that live end-to-end stdio session verification against a running Docker stack is NOT_RUN if the daemon is unavailable in this execution context, and that this is a known residual risk consistent with the source audit's own NOT_RUN labeling for live-runtime claims.",
+      "validation": [
+        "python -m jsonschema -i task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-005-wrapper-path-fixes.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json exits 0.",
+        "pytest -q tests/mcp_wrappers/test_conport_wrapper_targets_inrepo_server.py tests/mcp_wrappers/test_dope_context_wrapper_paths.py tests/mcp_wrappers/test_serena_wrapper_real_path.py exits 0.",
+        "Only files in commit.allowlist are staged.",
+        "Proof bundle exists under proof/DMX-FLEET-P0-005-wrapper-path-fixes/ with PASS/FAIL/NOT_RUN per validation item."
+      ],
+      "context_files": [
+        "task-packets/generated/DMX-CONPORT-OPTIMAL/_AUTHORING_KIT.md"
+      ]
+    }
+  ]
+}

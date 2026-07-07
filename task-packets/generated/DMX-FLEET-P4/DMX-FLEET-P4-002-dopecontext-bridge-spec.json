@@ -1,0 +1,89 @@
+{
+  "id": "DMX-FLEET-P4-002-dopecontext-bridge-spec",
+  "project": "dopemux-mvp",
+  "target": "Spec a minimal MCP-JSON-RPC read bridge that lets the DCP read-only facade's dope-context adapter issue real search_code/docs_search/index-status calls instead of permanently fail-closing to BLOCKED, while preserving the facade's untrusted-by-default, read-only, capped-result posture.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must not implement the bridge; DMX-FLEET-P4-001's parity gate and this spec's own acceptance criteria define what a follow-on implementation packet must satisfy.",
+    "This packet must preserve the fail-closed default: until the bridge exists, search_code_docs and get_index_status remain BLOCKED.",
+    "This packet must not propose exposing any dope-context mutating tool (index control, sync, autonomous indexing control, or search_all) through the bridge."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p4",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P4-001-facade-g1-contract-test",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p4-002-dopecontext-bridge-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(dcp-facade): spec the dope-context MCP-JSON-RPC read bridge",
+    "allowlist": [
+      "claudedocs/specs/dmx-fleet-p4-002-dopecontext-bridge-spec.md",
+      "task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-002-dopecontext-bridge-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p4-002-dopecontext-bridge-spec/DMX-FLEET-P4-002-dopecontext-bridge-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-002-dopecontext-bridge-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-002-dopecontext-bridge-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/dmx-fleet-p4-002-dopecontext-bridge-spec.md",
+      "grep -q 'Acceptance' claudedocs/specs/dmx-fleet-p4-002-dopecontext-bridge-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(dcp-facade): spec the dope-context MCP-JSON-RPC read bridge",
+    "body": "Produces the design spec for the minimal MCP-JSON-RPC read bridge that unblocks the DCP facade's dope-context adapter (search_code_docs, get_index_status), per the fleet audit's Phase 4.2 item. Spec-only: no runtime code changes. Feeds a future implementation packet and the DMX-FLEET-P4-001 contract-parity test.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read the current dope-context adapter fail-closed stub, the facade's HTTP-only client, the dope-context MCP server's real tool surface, and the fleet audit's DCP verdict and Phase 4.2 item, without modifying any runtime code.",
+      "validation": [
+        "Proof records the exact fail-closed reason string and MAX_LIMIT constant from dcp_facade/dope_context.py.",
+        "Proof records dope-context's actual MCP tool surface (search_code, docs_search, search_all, index status/control) and which are candidates for read-bridge exposure vs. permanently denied."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "services/dcp-readonly-facade/src/dcp_facade/dope_context.py",
+        "services/dcp-readonly-facade/src/dcp_facade/tools.py",
+        "services/dcp-readonly-facade/src/dcp_facade/http_client.py",
+        "services/dcp-readonly-facade/src/dcp_facade/route_manifest.py",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/dmx-fleet-p4-002-dopecontext-bridge-spec.md covering: scope (search_code_docs and get_index_status only, no mutating dope-context tool), transport design (MCP JSON-RPC client vs. the facade's existing REST-only ReadOnlyHttpClient), invariants (read-only, capped results, per-project workspace identity, untrusted-by-default envelope), interfaces (function signatures the bridge exposes to dcp_facade.tools), acceptance criteria (what a follow-on implementation packet's tests must prove), and phasing (bridge-only now; DERIVED-to-CANONICAL authority upgrade deferred until inventory classification lands).",
+      "validation": [
+        "Spec file exists at claudedocs/specs/dmx-fleet-p4-002-dopecontext-bridge-spec.md.",
+        "Spec contains sections for Scope, Invariants, Interfaces, Acceptance, and Phasing.",
+        "Spec explicitly states it does not change search_decisions query-mode or any ConPort/task-orchestrator behavior."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the fleet audit's DCP verdict and TOOL_CONTRACT.md section 1c, validate the packet, and commit.",
+      "validation": [
+        "Spec's acceptance criteria are consistent with DMX-FLEET-P4-001's contract-parity test intent (tool set stays 12; BLOCKED becomes real data only when this bridge lands).",
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

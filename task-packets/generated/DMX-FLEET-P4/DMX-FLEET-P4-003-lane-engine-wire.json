@@ -1,0 +1,116 @@
+{
+  "id": "DMX-FLEET-P4-003-lane-engine-wire",
+  "project": "dopemux-mvp",
+  "target": "Wire the currently dead-code decide_lane() function into a real dispatch point (a `dopemux dcp lane` CLI subcommand plus task-packet intake) so DCP lane routing has at least one non-test consumer, per the ADR-003 wire decision.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change decide_lane()'s pure-function contract: it must remain non-mutating of its inputs.",
+    "This packet must not introduce a lane dispatch path that bypasses decide_lane() for any task-packet intake flow it wires.",
+    "This packet must preserve fail-closed behavior for unresolved, blocked, unknown, or authority-conflicted routing inputs.",
+    "This packet must preserve the canonical writer and add a contract test for this lane-routing dispatch surface."
+  ],
+  "depends_on": [
+    "DMX-ADR-003-lane-engine-dispatch"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p4",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P4-002-dopecontext-bridge-spec",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p4-003-lane-engine-wire",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(dcp): wire decide_lane() into dopemux dcp lane and task-packet intake",
+    "allowlist": [
+      "src/dopemux/commands/dcp_commands.py",
+      "src/dopemux/dcp/lane_engine.py",
+      "src/dopemux/dcp/__init__.py",
+      "tests/unit/dcp/test_lane_engine.py",
+      "tests/unit/dopemux/commands/test_dcp_commands_lane.py",
+      "task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-003-lane-engine-wire.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p4-003-lane-engine-wire/DMX-FLEET-P4-003-lane-engine-wire/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-003-lane-engine-wire.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P4/DMX-FLEET-P4-003-lane-engine-wire.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest tests/unit/dcp/test_lane_engine.py tests/unit/dopemux/commands/test_dcp_commands_lane.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): wire decide_lane() as a real dispatch point",
+    "body": "Adds a `dopemux dcp lane` CLI subcommand and a task-packet intake call site that invoke the existing decide_lane() function (src/dopemux/dcp/lane_engine.py:335), which today has zero non-test consumers per the fleet audit's DCP verdict. Implements the DMX-ADR-003 decision to wire lane routing as real dispatch rather than leave it as latent, unconsumed protection.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Confirm DMX-ADR-003 is accepted before proceeding; if not yet merged, record NOT_RUN and stop. Read decide_lane(), its RouteDecision/RoutingClassificationInput/LaneDecision types, the existing dcp_commands.py CLI group (classify, recommend-backend), and the current 1009-line test suite.",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "ADR-003 acceptance status is recorded in proof; execution stops with NOT_RUN if the ADR is not yet accepted."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/90-adr/adr-003-lane-engine-dispatch.md",
+        "src/dopemux/dcp/lane_engine.py",
+        "src/dopemux/dcp/__init__.py",
+        "src/dopemux/commands/dcp_commands.py",
+        "tests/unit/dcp/test_lane_engine.py",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests for a new `dopemux dcp lane` CLI subcommand (accepts a routing classification input, calls decide_lane(), prints the LaneDecision) and for a task-packet intake call site that invokes decide_lane() before packet execution begins.",
+      "validation": [
+        "tests/unit/dopemux/commands/test_dcp_commands_lane.py fails because the `lane` subcommand does not exist yet.",
+        "New tests assert decide_lane()'s fail-closed behavior (unresolved/blocked/unknown/authority-conflicted inputs) is preserved through the new call sites."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement the minimal `dopemux dcp lane` subcommand in dcp_commands.py and the task-packet intake call site, both delegating to the existing decide_lane() without modifying its pure-function contract.",
+      "validation": [
+        "decide_lane() itself is unchanged in signature and purity (no mutation of inputs).",
+        "The new CLI subcommand and intake call site are the only new non-test consumers introduced.",
+        "Fail-closed routing behavior (from lane_engine.py's existing _has_unknown_decision_contract, _has_blocking_stop_or_escalation logic) is exercised end-to-end by the new tests."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, create the proof bundle, run the full verify list, commit only allowlisted files, push, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "All new and existing lane-engine and CLI tests pass.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

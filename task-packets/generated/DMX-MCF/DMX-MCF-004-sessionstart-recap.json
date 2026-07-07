@@ -1,0 +1,120 @@
+{
+  "id": "DMX-MCF-004-sessionstart-recap",
+  "project": "dopemux-mvp",
+  "target": "Extend the existing native_hooks.py SessionStart injection path with a bounded, token-budgeted, authority-labeled Top-3 recap read directly from the local chronicle SQLite ledger, with a kill switch and no semantic fusion.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must never make a network call, ConPort call, or dope-context call from the recap module -- it is a local SQLite read only.",
+    "This packet must open the chronicle ledger strictly read-only (mode=ro URI) -- no INSERT/UPDATE/DELETE anywhere in recap.py.",
+    "This packet must never raise out of _on_session_start -- missing ledger, empty ledger, malformed rows, or a corrupt file must inject nothing, not fail the hook.",
+    "This packet must enforce a token budget on every ContextBundle, dropping whole items (never partial) and setting truncated=true when the budget is exceeded.",
+    "This packet must label every item with an authority_label and trust field per the interfaces spec section 2.4, with conversation-inferred items never outranking canonical ones.",
+    "This packet must not perform semantic fusion -- retrieval is limited to the local chronicle ledger only, Top-3 default.",
+    "This packet must provide an operator kill switch (DOPEMUX_RECAP_INJECTION=off) that disables recap injection entirely.",
+    "This packet must implement ContextItem and ContextBundle exactly per the interfaces spec section 2.4 field names and order."
+  ],
+  "depends_on": [
+    "DMX-MCF-003-decision-candidate"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-mcf",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-MCF-003-decision-candidate",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-mcf-004-sessionstart-recap",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(memory): bounded SessionStart recap injection via native hooks",
+    "allowlist": [
+      "src/dopemux/memory/recap.py",
+      "src/dopemux/claude/native_hooks.py",
+      "tests/unit/test_recap.py",
+      "tests/test_native_hooks_workflow.py",
+      "task-packets/generated/DMX-MCF/DMX-MCF-004-sessionstart-recap.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-mcf-004-sessionstart-recap/DMX-MCF-004-sessionstart-recap/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-MCF/DMX-MCF-004-sessionstart-recap.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-MCF/DMX-MCF-004-sessionstart-recap.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "mise exec -- python -m pytest tests/unit/test_recap.py tests/test_native_hooks_workflow.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory): bounded SessionStart recap injection via native hooks",
+    "body": "Implements TP-MCF-004 per claudedocs/plans/2026-07-04-tp-mcf-004-sessionstart-recap.md: a new src/dopemux/memory/recap.py module that reads the local chronicle SQLite ledger read-only (mode=ro), builds a Top-3 token-budgeted ContextBundle with authority labels (canonical vs conversation-inferred), and renders a deterministic markdown recap block. native_hooks.py's SessionStart handler is extended to append this recap as a fail-open fourth part of its existing context composition, gated by a DOPEMUX_RECAP_INJECTION kill switch. No semantic fusion, no network calls.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean status. Confirm baseline: tests/test_native_hooks_workflow.py passes (7 tests) before any edits.",
+      "validation": [
+        "Worktree path, branch, origin, marker, and clean baseline are recorded in proof.",
+        "Baseline native-hooks test run is green and recorded before any implementation edit."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/plans/2026-07-04-tp-mcf-004-sessionstart-recap.md",
+        "claudedocs/memory-context-fabric-interfaces-2026-07-04.md",
+        "claudedocs/tp-mcf-001-authority-map-2026-07-04.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests for ContextItem/ContextBundle contracts, the token estimator, resolve_ledger_path, and build_recap_bundle (top-k selection, window filtering, workspace isolation, authority labeling, fail-open on missing/empty/corrupt ledger) before implementation, per the build plan's Tasks 1-2.",
+      "validation": [
+        "Tests fail because the recap module does not exist yet.",
+        "Test coverage includes curated-row canonical/high-trust labeling and conversation_candidate_v1-row conversation-inferred/conversation-derived labeling."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement recap.py: ContextItem, ContextBundle, estimate_tokens, resolve_ledger_path (delegating to capture_client._resolve_ledger_path), _connect_ro (mode=ro URI), build_recap_bundle, token-budget truncation (whole-item drop, most-recent-first prefix kept), and render_recap (deterministic markdown).",
+      "validation": [
+        "All recap.py unit tests pass.",
+        "A structural test confirms _connect_ro rejects INSERT/UPDATE/DELETE and that recap.py's source contains no write-SQL verbs.",
+        "A token-budget test confirms bundle.token_cost never exceeds the requested budget and truncated=true is set when items are dropped."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Wire the recap into native_hooks.py: add _recap_injection_enabled() (kill switch) and _emit_recap_context() (fail-open wrapper with a lazy import of dopemux.memory.recap), and append recap_ctx as the last element of the existing SessionStart context composition.",
+      "validation": [
+        "SessionStart hook tests confirm the recap block appears in additionalContext when the kill switch is unset, and is absent when DOPEMUX_RECAP_INJECTION=off.",
+        "A test proves an ImportError or exception inside the recap module never propagates out of _on_session_start."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Materialize the generated packet, update task-packets/INDEX.md, create the proof bundle, run all validations, run PAL codereview and precommit, commit only allowlisted files, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "All commit.verify commands pass or exact blockers are recorded as FAIL/NOT_RUN.",
+        "Only allowlisted files are staged and committed.",
+        "Proof bundle records worktree path, branch, commit SHA, PR URL, validations with exit codes, and residual risks."
+      ]
+    }
+  ]
+}

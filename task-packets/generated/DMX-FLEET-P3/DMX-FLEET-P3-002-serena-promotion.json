@@ -1,0 +1,119 @@
+{
+  "id": "DMX-FLEET-P3-002-serena-promotion",
+  "project": "dopemux-mvp",
+  "target": "Produce a spec that promotes the local 45-tool Serena candidate (services/serena/) to the canonical Serena surface per DMX-ADR-002, keeping the 6 write tools out of the default profile, and defines the archive/retire plan for the current upstream-wrapper split, without changing runtime code in this packet.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must not place any of the 6 write tools into a default tool profile.",
+    "This packet must classify missing or unresolved evidence as UNKNOWN rather than asserting it as fact."
+  ],
+  "depends_on": [
+    "DMX-ADR-002-serena-promotion"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p3",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P3-001-conport-jsonrpc-parity",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/fleet-p3-002-serena-promotion",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(serena): spec promotion of local 45-tool candidate to canonical surface",
+    "allowlist": [
+      "claudedocs/specs/DMX-FLEET-P3-002-serena-promotion.md",
+      "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-002-serena-promotion.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p3-002-serena-promotion/DMX-FLEET-P3-002-serena-promotion/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-002-serena-promotion.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-002-serena-promotion.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-FLEET-P3-002-serena-promotion.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(serena): spec promotion of local 45-tool Serena candidate to canonical",
+    "body": "Specs the Serena single-surface consolidation decided in DMX-ADR-002: promote services/serena/ (the local 45-tool candidate with genuinely implemented ADHD complexity banding) to canonical, retire/archive the current upstream-wrapper deployment and its phantom-path wrapper script, and keep the 6 write tools out of any default tool profile per the sanctioned read-only contract. No runtime code changes in this packet.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean baseline. Confirm DMX-ADR-002-serena-promotion has been authored and its decision text.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "The ADR-002 decision text is quoted in proof, or proof records UNKNOWN if the ADR file is not yet present."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/backlog/_AUTHORING_CONTRACT.md",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Read the source findings (fleet audit §4 Serena verdict, §7.1 target row; forgotten-features addendum §2.5 dormant ADHD modules table) and read-only inspect the current deployed wrapper, the local 45-tool candidate, and the wrapper's broken path reference.",
+      "commands": [
+        "grep -n 'Serena' claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        "sed -n '89,109p' claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md",
+        "find services/serena -maxdepth 2 -type d",
+        "grep -rn 'v2/mcp_server.py' --include='*.sh' . 2>/dev/null"
+      ],
+      "validation": [
+        "Proof records the exact deployed-wrapper path and the exact nonexistent path it currently references, with file:line citations.",
+        "Proof records the count and names of the 6 write tools that must stay out of the default profile, with file:line citations.",
+        "Proof records which dormant ADHD modules (complexity banding, focus mode manager, etc.) live only in the local candidate per forgotten-features §2.5."
+      ],
+      "context_files": [
+        "services/serena",
+        "docs/90-adr/adr-serena-as-technical-context-plane.md",
+        "docs/90-adr/adr-202-serena-v2-production-validation.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the spec at claudedocs/specs/DMX-FLEET-P3-002-serena-promotion.md covering: scope (promote local candidate to canonical; retire upstream-wrapper deployment); invariants (6 write tools excluded from default profile; no silent degradation; hardcoded-localhost infra parameterized); interfaces (final tool surface list split into default vs opt-in write profile; wrapper script fix or replacement); acceptance criteria (wrapper resolves to a real, existing entrypoint; default profile contains zero write tools; capability probe passes); archive/retire plan for the superseded upstream-wrapper path; and an explicit unblocking note that this promotion is a precondition for DMX-ADHD-WIRE-005/006.",
+      "validation": [
+        "claudedocs/specs/DMX-FLEET-P3-002-serena-promotion.md exists and contains named sections: Scope, Invariants, Interfaces, Acceptance Criteria, Archive/Retire Plan.",
+        "The spec explicitly enumerates the 6 write tools and confirms they are excluded from the default profile.",
+        "The spec references DMX-ADR-002-serena-promotion as the authorizing decision."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Self-review the spec against the source audit sections, the ADR, and the forgotten-features addendum, run packet validation, and commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Spec self-review confirms no runtime code files are included in the diff.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

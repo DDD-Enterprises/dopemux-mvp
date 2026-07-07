@@ -1,0 +1,119 @@
+{
+  "id": "DMX-ADHD-WIRE-002-context-preservation-display",
+  "project": "dopemux-mvp",
+  "target": "Surface the live adhd_engine/domains/attention/context_preserver.py output (pre-break mental-model snapshots) on a real PM/operator-facing display surface, so the existing backend capability stops being invisible to the user.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not fabricate a consuming display surface path; it must locate the actual PM/dashboard consumer before wiring, or add a minimal read endpoint if none exists.",
+    "This packet must not change context_preserver.py's snapshot data model; it only adds a consumer/read path."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-adhd-wire",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-ADHD-WIRE-001-predictive-risk-hook",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-adhd-wire-002-context-preservation-display",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(adhd-engine): surface context preservation snapshots on PM display",
+    "allowlist": [
+      "services/adhd_engine/api/routes.py",
+      "services/adhd_engine/domains/attention/context_preserver.py",
+      "services/adhd_engine/tests/test_context_preserver.py",
+      "task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-002-context-preservation-display.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-adhd-wire-002-context-preservation-display/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-002-context-preservation-display.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-002-context-preservation-display.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m py_compile services/adhd_engine/api/routes.py services/adhd_engine/domains/attention/context_preserver.py",
+      "python -m pytest -q services/adhd_engine/tests/test_context_preserver.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(adhd-engine): surface context preservation snapshots on PM display",
+    "body": "context_preserver.py (services/adhd_engine/domains/attention/) is LIVE and already consumed internally by services/adhd_engine/engine.py and api/routes.py, but per claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md section 3a item 3, no operator-facing display surface exposes its 'what was I doing?' snapshots. This packet adds or confirms a read endpoint/route that returns the latest PreservedContext for a session, closing the cheap UI/display hookup the addendum flags.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean status.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Read services/adhd_engine/domains/attention/context_preserver.py in full and read services/adhd_engine/api/routes.py to determine whether a route already returns PreservedContext data, and if so whether any PM/operator display (dashboard, CLI, TUI) actually calls it. Do not assume a consumer exists; verify with grep/read.",
+      "validation": [
+        "Proof states, with file:line evidence, whether an operator-facing route/consumer already exists for PreservedContext.",
+        "If a real gap is found, proof names the exact minimal addition (new route, or wiring an existing route into an existing display) rather than inventing a new display surface."
+      ],
+      "context_files": [
+        "services/adhd_engine/domains/attention/context_preserver.py",
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/engine.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Write a failing test in services/adhd_engine/tests/test_context_preserver.py (extend the existing test file) asserting that the identified read endpoint/route returns the most recent PreservedContext snapshot for a given session/workspace.",
+      "validation": [
+        "New or extended test fails against current HEAD before implementation.",
+        "Test asserts on real PreservedContext fields (active_files, mental_model_summary, recent_decisions), not a stub."
+      ],
+      "expected_files": [
+        "services/adhd_engine/tests/test_context_preserver.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Add the minimal route/handler in services/adhd_engine/api/routes.py that exposes the latest PreservedContext snapshot as a read-only JSON response, reusing context_preserver.py's existing retrieval method (no new snapshot logic).",
+      "validation": [
+        "New test from S3 passes.",
+        "Existing adhd_engine test suite still passes (no regression).",
+        "Endpoint is read-only; no new write path is introduced to context_preserver.py."
+      ],
+      "expected_files": [
+        "services/adhd_engine/api/routes.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run packet validation, PAL analyze/planner/codereview/precommit per the Codex minimum chain, and finalize proof.",
+      "validation": [
+        "TP JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "PAL codereview and precommit outputs are saved to proof, or recorded NOT_RUN with the exact tool error if PAL is unavailable.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

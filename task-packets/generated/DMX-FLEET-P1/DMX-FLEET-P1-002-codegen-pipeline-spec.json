@@ -1,0 +1,104 @@
+{
+  "id": "DMX-FLEET-P1-002-codegen-pipeline-spec",
+  "project": "dopemux-mvp",
+  "target": "Produce a spec that closes the residual codegen gap: src/dopemux/mcp/fleet_catalog.py already renders .mcp.json, a Codex config.toml fragment, health-probe lists, and a doctrine doc from the canonical catalog, but the Codex renderer is explicitly dry-run/advisory only ('review before copying into .codex/config.toml') and there is no single command that writes all generated artifacts (.mcp.json, ~/.claude.json, ~/.codex/config.toml, compose port/env blocks, doctrine docs) through one codegen entrypoint with drift detection.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must treat src/dopemux/mcp/fleet_catalog.py as the existing canonical renderer and specify extension, not a parallel rewrite.",
+    "This packet must not propose writing directly to a user's live ~/.claude.json or ~/.codex/config.toml without an explicit backup/dry-run/confirm step.",
+    "This packet must preserve dopemux as the sole canonical writer of generated MCP configuration artifacts."
+  ],
+  "depends_on": [
+    "DMX-FLEET-P1-001-unified-catalog-spec"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p1",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P1-001-unified-catalog-spec",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p1-002-codegen-pipeline-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(mcp-fleet): spec residual codegen write-through pipeline",
+    "allowlist": [
+      "claudedocs/specs/DMX-FLEET-P1-002-codegen-pipeline-spec.md",
+      "task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-002-codegen-pipeline-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p1-002-codegen-pipeline-spec/DMX-FLEET-P1-002-codegen-pipeline-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-002-codegen-pipeline-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P1/DMX-FLEET-P1-002-codegen-pipeline-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-FLEET-P1-002-codegen-pipeline-spec.md",
+      "grep -q 'fleet_catalog' claudedocs/specs/DMX-FLEET-P1-002-codegen-pipeline-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(mcp-fleet): spec residual codegen write-through pipeline",
+    "body": "Authors the residual-closure spec for DMX-FLEET-P1-002. The 2026-07-03 audit (mcp-fleet-canonical-audit-and-target-design-2026-07-03.md §6.1/§8 Phase 1.2) scoped codegen for .mcp.json, ~/.claude.json project entries, ~/.codex/config.toml, compose env blocks, health-probe lists, and doctrine docs from a unified catalog. src/dopemux/mcp/fleet_catalog.py already implements render functions for most of these, but the Codex fragment is dry-run only and there is no single write-through command with drift detection across all targets. This packet specs closing that gap.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md §6.1 and §8 Phase 1.2. Read the output of DMX-FLEET-P1-001-unified-catalog-spec if already authored. Inspect src/dopemux/mcp/fleet_catalog.py's render_per_worktree_mcp_json, render_singleton_mcp_servers, render_codex_config_fragment, render_health_probe_list, render_mcp_doctrine_doc, and generate_fleet_output_files. Inspect src/dopemux/commands/mcp_commands.py's mcp_init_cmd and the ~/.claude.json write path (_atomic_write_json, _claude_global_path, _backup_path). Determine exactly which of the six target artifacts (.mcp.json, ~/.claude.json, ~/.codex/config.toml, compose env blocks, health-probe lists, doctrine docs) are currently write-through versus dry-run/render-only.",
+      "validation": [
+        "Proof lists each of the six codegen targets with its current status (write-through / dry-run-only / not implemented) and file:line citation.",
+        "Proof states explicitly which parts of the audit's Phase 1.2 scope are already shipped, citing fleet_catalog.py and mcp_commands.py.",
+        "Proof identifies the exact dry-run boundary in render_codex_config_fragment and why it exists (no clobbering an operator's live Codex config without review)."
+      ],
+      "context_files": [
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        "claudedocs/specs/DMX-FLEET-P1-001-unified-catalog-spec.md",
+        "src/dopemux/mcp/fleet_catalog.py",
+        "src/dopemux/commands/mcp_commands.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/DMX-FLEET-P1-002-codegen-pipeline-spec.md covering: (a) current-state summary of fleet_catalog.py's render/generate surface; (b) scope of the residual gap — a single `dopemux mcp codegen` (or extension of `mcp init`/`mcp ensure`) entrypoint that write-throughs every target with an explicit --dry-run default and --apply/--force to write, backing up any file it overwrites; (c) drift-detection design: how codegen output is compared against catalog state to detect and report drift (reusing test_mcp_fleet_catalog_contract.py's alignment-check pattern as the CI-side complement); (d) interfaces (CLI command signature, exit codes, output format); (e) invariants (never silently overwrite live ~/.claude.json or ~/.codex/config.toml, always backup before write, catalog remains sole source of truth); (f) acceptance criteria; (g) phasing relative to DMX-FLEET-P1-001 (registry consolidation) and DMX-FLEET-P1-004 (CI drift gates).",
+      "validation": [
+        "Spec file exists at claudedocs/specs/DMX-FLEET-P1-002-codegen-pipeline-spec.md.",
+        "Spec names fleet_catalog.py's existing render functions and states which remain reusable versus which need a write-through wrapper.",
+        "Spec covers scope, invariants, interfaces, acceptance criteria, and phasing as distinct sections.",
+        "Spec does not propose runtime code changes; it is planning-only."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the source audit doc and the runtime evidence gathered in S1. Validate the packet JSON, update task-packets/INDEX.md, assemble the proof bundle, and commit only allowlisted files.",
+      "validation": [
+        "Spec is internally consistent with S1's evidence.",
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

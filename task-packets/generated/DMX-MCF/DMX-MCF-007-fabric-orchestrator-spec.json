@@ -1,0 +1,99 @@
+{
+  "id": "DMX-MCF-007-fabric-orchestrator-spec",
+  "project": "dopemux-mvp",
+  "target": "Spec the Fabric orchestrator and its context.recall / context.recap MCP surface, fusing whichever retrieval modalities (temporal, structural, semantic) exist at build time and degrading gracefully when a modality is unbuilt.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must specify the Fabric as a canonical-writer client and cross-plane reader/assembler only -- it must never own storage, truth, or domain authority, and must import no plane's storage internals.",
+    "This packet must specify graceful degradation: an unbuilt modality is omitted from the fused result, never faked.",
+    "This packet must specify context.recall and context.recap exactly per the interfaces spec section 1.1 signatures and section 2.4 ContextBundle/ContextItem schemas.",
+    "This packet must reconcile with the built primitives from DMX-MCF-002, DMX-MCF-003, and DMX-MCF-004 rather than re-specifying them."
+  ],
+  "depends_on": [
+    "DMX-MCF-002-transcript-ingest",
+    "DMX-MCF-003-decision-candidate",
+    "DMX-MCF-004-sessionstart-recap"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-mcf",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-MCF-006-conport-graph-spike-spec",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-mcf-007-fabric-orchestrator-spec",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(memory): Fabric orchestrator + context.recall/context.recap MCP surface spec",
+    "allowlist": [
+      "claudedocs/specs/DMX-MCF-007-fabric-orchestrator-spec.md",
+      "task-packets/generated/DMX-MCF/DMX-MCF-007-fabric-orchestrator-spec.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-mcf-007-fabric-orchestrator-spec/DMX-MCF-007-fabric-orchestrator-spec/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-MCF/DMX-MCF-007-fabric-orchestrator-spec.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-MCF/DMX-MCF-007-fabric-orchestrator-spec.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-MCF-007-fabric-orchestrator-spec.md",
+      "grep -q 'graceful degradation' claudedocs/specs/DMX-MCF-007-fabric-orchestrator-spec.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(memory): Fabric orchestrator + context.recall/context.recap MCP surface spec",
+    "body": "Produces the TP-MCF-007 planning spec (no runtime code) per claudedocs/memory-context-fabric-design-2026-07-04.md section 4 and section 6, and claudedocs/memory-context-fabric-interfaces-2026-07-04.md section 1.1/2.4: the Fabric orchestrator's context.recall/context.recap surface, fusing temporal (dope-memory), structural (ConPort), and semantic (dope-context) modalities with graceful degradation. Reconciles with the DMX-MCF-002/003/004 built primitives rather than re-specifying them.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Read the design spec sections 1 (architecture), 3 (memory model / retrieval modalities), and 4 (retrieval + injection), and the interfaces spec sections 1 (public surface), 2.4 (schemas), 3 (plane-interaction contracts), and 4 (invariants). Inspect the actual DMX-MCF-002/003/004 implementations read-only to confirm what recap/detection primitives exist to build on.",
+      "validation": [
+        "The spec's dependency section cites the exact modules built by DMX-MCF-002/003/004 (transcript_ingest.py, conversation_promotion.py, recap.py) that the orchestrator will call.",
+        "No runtime code is changed in this step."
+      ],
+      "context_files": [
+        "claudedocs/memory-context-fabric-design-2026-07-04.md",
+        "claudedocs/memory-context-fabric-interfaces-2026-07-04.md",
+        "claudedocs/tp-mcf-001-authority-map-2026-07-04.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Produce claudedocs/specs/DMX-MCF-007-fabric-orchestrator-spec.md covering: scope (context.recall/context.recap MCP tools, modality fusion logic), invariants (no plane-internal imports, canonical-writer-only writes, graceful degradation, token budget), interfaces (exact signatures from interfaces spec section 1.1, ContextBundle/ContextItem reuse from DMX-MCF-004's recap.py), acceptance criteria, and phasing (which modalities are available at which point given 002/003/004/005/006 status).",
+      "validation": [
+        "The spec file exists at claudedocs/specs/DMX-MCF-007-fabric-orchestrator-spec.md.",
+        "The spec explicitly states graceful-degradation behavior for each of the three modalities individually (temporal always available post-004; structural gated on DMX-MCF-006; semantic gated on DMX-MCF-005).",
+        "The spec includes a contract-test requirement: the Fabric package must import no plane's storage internals."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Self-review the spec against the design spec, interfaces spec, and the built DMX-MCF-002/003/004 modules for consistency. Validate the packet JSON. Commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Only allowlisted files are staged and committed.",
+        "No runtime code appears in the diff."
+      ]
+    }
+  ]
+}

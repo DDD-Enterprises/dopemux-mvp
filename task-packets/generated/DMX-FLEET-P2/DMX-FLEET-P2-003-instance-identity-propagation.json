@@ -1,0 +1,110 @@
+{
+  "id": "DMX-FLEET-P2-003-instance-identity-propagation",
+  "project": "dopemux-mvp",
+  "target": "Produce the spec for moving workspace/instance identity into per-request parameters (tool arguments or headers) so worktree scoping is real for ConPort and dope-memory over shared HTTP servers, replacing the env-var-shaped isolation that cannot influence a remote container.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must specify fail-closed behavior: a request missing required identity parameters must be rejected, not silently routed to a shared/default identity.",
+    "This packet must ground the design in dope-context's existing per-request workspace_id pattern as the reference implementation, not invent a new pattern.",
+    "This packet must not weaken any existing worktree-scoped isolation while the migration is in flight; the spec must define a compatible transition path."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p2",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P2-002-heartbeat-ratelimit",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p2-003-instance-identity-propagation",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(fleet-p2): spec per-request instance identity propagation",
+    "allowlist": [
+      "claudedocs/specs/DMX-FLEET-P2-003-instance-identity-propagation.md",
+      "task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-003-instance-identity-propagation.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P2-003-instance-identity-propagation/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-003-instance-identity-propagation.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-003-instance-identity-propagation.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-FLEET-P2-003-instance-identity-propagation.md",
+      "grep -q 'fail closed\\|fail-closed' claudedocs/specs/DMX-FLEET-P2-003-instance-identity-propagation.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(fleet-p2): spec per-request instance identity propagation",
+    "body": "Specs moving workspace/instance identity into per-request tool parameters for ConPort and dope-memory per mcp-fleet-canonical-audit-and-target-design-2026-07-03.md sec 6.2 and 7.2 item 2, using dope-context's existing per-request workspace_id pattern as the reference. Defines fail-closed rejection of identity-less requests and a compatible transition path. Planning-only; no runtime code changes.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean baseline status before any inspection begins.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Primary checkout remains untouched."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/backlog/_AUTHORING_CONTRACT.md",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Read-only inspect the current identity-handling runtime truth: dope-context's per-request workspace_id parameter pattern (the reference implementation), the dope-memory eventbus consumer's instance_id parameter handling (services/working-memory-assistant/eventbus_consumer.py), ConPort's workspace_id handling (docker/mcp-servers-source/conport/enhanced_server.py), and any remaining env-var-shaped identity assumptions in .mcp.json or compose configs that cannot influence a remote/shared container.",
+      "commands": [
+        "grep -rn 'workspace_id' services/dope-context 2>/dev/null | head -30",
+        "grep -n 'instance_id' services/working-memory-assistant/eventbus_consumer.py",
+        "grep -n 'workspace_id' docker/mcp-servers-source/conport/enhanced_server.py | head -20",
+        "grep -n 'DOPEMUX_INSTANCE_ID\\|DOPE_MEMORY_INSTANCE_ID' -r . --include='*.yaml' --include='*.yml' --include='*.py' 2>/dev/null | grep -v node_modules | head -20"
+      ],
+      "validation": [
+        "Proof records the exact file:line evidence for dope-context's per-request identity pattern as the reference design.",
+        "Proof records every current env-var-shaped identity assumption in ConPort and dope-memory that this spec must replace or migrate.",
+        "Proof records whether any consumer already defaults to a shared identity when none is supplied, and where that default is fail-open today."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the spec at claudedocs/specs/DMX-FLEET-P2-003-instance-identity-propagation.md covering: (a) scope — which tool surfaces (ConPort, dope-memory) move workspace_id/instance_id from env-var/compose-level configuration to explicit per-request tool arguments or headers, modeled on dope-context's existing pattern; (b) invariants — fail-closed rejection of requests missing required identity, no silent fallback to a shared default identity, backward-compatible transition so existing worktree-scoped consumers do not break mid-migration; (c) interfaces — exact tool schema changes (new required parameters) per affected MCP tool, and how the client-side wrapper or hook resolves workspace_id/instance_id before the call; (d) acceptance criteria — a test plan proving requests without identity are rejected and requests with identity route to the correct worktree-scoped data; (e) phasing — migration order relative to DMX-FLEET-P2-002's instance_id normalization work and any compatibility window needed for in-flight sessions.",
+      "validation": [
+        "claudedocs/specs/DMX-FLEET-P2-003-instance-identity-propagation.md exists and contains scope, invariants, interfaces, acceptance criteria, and phasing sections.",
+        "The spec explicitly defines fail-closed behavior for missing identity, not merely mentioning it.",
+        "The spec cites file:line evidence from S2 rather than restating the audit narrative uncritically.",
+        "No runtime source file outside claudedocs/specs/ is modified."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Self-review the spec against the source audit sections 6.2/7.2 and the decisions ledger, validate the packet JSON, and commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Self-review confirms the spec addresses the env-var-isolation-is-unimplementable finding from sec 5 and the per-request identity target from sec 6.2/7.2.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

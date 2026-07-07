@@ -1,0 +1,115 @@
+{
+  "id": "DMX-FLEET-P3-001-conport-jsonrpc-parity",
+  "project": "dopemux-mvp",
+  "target": "Produce a spec for ConPort packets 106/107/201/202 that closes JSON-RPC tool parity (13 of 17 SSE tools currently advertised), eliminates the GET /api/progress side-effect mutation, and adds a product-context and relationship-write API, without changing runtime code in this packet.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not change runtime code.",
+    "This packet must not mutate any live ConPort database.",
+    "This packet must classify missing or unresolved evidence as UNKNOWN rather than asserting it as fact."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p3",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/fleet-p3-001-conport-jsonrpc-parity",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(conport): spec JSON-RPC tool parity, GET-mutation kill, product context, relationship write API",
+    "allowlist": [
+      "claudedocs/specs/DMX-FLEET-P3-001-conport-jsonrpc-parity.md",
+      "task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-001-conport-jsonrpc-parity.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-fleet-p3-001-conport-jsonrpc-parity/DMX-FLEET-P3-001-conport-jsonrpc-parity/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-001-conport-jsonrpc-parity.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-FLEET-P3/DMX-FLEET-P3-001-conport-jsonrpc-parity.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "test -f claudedocs/specs/DMX-FLEET-P3-001-conport-jsonrpc-parity.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(conport): spec JSON-RPC parity + GET-mutation kill + product context + relationship write API",
+    "body": "Specs the minimum ConPort surface work (fleet audit packets 106/107/201/202) that makes the 'knowledge graph' claim true: JSON-RPC advertises all 17 SSE tools (currently 13 of 17, 3 dark + 1 missing per enhanced_server.py), GET /api/progress no longer auto-forks (DOPEMUX_AUTO_FORK_PROGRESS default), a product-context surface, and a relationship write API replacing the current read-only traversal. No runtime code changes in this packet.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean baseline.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/backlog/_AUTHORING_CONTRACT.md",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Read the source findings (fleet audit §4 ConPort verdict, §7.1 target row, §7.3 invariants, §8 Phase 3.1) and read-only inspect the current runtime surface: JSON-RPC dispatcher and tool schema list, the GET /api/progress route and its auto-fork handler, and the existing relationship/graph read path.",
+      "commands": [
+        "sed -n '1,60p' claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md",
+        "grep -n \"_jsonrpc_result\\|_get_tool_schemas\\|add_get('/api/progress'\\|auto_fork_progress\" docker/mcp-servers-source/conport/enhanced_server.py",
+        "cat proof/tp5a_conport_full_surface_drift_0001/SURFACE_INVENTORY_JSONRPC.md"
+      ],
+      "validation": [
+        "Proof records the exact current JSON-RPC tool count vs SSE tool count with file:line citations.",
+        "Proof records the exact GET /api/progress route registration and the DOPEMUX_AUTO_FORK_PROGRESS default with file:line citations.",
+        "Proof records whether a relationship write API exists today (expected: none, read-only traversal only) with file:line citations."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/SURFACE_INVENTORY.md",
+        "docs/systems/conport/surface-equivalence-and-drift.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the spec at claudedocs/specs/DMX-FLEET-P3-001-conport-jsonrpc-parity.md covering: scope (packets 106 JSON-RPC parity, 107 kill GET-mutation, 201 product context, 202 relationship write API); invariants (append-only decisions preserved, no auth regressions, fail-closed on schema mismatch); interfaces (exact JSON-RPC method names to add, exact route/verb changes for /api/progress, product-context request/response shape, relationship write endpoint shape and allowed relationship vocabulary); acceptance criteria (JSON-RPC tools/list count equals SSE tool count; GET /api/progress is provably non-mutating; product context is readable/writable; relationship writes are auditable); and phasing across the four source packet numbers.",
+      "validation": [
+        "claudedocs/specs/DMX-FLEET-P3-001-conport-jsonrpc-parity.md exists and contains named sections: Scope, Invariants, Interfaces, Acceptance Criteria, Phasing.",
+        "The spec references the exact current-state evidence captured in S2 rather than asserting unverified claims.",
+        "The spec does not propose introducing a second semantic-search authority in ConPort (per decisions-ledger.md: dope-context owns semantic retrieval)."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Self-review the spec against the source audit sections and the decisions ledger, run packet validation, and commit only allowlisted files.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "Spec self-review confirms no runtime code files are included in the diff.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

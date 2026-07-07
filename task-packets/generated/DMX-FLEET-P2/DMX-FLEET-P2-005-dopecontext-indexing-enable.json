@@ -1,0 +1,109 @@
+{
+  "id": "DMX-FLEET-P2-005-dopecontext-indexing-enable",
+  "project": "dopemux-mvp",
+  "target": "Flip ENABLE_DOPECONTEXT_INDEX=true with provenance pointers once the chronicle holds real curated content, completing the Memory Trinity loop by making decision/work-log entries semantically searchable via dope-context.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must not enable indexing before DMX-FLEET-P2-001's event-source wiring has produced real curated chronicle content; this packet's precondition check must fail closed if the chronicle is still empty.",
+    "This packet must not resurrect the dead memory_{hash} collection or /index route claims; indexing must target dope-context's existing real collection/document model.",
+    "This packet must attach provenance pointers (source_adapter/promotion_rule/source_event_id or equivalent) to every indexed entry so indexed content is traceable back to its canonical ConPort or chronicle source.",
+    "This packet must preserve the canonical writer for chronicle entries (dope-memory) and for decisions (ConPort); dope-context remains a read-optimized projection, not a new authority.",
+    "This packet must not introduce or rely on the external Voyage embedding path without an explicit, already-approved cost guard; if no cost guard exists yet, this packet must gate indexing volume or defer to DMX-FLEET-P3-005."
+  ],
+  "depends_on": [
+    "DMX-FLEET-P2-001-event-source-wiring"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-fleet-p2",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-FLEET-P2-004-skill-mirror-receipts",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-fleet-p2-005-dopecontext-indexing-enable",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(dope-context): enable chronicle indexing with provenance pointers",
+    "allowlist": [
+      "services/dope-context/**",
+      "services/working-memory-assistant/**",
+      "docker/compose/*.yml",
+      "docker/compose/**/*.yaml",
+      "tests/unit/dope_context/**",
+      "task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-005-dopecontext-indexing-enable.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-FLEET-P2-005-dopecontext-indexing-enable/**"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-005-dopecontext-indexing-enable.json >/dev/null",
+      "python3 -m jsonschema -i task-packets/generated/DMX-FLEET-P2/DMX-FLEET-P2-005-dopecontext-indexing-enable.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "grep -rn 'ENABLE_DOPECONTEXT_INDEX' services/working-memory-assistant services/dope-context docker/compose 2>/dev/null",
+      "python3 -m pytest -q tests/unit/dope_context/test_chronicle_indexing_provenance.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dope-context): enable chronicle indexing with provenance pointers",
+    "body": "Flips ENABLE_DOPECONTEXT_INDEX=true per mcp-fleet-canonical-audit-and-target-design-2026-07-03.md sec 7.2 item 4, gated on DMX-FLEET-P2-001's event-source wiring having produced real curated chronicle content. Attaches provenance pointers to every indexed entry so indexed content remains traceable to its canonical ConPort/chronicle source, completing the Memory Trinity loop (Rule 2). Final packet in the DMX-FLEET-P2 memory-spine series.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, and clean baseline status. Verify DMX-FLEET-P2-001's event-source wiring is present on the base branch before proceeding; if absent, record the precondition failure and stop.",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Precondition check for DMX-FLEET-P2-001 completion is recorded in proof as PASS or the packet stops with an explicit FAIL/blocker."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/backlog/_AUTHORING_CONTRACT.md",
+        "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write failing tests before code. Add a test proving that indexing a chronicle work_log_entries row into dope-context attaches a provenance pointer (source_adapter/promotion_rule/source_event_id or equivalent) resolvable back to the originating ConPort decision or chronicle entry, and a test proving indexing is a no-op when the chronicle contains no real curated entries (empty-chronicle guard).",
+      "validation": [
+        "New tests fail against current code because ENABLE_DOPECONTEXT_INDEX is currently false/unwired for this path.",
+        "Tests assert both the provenance-pointer attachment and the empty-chronicle no-op guard."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement the minimal wiring to flip ENABLE_DOPECONTEXT_INDEX=true in the relevant compose/env configuration, route curated chronicle entries into dope-context's existing real collection/document model with provenance pointers attached, and gate indexing volume against the external Voyage embedding cost surface pending DMX-FLEET-P3-005's cost guard.",
+      "validation": [
+        "Indexed entries carry a provenance pointer traceable to the canonical ConPort/chronicle source.",
+        "No new dead-collection or dead-route pattern (e.g. memory_{hash}, /index) is introduced; only dope-context's existing real indexing surface is used.",
+        "Indexing volume is bounded or explicitly deferred with a documented rationale if no cost guard exists yet."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Materialize the packet, update task-packets/INDEX.md, create the proof bundle, validate, commit, push, open a PR, and move the orchestrator item to review.",
+      "validation": [
+        "Task packet JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "New and existing tests pass; git diff --check passes.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "id": "DMX-ADHD-WIRE-004-relationship-vocab-widening",
+  "project": "dopemux-mvp",
+  "target": "Widen the active ConPort MCP server's exposed relationship vocabulary beyond the current link_conport_items generic edge, so callers can express modeled-but-unexposed relationship types (affects, depends_on, implements, discussed_in, produced_by, belongs_to_thread) without a client-side workaround.",
+  "invariants": [
+    "This packet must run from a fresh dedicated worktree based on origin/main.",
+    "This packet must only touch files in its commit.allowlist.",
+    "This packet must preserve docker/mcp-servers-source/conport/enhanced_server.py as the canonical writer for ConPort relationships and add a contract test.",
+    "This packet must not introduce a second relationship-write path outside the canonical ConPort MCP server (e.g. must not resurrect the quarantined services/conport_kg write path).",
+    "This packet must remain backward compatible: existing link_conport_items calls without an explicit relationship type must continue to work unchanged.",
+    "This packet must fail closed on an unrecognized relationship type (explicit validation error, not silent acceptance)."
+  ],
+  "depends_on": [
+    "DMX-FLEET-P3-001-conport-jsonrpc-parity"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "dmx-adhd-wire",
+    "base_branch": "origin/main",
+    "parent_tp_id": "DMX-ADHD-WIRE-003-overwhelm-snapshot",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dmx-adhd-wire-004-relationship-vocab-widening",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(conport): widen relationship vocabulary beyond generic link",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/schema.sql",
+      "docker/mcp-servers-source/conport/tests/test_relationship_vocabulary.py",
+      "task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-004-relationship-vocab-widening.json",
+      "task-packets/INDEX.md",
+      "proof/dmx-adhd-wire-004-relationship-vocab-widening/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-004-relationship-vocab-widening.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/DMX-ADHD-WIRE/DMX-ADHD-WIRE-004-relationship-vocab-widening.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m py_compile docker/mcp-servers-source/conport/enhanced_server.py",
+      "python -m pytest -q docker/mcp-servers-source/conport/tests/test_relationship_vocabulary.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(conport): widen relationship vocabulary beyond generic link",
+    "body": "Today only link_conport_items is exposed on the canonical ConPort MCP server (docker/mcp-servers-source/conport/enhanced_server.py), while a richer relationship vocabulary (BUILDS_UPON, VALIDATES, affects, depends_on, implements, discussed_in, produced_by, belongs_to_thread) is already modeled in the quarantined services/conport_kg/queries/models.py Relationship/DecisionChainNode dataclasses and never surfaced on the live server. Per claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md section 3a item 7 and the parent fleet audit's Phase 3 packets 106/107/201/202 (relationship-write-API scope), this packet adds an explicit relationship_type parameter to the canonical writer with validation, depending on DMX-FLEET-P3-001's JSON-RPC parity work landing first. This is an MCP tool-surface/contract change and runs the architecture-risky PAL chain accordingly.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight a fresh dedicated worktree from current origin/main. Verify repo marker, origin identity, branch, base HEAD, clean status, and confirm DMX-FLEET-P3-001's JSON-RPC parity work is present on the base branch (this packet's dependency).",
+      "validation": [
+        "Worktree path, branch, origin, marker, base HEAD, and clean baseline are recorded in proof.",
+        "Proof confirms the DMX-FLEET-P3-001 dependency is satisfied on the base branch, or records NOT_RUN/BLOCKED with the exact gap if it is not."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md",
+        "claudedocs/backlog/decisions-ledger.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run PAL analyze, thinkdeep, and a first challenge pass before touching the MCP contract surface. Read enhanced_server.py's link_conport_items implementation and schema.sql's relationship table, and read services/conport_kg/queries/models.py's Relationship/DecisionChainNode dataclasses to enumerate the exact modeled-but-unexposed relationship types.",
+      "validation": [
+        "PAL analyze/thinkdeep/challenge outputs are saved to proof, or recorded NOT_RUN with the exact tool error if PAL is unavailable.",
+        "Proof lists the exact relationship type strings to expose and confirms services/conport_kg is cited as reference only, not as a write path to reuse."
+      ],
+      "context_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/schema.sql",
+        "services/conport_kg/queries/models.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Run PAL planner to scope the minimal schema/API change, then a second challenge pass to attack the plan's assumptions (backward compatibility, validation of unrecognized types, migration safety).",
+      "validation": [
+        "PAL planner and challenge outputs are saved to proof, or recorded NOT_RUN with the exact tool error.",
+        "Plan explicitly preserves existing link_conport_items callers with no relationship_type argument."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Write a failing contract test in docker/mcp-servers-source/conport/tests/test_relationship_vocabulary.py asserting that link_conport_items accepts an explicit relationship_type from the widened vocabulary, persists it correctly, and rejects an unrecognized type with a clear error.",
+      "validation": [
+        "New test fails against current HEAD before implementation.",
+        "Test covers at least one new relationship type plus the unrecognized-type rejection case."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/tests/test_relationship_vocabulary.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Implement the minimal schema and enhanced_server.py changes to accept and validate the widened relationship_type vocabulary on link_conport_items, keeping the canonical writer as the single write path.",
+      "validation": [
+        "New test from S4 passes.",
+        "Existing ConPort MCP server test suite still passes (no regression).",
+        "Unrecognized relationship types fail closed with an explicit validation error."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/schema.sql"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run packet validation, PAL codereview, PAL precommit, and a final PAL challenge per the architecture-risky chain, and finalize proof.",
+      "validation": [
+        "TP JSON parses and validates against dopetask-canonical-spec.json with exit code 0.",
+        "PAL codereview, precommit, and final challenge outputs are saved to proof, or recorded NOT_RUN with the exact tool error if PAL is unavailable.",
+        "Only allowlisted files are staged and committed."
+      ]
+    }
+  ]
+}
