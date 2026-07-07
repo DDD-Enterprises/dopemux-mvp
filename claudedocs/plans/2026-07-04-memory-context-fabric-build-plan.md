@@ -57,8 +57,8 @@ TP-MCF-009  proactive mid-session injection                  [BLOCKED on 007; ki
 | TP-MCF-002 | **READY TO BUILD** | `claudedocs/plans/2026-07-04-tp-mcf-002-transcript-ingest.md` |
 | TP-MCF-003 | **READY TO BUILD** (after 002 merges) | `claudedocs/plans/2026-07-04-tp-mcf-003-deterministic-promotion.md` |
 | TP-MCF-004 | **READY TO BUILD** (parallel-safe with 003) | `claudedocs/plans/2026-07-04-tp-mcf-004-sessionstart-recap.md` |
-| TP-MCF-005 | **DECISION REQUIRED** — see fork below | this document, §Fork 005 |
-| TP-MCF-006 | **DECISION REQUIRED** — see fork below | this document, §Fork 006 |
+| TP-MCF-005 | **DEFERRED → provisionally Option A** — decide after 002–004 with data (§Fork 005) | this document, §Fork 005 |
+| TP-MCF-006 | **APPROVED → Option A** — graph.neighbors + genealogy, spike-gated (§Fork 006) | this document, §Fork 006 |
 | TP-MCF-007..009 | **BLOCKED** — scoped stubs below | this document, §Deferred packets |
 
 ---
@@ -78,6 +78,8 @@ Cost: Small (doc edits + one dead-code removal).
 
 **Recommendation:** A, *after* 002–004 prove the capture pipeline in practice — the recall quality gap between temporal-only and temporal+semantic is the strongest argument, but it's only measurable once the chronicle has content. Decide with data.
 
+> **DECISION (2026-07-06, operator): DEFER — provisionally Option A.** Do not build until 002–004 are merged and the chronicle holds real content; then measure temporal-only recall quality and confirm whether the semantic collection earns its ADR + embedding-privacy cost. The design docs keep `memory_{hash}`/`index_memory` marked UNKNOWN-until-built. Revisit as a dedicated go/no-go after 004.
+
 ## Fork 006 — ConPort graph exposure (decide before building)
 
 **Question:** implement graph traversal MCP tools on the **active** Docker ConPort, or settle for the existing HTTP relationship endpoint?
@@ -92,9 +94,13 @@ Cost: Zero new ConPort work; bounded structural recall.
 
 **Recommendation:** B for the first Fabric release (007), upgrade to A only if genealogy queries prove wanted. Nothing in 007 hard-depends on A.
 
+> **DECISION (2026-07-06, operator): Option A — build `graph.neighbors` + genealogy.** The decision-genealogy provenance story is worth the cost. **Mandatory de-risking gate:** TP-MCF-006's Task 1 is a **read-only AGE-data-layer spike** (not tool code) — verify against the active Docker ConPort that (a) the AGE graph tables exist and are *populated* with real relationship edges, and (b) the relationship *writer* path actually persists edges (the authority map flags writer authority as unproven). **If the spike fails** (tables empty / writer broken), STOP and either (i) scope a prerequisite AGE-repair packet, or (ii) fall back to Option B for v1 and revisit — do **not** build MCP traversal tools on a broken data layer. Only after the spike passes does the packet build `conport_graph_neighbors(item_id, rel_types?, depth<=2, limit<=10)` and `conport_decision_genealogy(decision_id)` into `enhanced_server.py`'s dispatch map. Sequence after 004; may proceed in parallel with 005's go/no-go.
+
 ---
 
 ## Deferred packets (scoped stubs — do not build yet)
+
+**TP-MCF-006 — ConPort graph (`graph.neighbors` + genealogy) — APPROVED (Option A), spike-first.** Full build plan to be authored, but **Task 1 is locked**: a read-only AGE-data-layer spike (per §Fork 006 DECISION) that must PASS before any tool code. If it passes, the packet ports the traversal *concepts* (not code) from dead `src/conport/memory_server.py` into `docker/mcp-servers-source/conport/enhanced_server.py`'s dispatch map, adds the two tools with bounded `depth<=2`/`limit<=10`, and gates each with proof (tool present in dispatch map, traversal returns real edges, no write-path regression). Sequence after 004. Plan authored once 004 is underway or the spike is run, whichever first.
 
 **TP-MCF-007 — Fabric orchestrator + `context.recall`/`context.recap` MCP surface.** The coordinating service: retrieval-fusion over whichever modalities exist (temporal always; structural per Fork 006; semantic per Fork 005), returning `ContextBundle` per the interfaces doc §2.4; graceful degradation (unbuilt modality omitted, never faked); single-point token budgeting; the no-plane-internals contract test. Blocked on 002–004 merged. Plan to be written when unblocked.
 

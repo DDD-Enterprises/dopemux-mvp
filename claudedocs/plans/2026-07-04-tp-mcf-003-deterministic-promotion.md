@@ -841,6 +841,23 @@ def test_never_produces_decision_logged_source_event_type(engine):
 
   **Important — do NOT run bare `pytest tests/` for this check.** The WMA `tests/` tree has **pre-existing, packet-unrelated collection errors** (verified empirically, present before this packet touched anything): `tests/test_migration_runner_optimized.py`, `tests/test_predictive_restoration.py`, `tests/test_wma_core.py`, and `tests/unit/test_copilot_adapter_hardening.py` all fail to collect with `ImportError: Unable to import services.copilot_transcript_ingester modules. Run from repository root or set PYTHONPATH to include it.` — a `dopemux.memory.adapters.copilot` import that only resolves when the interpreter is invoked from repo root, not from `services/working-memory-assistant/`. Additionally, `tests/test_dope_memory.py`, `tests/test_phase2_reflection_trajectory.py`, `tests/test_reflection.py`, `tests/test_trajectory.py`, and `tests/test_trajectory_boost_in_ranking.py` have pre-existing failures unrelated to promotion (reflection/trajectory ordering tests). None of this is caused by this packet — verified by running the identical command against an unmodified copy of this repo before any Task 1-4 edits were applied. **Do not attempt to fix these; they are out of this packet's scope.**
 
+  **You can confirm this yourself** (the scoped command below deliberately excludes these 9 files, so a regression this packet accidentally introduces *into* one of them would be invisible to the check above — this step closes that gap). In a **separate worktree** checked out at the commit immediately before Task 1's first commit (do not disrupt your current working tree), run the identical scoped command:
+  ```bash
+  git worktree add /tmp/tp-mcf-003-baseline-check <sha-before-task-1>
+  cd /tmp/tp-mcf-003-baseline-check/services/working-memory-assistant && mise exec -- python -m pytest \
+    tests/test_event_type_normalization.py \
+    tests/test_eventbus_consumer.py \
+    tests/test_mcp_http_endpoint.py \
+    tests/test_promotion_allowlist.py \
+    tests/test_session_tracker.py \
+    tests/test_store_fail_closed.py \
+    tests/unit/ \
+    --ignore=tests/unit/test_copilot_adapter_hardening.py \
+    -q
+  cd - && git worktree remove /tmp/tp-mcf-003-baseline-check
+  ```
+  Expected output at the pre-packet baseline: `101 passed, 1 skipped`. The post-packet count in this task (`113 passed, 1 skipped`) is 12 higher, which reconciles exactly as: `+2` (`test_promotion_rule_precedence.py`, new in Task 2) `+10` (`test_promote_conversation_decision_candidate.py`, new in Task 4) `= +12`, with `test_event_type_normalization.py`'s test count unchanged (Task 3.5 edits an existing test's body, it doesn't add or remove a test function, so its contribution to the total is net zero). If the baseline run shows any failures or a different passing count than `101 passed, 1 skipped`, stop — that means the pre-packet state assumed by this plan doesn't match what's actually in the repo, and the whole plan's expected-output numbers need re-verification before proceeding.
+
   Instead, run the promotion-relevant subset that is known-clean in the baseline:
   ```bash
   cd services/working-memory-assistant && mise exec -- python -m pytest \
