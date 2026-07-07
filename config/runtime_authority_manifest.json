@@ -340,26 +340,18 @@
           "source_paths": [
             "services/working-memory-assistant/dope_memory_main.py",
             "services/working-memory-assistant/Dockerfile.dope-memory",
+            "services/dope-memory/mcp_stdio_adapter.py",
             "compose.yml",
             "services/registry.yaml"
           ],
           "status": "observed"
-        },
-        {
-          "port": 8096,
-          "role": "legacy_adapter_target",
-          "source_paths": [
-            "services/dope-memory/mcp_stdio_adapter.py",
-            "services/working-memory-assistant/main.py"
-          ],
-          "status": "conflicting"
         }
       ],
       "forbidden_authority_paths": [
         {
           "forbidden_domain": "chronicle_runtime",
           "path": "services/dope-memory/mcp_stdio_adapter.py",
-          "reason": "This adapter targets legacy 8096 and is not the dope-memory runtime authority."
+          "reason": "This stdio adapter proxies REST tools and is not the dope-memory chronicle runtime authority."
         },
         {
           "forbidden_domain": "chronicle_runtime",
@@ -381,11 +373,11 @@
               "path": "services/working-memory-assistant/dope_memory_main.py"
             },
             {
-              "contains": "http://localhost:8096/tools",
+              "contains": "http://localhost:3020/tools",
               "path": "services/dope-memory/mcp_stdio_adapter.py"
             }
           ],
-          "summary": "Active dope-memory runtime is 3020, while the stdio adapter still targets legacy 8096."
+          "summary": "dope-memory runtime and stdio adapter both target port 3020; legacy 8096 drift is resolved in the adapter."
         },
         {
           "id": "dope_memory_wma_tree_overlap",
