@@ -57,6 +57,34 @@ DATA_DIR = Path(os.getenv("DOPE_MEMORY_DATA_DIR", str(Path.home() / ".dope-memor
 DEFAULT_WORKSPACE_ID = os.getenv("DOPE_MEMORY_WORKSPACE_ID", "default")
 DEFAULT_INSTANCE_ID = os.getenv("DOPE_MEMORY_INSTANCE_ID", "A")
 
+# ADHD-aware recap (ported from legacy WMA adhd_integration.py): annotate
+# memory_recap with the operator's live attention/energy state so consumers
+# can adapt verbosity. Fail-open — recap works unchanged when the engine is
+# down or the flag is off.
+ADHD_ENGINE_URL = os.getenv("ADHD_ENGINE_URL", "http://adhd-engine:8095")
+ADHD_RECAP_ENABLED = os.getenv("DOPE_MEMORY_ADHD_RECAP", "false").lower() == "true"
+
+def _get_adhd_state_hint(user_id: str = "default") -> Optional[dict]:
+    """Best-effort fetch of the operator's ADHD state; never raises."""
+    if not ADHD_RECAP_ENABLED:
+        return None
+    try:
+        import urllib.parse
+        import urllib.request
+
+        url = f"{ADHD_ENGINE_URL.rstrip('/')}/api/v1/state?{urllib.parse.urlencode({'user_id': user_id})}"
+        with urllib.request.urlopen(url, timeout=3) as resp:
+            if resp.getcode() != 200:
+                return None
+            payload = json.loads(resp.read().decode("utf-8"))
+        return {
+            "attention_state": payload.get("attention_state", "unknown"),
+            "energy_level": payload.get("energy_level"),
+            "source": ADHD_ENGINE_URL,
+        }
+    except Exception:
+        return None
+
 # CORS configuration
 ALLOWED_ORIGINS = [
     o.strip() for o in os.getenv(
@@ -384,10 +412,18 @@ class DopeMemoryMCPServer:
 
             trajectory = f"Working on {', '.join(sorted(set(e['category'] for e in entries[:5])))} activities" if entries else "No recent activity"
 
-            return ToolResponse(
-                success=True,
-                data={"trajectory": trajectory, "cards": cards[:top_k], "more_count": max(0, len(entries) - top_k)},
-            )
+            data = {
+                "trajectory": trajectory,
+                "cards": cards[:top_k],
+                "more_count": max(0, len(entries) - top_k),
+            }
+            adhd_state = _get_adhd_state_hint()
+            if adhd_state is not None:
+                # Annotation only — consumers decide how to adapt (e.g. show
+                # fewer cards when attention_state is scattered/distracted).
+                data["adhd_state"] = adhd_state
+
+            return ToolResponse(success=True, data=data)
         except Exception as e:
             logger.error(f"memory_recap error: {e}")
             return ToolResponse(success=False, data={}, error=str(e))
