@@ -843,7 +843,12 @@ def test_never_produces_decision_logged_source_event_type(engine):
 
   **You can confirm this yourself** (the scoped command below deliberately excludes these 9 files, so a regression this packet accidentally introduces *into* one of them would be invisible to the check above — this step closes that gap). In a **separate worktree** checked out at the commit immediately before Task 1's first commit (do not disrupt your current working tree), run the identical scoped command:
   ```bash
-  git worktree add /tmp/tp-mcf-003-baseline-check <sha-before-task-1>
+  # BASE_SHA = the commit immediately before Task 1's first commit. Capture it at packet start
+  # with `git rev-parse HEAD` (before any Task-1 edit), or find it via `git log --oneline` on your
+  # branch (the commit just before the first `feat(memory): ...` packet commit). It should also be
+  # recorded in the packet's proof bundle at start.
+  BASE_SHA="${BASE_SHA:?set BASE_SHA to the pre-Task-1 commit (see comment above)}"
+  git worktree add /tmp/tp-mcf-003-baseline-check "$BASE_SHA"
   cd /tmp/tp-mcf-003-baseline-check/services/working-memory-assistant && mise exec -- python -m pytest \
     tests/test_event_type_normalization.py \
     tests/test_eventbus_consumer.py \
