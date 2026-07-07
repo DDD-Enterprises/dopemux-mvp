@@ -21,7 +21,6 @@ import yaml
 from .extractor_commands import _extractor_runner_path, _resolve_extractor_root
 from .extractor_validation_ui import BatchValidationUI
 from dopemux.error_handling import CircuitBreaker, CircuitBreakerConfig, CircuitBreakerState
-from services.shared.mcp.pal_client import PALClient
 
 
 DEFAULT_REPORT_ROOT = Path("reports/repo-truth-extractor/validation")
@@ -909,6 +908,13 @@ class LiveValidationRunner:
         return {provider: sorted(models) for provider, models in inventory.items()}
 
     async def _call_pal_tool(self, tool_name: str, prompt: str) -> Dict[str, Any]:
+        try:
+            from services.shared.mcp.pal_client import PALClient  # lazy: only available in dopemux-mvp checkout
+        except ImportError as exc:
+            raise RuntimeError(
+                "PALClient is only available when running from the dopemux-mvp checkout. "
+                "Ensure services/shared/mcp/pal_client.py is on sys.path."
+            ) from exc
         async with PALClient(
             self.pal_base_url,
             SimpleNamespace(api_key=os.getenv("PAL_API_KEY", "")),
@@ -926,6 +932,13 @@ class LiveValidationRunner:
         return result
 
     async def _call_pal_consensus(self, prompt: str) -> Dict[str, Any]:
+        try:
+            from services.shared.mcp.pal_client import PALClient  # lazy: only available in dopemux-mvp checkout
+        except ImportError as exc:
+            raise RuntimeError(
+                "PALClient is only available when running from the dopemux-mvp checkout. "
+                "Ensure services/shared/mcp/pal_client.py is on sys.path."
+            ) from exc
         async with PALClient(
             self.pal_base_url,
             SimpleNamespace(api_key=os.getenv("PAL_API_KEY", "")),
