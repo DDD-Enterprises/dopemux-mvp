@@ -120,6 +120,11 @@
           "minimum": 1,
           "maximum": 65535
         },
+        "reserved_port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
         "extra_port_vars": {
           "type": "array",
           "items": {

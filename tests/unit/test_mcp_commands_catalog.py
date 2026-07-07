@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 from pathlib import Path
 from types import SimpleNamespace
@@ -139,6 +140,117 @@ def test_allocate_ports_raises_on_cross_server_collision():
     assert "Internal port collision" in msg
     assert "alpha" in msg
     assert "beta" in msg
+
+
+def test_allocate_ports_wrapper_singleton_uses_fixed_base_port():
+    """wrapper-singleton services must NOT have a workspace hash offset applied.
+
+    task-orchestrator is the canonical wrapper-singleton; its port must always
+    equal default_port_base regardless of the workspace path hash.
+    """
+    catalog = {
+        "version": 1,
+        "servers": {
+            "task-orchestrator": {
+                "scope": "per-worktree",
+                "state_scope": "per-repo",
+                "management_model": "wrapper-singleton",
+                "transport": "http",
+                "port_var": "TASK_ORCHESTRATOR_HTTP_PORT",
+                "default_port_base": 7890,
+            },
+        },
+    }
+
+    # Two completely different workspace paths must yield the same fixed port
+    result_a = mcp_commands._allocate_ports(
+        "/Users/alice/code/project-a",
+        ["task-orchestrator"],
+        catalog,
+        project_root="/Users/alice/code/project-a",
+    )
+    result_b = mcp_commands._allocate_ports(
+        "/Users/bob/totally-different-path/zyx",
+        ["task-orchestrator"],
+        catalog,
+        project_root="/Users/bob/totally-different-path/zyx",
+    )
+
+    assert result_a["TASK_ORCHESTRATOR_HTTP_PORT"] == 7890
+    assert result_b["TASK_ORCHESTRATOR_HTTP_PORT"] == 7890
+
+
+def test_allocate_ports_raises_on_singleton_port_collision(monkeypatch):
+    """Per-worktree hash offset must not silently land on a singleton's reserved port.
+
+    This is the bug that caused CONPORT_HTTP_PORT=3009 to collide with gpt-researcher
+    at port 3009 in the dNh_CRM workspace.
+
+    gpt-researcher is a stdio singleton (no url) whose Docker container still binds
+    port 3009; the catalog declares this via ``reserved_port: 3009``.  The test
+    monkeypatches _port_for to guarantee the collision deterministically.
+    """
+    SINGLETON_PORT = 3009
+    catalog = {
+        "version": 1,
+        "servers": {
+            # Matches the real gpt-researcher catalog entry: stdio, no url, reserved_port
+            "gpt-researcher": {
+                "scope": "singleton",
+                "transport": "stdio",
+                "reserved_port": SINGLETON_PORT,
+            },
+            # Per-worktree service whose hash-derived port happens to land on 3009
+            "conport": {
+                "scope": "per-worktree",
+                "transport": "sse",
+                "port_var": "CONPORT_HTTP_PORT",
+                "default_port_base": 3004,  # realistic value
+            },
+        },
+    }
+
+    # Force _port_for to return the singleton port regardless of input
+    monkeypatch.setattr(mcp_commands, "_port_for", lambda _path, _base: SINGLETON_PORT)
+
+    with pytest.raises(click.ClickException) as excinfo:
+        mcp_commands._allocate_ports(
+            "/Users/hue/code/dNh_CRM",
+            ["conport"],
+            catalog,
+        )
+
+    msg = str(excinfo.value.message)
+    assert "collision" in msg.lower()
+    assert str(SINGLETON_PORT) in msg or "gpt-researcher" in msg or "singleton" in msg
+
+
+def test_allocate_ports_raises_on_url_singleton_port_collision(monkeypatch):
+    """Same collision guard applies to HTTP/SSE singletons whose port comes from url."""
+    SINGLETON_PORT = 3003
+    catalog = {
+        "version": 1,
+        "servers": {
+            "pal": {
+                "scope": "singleton",
+                "transport": "http",
+                "url": f"http://localhost:{SINGLETON_PORT}/mcp",
+            },
+            "conport": {
+                "scope": "per-worktree",
+                "transport": "sse",
+                "port_var": "CONPORT_HTTP_PORT",
+                "default_port_base": 3000,
+            },
+        },
+    }
+
+    monkeypatch.setattr(mcp_commands, "_port_for", lambda _path, _base: SINGLETON_PORT)
+
+    with pytest.raises(click.ClickException) as excinfo:
+        mcp_commands._allocate_ports("/tmp/wt", ["conport"], catalog)
+
+    assert "collision" in str(excinfo.value.message).lower()
 
 
 def test_allocate_ports_uses_project_root_for_per_repo_state():
@@ -621,8 +733,9 @@ def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
     assert result.exit_code == 1, result.output
     # Doctor reports multiple problems in a single run (envrc missing + ghost server +
     # missing required env + missing port var). Assert each surfaces, ignoring the
-    # logger's line-wrapping of long absolute paths.
-    assert "issue(s) found" in result.output
+    # logger's line-wrapping of long absolute paths and Rich ANSI markup.
+    plain_output = re.sub(r"\x1b\[[0-9;]*m", "", result.output)
+    assert "issue(s) found" in plain_output
     assert ".envrc" in result.output
     assert "ghost" in result.output
     assert "DOPEMUX_WORKSPACE_ID" in result.output
