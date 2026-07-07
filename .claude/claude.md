@@ -157,3 +157,30 @@ When you need comprehensive details, refer to:
 **MCP Status**: Fully operational with ConPort auto-initialization
 **Python Standards**: Type hints, pytest, PEP 8 with Black formatting, src/ layout
 **ADHD Support**: Progressive disclosure, gentle guidance, visual progress indicators active
+
+## 🔌 MCP Transport and Setup Rules (see AGENTS.md §12)
+
+**Do not change transport types without reading server source.** The correct types are:
+
+| Server | `type` | Protocol |
+|---|---|---|
+| `conport` | `sse` | SSE — `GET /sse` |
+| `dope-memory`, `task-orchestrator` | `http` | Streamable HTTP — `POST /mcp` |
+| `pal`, `serena`, `dope-context` | `http` | Streamable HTTP — `POST /mcp` |
+
+A `406 Not Acceptable: Client must accept text/event-stream` on `GET /mcp` is
+**correct Streamable HTTP behaviour** — not evidence the server is SSE. Fix: POST with JSON-RPC.
+
+**Setting up MCP in a new repo**:
+```bash
+cd ~/code/target-repo && dopemux mcp init
+source .envrc.dopemux-mcp && dopemux mcp doctor
+```
+
+**Debug sequence**: source envrc → `dopemux mcp doctor` → curl probe → tail docker logs
+→ `./mcp_server_health_report.sh`
+
+**Key docs**:
+- [`docs/02-how-to/mcp-setup-other-repos.md`](docs/02-how-to/mcp-setup-other-repos.md) — user guide for other projects
+- [`docs/02-how-to/mcp-transport-and-port-bugs.md`](docs/02-how-to/mcp-transport-and-port-bugs.md) — bug record + correct analysis
+- `AGENTS.md §12` — canonical MCP rules for all agents
