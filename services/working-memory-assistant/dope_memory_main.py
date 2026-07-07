@@ -62,8 +62,7 @@ DEFAULT_INSTANCE_ID = os.getenv("DOPE_MEMORY_INSTANCE_ID", "A")
 # can adapt verbosity. Fail-open — recap works unchanged when the engine is
 # down or the flag is off.
 ADHD_ENGINE_URL = os.getenv("ADHD_ENGINE_URL", "http://adhd-engine:8095")
-ADHD_RECAP_ENABLED = os.getenv("DOPE_MEMORY_ADHD_RECAP", "true").lower() == "true"
-
+ADHD_RECAP_ENABLED = os.getenv("DOPE_MEMORY_ADHD_RECAP", "false").lower() == "true"
 
 def _get_adhd_state_hint(user_id: str = "default") -> Optional[dict]:
     """Best-effort fetch of the operator's ADHD state; never raises."""
