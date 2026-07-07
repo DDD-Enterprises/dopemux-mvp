@@ -465,7 +465,7 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
     try:
         from ..profile_commands import get_profiles_directory
         profiles_directory = Path(profile_dir) if profile_dir else get_profiles_directory()
-        parser = ProfileParser(validate_mcps=False)
+        parser = ProfileParser(validate_mcps=True)
 
         if all:
             # Validate all profiles
