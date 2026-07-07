@@ -482,22 +482,44 @@ def _singleton_reserved_ports(catalog: Dict[str, Any]) -> Dict[int, str]:
     Return a map of {port: server_name} for all singleton servers that have a
     statically-declared port in the catalog.  These ports must never be assigned
     to per-worktree services regardless of what hash offset `_port_for` produces.
+
+    Two sources of port reservation are recognised:
+
+    1. ``url`` field — parsed via urllib (e.g. ``http://localhost:3009/mcp``).
+    2. ``reserved_port`` field — an explicit integer for singletons whose MCP
+       transport is ``stdio`` (e.g. ``gpt-researcher``) but whose Docker service
+       still binds a host port that per-worktree services must not shadow.
     """
+    from urllib.parse import urlparse as _urlparse
+
     reserved: Dict[int, str] = {}
     for name, spec in catalog.get("servers", {}).items():
         if spec.get("scope") != "singleton":
             continue
+
+        # Source 1: explicit reserved_port (stdio singletons that still bind a host port)
+        explicit = spec.get("reserved_port")
+        if explicit is not None:
+            try:
+                reserved[int(explicit)] = name
+            except (TypeError, ValueError):
+                console.logger.warning(
+                    f"[warning]mcp_catalog: singleton '{name}' has a non-integer "
+                    f"reserved_port value ({explicit!r}); skipping port reservation.[/warning]"
+                )
+
+        # Source 2: url field (HTTP/SSE singletons)
         raw_url = spec.get("url")
-        if not raw_url:
-            continue
-        # Parse the port from a bare URL like "http://localhost:3009/mcp"
-        try:
-            from urllib.parse import urlparse as _up
-            port = _up(str(raw_url)).port
-            if port:
-                reserved[port] = name
-        except Exception:
-            pass
+        if raw_url:
+            try:
+                port = _urlparse(str(raw_url)).port
+                if port:
+                    reserved[port] = name
+            except Exception as exc:  # noqa: BLE001
+                console.logger.warning(
+                    f"[warning]mcp_catalog: singleton '{name}' has an unparseable "
+                    f"url ({raw_url!r}); skipping port reservation. ({exc})[/warning]"
+                )
     return reserved
 
 
@@ -527,11 +549,14 @@ def _allocate_ports(
         for port, name in _singleton_reserved_ports(catalog).items()
     }
 
-    def _claim(var: str, base: int, owner: str, key_path: str, *, fixed: bool = False) -> None:
+    def _claim(
+        var: str, base: int, owner: str, key_path: str, *, fixed: bool = False
+    ) -> None:
         port = base if fixed else _port_for(key_path, base)
         if port in seen_ports:
             raise click.ClickException(
-                f"Internal port collision: {owner}.{var} and {seen_ports[port]} both map to :{port}. "
+                f"Internal port collision: {owner}.{var} and "
+                f"{seen_ports[port]} both map to :{port}. "
                 f"Adjust the `default_port_base` for one of them in {CATALOG_FILENAME}."
             )
         seen_ports[port] = f"{owner}.{var}"
@@ -543,7 +568,11 @@ def _allocate_ports(
             continue
         # wrapper-singleton: one global instance at a fixed port — no hash offset.
         is_wrapper_singleton = spec.get("management_model") == "wrapper-singleton"
-        key_path = project_root if spec.get("state_scope") == "per-repo" and project_root else worktree
+        key_path = (
+            project_root
+            if spec.get("state_scope") == "per-repo" and project_root
+            else worktree
+        )
         base = spec.get("default_port_base")
         if base:
             _claim(spec["port_var"], base, name, key_path, fixed=is_wrapper_singleton)

@@ -185,18 +185,19 @@ def test_allocate_ports_raises_on_singleton_port_collision(monkeypatch):
     This is the bug that caused CONPORT_HTTP_PORT=3009 to collide with gpt-researcher
     at port 3009 in the dNh_CRM workspace.
 
-    We monkeypatch _port_for to return a deterministic value equal to the singleton port
-    so the test is independent of hash implementation details.
+    gpt-researcher is a stdio singleton (no url) whose Docker container still binds
+    port 3009; the catalog declares this via ``reserved_port: 3009``.  The test
+    monkeypatches _port_for to guarantee the collision deterministically.
     """
     SINGLETON_PORT = 3009
     catalog = {
         "version": 1,
         "servers": {
-            # Singleton that statically owns port 3009
+            # Matches the real gpt-researcher catalog entry: stdio, no url, reserved_port
             "gpt-researcher": {
                 "scope": "singleton",
-                "transport": "http",
-                "url": f"http://localhost:{SINGLETON_PORT}/mcp",
+                "transport": "stdio",
+                "reserved_port": SINGLETON_PORT,
             },
             # Per-worktree service whose hash-derived port happens to land on 3009
             "conport": {
@@ -221,6 +222,34 @@ def test_allocate_ports_raises_on_singleton_port_collision(monkeypatch):
     msg = str(excinfo.value.message)
     assert "collision" in msg.lower()
     assert str(SINGLETON_PORT) in msg or "gpt-researcher" in msg or "singleton" in msg
+
+
+def test_allocate_ports_raises_on_url_singleton_port_collision(monkeypatch):
+    """Same collision guard applies to HTTP/SSE singletons whose port comes from url."""
+    SINGLETON_PORT = 3003
+    catalog = {
+        "version": 1,
+        "servers": {
+            "pal": {
+                "scope": "singleton",
+                "transport": "http",
+                "url": f"http://localhost:{SINGLETON_PORT}/mcp",
+            },
+            "conport": {
+                "scope": "per-worktree",
+                "transport": "sse",
+                "port_var": "CONPORT_HTTP_PORT",
+                "default_port_base": 3000,
+            },
+        },
+    }
+
+    monkeypatch.setattr(mcp_commands, "_port_for", lambda _path, _base: SINGLETON_PORT)
+
+    with pytest.raises(click.ClickException) as excinfo:
+        mcp_commands._allocate_ports("/tmp/wt", ["conport"], catalog)
+
+    assert "collision" in str(excinfo.value.message).lower()
 
 
 def test_allocate_ports_uses_project_root_for_per_repo_state():

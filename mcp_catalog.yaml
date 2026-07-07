@@ -103,6 +103,7 @@ servers:
     command: docker
     args: ["exec", "-i", "dopemux-mcp-gptr-mcp", "python", "/app/server.py"]
     docker_compose_service: gptr-mcp
+    reserved_port: 3009  # gptr-mcp container binds ${GPT_RESEARCHER_PORT:-3009}
     requires_env: ["OPENAI_API_KEY"]
     optional_env: ["TAVILY_API_KEY", "EXA_API_KEY", "PERPLEXITY_API_KEY", "ANTHROPIC_API_KEY"]
     description: "Deep multi-source research (PR #575: gpt-researcher==0.14.8 pinned)"
