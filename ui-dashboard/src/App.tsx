@@ -174,6 +174,8 @@ function App() {
   const clearConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [copiedNotificationId, setCopiedNotificationId] = useState<string | null>(null);
+  const notificationCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [lastSignalTime, setLastSignalTime] = useState<Date | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
 
@@ -210,6 +212,29 @@ function App() {
     }
   }, [cognitiveState.recommendation]);
 
+  const handleCopyNotification = useCallback(async (notification: Notification) => {
+    if (!navigator.clipboard?.writeText) {
+      setErrorMessage('Clipboard API is not supported in this browser or context.');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(notification.message);
+      setCopiedNotificationId(notification.id);
+
+      if (notificationCopyTimeoutRef.current) {
+        clearTimeout(notificationCopyTimeoutRef.current);
+      }
+
+      notificationCopyTimeoutRef.current = setTimeout(() => {
+        setCopiedNotificationId(null);
+        notificationCopyTimeoutRef.current = null;
+      }, 2000);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      setErrorMessage(`Failed to copy notification: ${errorMsg}`);
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       if (clearConfirmTimeoutRef.current) {
@@ -219,6 +244,10 @@ function App() {
       if (copyTimeoutRef.current) {
         clearTimeout(copyTimeoutRef.current);
         copyTimeoutRef.current = null;
+      }
+      if (notificationCopyTimeoutRef.current) {
+        clearTimeout(notificationCopyTimeoutRef.current);
+        notificationCopyTimeoutRef.current = null;
       }
     };
   }, []);
@@ -752,14 +781,23 @@ function App() {
               {notifications.map((notification) => {
                 const severityColor = getNotificationColor(notification.notificationType);
                 const notificationLabel = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
+                const isNotificationCopied = copiedNotificationId === notification.id;
+
                 return (
                   <Fade in={true} key={notification.id}>
-                    <Tooltip title="Dismiss notification" arrow describeChild>
+                    <Tooltip title={isNotificationCopied ? 'Copied!' : 'Click to copy message, click X to dismiss'} arrow describeChild>
                       <Chip
-                        icon={getNotificationIcon(notification.notificationType)}
+                        icon={
+                          isNotificationCopied ? (
+                            <Check size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
+                          ) : (
+                            getNotificationIcon(notification.notificationType)
+                          )
+                        }
                         label={notificationLabel}
-                        aria-label={notificationLabel}
+                        aria-label={isNotificationCopied ? `${notificationLabel} (Copied)` : `Copy signal: ${notificationLabel}`}
                         variant="outlined"
+                        onClick={() => handleCopyNotification(notification)}
                         onDelete={() => handleDismissNotification(notification.id)}
                         deleteIcon={<X size={14} aria-hidden="true" />}
                         tabIndex={0}
@@ -768,8 +806,27 @@ function App() {
                           borderColor: alpha(severityColor, 0.6),
                           color: severityColor,
                           backgroundColor: alpha(severityColor, 0.08),
+                          cursor: 'copy',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            backgroundColor: alpha(severityColor, 0.12),
+                            transform: 'translateY(-1px)',
+                            boxShadow: `0 2px 8px ${alpha(severityColor, 0.2)}`,
+                          },
+                          '&:active': {
+                            transform: 'translateY(0)',
+                          },
+                          ...(isNotificationCopied && {
+                            animation: 'copy-success 0.4s ease-out',
+                            '@keyframes copy-success': {
+                              '0%': { transform: 'scale(1)' },
+                              '50%': { transform: 'scale(1.05)', boxShadow: `0 0 12px ${alpha(brandTokens.colors.serumMint, 0.4)}` },
+                              '100%': { transform: 'scale(1)' },
+                            }
+                          }),
                           '& .MuiChip-deleteIcon': {
                             color: alpha(severityColor, 0.7),
+                            cursor: 'pointer',
                             '&:hover': {
                               color: severityColor,
                             },
