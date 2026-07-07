@@ -1,2 +1,0 @@
-"""Interruption shield package."""
-
