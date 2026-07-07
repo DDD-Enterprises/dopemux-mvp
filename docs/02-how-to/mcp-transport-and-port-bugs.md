@@ -6,8 +6,10 @@ owner: dopemux-infra
 date: 2026-07-06
 author: '@hu3mann'
 last_review: '2026-07-06'
+next_review: '2026-10-05'
+prelude: MCP Transport Misconfiguration and Port Collision Reference (how-to) for
+  dopemux documentation and developer workflows.
 ---
-
 # MCP Transport Misconfiguration and Port Collision Reference
 
 This document describes three confirmed bugs that were discovered during the `dNh_CRM`
