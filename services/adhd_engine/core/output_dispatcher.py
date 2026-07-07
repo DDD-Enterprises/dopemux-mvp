@@ -375,7 +375,12 @@ class DesktopNotificationChannel(OutputChannel):
             self._tool = "notify-send"
         self.enabled = enabled and self._tool is not None
         if enabled and self._tool is None:
-            logger.info("Desktop notifications unavailable (no osascript/notify-send) - channel disabled")
+            logger.info(
+                brand_log(
+                    "Desktop notifications unavailable (no osascript/notify-send) - channel disabled",
+                    chip=StatusChip.AFTERCARE,
+                )
+            )
 
     @property
     def name(self) -> str:
