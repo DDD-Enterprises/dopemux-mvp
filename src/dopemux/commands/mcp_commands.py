@@ -1203,10 +1203,114 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
 
 
 @mcp.command("doctor")
-def mcp_doctor_cmd():
+@click.option(
+    "--repo",
+    "repo_arg",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    default=None,
+    help="Target repo/worktree to diagnose (defaults to current git root). Works from any cwd.",
+)
+@click.option(
+    "--json",
+    "json_output",
+    is_flag=True,
+    help="Emit the full doctor JSON report (schema_version 1.0) to stdout.",
+)
+@click.option(
+    "--verbose",
+    is_flag=True,
+    help="Include more findings in the human summary.",
+)
+@click.option(
+    "--skip-docker",
+    is_flag=True,
+    help="Skip Docker inspection (still reports DOCKER_UNAVAILABLE).",
+)
+@click.option(
+    "--legacy",
+    is_flag=True,
+    help="Use the pre-Packet-001 problem-list doctor (cwd git root only).",
+)
+def mcp_doctor_cmd(
+    repo_arg: Optional[Path],
+    json_output: bool,
+    verbose: bool,
+    skip_docker: bool,
+    legacy: bool,
+):
     """
-    🩺 Health Sweep: Verify env vars, port reachability, container health
+    🩺 Health Sweep: Repo-aware MCP truth gate (read-only)
+
+    Loads the target repo's `.envrc.dopemux-mcp`, validates catalog transports,
+    detects port collision risks, compose lifecycle drift, and Docker ownership
+    where labels exist. Does not start or stop containers.
+
+    Examples:
+      dopemux mcp doctor
+      dopemux mcp doctor --repo ~/code/other-project
+      dopemux mcp doctor --repo ~/code/other-project --json
     """
+    if legacy:
+        if repo_arg is not None:
+            raise click.ClickException(
+                "--legacy does not support --repo; omit --legacy for repo-aware doctor."
+            )
+        _mcp_doctor_legacy()
+        return
+
+    catalog = _load_catalog()
+    catalog_path = _catalog_path()
+    catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
+
+    if repo_arg is not None:
+        repo = str(repo_arg.resolve())
+    else:
+        repo = get_repo_root(fallback_cwd=False)
+        if not repo:
+            raise click.ClickException(
+                "Not inside a git repository. Pass --repo <path> to diagnose another project."
+            )
+
+    from dopemux.mcp.doctor import format_human_summary, run_mcp_doctor
+
+    # Prefer compose hazards from dopemux product compose when target has none.
+    compose_candidate = Path(repo) / "compose.yml"
+    if not compose_candidate.is_file():
+        # Read-only: may use current cwd compose for hazard text only
+        cwd_compose = Path.cwd() / "compose.yml"
+        compose_candidate = cwd_compose if cwd_compose.is_file() else None
+
+    report = run_mcp_doctor(
+        repo,
+        catalog=catalog,
+        catalog_paths_checked=catalog_paths,
+        compose_path=compose_candidate,
+        skip_docker=skip_docker,
+        process_env=dict(os.environ),
+    )
+
+    if json_output:
+        # Deterministic JSON to stdout (not through rich logger)
+        sys.stdout.write(report.to_json())
+    else:
+        summary = format_human_summary(report, verbose=verbose)
+        # Color the status line lightly via console, keep body plain for copy/paste
+        status = report.status
+        if status == "PASS":
+            console.logger.info(f"[success]{summary.rstrip()}[/success]")
+        elif status == "PASS_WITH_WARNINGS":
+            console.logger.info(f"[warning]{summary.rstrip()}[/warning]")
+        elif status == "FAIL":
+            console.logger.info(f"[error]{summary.rstrip()}[/error]")
+        else:
+            console.logger.info(f"[info]{summary.rstrip()}[/info]")
+
+    if report.exit_code:
+        sys.exit(report.exit_code)
+
+
+def _mcp_doctor_legacy() -> None:
+    """Pre-Packet-001 doctor: problem list for cwd git root (compat)."""
     catalog = _load_catalog()
     repo = get_repo_root(fallback_cwd=False)
     if not repo:
@@ -1222,8 +1326,14 @@ def mcp_doctor_cmd():
     except ProjectIdentityError as exc:
         raise click.ClickException(f"Could not resolve project identity: {exc}") from exc
 
+    # Load envrc when present so legacy path no longer false-fails on unset ports.
     doctor_env = dict(os.environ)
     doctor_env.update(_project_env_exports(repo, str(identity.project_root)))
+    if envrc_path.is_file():
+        from dopemux.mcp.envrc import load_envrc, merge_envrc_into_environ
+
+        parsed = load_envrc(envrc_path)
+        doctor_env = merge_envrc_into_environ(doctor_env, parsed, override=True)
 
     if not mcp_json_path.exists():
         problems.append(f"Missing {mcp_json_path} — run `dopemux mcp init`.")
@@ -1239,7 +1349,7 @@ def mcp_doctor_cmd():
             problems.append(f"Server `{name}` declared locally but not in catalog.")
             continue
         is_stdio = spec.get("transport") == "stdio"
-        env_source = doctor_env if is_stdio else os.environ
+        env_source = doctor_env if is_stdio else doctor_env
         for env_key in spec.get("requires_env", []) or []:
             if not env_source.get(env_key):
                 problems.append(f"`{name}`: required env `{env_key}` is unset.")
