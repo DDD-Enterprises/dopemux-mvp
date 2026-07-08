@@ -96,26 +96,45 @@ direnv allow
 
 ### Step 4 — Start per-worktree containers
 
-The per-worktree services (`conport`, `dope-memory`) need to be started with your
-workspace's port variables:
+> [!CAUTION]
+> **Unsafe until Packet 002 (repo-aware start).** Injecting another project's
+> `.envrc.dopemux-mcp` into `dopemux-mvp` compose is a known lifecycle hazard:
+>
+> 1. **Container name collision** — `compose.yml` defaults
+>    `container_name: ${CONPORT_CONTAINER_NAME:-mcp-conport}`, so a foreign-repo
+>    `up` can **replace** the primary ConPort container if the name is still default.
+> 2. **dope-memory state bleed** — volume `./.dopemux:/data` is **relative to
+>    compose cwd**. Starting dope-memory from `dopemux-mvp` binds
+>    `dopemux-mvp/.dopemux`, not the target repo.
+> 3. **Ownership is unproven** — a listening port is **not** proof the service
+>    belongs to your project. Unlabeled containers are `UNKNOWN`, not healthy.
+>
+> Prefer diagnosing first. Do **not** treat `mcp init` as runtime isolation.
 
 ```bash
-# From the dopemux-mvp directory:
-cd ~/code/dopemux-mvp
+# Read-only truth gate (any cwd; does not start/stop containers):
+dopemux mcp doctor --repo ~/code/your-other-project
+dopemux mcp doctor --repo ~/code/your-other-project --json
+```
 
-# Start the per-worktree services for your project using its env file:
+Repo-aware `dopemux mcp start/up --repo` is **not** implemented yet (Packet 002).
+
+<details>
+<summary>Legacy / high-risk compose path (not recommended)</summary>
+
+```bash
+# From dopemux-mvp — DANGEROUS for foreign repos without unique names + absolute volumes:
+cd ~/code/dopemux-mvp
 env $(cat ~/code/your-other-project/.envrc.dopemux-mcp | grep -v '^#' | xargs) \
   docker compose -f compose.yml up -d conport dope-memory
-
-# Go back to your project
-cd ~/code/your-other-project
 ```
+</details>
 
 ### Step 5 — Verify connectivity
 
 ```bash
-# Check port reachability and env vars:
-dopemux mcp doctor
+# Repo-aware doctor (loads target .envrc.dopemux-mcp; no container mutations):
+dopemux mcp doctor --repo ~/code/your-other-project
 
 # Full health report with transport-aware probing:
 ~/code/dopemux-mvp/mcp_server_health_report.sh
