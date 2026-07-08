@@ -97,17 +97,149 @@ def mcp():
     """
 
 
+def _lifecycle_repo_option():
+    return click.option(
+        "--repo",
+        "repo_arg",
+        type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+        default=None,
+        help="Target repo/worktree (default: cwd). Works without compose.yml in the target.",
+    )
+
+
+def _lifecycle_services_option():
+    return click.option(
+        "--services",
+        "services",
+        default=None,
+        help="Comma-separated project-scoped services (conport,dope-memory,task-orchestrator).",
+    )
+
+
+def _run_lifecycle_cli(
+    operation: str,
+    *,
+    repo_arg: Optional[Path],
+    services: Optional[str],
+    dry_run: bool,
+    json_output: bool,
+) -> None:
+    """Shared entry for start/stop/restart/status reconciler."""
+    from dopemux.mcp.lifecycle import format_lifecycle_human, run_lifecycle
+
+    catalog = _load_catalog()
+    svc_list = [s.strip() for s in (services or "").split(",") if s.strip()] or None
+    result = run_lifecycle(
+        operation,
+        repo=repo_arg,
+        services=svc_list,
+        catalog=catalog,
+        dry_run=dry_run,
+        process_env=dict(os.environ),
+    )
+    if json_output:
+        sys.stdout.write(result.to_json())
+    else:
+        text = format_lifecycle_human(result)
+        if result.status in {"PASS", "PLANNED"}:
+            console.logger.info(f"[success]{text.rstrip()}[/success]")
+        elif result.status in {"PASS_WITH_WARNINGS"}:
+            console.logger.info(f"[warning]{text.rstrip()}[/warning]")
+        elif result.status in {"FAIL", "BLOCKED"}:
+            console.logger.info(f"[error]{text.rstrip()}[/error]")
+        else:
+            console.logger.info(f"[info]{text.rstrip()}[/info]")
+    if result.exit_code:
+        sys.exit(result.exit_code)
+
+
+@mcp.command("start")
+@_lifecycle_repo_option()
+@_lifecycle_services_option()
+@click.option("--dry-run", is_flag=True, help="Plan only; no Docker mutations, no registry writes.")
+@click.option("--json", "json_output", is_flag=True, help="Emit lifecycle JSON report.")
+def mcp_start_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: bool, json_output: bool):
+    """
+    🚀 Start project-scoped MCP sidecars (repo-aware reconciler)
+
+    Starts conport / dope-memory / task-orchestrator for the target repo with
+    unique names, labels, absolute memory volumes, and runtime registry updates.
+    Does not use the unsafe env-injection compose pattern.
+    """
+    _run_lifecycle_cli(
+        "start",
+        repo_arg=repo_arg,
+        services=services,
+        dry_run=dry_run,
+        json_output=json_output,
+    )
+
+
+@mcp.command("stop")
+@_lifecycle_repo_option()
+@_lifecycle_services_option()
+@click.option("--dry-run", is_flag=True, help="Plan only; do not stop containers.")
+@click.option("--json", "json_output", is_flag=True, help="Emit lifecycle JSON report.")
+def mcp_stop_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: bool, json_output: bool):
+    """
+    🛑 Stop Dopemux-managed MCP sidecars for a target repo
+
+    Stops only containers with dopemux.managed=true and matching project labels
+    (or registry-known task-orchestrator wrappers). Never stops unlabeled strangers.
+    """
+    _run_lifecycle_cli(
+        "stop",
+        repo_arg=repo_arg,
+        services=services,
+        dry_run=dry_run,
+        json_output=json_output,
+    )
+
+
+@mcp.command("restart")
+@_lifecycle_repo_option()
+@_lifecycle_services_option()
+@click.option("--dry-run", is_flag=True, help="Plan stop+start without mutations.")
+@click.option("--json", "json_output", is_flag=True, help="Emit lifecycle JSON report.")
+def mcp_restart_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: bool, json_output: bool):
+    """♻️ Restart project-scoped MCP sidecars (safe stop then start)."""
+    _run_lifecycle_cli(
+        "restart",
+        repo_arg=repo_arg,
+        services=services,
+        dry_run=dry_run,
+        json_output=json_output,
+    )
+
+
 @mcp.command("up")
 @click.option("--all", "all_services", is_flag=True, help="🚀 Boot Fleet: Start every configured MCP service simultaneously.")
 @click.option("--services", "services", help="🎯 Targeted Ignition: Comma-separated list of specific MCP services to ignite.")
-def mcp_up_cmd(all_services: bool, services: str):
+@_lifecycle_repo_option()
+@click.option("--dry-run", is_flag=True, help="When --repo is set: plan-only reconciler start.")
+@click.option("--json", "json_output", is_flag=True, help="When --repo is set: JSON lifecycle report.")
+def mcp_up_cmd(
+    all_services: bool,
+    services: str,
+    repo_arg: Optional[Path],
+    dry_run: bool,
+    json_output: bool,
+):
     """
-    ⚡ Ignite Engine: Deploy MCP servers via Docker Compose
+    ⚡ Ignite Engine: Deploy MCP servers
 
-    Materializes the Model Context Protocol environment, initializing the 
-    distributed tool architecture required for high-fidelity focus-tracking 
-    and codebase interrogation.
+    With ``--repo``: compatibility alias for ``dopemux mcp start --repo``.
+    Without ``--repo``: legacy cwd compose / start-all-mcp-servers.sh behavior.
     """
+    if repo_arg is not None or dry_run or json_output:
+        _run_lifecycle_cli(
+            "start",
+            repo_arg=repo_arg,
+            services=services,
+            dry_run=dry_run,
+            json_output=json_output,
+        )
+        return
     try:
         script_dir = Path(__file__).parent.parent.parent.parent / "scripts"
         script_path = script_dir / "start-all-mcp-servers.sh"
@@ -126,13 +258,31 @@ def mcp_up_cmd(all_services: bool, services: str):
 
 
 @mcp.command("down")
-def mcp_down_cmd():
+@_lifecycle_repo_option()
+@_lifecycle_services_option()
+@click.option("--dry-run", is_flag=True, help="When --repo is set: plan-only stop.")
+@click.option("--json", "json_output", is_flag=True, help="When --repo is set: JSON lifecycle report.")
+def mcp_down_cmd(
+    repo_arg: Optional[Path],
+    services: Optional[str],
+    dry_run: bool,
+    json_output: bool,
+):
     """
-    💧 Cool Down Cores: Terminate MCP containers and volumes
+    💧 Cool Down Cores: Terminate MCP containers
 
-    Safely deactivates the neural infrastructure, releasing system resources 
-    and preserving ritual state in the Docker volume ledgers.
+    With ``--repo``: compatibility alias for ``dopemux mcp stop --repo``.
+    Without ``--repo``: legacy cwd compose rm behavior.
     """
+    if repo_arg is not None or dry_run or json_output:
+        _run_lifecycle_cli(
+            "stop",
+            repo_arg=repo_arg,
+            services=services,
+            dry_run=dry_run,
+            json_output=json_output,
+        )
+        return
     try:
         # Derive from the default set so `down` stays symmetric with `up`
         # (previously a hardcoded list that omitted several running services).
@@ -150,13 +300,43 @@ def mcp_down_cmd():
 
 
 @mcp.command("status")
-def mcp_status_cmd():
+@_lifecycle_repo_option()
+@click.option("--json", "json_output", is_flag=True, help="Emit repo-aware status JSON (registry+docker+probes).")
+@click.option(
+    "--legacy-compose",
+    is_flag=True,
+    help="Force legacy `docker compose ps` from cwd (ignores --repo).",
+)
+def mcp_status_cmd(repo_arg: Optional[Path], json_output: bool, legacy_compose: bool):
     """
     📊 Diagnostic HUD: Interrogate MCP service health
 
-    Displays the current operational state, port mappings, and uptime for 
-    all registered MCP daemons. Essential for diagnosing sensor disconnects.
+    Default / with ``--repo`` / ``--json``: repo-aware status (registry + Docker + probes).
+    ``--legacy-compose``: previous cwd `docker compose ps` behavior.
     """
+    if legacy_compose:
+        try:
+            subprocess.run(["docker", "compose", "-f", "compose.yml", "ps"], check=True)
+        except (CalledProcessError, FileNotFoundError):
+            sys.exit(1)
+        return
+
+    # Prefer reconciler status when --repo/--json or target has .mcp.json
+    use_reconciler = (
+        repo_arg is not None
+        or json_output
+        or (Path.cwd() / PROJECT_MCP_FILENAME).exists()
+        or (Path.cwd() / ENVRC_FILENAME).exists()
+    )
+    if use_reconciler:
+        _run_lifecycle_cli(
+            "status",
+            repo_arg=repo_arg,
+            services=None,
+            dry_run=False,
+            json_output=json_output,
+        )
+        return
     try:
         subprocess.run(["docker", "compose", "-f", "compose.yml", "ps"], check=True)
     except (CalledProcessError, FileNotFoundError):
@@ -244,27 +424,48 @@ def servers():
 @servers.command("up")
 @click.option("--all", "all_services", is_flag=True, help="🚀 Boot Fleet: Start every configured MCP service simultaneously.")
 @click.option("--services", "services", help="🎯 Targeted Ignition: Comma-separated list of specific MCP services to ignite.")
-def servers_up_cmd(all_services: bool, services: str):
+@click.option("--repo", "repo_arg", type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path), default=None)
+@click.option("--dry-run", is_flag=True)
+@click.option("--json", "json_output", is_flag=True)
+def servers_up_cmd(
+    all_services: bool,
+    services: str,
+    repo_arg: Optional[Path],
+    dry_run: bool,
+    json_output: bool,
+):
     """
     ⚡ Ignite Engine (Alias): Deploy MCP servers via Docker Compose
     """
-    mcp_up_cmd.callback(all_services, services)
+    mcp_up_cmd.callback(all_services, services, repo_arg, dry_run, json_output)
 
 
 @servers.command("down")
-def servers_down_cmd():
+@click.option("--repo", "repo_arg", type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path), default=None)
+@click.option("--services", "services", default=None)
+@click.option("--dry-run", is_flag=True)
+@click.option("--json", "json_output", is_flag=True)
+def servers_down_cmd(
+    repo_arg: Optional[Path],
+    services: Optional[str],
+    dry_run: bool,
+    json_output: bool,
+):
     """
     💧 Cool Down Cores (Alias): Terminate MCP containers and volumes
     """
-    mcp_down_cmd.callback()
+    mcp_down_cmd.callback(repo_arg, services, dry_run, json_output)
 
 
 @servers.command("status")
-def servers_status_cmd():
+@click.option("--repo", "repo_arg", type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path), default=None)
+@click.option("--json", "json_output", is_flag=True)
+@click.option("--legacy-compose", is_flag=True)
+def servers_status_cmd(repo_arg: Optional[Path], json_output: bool, legacy_compose: bool):
     """
     📊 Diagnostic HUD (Alias): Interrogate MCP service health
     """
-    mcp_status_cmd.callback()
+    mcp_status_cmd.callback(repo_arg, json_output, legacy_compose)
 
 
 @servers.command("logs")

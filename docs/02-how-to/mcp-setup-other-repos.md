@@ -94,36 +94,45 @@ echo 'source .envrc.dopemux-mcp' >> .envrc
 direnv allow
 ```
 
-### Step 4 — Start per-worktree containers
+### Step 4 — Start per-worktree containers (repo-aware reconciler)
 
-> [!CAUTION]
-> **Unsafe until Packet 002 (repo-aware start).** Injecting another project's
-> `.envrc.dopemux-mcp` into `dopemux-mvp` compose is a known lifecycle hazard:
->
-> 1. **Container name collision** — `compose.yml` defaults
->    `container_name: ${CONPORT_CONTAINER_NAME:-mcp-conport}`, so a foreign-repo
->    `up` can **replace** the primary ConPort container if the name is still default.
-> 2. **dope-memory state bleed** — volume `./.dopemux:/data` is **relative to
->    compose cwd**. Starting dope-memory from `dopemux-mvp` binds
->    `dopemux-mvp/.dopemux`, not the target repo.
-> 3. **Ownership is unproven** — a listening port is **not** proof the service
->    belongs to your project. Unlabeled containers are `UNKNOWN`, not healthy.
->
-> Prefer diagnosing first. Do **not** treat `mcp init` as runtime isolation.
+**Preferred path** (Packet 002):
 
 ```bash
-# Read-only truth gate (any cwd; does not start/stop containers):
-dopemux mcp doctor --repo ~/code/your-other-project
-dopemux mcp doctor --repo ~/code/your-other-project --json
+cd ~/code/your-other-project
+dopemux mcp init          # if not already done
+dopemux mcp doctor        # truth gate (loads .envrc.dopemux-mcp)
+dopemux mcp start         # labeled sidecars + runtime registry
+# or from any cwd:
+dopemux mcp start --repo ~/code/your-other-project
+dopemux mcp start --repo ~/code/your-other-project --dry-run --json
 ```
 
-Repo-aware `dopemux mcp start/up --repo` is **not** implemented yet (Packet 002).
+What `mcp start` does:
+
+- Runs doctor preflight; **blocks** on transport mismatch, unlabeled port owners, wrong-project containers
+- Generates compose override with **unique container names** and **absolute** target `.dopemux` volume
+- Sets `dopemux.managed=true` + project labels
+- Writes operational registry: `~/.dopemux/mcp/runtime/instances.json`
+- Does **not** adopt unlabeled containers
+
+Shared infrastructure (postgres, redis, etc.) must already be running from the primary dopemux stack (`--no-deps` sidecars).
+
+```bash
+dopemux mcp status --repo ~/code/your-other-project --json
+dopemux mcp stop --repo ~/code/your-other-project
+# Compatibility: mcp up/down --repo → start/stop
+```
+
+> [!CAUTION]
+> **Do not** use the old clipboard pattern (env-inject into dopemux-mvp compose).
+> It can replace `mcp-conport` and bind the wrong `.dopemux` data directory.
 
 <details>
 <summary>Legacy / high-risk compose path (not recommended)</summary>
 
 ```bash
-# From dopemux-mvp — DANGEROUS for foreign repos without unique names + absolute volumes:
+# DANGEROUS — fixed names + relative volumes:
 cd ~/code/dopemux-mvp
 env $(cat ~/code/your-other-project/.envrc.dopemux-mcp | grep -v '^#' | xargs) \
   docker compose -f compose.yml up -d conport dope-memory
@@ -133,7 +142,7 @@ env $(cat ~/code/your-other-project/.envrc.dopemux-mcp | grep -v '^#' | xargs) \
 ### Step 5 — Verify connectivity
 
 ```bash
-# Repo-aware doctor (loads target .envrc.dopemux-mcp; no container mutations):
+dopemux mcp status --repo ~/code/your-other-project
 dopemux mcp doctor --repo ~/code/your-other-project
 
 # Full health report with transport-aware probing:

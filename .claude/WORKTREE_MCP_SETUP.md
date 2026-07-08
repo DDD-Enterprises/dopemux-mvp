@@ -3,12 +3,10 @@
 **Purpose**: Enable full MCP server functionality across all git worktrees with automatic workspace detection
 
 > [!CAUTION]
-> **Config ≠ runtime isolation.** `dopemux mcp init` writes per-worktree
-> `.mcp.json` / `.envrc.dopemux-mcp`, but `mcp up` / compose still key off cwd
-> and default names (`mcp-conport`, relative `./.dopemux`). Before starting
-> multi-repo stacks, run the read-only gate:
-> `dopemux mcp doctor --repo <worktree-path> [--json]`.
-> Do not treat a listening port as proof of ownership.
+> **Config ≠ runtime isolation.** Use the reconciler, not cwd compose:
+> `dopemux mcp doctor --repo <worktree>` then `dopemux mcp start --repo <worktree>`.
+> Start applies labels + unique names + absolute `.dopemux` volume and records
+> `~/.dopemux/mcp/runtime/instances.json`. Unlabeled containers are never adopted.
 
 ## Overview
 
