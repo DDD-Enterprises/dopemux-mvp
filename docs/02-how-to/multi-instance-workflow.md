@@ -22,6 +22,10 @@ prelude: Multi-Instance Workflow Guide (how-to) for dopemux documentation and de
 
 Zero context destruction through parallel ADHD-optimized development instances.
 
+> **MCP sidecars (2026-07):** Prefer `dopemux mcp start --repo <worktree>` after
+> `dopemux mcp init` / `doctor`. Do not env-inject foreign `.envrc.dopemux-mcp`
+> into dopemux-mvp compose. Registry: `~/.dopemux/mcp/runtime/instances.json`.
+
 ## Overview
 
 Dopemux supports running up to 5 concurrent instances with isolated worktrees, enabling you to:
