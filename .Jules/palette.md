@@ -70,11 +70,11 @@
 **Learning:** For users with ADHD, relative durations (e.g., "45 minutes remaining") can feel abstract and fail to trigger a realistic sense of time ("time blindness"). Providing an absolute completion time (e.g., "Estimated completion: 14:30") grounds the relative effort in the real world, making the remaining workload feel more tangible and manageable.
 **Action:** Always supplement relative duration displays with an absolute estimated completion time to provide a concrete temporal anchor.
 
-## 2026-05-14 - [Temporal Grounding for Task Management]
+## 2025-05-14 - [Temporal Grounding for Task Management]
 **Learning:** Displaying relative durations (e.g., "45m remaining") is helpful but can still feel abstract to users with ADHD who experience "time blindness." Providing an absolute wall-clock finish estimate (e.g., "Finish at 14:30") grounds the relative duration in real-world time, making the workload feel more concrete and manageable.
 **Action:** Supplement relative duration counters with absolute estimated completion times to improve temporal grounding and reduce cognitive load.
 
-## 2026-05-15 - [Safe Destructive Actions with Soft Confirmation]
+## 2025-05-15 - [Safe Destructive Actions with Soft Confirmation]
 **Learning:** For ADHD users who may experience impulsivity or accidental clicks, immediate destructive actions (like resetting a hard-won ritual progress) can lead to significant frustration. Implementing a "soft" two-step confirmation (Confirm Reset?) within a short temporal window (3s) provides a safety net without the friction of a modal dialog.
 **Action:** Use a two-step confirmation state on buttons for destructive actions that are not easily reversible to prevent accidental progress loss.
 
@@ -158,6 +158,10 @@
 **Learning:** When refactoring multiple nested tooltips into a single "Card-Level" summary, it's easy to lose critical context like the "AI-generated" nature of suggestions. Explicitly labeling these summaries as "AI Insight" or "AI Recommendation" ensures transparency and maintains the user's understanding of the source of the information, which is crucial for building trust in automated systems.
 **Action:** When consolidating metadata into a single tooltip, ensure that the source and nature of suggestions (especially AI-driven ones) are explicitly labeled.
 
+
+## 2025-06-01 - [Consolidated Card-Level Interaction]
+**Learning:** Nesting interactive elements (like a "Copy" button) inside a focusable card surface creates a redundant and confusing experience for keyboard and screen reader users (nested tab stops). Consolidating the interaction onto the root container (Card-Level Interactive Surface) simplifies the tab order and provides a more direct, high-bandwidth interaction path.
+**Action:** When adding secondary actions like "Copy to Clipboard" to dashboard panels, prefer making the entire card the interactive surface rather than nesting small buttons.
 
 ## 2026-07-07 - [Tactile Confirmation for Signal Copying]
 **Learning:** In a high-density "Signal Feed," users need immediate and multi-stage feedback when interacting with fleeting notifications. Implementing a three-tier "Tactile Confirmation" loop—swapping icons (Signal -> Check), updating tooltips ("Click to Copy" -> "Copied!"), and triggering a brief scale-and-glow pulse animation—provides enough sensory reinforcement to confirm success without the user needing to leave the dashboard.

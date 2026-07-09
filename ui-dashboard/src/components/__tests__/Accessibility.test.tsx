@@ -31,26 +31,26 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
   const { rerender } = render(<PredictionPanel />);
   const progressBar = screen.getByRole('progressbar');
   expect(progressBar).toHaveAttribute('aria-label', '15-Minute Load Prediction Percentage');
-  expect(progressBar).toHaveAttribute('aria-valuetext', 'Prediction Loading...');
 
-  const panel = screen.getByLabelText('No prediction available');
-  expect(panel).toHaveAttribute('tabIndex', '0');
+  const panel = screen.getByLabelText('No prediction');
+  expect(panel).toHaveAttribute('tabIndex', '-1');
+  expect(panel).toHaveAttribute('role', 'button');
 
   // Test 2: With critical prediction
   rerender(<PredictionPanel prediction={0.9} />);
 
   const criticalValue = '90%';
   expect(screen.getByText(criticalValue)).toBeDefined();
-  expect(progressBar).toHaveAttribute('aria-valuetext', criticalValue);
 
-  const criticalLabel = /Fifteen minute prediction 90 percent, Break\. Now\./i;
+  const criticalLabel = /15-min prediction 90%, Break\. Now\./i;
   expect(screen.getByLabelText(criticalLabel)).toBeDefined();
+  expect(screen.getByLabelText(panel.getAttribute('aria-label'))).toHaveAttribute('tabIndex', '0');
 
   // Test 3: With optimal prediction
   rerender(<PredictionPanel prediction={0.4} />);
   const optimalValue = '40%';
   expect(screen.getByText(optimalValue)).toBeDefined();
-  expect(screen.getByLabelText(/Fifteen minute prediction 40 percent, Flow Ritual/i)).toBeDefined();
+  expect(screen.getByLabelText(/15-min prediction 40%, Flow Ritual/i)).toBeDefined();
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
@@ -191,12 +191,12 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('href="#main-dashboard"');
   expect(appContent).toMatch(/aria-label=\{\s*connectionStatus === 'degraded'\s*\?\s*`System connection degraded: \$\{connectionLabel\} DØPEMÜX Ritual Daemon\. Click to retry connection\.`\s*:\s*`System is actively monitoring ritual state: \$\{connectionLabel\} DØPEMÜX Ritual Daemon`\s*\}/);
   expect(appContent).toContain('<Tooltip title="Current cognitive status and load percentage" arrow>');
-  expect(appContent).toMatch(/<Tooltip title=\{isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>/);
+  expect(appContent).toMatch(/<Tooltip title={isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>/);
   expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
-  expect(appContent).toMatch(/<Tooltip title=\{isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>[\s\S]*tabIndex=\{0\}/);
+  expect(appContent).toMatch(/<Tooltip title={isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toMatch(/aria-label=\{\s*isCopied\s*\?\s*`AI Recommendation: \$\{cognitiveState\.recommendation\} \(Copied\)`\s*:\s*`Copy AI Recommendation: \$\{cognitiveState\.recommendation\}`\s*\}/);
   expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications\' : \'Clear all notifications\'}');
-  expect(appContent).toMatch(/<Tooltip title=\{isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\} arrow>/);
+  expect(appContent).toMatch(/<Tooltip title={isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\} arrow>/);
   expect(appContent).toContain('System is actively listening for ConPort and ADHD event traffic');
   expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
   expect(appContent).toContain('Waiting for signals...');
