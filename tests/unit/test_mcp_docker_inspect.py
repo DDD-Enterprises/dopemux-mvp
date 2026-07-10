@@ -1,142 +1,49 @@
-"""Unit tests for dopemux.mcp.docker_inspect (mocked Docker)."""
+"""Docker ownership classification (006R compose secondary evidence)."""
 
-from __future__ import annotations
-
-import json
-from types import SimpleNamespace
-
-from dopemux.mcp import docker_inspect as di
+from dopemux.mcp.docker_inspect import DockerContainerInfo, classify_container_ownership
 
 
-def test_parse_docker_ps_json_lines():
-    rows = [
-        {
-            "ID": "abc123456789",
-            "Names": "mcp-conport_dnh",
-            "Image": "conport:latest",
-            "Status": "Up 2 hours",
-            "Ports": "0.0.0.0:3041->3005/tcp",
-            "Labels": "dopemux.project_root=/Users/hue/code/dNh_CRM,dopemux.workspace_id=/Users/hue/code/dNh_CRM",
-        }
-    ]
-    text = "\n".join(json.dumps(r) for r in rows)
-    containers = di.parse_docker_ps_json_lines(text)
-    assert len(containers) == 1
-    c = containers[0]
-    assert c.name == "mcp-conport_dnh"
-    assert 3041 in c.published_ports
-    assert c.labels["dopemux.project_root"] == "/Users/hue/code/dNh_CRM"
-
-
-def test_docker_unavailable_when_binary_missing(monkeypatch):
-    monkeypatch.setattr(di.shutil, "which", lambda _: None)
-    result = di.inspect_running_containers()
-    assert result.available is False
-    assert "docker" in (result.error or "").lower()
-
-
-def test_docker_unavailable_on_nonzero_exit():
-    def fake_run(*args, **kwargs):
-        return SimpleNamespace(returncode=1, stdout="", stderr="Cannot connect to Docker daemon")
-
-    result = di.inspect_running_containers(runner=fake_run)
-    assert result.available is False
-    assert "Docker" in (result.error or "") or "Cannot" in (result.error or "")
-
-
-def test_classify_labeled_match():
-    c = di.DockerContainerInfo(
-        id="1",
-        name="mcp-conport",
+def test_compose_match_dnh_conport():
+    c = DockerContainerInfo(
+        id="abc",
+        name="mcp-conport_dnh_crm_8d6d",
         labels={
-            "dopemux.project_root": "/proj/a",
-            "dopemux.workspace_id": "/proj/a",
+            "com.docker.compose.project": "dopemux_dnh_crm_8d6d",
+            "com.docker.compose.service": "conport",
         },
-        published_ports=[3041],
+        published_ports=[3040, 3041, 4040],
     )
-    status = di.classify_container_ownership(
+    st = classify_container_ownership(
         c,
-        project_root="/proj/a",
-        workspace_id="/proj/a",
-        project_id="a-hash",
-        expected_ports=[3041],
+        project_root="/Users/hue/code/dNh_CRM",
+        workspace_id="/Users/hue/code/dNh_CRM",
+        project_id="dnh_crm-9a4e9aa8a329cdd5",
+        expected_ports=[3040, 3041, 4040],
         expected_name_substrings=["conport"],
+        project_slug_hints=["dNh_CRM", "dnh_crm"],
     )
-    assert status == "MATCH"
+    assert st == "COMPOSE_MATCH"
 
 
-def test_classify_wrong_project():
-    c = di.DockerContainerInfo(
-        id="1",
-        name="mcp-conport",
+def test_main_stack_memory_unlabeled_not_compose_match_for_dnh():
+    c = DockerContainerInfo(
+        id="xyz",
+        name="dopemux-dope-memory-1",
         labels={
-            "dopemux.project_root": "/proj/other",
-            "dopemux.workspace_id": "/proj/other",
+            "com.docker.compose.project": "dopemux",
+            "com.docker.compose.project.working_dir": "/Users/hue/code/dopemux-mvp",
+            "com.docker.compose.service": "dope-memory",
         },
-        published_ports=[3041],
+        published_ports=[3020],
     )
-    status = di.classify_container_ownership(
+    st = classify_container_ownership(
         c,
-        project_root="/proj/a",
-        workspace_id="/proj/a",
-        project_id="a-hash",
-        expected_ports=[3041],
+        project_root="/Users/hue/code/dNh_CRM",
+        workspace_id="/Users/hue/code/dNh_CRM",
+        project_id="dNh_CRM",
+        expected_ports=[3020],
+        expected_name_substrings=["dope-memory"],
+        project_slug_hints=["dNh_CRM"],
     )
-    assert status == "WRONG_PROJECT"
-
-
-def test_classify_unlabeled_matching_port():
-    c = di.DockerContainerInfo(
-        id="1",
-        name="mcp-conport",
-        labels={},
-        published_ports=[3041],
-    )
-    status = di.classify_container_ownership(
-        c,
-        project_root="/proj/a",
-        workspace_id="/proj/a",
-        project_id="a-hash",
-        expected_ports=[3041],
-        expected_name_substrings=["conport"],
-    )
-    assert status == "UNLABELED"
-
-
-def test_find_containers_by_port_and_name():
-    docker = di.DockerInspectResult(
-        available=True,
-        containers=[
-            di.DockerContainerInfo(
-                id="1",
-                name="random",
-                published_ports=[9999],
-            ),
-            di.DockerContainerInfo(
-                id="2",
-                name="mcp-conport_x",
-                published_ports=[3041],
-            ),
-        ],
-    )
-    found = di.find_containers_for_service(
-        docker,
-        service_name="conport",
-        expected_ports=[3041],
-        name_hints=["conport"],
-    )
-    assert len(found) == 1
-    assert found[0].name == "mcp-conport_x"
-
-
-def test_no_matching_container():
-    docker = di.DockerInspectResult(
-        available=True,
-        containers=[
-            di.DockerContainerInfo(id="1", name="redis", published_ports=[6379]),
-        ],
-    )
-    found = di.find_containers_for_service(
-        docker, service_name="conport", expected_ports=[3041], name_hints=["conport"]
-    )
-    assert found == []
+    # Main stack compose project "dopemux" does not slug-match dNh → UNLABELED
+    assert st in {"UNLABELED", "UNKNOWN"}

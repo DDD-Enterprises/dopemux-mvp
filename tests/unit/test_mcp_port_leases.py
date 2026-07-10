@@ -207,3 +207,38 @@ def test_find_active_for_identity_separates_scopes(tmp_path: Path):
     )
     assert found_wt is not None
     assert found_wt["port"] == 3040
+
+
+def test_reconcile_releases_invalid_singleton_lease(tmp_path: Path):
+    path = tmp_path / "leases.json"
+    reg = PortLeaseRegistry.load(path, create_missing=True)
+    reg.upsert_lease(
+        PortLease(
+            lease_id="lease_project_a_to_7890",
+            port=7890,
+            service="task-orchestrator",
+            port_role="http",
+            project_root="/Users/alice/code/project-a",
+            worktree_root="/Users/alice/code/project-a",
+            status="active",
+        )
+    )
+    reg.save()
+    plan = reg.reconcile_reserved_singleton_leases({7890: "task-orchestrator"}, dry_run=True)
+    assert plan["invalid_count"] == 1
+    assert plan["applied"] is False
+    applied = reg.reconcile_reserved_singleton_leases({7890: "task-orchestrator"}, dry_run=False)
+    assert applied["applied"] is True
+    reg2 = PortLeaseRegistry.load(path)
+    assert not any(int(L.get("port") or 0) == 7890 for L in reg2.active_leases())
+
+
+def test_pytest_defaults_away_from_home_registry(monkeypatch):
+    monkeypatch.delenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", raising=False)
+    monkeypatch.delenv("DOPEMUX_ALLOW_HOME_LEASE_REGISTRY", raising=False)
+    monkeypatch.setenv("PYTEST_CURRENT_TEST", "test_node")
+    from dopemux.mcp import port_leases as pl
+
+    path = pl.default_lease_registry_path()
+    assert "dopemux-pytest-port-leases" in str(path)
+    assert str(Path.home()) not in str(path)

@@ -37,6 +37,14 @@ applied to `dopemux-mvp`.
 > never write leases. Fixed-port `task-orchestrator` (7890) reuses or blocks —
 > it does not rebind.
 >
+> >
+> **006R remediation:** Task Orchestrator port `7890` is a **reserved host singleton**
+> (never project-leased). Invalid fixture leases on reserved ports are reconciled via
+> `dopemux mcp leases reconcile --apply`. Doctor recognizes compose-project sidecars
+> (e.g. `mcp-conport_dnh_crm_*`) and **refuses** main-stack dope-memory when target is
+> another repo. Upstream TO jar has no REST `/info`/`/health` — use container name,
+> data path, labels, and MCP transport.
+>
 > **TO identity (TP-DMX-MCP-RUNTIME-005):** prove project ownership of `:7890`
 > before treating TO as ready. Trust order: HTTP `/info` identity → Docker labels
 > → runtime registry → wrapper metadata
