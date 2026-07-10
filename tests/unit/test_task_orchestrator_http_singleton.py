@@ -12,7 +12,6 @@ import re
 import subprocess
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 HTTP_LAUNCHER = REPO_ROOT / "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh"
 STDIO_LAUNCHER = REPO_ROOT / "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh"
@@ -107,7 +106,9 @@ def test_reuses_running_singleton_with_http_env(tmp_path):
     result, run_marker = _run(tmp_path, env_ok=True)
     assert result.returncode == 0, result.stderr
     assert "already running" in result.stderr
-    assert not run_marker.exists(), "recreated a healthy singleton instead of reusing it"
+    assert (
+        not run_marker.exists()
+    ), "recreated a healthy singleton instead of reusing it"
 
 
 def test_recreates_running_singleton_missing_http_env(tmp_path):

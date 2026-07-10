@@ -8,13 +8,11 @@ fail-closed on wrong-project or unknown for start.
 from __future__ import annotations
 
 import json
-import os
-import re
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence  # Mapping used by heuristics
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 
 DEFAULT_TO_PORT = 7890
 METADATA_FILENAME = "task-orchestrator.identity.json"
@@ -82,49 +80,6 @@ def _ids_equal(a: Optional[str], b: Optional[str]) -> bool:
     return str(a).strip().lower() == str(b).strip().lower()
 
 
-def _normalize_project_id(value: Optional[str]) -> Optional[str]:
-    """Deterministic project_id normalization for match_target.
-
-    - lower-case
-    - hyphen → underscore
-    - strip a trailing generated hash suffix when the form is
-      ``<slug>[-_]<hex8+>`` (e.g. ``dnh_crm-9a4e9aa8a329cdd5``)
-
-    Does not strip arbitrary free-text suffixes.
-    """
-    if value is None or value == "":
-        return None
-    s = str(value).strip().lower().replace("-", "_")
-    # slug + 8+ hex hash (worktree/project hash forms used by dopemux)
-    m = re.match(r"^(.+)_([0-9a-f]{8,})$", s)
-    if m:
-        return m.group(1)
-    return s
-
-
-def _ids_match_normalized(a: Optional[str], b: Optional[str]) -> bool:
-    na, nb = _normalize_project_id(a), _normalize_project_id(b)
-    if na is None or nb is None:
-        return False
-    return na == nb
-
-
-def _source_is_heuristic(source: Optional[str]) -> bool:
-    s = (source or "").lower()
-    if not s or s == "unknown":
-        return True
-    if s in {
-        "container_heuristics",
-        "name_slug",
-        "data_path_heuristic",
-        "container_name_heuristic",
-        "port_only",
-        "compose_metadata",
-    }:
-        return True
-    return "heuristic" in s
-
-
 def metadata_dir(instance_id: str, *, base: Optional[Path] = None) -> Path:
     root = base or (Path.home() / ".dopemux" / "mcp" / "runtime")
     return Path(root) / instance_id
@@ -143,7 +98,9 @@ def write_wrapper_metadata(
     """Write non-secret identity metadata. Returns path or None if dry_run/missing id."""
     if dry_run:
         return None
-    instance_id = identity.instance_id or identity.worktree_hash or identity.project_hash
+    instance_id = (
+        identity.instance_id or identity.worktree_hash or identity.project_hash
+    )
     if not instance_id:
         return None
     path = metadata_path(str(instance_id), base=base)
@@ -151,14 +108,18 @@ def write_wrapper_metadata(
     payload = {
         "schema_version": SCHEMA_VERSION,
         **identity.to_dict(),
-        "source": identity.source if identity.source != "unknown" else "wrapper_metadata",
+        "source": (
+            identity.source if identity.source != "unknown" else "wrapper_metadata"
+        ),
     }
     # Do not overwrite another project's metadata
     if path.exists():
         try:
             existing = json.loads(path.read_text(encoding="utf-8"))
             if existing.get("project_root") and identity.project_root:
-                if not _paths_equal(existing.get("project_root"), identity.project_root):
+                if not _paths_equal(
+                    existing.get("project_root"), identity.project_root
+                ):
                     raise RuntimeError(
                         f"Refusing to overwrite TO metadata for other project at {path}"
                     )
@@ -217,38 +178,42 @@ def probe_http_info(
     timeout_s: float = 1.0,
     opener: Optional[Callable[[str], Any]] = None,
 ) -> Optional[TOIdentity]:
-    """Best-effort HTTP identity probe.
-
-    Upstream Kotlin Task Orchestrator does **not** expose generic REST ``/info``
-    or ``/health`` (404). Those paths are only used when a FastAPI or other
-    stack returns a JSON body with an ``identity`` object. 404/connection errors
-    are non-fatal and return None (fall through to labels/metadata).
-    """
+    """GET /info (then /health) for identity subsection. Injectable opener for tests."""
 
     def _default_get(url: str) -> Any:
         req = urllib.request.Request(url, method="GET")
-        with urllib.request.urlopen(req, timeout=timeout_s) as resp:  # noqa: S310 — localhost probe
+        with urllib.request.urlopen(
+            req, timeout=timeout_s
+        ) as resp:  # noqa: S310 — localhost probe
             return json.loads(resp.read().decode("utf-8"))
 
     get = opener or _default_get
-    for path in ("/info", "/health", "/mcp"):
+    for path in ("/info", "/health"):
         url = f"http://{host}:{int(port)}{path}"
         try:
             body = get(url)
-        except urllib.error.HTTPError as exc:
-            # 404 is expected for upstream jar — do not treat as failure
-            if exc.code == 404:
-                continue
-            continue
-        except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError, ValueError):
+        except (
+            urllib.error.URLError,
+            urllib.error.HTTPError,
+            TimeoutError,
+            OSError,
+            json.JSONDecodeError,
+            ValueError,
+        ):
             continue
         if not isinstance(body, dict):
             continue
         ident = body.get("identity") if isinstance(body.get("identity"), dict) else None
         if not ident and path == "/health":
-            meta = body.get("metadata") if isinstance(body.get("metadata"), dict) else {}
-            ident = meta.get("identity") if isinstance(meta.get("identity"), dict) else None
+            # health may nest identity under metadata
+            meta = (
+                body.get("metadata") if isinstance(body.get("metadata"), dict) else {}
+            )
+            ident = (
+                meta.get("identity") if isinstance(meta.get("identity"), dict) else None
+            )
         if not ident:
+            # No identity fields — not proof of ownership
             continue
         return TOIdentity(
             project_id=ident.get("project_id"),
@@ -258,75 +223,18 @@ def probe_http_info(
             project_hash=ident.get("project_hash"),
             worktree_hash=ident.get("worktree_hash"),
             instance_id=ident.get("instance_id"),
-            state_scope=str(ident.get("state_scope") or "single_active_project"),
+            state_scope=str(ident.get("state_scope") or "per-repo"),
             runtime_scope=str(ident.get("runtime_scope") or "project"),
             port=int(port),
             source="http_info",
-            confidence="HIGH" if ident.get("project_root") or ident.get("project_id") else "LOW",
+            confidence=(
+                "HIGH"
+                if ident.get("project_root") or ident.get("project_id")
+                else "LOW"
+            ),
             evidence=[url],
         )
     return None
-
-
-def identity_from_container_heuristics(
-    *,
-    container_name: str,
-    labels: Optional[Mapping[str, str]] = None,
-    mounts: Optional[Sequence[Mapping[str, Any]]] = None,
-    port: int = DEFAULT_TO_PORT,
-    target_project_root: Optional[str] = None,
-    target_project_id: Optional[str] = None,
-) -> TOIdentity:
-    """Infer TO identity from container name / data path / compose labels (006R).
-
-    Upstream jar has no /info; wrapper names containers
-    ``task-orchestrator-<state_id>`` and mounts project data under a hash path.
-    """
-    labels = labels or {}
-    evidence = [container_name]
-    project_root = labels.get("dopemux.project_root") or labels.get("com.dopemux.project_root")
-    project_id = labels.get("dopemux.project_id") or labels.get("com.dopemux.project_id")
-    instance_id = labels.get("dopemux.instance_id")
-    name_l = (container_name or "").lower()
-
-    # Name pattern: task-orchestrator-dnh_crm-9a4e9aa8a329cdd5
-    if name_l.startswith("task-orchestrator-") and not instance_id:
-        instance_id = container_name[len("task-orchestrator-") :]
-        evidence.append(f"name_state_id={instance_id}")
-
-    # Data mount under ~/.local/share/dopemux-mission-control/task-orchestrator/<id>
-    if mounts:
-        for m in mounts:
-            src = str(m.get("Source") or m.get("source") or "")
-            if "task-orchestrator" in src and instance_id and instance_id in src:
-                evidence.append(f"data_mount={src}")
-            if target_project_root and target_project_root.rstrip("/") in src:
-                project_root = project_root or target_project_root
-                evidence.append("mount_contains_target_root")
-
-    # Slug match from name vs target
-    if target_project_root and not project_root:
-        slug = Path(target_project_root).name.lower().replace("-", "_")
-        slug_compact = slug.replace("_", "")
-        if slug in name_l or slug_compact in name_l.replace("_", "").replace("-", ""):
-            project_root = target_project_root
-            project_id = project_id or Path(target_project_root).name
-            evidence.append(f"name_slug_match={slug}")
-
-    conf = "MEDIUM" if project_root or instance_id else "LOW"
-    if labels.get("dopemux.project_root"):
-        conf = "HIGH"
-    return TOIdentity(
-        project_id=project_id or target_project_id,
-        project_root=project_root,
-        instance_id=instance_id,
-        port=port,
-        source="container_heuristics",
-        confidence=conf,
-        evidence=evidence,
-        state_scope="single_active_project",
-        runtime_scope="singleton",
-    )
 
 
 def identity_from_docker_labels(
@@ -336,13 +244,15 @@ def identity_from_docker_labels(
     container_name: Optional[str] = None,
 ) -> TOIdentity:
     return TOIdentity(
-        project_id=labels.get("dopemux.project_id") or labels.get("com.dopemux.project_id"),
+        project_id=labels.get("dopemux.project_id")
+        or labels.get("com.dopemux.project_id"),
         workspace_id=(
             labels.get("dopemux.workspace_id")
             or labels.get("com.dopemux.workspace_id")
             or labels.get("dopemux.worktree_root")
         ),
-        project_root=labels.get("dopemux.project_root") or labels.get("com.dopemux.project_root"),
+        project_root=labels.get("dopemux.project_root")
+        or labels.get("com.dopemux.project_root"),
         worktree_root=labels.get("dopemux.worktree_root"),
         project_hash=labels.get("dopemux.project_hash"),
         worktree_hash=labels.get("dopemux.worktree_hash"),
@@ -380,15 +290,7 @@ def match_target(
     project_id: Optional[str],
     project_root: Optional[str],
 ) -> str:
-    """Return OK | WRONG_PROJECT | UNKNOWN | CONFLICT.
-
-    Fail-closed rules (006R2):
-    - explicit root match + explicit ID match => OK
-    - explicit root match + explicit ID mismatch => CONFLICT (never OK)
-    - heuristic root + ID mismatch => CONFLICT/UNKNOWN (never OK)
-    - ID comparison uses deterministic normalization (case/hyphen/hash-suffix)
-    - heuristic evidence never outranks an explicit contradictory ID
-    """
+    """Return OK | WRONG_PROJECT | UNKNOWN | CONFLICT."""
     if observed is None or not observed.has_project_proof():
         return "UNKNOWN"
 
@@ -398,29 +300,20 @@ def match_target(
         else None
     )
     id_ok = (
-        _ids_match_normalized(observed.project_id, project_id)
+        _ids_equal(observed.project_id, project_id)
         if observed.project_id and project_id
         else None
     )
-    heuristic = _source_is_heuristic(observed.source)
 
     if root_ok is True and id_ok is True:
         return "OK"
     if root_ok is True and id_ok is False:
-        # Explicit (or heuristic) ID conflict must never become OK.
-        return "CONFLICT"
+        return "UNKNOWN"  # slug/case drift — do not hard FAIL unless roots conflict
     if root_ok is False and id_ok is True:
         return "CONFLICT"
-    if root_ok is False and id_ok is False:
-        return "WRONG_PROJECT"
-    if root_ok is False and id_ok is None:
-        return "WRONG_PROJECT"
-    if id_ok is False and root_ok is None:
+    if root_ok is False or id_ok is False:
         return "WRONG_PROJECT"
     if root_ok is True and id_ok is None:
-        # Root-only: OK only for explicit high-trust sources; heuristics stay UNKNOWN.
-        if heuristic:
-            return "UNKNOWN"
         return "OK"
     if id_ok is True and root_ok is None:
         return "UNKNOWN"  # id alone insufficient without root when target has root
@@ -428,7 +321,11 @@ def match_target(
 
 
 def _sources_conflict(a: TOIdentity, b: TOIdentity) -> bool:
-    if a.project_root and b.project_root and not _paths_equal(a.project_root, b.project_root):
+    if (
+        a.project_root
+        and b.project_root
+        and not _paths_equal(a.project_root, b.project_root)
+    ):
         return True
     if a.project_id and b.project_id and not _ids_equal(a.project_id, b.project_id):
         return True
@@ -561,6 +458,9 @@ def evaluate_fixed_port_state(
         }
     )
 
+    # Live ownership sources for an occupied port only.
+    # Wrapper metadata is disk-stale-capable and not tied to the live listener;
+    # never treat it alone as proof of who owns :port (P1 fail-closed).
     sources: List[TOIdentity] = []
     if http_identity is not None:
         sources.append(http_identity)
@@ -581,16 +481,20 @@ def evaluate_fixed_port_state(
         sources.append(docker_identity)
     if registry_identity is not None:
         sources.append(registry_identity)
-    if wrapper_identity is not None:
-        sources.append(wrapper_identity)
-    else:
-        meta = probe_wrapper_metadata(
+
+    has_live_proof = any(s.has_project_proof() for s in sources)
+
+    wrapper: Optional[TOIdentity] = wrapper_identity
+    if wrapper is None:
+        wrapper = probe_wrapper_metadata(
             instance_id=target_instance_id,
             candidates=[c for c in (target_worktree_hash, target_project_id) if c],
             base=metadata_base,
         )
-        if meta:
-            sources.append(meta)
+    if wrapper is not None and wrapper.has_project_proof():
+        if has_live_proof:
+            # Corroborate / conflict-check only when a live source already exists.
+            sources.append(wrapper)
             findings.append(
                 {
                     "code": "TASK_ORCHESTRATOR_RUNTIME_METADATA_FOUND",
@@ -598,6 +502,20 @@ def evaluate_fixed_port_state(
                     "message": "TO identity found via wrapper metadata",
                     "service": "task-orchestrator",
                     "source": "wrapper_metadata",
+                }
+            )
+        else:
+            findings.append(
+                {
+                    "code": "TASK_ORCHESTRATOR_WRAPPER_METADATA_NOT_LIVE",
+                    "severity": "WARN",
+                    "message": (
+                        "wrapper metadata present but not used as live ownership "
+                        f"proof for occupied :{port} (HTTP/Docker identity unavailable)"
+                    ),
+                    "service": "task-orchestrator",
+                    "source": "wrapper_metadata",
+                    "evidence": list(wrapper.evidence),
                 }
             )
 
