@@ -16,6 +16,15 @@ This document describes three confirmed bugs that were discovered during the `dN
 workspace MCP connectivity investigation (2026-07-06) and the authoritative fixes
 applied to `dopemux-mvp`.
 
+> [!IMPORTANT]
+> **Repo-aware doctor (TP-DMX-MCP-RUNTIME-001)** is the pre-start truth gate:
+> `dopemux mcp doctor --repo <path> [--json]`. It loads the target
+> `.envrc.dopemux-mcp`, validates catalog transports, reports `%100` hash
+> birthday-risk / missing rebind, compose lifecycle hazards (fixed
+> `mcp-conport` name, relative `./.dopemux` volume), and refuses to treat
+> unlabeled listening ports as owned. It does **not** start or stop containers.
+> Repo-aware start/stop is a later packet.
+
 ---
 
 ## Transport Architecture — What is Correct
