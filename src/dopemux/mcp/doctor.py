@@ -139,6 +139,9 @@ def _summarize_status(findings: List[Finding]) -> tuple[str, int]:
         "MCP_DOCTOR_UNKNOWN",
         "WORKTREE_ROOT_UNKNOWN",
         "PROJECT_ROOT_UNKNOWN",
+        "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN",
+        "TASK_ORCHESTRATOR_FIXED_PORT_OCCUPIED_UNKNOWN",
+        "TASK_ORCHESTRATOR_STATUS_UNKNOWN",
     }
     has_blocking_unknown = any(
         f.severity == "UNKNOWN" and f.code in unknown_blocking for f in findings
@@ -952,7 +955,7 @@ def run_mcp_doctor(
                     evidence=[line],
                 )
 
-    # --- Task orchestrator specials ---
+    # --- Task orchestrator specials (Packet 005 multi-source identity) ---
     to_spec = (catalog.get("servers") or {}).get("task-orchestrator") or {}
     if "task-orchestrator" in service_names or "task-orchestrator" in local_servers:
         if isinstance(to_spec, dict) and to_spec.get("management_model") == "wrapper-singleton":
@@ -963,22 +966,27 @@ def run_mcp_doctor(
                 "task-orchestrator is wrapper-singleton (fixed port, per-repo state)",
                 service="task-orchestrator",
             )
-            base = to_spec.get("default_port_base")
-            if base:
-                _add(
-                    findings,
-                    "TASK_ORCHESTRATOR_FIXED_PORT",
-                    "INFO",
-                    f"task-orchestrator uses fixed port {base}",
-                    service="task-orchestrator",
-                    evidence=[f"port={base}"],
-                )
-            to_port = configured_ports.get(str(to_spec.get("port_var") or "TASK_ORCHESTRATOR_HTTP_PORT"))
-            if to_port and docker_result.available:
+            base = to_spec.get("default_port_base") or 7890
+            _add(
+                findings,
+                "TASK_ORCHESTRATOR_FIXED_PORT",
+                "INFO",
+                f"task-orchestrator uses fixed port {base}",
+                service="task-orchestrator",
+                evidence=[f"port={base}"],
+            )
+            to_port = configured_ports.get(
+                str(to_spec.get("port_var") or "TASK_ORCHESTRATOR_HTTP_PORT")
+            )
+            if to_port is None:
+                to_port = int(base)
+
+            docker_identity = None
+            if docker_result.available:
                 matches = di.find_containers_for_service(
                     docker_result,
                     service_name="task-orchestrator",
-                    expected_ports=[to_port],
+                    expected_ports=[int(to_port)],
                     name_hints=["task-orchestrator", "orchestrator"],
                 )
                 for c in matches:
@@ -987,49 +995,79 @@ def run_mcp_doctor(
                         project_root=identity.project_root,
                         workspace_id=identity.workspace_id,
                         project_id=identity.project_id,
-                        expected_ports=[to_port],
+                        expected_ports=[int(to_port)],
                         expected_name_substrings=["task-orchestrator"],
                     )
                     if st == "WRONG_PROJECT":
-                        _add(
-                            findings,
-                            "TASK_ORCHESTRATOR_WRONG_PROJECT_RUNTIME",
-                            "FAIL",
-                            f"task-orchestrator container {c.name} is labeled for another project",
-                            service="task-orchestrator",
-                            evidence=[c.name],
+                        from .task_orchestrator_identity import identity_from_docker_labels
+
+                        docker_identity = identity_from_docker_labels(
+                            c.labels or {},
+                            port=int(to_port),
+                            container_name=c.name,
                         )
-                    elif st in {"UNLABELED", "UNKNOWN"}:
-                        _add(
-                            findings,
-                            "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN",
-                            "UNKNOWN",
-                            (
-                                f"task-orchestrator on :{to_port} (container {c.name}) "
-                                "has unproven project identity"
-                            ),
-                            service="task-orchestrator",
-                            evidence=[c.name, f"port={to_port}"],
+                    elif st == "MATCH":
+                        from .task_orchestrator_identity import identity_from_docker_labels
+
+                        docker_identity = identity_from_docker_labels(
+                            c.labels or {},
+                            port=int(to_port),
+                            container_name=c.name,
                         )
+                        break
+                    elif st in {"UNLABELED", "UNKNOWN"} and docker_identity is None:
+                        from .task_orchestrator_identity import TOIdentity
+
+                        docker_identity = TOIdentity(
+                            port=int(to_port),
+                            source="docker_labels",
+                            confidence="UNKNOWN",
+                            evidence=[c.name, f"ownership={st}"],
+                        )
+
+            try:
+                from .task_orchestrator_identity import evaluate_fixed_port_state
+
+                eval_result = evaluate_fixed_port_state(
+                    port=int(to_port),
+                    target_project_id=identity.project_id,
+                    target_project_root=identity.project_root,
+                    target_workspace_id=identity.workspace_id,
+                    target_instance_id=identity.instance_id,
+                    target_worktree_hash=identity.worktree_hash,
+                    is_free_fn=is_free if not skip_port_probe else (lambda _p: True),
+                    docker_identity=docker_identity,
+                    skip_http=skip_port_probe,
+                    for_start=False,
+                )
+                for fdict in eval_result.findings:
+                    sev = fdict.get("severity") or "INFO"
+                    # Map UNKNOWN severity string to Finding severity
+                    if sev == "UNKNOWN":
+                        sev = "UNKNOWN"
+                    _add(
+                        findings,
+                        fdict.get("code") or "TASK_ORCHESTRATOR_STATUS_UNKNOWN",
+                        sev,  # type: ignore[arg-type]
+                        fdict.get("message") or "",
+                        service="task-orchestrator",
+                        evidence=list(fdict.get("evidence") or []),
+                        recommendation=fdict.get("recommendation") or "",
+                    )
+                    if fdict.get("code") in {
+                        "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN",
+                        "TASK_ORCHESTRATOR_FIXED_PORT_OCCUPIED_UNKNOWN",
+                    }:
                         unknowns.append("task-orchestrator ownership")
-            elif to_port and not skip_port_probe:
-                try:
-                    if not is_free(to_port):
-                        _add(
-                            findings,
-                            "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN",
-                            "UNKNOWN",
-                            (
-                                f"task-orchestrator port :{to_port} is listening but ownership "
-                                "is unproven (wrapper-singleton shared listener)"
-                            ),
-                            service="task-orchestrator",
-                            evidence=[f"port={to_port}"],
-                            recommendation="Confirm TASK_ORCHESTRATOR_PROJECT_ROOT matches this repo before use.",
-                        )
-                        unknowns.append("task-orchestrator ownership")
-                except Exception:  # noqa: BLE001
-                    pass
+            except Exception as exc:  # noqa: BLE001
+                unknowns.append(f"task-orchestrator identity probe failed: {exc}")
+                _add(
+                    findings,
+                    "TASK_ORCHESTRATOR_STATUS_UNKNOWN",
+                    "UNKNOWN",
+                    f"TO identity evaluation failed: {exc}",
+                    service="task-orchestrator",
+                )
 
     # --- Status summary findings ---
     status, exit_code = _summarize_status(findings)
