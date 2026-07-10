@@ -1,0 +1,4 @@
+## codex/tp-dmx-mcp-runtime-006-dnh-e2e-proof
+ M .claude/claude_config.json
+?? proofs/
+?? scripts/proofs/
