@@ -139,10 +139,32 @@ def test_missing_identity_target_rejected_with_warning():
     assert any("identity" in w.lower() for w in reg.warnings)
 
 
-def test_duplicate_target_id_dropped():
+def test_duplicate_target_id_fails_closed():
+    # Ambiguity blocks (ADR-DCP-MCP-RO-0009): a duplicate target_id is an
+    # ambiguous exposure-consent binding, so the WHOLE id fails closed — both
+    # the first-accepted entry and every later duplicate are dropped, and the
+    # id resolves to nothing.
     reg = REG2.parse_registry_v2(_load_yaml("invalid_duplicate_target_id.yaml"))
-    assert list(reg.targets) == ["dup"]
+    assert list(reg.targets) == []
+    assert "dup" not in reg.targets
     assert any("duplicate" in w.lower() for w in reg.warnings)
+    assert any("fail-closed" in w.lower() for w in reg.warnings)
+
+
+def test_duplicate_target_id_not_revived_by_third_entry():
+    # A third entry with the poisoned id must not resurrect it.
+    doc = {
+        "targets": [
+            {"target_id": "dup", "workspace_path": "/a", "enabled": True,
+             "identity": {"project": "p1"}},
+            {"target_id": "dup", "workspace_path": "/b", "enabled": True,
+             "identity": {"project": "p2"}},
+            {"target_id": "dup", "workspace_path": "/c", "enabled": True,
+             "identity": {"project": "p3"}},
+        ]
+    }
+    reg = REG2.parse_registry_v2(doc)
+    assert "dup" not in reg.targets
 
 
 def test_disabled_target_parses_but_is_not_enabled():

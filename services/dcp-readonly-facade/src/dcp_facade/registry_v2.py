@@ -247,22 +247,47 @@ def parse_registry_v2(doc: Any) -> RegistryV2:
     else:
         reg.warnings.append("approved_roots is not a list; ignored")
 
+    if "projects" in doc:
+        # "targets" is present here (the v1-only shape returned above), so a
+        # "projects" key is a stray v1 remnant. Registry v2 uses "targets"
+        # exclusively; surface the drift rather than ignoring it silently.
+        reg.warnings.append(
+            "stray v1 'projects' key present alongside v2 'targets'; "
+            "'projects' is ignored (registry v2 uses 'targets' only)"
+        )
+
     targets = doc.get("targets", []) or []
     if not isinstance(targets, list):
         reg.warnings.append("targets is not a list; treating as empty")
         targets = []
 
+    # A duplicate target_id is an AMBIGUOUS exposure-consent binding: one opaque
+    # handle mapped to two workspaces. Per ADR-DCP-MCP-RO-0009 ("Ambiguity
+    # blocks") the facade must fail closed — it must NOT silently first-wins.
+    # We drop the already-accepted entry AND poison the id so no later entry can
+    # revive it; the whole ambiguous target_id resolves to nothing.
+    poisoned: set[str] = set()
     for raw in targets:
         target, reason = _coerce_target(raw)
         if target is None:
             reg.warnings.append(f"dropped target entry ({reason})")
             continue
-        if target.target_id in reg.targets:
+        tid = target.target_id
+        if tid in poisoned:
             reg.warnings.append(
-                f"duplicate target_id {target.target_id}; later entry dropped"
+                f"duplicate target_id {tid}; ambiguous exposure consent blocked "
+                "(fail-closed: all entries with this target_id dropped)"
             )
             continue
-        reg.targets[target.target_id] = target
+        if tid in reg.targets:
+            del reg.targets[tid]
+            poisoned.add(tid)
+            reg.warnings.append(
+                f"duplicate target_id {tid}; ambiguous exposure consent blocked "
+                "(fail-closed: all entries with this target_id dropped)"
+            )
+            continue
+        reg.targets[tid] = target
 
     reg.generation = _generation(doc)
     return reg

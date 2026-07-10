@@ -174,7 +174,9 @@ def resolve_target(
     # Eligibility: the dopemux init marker + canonical workspace validation.
     if not (real / ".dopemux").is_dir():
         return None, "workspace missing .dopemux (not initialized)"
-    ok, _err = _validate_workspace(real)
+    # Note: validate_workspace's raw error is intentionally discarded — it can
+    # embed absolute paths, which must never appear in a caller-facing reason.
+    ok, _ = _validate_workspace(real)
     if not ok:
         return None, "workspace validation failed"
 

@@ -122,8 +122,12 @@ Mirrors v1's fail-closed posture (`registry.py` §4), extended for v2:
    exposed loosely. **The whole target is dropped**, not just the offending
    family — a target with one bad family entry is not partially trusted.
 2. `enabled` defaults to `false` when omitted.
-3. A duplicate `target_id` within one registry document: the **later**
-   entry is dropped (first-registered wins), recorded in `warnings`.
+3. A duplicate `target_id` within one registry document is an **ambiguous
+   exposure-consent binding** (one opaque handle mapped to two workspaces).
+   Per ADR-DCP-MCP-RO-0009 ("Ambiguity blocks") it **fails closed**: *all*
+   entries sharing that `target_id` are dropped (including the
+   first-registered one) and the id is poisoned so no later entry can revive
+   it — the ambiguous `target_id` resolves to nothing. Recorded in `warnings`.
 4. A registry root that is not a mapping, or whose `targets`/
    `approved_roots` are not lists, is treated as empty (with a warning) —
    never partially trusted.
@@ -141,6 +145,10 @@ v1-shaped document under `parse_registry_v2` — an operator must migrate the
 file (or keep running it through v1's `registry.load_registry` /
 `resolver.resolve`, which remain fully supported and unmodified) before it
 is recognized by v2.
+
+A document carrying **both** a `targets` key and a stray v1 `projects` key is
+parsed as v2 (the `projects` key is ignored) but records a warning surfacing
+the drift — a half-migrated file should not silently hide its v1 remnant.
 
 Rationale: v1's `service_profiles` shape (per-family `base_url` / port /
 workspace-id detail) is a materially different trust surface from v2's
