@@ -161,3 +161,7 @@
 ## 2025-06-01 - [Consolidated Card-Level Interaction]
 **Learning:** Nesting interactive elements (like a "Copy" button) inside a focusable card surface creates a redundant and confusing experience for keyboard and screen reader users (nested tab stops). Consolidating the interaction onto the root container (Card-Level Interactive Surface) simplifies the tab order and provides a more direct, high-bandwidth interaction path.
 **Action:** When adding secondary actions like "Copy to Clipboard" to dashboard panels, prefer making the entire card the interactive surface rather than nesting small buttons.
+
+## 2025-06-02 - [Soft Confirmation for Non-Reversible Progress Jumps]
+**Learning:** For users with ADHD, skipping a task in a sequence is often a high-stakes decision that can't be easily undone without manual list management. Applying the "Soft Confirmation" pattern (Confirm Skip?) within a 3-second window, reinforced with icon swapping (`AlertTriangle`) and a rhythmic pulse (`skip-pulse`), provides a necessary safety net against impulsive clicks while maintaining a low-friction workflow.
+**Action:** Use time-limited soft confirmation for sequence jumps or skips to prevent accidental workflow disruption.
