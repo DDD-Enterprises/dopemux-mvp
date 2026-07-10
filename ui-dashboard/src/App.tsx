@@ -218,7 +218,8 @@ function App() {
       return;
     }
     try {
-      await navigator.clipboard.writeText(notification.message);
+      const formattedMessage = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
+      await navigator.clipboard.writeText(formattedMessage);
       setCopiedNotificationId(notification.id);
 
       if (notificationCopyTimeoutRef.current) {
