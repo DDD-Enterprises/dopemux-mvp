@@ -61,16 +61,50 @@
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
     "auditor_model": "opus",
-    "report_path": "proof/TP-DCP-MCP-RO-0010/AUDIT.md",
-    "hardenings_applied": [
-      "Duplicate target_id now fails closed (ambiguity blocks): first entry removed + id poisoned; was keep-first.",
-      "Stray v1 'projects' key alongside v2 'targets' now warns instead of silent ignore.",
-      "Cosmetic: unused _err -> _ in resolver with clarifying comment."
+    "invocation": "Independent Opus audit of TP-DCP-MCP-RO-0010 (registry v2 + pure resolver core) against ADR-DCP-MCP-RO-0009: manual read of registry_v2/resolver_core/capability + schema/tests; real-world _derive_roots verification on this linked worktree; fixture parse + purity/secret scans; advisor() second opinion (PAL external codereview NOT_RUN due to provider outage).",
+    "exit_code": 0,
+    "report_path": "proof/TP-DCP-MCP-RO-0010/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-0010-LOW-1",
+        "severity": "LOW",
+        "title": "Duplicate target_id hardened to fail-closed (ambiguity blocks)",
+        "status": "RESOLVED",
+        "body": "Original implementation used keep-first + warn for a duplicate target_id. Per ADR-DCP-MCP-RO-0009 'Ambiguity blocks', changed to fail-closed: the already-accepted entry is dropped and the id poisoned so no later entry revives it. Test + fixture + contract doc updated."
+      },
+      {
+        "id": "F-0010-INFO-1",
+        "severity": "INFO",
+        "title": "project_root trust deferred to 0011/0012",
+        "status": "ACCEPTED_RISK",
+        "body": "project_root is derived from local .git metadata and trusted downstream. The 0011 runtime join must re-validate per-service project identity and must not treat a crafted .git gitfile as ownership authority."
+      },
+      {
+        "id": "F-0010-INFO-2",
+        "severity": "INFO",
+        "title": "Submodule/symlinked-.git derivation reasoned, not live-tested",
+        "status": "ACCEPTED_RISK",
+        "body": "Linked-worktree derivation verified on real metadata. Submodule (no commondir -> block) and symlinked-.git (treated as primary) layouts are reasoned to fail closed but not exercised live; worst case is a false block, never a wrong-repo bind."
+      },
+      {
+        "id": "F-0010-LOW-2",
+        "severity": "LOW",
+        "title": "PAL external codereview NOT_RUN (provider outage)",
+        "status": "ACCEPTED_RISK",
+        "body": "pal codereview attempted on gpt-5-codex (OpenAI 401) and gemini-2.5-pro (Google 429 quota=0); both unavailable. Mitigated by independent Opus manual audit + advisor() second opinion."
+      }
     ],
-    "reasoned_not_verified": [
-      "submodule .git layout (no commondir) -> fail-closed block (reasoned)",
-      "symlinked .git -> treated as primary checkout (reasoned)"
-    ]
+    "fixes_applied": [
+      "Duplicate target_id now fails closed (ambiguity blocks): drop first entry + poison id (was keep-first).",
+      "Stray v1 'projects' key alongside v2 'targets' now records a drift warning (was silent ignore).",
+      "Discard validate_workspace raw error explicitly to avoid abs-path leak in caller reasons (cosmetic _err -> _)."
+    ],
+    "remaining_risks": [
+      "project_root trust is defense-in-depth deferred to 0011/0012.",
+      "submodule/symlinked-.git derivation reasoned, not live-tested (fail-closed).",
+      "PAL external codereview NOT_RUN (provider outage)."
+    ],
+    "skip_reason": null
   },
   "deviations": [
     "FAMILY_POLICY_TABLE is a 2-tuple (resolution_class, chatgpt_posture) per the packet brief; no fabricated port_policy for the 8 families the ADR does not specify.",
