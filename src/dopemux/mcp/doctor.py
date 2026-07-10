@@ -194,6 +194,19 @@ def run_mcp_doctor(
 
     if envrc.present and envrc.parse_status == "OK":
         _add(findings, "ENVRC_FOUND", "INFO", f"Found {ENVRC_FILENAME}", evidence=[str(envrc_path)])
+    elif envrc.present and envrc.parse_status == "PARTIAL":
+        _add(findings, "ENVRC_FOUND", "INFO", f"Found {ENVRC_FILENAME}", evidence=[str(envrc_path)])
+        _add(
+            findings,
+            "ENVRC_PARSE_PARTIAL",
+            "WARN",
+            (
+                f"Partial parse of {ENVRC_FILENAME}: "
+                f"{len(envrc.values)} key(s) usable, {len(envrc.errors)} malformed line(s)"
+            ),
+            evidence=envrc.errors,
+            recommendation="Fix malformed lines in .envrc.dopemux-mcp; usable keys were still loaded.",
+        )
     elif not envrc.present:
         # Severity depends on whether mcp.json expects env-derived ports
         mcp_needs_env = False
@@ -284,9 +297,14 @@ def run_mcp_doctor(
 
     # --- Desired services ---
     mcp_servers = mcp_json.get("servers") or {}
-    service_names = list(mcp_servers.keys()) if mcp_servers else list(
-        (catalog.get("defaults") or {}).get("per_worktree") or []
-    )
+    catalog_defaults = list((catalog.get("defaults") or {}).get("per_worktree") or [])
+    if mcp_servers:
+        service_names = list(mcp_servers.keys())
+        for default_name in catalog_defaults:
+            if default_name not in service_names:
+                service_names.append(default_name)
+    else:
+        service_names = catalog_defaults
 
     # Configured ports from envrc
     configured_ports: Dict[str, int] = {}
@@ -302,7 +320,7 @@ def run_mcp_doctor(
             port = safe_port_int(doctor_env, str(key))
             if port is not None:
                 configured_ports[str(key)] = port
-            elif envrc.present and envrc.parse_status == "OK":
+            elif envrc.present and envrc.parse_status in {"OK", "PARTIAL"}:
                 _add(
                     findings,
                     "PORT_UNSET",
@@ -642,9 +660,16 @@ def run_mcp_doctor(
             f"Malformed global config: {global_claude.get('error')}",
             evidence=[str(global_claude.get("path"))],
         )
+    # Never dump raw URLs into findings (may leak hostnames / secrets).
+    from .envrc import redact_value as _redact
+
     for name in sorted(set(global_servers) & set(local_servers)):
         g = global_servers[name] if isinstance(global_servers.get(name), dict) else {}
         loc = local_servers[name] if isinstance(local_servers.get(name), dict) else {}
+        g_url = g.get("url") or ""
+        l_url = loc.get("url") or ""
+        safe_g_url = _redact("URL", str(g_url)) if g_url else None
+        safe_l_url = _redact("URL", str(l_url)) if l_url else None
         _add(
             findings,
             "GLOBAL_LOCAL_DUPLICATE",
@@ -654,21 +679,15 @@ def run_mcp_doctor(
             evidence=[
                 f"global_type={g.get('type')}",
                 f"local_type={loc.get('type')}",
-                f"global_url={g.get('url')}",
-                f"local_url={loc.get('url')}",
+                f"global_url={safe_g_url}",
+                f"local_url={safe_l_url}",
             ],
             recommendation="Prefer local per-worktree entry; remove or rename global duplicate.",
         )
-        g_url = g.get("url") or ""
-        l_url = loc.get("url") or ""
         if g.get("type") != loc.get("type") or (
             g_url and l_url and g_url != l_url and "${" not in g_url and "${" not in l_url
         ):
             # Never dump full mcpServers entry (may contain env secrets).
-            from .envrc import redact_value as _redact
-
-            safe_g_url = _redact("URL", str(g_url)) if g_url else None
-            safe_l_url = _redact("URL", str(l_url)) if l_url else None
             g_env_keys = sorted((g.get("env") or {}).keys()) if isinstance(g.get("env"), dict) else []
             _add(
                 findings,

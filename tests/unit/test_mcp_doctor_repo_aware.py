@@ -12,7 +12,7 @@ from click.testing import CliRunner
 from dopemux.commands import mcp_commands
 from dopemux.mcp.doctor import format_human_summary, run_mcp_doctor
 from dopemux.mcp.project_identity import resolve_project_identity
-from dopemux.mcp.runtime_state import compose_lifecycle_diagnostics
+from dopemux.mcp.runtime_state import build_desired_services, compose_lifecycle_diagnostics
 
 
 def _catalog():
@@ -184,12 +184,36 @@ services:
     diag2 = compose_lifecycle_diagnostics(path)
     assert any("mcp-conport" in r for r in diag2["fixed_container_name_risks"])
     assert any(".dopemux" in r for r in diag2["relative_volume_risks"])
+    assert any("DOPEMUX_WORKSPACE_ID" in r for r in diag2["identity_env_risks"])
+    assert "COMPOSE_WORKSPACE_ID_MISSING_RISK" in {f["code"] for f in diag2["findings"]}
 
 
 def test_compose_no_hazard_minimal():
     # Even empty compose still flags dual allocator / cwd requirement (architectural)
     diag = compose_lifecycle_diagnostics(None)
     assert diag["compose_required_in_cwd"] is True
+
+
+def test_build_desired_services_includes_catalog_defaults_missing_from_mcp_json():
+    """When .mcp.json exists, still diagnose catalog per-worktree defaults absent there."""
+    catalog = _catalog()
+    mcp_servers = {
+        "conport": {
+            "type": "sse",
+            "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
+        },
+        # intentionally omit dope-memory and task-orchestrator
+    }
+    env = {
+        "CONPORT_MCP_PORT": "3041",
+        "DOPE_MEMORY_PORT": "3060",
+        "TASK_ORCHESTRATOR_HTTP_PORT": "7890",
+    }
+    desired = build_desired_services(catalog, mcp_servers, env)
+    names = {svc.name for svc in desired}
+    assert "conport" in names
+    assert "dope-memory" in names
+    assert "task-orchestrator" in names
 
 
 def test_global_local_duplicate_and_dead(tmp_path: Path, monkeypatch):
@@ -223,6 +247,45 @@ def test_global_local_duplicate_and_dead(tmp_path: Path, monkeypatch):
     codes = {f["code"] for f in report.findings}
     assert "GLOBAL_LOCAL_DUPLICATE" in codes
     assert "GLOBAL_SERVICE_DEAD" in codes
+
+
+def test_global_local_duplicate_redacts_non_local_urls(tmp_path: Path):
+    repo = _write_fixture_repo(
+        tmp_path,
+        mcp_servers={
+            "conport": {
+                "type": "sse",
+                "url": "https://mcp.example.com/sse",
+            },
+        },
+    )
+    global_path = tmp_path / "claude.json"
+    global_path.write_text(
+        json.dumps(
+            {
+                "mcpServers": {
+                    "conport": {
+                        "type": "sse",
+                        "url": "https://other.example.net:9443/sse",
+                    },
+                }
+            }
+        )
+    )
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        global_claude_path=global_path,
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+    )
+    dupes = [f for f in report.findings if f["code"] == "GLOBAL_LOCAL_DUPLICATE"]
+    assert dupes
+    evidence = " ".join(dupes[0].get("evidence") or [])
+    assert "example.com" not in evidence
+    assert "example.net" not in evidence
+    assert "[REDACTED_HOST]" in evidence
 
 
 def test_global_malformed(tmp_path: Path):

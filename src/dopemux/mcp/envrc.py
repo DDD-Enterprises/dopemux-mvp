@@ -10,6 +10,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
+from urllib.parse import urlparse, urlunparse
 
 # Lines we accept: optional "export ", KEY=VALUE with optional quotes.
 _LINE_RE = re.compile(
@@ -50,7 +51,7 @@ class EnvrcParseResult:
 
     path: Optional[Path]
     present: bool
-    parse_status: str  # OK | ERROR | MISSING
+    parse_status: str  # OK | PARTIAL | ERROR | MISSING
     values: Dict[str, str] = field(default_factory=dict)
     keys_present: List[str] = field(default_factory=list)
     errors: List[str] = field(default_factory=list)
@@ -106,6 +107,28 @@ def is_secret_like_key(key: str) -> bool:
     return False
 
 
+def _redact_url_hostname(value: str) -> str:
+    """Keep scheme + redacted host (and port/path); drop raw hostnames."""
+    try:
+        parsed = urlparse(value)
+        if not parsed.scheme or not parsed.netloc:
+            return "[REDACTED_URL]"
+        port = f":{parsed.port}" if parsed.port else ""
+        redacted_netloc = f"[REDACTED_HOST]{port}"
+        return urlunparse(
+            (
+                parsed.scheme,
+                redacted_netloc,
+                parsed.path,
+                parsed.params,
+                parsed.query,
+                parsed.fragment,
+            )
+        )
+    except Exception:  # noqa: BLE001
+        return "[REDACTED_URL]"
+
+
 def redact_value(key: str, value: str) -> str:
     """Return a report-safe representation of an env value."""
     if is_secret_like_key(key):
@@ -116,8 +139,8 @@ def redact_value(key: str, value: str) -> str:
             return "[REDACTED_URL_WITH_CREDENTIALS]"
         if "localhost" in value or "127.0.0.1" in value:
             return value
-        # Non-localhost URLs may leak hostnames; keep host only if no userinfo
-        return value
+        # Non-localhost URLs may leak hostnames; keep scheme + redacted host
+        return _redact_url_hostname(value)
     # Numeric ports are always safe
     if value.isdigit():
         return value
@@ -178,10 +201,10 @@ def load_envrc(path: Path | str | None) -> EnvrcParseResult:
         )
 
     values, errors = parse_envrc_text(text)
-    status = "ERROR" if errors and not values else ("OK" if not errors else "ERROR")
-    # Partial parse with some good keys: still OK if at least one key parsed and only warnings
+    # Only ERROR when unusable (no keys). PARTIAL when some keys parsed but
+    # malformed lines remain; OK when clean.
     if values and errors:
-        status = "ERROR"
+        status = "PARTIAL"
     elif values:
         status = "OK"
     elif errors:
@@ -208,7 +231,8 @@ def merge_envrc_into_environ(
 ) -> Dict[str, str]:
     """Return a new env mapping with envrc values applied (envrc wins when override=True)."""
     merged = dict(base or {})
-    if envrc.parse_status in {"OK", "ERROR"} and envrc.values:
+    # Merge usable values from OK/PARTIAL (and ERROR-with-values if any future path).
+    if envrc.parse_status in {"OK", "PARTIAL", "ERROR"} and envrc.values:
         for key, value in envrc.values.items():
             if override or key not in merged:
                 merged[key] = value

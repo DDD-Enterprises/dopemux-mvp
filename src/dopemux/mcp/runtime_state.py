@@ -267,10 +267,16 @@ def build_desired_services(
 ) -> List[DesiredService]:
     """Build desired service list from catalog + local mcp.json + env."""
     desired: List[DesiredService] = []
-    names = list(mcp_servers.keys()) if mcp_servers else list(
-        (catalog.get("defaults") or {}).get("per_worktree") or []
-    )
-    # Also include any catalog per-worktree defaults not in mcp.json for diagnosis
+    catalog_defaults = list((catalog.get("defaults") or {}).get("per_worktree") or [])
+    # Prefer local .mcp.json names, but always also include catalog per-worktree
+    # defaults not present in mcp.json so doctor can diagnose missing entries.
+    if mcp_servers:
+        names = list(mcp_servers.keys())
+        for default_name in catalog_defaults:
+            if default_name not in names:
+                names.append(default_name)
+    else:
+        names = catalog_defaults
     for name in names:
         catalog_spec = (catalog.get("servers") or {}).get(name) or {}
         local_entry = mcp_servers.get(name) if isinstance(mcp_servers.get(name), dict) else {}
@@ -410,15 +416,14 @@ def compose_lifecycle_diagnostics(
             relative_volume_risks.append(
                 "dope-memory volume ./.dopemux:/data is relative to compose cwd"
             )
-        # Identity env on conport
-        if "DOPEMUX_INSTANCE_ID" in text and "DOPEMUX_WORKSPACE_ID" not in text.split("conport:")[1].split("\n  ")[0] if "conport:" in text else True:
-            # Broader check: conport service block lacks WORKSPACE_ID
-            conport_block = _extract_service_block(text, "conport")
-            if conport_block:
-                if "DOPEMUX_INSTANCE_ID" in conport_block and "DOPEMUX_WORKSPACE_ID" not in conport_block:
-                    identity_env_risks.append(
-                        "conport receives DOPEMUX_INSTANCE_ID but not DOPEMUX_WORKSPACE_ID"
-                    )
+        # Identity env on conport: require both INSTANCE_ID and WORKSPACE_ID
+        # when the service block is present (use block extractor, not fragile splits).
+        conport_block = _extract_service_block(text, "conport")
+        if conport_block:
+            if "DOPEMUX_INSTANCE_ID" in conport_block and "DOPEMUX_WORKSPACE_ID" not in conport_block:
+                identity_env_risks.append(
+                    "conport receives DOPEMUX_INSTANCE_ID but not DOPEMUX_WORKSPACE_ID"
+                )
         memory_block = _extract_service_block(text, "dope-memory")
         if memory_block and "DOPE_MEMORY_WORKSPACE_ID" in memory_block:
             # workspace id is present for memory — still relative volume is the main risk
