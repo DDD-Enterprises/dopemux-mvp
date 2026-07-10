@@ -1,0 +1,71 @@
+{
+  "id": "DMX-ARCH-CONPORT-SURFACE-002",
+  "project": "dopemux-mvp",
+  "target": "ADR + rewrite: retire the ConPort upstream-wrapper path; rewrite wrappers/commands against the real 17-tool surface (extends HYG-003); scope packets 106/107/201/202.",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Run `pytest tests/ --co` after any deletion to catch orphaned imports."
+  ],
+  "depends_on": [
+    "DMX-HYG-CONPORTREFS-003"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfin-arch",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfin-arch",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "commit": {
+    "message": "docs(adr): ConPort single-surface + rewrite scope",
+    "allowlist": [
+      "docs/90-adr",
+      ".claude/commands",
+      "docs/03-reference",
+      "task-packets/DMX-ARCH-CONPORT-SURFACE-002.json"
+    ],
+    "verify": [
+      "pytest tests/arch/test_mcp_fleet_catalog_contract.py -q"
+    ]
+  },
+  "pr": {
+    "title": "docs(adr): ConPort single-surface decision",
+    "body": "Retire the upstream-wrapper path; rewrite wrappers/commands against the real 17-tool surface; scope the follow-on packets (E5).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Author the single-surface ADR and scope the sub-packets.",
+      "validation": [
+        "ADR merged establishing the in-repo ConPort as canonical and retiring the wrapper path.",
+        "Sub-packets 106/107/201/202 (JSON-RPC parity, kill GET-mutation, product context, relationship write API) scoped.",
+        "Command drift gate (HYG-003) stays green."
+      ]
+    }
+  ]
+}

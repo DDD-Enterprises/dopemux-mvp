@@ -1,0 +1,86 @@
+{
+  "id": "DMX-MEMSPINE-EXTRACT-RELOCATE-001",
+  "project": "dopemux-mvp",
+  "target": "Relocate the live extraction backend (~4,850 LOC, self-contained) from the dead services/dopemux-gpt-researcher/ into a namespaced submodule under src/dopemux/extraction/, converting sys.path hacks to relative imports.",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Run `pytest tests/ --co` after any deletion to catch orphaned imports."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfin-memspine",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfin-memspine",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "commit": {
+    "message": "refactor(extraction): relocate gpt-researcher backend into src/dopemux/extraction",
+    "allowlist": [
+      "src/dopemux/extraction",
+      "src/dopemux/cli.py",
+      "tests",
+      "task-packets/DMX-MEMSPINE-EXTRACT-RELOCATE-001.json"
+    ],
+    "verify": [
+      "python -c 'from dopemux.extraction.legacy_pipeline import ExtractionPipeline, PipelineConfig'",
+      "pytest tests/ -q -k extract"
+    ]
+  },
+  "pr": {
+    "title": "refactor(extraction): move live gpt-researcher backend into src/",
+    "body": "Relocates the self-contained extraction pipeline (only cli.py imported it, via sys.path hacks) into a namespaced src/dopemux/extraction/legacy_pipeline submodule, unblocking deletion of the dead MCP twin (D4).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Move the pipeline closure under src/dopemux/extraction/legacy_pipeline/ (namespaced).",
+      "validation": [
+        "extraction_pipeline.py + extractors/ + synthesis/ + processing/semantic_chunker.py live under src/dopemux/extraction/legacy_pipeline/.",
+        "sys.path hacks (extraction_pipeline.py:32) converted to relative imports.",
+        "python -c 'from dopemux.extraction.legacy_pipeline import ExtractionPipeline, PipelineConfig' imports without shadowing extraction/__init__.py exports."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Replace both cli.py sys.path.insert blocks with the package import.",
+      "validation": [
+        "cli.py:4331-4337 and :4548-4554 now use 'from dopemux.extraction.legacy_pipeline import ...'.",
+        "grep -n 'dopemux-gpt-researcher/backend' src/dopemux/cli.py is clean.",
+        "dopemux extract (basic + pro) run in a smoke test."
+      ]
+    },
+    {
+      "id": "step-3",
+      "task": "Full suite.",
+      "validation": [
+        "pytest tests/ -q passes including extraction tests."
+      ]
+    }
+  ]
+}
