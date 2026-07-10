@@ -121,10 +121,11 @@ def generate_compose_override(
         http_p = int(ports.get("CONPORT_HTTP_PORT", 3004))
         mcp_p = int(ports.get("CONPORT_MCP_PORT", 3005))
         info_p = int(ports.get("CONPORT_INFO_PORT", 4004))
+        # ports: !override replaces compose.yml all-interface publishes with loopback-only.
         blocks.append(
             f"""  conport:
     container_name: {cname}
-    ports:
+    ports: !override
       - "127.0.0.1:{http_p}:3004"
       - "127.0.0.1:{mcp_p}:3005"
       - "127.0.0.1:{info_p}:4004"
@@ -146,7 +147,7 @@ def generate_compose_override(
         blocks.append(
             f"""  dope-memory:
     container_name: {cname}
-    ports:
+    ports: !override
       - "127.0.0.1:{mem_p}:3020"
     environment:
       DOPE_MEMORY_WORKSPACE_ID: "{identity.get('DOPE_MEMORY_WORKSPACE_ID', '')}"
