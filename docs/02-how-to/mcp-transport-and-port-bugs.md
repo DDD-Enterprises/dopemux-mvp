@@ -16,41 +16,6 @@ This document describes three confirmed bugs that were discovered during the `dN
 workspace MCP connectivity investigation (2026-07-06) and the authoritative fixes
 applied to `dopemux-mvp`.
 
-> [!IMPORTANT]
-> **Repo-aware doctor (TP-DMX-MCP-RUNTIME-001)** is the pre-start truth gate:
-> `dopemux mcp doctor --repo <path> [--json]`. It loads the target
-> `.envrc.dopemux-mcp`, validates catalog transports, reports `%100` hash
-> birthday-risk / missing rebind, compose lifecycle hazards (fixed
-> `mcp-conport` name, relative `./.dopemux` volume), and refuses to treat
-> unlabeled listening ports as owned. It does **not** start or stop containers.
->
-> **Config repair (TP-DMX-MCP-RUNTIME-003):** fix transport mismatches without
-> hand-editing every worktree:
-> `dopemux mcp repair-config --repo <path> --dry-run --json` then `--apply`.
-> Preserves custom mcpServers entries; never mutates `~/.claude.json`.
-> Runtime start remains `dopemux mcp start --repo <path>` (Packet 002).
->
-> **Port leases (TP-DMX-MCP-RUNTIME-004):** hash offsets are *preferred* only.
-> Assignment uses `~/.dopemux/mcp/runtime/port-leases.json` (override
-> `DOPEMUX_MCP_PORT_LEASE_REGISTRY`), reserved singleton protection, live TCP
-> probes, and rebind when preferred ports are unsafe. Dry-run / `persist=False`
-> never write leases. Fixed-port `task-orchestrator` (7890) reuses or blocks —
-> it does not rebind.
->
-> >
-> **006R remediation:** Task Orchestrator port `7890` is a **reserved host singleton**
-> (never project-leased). Invalid fixture leases on reserved ports are reconciled via
-> `dopemux mcp leases reconcile --apply`. Doctor recognizes compose-project sidecars
-> (e.g. `mcp-conport_dnh_crm_*`) and **refuses** main-stack dope-memory when target is
-> another repo. Upstream TO jar has no REST `/info`/`/health` — use container name,
-> data path, labels, and MCP transport.
->
-> **TO identity (TP-DMX-MCP-RUNTIME-005):** prove project ownership of `:7890`
-> before treating TO as ready. Trust order: HTTP `/info` identity → Docker labels
-> → runtime registry → wrapper metadata
-> (`~/.dopemux/mcp/runtime/<id>/task-orchestrator.identity.json`). Port-only
-> is UNKNOWN. Wrong project blocks start; foreign runtimes are never stopped.
-
 ---
 
 ## Transport Architecture — What is Correct
