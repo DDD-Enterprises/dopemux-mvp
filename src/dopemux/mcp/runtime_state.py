@@ -83,7 +83,31 @@ def resolve_identity_view(
     """Resolve project identity for doctor; never raises — degrades to UNKNOWN."""
     evidence: List[str] = []
     env_map = dict(envrc_values or {})
-    env_map.setdefault("DOPEMUX_WORKSPACE_ROOT", str(repo_path))
+    # --repo / explicit target path must win over ambient shell exports.
+    # setdefault would leave a foreign DOPEMUX_WORKSPACE_ROOT in place and
+    # resolve_project_identity would diagnose the previously sourced repo.
+    repo_str = str(Path(repo_path).expanduser().resolve())
+    prior_ws = env_map.get("DOPEMUX_WORKSPACE_ROOT")
+    env_map["DOPEMUX_WORKSPACE_ROOT"] = repo_str
+    if prior_ws:
+        try:
+            prior_ws_res = str(Path(prior_ws).expanduser().resolve())
+        except OSError:
+            prior_ws_res = str(prior_ws)
+        if prior_ws_res != repo_str:
+            # Foreign ambient workspace — scrub project roots that rode along with it.
+            env_map["DOPEMUX_PROJECT_ROOT"] = repo_str
+            prior_pr = env_map.get("TASK_ORCHESTRATOR_PROJECT_ROOT")
+            if prior_pr:
+                try:
+                    prior_pr_res = str(Path(prior_pr).expanduser().resolve())
+                except OSError:
+                    prior_pr_res = str(prior_pr)
+                if prior_pr_res == prior_ws_res:
+                    env_map["TASK_ORCHESTRATOR_PROJECT_ROOT"] = repo_str
+            evidence.append(
+                f"forced identity to target path (ambient DOPEMUX_WORKSPACE_ROOT={prior_ws})"
+            )
 
     try:
         identity: ProjectIdentity = resolve_project_identity(cwd=repo_path, env=env_map)
@@ -267,10 +291,15 @@ def build_desired_services(
 ) -> List[DesiredService]:
     """Build desired service list from catalog + local mcp.json + env."""
     desired: List[DesiredService] = []
-    names = list(mcp_servers.keys()) if mcp_servers else list(
-        (catalog.get("defaults") or {}).get("per_worktree") or []
-    )
-    # Also include any catalog per-worktree defaults not in mcp.json for diagnosis
+    defaults = list((catalog.get("defaults") or {}).get("per_worktree") or [])
+    # Union mcp.json servers with catalog defaults so missing defaults are still diagnosed.
+    names: List[str] = []
+    seen: set[str] = set()
+    for name in list(mcp_servers.keys()) + defaults:
+        if name in seen:
+            continue
+        seen.add(name)
+        names.append(name)
     for name in names:
         catalog_spec = (catalog.get("servers") or {}).get(name) or {}
         local_entry = mcp_servers.get(name) if isinstance(mcp_servers.get(name), dict) else {}
@@ -383,9 +412,11 @@ def compose_lifecycle_diagnostics(
     findings_seed: List[Dict[str, Any]] = []
 
     text = ""
+    compose_readable = False
     if compose_path and compose_path.is_file():
         try:
             text = compose_path.read_text(encoding="utf-8")
+            compose_readable = True
         except OSError as exc:
             findings_seed.append(
                 {
@@ -399,7 +430,7 @@ def compose_lifecycle_diagnostics(
             )
 
     # Fixed container name default for conport
-    if text:
+    if compose_readable and text:
         if "CONPORT_CONTAINER_NAME:-mcp-conport" in text or re.search(
             r"container_name:\s*\$\{CONPORT_CONTAINER_NAME:-\s*mcp-conport\s*\}", text
         ):
@@ -410,22 +441,16 @@ def compose_lifecycle_diagnostics(
             relative_volume_risks.append(
                 "dope-memory volume ./.dopemux:/data is relative to compose cwd"
             )
-        # Identity env on conport
-        if "DOPEMUX_INSTANCE_ID" in text and "DOPEMUX_WORKSPACE_ID" not in text.split("conport:")[1].split("\n  ")[0] if "conport:" in text else True:
-            # Broader check: conport service block lacks WORKSPACE_ID
-            conport_block = _extract_service_block(text, "conport")
-            if conport_block:
-                if "DOPEMUX_INSTANCE_ID" in conport_block and "DOPEMUX_WORKSPACE_ID" not in conport_block:
-                    identity_env_risks.append(
-                        "conport receives DOPEMUX_INSTANCE_ID but not DOPEMUX_WORKSPACE_ID"
-                    )
-        memory_block = _extract_service_block(text, "dope-memory")
-        if memory_block and "DOPE_MEMORY_WORKSPACE_ID" in memory_block:
-            # workspace id is present for memory — still relative volume is the main risk
-            pass
+        # Identity env on conport — use service-block extract only (no fragile splits).
+        conport_block = _extract_service_block(text, "conport")
+        if conport_block:
+            if "DOPEMUX_INSTANCE_ID" in conport_block and "DOPEMUX_WORKSPACE_ID" not in conport_block:
+                identity_env_risks.append(
+                    "conport receives DOPEMUX_INSTANCE_ID but not DOPEMUX_WORKSPACE_ID"
+                )
     else:
-        # Without compose file still emit known architectural risks as WARN
-        # so doctor works without target-repo compose.yml
+        # Without a readable compose file, emit convention notes at WARN/INFO only
+        # so doctor does not FAIL repos that intentionally have no compose.yml.
         fixed_name_risks.append(
             "compose convention (dopemux-mvp): conport container_name defaults to mcp-conport"
         )
@@ -454,11 +479,14 @@ def compose_lifecycle_diagnostics(
             }
         )
 
+    # Confirmed by compose text → FAIL; convention-only / unreadable → WARN.
+    compose_hazard_severity = "FAIL" if compose_readable else "WARN"
+
     if fixed_name_risks:
         findings_seed.append(
             {
                 "code": "COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK",
-                "severity": "FAIL",
+                "severity": compose_hazard_severity,
                 "service": "conport",
                 "message": (
                     "Fixed/default mcp-conport container name risks replacing the primary "
@@ -476,7 +504,7 @@ def compose_lifecycle_diagnostics(
         findings_seed.append(
             {
                 "code": "COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK",
-                "severity": "FAIL",
+                "severity": compose_hazard_severity,
                 "service": "dope-memory",
                 "message": (
                     "Starting dope-memory for another repo from dopemux-mvp compose can bind "
