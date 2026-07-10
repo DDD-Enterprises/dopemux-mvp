@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from dopemux.mcp.task_orchestrator_identity import (
@@ -18,11 +17,16 @@ from dopemux.mcp.task_orchestrator_identity import (
 
 def test_match_ok():
     obs = TOIdentity(project_id="dNh_CRM", project_root="/Users/hue/code/dNh_CRM")
-    assert match_target(obs, project_id="dNh_CRM", project_root="/Users/hue/code/dNh_CRM") == "OK"
+    assert (
+        match_target(obs, project_id="dNh_CRM", project_root="/Users/hue/code/dNh_CRM")
+        == "OK"
+    )
 
 
 def test_match_wrong_project():
-    obs = TOIdentity(project_id="dopemux-mvp", project_root="/Users/hue/code/dopemux-mvp")
+    obs = TOIdentity(
+        project_id="dopemux-mvp", project_root="/Users/hue/code/dopemux-mvp"
+    )
     assert (
         match_target(obs, project_id="dNh_CRM", project_root="/Users/hue/code/dNh_CRM")
         == "WRONG_PROJECT"
@@ -32,7 +36,8 @@ def test_match_wrong_project():
 def test_match_unknown_without_proof():
     assert match_target(None, project_id="x", project_root="/p") == "UNKNOWN"
     assert (
-        match_target(TOIdentity(port=7890), project_id="x", project_root="/p") == "UNKNOWN"
+        match_target(TOIdentity(port=7890), project_id="x", project_root="/p")
+        == "UNKNOWN"
     )
 
 
@@ -92,7 +97,9 @@ def test_same_project_ok():
     )
     assert ev.match == "OK"
     assert ev.start_allowed is True
-    assert any(f["code"] == "TASK_ORCHESTRATOR_PROJECT_IDENTITY_OK" for f in ev.findings)
+    assert any(
+        f["code"] == "TASK_ORCHESTRATOR_PROJECT_IDENTITY_OK" for f in ev.findings
+    )
 
 
 def test_wrong_project_blocks_start():
@@ -114,7 +121,9 @@ def test_wrong_project_blocks_start():
     assert ev.match == "WRONG_PROJECT"
     assert ev.start_allowed is False
     assert ev.start_block_code == "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT"
-    assert any(f["code"] == "TASK_ORCHESTRATOR_WRONG_PROJECT_RUNTIME" for f in ev.findings)
+    assert any(
+        f["code"] == "TASK_ORCHESTRATOR_WRONG_PROJECT_RUNTIME" for f in ev.findings
+    )
 
 
 def test_source_conflict():
@@ -122,7 +131,9 @@ def test_source_conflict():
     b = TOIdentity(project_id="b", project_root="/b", source="docker_labels")
     merged, findings = merge_identity_sources([a, b])
     assert merged is None
-    assert any(f["code"] == "TASK_ORCHESTRATOR_RUNTIME_METADATA_CONFLICT" for f in findings)
+    assert any(
+        f["code"] == "TASK_ORCHESTRATOR_RUNTIME_METADATA_CONFLICT" for f in findings
+    )
 
 
 def test_wrapper_metadata_roundtrip(tmp_path: Path):
@@ -176,3 +187,64 @@ def test_dry_run_metadata_no_write(tmp_path: Path):
     ident = TOIdentity(project_id="a", project_root="/a", instance_id="z")
     assert write_wrapper_metadata(ident, base=tmp_path, dry_run=True) is None
     assert not list(tmp_path.rglob("*.json"))
+
+
+def test_wrapper_metadata_alone_not_live_proof(tmp_path: Path):
+    """Occupied port + wrapper metadata only must stay UNKNOWN (P1)."""
+    write_wrapper_metadata(
+        TOIdentity(
+            project_id="dNh_CRM",
+            project_root="/Users/hue/code/dNh_CRM",
+            instance_id="8d6d",
+            source="wrapper_metadata",
+        ),
+        base=tmp_path,
+    )
+    ev = evaluate_fixed_port_state(
+        port=7890,
+        target_project_id="dNh_CRM",
+        target_project_root="/Users/hue/code/dNh_CRM",
+        target_instance_id="8d6d",
+        listening=True,
+        skip_http=True,
+        metadata_base=tmp_path,
+        for_start=True,
+    )
+    assert ev.match == "UNKNOWN"
+    assert ev.start_allowed is False
+    codes = {f["code"] for f in ev.findings}
+    assert "TASK_ORCHESTRATOR_WRAPPER_METADATA_NOT_LIVE" in codes
+    assert "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN" in codes
+
+
+def test_wrapper_metadata_corroborates_live_docker(tmp_path: Path):
+    """Wrapper metadata may merge when live Docker proof already exists."""
+    write_wrapper_metadata(
+        TOIdentity(
+            project_id="dNh_CRM",
+            project_root="/Users/hue/code/dNh_CRM",
+            instance_id="8d6d",
+            source="wrapper_metadata",
+        ),
+        base=tmp_path,
+    )
+    docker_ident = TOIdentity(
+        project_id="dNh_CRM",
+        project_root="/Users/hue/code/dNh_CRM",
+        source="docker_labels",
+        confidence="HIGH",
+        evidence=["c1"],
+    )
+    ev = evaluate_fixed_port_state(
+        port=7890,
+        target_project_id="dNh_CRM",
+        target_project_root="/Users/hue/code/dNh_CRM",
+        target_instance_id="8d6d",
+        listening=True,
+        docker_identity=docker_ident,
+        skip_http=True,
+        metadata_base=tmp_path,
+        for_start=True,
+    )
+    assert ev.match == "OK"
+    assert ev.start_allowed is True
