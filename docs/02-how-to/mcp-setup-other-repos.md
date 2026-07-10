@@ -184,8 +184,11 @@ Fleet commands never start containers and never modify `~/.claude.json`.
 ## Current limitations
 
 * Preferred ports still derive from hash `%100` — leases rebind on conflict (no longer silent).
-* `task-orchestrator` fixed port `7890` blocks multi-project simultaneous use when another
-  project holds the lease (see RUNTIME-005 for deeper TO identity work).
+* **Task Orchestrator fixed port `7890` (Packet 005):** port-alive is **not** ownership.
+  Doctor/start prove identity via HTTP `/info`, Docker labels, wrapper metadata, and
+  registry. Wrong-project TO → **FAIL / start blocked**. Unknown owner → not PASS;
+  start blocked. Foreign TO is never stopped automatically. Concurrent multi-project
+  TO still requires only one owner of `7890` at a time.
 * Unlabeled existing containers are not adopted automatically.
 * Lease prune is not automatic; doctor may report `LEASE_STALE` without deleting.
 
