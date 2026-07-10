@@ -213,7 +213,10 @@ function App() {
   }, [cognitiveState.recommendation]);
 
   const handleCopyNotification = useCallback(async (notification: Notification) => {
-    if (!navigator.clipboard?.writeText) return;
+    if (!navigator.clipboard?.writeText) {
+      setErrorMessage('Clipboard API is not supported in this browser or context.');
+      return;
+    }
     const notificationLabel = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
     try {
       await navigator.clipboard.writeText(notificationLabel);
@@ -228,7 +231,8 @@ function App() {
         notificationCopyTimeoutRef.current = null;
       }, 2000);
     } catch (err) {
-      console.error('Failed to copy notification:', err);
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      setErrorMessage(`Failed to copy notification: ${errorMsg}`);
     }
   }, []);
 
