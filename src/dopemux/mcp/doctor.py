@@ -379,19 +379,168 @@ def run_mcp_doctor(
                 ),
             )
 
-    # --- Port diagnostics ---
+    # --- Port diagnostics + lease registry ---
     worktree_for_ports = identity.worktree_root or str(repo_path)
     project_root_for_ports = identity.project_root
+
+    lease_registry_present = False
+    lease_allocator_healthy = False
+    try:
+        from .port_leases import PortLeaseRegistry
+
+        lease_reg = PortLeaseRegistry.load()
+        if lease_reg.parse_status == "ERROR":
+            _add(
+                findings,
+                "LEASE_REGISTRY_PARSE_ERROR",
+                "FAIL",
+                f"Lease registry unreadable: {lease_reg.error}",
+                evidence=[str(lease_reg.path)],
+                recommendation="Inspect ~/.dopemux/mcp/runtime/port-leases.json or set DOPEMUX_MCP_PORT_LEASE_REGISTRY.",
+            )
+        elif lease_reg.parse_status == "MISSING":
+            _add(
+                findings,
+                "LEASE_REGISTRY_MISSING",
+                "WARN",
+                f"No lease registry at {lease_reg.path}",
+                evidence=[str(lease_reg.path)],
+                recommendation="Run `dopemux mcp init` or `dopemux mcp repair-config --apply` to create leases.",
+            )
+            if envrc.present and configured_ports:
+                _add(
+                    findings,
+                    "LEGACY_ENVRC_WITHOUT_LEASE",
+                    "WARN",
+                    "Envrc ports present without lease registry entries",
+                    recommendation="Run `dopemux mcp repair-config --apply` to migrate ports into leases.",
+                )
+        else:
+            lease_registry_present = True
+            _add(
+                findings,
+                "LEASE_REGISTRY_FOUND",
+                "INFO",
+                f"Lease registry OK ({len(lease_reg.active_leases())} active)",
+                evidence=[str(lease_reg.path)],
+            )
+            # Envrc vs lease mismatch
+            for var, port in (configured_ports or {}).items():
+                matched = False
+                foreign = False
+                for L in lease_reg.active_leases():
+                    if int(L.get("port") or 0) != int(port):
+                        continue
+                    if L.get("worktree_root") in {worktree_for_ports, str(repo_path)} or (
+                        L.get("worktree_hash") and L.get("worktree_hash") == identity.worktree_hash
+                    ):
+                        matched = True
+                    else:
+                        foreign = True
+                if foreign and not matched:
+                    _add(
+                        findings,
+                        "LEASE_BELONGS_TO_OTHER_PROJECT",
+                        "FAIL",
+                        f"Envrc {var}={port} is leased to another project/worktree",
+                        evidence=[f"{var}={port}"],
+                        recommendation="Run `dopemux mcp repair-config --apply` to rebind.",
+                    )
+                elif not matched:
+                    # no lease for this envrc port
+                    ours = [
+                        L
+                        for L in lease_reg.active_leases()
+                        if L.get("port_var") == var
+                        and (
+                            L.get("worktree_root") in {worktree_for_ports, str(repo_path)}
+                            or L.get("worktree_hash") == identity.worktree_hash
+                        )
+                    ]
+                    if ours and int(ours[0].get("port") or 0) != int(port):
+                        _add(
+                            findings,
+                            "LEASE_ENVRC_MISMATCH",
+                            "FAIL",
+                            f"Envrc {var}={port} != lease {ours[0].get('port')}",
+                            evidence=[f"envrc={port}", f"lease={ours[0].get('port')}"],
+                            recommendation="Run `dopemux mcp repair-config --apply`.",
+                        )
+                    elif not ours:
+                        _add(
+                            findings,
+                            "LEGACY_ENVRC_WITHOUT_LEASE",
+                            "WARN",
+                            f"Envrc {var}={port} has no active lease for this worktree",
+                            recommendation="Run `dopemux mcp repair-config --apply`.",
+                        )
+                else:
+                    lease_allocator_healthy = True
+                    if not is_free(int(port)):
+                        _add(
+                            findings,
+                            "LEASE_PORT_OCCUPIED",
+                            "INFO",
+                            f"Leased port {port} ({var}) is listening (expected if services are up)",
+                            evidence=[f"{var}={port}"],
+                        )
+                    else:
+                        _add(
+                            findings,
+                            "LEASE_PORT_FREE",
+                            "INFO",
+                            f"Leased port {port} ({var}) is free (services may be stopped)",
+                            evidence=[f"{var}={port}"],
+                        )
+            # Stale leases for this worktree (active but free + no configured use)
+            for L in lease_reg.active_leases():
+                if L.get("worktree_root") not in {worktree_for_ports, str(repo_path)}:
+                    continue
+                lp = int(L.get("port") or 0)
+                if not lp:
+                    continue
+                if is_free(lp) and (
+                    not configured_ports
+                    or L.get("port_var") not in configured_ports
+                    or configured_ports.get(str(L.get("port_var"))) != lp
+                ):
+                    # only mark stale-ish when no envrc owns it
+                    if not configured_ports or str(L.get("port_var")) not in configured_ports:
+                        _add(
+                            findings,
+                            "LEASE_STALE",
+                            "WARN",
+                            f"Active lease {L.get('lease_id')} port {lp} looks unused",
+                            service=L.get("service"),
+                            evidence=[str(L.get("lease_id")), f"port={lp}"],
+                            recommendation="Explicit prune is not auto-run; re-init/repair if needed.",
+                        )
+    except Exception as exc:  # noqa: BLE001 — doctor remains best-effort
+        unknowns.append(f"lease registry inspection failed: {exc}")
+
     port_report = pd.diagnose_ports(
         worktree_for_ports,
         service_names,
         catalog,
         project_root=project_root_for_ports,
         configured_ports=configured_ports or None,
-        has_lease_registry=False,
-        has_live_rebind=False,
+        has_lease_registry=lease_registry_present,
+        has_live_rebind=lease_allocator_healthy or lease_registry_present,
     )
     for fdict in port_report.findings:
+        # Downgrade legacy hash bucket noise when lease allocator is active
+        code = fdict.get("code") or ""
+        sev = fdict.get("severity") or "INFO"
+        if lease_registry_present and code in {
+            "PORT_HASH_BUCKET_COLLISION_RISK",
+            "PORT_REBIND_MISSING",
+        }:
+            sev = "INFO"
+            fdict = dict(fdict)
+            fdict["message"] = (
+                f"{fdict.get('message', '')} (lease allocator active — preferred formula only)"
+            )
+            fdict["severity"] = sev
         findings.append(
             Finding(
                 code=fdict["code"],

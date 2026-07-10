@@ -29,6 +29,13 @@ applied to `dopemux-mvp`.
 > `dopemux mcp repair-config --repo <path> --dry-run --json` then `--apply`.
 > Preserves custom mcpServers entries; never mutates `~/.claude.json`.
 > Runtime start remains `dopemux mcp start --repo <path>` (Packet 002).
+>
+> **Port leases (TP-DMX-MCP-RUNTIME-004):** hash offsets are *preferred* only.
+> Assignment uses `~/.dopemux/mcp/runtime/port-leases.json` (override
+> `DOPEMUX_MCP_PORT_LEASE_REGISTRY`), reserved singleton protection, live TCP
+> probes, and rebind when preferred ports are unsafe. Dry-run / `persist=False`
+> never write leases. Fixed-port `task-orchestrator` (7890) reuses or blocks —
+> it does not rebind.
 
 ---
 
