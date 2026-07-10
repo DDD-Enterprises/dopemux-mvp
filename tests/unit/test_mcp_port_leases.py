@@ -207,3 +207,111 @@ def test_find_active_for_identity_separates_scopes(tmp_path: Path):
     )
     assert found_wt is not None
     assert found_wt["port"] == 3040
+
+
+def test_reconcile_releases_invalid_singleton_lease(tmp_path: Path):
+    path = tmp_path / "leases.json"
+    reg = PortLeaseRegistry.load(path, create_missing=True)
+    reg.upsert_lease(
+        PortLease(
+            lease_id="lease_project_a_to_7890",
+            port=7890,
+            service="task-orchestrator",
+            port_role="http",
+            project_root="/Users/alice/code/project-a",
+            worktree_root="/Users/alice/code/project-a",
+            status="active",
+        )
+    )
+    reg.save()
+    plan = reg.reconcile_reserved_singleton_leases({7890: "task-orchestrator"}, dry_run=True)
+    assert plan["invalid_count"] == 1
+    assert plan["applied"] is False
+    applied = reg.reconcile_reserved_singleton_leases({7890: "task-orchestrator"}, dry_run=False)
+    assert applied["applied"] is True
+    reg2 = PortLeaseRegistry.load(path)
+    assert not any(int(L.get("port") or 0) == 7890 for L in reg2.active_leases())
+
+
+def test_pytest_defaults_away_from_home_registry(monkeypatch):
+    monkeypatch.delenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", raising=False)
+    monkeypatch.delenv("DOPEMUX_ALLOW_HOME_LEASE_REGISTRY", raising=False)
+    monkeypatch.setenv("PYTEST_CURRENT_TEST", "tests/unit/test_mcp_port_leases.py::test_x (call)")
+    from dopemux.mcp import port_leases as pl
+
+    path = pl.default_lease_registry_path()
+    assert "dopemux-mcp-tests" in str(path)
+    assert path.name == "port-leases.json"
+    assert str(Path.home() / ".dopemux") not in str(path)
+
+
+def test_parallel_workers_resolve_different_paths(monkeypatch):
+    monkeypatch.delenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", raising=False)
+    monkeypatch.delenv("DOPEMUX_ALLOW_HOME_LEASE_REGISTRY", raising=False)
+    monkeypatch.setenv("PYTEST_CURRENT_TEST", "tests/unit/test_mcp_port_leases.py::test_parallel (call)")
+    from dopemux.mcp import port_leases as pl
+
+    monkeypatch.setenv("PYTEST_XDIST_WORKER", "gw0")
+    p0 = pl.default_lease_registry_path()
+    monkeypatch.setenv("PYTEST_XDIST_WORKER", "gw1")
+    p1 = pl.default_lease_registry_path()
+    assert p0 != p1
+    assert "gw0" in str(p0)
+    assert "gw1" in str(p1)
+
+
+def test_different_pids_resolve_different_paths(monkeypatch):
+    monkeypatch.delenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", raising=False)
+    monkeypatch.delenv("DOPEMUX_ALLOW_HOME_LEASE_REGISTRY", raising=False)
+    monkeypatch.setenv("PYTEST_CURRENT_TEST", "tests/unit/test_mcp_port_leases.py::test_pid (call)")
+    monkeypatch.setenv("PYTEST_XDIST_WORKER", "gw0")
+    from dopemux.mcp import port_leases as pl
+
+    monkeypatch.setattr(pl.os, "getpid", lambda: 11111)
+    p_a = pl.default_lease_registry_path()
+    monkeypatch.setattr(pl.os, "getpid", lambda: 22222)
+    p_b = pl.default_lease_registry_path()
+    assert p_a != p_b
+    assert "11111" in str(p_a)
+    assert "22222" in str(p_b)
+
+
+def test_production_default_is_home_registry(monkeypatch):
+    monkeypatch.delenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", raising=False)
+    monkeypatch.delenv("DOPEMUX_ALLOW_HOME_LEASE_REGISTRY", raising=False)
+    monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
+    from dopemux.mcp import port_leases as pl
+
+    path = pl.default_lease_registry_path()
+    assert path == (Path.home() / ".dopemux/mcp/runtime/port-leases.json").resolve()
+
+
+def test_env_override_wins_over_pytest(monkeypatch, tmp_path: Path):
+    custom = tmp_path / "custom-leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(custom))
+    monkeypatch.setenv("PYTEST_CURRENT_TEST", "tests/unit/test_mcp_port_leases.py::test_env (call)")
+    from dopemux.mcp import port_leases as pl
+
+    assert pl.default_lease_registry_path() == custom.resolve()
+
+
+def test_two_tmp_path_registries_do_not_share_leases(tmp_path: Path):
+    a = tmp_path / "a" / "leases.json"
+    b = tmp_path / "b" / "leases.json"
+    ra = PortLeaseRegistry.load(a, create_missing=True)
+    rb = PortLeaseRegistry.load(b, create_missing=True)
+    ra.upsert_lease(
+        PortLease(
+            lease_id="la",
+            port=3100,
+            service="conport",
+            port_role="sse",
+            worktree_root="/a",
+            status="active",
+        )
+    )
+    ra.save()
+    assert ra.find_active_by_port(3100) is not None
+    assert rb.find_active_by_port(3100) is None
+    rb2 = PortLeaseRegistry.load(b)
+    assert rb2.find_active_by_port(3100) is None

@@ -742,7 +742,11 @@ def run_mcp_doctor(
                     workspace_id=identity.workspace_id,
                     project_id=identity.project_id,
                     expected_ports=ports,
-                    expected_name_substrings=[svc.name],
+                    expected_name_substrings=[svc.name, "conport", "dope-memory", "orchestrator"],
+                    project_slug_hints=[
+                        identity.project_id or "",
+                        Path(identity.project_root).name if identity.project_root else "",
+                    ],
                 )
                 if label_status == "MATCH":
                     _add(
@@ -752,6 +756,23 @@ def run_mcp_doctor(
                         f"Container {c.name} labels match project for `{svc.name}`",
                         service=svc.name,
                         evidence=[c.name, f"labels={sorted(c.labels.keys())}"],
+                    )
+                elif label_status == "COMPOSE_MATCH":
+                    _add(
+                        findings,
+                        "DOCKER_CONTAINER_COMPOSE_MATCH",
+                        "INFO",
+                        (
+                            f"Container {c.name} matches `{svc.name}` via compose project/name/port "
+                            "(no explicit dopemux labels yet)"
+                        ),
+                        service=svc.name,
+                        evidence=[
+                            c.name,
+                            f"ports={c.published_ports}",
+                            f"compose={c.labels.get('com.docker.compose.project')}",
+                        ],
+                        recommendation="Next controlled start should attach dopemux.* labels.",
                     )
                 elif label_status == "WRONG_PROJECT":
                     _add(
@@ -764,19 +785,57 @@ def run_mcp_doctor(
                         recommendation="Do not treat this container as this repo's MCP service.",
                     )
                 elif label_status == "UNLABELED":
-                    _add(
-                        findings,
-                        "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
-                        "UNKNOWN",
-                        (
-                            f"Container {c.name} matches `{svc.name}` by name/port but has no "
-                            "project labels — ownership UNKNOWN"
-                        ),
-                        service=svc.name,
-                        evidence=[c.name, f"ports={c.published_ports}"],
-                        recommendation="Packet 002 should attach dopemux project labels.",
-                    )
-                    unknowns.append(f"docker ownership unlabeled: {c.name}")
+                    # dope-memory: main compose project "dopemux" is never the target repo sidecar
+                    if svc.name == "dope-memory":
+                        compose_proj = (c.labels.get("com.docker.compose.project") or "").lower()
+                        compose_wd = c.labels.get("com.docker.compose.project.working_dir") or ""
+                        target = identity.project_root or ""
+                        is_main_stack = compose_proj == "dopemux" or (
+                            "dopemux-mvp" in compose_wd and "dNh" not in compose_wd
+                        )
+                        if is_main_stack and target and "dopemux-mvp" not in target:
+                            _add(
+                                findings,
+                                "DOPE_MEMORY_CROSS_REPO_MOUNT",
+                                "FAIL",
+                                (
+                                    f"Container {c.name} is main-stack dope-memory (compose={compose_proj}) "
+                                    "— must not be accepted as this repo's chronicle runtime"
+                                ),
+                                service=svc.name,
+                                evidence=[c.name, f"compose_wd={compose_wd}"],
+                                recommendation=(
+                                    "Start a project-scoped dope-memory sidecar with absolute "
+                                    f"{target}/.dopemux bind mount; do not use dopemux-mvp/.dopemux."
+                                ),
+                            )
+                        else:
+                            _add(
+                                findings,
+                                "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
+                                "UNKNOWN",
+                                (
+                                    f"Container {c.name} matches dope-memory by name/port but lacks "
+                                    "project labels — verify mount path"
+                                ),
+                                service=svc.name,
+                                evidence=[c.name, f"ports={c.published_ports}"],
+                            )
+                            unknowns.append(f"docker ownership unlabeled: {c.name}")
+                    else:
+                        _add(
+                            findings,
+                            "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
+                            "UNKNOWN",
+                            (
+                                f"Container {c.name} matches `{svc.name}` by name/port but has no "
+                                "project labels — ownership UNKNOWN"
+                            ),
+                            service=svc.name,
+                            evidence=[c.name, f"ports={c.published_ports}"],
+                            recommendation="Packet 002 should attach dopemux project labels.",
+                        )
+                        unknowns.append(f"docker ownership unlabeled: {c.name}")
                 # Port collision: container publishes port assigned to us but wrong name
                 if (
                     set(c.published_ports) & set(ports)
@@ -1045,6 +1104,11 @@ def run_mcp_doctor(
 
             docker_identity = None
             if docker_result.available:
+                from .task_orchestrator_identity import (
+                    identity_from_container_heuristics,
+                    identity_from_docker_labels,
+                )
+
                 matches = di.find_containers_for_service(
                     docker_result,
                     service_name="task-orchestrator",
@@ -1059,29 +1123,35 @@ def run_mcp_doctor(
                         project_id=identity.project_id,
                         expected_ports=[int(to_port)],
                         expected_name_substrings=["task-orchestrator"],
+                        project_slug_hints=[
+                            identity.project_id or "",
+                            Path(identity.project_root).name if identity.project_root else "",
+                        ],
                     )
                     if st == "WRONG_PROJECT":
-                        from .task_orchestrator_identity import (
-                            identity_from_docker_labels,
-                        )
-
                         docker_identity = identity_from_docker_labels(
                             c.labels or {},
                             port=int(to_port),
                             container_name=c.name,
                         )
                     elif st == "MATCH":
-                        from .task_orchestrator_identity import (
-                            identity_from_docker_labels,
-                        )
-
                         docker_identity = identity_from_docker_labels(
                             c.labels or {},
                             port=int(to_port),
                             container_name=c.name,
                         )
                         break
-                    elif st in {"UNLABELED", "UNKNOWN"} and docker_identity is None:
+                    elif st in {"COMPOSE_MATCH", "UNLABELED"} and docker_identity is None:
+                        docker_identity = identity_from_container_heuristics(
+                            container_name=c.name,
+                            labels=c.labels or {},
+                            port=int(to_port),
+                            target_project_root=identity.project_root,
+                            target_project_id=identity.project_id,
+                        )
+                        if docker_identity.has_project_proof():
+                            break
+                    elif st == "UNKNOWN" and docker_identity is None:
                         from .task_orchestrator_identity import TOIdentity
 
                         docker_identity = TOIdentity(
@@ -1095,8 +1165,8 @@ def run_mcp_doctor(
                 from .task_orchestrator_identity import evaluate_fixed_port_state
 
                 # When port probes are skipped: never pretend FREE (fail-closed).
-                # Still honor Docker ownership evidence (P2) by treating the
-                # fixed port as needing identity evaluation rather than free.
+                # Still honor Docker ownership evidence (P2). skip_http always:
+                # upstream jar has no REST /info|/health.
                 if skip_port_probe:
                     eval_result = evaluate_fixed_port_state(
                         port=int(to_port),
@@ -1111,7 +1181,6 @@ def run_mcp_doctor(
                         for_start=False,
                     )
                     if docker_identity is None:
-                        # Explicit probe-skipped finding when no Docker evidence either.
                         _add(
                             findings,
                             "TASK_ORCHESTRATOR_PORT_PROBE_SKIPPED",
@@ -1135,7 +1204,7 @@ def run_mcp_doctor(
                         target_worktree_hash=identity.worktree_hash,
                         is_free_fn=is_free,
                         docker_identity=docker_identity,
-                        skip_http=False,
+                        skip_http=True,  # upstream jar: no REST /info|/health
                         for_start=False,
                     )
                 for fdict in eval_result.findings:
