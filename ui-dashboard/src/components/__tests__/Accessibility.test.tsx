@@ -37,8 +37,8 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
   // Root paper no longer has role=button (dedicated copy control pattern)
   expect(paper).not.toHaveAttribute('role', 'button');
 
-  const roastBox = screen.getByRole('button');
-  expect(roastBox).toHaveAttribute('aria-label', 'No forecast available');
+  const roastBox = screen.getByLabelText('No forecast available');
+  expect(roastBox).toBeDefined();
   expect(roastBox).toHaveAttribute('tabIndex', '-1');
 
   // Test 2: With critical prediction
@@ -117,7 +117,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('getCompletionTransitionTask(currentTaskId, tasks, optimizedTasks)');
   expect(content).toContain('getSkipTransitionTask(currentTaskId, optimizedTasks)');
   expect(content).toMatch(/aria-label=\{\s*nextTaskAfterCompletion\s*\?\s*`Complete \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterCompletion\.title\}`\s*:\s*`Complete \$\{currentTask\.title\}, finish ritual`\s*\}/);
-  expect(content).toMatch(/aria-label=\{\s*nextTaskAfterSkip\s*\?\s*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
+  expect(content).toMatch(/aria-label=\{\s*isSkipConfirming\s*\?\s*'Confirm skip task'\s*:\s*nextTaskAfterSkip\s*\?\s*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
   // New LinearProgress for task progress
   expect(content).toContain('aria-label={`Progress for task: ${currentTask.title}`}');

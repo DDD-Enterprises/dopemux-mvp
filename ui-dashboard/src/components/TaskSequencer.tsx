@@ -83,7 +83,7 @@ const INITIAL_TASKS: Task[] = [
   },
 ];
 
-const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
+const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }) => {
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
   const headerRef = useRef<HTMLHeadingElement>(null);
 
@@ -96,6 +96,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isTaskTitleCopied, setIsTaskTitleCopied] = useState(false);
   const copyTaskTitleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isSkipConfirming, setIsSkipConfirming] = useState(false);
+  const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -127,6 +129,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
       }
       if (copyTaskTitleTimeoutRef.current) {
         clearTimeout(copyTaskTitleTimeoutRef.current);
+      }
+      if (skipConfirmTimeoutRef.current) {
+        clearTimeout(skipConfirmTimeoutRef.current);
       }
     };
   }, []);
@@ -183,6 +188,22 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const skipTask = (taskId: string) => {
+    if (!isSkipConfirming) {
+      setIsSkipConfirming(true);
+      if (skipConfirmTimeoutRef.current) clearTimeout(skipConfirmTimeoutRef.current);
+      skipConfirmTimeoutRef.current = setTimeout(() => {
+        setIsSkipConfirming(false);
+        skipConfirmTimeoutRef.current = null;
+      }, 3000);
+      return;
+    }
+
+    if (skipConfirmTimeoutRef.current) {
+      clearTimeout(skipConfirmTimeoutRef.current);
+      skipConfirmTimeoutRef.current = null;
+    }
+    setIsSkipConfirming(false);
+
     const nextTask = getSkipTransitionTask(taskId, optimizedTasks);
     if (!nextTask) return;
     setCurrentTaskId(nextTask.id);
@@ -398,6 +419,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           '50%': {
             transform: 'scale(1.03)',
             boxShadow: `0 0 12px ${alpha(brandTokens.colors.saintGold, 0.3)}`,
+          },
+          '100%': { transform: 'scale(1)' },
+        },
+        '@keyframes skip-pulse': {
+          '0%': { transform: 'scale(1)' },
+          '50%': {
+            transform: 'scale(1.03)',
+            boxShadow: `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.3)}`,
           },
           '100%': { transform: 'scale(1)' },
         },
@@ -669,18 +698,30 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               >
                 <Button
                   size="small"
-                  variant="text"
-                  startIcon={<SkipForward aria-hidden="true" />}
+                  variant={isSkipConfirming ? 'outlined' : 'text'}
+                  startIcon={isSkipConfirming ? <AlertTriangle size={16} aria-hidden="true" /> : <SkipForward aria-hidden="true" />}
                   onClick={() => skipTask(currentTask.id)}
-                  sx={{ color: brandTokens.colors.gremlinPink }}
+                  sx={{
+                    color: brandTokens.colors.gremlinPink,
+                    borderColor: isSkipConfirming ? brandTokens.colors.gremlinPink : 'transparent',
+                    ...(isSkipConfirming && {
+                      animation: 'skip-pulse 1.5s infinite',
+                    }),
+                    '&:hover': {
+                      bgcolor: alpha(brandTokens.colors.gremlinPink, 0.08),
+                      borderColor: isSkipConfirming ? brandTokens.colors.gremlinPink : 'transparent',
+                    },
+                  }}
                   aria-label={
-                    nextTaskAfterSkip
-                      ? `Skip ${currentTask.title}, proceed to ${nextTaskAfterSkip.title}`
-                      : `Skip task: ${currentTask.title}`
+                    isSkipConfirming
+                      ? 'Confirm skip task'
+                      : nextTaskAfterSkip
+                        ? `Skip ${currentTask.title}, proceed to ${nextTaskAfterSkip.title}`
+                        : `Skip task: ${currentTask.title}`
                   }
                   disabled={optimizedTasks.length <= 1}
                 >
-                  Skip
+                  {isSkipConfirming ? 'Confirm Skip?' : 'Skip'}
                 </Button>
               </Box>
             </Tooltip>
