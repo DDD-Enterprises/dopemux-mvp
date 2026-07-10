@@ -149,17 +149,23 @@ config_root="$(get_resolution_field config_root)"
 image="$(parse_image_ref)"
 port="${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
 
-# Prefer explicit Dopemux identity env when provided by mcp start
+# Prefer explicit Dopemux identity env when provided by mcp start / lifecycle.
+# Container naming must use lifecycle project identity (slug-hash project_id),
+# not DOPEMUX_INSTANCE_ID from .envrc (often a short worktree hash).
 project_root="${DOPEMUX_PROJECT_ROOT:-${TASK_ORCHESTRATOR_PROJECT_ROOT:-${project_root}}}"
 workspace_root="${DOPEMUX_WORKTREE_ROOT:-${DOPEMUX_WORKSPACE_ROOT:-${workspace_root}}}"
 project_id="${DOPEMUX_PROJECT_ID:-$(basename "${project_root}")}"
-if [[ -n "${DOPEMUX_INSTANCE_ID:-}" ]]; then
+# state_id for container name: project identity first, then resolution state_id,
+# then instance id only as last resort (avoids worktree-hash name mismatch).
+if [[ -n "${DOPEMUX_PROJECT_ID:-}" ]]; then
+  workspace_id="${DOPEMUX_PROJECT_ID}"
+elif [[ -z "${workspace_id:-}" && -n "${DOPEMUX_INSTANCE_ID:-}" ]]; then
   workspace_id="${DOPEMUX_INSTANCE_ID}"
 fi
 
 [[ -n "${workspace_root}" ]] || die "could not derive workspace_root (set DOPEMUX_WORKTREE_ROOT)"
 [[ -n "${project_root}" ]] || die "could not derive project_root (set DOPEMUX_PROJECT_ROOT / TASK_ORCHESTRATOR_PROJECT_ROOT)"
-[[ -n "${workspace_id}" ]] || die "could not derive state_id / DOPEMUX_INSTANCE_ID"
+[[ -n "${workspace_id}" ]] || die "could not derive state_id / DOPEMUX_PROJECT_ID"
 [[ -n "${data_dir}" ]] || die "could not derive data_dir"
 [[ -n "${database_path}" ]] || die "could not derive database_path"
 [[ -n "${config_root}" ]] || die "could not derive config_root"
