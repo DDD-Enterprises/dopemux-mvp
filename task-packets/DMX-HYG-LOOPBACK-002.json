@@ -1,0 +1,70 @@
+{
+  "id": "DMX-HYG-LOOPBACK-002",
+  "project": "dopemux-mvp",
+  "target": "Loopback-bind (127.0.0.1) the host port publications for conport, dope-memory, serena, and gpt-researcher in compose.yml to close the standing 0.0.0.0 exposure family.",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Run `pytest tests/ --co` after any deletion to catch orphaned imports."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfin-hyg",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfin-hyg",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "fix(security): loopback-bind conport/dope-memory/serena/gptr host ports",
+    "allowlist": [
+      "compose.yml",
+      "task-packets/DMX-HYG-LOOPBACK-002.json"
+    ],
+    "verify": [
+      "docker compose config -q",
+      "pytest tests/arch/test_registry_compose_alignment.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(security): loopback-bind 4 exposed MCP servers",
+    "body": "Binds conport, dope-memory, serena, and gpt-researcher host ports to 127.0.0.1, closing the standing 0.0.0.0 exposure family (E7 from the fleet audit).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Prefix 127.0.0.1: on host publications for the four servers.",
+      "validation": [
+        "conport (compose.yml:258-260 -> 3004/3005/4004), dope-memory (:509 -> 3020), serena (:552-553 -> 3006/4006), gpt-researcher (:579 -> 3009) are all 127.0.0.1-bound, matching dope-context/adhd-engine at :372,489.",
+        "docker compose config parses without error."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Regression check.",
+      "validation": [
+        "pytest tests/arch/test_registry_compose_alignment.py -q passes."
+      ]
+    }
+  ]
+}

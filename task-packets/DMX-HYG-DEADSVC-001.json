@@ -1,0 +1,91 @@
+{
+  "id": "DMX-HYG-DEADSVC-001",
+  "project": "dopemux-mvp",
+  "target": "Remove the two confirmed-dead held services (session_intelligence snake, voice-commands) and all orphaned references + tests.",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Run `pytest tests/ --co` after any deletion to catch orphaned imports."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfin-hyg",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfin-hyg",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "commit": {
+    "message": "chore(graveyard): delete session_intelligence + voice-commands dead services",
+    "allowlist": [
+      "services/session_intelligence",
+      "services/voice-commands",
+      "tests/regression/test_fnew6_session_intelligence.py",
+      "tests/test_multi_workspace.py",
+      "tests/regression/test_production_integration.py",
+      "scripts/utilities/serena_enrichment.py",
+      "task-packets/DMX-HYG-DEADSVC-001.json"
+    ],
+    "verify": [
+      "pytest tests/ --co -q",
+      "python scripts/brand_lint.py"
+    ]
+  },
+  "pr": {
+    "title": "chore(graveyard): remove 2 confirmed-dead held services",
+    "body": "Deletes services/session_intelligence (fabricated minutes_since data, dead cache) and services/voice-commands (zero imports, junk duplicate infra), plus 3 orphaned test refs. Verdicts evidence-backed by the 2026-07-09 held-surface deep-dive.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "git rm -r services/session_intelligence and services/voice-commands.",
+      "validation": [
+        "Both directories are removed from the tree.",
+        "git status shows no residual files under either path."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Remove session_intelligence test cases and demo refs.",
+      "validation": [
+        "session_intelligence cases removed from tests/test_multi_workspace.py:89,115 and tests/regression/test_production_integration.py.",
+        "tests/regression/test_fnew6_session_intelligence.py deleted.",
+        "sys.path demo block removed from scripts/utilities/serena_enrichment.py:445,464-470.",
+        "pytest tests/ --co returns NO collection errors."
+      ]
+    },
+    {
+      "id": "step-3",
+      "task": "Final reference + lint sweep.",
+      "validation": [
+        "pytest tests/arch tests/regression -q passes.",
+        "python scripts/brand_lint.py returns 0 errors.",
+        "grep -rn 'session_intelligence\\|voice-commands' src/ tests/ scripts/ compose.yml services/registry.yaml is clean."
+      ]
+    }
+  ]
+}
