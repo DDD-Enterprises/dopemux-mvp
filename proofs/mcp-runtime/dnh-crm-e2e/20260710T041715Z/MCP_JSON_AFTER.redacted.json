@@ -1,0 +1,35 @@
+{
+  "mcpServers": {
+    "conport": {
+      "type": "sse",
+      "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
+      "env": {
+        "DOPEMUX_WORKSPACE_ID": "${DOPEMUX_WORKSPACE_ID:-}",
+        "GEMINI_API_KEY": "[REDACTED]",
+        "VOYAGEAI_API_KEY": "[REDACTED]",
+        "OPENAI_API_KEY": "[REDACTED]"
+      },
+      "description": "Knowledge graph, decisions, progress (PostgreSQL+AGE; per-worktree state)"
+    },
+    "dope-memory": {
+      "type": "http",
+      "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
+      "env": {
+        "DOPE_MEMORY_WORKSPACE_ID": "${DOPE_MEMORY_WORKSPACE_ID:-}",
+        "DOPE_MEMORY_INSTANCE_ID": "${DOPE_MEMORY_INSTANCE_ID:-}"
+      },
+      "description": "Temporal chronicle and working-context (per worktree instance)"
+    },
+    "ta[REDACTED_SK]": {
+      "type": "http",
+      "url": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
+      "env": {
+        "TASK_ORCHESTRATOR_PROJECT_ROOT": "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}",
+        "DOPEMUX_WORKSPACE_ROOT": "${DOPEMUX_WORKSPACE_ROOT:-}",
+        "DOPEMUX_PROJECT_ROOT": "${DOPEMUX_PROJECT_ROOT:-}",
+        "TASK_ORCHESTRATOR_HTTP_PORT": "${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
+      },
+      "description": "HTTP singleton MCP Task Orchestrator with repo-scoped SQLite state"
+    }
+  }
+}

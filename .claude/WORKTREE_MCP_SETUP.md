@@ -8,6 +8,56 @@
 > Start applies labels + unique names + absolute `.dopemux` volume and records
 > `~/.dopemux/mcp/runtime/instances.json`. Unlabeled containers are never adopted.
 
+<!-- BEGIN DOPEMUX MCP SETUP -->
+# Worktree MCP Setup
+
+## Session Start
+
+```bash
+source .envrc.dopemux-mcp
+dopemux mcp doctor
+```
+
+If services are not running:
+
+```bash
+dopemux mcp start
+dopemux mcp doctor
+```
+
+## Healthy Sequence
+
+```bash
+dopemux mcp init
+dopemux mcp repair-config --dry-run
+dopemux mcp repair-config --apply
+dopemux mcp start
+source .envrc.dopemux-mcp
+dopemux mcp doctor
+```
+
+## Do Not Run
+
+Do not start this repo's MCP services by cd'ing into `dopemux-mvp` and injecting
+this repo's env into `docker compose up`.
+
+Do not replace global ConPort with local ConPort.
+
+Do not treat a listening port as healthy unless `dopemux mcp doctor` proves ownership.
+
+Do not treat `curl :7890/health` as proof that **this** project's Task Orchestrator
+is ready. Fixed port 7890 must match this repo's project identity (labels/metadata/info)
+or start/doctor must fail closed.
+
+## Authority
+
+Dopemux manages MCP lifecycle and local config only.
+ConPort owns structured context.
+dope-memory owns chronicle receipts.
+task-orchestrator owns workflow views/transitions.
+dopecon-bridge is proxy/adapter only.
+<!-- END DOPEMUX MCP SETUP -->
+
 ## Overview
 
 Git worktrees allow parallel development on different branches without context-switching overhead. This guide explains how MCP servers are configured to work seamlessly across all worktrees.
