@@ -72,10 +72,14 @@ This command:
 - Writes `.envrc.dopemux-mcp` with deterministic ports for this workspace path
 
 > [!NOTE]
-> **Port allocation is deterministic** (`base + sha1(path)[:4] % 100`).
-> `wrapper-singleton` services (e.g. `task-orchestrator` on `7890`) use fixed ports.
-> Cross-worktree collision risk remains until the port-lease packet; repair-config
-> emits `PORT_HASH_BUCKET_COLLISION_RISK` and does **not** live-rebind free ports.
+> **Port allocation (Packet 004):** preferred ports still use
+> `base + sha1(path)[:4] % 100` (or existing envrc values), but assignment goes
+> through the **lease registry** (`~/.dopemux/mcp/runtime/port-leases.json`).
+> Reserved singletons, active foreign leases, and live TCP sockets force **rebind**
+> to the next safe port. Override registry path with
+> `DOPEMUX_MCP_PORT_LEASE_REGISTRY` (tests must never use the real home registry).
+> `wrapper-singleton` services (e.g. `task-orchestrator` on `7890`) are fixed —
+> free/same-project reuse or **block**, never rebind.
 
 ### Step 3 — Repair config (previewable)
 
@@ -179,11 +183,11 @@ Fleet commands never start containers and never modify `~/.claude.json`.
 
 ## Current limitations
 
-* Port allocator still has `%100` birthday-collision risk (see RUNTIME-004 lease packet).
-* Live free-port rebind is **not** implemented.
-* `task-orchestrator` fixed port `7890` may block multi-project simultaneous use if
-  identity cannot be proven.
+* Preferred ports still derive from hash `%100` — leases rebind on conflict (no longer silent).
+* `task-orchestrator` fixed port `7890` blocks multi-project simultaneous use when another
+  project holds the lease (see RUNTIME-005 for deeper TO identity work).
 * Unlabeled existing containers are not adopted automatically.
+* Lease prune is not automatic; doctor may report `LEASE_STALE` without deleting.
 
 ---
 

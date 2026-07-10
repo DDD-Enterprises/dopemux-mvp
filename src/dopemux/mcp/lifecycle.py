@@ -492,6 +492,84 @@ def run_lifecycle(
     compose_proj = dr.compose_project_name(slug, worktree_hash)
 
     ports = _extract_ports(doctor_env, selected, catalog)
+
+    # Lease registry consistency (start only — recommend repair-config on mismatch)
+    if op == "start":
+        try:
+            from .port_leases import PortLeaseRegistry
+
+            lease_reg = PortLeaseRegistry.load()
+            if lease_reg.parse_status == "ERROR":
+                blocking.append(
+                    {
+                        "code": "LEASE_REGISTRY_PARSE_ERROR",
+                        "severity": "FAIL",
+                        "message": f"Lease registry unreadable: {lease_reg.error}",
+                        "service": None,
+                    }
+                )
+            elif lease_reg.parse_status == "OK":
+                for var, port in ports.items():
+                    ours = [
+                        L
+                        for L in lease_reg.active_leases()
+                        if L.get("port_var") == var
+                        and (
+                            L.get("worktree_root") == (identity.worktree_root or str(target))
+                            or L.get("worktree_hash") == identity.worktree_hash
+                        )
+                    ]
+                    foreign = lease_reg.find_active_by_port(int(port))
+                    if foreign and not lease_reg.identity_matches(
+                        foreign,
+                        worktree_root=identity.worktree_root or str(target),
+                        project_root=identity.project_root,
+                        worktree_hash=identity.worktree_hash,
+                    ):
+                        blocking.append(
+                            {
+                                "code": "LEASE_BELONGS_TO_OTHER_PROJECT",
+                                "severity": "FAIL",
+                                "message": f"Port {port} ({var}) leased to another project",
+                                "service": None,
+                            }
+                        )
+                    elif ours and int(ours[0].get("port") or 0) != int(port):
+                        blocking.append(
+                            {
+                                "code": "LEASE_ENVRC_MISMATCH",
+                                "severity": "FAIL",
+                                "message": (
+                                    f"Envrc {var}={port} != lease {ours[0].get('port')}; "
+                                    "run `dopemux mcp repair-config --apply`"
+                                ),
+                                "service": None,
+                            }
+                        )
+                    elif not ours:
+                        warnings.append(
+                            {
+                                "code": "LEGACY_ENVRC_WITHOUT_LEASE",
+                                "severity": "WARN",
+                                "message": f"No lease for envrc {var}={port}",
+                                "service": None,
+                            }
+                        )
+                    else:
+                        # Port became occupied by non-lease holder after lease
+                        if not is_free(int(port)):
+                            # listening is OK if we will start/reuse — only block if foreign docker
+                            pass
+        except Exception as exc:  # noqa: BLE001
+            warnings.append(
+                {
+                    "code": "LEASE_UNKNOWN_OWNER",
+                    "severity": "WARN",
+                    "message": f"Lease check skipped: {exc}",
+                    "service": None,
+                }
+            )
+
     # Missing required ports for selected services
     for name in selected:
         spec = (catalog.get("servers") or {}).get(name) or {}

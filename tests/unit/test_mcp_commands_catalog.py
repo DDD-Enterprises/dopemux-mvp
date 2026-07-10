@@ -133,21 +133,25 @@ def test_allocate_ports_raises_on_cross_server_collision():
         },
     }
 
-    with pytest.raises(click.ClickException) as excinfo:
-        mcp_commands._allocate_ports("/tmp/wt-collide", ["alpha", "beta"], catalog)
+    # Packet 004: cross-service preferred collisions rebind instead of hard-fail
+    ports = mcp_commands._allocate_ports(
+        "/tmp/wt-collide",
+        ["alpha", "beta"],
+        catalog,
+        persist=False,
+        dry_run=True,
+        is_free_fn=lambda p: True,
+    )
+    assert ports["ALPHA_PORT"] != ports["BETA_PORT"]
 
-    msg = str(excinfo.value.message)
-    assert "Internal port collision" in msg
-    assert "alpha" in msg
-    assert "beta" in msg
 
-
-def test_allocate_ports_wrapper_singleton_uses_fixed_base_port():
+def test_allocate_ports_wrapper_singleton_uses_fixed_base_port(tmp_path, monkeypatch):
     """wrapper-singleton services must NOT have a workspace hash offset applied.
 
     task-orchestrator is the canonical wrapper-singleton; its port must always
     equal default_port_base regardless of the workspace path hash.
     """
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "leases.json"))
     catalog = {
         "version": 1,
         "servers": {
@@ -163,17 +167,24 @@ def test_allocate_ports_wrapper_singleton_uses_fixed_base_port():
     }
 
     # Two completely different workspace paths must yield the same fixed port
+    # (dry-run so concurrent multi-project fixed-port leases are not written)
     result_a = mcp_commands._allocate_ports(
         "/Users/alice/code/project-a",
         ["task-orchestrator"],
         catalog,
         project_root="/Users/alice/code/project-a",
+        persist=False,
+        dry_run=True,
+        is_free_fn=lambda p: True,
     )
     result_b = mcp_commands._allocate_ports(
         "/Users/bob/totally-different-path/zyx",
         ["task-orchestrator"],
         catalog,
         project_root="/Users/bob/totally-different-path/zyx",
+        persist=False,
+        dry_run=True,
+        is_free_fn=lambda p: True,
     )
 
     assert result_a["TASK_ORCHESTRATOR_HTTP_PORT"] == 7890
@@ -210,19 +221,17 @@ def test_allocate_ports_raises_on_singleton_port_collision(monkeypatch):
         },
     }
 
-    # Force _port_for to return the singleton port regardless of input
-    monkeypatch.setattr(mcp_commands, "_port_for", lambda _path, _base: SINGLETON_PORT)
-
-    with pytest.raises(click.ClickException) as excinfo:
-        mcp_commands._allocate_ports(
-            "/Users/hue/code/dNh_CRM",
-            ["conport"],
-            catalog,
-        )
-
-    msg = str(excinfo.value.message)
-    assert "collision" in msg.lower()
-    assert str(SINGLETON_PORT) in msg or "gpt-researcher" in msg or "singleton" in msg
+    # Prefer reserved port via envrc; allocator must rebind away from singleton
+    ports = mcp_commands._allocate_ports(
+        "/Users/hue/code/dNh_CRM",
+        ["conport"],
+        catalog,
+        existing_envrc={"CONPORT_HTTP_PORT": str(SINGLETON_PORT)},
+        persist=False,
+        dry_run=True,
+        is_free_fn=lambda p: True,
+    )
+    assert ports["CONPORT_HTTP_PORT"] != SINGLETON_PORT
 
 
 def test_allocate_ports_raises_on_url_singleton_port_collision(monkeypatch):
@@ -245,42 +254,52 @@ def test_allocate_ports_raises_on_url_singleton_port_collision(monkeypatch):
         },
     }
 
-    monkeypatch.setattr(mcp_commands, "_port_for", lambda _path, _base: SINGLETON_PORT)
+    ports = mcp_commands._allocate_ports(
+        "/tmp/wt",
+        ["conport"],
+        catalog,
+        existing_envrc={"CONPORT_HTTP_PORT": str(SINGLETON_PORT)},
+        persist=False,
+        dry_run=True,
+        is_free_fn=lambda p: True,
+    )
+    assert ports["CONPORT_HTTP_PORT"] != SINGLETON_PORT
 
-    with pytest.raises(click.ClickException) as excinfo:
-        mcp_commands._allocate_ports("/tmp/wt", ["conport"], catalog)
 
-    assert "collision" in str(excinfo.value.message).lower()
-
-
-def test_allocate_ports_uses_project_root_for_per_repo_state():
+def test_allocate_ports_uses_project_root_for_per_repo_state(tmp_path, monkeypatch):
     catalog = {
         "version": 1,
         "servers": {
             "task-orchestrator": {
                 "scope": "per-worktree",
                 "state_scope": "per-repo",
+                "management_model": "wrapper-singleton",
                 "transport": "http",
                 "port_var": "TASK_ORCHESTRATOR_HTTP_PORT",
                 "default_port_base": 7890,
             },
         },
     }
+    reg = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg))
 
     main = mcp_commands._allocate_ports(
         "/tmp/repo",
         ["task-orchestrator"],
         catalog,
         project_root="/tmp/shared-project",
+        is_free_fn=lambda p: True,
     )
     linked = mcp_commands._allocate_ports(
         "/tmp/repo-linked",
         ["task-orchestrator"],
         catalog,
         project_root="/tmp/shared-project",
+        is_free_fn=lambda p: True,
     )
 
     assert linked == main
+    assert main["TASK_ORCHESTRATOR_HTTP_PORT"] == 7890
 
 
 def test_project_identity_is_shared_across_linked_worktrees(tmp_path):
