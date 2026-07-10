@@ -83,7 +83,7 @@ const INITIAL_TASKS: Task[] = [
   },
 ];
 
-const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }) => {
+const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
   const headerRef = useRef<HTMLHeadingElement>(null);
 

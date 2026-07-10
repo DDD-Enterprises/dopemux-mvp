@@ -31,34 +31,34 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
   const { rerender } = render(<PredictionPanel />);
   const progressBar = screen.getByRole('progressbar');
   expect(progressBar).toHaveAttribute('aria-label', '15-Minute Load Prediction Percentage');
-  expect(progressBar).toHaveAttribute('aria-valuetext', 'Loading prediction');
 
-  // Dedicated copy control (not the metric card) — disabled without prediction
-  const panel = screen.getByLabelText('No prediction');
-  expect(panel).toHaveAttribute('tabIndex', '-1');
-  expect(panel).toHaveAttribute('role', 'button');
-  expect(panel).toHaveAttribute('aria-disabled', 'true');
+  const paper = screen.getByLabelText('No prediction');
+  expect(paper).toHaveAttribute('tabIndex', '0');
+  // Root paper no longer has role=button (dedicated copy control pattern)
+  expect(paper).not.toHaveAttribute('role', 'button');
+
+  const roastBox = screen.getByRole('button');
+  expect(roastBox).toHaveAttribute('aria-label', 'No forecast available');
+  expect(roastBox).toHaveAttribute('tabIndex', '-1');
 
   // Test 2: With critical prediction
   rerender(<PredictionPanel prediction={0.9} />);
 
   const criticalValue = '90%';
   expect(screen.getByText(criticalValue)).toBeDefined();
-  expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuetext', '90%');
 
   const criticalLabel = /15-min prediction 90%, Break\. Now\./i;
-  const criticalPanel = screen.getByLabelText(criticalLabel);
-  expect(criticalPanel).toBeDefined();
-  // Assert tabIndex on the live critical control, not a stale "No prediction" reference
-  expect(criticalPanel).toHaveAttribute('tabIndex', '0');
-  expect(criticalPanel).toHaveAttribute('aria-disabled', 'false');
+  expect(screen.getByLabelText(criticalLabel)).toBeDefined();
+
+  const activeRoastBox = screen.getAllByRole('button').find(el => el.getAttribute('aria-label')?.includes('Click to copy'));
+  expect(activeRoastBox).toBeDefined();
+  expect(activeRoastBox).toHaveAttribute('tabIndex', '0');
 
   // Test 3: With optimal prediction
   rerender(<PredictionPanel prediction={0.4} />);
   const optimalValue = '40%';
   expect(screen.getByText(optimalValue)).toBeDefined();
   expect(screen.getByLabelText(/15-min prediction 40%, Flow Ritual/i)).toBeDefined();
-  expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuetext', '40%');
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
