@@ -12,7 +12,11 @@ from click.testing import CliRunner
 from dopemux.commands import mcp_commands
 from dopemux.mcp.doctor import format_human_summary, run_mcp_doctor
 from dopemux.mcp.project_identity import resolve_project_identity
-from dopemux.mcp.runtime_state import build_desired_services, compose_lifecycle_diagnostics
+from dopemux.mcp.runtime_state import (
+    build_desired_services,
+    compose_lifecycle_diagnostics,
+    resolve_identity_view,
+)
 
 
 def _catalog():
@@ -194,6 +198,40 @@ services:
     assert any(
         "DOPEMUX_WORKSPACE_ID" in r for r in diag2["identity_env_risks"]
     )
+
+
+def test_build_desired_services_unions_catalog_defaults():
+    catalog = _catalog()
+    # Only conport in mcp.json — defaults still include dope-memory + task-orchestrator
+    desired = build_desired_services(
+        catalog,
+        {"conport": {"type": "sse", "url": "http://localhost:3005/sse"}},
+        {"CONPORT_MCP_PORT": "3005", "DOPE_MEMORY_PORT": "3020"},
+    )
+    names = {s.name for s in desired}
+    assert "conport" in names
+    assert "dope-memory" in names
+    assert "task-orchestrator" in names
+
+
+def test_resolve_identity_forces_repo_over_ambient(tmp_path: Path):
+    target = tmp_path / "target-repo"
+    target.mkdir()
+    (target / ".git").mkdir()
+    foreign = tmp_path / "foreign-repo"
+    foreign.mkdir()
+    (foreign / ".git").mkdir()
+
+    view = resolve_identity_view(
+        target,
+        envrc_values={
+            "DOPEMUX_WORKSPACE_ROOT": str(foreign),
+            "DOPEMUX_PROJECT_ROOT": str(foreign),
+            "TASK_ORCHESTRATOR_PROJECT_ROOT": str(foreign),
+        },
+    )
+    assert view.worktree_root == str(target.resolve())
+    assert any("forced identity" in e for e in view.evidence)
 
 
 def test_compose_no_hazard_minimal():

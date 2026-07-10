@@ -61,6 +61,25 @@ def test_parse_malformed_line():
     assert any("malformed" in e for e in errors)
 
 
+def test_load_envrc_partial_keeps_values(tmp_path: Path):
+    """Malformed lines must not mark partial parses as ERROR when keys loaded."""
+    path = tmp_path / ".envrc.dopemux-mcp"
+    path.write_text(
+        "not a valid line\n"
+        "export CONPORT_MCP_PORT=3041\n"
+        "export DOPEMUX_INSTANCE_ID=abcd\n"
+        "also bad\n"
+    )
+    result = load_envrc(path)
+    assert result.present is True
+    assert result.parse_status == "PARTIAL"
+    assert result.values["CONPORT_MCP_PORT"] == "3041"
+    assert result.values["DOPEMUX_INSTANCE_ID"] == "abcd"
+    assert len(result.errors) >= 2
+    merged = merge_envrc_into_environ({}, result)
+    assert merged["CONPORT_MCP_PORT"] == "3041"
+
+
 def test_secret_like_redaction():
     assert is_secret_like_key("OPENAI_API_KEY") is True
     assert is_secret_like_key("CONPORT_MCP_PORT") is False
