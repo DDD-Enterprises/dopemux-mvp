@@ -1,0 +1,12 @@
+# Invalid (parser-level, not schema-level): duplicate target_id — later entry dropped.
+targets:
+  - target_id: "dup"
+    workspace_path: "/abs/ws1"
+    enabled: true
+    identity:
+      project: "proj1"
+  - target_id: "dup"
+    workspace_path: "/abs/ws2"
+    enabled: true
+    identity:
+      project: "proj2"
