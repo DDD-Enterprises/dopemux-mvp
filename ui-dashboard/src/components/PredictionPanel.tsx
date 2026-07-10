@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Box, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { Check, TrendingUp } from 'lucide-react';
@@ -71,27 +71,52 @@ export default function PredictionPanel({ prediction, onError }: PredictionPanel
       <Box aria-hidden="true" sx={{ width: 28, height: 2, bgcolor: statusMeta.color, mb: 1 }} />
       <LinearProgress
           aria-label="15-Minute Load Prediction Percentage"
+          aria-valuetext={hasPrediction ? `${value}%` : 'Loading prediction'}
           variant={hasPrediction ? 'determinate' : 'indeterminate'}
           value={value}
           sx={{ height: 8, borderRadius: 6, backgroundColor: alpha(statusMeta.color, 0.14), '& .MuiLinearProgress-bar': { backgroundColor: statusMeta.color } }}
       />
       <Tooltip arrow title={isCopied ? 'Forecast copied!' : hasPrediction ? 'Click to copy forecast' : 'Waiting for forecast...'}>
         <Box
-          role="button"
-          tabIndex={hasPrediction ? 0 : -1}
-          onClick={handleCopy}
-          onKeyDown={(e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); void handleCopy(); } }}
-          aria-label={isCopied ? 'Forecast copied' : hasPrediction ? `15-min prediction roast: ${roast}. Click to copy.` : 'No forecast available'}
+          {...(hasPrediction
+            ? {
+                role: 'button' as const,
+                tabIndex: 0,
+                onClick: () => { void handleCopy(); },
+                onKeyDown: (e: KeyboardEvent) => {
+                  if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) {
+                    e.preventDefault();
+                    void handleCopy();
+                  }
+                },
+              }
+            : {
+                role: undefined,
+                tabIndex: -1,
+                'aria-disabled': true as const,
+              })}
+          aria-label={
+            isCopied
+              ? 'Forecast copied'
+              : hasPrediction
+                ? `15-min prediction roast: ${roast}. Click to copy.`
+                : 'No forecast available'
+          }
           sx={{
             mt: 3, p: 2, borderRadius: 2, bgcolor: alpha(statusMeta.color, 0.04), border: `1px dashed ${alpha(statusMeta.color, 0.3)}`,
             cursor: hasPrediction ? 'copy' : 'default', transition: 'all 0.2s',
             display: 'flex', alignItems: 'flex-start', gap: 1.5,
-            '&:hover, &:focus-visible': {
-              bgcolor: alpha(statusMeta.color, 0.08),
-              borderColor: statusMeta.color,
-              transform: 'translateY(-2px)',
-              boxShadow: `0 4px 12px ${alpha(statusMeta.color, 0.15)}`,
-            },
+            opacity: hasPrediction ? 1 : 0.7,
+            ...(hasPrediction
+              ? {
+                  '&:hover, &:focus-visible': {
+                    bgcolor: alpha(statusMeta.color, 0.08),
+                    borderColor: statusMeta.color,
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 4px 12px ${alpha(statusMeta.color, 0.15)}`,
+                  },
+                }
+              : {}),
             ...(isCopied && {
               animation: 'copy-success-pulse 0.4s ease-out',
               '@keyframes copy-success-pulse': {
@@ -102,7 +127,9 @@ export default function PredictionPanel({ prediction, onError }: PredictionPanel
             }),
           }}
         >
-          {isCopied ? <Check size={16} color={brandTokens.colors.serumMint} style={{ marginTop: 2 }} /> : <TrendingUp size={16} color={statusMeta.color} style={{ marginTop: 2 }} />}
+          {isCopied
+            ? <Check size={16} color={brandTokens.colors.serumMint} style={{ marginTop: 2 }} aria-hidden="true" />
+            : <TrendingUp size={16} color={statusMeta.color} style={{ marginTop: 2 }} aria-hidden="true" />}
           <Box>
             <Typography variant="body2" className="dopemux-roast">{roast}</Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>{hasPrediction ? 'Forecast panel uses backend projection.' : 'Loading...'}</Typography>
