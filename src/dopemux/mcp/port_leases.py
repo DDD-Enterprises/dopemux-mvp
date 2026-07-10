@@ -17,7 +17,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 SCHEMA_VERSION = "1.0"
 ALLOCATOR_VERSION = "1"
@@ -37,6 +37,13 @@ def default_lease_registry_path() -> Path:
     override = os.environ.get(REGISTRY_ENV)
     if override:
         return Path(override).expanduser().resolve()
+    # Under pytest, never default to the real home registry (prevents pollution).
+    if os.environ.get("PYTEST_CURRENT_TEST") and not os.environ.get(
+        "DOPEMUX_ALLOW_HOME_LEASE_REGISTRY"
+    ):
+        import tempfile
+
+        return Path(tempfile.gettempdir()) / "dopemux-pytest-port-leases.json"
     return (Path.home() / DEFAULT_RELATIVE).resolve()
 
 
@@ -387,3 +394,68 @@ class PortLeaseRegistry:
             "allocator_version": self.data.get("allocator_version"),
             "schema_version": self.data.get("schema_version"),
         }
+
+    def find_invalid_singleton_leases(
+        self, reserved_ports: Mapping[int, str]
+    ) -> List[Dict[str, Any]]:
+        """Active project/worktree leases on reserved singleton ports (invalid)."""
+        bad: List[Dict[str, Any]] = []
+        for L in self.active_leases():
+            try:
+                port = int(L.get("port") or 0)
+            except (TypeError, ValueError):
+                continue
+            if port not in reserved_ports:
+                continue
+            # Any active lease claiming a reserved singleton port is invalid.
+            bad.append(dict(L))
+        return bad
+
+    def reconcile_reserved_singleton_leases(
+        self,
+        reserved_ports: Mapping[int, str],
+        *,
+        dry_run: bool = True,
+    ) -> Dict[str, Any]:
+        """Release invalid project leases on reserved singleton ports.
+
+        Returns plan/result with backup path when applied.
+        """
+        self.require_writable()
+        invalid = self.find_invalid_singleton_leases(reserved_ports)
+        plan = {
+            "dry_run": dry_run,
+            "invalid_count": len(invalid),
+            "invalid_leases": [
+                {
+                    "lease_id": L.get("lease_id"),
+                    "port": L.get("port"),
+                    "service": L.get("service"),
+                    "project_root": L.get("project_root"),
+                    "status": L.get("status"),
+                    "reason": f"port {L.get('port')} is reserved singleton ({reserved_ports.get(int(L.get('port') or 0))})",
+                }
+                for L in invalid
+            ],
+            "backup_path": None,
+            "applied": False,
+        }
+        if dry_run or not invalid:
+            return plan
+
+        # Backup before mutate
+        if self.path.exists():
+            stamp = _utc_now().replace(":", "").replace("-", "")
+            backup = self.path.with_suffix(self.path.suffix + f".backup-{stamp}")
+            backup.write_bytes(self.path.read_bytes())
+            plan["backup_path"] = str(backup)
+
+        for L in invalid:
+            lid = L.get("lease_id")
+            if lid:
+                self.mark_released(lease_id=str(lid))
+            else:
+                self.mark_released(port=int(L.get("port") or 0))
+        self.save()
+        plan["applied"] = True
+        return plan

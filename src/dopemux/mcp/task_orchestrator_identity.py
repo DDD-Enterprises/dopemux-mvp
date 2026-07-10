@@ -13,7 +13,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence  # Mapping used by heuristics
 
 DEFAULT_TO_PORT = 7890
 METADATA_FILENAME = "task-orchestrator.identity.json"
@@ -173,7 +173,13 @@ def probe_http_info(
     timeout_s: float = 1.0,
     opener: Optional[Callable[[str], Any]] = None,
 ) -> Optional[TOIdentity]:
-    """GET /info (then /health) for identity subsection. Injectable opener for tests."""
+    """Best-effort HTTP identity probe.
+
+    Upstream Kotlin Task Orchestrator does **not** expose generic REST ``/info``
+    or ``/health`` (404). Those paths are only used when a FastAPI or other
+    stack returns a JSON body with an ``identity`` object. 404/connection errors
+    are non-fatal and return None (fall through to labels/metadata).
+    """
 
     def _default_get(url: str) -> Any:
         req = urllib.request.Request(url, method="GET")
@@ -181,21 +187,24 @@ def probe_http_info(
             return json.loads(resp.read().decode("utf-8"))
 
     get = opener or _default_get
-    for path in ("/info", "/health"):
+    for path in ("/info", "/health", "/mcp"):
         url = f"http://{host}:{int(port)}{path}"
         try:
             body = get(url)
-        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError, json.JSONDecodeError, ValueError):
+        except urllib.error.HTTPError as exc:
+            # 404 is expected for upstream jar — do not treat as failure
+            if exc.code == 404:
+                continue
+            continue
+        except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError, ValueError):
             continue
         if not isinstance(body, dict):
             continue
         ident = body.get("identity") if isinstance(body.get("identity"), dict) else None
         if not ident and path == "/health":
-            # health may nest identity under metadata
             meta = body.get("metadata") if isinstance(body.get("metadata"), dict) else {}
             ident = meta.get("identity") if isinstance(meta.get("identity"), dict) else None
         if not ident:
-            # No identity fields — not proof of ownership
             continue
         return TOIdentity(
             project_id=ident.get("project_id"),
@@ -205,7 +214,7 @@ def probe_http_info(
             project_hash=ident.get("project_hash"),
             worktree_hash=ident.get("worktree_hash"),
             instance_id=ident.get("instance_id"),
-            state_scope=str(ident.get("state_scope") or "per-repo"),
+            state_scope=str(ident.get("state_scope") or "single_active_project"),
             runtime_scope=str(ident.get("runtime_scope") or "project"),
             port=int(port),
             source="http_info",
@@ -213,6 +222,67 @@ def probe_http_info(
             evidence=[url],
         )
     return None
+
+
+def identity_from_container_heuristics(
+    *,
+    container_name: str,
+    labels: Optional[Mapping[str, str]] = None,
+    mounts: Optional[Sequence[Mapping[str, Any]]] = None,
+    port: int = DEFAULT_TO_PORT,
+    target_project_root: Optional[str] = None,
+    target_project_id: Optional[str] = None,
+) -> TOIdentity:
+    """Infer TO identity from container name / data path / compose labels (006R).
+
+    Upstream jar has no /info; wrapper names containers
+    ``task-orchestrator-<state_id>`` and mounts project data under a hash path.
+    """
+    labels = labels or {}
+    evidence = [container_name]
+    project_root = labels.get("dopemux.project_root") or labels.get("com.dopemux.project_root")
+    project_id = labels.get("dopemux.project_id") or labels.get("com.dopemux.project_id")
+    instance_id = labels.get("dopemux.instance_id")
+    name_l = (container_name or "").lower()
+
+    # Name pattern: task-orchestrator-dnh_crm-9a4e9aa8a329cdd5
+    if name_l.startswith("task-orchestrator-") and not instance_id:
+        instance_id = container_name[len("task-orchestrator-") :]
+        evidence.append(f"name_state_id={instance_id}")
+
+    # Data mount under ~/.local/share/dopemux-mission-control/task-orchestrator/<id>
+    if mounts:
+        for m in mounts:
+            src = str(m.get("Source") or m.get("source") or "")
+            if "task-orchestrator" in src and instance_id and instance_id in src:
+                evidence.append(f"data_mount={src}")
+            if target_project_root and target_project_root.rstrip("/") in src:
+                project_root = project_root or target_project_root
+                evidence.append("mount_contains_target_root")
+
+    # Slug match from name vs target
+    if target_project_root and not project_root:
+        slug = Path(target_project_root).name.lower().replace("-", "_")
+        slug_compact = slug.replace("_", "")
+        if slug in name_l or slug_compact in name_l.replace("_", "").replace("-", ""):
+            project_root = target_project_root
+            project_id = project_id or Path(target_project_root).name
+            evidence.append(f"name_slug_match={slug}")
+
+    conf = "MEDIUM" if project_root or instance_id else "LOW"
+    if labels.get("dopemux.project_root"):
+        conf = "HIGH"
+    return TOIdentity(
+        project_id=project_id or target_project_id,
+        project_root=project_root,
+        instance_id=instance_id,
+        port=port,
+        source="container_heuristics",
+        confidence=conf,
+        evidence=evidence,
+        state_scope="single_active_project",
+        runtime_scope="singleton",
+    )
 
 
 def identity_from_docker_labels(
@@ -284,7 +354,8 @@ def match_target(
     if root_ok is True and id_ok is True:
         return "OK"
     if root_ok is True and id_ok is False:
-        return "UNKNOWN"  # slug/case drift — do not hard FAIL unless roots conflict
+        # Project root is authoritative; slug/id formats often differ (dNh_CRM vs dnh_crm-hash)
+        return "OK"
     if root_ok is False and id_ok is True:
         return "CONFLICT"
     if root_ok is False or id_ok is False:

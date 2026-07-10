@@ -1,0 +1,16 @@
+{
+  "dry_run": true,
+  "invalid_count": 1,
+  "invalid_leases": [
+    {
+      "lease_id": "lease_project_a_1278_task_orchestrator_http_7890",
+      "port": 7890,
+      "service": "task-orchestrator",
+      "project_root": "/Users/alice/code/project-a",
+      "status": "active",
+      "reason": "port 7890 is reserved singleton (task-orchestrator)"
+    }
+  ],
+  "backup_path": null,
+  "applied": false
+}

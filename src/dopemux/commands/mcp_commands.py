@@ -1614,6 +1614,52 @@ def _require_exactly_one_dry_run_or_apply(dry_run: bool, apply: bool) -> None:
         )
 
 
+@mcp.group("leases")
+def mcp_leases_group():
+    """🔐 Port leases: inspect/reconcile operational lease registry (006R)."""
+
+
+@mcp_leases_group.command("reconcile")
+@click.option("--dry-run", is_flag=True, help="Plan only; write nothing.")
+@click.option("--apply", is_flag=True, help="Release invalid singleton leases after backup.")
+@click.option("--json", "json_output", is_flag=True, help="Emit JSON plan/result.")
+def mcp_leases_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
+    """
+    Release invalid project/worktree leases on reserved singleton ports (e.g. 7890).
+
+    Does not stop containers. Backs up the registry before apply.
+    """
+    _require_exactly_one_dry_run_or_apply(dry_run, apply)
+    from dopemux.mcp.port_allocator import singleton_reserved_ports
+    from dopemux.mcp.port_leases import PortLeaseRegistry
+
+    catalog = _load_catalog()
+    reserved = singleton_reserved_ports(catalog)
+    # Always treat 7890 as reserved for TO even if catalog lagging
+    reserved.setdefault(7890, "task-orchestrator")
+    reg = PortLeaseRegistry.load()
+    if reg.parse_status == "ERROR":
+        raise click.ClickException(f"Lease registry unreadable: {reg.error}")
+    plan = reg.reconcile_reserved_singleton_leases(reserved, dry_run=not apply)
+    if apply and plan.get("invalid_count"):
+        # re-run applied path already in reconcile when dry_run=False
+        pass
+    if json_output:
+        sys.stdout.write(json.dumps(plan, indent=2) + "\n")
+    else:
+        console.logger.info(
+            f"[info]leases reconcile dry_run={plan.get('dry_run')} "
+            f"invalid={plan.get('invalid_count')} applied={plan.get('applied')}[/info]"
+        )
+        for item in plan.get("invalid_leases") or []:
+            console.logger.info(
+                f"  • port={item.get('port')} lease={item.get('lease_id')} "
+                f"root={item.get('project_root')} — {item.get('reason')}"
+            )
+        if plan.get("backup_path"):
+            console.logger.info(f"[info]backup: {plan['backup_path']}[/info]")
+
+
 @mcp.command("repair-config")
 @click.option(
     "--repo",
