@@ -83,7 +83,31 @@ def resolve_identity_view(
     """Resolve project identity for doctor; never raises — degrades to UNKNOWN."""
     evidence: List[str] = []
     env_map = dict(envrc_values or {})
-    env_map.setdefault("DOPEMUX_WORKSPACE_ROOT", str(repo_path))
+    # --repo / explicit target path must win over ambient shell exports.
+    # setdefault would leave a foreign DOPEMUX_WORKSPACE_ROOT in place and
+    # resolve_project_identity would diagnose the previously sourced repo.
+    repo_str = str(Path(repo_path).expanduser().resolve())
+    prior_ws = env_map.get("DOPEMUX_WORKSPACE_ROOT")
+    env_map["DOPEMUX_WORKSPACE_ROOT"] = repo_str
+    if prior_ws:
+        try:
+            prior_ws_res = str(Path(prior_ws).expanduser().resolve())
+        except OSError:
+            prior_ws_res = str(prior_ws)
+        if prior_ws_res != repo_str:
+            # Foreign ambient workspace — scrub project roots that rode along with it.
+            env_map["DOPEMUX_PROJECT_ROOT"] = repo_str
+            prior_pr = env_map.get("TASK_ORCHESTRATOR_PROJECT_ROOT")
+            if prior_pr:
+                try:
+                    prior_pr_res = str(Path(prior_pr).expanduser().resolve())
+                except OSError:
+                    prior_pr_res = str(prior_pr)
+                if prior_pr_res == prior_ws_res:
+                    env_map["TASK_ORCHESTRATOR_PROJECT_ROOT"] = repo_str
+            evidence.append(
+                f"forced identity to target path (ambient DOPEMUX_WORKSPACE_ROOT={prior_ws})"
+            )
 
     try:
         identity: ProjectIdentity = resolve_project_identity(cwd=repo_path, env=env_map)
@@ -389,9 +413,11 @@ def compose_lifecycle_diagnostics(
     findings_seed: List[Dict[str, Any]] = []
 
     text = ""
+    compose_readable = False
     if compose_path and compose_path.is_file():
         try:
             text = compose_path.read_text(encoding="utf-8")
+            compose_readable = True
         except OSError as exc:
             findings_seed.append(
                 {
@@ -405,7 +431,7 @@ def compose_lifecycle_diagnostics(
             )
 
     # Fixed container name default for conport
-    if text:
+    if compose_readable and text:
         if "CONPORT_CONTAINER_NAME:-mcp-conport" in text or re.search(
             r"container_name:\s*\$\{CONPORT_CONTAINER_NAME:-\s*mcp-conport\s*\}", text
         ):

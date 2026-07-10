@@ -6,6 +6,7 @@ Uses Packet 001 doctor for preflight. Never adopts unlabeled containers.
 from __future__ import annotations
 
 import json
+import re
 import socket
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -426,6 +427,18 @@ def run_lifecycle(
                 "service": None,
             }
         )
+    elif envrc.parse_status == "PARTIAL":
+        warnings.append(
+            {
+                "code": "ENVRC_PARTIAL_PARSE",
+                "severity": "WARN",
+                "message": (
+                    f"envrc partial parse: {len(envrc.values)} keys loaded, "
+                    f"{len(envrc.errors)} malformed line(s)"
+                ),
+                "service": None,
+            }
+        )
     if not mcp_json.get("present"):
         blocking.append(
             {
@@ -512,13 +525,19 @@ def run_lifecycle(
     container_names = {
         svc: dr.container_name_for(slug, worktree_hash, svc) for svc in selected
     }
-    # TO wrapper uses task-orchestrator-<state_id>; prefer project_hash short form
+    # Match wrapper scripts/mcp-wrappers/task-orchestrator-*-{stdio,http}:
+    # state_id = <project-slug>-<sha256(project_root)[:16]> (== ProjectIdentity.project_id)
+    # container_name = task-orchestrator-${state_id}
     if "task-orchestrator" in selected:
-        # Match wrapper: task-orchestrator-${workspace_id} where state_id is project hash-ish
-        # Use our deterministic name for managed lifecycle; note wrapper uses different name
-        container_names["task-orchestrator"] = (
-            f"task-orchestrator-{project_hash}" if project_hash else container_names["task-orchestrator"]
-        )
+        to_state_id = identity.project_id
+        if not to_state_id and project_hash:
+            # Fallback: identity-style slug (keeps . _ - like the wrapper), not docker slug.
+            to_slug = re.sub(
+                r"[^a-z0-9._-]+", "-", Path(project_root).name.lower()
+            ).strip("-") or "workspace"
+            to_state_id = f"{to_slug}-{project_hash}"
+        if to_state_id:
+            container_names["task-orchestrator"] = f"task-orchestrator-{to_state_id}"
 
     labels_by_service: Dict[str, Dict[str, str]] = {}
     for svc in selected:

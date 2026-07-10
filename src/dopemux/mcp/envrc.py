@@ -50,7 +50,7 @@ class EnvrcParseResult:
 
     path: Optional[Path]
     present: bool
-    parse_status: str  # OK | ERROR | MISSING
+    parse_status: str  # OK | PARTIAL | ERROR | MISSING
     values: Dict[str, str] = field(default_factory=dict)
     keys_present: List[str] = field(default_factory=list)
     errors: List[str] = field(default_factory=list)
@@ -206,7 +206,7 @@ def merge_envrc_into_environ(
 ) -> Dict[str, str]:
     """Return a new env mapping with envrc values applied (envrc wins when override=True)."""
     merged = dict(base or {})
-    if envrc.parse_status in {"OK", "ERROR"} and envrc.values:
+    if envrc.parse_status in {"OK", "PARTIAL", "ERROR"} and envrc.values:
         for key, value in envrc.values.items():
             if override or key not in merged:
                 merged[key] = value
