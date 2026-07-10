@@ -45,6 +45,10 @@ Do not replace global ConPort with local ConPort.
 
 Do not treat a listening port as healthy unless `dopemux mcp doctor` proves ownership.
 
+Do not treat `curl :7890/health` as proof that **this** project's Task Orchestrator
+is ready. Fixed port 7890 must match this repo's project identity (labels/metadata/info)
+or start/doctor must fail closed.
+
 ## Authority
 
 Dopemux manages MCP lifecycle and local config only.
