@@ -267,16 +267,16 @@ def build_desired_services(
 ) -> List[DesiredService]:
     """Build desired service list from catalog + local mcp.json + env."""
     desired: List[DesiredService] = []
+    # Union of .mcp.json servers and catalog per-worktree defaults so doctor
+    # can still diagnose missing default services when .mcp.json is present.
     catalog_defaults = list((catalog.get("defaults") or {}).get("per_worktree") or [])
-    # Prefer local .mcp.json names, but always also include catalog per-worktree
-    # defaults not present in mcp.json so doctor can diagnose missing entries.
-    if mcp_servers:
-        names = list(mcp_servers.keys())
-        for default_name in catalog_defaults:
-            if default_name not in names:
-                names.append(default_name)
-    else:
-        names = catalog_defaults
+    names: List[str] = []
+    seen: set[str] = set()
+    for name in list(mcp_servers.keys()) + catalog_defaults:
+        if name in seen:
+            continue
+        seen.add(name)
+        names.append(name)
     for name in names:
         catalog_spec = (catalog.get("servers") or {}).get(name) or {}
         local_entry = mcp_servers.get(name) if isinstance(mcp_servers.get(name), dict) else {}
@@ -416,11 +416,13 @@ def compose_lifecycle_diagnostics(
             relative_volume_risks.append(
                 "dope-memory volume ./.dopemux:/data is relative to compose cwd"
             )
-        # Identity env on conport: require both INSTANCE_ID and WORKSPACE_ID
-        # when the service block is present (use block extractor, not fragile splits).
+        # Identity env on conport — inspect the service block only (no fragile splits).
         conport_block = _extract_service_block(text, "conport")
         if conport_block:
-            if "DOPEMUX_INSTANCE_ID" in conport_block and "DOPEMUX_WORKSPACE_ID" not in conport_block:
+            if (
+                "DOPEMUX_INSTANCE_ID" in conport_block
+                and "DOPEMUX_WORKSPACE_ID" not in conport_block
+            ):
                 identity_env_risks.append(
                     "conport receives DOPEMUX_INSTANCE_ID but not DOPEMUX_WORKSPACE_ID"
                 )
@@ -429,8 +431,8 @@ def compose_lifecycle_diagnostics(
             # workspace id is present for memory — still relative volume is the main risk
             pass
     else:
-        # Without compose file still emit known architectural risks as WARN
-        # so doctor works without target-repo compose.yml
+        # Without compose file: emit convention risks as soft notes only.
+        # Do not escalate missing/unreadable compose into FAIL for foreign repos.
         fixed_name_risks.append(
             "compose convention (dopemux-mvp): conport container_name defaults to mcp-conport"
         )
@@ -459,15 +461,24 @@ def compose_lifecycle_diagnostics(
             }
         )
 
+    # FAIL only when compose content was inspected and shows the hazard.
+    # Convention-only notes (no compose file) stay WARN so doctor does not
+    # hard-fail repos that never ship a dopemux compose.yml.
+    compose_verified = bool(text)
     if fixed_name_risks:
         findings_seed.append(
             {
                 "code": "COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK",
-                "severity": "FAIL",
+                "severity": "FAIL" if compose_verified else "WARN",
                 "service": "conport",
                 "message": (
                     "Fixed/default mcp-conport container name risks replacing the primary "
                     "ConPort container when starting another project's stack."
+                    if compose_verified
+                    else (
+                        "Compose file unavailable; cannot verify container_name uniqueness. "
+                        "Convention risk: conport may default to mcp-conport."
+                    )
                 ),
                 "evidence": fixed_name_risks,
                 "recommendation": (
@@ -481,11 +492,16 @@ def compose_lifecycle_diagnostics(
         findings_seed.append(
             {
                 "code": "COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK",
-                "severity": "FAIL",
+                "severity": "FAIL" if compose_verified else "WARN",
                 "service": "dope-memory",
                 "message": (
                     "Starting dope-memory for another repo from dopemux-mvp compose can bind "
                     "dopemux-mvp/.dopemux instead of the target repo .dopemux, causing memory-state bleed."
+                    if compose_verified
+                    else (
+                        "Compose file unavailable; cannot verify volume binds. "
+                        "Convention risk: dope-memory may bind ./.dopemux relative to compose cwd."
+                    )
                 ),
                 "evidence": relative_volume_risks,
                 "recommendation": (
