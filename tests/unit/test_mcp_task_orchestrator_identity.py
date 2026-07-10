@@ -44,6 +44,74 @@ def test_match_conflict_id_ok_root_diff():
     )
 
 
+def test_match_explicit_root_id_mismatch_is_conflict():
+    """Fail-closed: root match must never override an explicit ID mismatch."""
+    obs = TOIdentity(
+        project_id="foreign-project",
+        project_root="/Users/hue/code/dNh_CRM",
+        source="docker_labels",
+        confidence="HIGH",
+    )
+    assert (
+        match_target(obs, project_id="dNh_CRM", project_root="/Users/hue/code/dNh_CRM")
+        == "CONFLICT"
+    )
+
+
+def test_match_heuristic_root_id_mismatch_never_ok():
+    obs = TOIdentity(
+        project_id="foreign-project",
+        project_root="/Users/hue/code/dNh_CRM",
+        source="container_heuristics",
+        confidence="MEDIUM",
+    )
+    result = match_target(
+        obs, project_id="dNh_CRM", project_root="/Users/hue/code/dNh_CRM"
+    )
+    assert result in {"CONFLICT", "UNKNOWN"}
+    assert result != "OK"
+
+
+def test_match_normalized_dnh_id_variants():
+    obs = TOIdentity(
+        project_id="dnh_crm-9a4e9aa8a329cdd5",
+        project_root="/Users/hue/code/dNh_CRM",
+        source="docker_labels",
+    )
+    assert (
+        match_target(obs, project_id="dNh_CRM", project_root="/Users/hue/code/dNh_CRM")
+        == "OK"
+    )
+    assert (
+        match_target(obs, project_id="dnh-crm", project_root="/Users/hue/code/dNh_CRM")
+        == "OK"
+    )
+
+
+def test_match_foreign_similar_slug_not_ok():
+    obs = TOIdentity(
+        project_id="dNh_CRM_fork",
+        project_root="/Users/hue/code/dNh_CRM_fork",
+        source="docker_labels",
+    )
+    assert (
+        match_target(obs, project_id="dNh_CRM", project_root="/Users/hue/code/dNh_CRM")
+        == "WRONG_PROJECT"
+    )
+
+
+def test_match_heuristic_root_only_is_unknown():
+    obs = TOIdentity(
+        project_id=None,
+        project_root="/Users/hue/code/dNh_CRM",
+        source="container_heuristics",
+    )
+    assert (
+        match_target(obs, project_id="dNh_CRM", project_root="/Users/hue/code/dNh_CRM")
+        == "UNKNOWN"
+    )
+
+
 def test_port_only_never_ok():
     ev = evaluate_fixed_port_state(
         port=7890,

@@ -26,9 +26,12 @@ def _image_ref() -> str:
     raise AssertionError("could not parse IMAGE= from stdio launcher")
 
 
-# Stub `docker` covering exactly the calls the reuse path makes:
+# Stub `docker` covering the calls the reuse path makes:
+#   ps -q                           -> running container id (refuse_foreign_port_owner)
 #   ps -q --filter name=^X$         -> running container id
 #   inspect --format '{{.Config.Image}}' -> the expected image (match)
+#   inspect --format '{{.Name}}'    -> container name matching expected singleton
+#   inspect Labels dopemux.project_root -> project_root label for ownership check
 #   port <cid> 7890/tcp             -> 127.0.0.1:7890 (port published)
 #   inspect --format '{{range .Config.Env}}...' -> env, with/without MCP_HTTP_PORT
 #   run ...                         -> record a marker (proves recreate happened)
@@ -39,15 +42,25 @@ case "$cmd" in
   ps) echo runningcid ;;
   port) printf '127.0.0.1:%s\n' "7890" ;;
   inspect)
-    if printf '%s ' "$@" | grep -q 'Config.Image'; then
+    fmt="$(printf '%s ' "$@")"
+    if printf '%s' "$fmt" | grep -q 'Config.Image'; then
       printf '%s\n' "${EXPECTED_IMAGE}"
-    elif printf '%s ' "$@" | grep -q 'Config.Env'; then
+    elif printf '%s' "$fmt" | grep -q 'Config.Env'; then
       printf 'MCP_TRANSPORT=http\n'
       if [[ "${STUB_ENV_OK:-0}" == "1" ]]; then
         printf 'MCP_HTTP_PORT=7890\nMCP_HTTP_HOST=0.0.0.0\n'
       else
         printf 'MCP_PORT=7890\n'
       fi
+    elif printf '%s' "$fmt" | grep -q 'dopemux.project_root'; then
+      # Labeled same-project owner so refuse_foreign_port_owner does not block reuse
+      printf '%s\n' "${DOPEMUX_PROJECT_ROOT:-}"
+    elif printf '%s' "$fmt" | grep -q '\.Name'; then
+      # Match container_name derived by launcher (task-orchestrator-<state_id>)
+      # state_id comes from stdio --print-resolution; tests set PROJECT_ROOT so
+      # any name that is NOT treated as foreign unlabeled is fine. Use empty
+      # when project_root label is set; launcher only dies on unlabeled foreign.
+      printf '/task-orchestrator-stub\n'
     fi ;;
   run) : > "${DOCKER_RUN_MARKER:?}" ;;
   *) : ;;
