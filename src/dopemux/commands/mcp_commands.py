@@ -2,9 +2,10 @@
 MCP Server Management Commands
 
 Commands for starting, stopping, and monitoring MCP Docker servers
-(``up``/``down``/``status``/``logs``/``start-all``), plus MCP config
-scaffolding driven by repo-local or bundled ``mcp_catalog.yaml`` data
-(``init``/``add``/``remove``/``list``/``doctor``/``sync-globals``).
+(``start``/``stop``/``up``/``down``/``status``/``logs``/``start-all``), plus MCP
+config scaffolding driven by repo-local or bundled ``mcp_catalog.yaml`` data
+(``init``/``repair-config``/``fleet``/``add``/``remove``/``list``/``doctor``/
+``sync-globals``).
 
 The ``servers`` group is an alias for ``mcp`` for backward compatibility.
 """
@@ -1581,6 +1582,215 @@ def _mcp_doctor_legacy() -> None:
 def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
     """Strip advisory fields (description) for diff purposes — they're documentation, not config."""
     return {k: v for k, v in entry.items() if k != "description"}
+
+
+def _resolve_repo_arg(repo_arg: Optional[Path]) -> Path:
+    """Resolve --repo or current git root to an absolute path."""
+    if repo_arg is not None:
+        return Path(repo_arg).expanduser().resolve()
+    repo = get_repo_root(fallback_cwd=False)
+    if not repo:
+        raise click.ClickException(
+            "Not inside a git repository. Pass --repo <path> to target another project."
+        )
+    return Path(repo).resolve()
+
+
+def _require_exactly_one_dry_run_or_apply(dry_run: bool, apply: bool) -> None:
+    if dry_run and apply:
+        raise click.ClickException("Pass exactly one of --dry-run or --apply (not both).")
+    if not dry_run and not apply:
+        raise click.ClickException(
+            "Pass exactly one of --dry-run or --apply. "
+            "Preview with --dry-run; write local config with --apply."
+        )
+
+
+@mcp.command("repair-config")
+@click.option(
+    "--repo",
+    "repo_arg",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    default=None,
+    help="Target repo/worktree (defaults to current git root).",
+)
+@click.option("--dry-run", is_flag=True, help="Plan only; write nothing.")
+@click.option("--apply", is_flag=True, help="Write local .mcp.json / envrc / agent bootstrap doc.")
+@click.option("--json", "json_output", is_flag=True, help="Emit repair plan JSON to stdout.")
+def mcp_repair_config_cmd(
+    repo_arg: Optional[Path],
+    dry_run: bool,
+    apply: bool,
+    json_output: bool,
+):
+    """
+    🔧 Repair local MCP config: .mcp.json transports, envrc, agent bootstrap
+
+    Previewable and idempotent. Never mutates ~/.claude.json and never starts
+    or stops containers. Unknown/custom mcpServers entries are preserved.
+
+    Examples:
+      dopemux mcp repair-config --dry-run --json
+      dopemux mcp repair-config --repo ~/code/other --apply
+    """
+    _require_exactly_one_dry_run_or_apply(dry_run, apply)
+
+    from dopemux.mcp.config_repair import apply_repair, format_repair_human, plan_repair
+
+    repo_path = _resolve_repo_arg(repo_arg)
+    catalog = _load_catalog()
+    catalog_path = _catalog_path()
+    catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
+
+    plan = plan_repair(
+        repo_path,
+        catalog,
+        dry_run=dry_run,
+        catalog_paths=catalog_paths,
+        process_env=dict(os.environ),
+    )
+
+    if apply and plan.status != "BLOCKED":
+        plan.dry_run = False
+        plan = apply_repair(plan)
+
+    if json_output:
+        sys.stdout.write(plan.to_json())
+    else:
+        summary = format_repair_human(plan)
+        if plan.status in {"APPLIED", "NOOP"}:
+            console.logger.info(f"[success]{summary.rstrip()}[/success]")
+        elif plan.status == "BLOCKED":
+            console.logger.info(f"[error]{summary.rstrip()}[/error]")
+        else:
+            console.logger.info(f"[info]{summary.rstrip()}[/info]")
+
+    if plan.status == "BLOCKED":
+        sys.exit(2)
+
+
+@mcp.group("fleet")
+def mcp_fleet_group():
+    """
+    🚢 Fleet: multi-worktree MCP config init and doctor aggregation
+
+    Config-only operations. Does not start containers or mutate globals.
+    """
+
+
+@mcp_fleet_group.command("init")
+@click.option(
+    "--repo",
+    "repo_arg",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    help="Project root that owns the worktrees.",
+)
+@click.option(
+    "--worktrees",
+    "worktrees",
+    required=True,
+    multiple=True,
+    type=click.Path(path_type=Path),
+    help="Worktree paths (repeatable).",
+)
+@click.option("--dry-run", is_flag=True, help="Plan only; write nothing.")
+@click.option("--apply", is_flag=True, help="Apply repair-config per valid worktree.")
+@click.option("--json", "json_output", is_flag=True, help="Emit fleet-init JSON to stdout.")
+def mcp_fleet_init_cmd(
+    repo_arg: Path,
+    worktrees: Tuple[Path, ...],
+    dry_run: bool,
+    apply: bool,
+    json_output: bool,
+):
+    """
+    Scaffold/repair MCP config across worktrees (no container start).
+    """
+    _require_exactly_one_dry_run_or_apply(dry_run, apply)
+    if not worktrees:
+        raise click.ClickException("Pass at least one --worktrees path.")
+
+    from dopemux.mcp.fleet import fleet_init, format_fleet_init_human
+
+    catalog = _load_catalog()
+    catalog_path = _catalog_path()
+    catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
+
+    report = fleet_init(
+        repo_arg,
+        list(worktrees),
+        catalog,
+        dry_run=dry_run,
+        apply=apply,
+        catalog_paths=catalog_paths,
+    )
+
+    if json_output:
+        sys.stdout.write(report.to_json())
+    else:
+        console.logger.info(f"[info]{format_fleet_init_human(report).rstrip()}[/info]")
+
+    if report.status in {"FAIL", "UNKNOWN"}:
+        sys.exit(1)
+
+
+@mcp_fleet_group.command("doctor")
+@click.option(
+    "--repo",
+    "repo_arg",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    help="Project root that owns the worktrees.",
+)
+@click.option(
+    "--worktrees",
+    "worktrees",
+    required=True,
+    multiple=True,
+    type=click.Path(path_type=Path),
+    help="Worktree paths (repeatable).",
+)
+@click.option("--json", "json_output", is_flag=True, help="Emit fleet-doctor JSON to stdout.")
+@click.option(
+    "--skip-docker/--probe-docker",
+    default=True,
+    help="Skip Docker inspection per worktree (default: skip for speed).",
+)
+def mcp_fleet_doctor_cmd(
+    repo_arg: Path,
+    worktrees: Tuple[Path, ...],
+    json_output: bool,
+    skip_docker: bool,
+):
+    """
+    Aggregate Packet 001 doctor results across worktrees (read-only).
+    """
+    if not worktrees:
+        raise click.ClickException("Pass at least one --worktrees path.")
+
+    from dopemux.mcp.fleet import fleet_doctor, format_fleet_doctor_human
+
+    catalog = _load_catalog()
+    catalog_path = _catalog_path()
+    catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
+
+    report = fleet_doctor(
+        repo_arg,
+        list(worktrees),
+        catalog,
+        catalog_paths=catalog_paths,
+        skip_docker=skip_docker,
+        process_env=dict(os.environ),
+    )
+
+    if json_output:
+        sys.stdout.write(report.to_json())
+    else:
+        console.logger.info(f"[info]{format_fleet_doctor_human(report).rstrip()}[/info]")
+
+    if report.status in {"FAIL", "UNKNOWN"}:
+        sys.exit(1)
 
 
 @mcp.command("sync-globals")
