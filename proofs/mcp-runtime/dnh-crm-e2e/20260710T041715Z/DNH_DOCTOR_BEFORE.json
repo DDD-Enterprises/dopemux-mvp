@@ -1,0 +1,1187 @@
+{
+  "actual_services": [
+    {
+      "docker": {
+        "available": true,
+        "containers": [
+          {
+            "id": "4012dc998594",
+            "image": "dopemux_dnh_crm_8d6d-conport",
+            "labels": {
+              "com.docker.compose.config-hash": "041d50095fdc4df500214f063792d57c7402f0ba5c51821e757d70e7ae9d3f88",
+              "com.docker.compose.container-number": "1",
+              "com.docker.compose.depends_on": "",
+              "com.docker.compose.image": "sha256:93ec07e48353ff227b98d85ccbe4b76935ecedd0383a3840b97ad3c9ebc7e0f6",
+              "com.docker.compose.oneoff": "False",
+              "com.docker.compose.project": "dopemux_dnh_crm_8d6d",
+              "com.docker.compose.project.config_files": "/Users/hue/code/dopemux-mvp/compose.yml",
+              "com.docker.compose.project.working_dir": "/Users/hue/code/dopemux-mvp",
+              "com.docker.compose.service": "conport",
+              "com.docker.compose.version": "5.3.0",
+              "desktop.docker.io/ports.scheme": "v2",
+              "desktop.docker.io/ports/3004/tcp": ":3040",
+              "desktop.docker.io/ports/3005/tcp": ":3041",
+              "desktop.docker.io/ports/4004/tcp": ":4040"
+            },
+            "name": "mcp-conport_dnh_crm_8d6d",
+            "ports": [
+              "0.0.0.0:3040->3004/tcp, [::]:3040->3004/tcp, 0.0.0.0:3041->3005/tcp, [::]:3041->3005/tcp, 0.0.0.0:4040->4004/tcp, [::]:4040->4004/tcp"
+            ],
+            "published_ports": [
+              3040,
+              3041,
+              4040
+            ],
+            "status": "Up 3 hours (unhealthy)"
+          },
+          {
+            "id": "529e0e211050",
+            "image": "dopemux-conport",
+            "labels": {
+              "com.docker.compose.config-hash": "b1a7ebcd4836ef088bdf8daaf2b6de35b1cdfba6e40ef93f2c1017c3faddb7ef",
+              "com.docker.compose.container-number": "1",
+              "com.docker.compose.depends_on": "",
+              "com.docker.compose.image": "sha256:c00117e39199d87bf944ec6343908568e377070eb882bb500faf65c463e27fd6",
+              "com.docker.compose.oneoff": "False",
+              "com.docker.compose.project": "dopemux",
+              "com.docker.compose.project.config_files": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b/compose.yml",
+              "com.docker.compose.project.environment_file": "/Users/hue/code/dopemux-mvp/.env",
+              "com.docker.compose.project.working_dir": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+              "com.docker.compose.replace": "mcp-conport",
+              "com.docker.compose.service": "conport",
+              "com.docker.compose.version": "5.3.0",
+              "desktop.docker.io/ports.scheme": "v2",
+              "desktop.docker.io/ports/3004/tcp": ":3004",
+              "desktop.docker.io/ports/3005/tcp": ":3005",
+              "desktop.docker.io/ports/4004/tcp": ":4004"
+            },
+            "name": "mcp-conport",
+            "ports": [
+              "0.0.0.0:3004-3005->3004-3005/tcp, [::]:3004-3005->3004-3005/tcp, 0.0.0.0:4004->4004/tcp, [::]:4004->4004/tcp"
+            ],
+            "published_ports": [
+              4004
+            ],
+            "status": "Up 3 hours (unhealthy)"
+          }
+        ],
+        "label_status": "UNLABELED"
+      },
+      "endpoint": "http://localhost:3041/sse",
+      "http_status": null,
+      "name": "conport",
+      "probe_status": "UNKNOWN"
+    },
+    {
+      "docker": {
+        "available": true,
+        "containers": [
+          {
+            "id": "da0639a6f31a",
+            "image": "dopemux_dnh-crm_8d6d-dope-memory",
+            "labels": {
+              "com.docker.compose.config-hash": "14d8be29ef1eccae6a5ffedc324fae2da856c0afabc4b2622e6cc23844d58bfb",
+              "com.docker.compose.container-number": "1",
+              "com.docker.compose.depends_on": "",
+              "com.docker.compose.image": "sha256:0b15313a4d70c3fcf4b1f61f296547c728bbcc1f3ae662dd3e3578c1708ac724",
+              "com.docker.compose.oneoff": "False",
+              "com.docker.compose.project": "dopemux_dnh-crm_8d6d",
+              "com.docker.compose.project.config_files": "/Users/hue/code/dopemux-mcp-runtime-006r/compose.yml",
+              "com.docker.compose.project.environment_file": "/Users/hue/.dopemux/mcp/runtime/dnh-crm-8d6d/mcp.env",
+              "com.docker.compose.project.working_dir": "/Users/hue/code/dopemux-mcp-runtime-006r",
+              "com.docker.compose.service": "dope-memory",
+              "com.docker.compose.version": "5.3.0",
+              "desktop.docker.io/binds/0/Source": "/Users/hue/code/dNh_CRM/.dopemux",
+              "desktop.docker.io/binds/0/SourceKind": "hostFile",
+              "desktop.docker.io/binds/0/Target": "/data",
+              "desktop.docker.io/ports.scheme": "v2",
+              "desktop.docker.io/ports/3020/tcp": "127.0.0.1:3020",
+              "dopemux.catalog_service": "dope-memory",
+              "dopemux.created_by": "dopemux-mcp",
+              "dopemux.instance_id": "dnh-crm-8d6d-dope-memory",
+              "dopemux.managed": "true",
+              "dopemux.project_hash": "9a4e9aa8a329cdd5",
+              "dopemux.project_id": "dnh_crm-9a4e9aa8a329cdd5",
+              "dopemux.project_root": "/Users/hue/code/dNh_CRM",
+              "dopemux.repo_basename": "dNh_CRM",
+              "dopemux.scope": "worktree",
+              "dopemux.service": "dope-memory",
+              "dopemux.transport": "http",
+              "dopemux.workspace_id": "/Users/hue/code/dNh_CRM",
+              "dopemux.worktree_hash": "8d6d",
+              "dopemux.worktree_root": "/Users/hue/code/dNh_CRM",
+              "maintainer": "dopemux",
+              "service": "dope-memory",
+              "version": "1.0.0"
+            },
+            "name": "dopemux-dnh-crm-8d6d-dope-memory",
+            "ports": [
+              "127.0.0.1:3020->3020/tcp"
+            ],
+            "published_ports": [
+              3020
+            ],
+            "status": "Up 25 seconds (healthy)"
+          },
+          {
+            "id": "2e04f4fae87d",
+            "image": "dopemux-dope-memory",
+            "labels": {
+              "com.docker.compose.config-hash": "b547be2b82f9c2d676f5a155a698195880a5a4ff79565f935f3de2da9ce9bb2e",
+              "com.docker.compose.container-number": "1",
+              "com.docker.compose.depends_on": "postgres:service_healthy:false",
+              "com.docker.compose.image": "sha256:96f051377a02a55353a68213095eaa21cb93c6b123517c5a53fb47c3f83c7c1e",
+              "com.docker.compose.oneoff": "False",
+              "com.docker.compose.project": "dopemux",
+              "com.docker.compose.project.config_files": "/Users/hue/code/dopemux-mvp/compose.yml",
+              "com.docker.compose.project.working_dir": "/Users/hue/code/dopemux-mvp",
+              "com.docker.compose.replace": "dope-memory-1",
+              "com.docker.compose.service": "dope-memory",
+              "com.docker.compose.version": "5.3.0",
+              "desktop.docker.io/binds/0/Source": "/Users/hue/code/dopemux-mvp/.dopemux",
+              "desktop.docker.io/binds/0/SourceKind": "hostFile",
+              "desktop.docker.io/binds/0/Target": "/data",
+              "desktop.docker.io/ports.scheme": "v2",
+              "desktop.docker.io/ports/3020/tcp": ":3060",
+              "maintainer": "dopemux",
+              "service": "dope-memory",
+              "version": "1.0.0"
+            },
+            "name": "dopemux-dope-memory-1",
+            "ports": [
+              "0.0.0.0:3060->3020/tcp, [::]:3060->3020/tcp"
+            ],
+            "published_ports": [
+              3060
+            ],
+            "status": "Up 3 hours (healthy)"
+          }
+        ],
+        "label_status": "UNLABELED"
+      },
+      "endpoint": "http://localhost:3020/mcp",
+      "http_status": null,
+      "name": "dope-memory",
+      "probe_status": "UNKNOWN"
+    },
+    {
+      "docker": {
+        "available": true,
+        "containers": [
+          {
+            "id": "feb7b1b5fbc8",
+            "image": "e47ed00aae31",
+            "labels": {
+              "desktop.docker.io/binds/0/Source": "/Users/hue/.local/share/dopemux-mission-control/task-orchestrator/dnh_crm-9a4e9aa8a329cdd5",
+              "desktop.docker.io/binds/0/SourceKind": "hostFile",
+              "desktop.docker.io/binds/0/Target": "/app/data",
+              "desktop.docker.io/binds/1/Source": "/Users/hue/code/dopemux-mvp/scripts/mcp-wrappers/task-orchestrator-logback.xml",
+              "desktop.docker.io/binds/1/SourceKind": "hostFile",
+              "desktop.docker.io/binds/1/Target": "/tmp/logback.xml",
+              "desktop.docker.io/ports.scheme": "v2",
+              "desktop.docker.io/ports/7890/tcp": "127.0.0.1:7890",
+              "io.modelcontextprotocol.server.name": "io.github.jpicklyk/task-orchestrator",
+              "org.opencontainers.image.created": "2026-05-22T13:55:34.176Z",
+              "org.opencontainers.image.description": "Server-enforced workflow discipline for AI agents. An MCP server providing persistent work items",
+              "org.opencontainers.image.licenses": "MIT",
+              "org.opencontainers.image.revision": "4d73577dfba3c07b3aa917c8fe0c6b8a70863f11",
+              "org.opencontainers.image.source": "https://github.com/jpicklyk/task-orchestrator",
+              "org.opencontainers.image.title": "task-orchestrator",
+              "org.opencontainers.image.url": "https://github.com/jpicklyk/task-orchestrator",
+              "org.opencontainers.image.vendor": "jpicklyk",
+              "org.opencontainers.image.version": "3.8"
+            },
+            "name": "task-orchestrator-dnh_crm-9a4e9aa8a329cdd5",
+            "ports": [
+              "127.0.0.1:7890->7890/tcp"
+            ],
+            "published_ports": [
+              7890
+            ],
+            "status": "Up 3 hours"
+          },
+          {
+            "id": "04f4445af473",
+            "image": "dopemux-task-orchestrator",
+            "labels": {
+              "com.docker.compose.config-hash": "2c626775475c84d5a32c7cf6def46c7f457c735f3765e1a8f9e9944b8bee2002",
+              "com.docker.compose.container-number": "1",
+              "com.docker.compose.depends_on": "leantime:service_started:false",
+              "com.docker.compose.image": "sha256:e029a6d40a7131a0ec504dd7a27f4086a0c61183cbebb264e1ba3be1aebe152c",
+              "com.docker.compose.oneoff": "False",
+              "com.docker.compose.project": "dopemux",
+              "com.docker.compose.project.config_files": "/Users/hue/code/dopemux-mvp/compose.yml",
+              "com.docker.compose.project.working_dir": "/Users/hue/code/dopemux-mvp",
+              "com.docker.compose.replace": "task-orchestrator",
+              "com.docker.compose.service": "task-orchestrator",
+              "com.docker.compose.version": "5.3.0",
+              "desktop.docker.io/ports.scheme": "v2",
+              "desktop.docker.io/ports/8000/tcp": ":8000"
+            },
+            "name": "task-orchestrator",
+            "ports": [
+              "0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp"
+            ],
+            "published_ports": [
+              8000
+            ],
+            "status": "Up 3 hours (healthy)"
+          }
+        ],
+        "label_status": "UNLABELED"
+      },
+      "endpoint": "http://127.0.0.1:7890/mcp",
+      "http_status": null,
+      "name": "task-orchestrator",
+      "probe_status": "UNKNOWN"
+    }
+  ],
+  "compose_lifecycle_diagnostics": {
+    "compose_path": "/Users/hue/code/dopemux-mcp-runtime-006r/compose.yml",
+    "compose_present": true,
+    "compose_required_in_cwd": true,
+    "dual_allocator_risks": [
+      "InstanceOverlayManager uses a separate port map (letter/md5 base) not wired into mcp init",
+      "mcp init uses _allocate_ports (sha1_abs_path_mod_100) independently"
+    ],
+    "fixed_container_name_risks": [
+      "conport defaults to container_name mcp-conport; foreign-repo up can replace primary"
+    ],
+    "identity_env_risks": [
+      "conport receives DOPEMUX_INSTANCE_ID but not DOPEMUX_WORKSPACE_ID"
+    ],
+    "relative_volume_risks": [
+      "dope-memory volume ./.dopemux:/data is relative to compose cwd"
+    ]
+  },
+  "config_sources": {
+    "catalog": {
+      "paths_checked": [
+        "/Users/hue/code/dopemux-mcp-runtime-006r/mcp_catalog.yaml"
+      ],
+      "services": [
+        {
+          "default_port_base": null,
+          "management_model": "compose-service",
+          "name": "pal",
+          "port_var": null,
+          "scope": "singleton",
+          "transport": "http"
+        },
+        {
+          "default_port_base": null,
+          "management_model": "compose-service",
+          "name": "serena",
+          "port_var": null,
+          "scope": "singleton",
+          "transport": "http"
+        },
+        {
+          "default_port_base": null,
+          "management_model": "compose-service",
+          "name": "dope-context",
+          "port_var": null,
+          "scope": "singleton",
+          "transport": "http"
+        },
+        {
+          "default_port_base": null,
+          "management_model": "compose-service",
+          "name": "desktop-commander",
+          "port_var": null,
+          "scope": "singleton",
+          "transport": "sse"
+        },
+        {
+          "default_port_base": null,
+          "management_model": "docker-exec",
+          "name": "gpt-researcher",
+          "port_var": null,
+          "scope": "singleton",
+          "transport": "stdio"
+        },
+        {
+          "default_port_base": null,
+          "management_model": "docker-exec",
+          "name": "pal-stdio",
+          "port_var": null,
+          "scope": "singleton",
+          "transport": "stdio"
+        },
+        {
+          "default_port_base": null,
+          "management_model": "docker-mcp-gateway",
+          "name": "MCP_DOCKER",
+          "port_var": null,
+          "scope": "singleton",
+          "transport": "stdio"
+        },
+        {
+          "default_port_base": 3005,
+          "management_model": "compose-service",
+          "name": "conport",
+          "port_var": "CONPORT_MCP_PORT",
+          "scope": "per-worktree",
+          "transport": "sse"
+        },
+        {
+          "default_port_base": 3020,
+          "management_model": "compose-service",
+          "name": "dope-memory",
+          "port_var": "DOPE_MEMORY_PORT",
+          "scope": "per-worktree",
+          "transport": "http"
+        },
+        {
+          "default_port_base": 7890,
+          "management_model": "wrapper-singleton",
+          "name": "task-orchestrator",
+          "port_var": "TASK_ORCHESTRATOR_HTTP_PORT",
+          "scope": "per-worktree",
+          "transport": "http"
+        }
+      ]
+    },
+    "envrc": {
+      "keys_present": [
+        "COMPOSE_PROJECT_NAME",
+        "CONPORT_CONTAINER_NAME",
+        "CONPORT_HTTP_PORT",
+        "CONPORT_INFO_PORT",
+        "CONPORT_MCP_PORT",
+        "DOPEMUX_INSTANCE_ID",
+        "DOPEMUX_PROJECT_ROOT",
+        "DOPEMUX_WORKSPACE_ID",
+        "DOPEMUX_WORKSPACE_ROOT",
+        "DOPE_MEMORY_INSTANCE_ID",
+        "DOPE_MEMORY_PORT",
+        "DOPE_MEMORY_WORKSPACE_ID",
+        "TASK_ORCHESTRATOR_HTTP_PORT",
+        "TASK_ORCHESTRATOR_PROJECT_ROOT",
+        "WORKSPACE_ID"
+      ],
+      "parse_status": "OK",
+      "path": "/Users/hue/code/dNh_CRM/.envrc.dopemux-mcp",
+      "present": true,
+      "redacted": true
+    },
+    "global_claude": {
+      "parse_status": "OK",
+      "path": "/Users/hue/.claude.json",
+      "present": true,
+      "services": [
+        {
+          "command": null,
+          "name": "pal",
+          "type": "http",
+          "url": "http://localhost:3003/mcp"
+        },
+        {
+          "command": null,
+          "name": "serena",
+          "type": "http",
+          "url": "http://localhost:3006/mcp"
+        },
+        {
+          "command": null,
+          "name": "dope-context",
+          "type": "http",
+          "url": "http://localhost:3010/mcp"
+        },
+        {
+          "command": null,
+          "name": "desktop-commander",
+          "type": "sse",
+          "url": "http://localhost:3012/sse"
+        },
+        {
+          "command": "docker",
+          "name": "gpt-researcher",
+          "type": "stdio",
+          "url": null
+        },
+        {
+          "command": "docker",
+          "name": "exa",
+          "type": "stdio",
+          "url": null
+        },
+        {
+          "command": "docker",
+          "name": "pal-stdio",
+          "type": "stdio",
+          "url": null
+        },
+        {
+          "command": "docker",
+          "name": "MCP_DOCKER",
+          "type": "stdio",
+          "url": null
+        }
+      ]
+    },
+    "mcp_json": {
+      "parse_status": "OK",
+      "path": "/Users/hue/code/dNh_CRM/.mcp.json",
+      "present": true,
+      "services": [
+        {
+          "command": null,
+          "name": "conport",
+          "type": "sse",
+          "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"
+        },
+        {
+          "command": null,
+          "name": "dope-memory",
+          "type": "http",
+          "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp"
+        },
+        {
+          "command": null,
+          "name": "task-orchestrator",
+          "type": "http",
+          "url": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp"
+        }
+      ]
+    }
+  },
+  "desired_services": [
+    {
+      "catalog_transport": "sse",
+      "env_keys": [
+        "DOPEMUX_WORKSPACE_ID",
+        "GEMINI_API_KEY",
+        "VOYAGEAI_API_KEY",
+        "OPENAI_API_KEY"
+      ],
+      "expected_ports": {
+        "CONPORT_HTTP_PORT": 3040,
+        "CONPORT_INFO_PORT": 4040,
+        "CONPORT_MCP_PORT": 3041
+      },
+      "expected_urls": [
+        "http://localhost:3041/sse"
+      ],
+      "identity_requirements": [
+        "DOPEMUX_WORKSPACE_ID"
+      ],
+      "management_model": "compose-service",
+      "mcp_json_transport": "sse",
+      "name": "conport",
+      "scope": "per-worktree",
+      "state_scope": null
+    },
+    {
+      "catalog_transport": "http",
+      "env_keys": [
+        "DOPE_MEMORY_WORKSPACE_ID",
+        "DOPE_MEMORY_INSTANCE_ID"
+      ],
+      "expected_ports": {
+        "DOPE_MEMORY_PORT": 3020
+      },
+      "expected_urls": [
+        "http://localhost:3020/mcp"
+      ],
+      "identity_requirements": [
+        "DOPE_MEMORY_WORKSPACE_ID",
+        "DOPE_MEMORY_INSTANCE_ID"
+      ],
+      "management_model": "compose-service",
+      "mcp_json_transport": "http",
+      "name": "dope-memory",
+      "scope": "per-worktree",
+      "state_scope": null
+    },
+    {
+      "catalog_transport": "http",
+      "env_keys": [
+        "TASK_ORCHESTRATOR_PROJECT_ROOT"
+      ],
+      "expected_ports": {
+        "TASK_ORCHESTRATOR_HTTP_PORT": 7890
+      },
+      "expected_urls": [
+        "http://127.0.0.1:7890/mcp"
+      ],
+      "identity_requirements": [
+        "TASK_ORCHESTRATOR_PROJECT_ROOT"
+      ],
+      "management_model": "wrapper-singleton",
+      "mcp_json_transport": "http",
+      "name": "task-orchestrator",
+      "scope": "per-worktree",
+      "state_scope": "single_active_project"
+    }
+  ],
+  "findings": [
+    {
+      "code": "ENVRC_FOUND",
+      "evidence": [
+        "/Users/hue/code/dNh_CRM/.envrc.dopemux-mcp"
+      ],
+      "message": "Found .envrc.dopemux-mcp",
+      "recommendation": "",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "MCP_JSON_FOUND",
+      "evidence": [
+        "/Users/hue/code/dNh_CRM/.mcp.json"
+      ],
+      "message": "Found .mcp.json",
+      "recommendation": "",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "PROJECT_IDENTITY_RESOLVED",
+      "evidence": [
+        "worktree_root=/Users/hue/code/dNh_CRM",
+        "project_root=/Users/hue/code/dNh_CRM",
+        "project_root_from_env_override"
+      ],
+      "message": "Resolved project identity dnh_crm-9a4e9aa8a329cdd5",
+      "recommendation": "",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "TRANSPORT_MATCH",
+      "evidence": [
+        "catalog=sse",
+        "mcp_json=sse"
+      ],
+      "message": "`conport` transport matches catalog (sse)",
+      "recommendation": "",
+      "service": "conport",
+      "severity": "INFO"
+    },
+    {
+      "code": "TRANSPORT_MATCH",
+      "evidence": [
+        "catalog=http",
+        "mcp_json=http"
+      ],
+      "message": "`dope-memory` transport matches catalog (http)",
+      "recommendation": "",
+      "service": "dope-memory",
+      "severity": "INFO"
+    },
+    {
+      "code": "TRANSPORT_MATCH",
+      "evidence": [
+        "catalog=http",
+        "mcp_json=http"
+      ],
+      "message": "`task-orchestrator` transport matches catalog (http)",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "LEASE_REGISTRY_FOUND",
+      "evidence": [
+        "/Users/hue/.dopemux/mcp/runtime/port-leases.json"
+      ],
+      "message": "Lease registry OK (33 active)",
+      "recommendation": "",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "LEASE_PORT_OCCUPIED",
+      "evidence": [
+        "CONPORT_MCP_PORT=3041"
+      ],
+      "message": "Leased port 3041 (CONPORT_MCP_PORT) is listening (expected if services are up)",
+      "recommendation": "",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "LEASE_PORT_OCCUPIED",
+      "evidence": [
+        "CONPORT_HTTP_PORT=3040"
+      ],
+      "message": "Leased port 3040 (CONPORT_HTTP_PORT) is listening (expected if services are up)",
+      "recommendation": "",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "LEASE_PORT_OCCUPIED",
+      "evidence": [
+        "CONPORT_INFO_PORT=4040"
+      ],
+      "message": "Leased port 4040 (CONPORT_INFO_PORT) is listening (expected if services are up)",
+      "recommendation": "",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "LEASE_PORT_OCCUPIED",
+      "evidence": [
+        "DOPE_MEMORY_PORT=3020"
+      ],
+      "message": "Leased port 3020 (DOPE_MEMORY_PORT) is listening (expected if services are up)",
+      "recommendation": "",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "LEGACY_ENVRC_WITHOUT_LEASE",
+      "evidence": [],
+      "message": "Envrc TASK_ORCHESTRATOR_HTTP_PORT=7890 has no active lease for this worktree",
+      "recommendation": "Run `dopemux mcp repair-config --apply`.",
+      "service": null,
+      "severity": "WARN"
+    },
+    {
+      "code": "PORT_RESERVED_COLLISION",
+      "evidence": [
+        "port=3010",
+        "var=CONPORT_MCP_PORT",
+        "singleton=dope-context",
+        "source=formula"
+      ],
+      "message": "CONPORT_MCP_PORT=3010 (formula) collides with reserved singleton port for `dope-context`",
+      "recommendation": "Adjust default_port_base spacing in mcp_catalog.yaml, or implement preferred-port + lease allocation in a later packet. Do not start services on reserved singleton ports.",
+      "service": "conport",
+      "severity": "FAIL"
+    },
+    {
+      "code": "PORT_RESERVED_COLLISION",
+      "evidence": [
+        "port=3009",
+        "var=CONPORT_HTTP_PORT",
+        "singleton=gpt-researcher",
+        "source=formula"
+      ],
+      "message": "CONPORT_HTTP_PORT=3009 (formula) collides with reserved singleton port for `gpt-researcher`",
+      "recommendation": "Adjust default_port_base spacing in mcp_catalog.yaml, or implement preferred-port + lease allocation in a later packet. Do not start services on reserved singleton ports.",
+      "service": "conport",
+      "severity": "FAIL"
+    },
+    {
+      "code": "PORT_EXPECTED",
+      "evidence": [
+        "var=CONPORT_HTTP_PORT",
+        "port=3040"
+      ],
+      "message": "CONPORT_HTTP_PORT expected/configured as 3040",
+      "recommendation": "",
+      "service": "conport",
+      "severity": "INFO"
+    },
+    {
+      "code": "PORT_EXPECTED",
+      "evidence": [
+        "var=CONPORT_INFO_PORT",
+        "port=4040"
+      ],
+      "message": "CONPORT_INFO_PORT expected/configured as 4040",
+      "recommendation": "",
+      "service": "conport",
+      "severity": "INFO"
+    },
+    {
+      "code": "PORT_EXPECTED",
+      "evidence": [
+        "var=CONPORT_MCP_PORT",
+        "port=3041"
+      ],
+      "message": "CONPORT_MCP_PORT expected/configured as 3041",
+      "recommendation": "",
+      "service": "conport",
+      "severity": "INFO"
+    },
+    {
+      "code": "PORT_EXPECTED",
+      "evidence": [
+        "var=DOPE_MEMORY_PORT",
+        "port=3020"
+      ],
+      "message": "DOPE_MEMORY_PORT expected/configured as 3020",
+      "recommendation": "",
+      "service": "dope-memory",
+      "severity": "INFO"
+    },
+    {
+      "code": "PORT_EXPECTED",
+      "evidence": [
+        "var=TASK_ORCHESTRATOR_HTTP_PORT",
+        "port=7890"
+      ],
+      "message": "TASK_ORCHESTRATOR_HTTP_PORT expected/configured as 7890",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "PORT_LISTENING",
+      "evidence": [
+        "var=CONPORT_HTTP_PORT",
+        "port=3040",
+        "ownership=UNKNOWN"
+      ],
+      "message": "Port :3040 (CONPORT_HTTP_PORT) is listening (ownership not proven)",
+      "recommendation": "Confirm container labels/project identity before treating this as healthy for this repo.",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "PORT_OWNERSHIP_UNKNOWN",
+      "evidence": [
+        "var=CONPORT_HTTP_PORT",
+        "port=3040"
+      ],
+      "message": "Listening port :3040 (CONPORT_HTTP_PORT) has no proven project ownership",
+      "recommendation": "Packet 002 should attach project labels and a runtime registry.",
+      "service": null,
+      "severity": "UNKNOWN"
+    },
+    {
+      "code": "PORT_LISTENING",
+      "evidence": [
+        "var=CONPORT_INFO_PORT",
+        "port=4040",
+        "ownership=UNKNOWN"
+      ],
+      "message": "Port :4040 (CONPORT_INFO_PORT) is listening (ownership not proven)",
+      "recommendation": "Confirm container labels/project identity before treating this as healthy for this repo.",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "PORT_OWNERSHIP_UNKNOWN",
+      "evidence": [
+        "var=CONPORT_INFO_PORT",
+        "port=4040"
+      ],
+      "message": "Listening port :4040 (CONPORT_INFO_PORT) has no proven project ownership",
+      "recommendation": "Packet 002 should attach project labels and a runtime registry.",
+      "service": null,
+      "severity": "UNKNOWN"
+    },
+    {
+      "code": "PORT_LISTENING",
+      "evidence": [
+        "var=CONPORT_MCP_PORT",
+        "port=3041",
+        "ownership=UNKNOWN"
+      ],
+      "message": "Port :3041 (CONPORT_MCP_PORT) is listening (ownership not proven)",
+      "recommendation": "Confirm container labels/project identity before treating this as healthy for this repo.",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "PORT_OWNERSHIP_UNKNOWN",
+      "evidence": [
+        "var=CONPORT_MCP_PORT",
+        "port=3041"
+      ],
+      "message": "Listening port :3041 (CONPORT_MCP_PORT) has no proven project ownership",
+      "recommendation": "Packet 002 should attach project labels and a runtime registry.",
+      "service": null,
+      "severity": "UNKNOWN"
+    },
+    {
+      "code": "PORT_LISTENING",
+      "evidence": [
+        "var=DOPE_MEMORY_PORT",
+        "port=3020",
+        "ownership=UNKNOWN"
+      ],
+      "message": "Port :3020 (DOPE_MEMORY_PORT) is listening (ownership not proven)",
+      "recommendation": "Confirm container labels/project identity before treating this as healthy for this repo.",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "PORT_OWNERSHIP_UNKNOWN",
+      "evidence": [
+        "var=DOPE_MEMORY_PORT",
+        "port=3020"
+      ],
+      "message": "Listening port :3020 (DOPE_MEMORY_PORT) has no proven project ownership",
+      "recommendation": "Packet 002 should attach project labels and a runtime registry.",
+      "service": null,
+      "severity": "UNKNOWN"
+    },
+    {
+      "code": "PORT_LISTENING",
+      "evidence": [
+        "var=TASK_ORCHESTRATOR_HTTP_PORT",
+        "port=7890",
+        "ownership=UNKNOWN"
+      ],
+      "message": "Port :7890 (TASK_ORCHESTRATOR_HTTP_PORT) is listening (ownership not proven)",
+      "recommendation": "Confirm container labels/project identity before treating this as healthy for this repo.",
+      "service": null,
+      "severity": "INFO"
+    },
+    {
+      "code": "PORT_OWNERSHIP_UNKNOWN",
+      "evidence": [
+        "var=TASK_ORCHESTRATOR_HTTP_PORT",
+        "port=7890"
+      ],
+      "message": "Listening port :7890 (TASK_ORCHESTRATOR_HTTP_PORT) has no proven project ownership",
+      "recommendation": "Packet 002 should attach project labels and a runtime registry.",
+      "service": null,
+      "severity": "UNKNOWN"
+    },
+    {
+      "code": "COMPOSE_REQUIRED_IN_CWD",
+      "evidence": [
+        "mcp_commands._compose_path uses Path.cwd()/compose.yml"
+      ],
+      "message": "mcp up/status/ensure --full paths require compose.yml in cwd (or current repo), so init-for-target + up-from-dopemux-mvp is split and unsafe.",
+      "recommendation": "Packet 002 must implement repo-aware start/up/down that does not depend on operator cwd for identity.",
+      "service": null,
+      "severity": "WARN"
+    },
+    {
+      "code": "COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK",
+      "evidence": [
+        "conport defaults to container_name mcp-conport; foreign-repo up can replace primary"
+      ],
+      "message": "Fixed/default mcp-conport container name risks replacing the primary ConPort container when starting another project's stack.",
+      "recommendation": "Always set unique CONPORT_CONTAINER_NAME per project/worktree; Packet 002 should enforce labels + unique names.",
+      "service": "conport",
+      "severity": "FAIL"
+    },
+    {
+      "code": "COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK",
+      "evidence": [
+        "dope-memory volume ./.dopemux:/data is relative to compose cwd"
+      ],
+      "message": "Starting dope-memory for another repo from dopemux-mvp compose can bind dopemux-mvp/.dopemux instead of the target repo .dopemux, causing memory-state bleed.",
+      "recommendation": "Do not start foreign-repo dope-memory via dopemux-mvp cwd compose until Packet 002 binds absolute target-repo data paths.",
+      "service": "dope-memory",
+      "severity": "FAIL"
+    },
+    {
+      "code": "COMPOSE_WORKSPACE_ID_MISSING_RISK",
+      "evidence": [
+        "conport receives DOPEMUX_INSTANCE_ID but not DOPEMUX_WORKSPACE_ID"
+      ],
+      "message": "conport receives DOPEMUX_INSTANCE_ID but not DOPEMUX_WORKSPACE_ID",
+      "recommendation": "Pass DOPEMUX_WORKSPACE_ID / project identity into project-scoped containers.",
+      "service": "conport",
+      "severity": "WARN"
+    },
+    {
+      "code": "COMPOSE_INSTANCE_ID_ONLY_INSUFFICIENT",
+      "evidence": [
+        "conport receives DOPEMUX_INSTANCE_ID but not DOPEMUX_WORKSPACE_ID"
+      ],
+      "message": "DOPEMUX_INSTANCE_ID alone is insufficient to prove workspace/project ownership.",
+      "recommendation": "Require workspace/project labels and env before treating a container as owned.",
+      "service": "conport",
+      "severity": "WARN"
+    },
+    {
+      "code": "DUAL_ALLOCATION_BRAINS",
+      "evidence": [
+        "InstanceOverlayManager uses a separate port map (letter/md5 base) not wired into mcp init",
+        "mcp init uses _allocate_ports (sha1_abs_path_mod_100) independently"
+      ],
+      "message": "Two allocation brains exist: mcp init `_allocate_ports` and `InstanceOverlayManager`; they are not unified.",
+      "recommendation": "Unify allocation in a later packet; doctor only reports the drift.",
+      "service": null,
+      "severity": "WARN"
+    },
+    {
+      "code": "INSTANCE_OVERLAY_NOT_WIRED_TO_INIT",
+      "evidence": [
+        "instance_overlay.InstanceOverlayManager",
+        "mcp_commands._allocate_ports"
+      ],
+      "message": "InstanceOverlayManager is not wired into `dopemux mcp init`.",
+      "recommendation": "Wire a single allocator before multi-repo start automation.",
+      "service": null,
+      "severity": "WARN"
+    },
+    {
+      "code": "DOCKER_CONTAINER_COMPOSE_MATCH",
+      "evidence": [
+        "mcp-conport_dnh_crm_8d6d",
+        "ports=[3040, 3041, 4040]",
+        "compose=dopemux_dnh_crm_8d6d"
+      ],
+      "message": "Container mcp-conport_dnh_crm_8d6d matches `conport` via compose project/name/port (no explicit dopemux labels yet)",
+      "recommendation": "Next controlled start should attach dopemux.* labels.",
+      "service": "conport",
+      "severity": "INFO"
+    },
+    {
+      "code": "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
+      "evidence": [
+        "mcp-conport",
+        "ports=[4004]"
+      ],
+      "message": "Container mcp-conport matches `conport` by name/port but has no project labels \u2014 ownership UNKNOWN",
+      "recommendation": "Packet 002 should attach dopemux project labels.",
+      "service": "conport",
+      "severity": "UNKNOWN"
+    },
+    {
+      "code": "DOCKER_CONTAINER_MATCH",
+      "evidence": [
+        "dopemux-dnh-crm-8d6d-dope-memory",
+        "labels=['com.docker.compose.config-hash', 'com.docker.compose.container-number', 'com.docker.compose.depends_on', 'com.docker.compose.image', 'com.docker.compose.oneoff', 'com.docker.compose.project', 'com.docker.compose.project.config_files', 'com.docker.compose.project.environment_file', 'com.docker.compose.project.working_dir', 'com.docker.compose.service', 'com.docker.compose.version', 'desktop.docker.io/binds/0/Source', 'desktop.docker.io/binds/0/SourceKind', 'desktop.docker.io/binds/0/Target', 'desktop.docker.io/ports.scheme', 'desktop.docker.io/ports/3020/tcp', 'dopemux.catalog_service', 'dopemux.created_by', 'dopemux.instance_id', 'dopemux.managed', 'dopemux.project_hash', 'dopemux.project_id', 'dopemux.project_root', 'dopemux.repo_basename', 'dopemux.scope', 'dopemux.service', 'dopemux.transport', 'dopemux.workspace_id', 'dopemux.worktree_hash', 'dopemux.worktree_root', 'maintainer', 'service', 'version']"
+      ],
+      "message": "Container dopemux-dnh-crm-8d6d-dope-memory labels match project for `dope-memory`",
+      "recommendation": "",
+      "service": "dope-memory",
+      "severity": "INFO"
+    },
+    {
+      "code": "DOPE_MEMORY_CROSS_REPO_MOUNT",
+      "evidence": [
+        "dopemux-dope-memory-1",
+        "compose_wd=/Users/hue/code/dopemux-mvp"
+      ],
+      "message": "Container dopemux-dope-memory-1 is main-stack dope-memory (compose=dopemux) \u2014 must not be accepted as this repo's chronicle runtime",
+      "recommendation": "Start a project-scoped dope-memory sidecar with absolute /Users/hue/code/dNh_CRM/.dopemux bind mount; do not use dopemux-mvp/.dopemux.",
+      "service": "dope-memory",
+      "severity": "FAIL"
+    },
+    {
+      "code": "DOCKER_CONTAINER_COMPOSE_MATCH",
+      "evidence": [
+        "task-orchestrator-dnh_crm-9a4e9aa8a329cdd5",
+        "ports=[7890]",
+        "compose=None"
+      ],
+      "message": "Container task-orchestrator-dnh_crm-9a4e9aa8a329cdd5 matches `task-orchestrator` via compose project/name/port (no explicit dopemux labels yet)",
+      "recommendation": "Next controlled start should attach dopemux.* labels.",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
+      "evidence": [
+        "task-orchestrator",
+        "ports=[8000]"
+      ],
+      "message": "Container task-orchestrator matches `task-orchestrator` by name/port but has no project labels \u2014 ownership UNKNOWN",
+      "recommendation": "Packet 002 should attach dopemux project labels.",
+      "service": "task-orchestrator",
+      "severity": "UNKNOWN"
+    },
+    {
+      "code": "GLOBAL_SINGLETON_OK",
+      "evidence": [],
+      "message": "Global singleton `pal` present in ~/.claude.json",
+      "recommendation": "",
+      "service": "pal",
+      "severity": "INFO"
+    },
+    {
+      "code": "GLOBAL_SINGLETON_OK",
+      "evidence": [],
+      "message": "Global singleton `serena` present in ~/.claude.json",
+      "recommendation": "",
+      "service": "serena",
+      "severity": "INFO"
+    },
+    {
+      "code": "GLOBAL_SINGLETON_OK",
+      "evidence": [],
+      "message": "Global singleton `dope-context` present in ~/.claude.json",
+      "recommendation": "",
+      "service": "dope-context",
+      "severity": "INFO"
+    },
+    {
+      "code": "GLOBAL_SINGLETON_OK",
+      "evidence": [],
+      "message": "Global singleton `desktop-commander` present in ~/.claude.json",
+      "recommendation": "",
+      "service": "desktop-commander",
+      "severity": "INFO"
+    },
+    {
+      "code": "GLOBAL_SINGLETON_OK",
+      "evidence": [],
+      "message": "Global singleton `gpt-researcher` present in ~/.claude.json",
+      "recommendation": "",
+      "service": "gpt-researcher",
+      "severity": "INFO"
+    },
+    {
+      "code": "GLOBAL_SINGLETON_OK",
+      "evidence": [],
+      "message": "Global singleton `pal-stdio` present in ~/.claude.json",
+      "recommendation": "",
+      "service": "pal-stdio",
+      "severity": "INFO"
+    },
+    {
+      "code": "GLOBAL_SINGLETON_OK",
+      "evidence": [],
+      "message": "Global singleton `MCP_DOCKER` present in ~/.claude.json",
+      "recommendation": "",
+      "service": "MCP_DOCKER",
+      "severity": "INFO"
+    },
+    {
+      "code": "LOCAL_SERVICE_OK",
+      "evidence": [],
+      "message": "Local service `conport` not duplicated in global config",
+      "recommendation": "",
+      "service": "conport",
+      "severity": "INFO"
+    },
+    {
+      "code": "LOCAL_SERVICE_OK",
+      "evidence": [],
+      "message": "Local service `dope-memory` not duplicated in global config",
+      "recommendation": "",
+      "service": "dope-memory",
+      "severity": "INFO"
+    },
+    {
+      "code": "LOCAL_SERVICE_OK",
+      "evidence": [],
+      "message": "Local service `task-orchestrator` not duplicated in global config",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "TASK_ORCHESTRATOR_WRAPPER_SINGLETON_COMPAT",
+      "evidence": [],
+      "message": "task-orchestrator is wrapper-singleton (fixed port, per-repo state)",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "TASK_ORCHESTRATOR_FIXED_PORT",
+      "evidence": [
+        "port=7890"
+      ],
+      "message": "task-orchestrator uses fixed port 7890",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "TASK_ORCHESTRATOR_FIXED_PORT_OCCUPIED",
+      "evidence": [],
+      "message": "task-orchestrator fixed port :7890 is occupied",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "TASK_ORCHESTRATOR_PROJECT_IDENTITY_OK",
+      "evidence": [
+        "task-orchestrator-dnh_crm-9a4e9aa8a329cdd5",
+        "name_state_id=dnh_crm-9a4e9aa8a329cdd5",
+        "name_slug_match=dnh_crm"
+      ],
+      "message": "task-orchestrator on :7890 matches project dnh_crm-9a4e9aa8a329cdd5",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "TASK_ORCHESTRATOR_FIXED_PORT_OCCUPIED_SAME_PROJECT",
+      "evidence": [],
+      "message": ":7890 occupied by same project TO",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "MCP_DOCTOR_FAIL",
+      "evidence": [],
+      "message": "MCP doctor found blocking failures",
+      "recommendation": "",
+      "service": null,
+      "severity": "FAIL"
+    }
+  ],
+  "port_diagnostics": {
+    "allocator": "sha1_abs_path_mod_100",
+    "bucket_count": 100,
+    "collisions": [
+      {
+        "kind": "reserved",
+        "message": "CONPORT_MCP_PORT=3010 (formula) collides with reserved singleton port for `dope-context`",
+        "owners": [
+          "CONPORT_MCP_PORT@formula",
+          "singleton:dope-context"
+        ],
+        "port": 3010
+      },
+      {
+        "kind": "reserved",
+        "message": "CONPORT_HTTP_PORT=3009 (formula) collides with reserved singleton port for `gpt-researcher`",
+        "owners": [
+          "CONPORT_HTTP_PORT@formula",
+          "singleton:gpt-researcher"
+        ],
+        "port": 3009
+      }
+    ],
+    "expected_ports": {
+      "CONPORT_HTTP_PORT": 3040,
+      "CONPORT_INFO_PORT": 4040,
+      "CONPORT_MCP_PORT": 3041,
+      "DOPE_MEMORY_PORT": 3020,
+      "TASK_ORCHESTRATOR_HTTP_PORT": 7890
+    },
+    "offset": 5,
+    "reserved_ports_checked": [
+      3003,
+      3006,
+      3009,
+      3010,
+      3012
+    ],
+    "risk_notes": []
+  },
+  "project_identity": {
+    "evidence": [
+      "worktree_root=/Users/hue/code/dNh_CRM",
+      "project_root=/Users/hue/code/dNh_CRM",
+      "project_root_from_env_override"
+    ],
+    "identity_confidence": "MEDIUM",
+    "instance_id": "8d6d",
+    "project_hash": "9a4e9aa8a329cdd5",
+    "project_id": "dnh_crm-9a4e9aa8a329cdd5",
+    "project_root": "/Users/hue/code/dNh_CRM",
+    "workspace_id": "/Users/hue/code/dNh_CRM",
+    "worktree_hash": "8d6d",
+    "worktree_root": "/Users/hue/code/dNh_CRM"
+  },
+  "recommended_next_actions": [
+    "Run `dopemux mcp repair-config --apply`.",
+    "Adjust default_port_base spacing in mcp_catalog.yaml, or implement preferred-port + lease allocation in a later packet. Do not start services on reserved singleton ports.",
+    "Packet 002 must implement repo-aware start/up/down that does not depend on operator cwd for identity.",
+    "Always set unique CONPORT_CONTAINER_NAME per project/worktree; Packet 002 should enforce labels + unique names.",
+    "Do not start foreign-repo dope-memory via dopemux-mvp cwd compose until Packet 002 binds absolute target-repo data paths.",
+    "Pass DOPEMUX_WORKSPACE_ID / project identity into project-scoped containers.",
+    "Require workspace/project labels and env before treating a container as owned.",
+    "Unify allocation in a later packet; doctor only reports the drift.",
+    "Wire a single allocator before multi-repo start automation.",
+    "Start a project-scoped dope-memory sidecar with absolute /Users/hue/code/dNh_CRM/.dopemux bind mount; do not use dopemux-mvp/.dopemux."
+  ],
+  "repo_arg": "/Users/hue/code/dNh_CRM",
+  "schema_version": "1.0",
+  "status": "FAIL",
+  "unknowns": [
+    "docker ownership unlabeled: mcp-conport",
+    "docker ownership unlabeled: task-orchestrator"
+  ]
+}

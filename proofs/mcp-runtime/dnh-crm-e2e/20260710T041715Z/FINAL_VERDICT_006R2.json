@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0",
+  "packet_id": "TP-DMX-MCP-RUNTIME-006R2",
+  "overall_status": "PARTIAL",
+  "final_confidence": "VERIFIED_PARTIAL",
+  "dopemux_head": "1e3407e8b8a29307e0c534031a6afaa776bbc72c",
+  "generated_at": "2026-07-10T04:17:48Z",
+  "live": true,
+  "stack": {
+    "pr_1030": "OPEN base for 1031",
+    "pr_1031": "OPEN remediation",
+    "merge_order": [
+      "#1030",
+      "#1031"
+    ],
+    "ready_to_merge_1031": false,
+    "reason": "base PR #1030 still unmerged; READY AFTER BASE MERGE only"
+  },
+  "services": {
+    "conport": {
+      "status": "PARTIAL",
+      "container": "mcp-conport_dnh_crm_8d6d",
+      "ports_adopted": {
+        "http": 3040,
+        "sse": 3041,
+        "info": 4040
+      },
+      "sse_probe": "PASS (endpoint event)",
+      "docker_health": "unhealthy (healthcheck curls localhost:3004 inside container; known false-negative)",
+      "compose_match": true,
+      "replaced": false
+    },
+    "dope-memory": {
+      "status": "PASS",
+      "sidecar": {
+        "name": "dopemux-dnh-crm-8d6d-dope-memory",
+        "status": "running",
+        "health": "healthy",
+        "ports": {
+          "3020/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "3020"
+            }
+          ]
+        },
+        "port_bindings": {
+          "3020/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "3020"
+            }
+          ]
+        },
+        "binds": [
+          "/Users/hue/code/dNh_CRM/.dopemux:/data:rw"
+        ],
+        "labels": {
+          "dopemux.catalog_service": "dope-memory",
+          "dopemux.created_by": "dopemux-mcp",
+          "dopemux.instance_id": "dnh-crm-8d6d-dope-memory",
+          "dopemux.managed": "true",
+          "dopemux.project_hash": "9a4e9aa8a329cdd5",
+          "dopemux.project_id": "dnh_crm-9a4e9aa8a329cdd5",
+          "dopemux.project_root": "/Users/hue/code/dNh_CRM",
+          "dopemux.repo_basename": "dNh_CRM",
+          "dopemux.scope": "worktree",
+          "dopemux.service": "dope-memory",
+          "dopemux.transport": "http",
+          "dopemux.workspace_id": "/Users/hue/code/dNh_CRM",
+          "dopemux.worktree_hash": "8d6d",
+          "dopemux.worktree_root": "/Users/hue/code/dNh_CRM"
+        }
+      },
+      "health": {
+        "status": "healthy",
+        "service": "dope-memory",
+        "version": "1.0.0",
+        "timestamp": "2026-07-10T04:17:45.233893Z"
+      },
+      "host_bind": "127.0.0.1:3020",
+      "mount": "/Users/hue/code/dNh_CRM/.dopemux:/data",
+      "main_stack_untouched": "dopemux-dope-memory-1 Up 3 hours (healthy) 0.0.0.0:3060->3020/tcp, [::]:3060->3020/tcp",
+      "main_stack_not_accepted": true
+    },
+    "task-orchestrator": {
+      "status": "PASS",
+      "port": 7890,
+      "identity": "MATCH dnh_crm-9a4e9aa8a329cdd5",
+      "singleton": true,
+      "project_lease": false
+    }
+  },
+  "blocking_for_full_pass": [
+    "Doctor still FAIL on structural COMPOSE_* risks and formula PORT_RESERVED_COLLISION noise",
+    "ConPort Docker healthcheck unhealthy (probe false-negative; SSE works)",
+    "PR #1030 must merge before #1031"
+  ],
+  "acceptance": "PARTIAL runtime with isolated dope-memory sidecar proven; review/CI fixes on PR head"
+}

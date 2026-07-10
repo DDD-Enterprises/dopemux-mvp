@@ -298,6 +298,22 @@ def _collision_checks(
             continue
         labels = owner.labels or {}
         managed = labels.get(dr.LABEL_MANAGED) == "true"
+        # Secondary ownership: compose project/name/port for same worktree (006R2)
+        ownership = di.classify_container_ownership(
+            owner,
+            project_root=worktree_root,
+            workspace_id=worktree_root,
+            project_id=project_id,
+            expected_ports=[int(port)],
+            expected_name_substrings=[
+                labels.get("dopemux.service") or "",
+                owner.name.split("_")[0] if owner.name else "",
+            ],
+            project_slug_hints=[project_id, Path(worktree_root).name if worktree_root else ""],
+        )
+        if ownership in {"MATCH", "COMPOSE_MATCH"}:
+            # Owned by this project (explicit labels or compose secondary) — not a foreign collision
+            continue
         if not managed:
             findings.append(
                 {
