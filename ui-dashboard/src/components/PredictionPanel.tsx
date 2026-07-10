@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { Check, TrendingUp } from 'lucide-react';
@@ -7,26 +7,48 @@ import { brandTokens, statusStyles, deriveStatus, getDynamicRoast } from '../the
 
 interface PredictionPanelProps {
   prediction?: number;
+  onError?: (message: string) => void;
 }
 
-export default function PredictionPanel({ prediction }: PredictionPanelProps) {
+export default function PredictionPanel({ prediction, onError }: PredictionPanelProps) {
   const hasPrediction = typeof prediction === 'number';
   const value = hasPrediction ? Math.max(0, Math.min(100, Math.round(prediction * 100))) : 0;
   const status = hasPrediction ? deriveStatus(prediction) : 'optimal';
   const statusMeta = statusStyles[status];
   const roast = getDynamicRoast('15-min Prediction', prediction ?? null);
   const [isCopied, setIsCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleCopy = useCallback(async () => {
-    if (!navigator.clipboard?.writeText || !hasPrediction) return;
+    if (!navigator.clipboard?.writeText) {
+      onError?.('Clipboard API is not supported in this browser or context.');
+      return;
+    }
+    if (!hasPrediction) return;
+
     try {
       await navigator.clipboard.writeText(`15-min Forecast: ${value}% (${statusMeta.label}) - ${roast}`);
       setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => {
+        setIsCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
     } catch (err) {
-      console.error('Failed to copy forecast:', err);
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      onError?.(`Failed to copy forecast: ${errorMsg}`);
     }
-  }, [hasPrediction, value, statusMeta.label, roast]);
+  }, [hasPrediction, value, statusMeta.label, roast, onError]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+        copyTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const isPredictiveHigh = status === 'high' || status === 'critical';
 
