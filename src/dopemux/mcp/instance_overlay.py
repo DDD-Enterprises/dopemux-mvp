@@ -17,7 +17,7 @@ class InstanceOverlayManager:
         "Serena": 6,
         "Dope-Context": 10,
         "Dope-Memory": 20,
-        "LiteLLM": 1000 
+        "LiteLLM": 1000
     }
 
     def __init__(self, project_root: Path, instance_id: str):
@@ -30,12 +30,12 @@ class InstanceOverlayManager:
     def _calculate_base_port(self) -> int:
         if not self.instance_id:
             return 3000
-        
+
         first_char = self.instance_id[0].upper()
         if 'A' <= first_char <= 'Z':
             offset = ord(first_char) - ord('A')
             return 3000 + (offset * 100)
-        
+
         import hashlib
         h = hashlib.md5(self.instance_id.encode()).hexdigest()
         offset = int(h[:2], 16) % 30
@@ -50,10 +50,10 @@ class InstanceOverlayManager:
     def materialize(self) -> Dict[str, Any]:
         """Generates the overlay files in .dopemux/instances/<id>/"""
         self.instance_dir.mkdir(parents=True, exist_ok=True)
-        
+
         env_path = self.write_mcp_env()
         compose_path = self.write_compose_override()
-        
+
         # Save port map for reports
         with open(self.instance_dir / "PORT_MAP.json", "w") as f:
             json.dump(self.port_map, f, indent=2)
@@ -75,7 +75,7 @@ class InstanceOverlayManager:
 
     def write_mcp_env(self) -> Path:
         env_path = self.instance_dir / "mcp.env"
-        
+
         # Safely get ports
         def get_p(name): return self.port_map.get(name, 0)
 
@@ -104,14 +104,14 @@ class InstanceOverlayManager:
             f"DOPEMUX_MEMORY_PORT={get_p('Dope-Memory')}",
             f"DOPEMUX_LITELLM_PORT={get_p('LiteLLM')}",
         ]
-        
+
         with open(env_path, "w") as f:
             f.write("\n".join(lines) + "\n")
         return env_path
 
     def write_compose_override(self) -> Path:
         compose_path = self.instance_dir / "mcp.compose.override.yml"
-        
+
         # Helper to generate service override only if port exists
         services = []
         if "ConPort" in self.port_map:
@@ -139,7 +139,7 @@ class InstanceOverlayManager:
             services.append(f"  litellm:\n    ports:\n      - \"{self.port_map['LiteLLM']}:4000\"")
 
         content = "services:\n" + "\n".join(services)
-        
+
         with open(compose_path, "w") as f:
             f.write(content)
         return compose_path

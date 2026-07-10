@@ -188,6 +188,15 @@ services:
     enabled_in_smoke: true
     category: cognitive
     description: "ADHD Engine (Multi-instance)"
+    env_contract_exceptions:
+      - variable: PORT
+        reason: "Engine reads API_PORT (config.py); compose sets API_PORT=8095"
+      - variable: SERVICE_NAME
+        reason: "Service name is fixed in code; not env-configurable"
+      - variable: HEALTH_CHECK_PATH
+        reason: "Health route hardcoded at /health in FastAPI app"
+      - variable: DATABASE_URL
+        reason: "No direct DB; persistence via ConPort/DopeconBridge HTTP (CONPORT_URL)"
 
   # Shared Legacy/Static Services
   - name: leantime

@@ -104,8 +104,8 @@ def mcp_up_cmd(all_services: bool, services: str):
     """
     ⚡ Ignite Engine: Deploy MCP servers via Docker Compose
 
-    Materializes the Model Context Protocol environment, initializing the 
-    distributed tool architecture required for high-fidelity focus-tracking 
+    Materializes the Model Context Protocol environment, initializing the
+    distributed tool architecture required for high-fidelity focus-tracking
     and codebase interrogation.
     """
     try:
@@ -130,7 +130,7 @@ def mcp_down_cmd():
     """
     💧 Cool Down Cores: Terminate MCP containers and volumes
 
-    Safely deactivates the neural infrastructure, releasing system resources 
+    Safely deactivates the neural infrastructure, releasing system resources
     and preserving ritual state in the Docker volume ledgers.
     """
     try:
@@ -154,7 +154,7 @@ def mcp_status_cmd():
     """
     📊 Diagnostic HUD: Interrogate MCP service health
 
-    Displays the current operational state, port mappings, and uptime for 
+    Displays the current operational state, port mappings, and uptime for
     all registered MCP daemons. Essential for diagnosing sensor disconnects.
     """
     try:

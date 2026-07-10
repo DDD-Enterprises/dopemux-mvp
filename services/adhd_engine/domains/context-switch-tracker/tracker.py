@@ -12,7 +12,6 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from collections import deque
-import aiohttp
 
 logger = logging.getLogger(__name__)
 
@@ -30,16 +29,17 @@ class ContextSwitchTracker:
 
     def __init__(
         self,
-        activity_capture_url: str = "http://localhost:8096",
+        activity_capture_url: str | None = None,
         recovery_time_baseline: int = 23  # Average: 23 minutes to regain focus after interrupt
     ):
         """
         Initialize context switch tracker.
 
         Args:
-            activity_capture_url: Activity Capture service URL
+            activity_capture_url: Deprecated; activity-capture service removed (graveyard).
             recovery_time_baseline: Average recovery time in minutes
         """
+        # Kept for API compatibility; remote metrics endpoint no longer exists.
         self.activity_capture_url = activity_capture_url
         self.recovery_time_baseline = recovery_time_baseline
 
@@ -94,36 +94,26 @@ class ContextSwitchTracker:
 
     async def get_todays_switches(self) -> Dict:
         """
-        Get today's context switch metrics from Activity Capture.
+        Get today's context switch metrics from in-process tracking.
+
+        activity-capture (:8096) was removed; use local switch list only.
 
         Returns:
             Dict with switch count, recovery time, cost analysis
         """
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    f"{self.activity_capture_url}/metrics",
-                    timeout=aiohttp.ClientTimeout(total=5)
-                ) as response:
-                    if response.status == 200:
-                        metrics = await response.json()
-
-                        # Calculate from Activity Capture data
-                        sessions = metrics.get("sessions_tracked", 0)
-                        interruptions = metrics.get("current_session_interruptions", 0)
-
-                        # Estimate: Each interruption costs ~23 min recovery time
-                        estimated_cost_minutes = interruptions * self.recovery_time_baseline
-
-                        return {
-                            "switches_today": interruptions,
-                            "estimated_recovery_minutes": estimated_cost_minutes,
-                            "estimated_recovery_hours": round(estimated_cost_minutes / 60, 2),
-                            "recovery_time_baseline": self.recovery_time_baseline,
-                            "sessions_tracked": sessions,
-                            "productivity_impact": self._calculate_productivity_impact(interruptions)
-                        }
-
+            interruptions = len(self.switches_today)
+            estimated_cost_minutes = interruptions * self.recovery_time_baseline
+            return {
+                "switches_today": interruptions,
+                "estimated_recovery_minutes": estimated_cost_minutes,
+                "estimated_recovery_hours": round(estimated_cost_minutes / 60, 2),
+                "recovery_time_baseline": self.recovery_time_baseline,
+                "sessions_tracked": 0,
+                "productivity_impact": self._calculate_productivity_impact(interruptions),
+                "source": "local",
+                "activity_capture": "removed",
+            }
         except Exception as e:
             logger.error(f"Failed to get switch metrics: {e}")
             return {"error": str(e)}

@@ -85,14 +85,7 @@ else
     echo -e "${YELLOW}🟢 90% - Router integration needed${NC} (${orch_tests} utility tests)"
 fi
 
-# 5. activity-capture
-echo -n "5. activity-capture:     "
-activity_integration=$(check_integration "services/activity-capture/activity_tracker.py" "workspace")
-if [ "$activity_integration" = "$(echo -e ${GREEN}✓${NC})" ]; then
-    echo -e "${GREEN}✅ COMPLETE${NC}"
-else
-    echo -e "${YELLOW}🟢 85% - Tracker integration needed${NC}"
-fi
+# 5. activity-capture removed (dead service, 2026-07-09 graveyard).
 
 # 6-10. Future services
 echo -n "6. task-orchestrator:    "
