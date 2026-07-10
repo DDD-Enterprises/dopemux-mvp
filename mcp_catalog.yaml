@@ -181,14 +181,18 @@ servers:
     description: "Temporal chronicle and working-context (per worktree instance)"
 
   task-orchestrator:
+    # Host singleton runtime; declaration may appear in per-repo .mcp.json.
+    # Port 7890 is reserved — never project/worktree leased (RUNTIME-006R).
     scope: per-worktree
-    state_scope: per-repo
+    state_scope: single_active_project
     transport: http
     plane: workflow
     authority_role: workflow-authority
     lifecycle: active
     management_model: wrapper-singleton
     identity_scope: per-repo
+    port_policy: reserved_singleton
+    reserved_port: 7890
     follow_on_decision: none
     url_template: "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp"
     port_var: TASK_ORCHESTRATOR_HTTP_PORT
@@ -200,4 +204,4 @@ servers:
       DOPEMUX_PROJECT_ROOT: "${DOPEMUX_PROJECT_ROOT:-}"
       TASK_ORCHESTRATOR_PROJECT_ROOT: "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}"
       TASK_ORCHESTRATOR_HTTP_PORT: "${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
-    description: "HTTP singleton MCP Task Orchestrator with repo-scoped SQLite state"
+    description: "Host-singleton Task Orchestrator MCP on reserved 7890 (single-active-project state)"

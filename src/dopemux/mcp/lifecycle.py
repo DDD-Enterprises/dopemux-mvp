@@ -298,6 +298,22 @@ def _collision_checks(
             continue
         labels = owner.labels or {}
         managed = labels.get(dr.LABEL_MANAGED) == "true"
+        # Secondary ownership: compose project/name/port for same worktree (006R2)
+        ownership = di.classify_container_ownership(
+            owner,
+            project_root=worktree_root,
+            workspace_id=worktree_root,
+            project_id=project_id,
+            expected_ports=[int(port)],
+            expected_name_substrings=[
+                labels.get("dopemux.service") or "",
+                owner.name.split("_")[0] if owner.name else "",
+            ],
+            project_slug_hints=[project_id, Path(worktree_root).name if worktree_root else ""],
+        )
+        if ownership in {"MATCH", "COMPOSE_MATCH"}:
+            # Owned by this project (explicit labels or compose secondary) — not a foreign collision
+            continue
         if not managed:
             findings.append(
                 {
@@ -507,6 +523,8 @@ def run_lifecycle(
             ) or int(to_spec.get("default_port_base") or 7890)
             docker_identity = None
             if docker.available:
+                from .task_orchestrator_identity import identity_from_container_heuristics
+
                 matches = di.find_containers_for_service(
                     docker,
                     service_name="task-orchestrator",
@@ -521,6 +539,10 @@ def run_lifecycle(
                         project_id=identity.project_id,
                         expected_ports=[int(to_port)],
                         expected_name_substrings=["task-orchestrator"],
+                        project_slug_hints=[
+                            identity.project_id or "",
+                            Path(identity.project_root or "").name,
+                        ],
                     )
                     if st in {"MATCH", "WRONG_PROJECT"}:
                         docker_identity = identity_from_docker_labels(
@@ -529,6 +551,16 @@ def run_lifecycle(
                             container_name=c.name,
                         )
                         break
+                    if st in {"COMPOSE_MATCH", "UNLABELED"} and docker_identity is None:
+                        docker_identity = identity_from_container_heuristics(
+                            container_name=c.name,
+                            labels=c.labels or {},
+                            port=int(to_port),
+                            target_project_root=identity.project_root,
+                            target_project_id=identity.project_id,
+                        )
+                        if st == "COMPOSE_MATCH" or docker_identity.has_project_proof():
+                            break
             to_eval = evaluate_fixed_port_state(
                 port=int(to_port),
                 target_project_id=identity.project_id,
@@ -538,7 +570,7 @@ def run_lifecycle(
                 target_worktree_hash=identity.worktree_hash,
                 is_free_fn=is_free,
                 docker_identity=docker_identity,
-                skip_http=False,
+                skip_http=True,  # upstream jar has no /info|/health (006R)
                 for_start=True,
             )
             for f in to_eval.findings:
@@ -623,7 +655,26 @@ def run_lifecycle(
                     }
                 )
             elif lease_reg.parse_status == "OK":
+                # Reserved singleton ports (TO:7890) are never project-leased (006R)
+                from .port_allocator import singleton_reserved_ports
+
+                reserved = singleton_reserved_ports(catalog)
+                reserved.setdefault(7890, "task-orchestrator")
                 for var, port in ports.items():
+                    if int(port) in reserved:
+                        # Ignore invalid foreign leases on reserved ports; do not block start.
+                        warnings.append(
+                            {
+                                "code": "ALLOCATOR_RESERVED_SINGLETON_PORT",
+                                "severity": "INFO",
+                                "message": (
+                                    f"{var}={port} is reserved singleton "
+                                    f"({reserved[int(port)]}); not lease-gated"
+                                ),
+                                "service": reserved.get(int(port)),
+                            }
+                        )
+                        continue
                     ours = [
                         L
                         for L in lease_reg.active_leases()
@@ -670,9 +721,7 @@ def run_lifecycle(
                             }
                         )
                     else:
-                        # Port became occupied by non-lease holder after lease
                         if not is_free(int(port)):
-                            # listening is OK if we will start/reuse — only block if foreign docker
                             pass
         except Exception as exc:  # noqa: BLE001
             warnings.append(

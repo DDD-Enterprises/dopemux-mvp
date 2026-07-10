@@ -5,9 +5,9 @@
       "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
       "env": {
         "DOPEMUX_WORKSPACE_ID": "${DOPEMUX_WORKSPACE_ID:-}",
-        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
-        "VOYAGEAI_API_KEY": "${VOYAGEAI_API_KEY:-}",
-        "OPENAI_API_KEY": "${OPENAI_API_KEY:-}"
+        "GEMINI_API_KEY": "${GEMINI_API_KEY=[REDACTED]
+        "VOYAGEAI_API_KEY": "${VOYAGEAI_API_KEY=[REDACTED]
+        "OPENAI_API_KEY": "${OPENAI_API_KEY=[REDACTED]
       },
       "description": "Knowledge graph, decisions, progress (PostgreSQL+AGE; per-worktree state)"
     },
@@ -20,7 +20,7 @@
       },
       "description": "Temporal chronicle and working-context (per worktree instance)"
     },
-    "task-orchestrator": {
+    "ta[REDACTED_SK]": {
       "type": "http",
       "url": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
       "env": {
@@ -29,7 +29,7 @@
         "DOPEMUX_PROJECT_ROOT": "${DOPEMUX_PROJECT_ROOT:-}",
         "TASK_ORCHESTRATOR_HTTP_PORT": "${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
       },
-      "description": "Host-singleton Task Orchestrator MCP on reserved 7890 (single-active-project state)"
+      "description": "HTTP singleton MCP Task Orchestrator with repo-scoped SQLite state"
     }
   }
 }

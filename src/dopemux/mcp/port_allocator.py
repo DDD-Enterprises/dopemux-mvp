@@ -37,25 +37,54 @@ def instance_id_for_path(worktree_path: str) -> str:
     return hashlib.sha1(str(Path(worktree_path).resolve()).encode("utf-8")).hexdigest()[:4]
 
 
+def is_reserved_singleton_service(spec: Mapping[str, Any]) -> bool:
+    """True when service uses a host-reserved singleton port (never project-leased)."""
+    if not isinstance(spec, dict):
+        return False
+    if spec.get("port_policy") == "reserved_singleton":
+        return True
+    if spec.get("management_model") == "wrapper-singleton" and spec.get("reserved_port") is not None:
+        return True
+    if (
+        spec.get("management_model") == "wrapper-singleton"
+        and int(spec.get("default_port_base") or 0) == 7890
+        and str(spec.get("port_var") or "") == "TASK_ORCHESTRATOR_HTTP_PORT"
+    ):
+        # Back-compat: TO on 7890 is always reserved singleton even without new catalog fields
+        return True
+    return False
+
+
 def singleton_reserved_ports(catalog: Mapping[str, Any]) -> Dict[int, str]:
+    """Ports that must never be project/worktree leased."""
     reserved: Dict[int, str] = {}
     for name, spec in (catalog.get("servers") or {}).items():
-        if not isinstance(spec, dict) or spec.get("scope") != "singleton":
+        if not isinstance(spec, dict):
             continue
-        explicit = spec.get("reserved_port")
-        if explicit is not None:
-            try:
-                reserved[int(explicit)] = name
-            except (TypeError, ValueError):
-                pass
-        raw_url = spec.get("url")
-        if raw_url:
-            try:
-                port = urlparse(str(raw_url)).port
-                if port:
-                    reserved[port] = name
-            except Exception:  # noqa: BLE001
-                pass
+        # Classic singleton-scope services
+        if spec.get("scope") == "singleton":
+            explicit = spec.get("reserved_port")
+            if explicit is not None:
+                try:
+                    reserved[int(explicit)] = name
+                except (TypeError, ValueError):
+                    pass
+            raw_url = spec.get("url")
+            if raw_url:
+                try:
+                    port = urlparse(str(raw_url)).port
+                    if port:
+                        reserved[port] = name
+                except Exception:  # noqa: BLE001
+                    pass
+        # Host-singleton reserved ports declared on per-worktree client entries (e.g. TO)
+        if is_reserved_singleton_service(spec):
+            explicit = spec.get("reserved_port") or spec.get("default_port_base")
+            if explicit is not None:
+                try:
+                    reserved[int(explicit)] = name
+                except (TypeError, ValueError):
+                    pass
     return reserved
 
 
@@ -66,8 +95,9 @@ class PortRoleRequest:
     port_var: str
     base: int
     fixed: bool = False
-    scope: str = "worktree"  # worktree | project | singleton
+    scope: str = "worktree"  # worktree | project | singleton | reserved_singleton
     preferred: Optional[int] = None
+    lease: bool = True  # False => export port only, never write lease
 
 
 @dataclass
@@ -119,18 +149,26 @@ def build_role_requests(
         spec = (catalog.get("servers") or {}).get(name) or {}
         if not isinstance(spec, dict) or spec.get("scope") != "per-worktree":
             continue
-        is_fixed = spec.get("management_model") == "wrapper-singleton"
+        is_reserved = is_reserved_singleton_service(spec)
+        is_fixed = is_reserved or spec.get("management_model") == "wrapper-singleton"
         key_path = (
             project_root
-            if spec.get("state_scope") == "per-repo" and project_root
+            if spec.get("state_scope") in {"per-repo", "single_active_project"} and project_root
             else worktree
         )
-        scope = "project" if spec.get("state_scope") == "per-repo" else "worktree"
+        if is_reserved:
+            scope = "reserved_singleton"
+        elif spec.get("state_scope") in {"per-repo", "single_active_project"}:
+            scope = "project"
+        else:
+            scope = "worktree"
         base = spec.get("default_port_base")
         port_var = spec.get("port_var")
         if base and port_var:
             pref = preferred_port_for_path(str(key_path), int(base)) if not is_fixed else int(base)
-            if str(port_var) in env:
+            if is_reserved:
+                pref = int(spec.get("reserved_port") or base)
+            if str(port_var) in env and not is_reserved:
                 try:
                     pref = int(str(env[str(port_var)]).strip())
                 except ValueError:
@@ -144,9 +182,10 @@ def build_role_requests(
                     fixed=is_fixed,
                     scope=scope,
                     preferred=pref,
+                    lease=not is_reserved,
                 )
             )
-        if not is_fixed:
+        if not is_fixed and not is_reserved:
             for extra in spec.get("extra_port_vars") or []:
                 if not isinstance(extra, dict):
                     continue
@@ -312,6 +351,35 @@ def allocate_ports(
         assigned: Optional[int] = None
         status_local = "ASSIGNED"
         rebind_reason: Optional[str] = None
+
+        # Reserved host singletons (e.g. TO:7890): never lease, never block on foreign leases.
+        if not req.lease or req.scope == "reserved_singleton":
+            assigned = preferred
+            result.ports[req.port_var] = assigned
+            result.warnings.append(
+                {
+                    "code": "ALLOCATOR_RESERVED_SINGLETON_PORT",
+                    "service": req.service,
+                    "port": assigned,
+                    "message": (
+                        f"{req.service} uses reserved singleton port {assigned}; "
+                        "not written as a project/worktree lease."
+                    ),
+                }
+            )
+            # Release any invalid project leases on this reserved port
+            if not dry_run and persist:
+                n = registry.mark_released(port=assigned)
+                if n:
+                    result.warnings.append(
+                        {
+                            "code": "LEASE_INVALID_SINGLETON_RELEASED",
+                            "service": req.service,
+                            "port": assigned,
+                            "message": f"Released {n} invalid project lease(s) on reserved port {assigned}.",
+                        }
+                    )
+            continue
 
         # 1) Existing valid lease for this identity/service/role.
         # Worktree-scoped requests must not pick up project-scoped leases.

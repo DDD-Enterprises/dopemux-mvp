@@ -10,6 +10,7 @@ import json
 import shutil
 import subprocess
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 
@@ -144,7 +145,7 @@ Runner = Callable[..., subprocess.CompletedProcess]
 def inspect_running_containers(
     *,
     runner: Optional[Runner] = None,
-    timeout: float = 8.0,
+    timeout: float = 25.0,
 ) -> DockerInspectResult:
     """List running containers via `docker ps` (read-only)."""
     run = runner or subprocess.run
@@ -187,10 +188,16 @@ def classify_container_ownership(
     project_id: Optional[str],
     expected_ports: Sequence[int] = (),
     expected_name_substrings: Sequence[str] = (),
+    project_slug_hints: Sequence[str] = (),
 ) -> str:
     """
     Return label_status:
-      MATCH | WRONG_PROJECT | UNLABELED | UNKNOWN | SKIPPED
+      MATCH | WRONG_PROJECT | UNLABELED | UNKNOWN | SKIPPED | COMPOSE_MATCH
+
+    Trust order:
+      1. explicit dopemux.* labels
+      2. compose project/service + name/port heuristics (secondary)
+      3. name/port alone → UNLABELED (never ownership proof)
     """
     labels = container.labels or {}
     has_project_labels = any(k in labels for k in PROJECT_LABEL_KEYS)
@@ -200,7 +207,38 @@ def classify_container_ownership(
     name_match = any(s.lower() in name_l for s in expected_name_substrings if s)
     port_match = bool(set(container.published_ports) & set(expected_ports))
 
+    # Compose secondary evidence (006R)
+    compose_project = (
+        labels.get("com.docker.compose.project")
+        or labels.get("com.docker.compose.project.name")
+        or ""
+    ).lower()
+    compose_workdir = labels.get("com.docker.compose.project.working_dir") or ""
+    compose_service = (labels.get("com.docker.compose.service") or "").lower()
+
+    slug_hints = [s.lower().replace("_", "").replace("-", "") for s in project_slug_hints if s]
+    if project_root:
+        slug_hints.append(Path(project_root).name.lower().replace("_", "").replace("-", ""))
+    if project_id:
+        slug_hints.append(str(project_id).lower().replace("_", "").replace("-", "")[:16])
+
+    def _slug_in(text: str) -> bool:
+        t = text.lower().replace("_", "").replace("-", "")
+        return any(h and h in t for h in slug_hints)
+
+    compose_project_match = bool(compose_project and _slug_in(compose_project))
+    compose_workdir_match = bool(
+        compose_workdir and project_root and _norm_path(compose_workdir) == _norm_path(project_root)
+    )
+    name_slug_match = bool(name_l and _slug_in(name_l))
+
     if not has_project_labels:
+        # Secondary: compose + name/port strongly associate with target
+        if (compose_project_match or compose_workdir_match or name_slug_match) and (
+            name_match or port_match or compose_service
+        ):
+            # Not ideal ownership (no explicit labels) but not "not found"
+            return "COMPOSE_MATCH"
         if name_match or port_match:
             return "UNLABELED"
         return "UNKNOWN"
