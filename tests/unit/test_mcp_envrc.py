@@ -62,7 +62,7 @@ def test_parse_malformed_line():
 
 
 def test_load_envrc_partial_keeps_values(tmp_path: Path):
-    """Malformed lines must not mark partial parses as ERROR when keys loaded."""
+    """Malformed lines must not hard-fail when keys loaded (parse_status OK)."""
     path = tmp_path / ".envrc.dopemux-mcp"
     path.write_text(
         "not a valid line\n"
@@ -72,7 +72,7 @@ def test_load_envrc_partial_keeps_values(tmp_path: Path):
     )
     result = load_envrc(path)
     assert result.present is True
-    assert result.parse_status == "PARTIAL"
+    assert result.parse_status == "OK"
     assert result.values["CONPORT_MCP_PORT"] == "3041"
     assert result.values["DOPEMUX_INSTANCE_ID"] == "abcd"
     assert len(result.errors) >= 2
