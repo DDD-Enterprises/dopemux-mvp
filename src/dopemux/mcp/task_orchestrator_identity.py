@@ -8,7 +8,6 @@ fail-closed on wrong-project or unknown for start.
 from __future__ import annotations
 
 import json
-import os
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
@@ -99,7 +98,9 @@ def write_wrapper_metadata(
     """Write non-secret identity metadata. Returns path or None if dry_run/missing id."""
     if dry_run:
         return None
-    instance_id = identity.instance_id or identity.worktree_hash or identity.project_hash
+    instance_id = (
+        identity.instance_id or identity.worktree_hash or identity.project_hash
+    )
     if not instance_id:
         return None
     path = metadata_path(str(instance_id), base=base)
@@ -107,14 +108,18 @@ def write_wrapper_metadata(
     payload = {
         "schema_version": SCHEMA_VERSION,
         **identity.to_dict(),
-        "source": identity.source if identity.source != "unknown" else "wrapper_metadata",
+        "source": (
+            identity.source if identity.source != "unknown" else "wrapper_metadata"
+        ),
     }
     # Do not overwrite another project's metadata
     if path.exists():
         try:
             existing = json.loads(path.read_text(encoding="utf-8"))
             if existing.get("project_root") and identity.project_root:
-                if not _paths_equal(existing.get("project_root"), identity.project_root):
+                if not _paths_equal(
+                    existing.get("project_root"), identity.project_root
+                ):
                     raise RuntimeError(
                         f"Refusing to overwrite TO metadata for other project at {path}"
                     )
@@ -177,7 +182,9 @@ def probe_http_info(
 
     def _default_get(url: str) -> Any:
         req = urllib.request.Request(url, method="GET")
-        with urllib.request.urlopen(req, timeout=timeout_s) as resp:  # noqa: S310 — localhost probe
+        with urllib.request.urlopen(
+            req, timeout=timeout_s
+        ) as resp:  # noqa: S310 — localhost probe
             return json.loads(resp.read().decode("utf-8"))
 
     get = opener or _default_get
@@ -185,15 +192,26 @@ def probe_http_info(
         url = f"http://{host}:{int(port)}{path}"
         try:
             body = get(url)
-        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError, json.JSONDecodeError, ValueError):
+        except (
+            urllib.error.URLError,
+            urllib.error.HTTPError,
+            TimeoutError,
+            OSError,
+            json.JSONDecodeError,
+            ValueError,
+        ):
             continue
         if not isinstance(body, dict):
             continue
         ident = body.get("identity") if isinstance(body.get("identity"), dict) else None
         if not ident and path == "/health":
             # health may nest identity under metadata
-            meta = body.get("metadata") if isinstance(body.get("metadata"), dict) else {}
-            ident = meta.get("identity") if isinstance(meta.get("identity"), dict) else None
+            meta = (
+                body.get("metadata") if isinstance(body.get("metadata"), dict) else {}
+            )
+            ident = (
+                meta.get("identity") if isinstance(meta.get("identity"), dict) else None
+            )
         if not ident:
             # No identity fields — not proof of ownership
             continue
@@ -209,7 +227,11 @@ def probe_http_info(
             runtime_scope=str(ident.get("runtime_scope") or "project"),
             port=int(port),
             source="http_info",
-            confidence="HIGH" if ident.get("project_root") or ident.get("project_id") else "LOW",
+            confidence=(
+                "HIGH"
+                if ident.get("project_root") or ident.get("project_id")
+                else "LOW"
+            ),
             evidence=[url],
         )
     return None
@@ -222,13 +244,15 @@ def identity_from_docker_labels(
     container_name: Optional[str] = None,
 ) -> TOIdentity:
     return TOIdentity(
-        project_id=labels.get("dopemux.project_id") or labels.get("com.dopemux.project_id"),
+        project_id=labels.get("dopemux.project_id")
+        or labels.get("com.dopemux.project_id"),
         workspace_id=(
             labels.get("dopemux.workspace_id")
             or labels.get("com.dopemux.workspace_id")
             or labels.get("dopemux.worktree_root")
         ),
-        project_root=labels.get("dopemux.project_root") or labels.get("com.dopemux.project_root"),
+        project_root=labels.get("dopemux.project_root")
+        or labels.get("com.dopemux.project_root"),
         worktree_root=labels.get("dopemux.worktree_root"),
         project_hash=labels.get("dopemux.project_hash"),
         worktree_hash=labels.get("dopemux.worktree_hash"),
@@ -297,7 +321,11 @@ def match_target(
 
 
 def _sources_conflict(a: TOIdentity, b: TOIdentity) -> bool:
-    if a.project_root and b.project_root and not _paths_equal(a.project_root, b.project_root):
+    if (
+        a.project_root
+        and b.project_root
+        and not _paths_equal(a.project_root, b.project_root)
+    ):
         return True
     if a.project_id and b.project_id and not _ids_equal(a.project_id, b.project_id):
         return True
@@ -430,6 +458,9 @@ def evaluate_fixed_port_state(
         }
     )
 
+    # Live ownership sources for an occupied port only.
+    # Wrapper metadata is disk-stale-capable and not tied to the live listener;
+    # never treat it alone as proof of who owns :port (P1 fail-closed).
     sources: List[TOIdentity] = []
     if http_identity is not None:
         sources.append(http_identity)
@@ -450,16 +481,20 @@ def evaluate_fixed_port_state(
         sources.append(docker_identity)
     if registry_identity is not None:
         sources.append(registry_identity)
-    if wrapper_identity is not None:
-        sources.append(wrapper_identity)
-    else:
-        meta = probe_wrapper_metadata(
+
+    has_live_proof = any(s.has_project_proof() for s in sources)
+
+    wrapper: Optional[TOIdentity] = wrapper_identity
+    if wrapper is None:
+        wrapper = probe_wrapper_metadata(
             instance_id=target_instance_id,
             candidates=[c for c in (target_worktree_hash, target_project_id) if c],
             base=metadata_base,
         )
-        if meta:
-            sources.append(meta)
+    if wrapper is not None and wrapper.has_project_proof():
+        if has_live_proof:
+            # Corroborate / conflict-check only when a live source already exists.
+            sources.append(wrapper)
             findings.append(
                 {
                     "code": "TASK_ORCHESTRATOR_RUNTIME_METADATA_FOUND",
@@ -467,6 +502,20 @@ def evaluate_fixed_port_state(
                     "message": "TO identity found via wrapper metadata",
                     "service": "task-orchestrator",
                     "source": "wrapper_metadata",
+                }
+            )
+        else:
+            findings.append(
+                {
+                    "code": "TASK_ORCHESTRATOR_WRAPPER_METADATA_NOT_LIVE",
+                    "severity": "WARN",
+                    "message": (
+                        "wrapper metadata present but not used as live ownership "
+                        f"proof for occupied :{port} (HTTP/Docker identity unavailable)"
+                    ),
+                    "service": "task-orchestrator",
+                    "source": "wrapper_metadata",
+                    "evidence": list(wrapper.evidence),
                 }
             )
 
