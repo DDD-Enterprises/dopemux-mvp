@@ -427,7 +427,7 @@ def plan_repair(
 
     envrc_missing = not envrc_parsed.present
     envrc_stale = False
-    if envrc_parsed.present and envrc_parsed.parse_status == "OK":
+    if envrc_parsed.present and envrc_parsed.parse_status in {"OK", "PARTIAL"}:
         for key, want in desired_env.items():
             if envrc_parsed.values.get(key) != want:
                 envrc_stale = True
@@ -436,6 +436,9 @@ def plan_repair(
             if key in desired_env and key not in envrc_parsed.values:
                 envrc_stale = True
                 break
+        # Partial parse is repairable (regenerate), not a hard block.
+        if envrc_parsed.parse_status == "PARTIAL":
+            envrc_stale = True
     elif envrc_parsed.present and envrc_parsed.parse_status == "ERROR":
         plan.blocking_findings.append(
             _block(

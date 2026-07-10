@@ -196,8 +196,20 @@ def run_mcp_doctor(
     mcp_json = load_mcp_json(mcp_path)
     global_claude = load_global_claude(global_claude_path)
 
-    if envrc.present and envrc.parse_status == "OK":
+    if envrc.present and envrc.parse_status in {"OK", "PARTIAL"}:
         _add(findings, "ENVRC_FOUND", "INFO", f"Found {ENVRC_FILENAME}", evidence=[str(envrc_path)])
+        if envrc.parse_status == "PARTIAL":
+            _add(
+                findings,
+                "ENVRC_PARTIAL_PARSE",
+                "WARN",
+                (
+                    f"Partial parse of {ENVRC_FILENAME}: "
+                    f"{len(envrc.values)} keys loaded, {len(envrc.errors)} malformed line(s)"
+                ),
+                evidence=envrc.errors,
+                recommendation="Fix malformed lines or regenerate .envrc.dopemux-mcp.",
+            )
     elif not envrc.present:
         # Severity depends on whether mcp.json expects env-derived ports
         mcp_needs_env = False
@@ -306,7 +318,7 @@ def run_mcp_doctor(
             port = safe_port_int(doctor_env, str(key))
             if port is not None:
                 configured_ports[str(key)] = port
-            elif envrc.present and envrc.parse_status == "OK":
+            elif envrc.present and envrc.parse_status in {"OK", "PARTIAL"}:
                 _add(
                     findings,
                     "PORT_UNSET",
