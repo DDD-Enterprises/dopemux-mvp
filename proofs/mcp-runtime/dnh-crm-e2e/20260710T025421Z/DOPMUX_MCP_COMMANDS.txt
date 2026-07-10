@@ -1,0 +1,1 @@
+['add', 'doctor', 'down', 'ensure', 'fleet', 'generate', 'init', 'list', 'logs', 'remove', 'repair-config', 'restart', 'start', 'start-all', 'status', 'stop', 'sync-globals', 'up']
