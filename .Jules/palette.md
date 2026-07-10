@@ -158,11 +158,6 @@
 **Learning:** When refactoring multiple nested tooltips into a single "Card-Level" summary, it's easy to lose critical context like the "AI-generated" nature of suggestions. Explicitly labeling these summaries as "AI Insight" or "AI Recommendation" ensures transparency and maintains the user's understanding of the source of the information, which is crucial for building trust in automated systems.
 **Action:** When consolidating metadata into a single tooltip, ensure that the source and nature of suggestions (especially AI-driven ones) are explicitly labeled.
 
-
 ## 2025-06-01 - [Consolidated Card-Level Interaction]
 **Learning:** Nesting interactive elements (like a "Copy" button) inside a focusable card surface creates a redundant and confusing experience for keyboard and screen reader users (nested tab stops). Consolidating the interaction onto the root container (Card-Level Interactive Surface) simplifies the tab order and provides a more direct, high-bandwidth interaction path.
 **Action:** When adding secondary actions like "Copy to Clipboard" to dashboard panels, prefer making the entire card the interactive surface rather than nesting small buttons.
-
-## 2026-07-07 - [Tactile Confirmation for Signal Copying]
-**Learning:** In a high-density "Signal Feed," users need immediate and multi-stage feedback when interacting with fleeting notifications. Implementing a three-tier "Tactile Confirmation" loop—swapping icons (Signal -> Check), updating tooltips ("Click to Copy" -> "Copied!"), and triggering a brief scale-and-glow pulse animation—provides enough sensory reinforcement to confirm success without the user needing to leave the dashboard.
-**Action:** Use the three-tier tactile confirmation pattern for all informational copy actions in dense dashboard environments.

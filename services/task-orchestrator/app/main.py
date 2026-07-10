@@ -349,31 +349,8 @@ async def health_check():
 
 @app.get("/info")
 async def service_info():
-    """Service discovery endpoint - auto-config support (ADR-208)
-
-    Packet 005: expose env-sourced project identity so doctor/start can prove
-    which project owns this runtime. Null fields mean identity is unknown.
-    """
+    """Service discovery endpoint - auto-config support (ADR-208)"""
     port = int(os.getenv("PORT", str(DEFAULT_PORT)))
-    identity = {
-        "project_id": os.getenv("DOPEMUX_PROJECT_ID") or os.getenv("PROJECT_ID"),
-        "workspace_id": (
-            os.getenv("DOPEMUX_WORKSPACE_ID")
-            or os.getenv("WORKSPACE_ID")
-            or os.getenv("DOPEMUX_WORKTREE_ROOT")
-        ),
-        "project_root": (
-            os.getenv("DOPEMUX_PROJECT_ROOT")
-            or os.getenv("TASK_ORCHESTRATOR_PROJECT_ROOT")
-        ),
-        "worktree_root": (
-            os.getenv("DOPEMUX_WORKTREE_ROOT")
-            or os.getenv("DOPEMUX_WORKSPACE_ROOT")
-        ),
-        "instance_id": os.getenv("DOPEMUX_INSTANCE_ID"),
-        "state_scope": os.getenv("TASK_ORCHESTRATOR_STATE_SCOPE", "per-repo"),
-        "runtime_scope": os.getenv("TASK_ORCHESTRATOR_RUNTIME_SCOPE", "project"),
-    }
     return {
         "name": SERVICE_NAME,
         "version": "1.0.0",
@@ -389,7 +366,6 @@ async def service_info():
         },
         "health": HEALTH_CHECK_PATH,
         "description": "Advanced task orchestration and dependency management with 37 tools",
-        "identity": identity,
         "metadata": {
             "role": "workflow",
             "priority": "high",
