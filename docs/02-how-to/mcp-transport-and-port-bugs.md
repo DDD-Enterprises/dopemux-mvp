@@ -36,6 +36,12 @@ applied to `dopemux-mvp`.
 > probes, and rebind when preferred ports are unsafe. Dry-run / `persist=False`
 > never write leases. Fixed-port `task-orchestrator` (7890) reuses or blocks —
 > it does not rebind.
+>
+> **TO identity (TP-DMX-MCP-RUNTIME-005):** prove project ownership of `:7890`
+> before treating TO as ready. Trust order: HTTP `/info` identity → Docker labels
+> → runtime registry → wrapper metadata
+> (`~/.dopemux/mcp/runtime/<id>/task-orchestrator.identity.json`). Port-only
+> is UNKNOWN. Wrong project blocks start; foreign runtimes are never stopped.
 
 ---
 

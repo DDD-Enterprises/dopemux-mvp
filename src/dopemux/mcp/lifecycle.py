@@ -493,6 +493,120 @@ def run_lifecycle(
 
     ports = _extract_ports(doctor_env, selected, catalog)
 
+    # Task Orchestrator fixed-port identity gate (Packet 005)
+    if op in {"start", "restart"} and "task-orchestrator" in selected:
+        try:
+            from .task_orchestrator_identity import (
+                evaluate_fixed_port_state,
+                identity_from_docker_labels,
+            )
+
+            to_spec = (catalog.get("servers") or {}).get("task-orchestrator") or {}
+            to_port = ports.get(
+                str(to_spec.get("port_var") or "TASK_ORCHESTRATOR_HTTP_PORT")
+            ) or int(to_spec.get("default_port_base") or 7890)
+            docker_identity = None
+            if docker.available:
+                matches = di.find_containers_for_service(
+                    docker,
+                    service_name="task-orchestrator",
+                    expected_ports=[int(to_port)],
+                    name_hints=["task-orchestrator", "orchestrator"],
+                )
+                for c in matches:
+                    st = di.classify_container_ownership(
+                        c,
+                        project_root=identity.project_root,
+                        workspace_id=identity.workspace_id,
+                        project_id=identity.project_id,
+                        expected_ports=[int(to_port)],
+                        expected_name_substrings=["task-orchestrator"],
+                    )
+                    if st in {"MATCH", "WRONG_PROJECT"}:
+                        docker_identity = identity_from_docker_labels(
+                            c.labels or {},
+                            port=int(to_port),
+                            container_name=c.name,
+                        )
+                        break
+            to_eval = evaluate_fixed_port_state(
+                port=int(to_port),
+                target_project_id=identity.project_id,
+                target_project_root=identity.project_root,
+                target_workspace_id=identity.workspace_id,
+                target_instance_id=identity.instance_id,
+                target_worktree_hash=identity.worktree_hash,
+                is_free_fn=is_free,
+                docker_identity=docker_identity,
+                skip_http=False,
+                for_start=True,
+            )
+            for f in to_eval.findings:
+                if f.get("severity") == "FAIL" or f.get("code", "").startswith(
+                    "TASK_ORCHESTRATOR_START_BLOCKED"
+                ):
+                    blocking.append(
+                        {
+                            "code": f.get("code")
+                            or to_eval.start_block_code
+                            or "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
+                            "severity": "FAIL",
+                            "message": f.get("message") or "TO start blocked",
+                            "service": "task-orchestrator",
+                        }
+                    )
+                elif f.get("severity") in {"WARN", "UNKNOWN"}:
+                    warnings.append(
+                        {
+                            "code": f.get("code"),
+                            "severity": f.get("severity"),
+                            "message": f.get("message"),
+                            "service": "task-orchestrator",
+                        }
+                    )
+            if not to_eval.start_allowed and to_eval.start_block_code:
+                if not any(
+                    b.get("code") == to_eval.start_block_code for b in blocking
+                ):
+                    blocking.append(
+                        {
+                            "code": to_eval.start_block_code,
+                            "severity": "FAIL",
+                            "message": (
+                                f"task-orchestrator start blocked "
+                                f"(match={to_eval.match} port={to_port})"
+                            ),
+                            "service": "task-orchestrator",
+                        }
+                    )
+            elif to_eval.start_allowed and to_eval.match == "OK":
+                warnings.append(
+                    {
+                        "code": "TASK_ORCHESTRATOR_START_ALLOWED",
+                        "severity": "INFO",
+                        "message": "task-orchestrator already running for target project",
+                        "service": "task-orchestrator",
+                    }
+                )
+            elif to_eval.start_allowed and to_eval.match == "FREE":
+                warnings.append(
+                    {
+                        "code": "TASK_ORCHESTRATOR_START_ALLOWED",
+                        "severity": "INFO",
+                        "message": f"task-orchestrator fixed port :{to_port} free; start allowed",
+                        "service": "task-orchestrator",
+                    }
+                )
+        except Exception as exc:  # noqa: BLE001
+            blocking.append(
+                {
+                    "code": "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
+                    "severity": "FAIL",
+                    "message": f"TO identity preflight failed: {exc}",
+                    "service": "task-orchestrator",
+                }
+            )
+
     # Lease registry consistency (start only — recommend repair-config on mismatch)
     if op == "start":
         try:
