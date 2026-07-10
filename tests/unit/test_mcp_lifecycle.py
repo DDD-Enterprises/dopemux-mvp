@@ -155,6 +155,11 @@ def test_compose_override_unique_name_and_absolute_volume(tmp_path: Path):
     assert "./.dopemux:/data" not in text
     assert "dopemux.managed" in text
     assert "dopemux.project_id" in text
+    # Project sidecars must bind loopback only (never 0.0.0.0)
+    assert "127.0.0.1:3040:3004" in text
+    assert "127.0.0.1:3041:3005" in text
+    assert "127.0.0.1:4040:4004" in text
+    assert "127.0.0.1:3060:3020" in text
 
 
 def test_start_dry_run_planned(tmp_path: Path, monkeypatch):
