@@ -1,0 +1,44 @@
+{
+  "program": "DMX-SVCFIN",
+  "date": "2026-07-09",
+  "source_plan": "/Users/hue/.claude/plans/ok-let-s-plan-out-toasty-muffin.md",
+  "audit": "claudedocs/service-audit-2026-07-04.md; claudedocs/dopemux-completion-plan-2026-07-07.md; claudedocs/adhd-surfaces-deep-dive-2026-07-04.md",
+  "ambition": "full-build (user-selected all four workstreams)",
+  "validation": "3 Explore agents verified current-main state (held surfaces, gpt-researcher relocation, roadmap status); catalog+mcp-ensure and exa-retirement confirmed already-shipped and excluded",
+  "tag": "dmx-svcfin,service-audit-finish,series",
+  "packets_dir": "task-packets/",
+  "spec": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+  "root": {
+    "ref": "root",
+    "title": "DMX-SVCFIN: finish the service-audit — hygiene, dashboard, ADHD signal loop, memory-spine, architecture",
+    "summary": "18 commit-sized Task Packets across 5 epics closing out the 2026-07 service audit. Excludes already-shipped catalog+`mcp ensure` (E1/E3) and exa retirement (ADR-223). Held-surface decisions locked: delete session_intelligence + voice-commands; keep+wire adhd-dashboard. Every packet is schema-valid against the canonical dopeTask spec."
+  },
+  "load_order": ["EPIC-HYG", "EPIC-DASH || EPIC-ADHDLOOP || EPIC-MEMSPINE", "EPIC-ARCH"],
+  "epics": [
+    {"ref": "EPIC-HYG", "title": "Hygiene & Security (fast, high-certainty)", "phase": 1},
+    {"ref": "EPIC-DASH", "title": "Web dashboard wire-in (keep decision)", "phase": 2},
+    {"ref": "EPIC-ADHDLOOP", "title": "ADHD signal loop (highest user-visible value)", "phase": 2},
+    {"ref": "EPIC-MEMSPINE", "title": "Memory-spine completion (finish the Trinity)", "phase": 2},
+    {"ref": "EPIC-ARCH", "title": "Architectural decisions (design sign-off)", "phase": 3}
+  ],
+  "leaves": [
+    {"ref": "DMX-HYG-DEADSVC-001", "parent": "EPIC-HYG", "title": "Delete session_intelligence + voice-commands + orphaned tests", "disp": "DELETE", "effort": "S", "agent": "codex", "accept": "both dirs + 3 test refs gone; pytest --co clean; brand_lint 0", "depends_on": []},
+    {"ref": "DMX-HYG-LOOPBACK-002", "parent": "EPIC-HYG", "title": "Loopback-bind conport/dope-memory/serena/gptr host ports", "disp": "HARDEN", "effort": "S", "agent": "codex", "targets": "compose.yml:258-260,509,552-553,579", "accept": "all four 127.0.0.1-bound; compose config parses", "depends_on": []},
+    {"ref": "DMX-HYG-CONPORTREFS-003", "parent": "EPIC-HYG", "title": "Fix 6 broken ConPort command refs + tool-granular drift gate", "disp": "FIX", "effort": "M", "agent": "codex", "targets": ".claude/commands; fleet_catalog.py:find_unknown_command_tool_surfaces", "accept": "refs mapped to real 17-tool surface; gate catches tool-name drift", "depends_on": []},
+    {"ref": "DMX-DASH-WIRE-001", "parent": "EPIC-DASH", "title": "Add adhd-dashboard compose service + fix half-wires + activity-capture dep", "disp": "WIRE", "effort": "M", "agent": "codex", "targets": "compose.yml; services/registry.yaml; services/adhd-dashboard/backend.py", "accept": "dashboard healthy on 127.0.0.1:8097; React UI connects /ws/state", "depends_on": ["DMX-HYG-LOOPBACK-002"]},
+    {"ref": "DMX-ADHDLOOP-HOOKINGRESS-001", "parent": "EPIC-ADHDLOOP", "title": "native_hooks PostToolUse -> engine /external-activity ingress", "disp": "WIRE", "effort": "M", "agent": "codex", "targets": "native_hooks.py:479-535; adhd_engine/api/routes.py", "accept": "fail-open POST; /api/v1/state shifts on real activity", "depends_on": []},
+    {"ref": "DMX-ADHDLOOP-IGNITION-VERIFY-002", "parent": "EPIC-ADHDLOOP", "title": "Runtime-verify engine ignition (build-env gated, proof-only)", "disp": "PROVE", "effort": "S", "agent": "shell", "accept": "engine healthy :3025; listener log; /api/v1/state non-default", "depends_on": []},
+    {"ref": "DMX-ADHDLOOP-RECAP-003", "parent": "EPIC-ADHDLOOP", "title": "Recap adhd_state adaptation (calmer output when scattered)", "disp": "BUILD", "effort": "S", "agent": "codex", "targets": "src/dopemux/tui; ui/dashboard.py", "accept": "scattered -> fewer cards; missing annotation -> unchanged", "depends_on": []},
+    {"ref": "DMX-ADHDLOOP-DESKTOP-VERIFY-004", "parent": "EPIC-ADHDLOOP", "title": "Verify DesktopNotificationChannel on host (proof-only)", "disp": "PROVE", "effort": "S", "agent": "shell", "accept": "host notification fires; in-container self-disables", "depends_on": ["DMX-ADHDLOOP-IGNITION-VERIFY-002"]},
+    {"ref": "DMX-MEMSPINE-EXTRACT-RELOCATE-001", "parent": "EPIC-MEMSPINE", "title": "Relocate gpt-researcher extraction backend -> src/dopemux/extraction (namespaced)", "disp": "REFACTOR", "effort": "M", "agent": "codex", "targets": "cli.py:4331-4337,4548-4554; ~4850 LOC closure", "accept": "package import works; no PipelineConfig collision; dopemux extract runs", "depends_on": []},
+    {"ref": "DMX-MEMSPINE-GPTR-TWIN-DELETE-002", "parent": "EPIC-MEMSPINE", "title": "Delete dead dopemux-gpt-researcher MCP twin", "disp": "DELETE", "effort": "S", "agent": "codex", "accept": "twin gone; gptr-mcp intact; pytest --co clean", "depends_on": ["DMX-MEMSPINE-EXTRACT-RELOCATE-001"]},
+    {"ref": "DMX-MEMSPINE-TASKCREATED-003", "parent": "EPIC-MEMSPINE", "title": "task.created producer + pm.task.created naming-twin fix", "disp": "BUILD", "effort": "M", "agent": "codex", "targets": "pm/writes.py; pm/events.py:21; promotion.py:342", "accept": "created task -> work_log_entries row (source_event_type=task.created)", "depends_on": []},
+    {"ref": "DMX-MEMSPINE-PROGRESS-CHRONICLE-004", "parent": "EPIC-MEMSPINE", "title": "Progress -> chronicle (decision + optional wire)", "disp": "DECISION", "effort": "S", "agent": "codex", "targets": "enhanced_server.py:1217", "accept": "progress-log fills row OR non-promotable decision documented", "depends_on": []},
+    {"ref": "DMX-MEMSPINE-IDENTITY-005", "parent": "EPIC-MEMSPINE", "title": "Instance-identity fail-closed on writes", "disp": "FIX", "effort": "M", "agent": "codex", "targets": "instance_detector.py:53", "accept": "identity-less write rejected; identity-present succeeds", "depends_on": []},
+    {"ref": "DMX-MEMSPINE-DCINDEX-006", "parent": "EPIC-MEMSPINE", "title": "Flip ENABLE_DOPECONTEXT_INDEX (Trinity Rule 2)", "disp": "BUILD", "effort": "M", "agent": "codex", "targets": "compose.yml; eventbus_consumer.py:48", "accept": "logged decision retrievable via dope-context", "depends_on": ["DMX-MEMSPINE-TASKCREATED-003"]},
+    {"ref": "DMX-ARCH-INTSHIELD-001", "parent": "EPIC-ARCH", "title": "interruption_shield wire-or-shelve", "disp": "BUILD", "effort": "L", "agent": "codex", "targets": "adhd_engine/domains/interruption-shield; engine.py; event_listener.py", "accept": "flag-on activates shields; flag-off inert; OR ADR-shelve", "depends_on": []},
+    {"ref": "DMX-ARCH-CONPORT-SURFACE-002", "parent": "EPIC-ARCH", "title": "ConPort single-surface ADR + rewrite scope (packets 106/107/201/202)", "disp": "ADR", "effort": "L", "agent": "codex", "accept": "ADR merged; sub-packets scoped; drift gate green", "depends_on": ["DMX-HYG-CONPORTREFS-003"]},
+    {"ref": "DMX-ARCH-SERENA-SURFACE-003", "parent": "EPIC-ARCH", "title": "Serena single-surface ADR + archive 45-tool candidate", "disp": "ADR", "effort": "M", "agent": "shell", "accept": "ADR merged; local candidate archived; no 45-tool default surface", "depends_on": []},
+    {"ref": "DMX-ARCH-APPENDONLY-004", "parent": "EPIC-ARCH", "title": "ConPort append-only enforce-or-retire (INV-MEM-002/003/004)", "disp": "FIX", "effort": "M", "agent": "codex", "accept": "DB rejects append-only violation OR doctrine no longer claims it", "depends_on": []}
+  ]
+}

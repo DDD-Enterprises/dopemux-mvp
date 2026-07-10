@@ -1,0 +1,84 @@
+{
+  "id": "DMX-DASH-WIRE-001",
+  "project": "dopemux-mvp",
+  "target": "Deploy services/adhd-dashboard as a compose service (loopback-bound) so the live React ui-dashboard works; repair its half-wires and the deleted activity-capture dependency.",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Run `pytest tests/ --co` after any deletion to catch orphaned imports."
+  ],
+  "depends_on": [
+    "DMX-HYG-LOOPBACK-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfin-dash",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfin-dash",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "feat(dashboard): wire adhd-dashboard backend into compose for the React UI",
+    "allowlist": [
+      "compose.yml",
+      "services/registry.yaml",
+      "services/adhd-dashboard/backend.py",
+      "shared/service_discovery.py",
+      "task-packets/DMX-DASH-WIRE-001.json"
+    ],
+    "verify": [
+      "docker compose config -q",
+      "pytest tests/arch/test_registry_compose_alignment.py -q"
+    ]
+  },
+  "pr": {
+    "title": "feat(dashboard): deploy adhd-dashboard backend for the React operator UI",
+    "body": "Adds the adhd-dashboard FastAPI backend (:8097) as a loopback-bound compose service so the live React ui-dashboard works; repairs half-wires and the deleted activity-capture dependency. User decision: keep the web dashboard.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Add adhd-dashboard compose service + registry entry.",
+      "validation": [
+        "compose.yml has an adhd-dashboard service (build services/adhd-dashboard/Dockerfile, 127.0.0.1:${ADHD_DASHBOARD_PORT:-8097}:8097, depends_on adhd-engine).",
+        "services/registry.yaml has an adhd-dashboard entry (category cognitive) with env_contract_exceptions as needed.",
+        "docker compose config parses; pytest tests/arch/test_registry_compose_alignment.py -q passes."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Repoint or remove the deleted activity-capture:8096 dependency in backend.py.",
+      "validation": [
+        "grep -n 'activity-capture\\|8096' services/adhd-dashboard/backend.py is clean (repointed to engine /api/v1/activity or panel removed)."
+      ]
+    },
+    {
+      "id": "step-3",
+      "task": "Verify half-wires resolve at runtime.",
+      "validation": [
+        "dopemux mcp up brings adhd-dashboard healthy on 127.0.0.1:8097.",
+        "The React ui-dashboard connects to /ws/state (backend.py:392) and renders live state."
+      ]
+    }
+  ]
+}

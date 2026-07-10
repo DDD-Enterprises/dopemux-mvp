@@ -1,0 +1,64 @@
+{
+  "id": "DMX-MEMSPINE-PROGRESS-CHRONICLE-004",
+  "project": "dopemux-mvp",
+  "target": "DECISION: determine whether progress logs are promotable; if yes, add a progress promotion handler + extend emit_decision_to_chronicle to progress; if no, document the non-promotable decision and close.",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Run `pytest tests/ --co` after any deletion to catch orphaned imports."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfin-memspine",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfin-memspine",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "feat(memory): decide + optionally wire progress -> chronicle",
+    "allowlist": [
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/integration_bridge_client.py",
+      "services/working-memory-assistant/promotion/promotion.py",
+      "task-packets/DMX-MEMSPINE-PROGRESS-CHRONICLE-004.json"
+    ],
+    "verify": [
+      "pytest tests/unit -q -k progress"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory): progress -> chronicle (decision + optional wire)",
+    "body": "Low-priority: progress.updated still uses the dead bridge path. Decide promotability; wire via the proven emit_decision_to_chronicle pattern or document the non-promotable decision.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Decide and either wire or document.",
+      "validation": [
+        "Either: _log_progress (enhanced_server.py:1217) emits a promotable progress event and a progress-log fills a work_log_entries row; OR a decision note records why progress is non-promotable and the packet is closed.",
+        "No dead publisher/consumer left behind."
+      ]
+    }
+  ]
+}
