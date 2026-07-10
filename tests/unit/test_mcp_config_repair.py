@@ -277,6 +277,51 @@ def test_port_limitation_warnings(tmp_path: Path):
     assert "PORT_REBIND_MISSING" in codes
 
 
+def test_plan_does_not_persist_leases_until_apply(tmp_path: Path):
+    """Planning must not write leases even when dry_run=False (apply path)."""
+    repo = tmp_path / "proj"
+    repo.mkdir()
+    calls: list[dict] = []
+
+    def tracking_alloc(
+        worktree: str,
+        names: List[str],
+        catalog: Dict[str, Any],
+        *,
+        project_root: str | None = None,
+        persist: bool = True,
+        dry_run: bool = False,
+        existing_envrc: Dict[str, str] | None = None,
+        source: str = "",
+        **_kwargs: Any,
+    ):
+        calls.append({"persist": persist, "dry_run": dry_run, "source": source})
+        return _alloc(worktree, names, catalog, project_root=project_root)
+
+    plan = cr.plan_repair(
+        repo,
+        _catalog(),
+        dry_run=False,  # simulate --apply planning
+        allocate_ports_fn=tracking_alloc,
+        project_env_exports_fn=_exports,
+        render_local_fn=_render,
+        global_claude_path=repo / "no-global.json",
+    )
+    assert plan.status in {"PLANNED", "NOOP"}
+    # Plan-time allocation must never persist
+    assert calls, "allocator should have been invoked during plan"
+    assert all(c["persist"] is False or c["dry_run"] is True for c in calls)
+
+    plan.dry_run = False
+    plan_calls_before_apply = len(calls)
+    applied = cr.apply_repair(plan)
+    assert applied.status == "APPLIED"
+    # Apply should re-invoke allocator with persist enabled
+    post = calls[plan_calls_before_apply:]
+    assert post, "allocator should re-run on apply for lease persistence"
+    assert any(c["persist"] is True and c["dry_run"] is False for c in post)
+
+
 def test_is_catalog_owned():
     cat = _catalog()
     assert mj.is_catalog_owned("conport", cat) is True

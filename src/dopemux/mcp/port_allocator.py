@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 from urllib.parse import urlparse
 
 from .port_leases import (
@@ -304,6 +304,8 @@ def allocate_ports(
         project_root=proj,
         existing_envrc=existing_envrc,
     )
+    # Track per-role outcomes so overall status can become REUSED when appropriate.
+    role_statuses: List[str] = []
 
     for req in reqs:
         preferred = int(req.preferred if req.preferred is not None else req.base)
@@ -311,14 +313,21 @@ def allocate_ports(
         status_local = "ASSIGNED"
         rebind_reason: Optional[str] = None
 
-        # 1) Existing valid lease for this identity/service/role
-        existing = registry.find_active_for_identity(
-            service=req.service,
-            port_role=req.port_role,
-            worktree_root=identity.worktree_root if req.scope == "worktree" else None,
-            project_root=identity.project_root if req.scope == "project" else identity.project_root,
-            worktree_hash=identity.worktree_hash,
-        )
+        # 1) Existing valid lease for this identity/service/role.
+        # Worktree-scoped requests must not pick up project-scoped leases.
+        if req.scope == "project":
+            existing = registry.find_active_for_identity(
+                service=req.service,
+                port_role=req.port_role,
+                project_root=identity.project_root,
+            )
+        else:
+            existing = registry.find_active_for_identity(
+                service=req.service,
+                port_role=req.port_role,
+                worktree_root=identity.worktree_root,
+                worktree_hash=identity.worktree_hash,
+            )
         if existing:
             ep = int(existing["port"])
             if ep in plan_ports and plan_ports[ep] != f"{req.service}.{req.port_var}":
@@ -359,7 +368,8 @@ def allocate_ports(
                     )
 
         if assigned is None and req.fixed:
-            # Fixed-port services: never rebind
+            # Fixed-port services: never rebind. Block on foreign lease OR
+            # unknown occupant (live socket) before leasing.
             cand = preferred
             conflict = blocked.get(cand) or plan_ports.get(cand)
             other = registry.find_active_by_port(cand)
@@ -372,6 +382,15 @@ def allocate_ports(
             ):
                 other_ok = False
             free = is_free(cand)
+            ours_listening = bool(
+                other
+                and registry.identity_matches(
+                    other,
+                    worktree_root=identity.worktree_root,
+                    project_root=identity.project_root,
+                    worktree_hash=identity.worktree_hash,
+                )
+            )
             if conflict or not other_ok:
                 result.status = "BLOCKED"
                 result.blocking_findings.append(
@@ -386,7 +405,7 @@ def allocate_ports(
                     }
                 )
                 return result
-            if not free and not other_ok:
+            if not free and not ours_listening:
                 result.status = "BLOCKED"
                 result.blocking_findings.append(
                     {
@@ -500,6 +519,7 @@ def allocate_ports(
 
         plan_ports[assigned] = f"{req.service}.{req.port_var}"
         result.ports[req.port_var] = assigned
+        role_statuses.append(status_local)
 
         lease = PortLease(
             lease_id=make_lease_id(
@@ -570,12 +590,13 @@ def allocate_ports(
             )
             return result
 
-    if result.status not in {"BLOCKED", "REBIND"} and all(
-        w.get("code") == "LEASE_REUSED" for w in result.warnings if w.get("code", "").startswith("LEASE_")
+    # Pure reuse: every role was REUSED (ignore registry bookkeeping warnings).
+    if (
+        result.status not in {"BLOCKED", "REBIND"}
+        and role_statuses
+        and all(s == "REUSED" for s in role_statuses)
     ):
-        # purely reused
-        if any(w.get("code") == "LEASE_REUSED" for w in result.warnings):
-            result.status = "REUSED"
+        result.status = "REUSED"
 
     if not result.ports and not result.blocking_findings:
         result.status = "UNKNOWN"

@@ -109,7 +109,11 @@ class InstanceOverlayManager:
                 "InstanceOverlayManager using lease allocator ports for %s",
                 self.worktree,
             )
-        except Exception as exc:  # noqa: BLE001 — fall back to legacy map
+        except RuntimeError:
+            # Allocation BLOCKED (collision / occupied fixed port / etc.) —
+            # do not fall back to the unsafe legacy map; surface the failure.
+            raise
+        except Exception as exc:  # noqa: BLE001 — unexpected errors fall back
             logger.warning(
                 "InstanceOverlayManager lease allocator unavailable (%s); using legacy map",
                 exc,
