@@ -26,8 +26,9 @@ Zero context destruction through parallel ADHD-optimized development instances.
 > `dopemux mcp fleet init --repo <project> --worktrees <paths...> --apply` then
 > `dopemux mcp start --repo <worktree>` / `dopemux mcp fleet doctor --repo <project> --worktrees ...`.
 > Also: `init` → `repair-config` → `start` → `doctor` per worktree.
-> Do **not** env-inject foreign `.envrc.dopemux-mcp` into dopemux-mvp compose.
-> Registry: `~/.dopemux/mcp/runtime/instances.json`.
+> Port leases live in `~/.dopemux/mcp/runtime/port-leases.json` (cross-worktree collision
+> rebind). Do **not** env-inject foreign `.envrc.dopemux-mcp` into dopemux-mvp compose.
+> Runtime registry: `~/.dopemux/mcp/runtime/instances.json`.
 
 ## Overview
 

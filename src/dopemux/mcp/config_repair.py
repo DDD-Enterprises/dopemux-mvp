@@ -138,14 +138,30 @@ def _desired_env_map(
     *,
     allocate_ports_fn: Callable[..., Dict[str, int]],
     project_env_exports_fn: Callable[[str, str], Dict[str, str]],
+    dry_run: bool = True,
+    existing_envrc: Optional[Mapping[str, str]] = None,
 ) -> Dict[str, str]:
     exports = {k: str(v) for k, v in project_env_exports_fn(worktree, project_root).items()}
-    ports = allocate_ports_fn(
-        worktree,
-        list(server_names),
-        catalog,
-        project_root=project_root,
-    )
+    # Lease-aware allocation: never persist on dry-run; prefer existing envrc ports.
+    try:
+        ports = allocate_ports_fn(
+            worktree,
+            list(server_names),
+            catalog,
+            project_root=project_root,
+            persist=not dry_run,
+            dry_run=dry_run,
+            existing_envrc=dict(existing_envrc or {}),
+            source="dopemux mcp repair-config",
+        )
+    except TypeError:
+        # Test doubles / legacy callables without lease kwargs
+        ports = allocate_ports_fn(
+            worktree,
+            list(server_names),
+            catalog,
+            project_root=project_root,
+        )
     for k, v in ports.items():
         exports[str(k)] = str(v)
     return exports
@@ -372,6 +388,8 @@ def plan_repair(
         catalog,
         allocate_ports_fn=allocate_ports_fn,
         project_env_exports_fn=project_env_exports_fn,
+        dry_run=dry_run,
+        existing_envrc=envrc_parsed.values if envrc_parsed.present else {},
     )
     owned_keys = _catalog_owned_env_keys(catalog, server_names)
 
