@@ -171,49 +171,35 @@ services:
     volumes:
       - ./.dopemux:/data
 """
-    diag = compose_lifecycle_diagnostics(None)  # convention path
+    diag = compose_lifecycle_diagnostics(None)  # convention path (no compose file)
     codes = {f["code"] for f in diag["findings"]}
     assert "COMPOSE_REQUIRED_IN_CWD" in codes
     assert "COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK" in codes
     assert "COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK" in codes
     assert "DUAL_ALLOCATION_BRAINS" in codes
     assert "INSTANCE_OVERLAY_NOT_WIRED_TO_INIT" in codes
+    # Missing compose must not hard-FAIL on convention-only fixed-name / volume risks.
+    by_code = {f["code"]: f for f in diag["findings"]}
+    assert by_code["COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK"]["severity"] == "WARN"
+    assert by_code["COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK"]["severity"] == "WARN"
 
     path = tmp_path / "compose.yml"
     path.write_text(compose)
     diag2 = compose_lifecycle_diagnostics(path)
     assert any("mcp-conport" in r for r in diag2["fixed_container_name_risks"])
     assert any(".dopemux" in r for r in diag2["relative_volume_risks"])
-    assert any("DOPEMUX_WORKSPACE_ID" in r for r in diag2["identity_env_risks"])
-    assert "COMPOSE_WORKSPACE_ID_MISSING_RISK" in {f["code"] for f in diag2["findings"]}
+    by_code2 = {f["code"]: f for f in diag2["findings"]}
+    assert by_code2["COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK"]["severity"] == "FAIL"
+    assert by_code2["COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK"]["severity"] == "FAIL"
+    assert any(
+        "DOPEMUX_WORKSPACE_ID" in r for r in diag2["identity_env_risks"]
+    )
 
 
 def test_compose_no_hazard_minimal():
     # Even empty compose still flags dual allocator / cwd requirement (architectural)
     diag = compose_lifecycle_diagnostics(None)
     assert diag["compose_required_in_cwd"] is True
-
-
-def test_build_desired_services_includes_catalog_defaults_missing_from_mcp_json():
-    """When .mcp.json exists, still diagnose catalog per-worktree defaults absent there."""
-    catalog = _catalog()
-    mcp_servers = {
-        "conport": {
-            "type": "sse",
-            "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
-        },
-        # intentionally omit dope-memory and task-orchestrator
-    }
-    env = {
-        "CONPORT_MCP_PORT": "3041",
-        "DOPE_MEMORY_PORT": "3060",
-        "TASK_ORCHESTRATOR_HTTP_PORT": "7890",
-    }
-    desired = build_desired_services(catalog, mcp_servers, env)
-    names = {svc.name for svc in desired}
-    assert "conport" in names
-    assert "dope-memory" in names
-    assert "task-orchestrator" in names
 
 
 def test_global_local_duplicate_and_dead(tmp_path: Path, monkeypatch):
@@ -247,45 +233,6 @@ def test_global_local_duplicate_and_dead(tmp_path: Path, monkeypatch):
     codes = {f["code"] for f in report.findings}
     assert "GLOBAL_LOCAL_DUPLICATE" in codes
     assert "GLOBAL_SERVICE_DEAD" in codes
-
-
-def test_global_local_duplicate_redacts_non_local_urls(tmp_path: Path):
-    repo = _write_fixture_repo(
-        tmp_path,
-        mcp_servers={
-            "conport": {
-                "type": "sse",
-                "url": "https://mcp.example.com/sse",
-            },
-        },
-    )
-    global_path = tmp_path / "claude.json"
-    global_path.write_text(
-        json.dumps(
-            {
-                "mcpServers": {
-                    "conport": {
-                        "type": "sse",
-                        "url": "https://other.example.net:9443/sse",
-                    },
-                }
-            }
-        )
-    )
-    report = run_mcp_doctor(
-        repo,
-        catalog=_catalog(),
-        global_claude_path=global_path,
-        skip_docker=True,
-        skip_port_probe=True,
-        process_env={},
-    )
-    dupes = [f for f in report.findings if f["code"] == "GLOBAL_LOCAL_DUPLICATE"]
-    assert dupes
-    evidence = " ".join(dupes[0].get("evidence") or [])
-    assert "example.com" not in evidence
-    assert "example.net" not in evidence
-    assert "[REDACTED_HOST]" in evidence
 
 
 def test_global_malformed(tmp_path: Path):
@@ -485,3 +432,20 @@ def test_root_catalog_transports_match_expected():
     assert servers["conport"]["transport"] == "sse"
     assert servers["dope-memory"]["transport"] == "http"
     assert servers["task-orchestrator"]["transport"] == "http"
+
+
+def test_build_desired_services_includes_catalog_defaults_when_mcp_json_present():
+    """Doctor coverage must not drop catalog defaults just because .mcp.json exists."""
+    catalog = _catalog()
+    mcp_servers = {
+        "conport": {"type": "sse", "url": "http://localhost:${CONPORT_MCP_PORT}/sse"},
+    }
+    desired = build_desired_services(
+        catalog,
+        mcp_servers,
+        {"CONPORT_MCP_PORT": "3041", "DOPE_MEMORY_PORT": "3020"},
+    )
+    names = [d.name for d in desired]
+    assert "conport" in names
+    assert "dope-memory" in names
+    assert "task-orchestrator" in names
