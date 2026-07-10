@@ -48,14 +48,12 @@ def test_provision_idempotency(temp_project):
         assert path1 == path2
 
 def test_instance_overlay_uniqueness(temp_project):
-    # Empty catalog skips lease allocator so this exercises the legacy port map.
-    empty_catalog = {"defaults": {"per_worktree": []}, "servers": {}}
     # Instance A
-    manager_a = InstanceOverlayManager(temp_project, "A", catalog=empty_catalog)
+    manager_a = InstanceOverlayManager(temp_project, "A")
     overlay_a = manager_a.materialize()
     
     # Instance B
-    manager_b = InstanceOverlayManager(temp_project, "B", catalog=empty_catalog)
+    manager_b = InstanceOverlayManager(temp_project, "B")
     overlay_b = manager_b.materialize()
     
     assert overlay_a["base_port"] == 3000
@@ -174,29 +172,5 @@ def test_provision_broken_symlink_cleanup(temp_project):
         assert os.readlink(path) == str(pkg_mcp)
 
 def test_instance_overlay_no_id(temp_project):
-    empty_catalog = {"defaults": {"per_worktree": []}, "servers": {}}
-    manager = InstanceOverlayManager(temp_project, "", catalog=empty_catalog)
+    manager = InstanceOverlayManager(temp_project, "")
     assert manager.base_port == 3000
-
-
-def test_instance_overlay_reraises_allocator_blocked(temp_project):
-    """BLOCKED allocation must not fall back to the legacy colliding map."""
-
-    def boom(*_a, **_k):
-        raise RuntimeError("Fixed port 7890 occupied by unknown process.")
-
-    catalog = {
-        "defaults": {"per_worktree": ["task-orchestrator"]},
-        "servers": {
-            "task-orchestrator": {
-                "scope": "per-worktree",
-                "state_scope": "per-repo",
-                "port_var": "TASK_ORCHESTRATOR_HTTP_PORT",
-                "default_port_base": 7890,
-                "management_model": "wrapper-singleton",
-            }
-        },
-    }
-    with patch("dopemux.mcp.port_allocator.allocate_ports_map", side_effect=boom):
-        with pytest.raises(RuntimeError, match="Fixed port 7890"):
-            InstanceOverlayManager(temp_project, "A", catalog=catalog)

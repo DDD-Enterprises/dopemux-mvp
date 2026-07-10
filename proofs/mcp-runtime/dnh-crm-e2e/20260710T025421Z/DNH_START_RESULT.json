@@ -1,5 +1,0 @@
-{
-  "at": "2026-07-10T02:57:39Z",
-  "reason": "no --live; repair dry-run not safe; start dry-run blocked",
-  "status": "SKIPPED"
-}
