@@ -113,3 +113,97 @@ def test_release(tmp_path: Path):
     n = reg.mark_released(port=3060)
     assert n == 1
     assert reg.active_leases() == []
+
+
+def test_project_scoped_upsert_dedupes_across_worktrees(tmp_path: Path):
+    path = tmp_path / "leases.json"
+    reg = PortLeaseRegistry.load(path, create_missing=True)
+    reg.upsert_lease(
+        PortLease(
+            lease_id="to_wt_a",
+            port=7890,
+            service="task-orchestrator",
+            port_role="http",
+            worktree_root="/proj/wt-a",
+            project_root="/proj",
+            scope="project",
+            status="active",
+        )
+    )
+    reg.upsert_lease(
+        PortLease(
+            lease_id="to_wt_b",
+            port=7890,
+            service="task-orchestrator",
+            port_role="http",
+            worktree_root="/proj/wt-b",
+            project_root="/proj",
+            scope="project",
+            status="active",
+        )
+    )
+    active = [
+        L
+        for L in reg.active_leases()
+        if L.get("service") == "task-orchestrator" and L.get("scope") == "project"
+    ]
+    assert len(active) == 1
+    assert active[0]["worktree_root"] == "/proj/wt-b"
+
+
+def test_find_active_for_identity_separates_scopes(tmp_path: Path):
+    path = tmp_path / "leases.json"
+    reg = PortLeaseRegistry.load(path, create_missing=True)
+    reg.upsert_lease(
+        PortLease(
+            lease_id="proj",
+            port=7890,
+            service="task-orchestrator",
+            port_role="http",
+            worktree_root="/proj/wt-a",
+            project_root="/proj",
+            worktree_hash="aaaa",
+            scope="project",
+            status="active",
+        )
+    )
+    reg.upsert_lease(
+        PortLease(
+            lease_id="wt",
+            port=3040,
+            service="dope-memory",
+            port_role="http",
+            worktree_root="/proj/wt-a",
+            project_root="/proj",
+            worktree_hash="aaaa",
+            scope="worktree",
+            status="active",
+        )
+    )
+    # Worktree lookup must not return project-scoped lease
+    assert (
+        reg.find_active_for_identity(
+            service="task-orchestrator",
+            port_role="http",
+            worktree_root="/proj/wt-a",
+            worktree_hash="aaaa",
+        )
+        is None
+    )
+    # Project lookup returns project lease
+    found = reg.find_active_for_identity(
+        service="task-orchestrator",
+        port_role="http",
+        project_root="/proj",
+    )
+    assert found is not None
+    assert found["port"] == 7890
+    # Worktree lookup returns worktree lease
+    found_wt = reg.find_active_for_identity(
+        service="dope-memory",
+        port_role="http",
+        worktree_root="/proj/wt-a",
+        worktree_hash="aaaa",
+    )
+    assert found_wt is not None
+    assert found_wt["port"] == 3040
