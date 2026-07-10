@@ -155,6 +155,13 @@ def test_compose_override_unique_name_and_absolute_volume(tmp_path: Path):
     assert "./.dopemux:/data" not in text
     assert "dopemux.managed" in text
     assert "dopemux.project_id" in text
+    # Project sidecars must bind loopback only (never 0.0.0.0)
+    # ports: !override replaces compose.yml all-interface publishes
+    assert "ports: !override" in text
+    assert "127.0.0.1:3040:3004" in text
+    assert "127.0.0.1:3041:3005" in text
+    assert "127.0.0.1:4040:4004" in text
+    assert "127.0.0.1:3060:3020" in text
 
 
 def test_start_dry_run_planned(tmp_path: Path, monkeypatch):
@@ -191,6 +198,48 @@ def test_start_dry_run_planned(tmp_path: Path, monkeypatch):
         )
     # dry-run must not create registry
     assert not reg.exists()
+
+
+def test_task_orchestrator_container_name_matches_wrapper_state_id(tmp_path: Path):
+    """TO name must be task-orchestrator-<slug>-<hash>, not hash-only."""
+    import hashlib
+
+    repo = _fixture_repo(tmp_path)
+    reg = tmp_path / "reg" / "instances.json"
+    product = tmp_path / "product"
+    product.mkdir()
+    (product / "compose.yml").write_text("services: {}\n")
+    (product / "scripts" / "mcp-wrappers").mkdir(parents=True)
+    (product / "scripts" / "mcp-wrappers" / "task-orchestrator-http-singleton.sh").write_text(
+        "#!/bin/bash\n"
+    )
+
+    result = run_lifecycle(
+        "start",
+        repo=repo,
+        services=["task-orchestrator"],
+        catalog=_catalog(),
+        dry_run=True,
+        registry_path=reg,
+        docker_runner=_docker_empty(),
+        product_root=product,
+        process_env={},
+        skip_doctor=True,
+    )
+    assert result.status in {"PLANNED", "BLOCKED", "OK"}
+    # project_id from identity is slug-hash; wrapper uses task-orchestrator-${state_id}
+    project_root = str(repo.resolve())
+    project_hash = hashlib.sha256(project_root.encode("utf-8")).hexdigest()[:16]
+    expected_prefix = f"task-orchestrator-dnh_crm-{project_hash}"
+    # Fixture repo name is dNh_CRM → slug dnh_crm (identity-style keeps _)
+    to_svc = next((s for s in result.services if s.get("service") == "task-orchestrator"), None)
+    assert to_svc is not None, result.services
+    cname = to_svc.get("container_name") or ""
+    assert cname.startswith("task-orchestrator-")
+    assert project_hash in cname
+    assert cname == expected_prefix or cname.endswith(f"-{project_hash}")
+    # Must not be hash-only form
+    assert cname != f"task-orchestrator-{project_hash}"
 
 
 def test_start_blocks_transport_mismatch(tmp_path: Path):

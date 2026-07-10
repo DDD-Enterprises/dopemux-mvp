@@ -1,0 +1,87 @@
+[
+  {
+    "Env": [
+      "POSTGRES_PASSWORD=[REDACTED]",
+      "POSTGRES_HOST=postgres",
+      "DOPEMUX_CAPTURE_LEDGER_PATH=/data/chronicle.sqlite",
+      "DOPEMUX_WORKSPACE_ID=/Users/hue/code/dNh_CRM",
+      "DOPE_MEMORY_WORKSPACE_ID=dNh_CRM",
+      "DOPEMUX_PROJECT_ROOT=/Users/hue/code/dNh_CRM",
+      "REDIS_URL=redis://redis-events:6379",
+      "POSTGRES_DB=dopemux_knowledge_graph",
+      "DOPEMUX_WORKTREE_ROOT=/Users/hue/code/dNh_CRM",
+      "WMA_ENCRYPTION_KEY=[REDACTED]",
+      "DOPEMUX_SQLITE_JOURNAL_MODE=DELETE",
+      "DOPE_MEMORY_INSTANCE_ID=8d6d",
+      "POSTGRES_PORT=5432",
+      "ENABLE_MIRROR_SYNC=false",
+      "ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097",
+      "WMA_SECRET_KEY=[REDACTED]",
+      "ENVIRONMENT=production",
+      "POSTGRES_USER=dopemux_age",
+      "ENABLE_EVENTBUS=true",
+      "DOPEMUX_INSTANCE_ID=8d6d",
+      "POSTGRES_URL=postgresql://dopemux_age:dopemux_age_dev_password@postgres:5432/dopemux_knowledge_graph",
+      "MIRROR_SCHEMA_RESET=false",
+      "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "LANG=C.UTF-8",
+      "GPG_KEY=[REDACTED]",
+      "PYTHON_VERSION=3.11.15",
+      "PYTHON_SHA256=272179ddd9a2e41a0fc8e42e33dfbdca0b3711aa5abf372d3f2d51543d09b625",
+      "PYTHONUNBUFFERED=1",
+      "PYTHONDONTWRITEBYTECODE=1",
+      "PORT=3020",
+      "DOPE_MEMORY_PORT=3020",
+      "LOG_LEVEL=INFO"
+    ],
+    "Labels": {
+      "com.docker.compose.config-hash": "14d8be29ef1eccae6a5ffedc324fae2da856c0afabc4b2622e6cc23844d58bfb",
+      "com.docker.compose.container-number": "1",
+      "com.docker.compose.depends_on": "",
+      "com.docker.compose.image": "sha256:0b15313a4d70c3fcf4b1f61f296547c728bbcc1f3ae662dd3e3578c1708ac724",
+      "com.docker.compose.oneoff": "False",
+      "com.docker.compose.project": "dopemux_dnh-crm_8d6d",
+      "com.docker.compose.project.config_files": "/Users/hue/code/dopemux-mcp-runtime-006r/compose.yml,/Users/hue/.dopemux/mcp/runtime/dnh-crm-8d6d/compose.override.yml",
+      "com.docker.compose.project.environment_file": "/Users/hue/.dopemux/mcp/runtime/dnh-crm-8d6d/mcp.env",
+      "com.docker.compose.project.working_dir": "/Users/hue/code/dopemux-mcp-runtime-006r",
+      "com.docker.compose.service": "dope-memory",
+      "com.docker.compose.version": "5.3.0",
+      "dopemux.catalog_service": "dope-memory",
+      "dopemux.created_by": "dopemux-mcp",
+      "dopemux.instance_id": "dnh-crm-8d6d-dope-memory",
+      "dopemux.managed": "true",
+      "dopemux.project_hash": "9a4e9aa8a329cdd5",
+      "dopemux.project_id": "dnh_crm-9a4e9aa8a329cdd5",
+      "dopemux.project_root": "/Users/hue/code/dNh_CRM",
+      "dopemux.repo_basename": "dNh_CRM",
+      "dopemux.scope": "worktree",
+      "dopemux.service": "dope-memory",
+      "dopemux.transport": "http",
+      "dopemux.workspace_id": "/Users/hue/code/dNh_CRM",
+      "dopemux.worktree_hash": "8d6d",
+      "dopemux.worktree_root": "/Users/hue/code/dNh_CRM",
+      "maintainer": "dopemux",
+      "service": "dope-memory",
+      "version": "1.0.0"
+    },
+    "Mounts": [
+      {
+        "Destination": "/data",
+        "Source": "/Users/hue/code/dNh_CRM/.dopemux"
+      },
+      {
+        "Destination": "/home/dopememory/.dope-memory",
+        "Source": "/var/lib/docker/volumes/be7fec94b5ee4a2f0033830c6948eba3087fa90085270f547c0a8cba9c2261f5/_data"
+      }
+    ],
+    "Name": "dopemux-dnh-crm-8d6d-dope-memory",
+    "Ports": {
+      "3020/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "3020"
+        }
+      ]
+    }
+  }
+]

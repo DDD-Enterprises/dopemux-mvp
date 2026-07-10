@@ -2,9 +2,10 @@
 MCP Server Management Commands
 
 Commands for starting, stopping, and monitoring MCP Docker servers
-(``up``/``down``/``status``/``logs``/``start-all``), plus MCP config
-scaffolding driven by repo-local or bundled ``mcp_catalog.yaml`` data
-(``init``/``add``/``remove``/``list``/``doctor``/``sync-globals``).
+(``start``/``stop``/``up``/``down``/``status``/``logs``/``start-all``), plus MCP
+config scaffolding driven by repo-local or bundled ``mcp_catalog.yaml`` data
+(``init``/``repair-config``/``fleet``/``add``/``remove``/``list``/``doctor``/
+``sync-globals``).
 
 The ``servers`` group is an alias for ``mcp`` for backward compatibility.
 """
@@ -732,57 +733,43 @@ def _allocate_ports(
     catalog: Dict[str, Any],
     *,
     project_root: str | None = None,
+    persist: bool = True,
+    dry_run: bool = False,
+    existing_envrc: Optional[Dict[str, str]] = None,
+    is_free_fn: Any = None,
+    source: str = "dopemux mcp init",
 ) -> Dict[str, int]:
     """
-    Compute ports for each per-worktree server, including any `extra_port_vars`
-    declared by the spec (e.g. conport exposes three host ports for one service).
-    Same hash offset is reused across a single server's primary + extras.
+    Allocate ports for each per-worktree server via the lease registry allocator.
+
+    Preferred ports still come from the legacy hash formula
+    (``base + sha1(path)[:4] % 100``) or existing envrc values, but assignment
+    only succeeds after reserved/lease/socket safety checks. Unsafe preferred
+    ports are rebound within the service base search window.
 
     Safety rules:
-    - ``wrapper-singleton`` services (one global instance, fixed port) are
-      assigned their ``default_port_base`` directly without any hash offset.
-    - All singleton-catalog reserved ports are pre-seeded into the collision
-      map so per-worktree hash offsets cannot land on them.
+    - Singleton reserved catalog ports are never assigned to project sidecars.
+    - Active leases owned by other projects/worktrees are never stolen.
+    - Live TCP sockets block assignment (except reuse of our own lease).
+    - ``wrapper-singleton`` services use fixed ``default_port_base`` (no rebind).
+    - ``dry_run=True`` / ``persist=False`` skips lease registry writes.
     """
-    assignments: Dict[str, int] = {}
-    # Pre-seed with singleton reserved ports so per-worktree allocations
-    # cannot collide with statically-assigned singleton ports (e.g. gptr-mcp).
-    seen_ports: Dict[int, str] = {
-        port: f"singleton:{name}"
-        for port, name in _singleton_reserved_ports(catalog).items()
-    }
+    from dopemux.mcp.port_allocator import allocate_ports_map
 
-    def _claim(
-        var: str, base: int, owner: str, key_path: str, *, fixed: bool = False
-    ) -> None:
-        port = base if fixed else _port_for(key_path, base)
-        if port in seen_ports:
-            raise click.ClickException(
-                f"Internal port collision: {owner}.{var} and "
-                f"{seen_ports[port]} both map to :{port}. "
-                f"Adjust the `default_port_base` for one of them in {CATALOG_FILENAME}."
-            )
-        seen_ports[port] = f"{owner}.{var}"
-        assignments[var] = port
-
-    for name in names:
-        spec = catalog["servers"].get(name)
-        if not spec or spec.get("scope") != "per-worktree":
-            continue
-        # wrapper-singleton: one global instance at a fixed port — no hash offset.
-        is_wrapper_singleton = spec.get("management_model") == "wrapper-singleton"
-        key_path = (
-            project_root
-            if spec.get("state_scope") == "per-repo" and project_root
-            else worktree
+    try:
+        return allocate_ports_map(
+            worktree,
+            names,
+            catalog,
+            project_root=project_root,
+            existing_envrc=existing_envrc,
+            persist=persist and not dry_run,
+            dry_run=dry_run,
+            source=source,
+            is_free_fn=is_free_fn,
         )
-        base = spec.get("default_port_base")
-        if base:
-            _claim(spec["port_var"], base, name, key_path, fixed=is_wrapper_singleton)
-        if not is_wrapper_singleton:
-            for extra in spec.get("extra_port_vars", []) or []:
-                _claim(extra["var"], extra["base"], name, key_path)
-    return assignments
+    except RuntimeError as exc:
+        raise click.ClickException(str(exc)) from exc
 
 
 def _project_env_exports(worktree: str, project_root: str) -> Dict[str, str]:
@@ -1198,8 +1185,6 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...]):
 
     mcp_json_path = repo_path / PROJECT_MCP_FILENAME
     envrc_path = repo_path / ENVRC_FILENAME
-
-    port_vars = _allocate_ports(repo, ordered, catalog, project_root=str(identity.project_root))
     config = _build_local_mcp_json(ordered, catalog)
 
     if envrc_path.exists() and not force:
@@ -1216,8 +1201,32 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...]):
                 "Use --force to overwrite."
             )
         wrote_mcp_json = False
-    else:
+
+    # Allocate only after init preconditions pass so dry collisions do not write leases.
+    existing_env: Dict[str, str] = {}
+    if envrc_path.exists():
+        try:
+            from dopemux.mcp.envrc import load_envrc
+
+            parsed = load_envrc(envrc_path)
+            if parsed.values:
+                existing_env = dict(parsed.values)
+        except Exception:  # noqa: BLE001 — fall back to pure preferred formula
+            existing_env = {}
+    port_vars = _allocate_ports(
+        repo,
+        ordered,
+        catalog,
+        project_root=str(identity.project_root),
+        existing_envrc=existing_env or None,
+        source="dopemux mcp init",
+    )
+
+    if wrote_mcp_json:
         _atomic_write_json(mcp_json_path, config)
+    elif mcp_json_path.exists() and force:
+        _atomic_write_json(mcp_json_path, config)
+        wrote_mcp_json = True
 
     _write_envrc(envrc_path, port_vars, repo, str(identity.project_root))
 
@@ -1581,6 +1590,261 @@ def _mcp_doctor_legacy() -> None:
 def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
     """Strip advisory fields (description) for diff purposes — they're documentation, not config."""
     return {k: v for k, v in entry.items() if k != "description"}
+
+
+def _resolve_repo_arg(repo_arg: Optional[Path]) -> Path:
+    """Resolve --repo or current git root to an absolute path."""
+    if repo_arg is not None:
+        return Path(repo_arg).expanduser().resolve()
+    repo = get_repo_root(fallback_cwd=False)
+    if not repo:
+        raise click.ClickException(
+            "Not inside a git repository. Pass --repo <path> to target another project."
+        )
+    return Path(repo).resolve()
+
+
+def _require_exactly_one_dry_run_or_apply(dry_run: bool, apply: bool) -> None:
+    if dry_run and apply:
+        raise click.ClickException("Pass exactly one of --dry-run or --apply (not both).")
+    if not dry_run and not apply:
+        raise click.ClickException(
+            "Pass exactly one of --dry-run or --apply. "
+            "Preview with --dry-run; write local config with --apply."
+        )
+
+
+@mcp.group("leases")
+def mcp_leases_group():
+    """🔐 Port leases: inspect/reconcile operational lease registry (006R)."""
+
+
+@mcp_leases_group.command("reconcile")
+@click.option("--dry-run", is_flag=True, help="Plan only; write nothing.")
+@click.option("--apply", is_flag=True, help="Release invalid singleton leases after backup.")
+@click.option("--json", "json_output", is_flag=True, help="Emit JSON plan/result.")
+def mcp_leases_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
+    """
+    Release invalid project/worktree leases on reserved singleton ports (e.g. 7890).
+
+    Does not stop containers. Backs up the registry before apply.
+    """
+    _require_exactly_one_dry_run_or_apply(dry_run, apply)
+    from dopemux.mcp.port_allocator import singleton_reserved_ports
+    from dopemux.mcp.port_leases import PortLeaseRegistry
+
+    catalog = _load_catalog()
+    reserved = singleton_reserved_ports(catalog)
+    # Always treat 7890 as reserved for TO even if catalog lagging
+    reserved.setdefault(7890, "task-orchestrator")
+    reg = PortLeaseRegistry.load()
+    if reg.parse_status == "ERROR":
+        raise click.ClickException(f"Lease registry unreadable: {reg.error}")
+    plan = reg.reconcile_reserved_singleton_leases(reserved, dry_run=not apply)
+    if apply and plan.get("invalid_count"):
+        # re-run applied path already in reconcile when dry_run=False
+        pass
+    if json_output:
+        sys.stdout.write(json.dumps(plan, indent=2) + "\n")
+    else:
+        console.logger.info(
+            f"[info]leases reconcile dry_run={plan.get('dry_run')} "
+            f"invalid={plan.get('invalid_count')} applied={plan.get('applied')}[/info]"
+        )
+        for item in plan.get("invalid_leases") or []:
+            console.logger.info(
+                f"  • port={item.get('port')} lease={item.get('lease_id')} "
+                f"root={item.get('project_root')} — {item.get('reason')}"
+            )
+        if plan.get("backup_path"):
+            console.logger.info(f"[info]backup: {plan['backup_path']}[/info]")
+
+
+@mcp.command("repair-config")
+@click.option(
+    "--repo",
+    "repo_arg",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    default=None,
+    help="Target repo/worktree (defaults to current git root).",
+)
+@click.option("--dry-run", is_flag=True, help="Plan only; write nothing.")
+@click.option("--apply", is_flag=True, help="Write local .mcp.json / envrc / agent bootstrap doc.")
+@click.option("--json", "json_output", is_flag=True, help="Emit repair plan JSON to stdout.")
+def mcp_repair_config_cmd(
+    repo_arg: Optional[Path],
+    dry_run: bool,
+    apply: bool,
+    json_output: bool,
+):
+    """
+    🔧 Repair local MCP config: .mcp.json transports, envrc, agent bootstrap
+
+    Previewable and idempotent. Never mutates ~/.claude.json and never starts
+    or stops containers. Unknown/custom mcpServers entries are preserved.
+
+    Examples:
+      dopemux mcp repair-config --dry-run --json
+      dopemux mcp repair-config --repo ~/code/other --apply
+    """
+    _require_exactly_one_dry_run_or_apply(dry_run, apply)
+
+    from dopemux.mcp.config_repair import apply_repair, format_repair_human, plan_repair
+
+    repo_path = _resolve_repo_arg(repo_arg)
+    catalog = _load_catalog()
+    catalog_path = _catalog_path()
+    catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
+
+    plan = plan_repair(
+        repo_path,
+        catalog,
+        dry_run=dry_run,
+        catalog_paths=catalog_paths,
+        process_env=dict(os.environ),
+    )
+
+    if apply and plan.status != "BLOCKED":
+        plan.dry_run = False
+        plan = apply_repair(plan)
+
+    if json_output:
+        sys.stdout.write(plan.to_json())
+    else:
+        summary = format_repair_human(plan)
+        if plan.status in {"APPLIED", "NOOP"}:
+            console.logger.info(f"[success]{summary.rstrip()}[/success]")
+        elif plan.status == "BLOCKED":
+            console.logger.info(f"[error]{summary.rstrip()}[/error]")
+        else:
+            console.logger.info(f"[info]{summary.rstrip()}[/info]")
+
+    if plan.status == "BLOCKED":
+        sys.exit(2)
+
+
+@mcp.group("fleet")
+def mcp_fleet_group():
+    """
+    🚢 Fleet: multi-worktree MCP config init and doctor aggregation
+
+    Config-only operations. Does not start containers or mutate globals.
+    """
+
+
+@mcp_fleet_group.command("init")
+@click.option(
+    "--repo",
+    "repo_arg",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    help="Project root that owns the worktrees.",
+)
+@click.option(
+    "--worktrees",
+    "worktrees",
+    required=True,
+    multiple=True,
+    type=click.Path(path_type=Path),
+    help="Worktree paths (repeatable).",
+)
+@click.option("--dry-run", is_flag=True, help="Plan only; write nothing.")
+@click.option("--apply", is_flag=True, help="Apply repair-config per valid worktree.")
+@click.option("--json", "json_output", is_flag=True, help="Emit fleet-init JSON to stdout.")
+def mcp_fleet_init_cmd(
+    repo_arg: Path,
+    worktrees: Tuple[Path, ...],
+    dry_run: bool,
+    apply: bool,
+    json_output: bool,
+):
+    """
+    Scaffold/repair MCP config across worktrees (no container start).
+    """
+    _require_exactly_one_dry_run_or_apply(dry_run, apply)
+    if not worktrees:
+        raise click.ClickException("Pass at least one --worktrees path.")
+
+    from dopemux.mcp.fleet import fleet_init, format_fleet_init_human
+
+    catalog = _load_catalog()
+    catalog_path = _catalog_path()
+    catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
+
+    report = fleet_init(
+        repo_arg,
+        list(worktrees),
+        catalog,
+        dry_run=dry_run,
+        apply=apply,
+        catalog_paths=catalog_paths,
+    )
+
+    if json_output:
+        sys.stdout.write(report.to_json())
+    else:
+        console.logger.info(f"[info]{format_fleet_init_human(report).rstrip()}[/info]")
+
+    if report.status in {"FAIL", "UNKNOWN"}:
+        sys.exit(1)
+
+
+@mcp_fleet_group.command("doctor")
+@click.option(
+    "--repo",
+    "repo_arg",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    help="Project root that owns the worktrees.",
+)
+@click.option(
+    "--worktrees",
+    "worktrees",
+    required=True,
+    multiple=True,
+    type=click.Path(path_type=Path),
+    help="Worktree paths (repeatable).",
+)
+@click.option("--json", "json_output", is_flag=True, help="Emit fleet-doctor JSON to stdout.")
+@click.option(
+    "--skip-docker/--probe-docker",
+    default=True,
+    help="Skip Docker inspection per worktree (default: skip for speed).",
+)
+def mcp_fleet_doctor_cmd(
+    repo_arg: Path,
+    worktrees: Tuple[Path, ...],
+    json_output: bool,
+    skip_docker: bool,
+):
+    """
+    Aggregate Packet 001 doctor results across worktrees (read-only).
+    """
+    if not worktrees:
+        raise click.ClickException("Pass at least one --worktrees path.")
+
+    from dopemux.mcp.fleet import fleet_doctor, format_fleet_doctor_human
+
+    catalog = _load_catalog()
+    catalog_path = _catalog_path()
+    catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
+
+    report = fleet_doctor(
+        repo_arg,
+        list(worktrees),
+        catalog,
+        catalog_paths=catalog_paths,
+        skip_docker=skip_docker,
+        process_env=dict(os.environ),
+    )
+
+    if json_output:
+        sys.stdout.write(report.to_json())
+    else:
+        console.logger.info(f"[info]{format_fleet_doctor_human(report).rstrip()}[/info]")
+
+    if report.status in {"FAIL", "UNKNOWN"}:
+        sys.exit(1)
 
 
 @mcp.command("sync-globals")

@@ -19,7 +19,6 @@ from . import port_diagnostics as pd
 from .envrc import (
     load_envrc,
     merge_envrc_into_environ,
-    redact_value,
     safe_port_int,
 )
 from .runtime_state import (
@@ -140,6 +139,9 @@ def _summarize_status(findings: List[Finding]) -> tuple[str, int]:
         "MCP_DOCTOR_UNKNOWN",
         "WORKTREE_ROOT_UNKNOWN",
         "PROJECT_ROOT_UNKNOWN",
+        "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN",
+        "TASK_ORCHESTRATOR_FIXED_PORT_OCCUPIED_UNKNOWN",
+        "TASK_ORCHESTRATOR_STATUS_UNKNOWN",
     }
     has_blocking_unknown = any(
         f.severity == "UNKNOWN" and f.code in unknown_blocking for f in findings
@@ -194,7 +196,13 @@ def run_mcp_doctor(
     global_claude = load_global_claude(global_claude_path)
 
     if envrc.present and envrc.parse_status == "OK":
-        _add(findings, "ENVRC_FOUND", "INFO", f"Found {ENVRC_FILENAME}", evidence=[str(envrc_path)])
+        _add(
+            findings,
+            "ENVRC_FOUND",
+            "INFO",
+            f"Found {ENVRC_FILENAME}",
+            evidence=[str(envrc_path)],
+        )
     elif not envrc.present:
         # Severity depends on whether mcp.json expects env-derived ports
         mcp_needs_env = False
@@ -223,7 +231,13 @@ def run_mcp_doctor(
         )
 
     if mcp_json["present"] and mcp_json["parse_status"] == "OK":
-        _add(findings, "MCP_JSON_FOUND", "INFO", f"Found {PROJECT_MCP_FILENAME}", evidence=[str(mcp_path)])
+        _add(
+            findings,
+            "MCP_JSON_FOUND",
+            "INFO",
+            f"Found {PROJECT_MCP_FILENAME}",
+            evidence=[str(mcp_path)],
+        )
     elif not mcp_json["present"]:
         _add(
             findings,
@@ -285,8 +299,10 @@ def run_mcp_doctor(
 
     # --- Desired services ---
     mcp_servers = mcp_json.get("servers") or {}
-    service_names = list(mcp_servers.keys()) if mcp_servers else list(
-        (catalog.get("defaults") or {}).get("per_worktree") or []
+    service_names = (
+        list(mcp_servers.keys())
+        if mcp_servers
+        else list((catalog.get("defaults") or {}).get("per_worktree") or [])
     )
 
     # Configured ports from envrc
@@ -296,7 +312,9 @@ def run_mcp_doctor(
         if not isinstance(spec, dict):
             continue
         for key in [spec.get("port_var")] + [
-            e.get("var") for e in (spec.get("extra_port_vars") or []) if isinstance(e, dict)
+            e.get("var")
+            for e in (spec.get("extra_port_vars") or [])
+            if isinstance(e, dict)
         ]:
             if not key:
                 continue
@@ -321,7 +339,9 @@ def run_mcp_doctor(
     # --- Transport validation ---
     for svc in desired:
         cat_t = (svc.catalog_transport or "unknown").lower()
-        mcp_t = (svc.mcp_json_transport or "").lower() if svc.mcp_json_transport else None
+        mcp_t = (
+            (svc.mcp_json_transport or "").lower() if svc.mcp_json_transport else None
+        )
         catalog_has = svc.name in (catalog.get("servers") or {})
         if not catalog_has:
             _add(
@@ -368,19 +388,176 @@ def run_mcp_doctor(
                 ),
             )
 
-    # --- Port diagnostics ---
+    # --- Port diagnostics + lease registry ---
     worktree_for_ports = identity.worktree_root or str(repo_path)
     project_root_for_ports = identity.project_root
+
+    lease_registry_present = False
+    lease_allocator_healthy = False
+    try:
+        from .port_leases import PortLeaseRegistry
+
+        lease_reg = PortLeaseRegistry.load()
+        if lease_reg.parse_status == "ERROR":
+            _add(
+                findings,
+                "LEASE_REGISTRY_PARSE_ERROR",
+                "FAIL",
+                f"Lease registry unreadable: {lease_reg.error}",
+                evidence=[str(lease_reg.path)],
+                recommendation="Inspect ~/.dopemux/mcp/runtime/port-leases.json or set DOPEMUX_MCP_PORT_LEASE_REGISTRY.",
+            )
+        elif lease_reg.parse_status == "MISSING":
+            _add(
+                findings,
+                "LEASE_REGISTRY_MISSING",
+                "WARN",
+                f"No lease registry at {lease_reg.path}",
+                evidence=[str(lease_reg.path)],
+                recommendation="Run `dopemux mcp init` or `dopemux mcp repair-config --apply` to create leases.",
+            )
+            if envrc.present and configured_ports:
+                _add(
+                    findings,
+                    "LEGACY_ENVRC_WITHOUT_LEASE",
+                    "WARN",
+                    "Envrc ports present without lease registry entries",
+                    recommendation="Run `dopemux mcp repair-config --apply` to migrate ports into leases.",
+                )
+        else:
+            lease_registry_present = True
+            _add(
+                findings,
+                "LEASE_REGISTRY_FOUND",
+                "INFO",
+                f"Lease registry OK ({len(lease_reg.active_leases())} active)",
+                evidence=[str(lease_reg.path)],
+            )
+            # Envrc vs lease mismatch
+            for var, port in (configured_ports or {}).items():
+                matched = False
+                foreign = False
+                for L in lease_reg.active_leases():
+                    if int(L.get("port") or 0) != int(port):
+                        continue
+                    if L.get("worktree_root") in {
+                        worktree_for_ports,
+                        str(repo_path),
+                    } or (
+                        L.get("worktree_hash")
+                        and L.get("worktree_hash") == identity.worktree_hash
+                    ):
+                        matched = True
+                    else:
+                        foreign = True
+                if foreign and not matched:
+                    _add(
+                        findings,
+                        "LEASE_BELONGS_TO_OTHER_PROJECT",
+                        "FAIL",
+                        f"Envrc {var}={port} is leased to another project/worktree",
+                        evidence=[f"{var}={port}"],
+                        recommendation="Run `dopemux mcp repair-config --apply` to rebind.",
+                    )
+                elif not matched:
+                    # no lease for this envrc port
+                    ours = [
+                        L
+                        for L in lease_reg.active_leases()
+                        if L.get("port_var") == var
+                        and (
+                            L.get("worktree_root")
+                            in {worktree_for_ports, str(repo_path)}
+                            or L.get("worktree_hash") == identity.worktree_hash
+                        )
+                    ]
+                    if ours and int(ours[0].get("port") or 0) != int(port):
+                        _add(
+                            findings,
+                            "LEASE_ENVRC_MISMATCH",
+                            "FAIL",
+                            f"Envrc {var}={port} != lease {ours[0].get('port')}",
+                            evidence=[f"envrc={port}", f"lease={ours[0].get('port')}"],
+                            recommendation="Run `dopemux mcp repair-config --apply`.",
+                        )
+                    elif not ours:
+                        _add(
+                            findings,
+                            "LEGACY_ENVRC_WITHOUT_LEASE",
+                            "WARN",
+                            f"Envrc {var}={port} has no active lease for this worktree",
+                            recommendation="Run `dopemux mcp repair-config --apply`.",
+                        )
+                else:
+                    lease_allocator_healthy = True
+                    if not is_free(int(port)):
+                        _add(
+                            findings,
+                            "LEASE_PORT_OCCUPIED",
+                            "INFO",
+                            f"Leased port {port} ({var}) is listening (expected if services are up)",
+                            evidence=[f"{var}={port}"],
+                        )
+                    else:
+                        _add(
+                            findings,
+                            "LEASE_PORT_FREE",
+                            "INFO",
+                            f"Leased port {port} ({var}) is free (services may be stopped)",
+                            evidence=[f"{var}={port}"],
+                        )
+            # Stale leases for this worktree (active but free + no configured use)
+            for L in lease_reg.active_leases():
+                if L.get("worktree_root") not in {worktree_for_ports, str(repo_path)}:
+                    continue
+                lp = int(L.get("port") or 0)
+                if not lp:
+                    continue
+                if is_free(lp) and (
+                    not configured_ports
+                    or L.get("port_var") not in configured_ports
+                    or configured_ports.get(str(L.get("port_var"))) != lp
+                ):
+                    # only mark stale-ish when no envrc owns it
+                    if (
+                        not configured_ports
+                        or str(L.get("port_var")) not in configured_ports
+                    ):
+                        _add(
+                            findings,
+                            "LEASE_STALE",
+                            "WARN",
+                            f"Active lease {L.get('lease_id')} port {lp} looks unused",
+                            service=L.get("service"),
+                            evidence=[str(L.get("lease_id")), f"port={lp}"],
+                            recommendation="Explicit prune is not auto-run; re-init/repair if needed.",
+                        )
+    except Exception as exc:  # noqa: BLE001 — doctor remains best-effort
+        unknowns.append(f"lease registry inspection failed: {exc}")
+
     port_report = pd.diagnose_ports(
         worktree_for_ports,
         service_names,
         catalog,
         project_root=project_root_for_ports,
         configured_ports=configured_ports or None,
-        has_lease_registry=False,
-        has_live_rebind=False,
+        has_lease_registry=lease_registry_present,
+        has_live_rebind=lease_allocator_healthy or lease_registry_present,
     )
     for fdict in port_report.findings:
+        # Downgrade legacy hash bucket noise when lease allocator is active
+        code = fdict.get("code") or ""
+        sev = fdict.get("severity") or "INFO"
+        if lease_registry_present and code in {
+            "PORT_HASH_BUCKET_COLLISION_RISK",
+            "PORT_REBIND_MISSING",
+        }:
+            sev = "INFO"
+            fdict = dict(fdict)
+            fdict["message"] = (
+                f"{fdict.get('message', '')} (lease allocator active — preferred formula only)"
+            )
+            fdict["severity"] = sev
         findings.append(
             Finding(
                 code=fdict["code"],
@@ -420,7 +597,11 @@ def run_mcp_doctor(
             ):
                 var, default = match.group(1), match.group(2)
                 env_port = safe_port_int(doctor_env, var)
-                if env_port is not None and default is not None and int(default) != env_port:
+                if (
+                    env_port is not None
+                    and default is not None
+                    and int(default) != env_port
+                ):
                     # Not necessarily a mismatch error — templates use defaults when unset.
                     # Flag only when URL hardcodes a different literal after expansion would differ.
                     pass
@@ -433,7 +614,11 @@ def run_mcp_doctor(
                         # Compare service-specific
                         spec = (catalog.get("servers") or {}).get(name) or {}
                         pvar = spec.get("port_var")
-                        if pvar and pvar in configured_ports and configured_ports[pvar] != parsed.port:
+                        if (
+                            pvar
+                            and pvar in configured_ports
+                            and configured_ports[pvar] != parsed.port
+                        ):
                             _add(
                                 findings,
                                 "MCP_JSON_ENVRC_PORT_MISMATCH",
@@ -479,9 +664,7 @@ def run_mcp_doctor(
             )
         )
     # Drop nested findings from compose dict for report contract
-    compose_out = {
-        k: v for k, v in compose_diag.items() if k != "findings"
-    }
+    compose_out = {k: v for k, v in compose_diag.items() if k != "findings"}
 
     # --- Docker inspection ---
     actual_services: List[Dict[str, Any]] = []
@@ -582,7 +765,10 @@ def run_mcp_doctor(
                     )
                     unknowns.append(f"docker ownership unlabeled: {c.name}")
                 # Port collision: container publishes port assigned to us but wrong name
-                if set(c.published_ports) & set(ports) and svc.name.replace("-", "") not in c.name.replace("-", "").lower():
+                if (
+                    set(c.published_ports) & set(ports)
+                    and svc.name.replace("-", "") not in c.name.replace("-", "").lower()
+                ):
                     # only if name totally unrelated
                     pass
 
@@ -646,11 +832,6 @@ def run_mcp_doctor(
     for name in sorted(set(global_servers) & set(local_servers)):
         g = global_servers[name] if isinstance(global_servers.get(name), dict) else {}
         loc = local_servers[name] if isinstance(local_servers.get(name), dict) else {}
-        g_url = g.get("url") or ""
-        l_url = loc.get("url") or ""
-        # Always redact URLs in evidence (credentials / non-localhost hostnames).
-        safe_g_url = redact_value("URL", str(g_url)) if g_url else None
-        safe_l_url = redact_value("URL", str(l_url)) if l_url else None
         _add(
             findings,
             "GLOBAL_LOCAL_DUPLICATE",
@@ -660,16 +841,30 @@ def run_mcp_doctor(
             evidence=[
                 f"global_type={g.get('type')}",
                 f"local_type={loc.get('type')}",
-                f"global_url={safe_g_url}",
-                f"local_url={safe_l_url}",
+                f"global_url={g.get('url')}",
+                f"local_url={loc.get('url')}",
             ],
             recommendation="Prefer local per-worktree entry; remove or rename global duplicate.",
         )
+        g_url = g.get("url") or ""
+        l_url = loc.get("url") or ""
         if g.get("type") != loc.get("type") or (
-            g_url and l_url and g_url != l_url and "${" not in g_url and "${" not in l_url
+            g_url
+            and l_url
+            and g_url != l_url
+            and "${" not in g_url
+            and "${" not in l_url
         ):
             # Never dump full mcpServers entry (may contain env secrets).
-            g_env_keys = sorted((g.get("env") or {}).keys()) if isinstance(g.get("env"), dict) else []
+            from .envrc import redact_value as _redact
+
+            safe_g_url = _redact("URL", str(g_url)) if g_url else None
+            safe_l_url = _redact("URL", str(l_url)) if l_url else None
+            g_env_keys = (
+                sorted((g.get("env") or {}).keys())
+                if isinstance(g.get("env"), dict)
+                else []
+            )
             _add(
                 findings,
                 "GLOBAL_SERVICE_CONFLICTS_WITH_LOCAL",
@@ -688,7 +883,9 @@ def run_mcp_doctor(
         if g_url and "${" not in str(g_url) and not skip_port_probe:
             try:
                 parsed = urlparse(str(g_url))
-                if parsed.port and ("localhost" in str(g_url) or "127.0.0.1" in str(g_url)):
+                if parsed.port and (
+                    "localhost" in str(g_url) or "127.0.0.1" in str(g_url)
+                ):
                     if is_free(parsed.port):
                         _add(
                             findings,
@@ -784,9 +981,11 @@ def run_mcp_doctor(
             detail = (result.stderr or result.stdout or "").strip()
             _add(
                 findings,
-                "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN"
-                if name == "task-orchestrator"
-                else "MCP_DOCTOR_UNKNOWN",
+                (
+                    "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN"
+                    if name == "task-orchestrator"
+                    else "MCP_DOCTOR_UNKNOWN"
+                ),
                 "WARN",
                 f"`{name}`: doctor command failed" + (f" {detail}" if detail else ""),
                 service=name,
@@ -803,10 +1002,13 @@ def run_mcp_doctor(
                     evidence=[line],
                 )
 
-    # --- Task orchestrator specials ---
+    # --- Task orchestrator specials (Packet 005 multi-source identity) ---
     to_spec = (catalog.get("servers") or {}).get("task-orchestrator") or {}
     if "task-orchestrator" in service_names or "task-orchestrator" in local_servers:
-        if isinstance(to_spec, dict) and to_spec.get("management_model") == "wrapper-singleton":
+        if (
+            isinstance(to_spec, dict)
+            and to_spec.get("management_model") == "wrapper-singleton"
+        ):
             _add(
                 findings,
                 "TASK_ORCHESTRATOR_WRAPPER_SINGLETON_COMPAT",
@@ -814,22 +1016,27 @@ def run_mcp_doctor(
                 "task-orchestrator is wrapper-singleton (fixed port, per-repo state)",
                 service="task-orchestrator",
             )
-            base = to_spec.get("default_port_base")
-            if base:
-                _add(
-                    findings,
-                    "TASK_ORCHESTRATOR_FIXED_PORT",
-                    "INFO",
-                    f"task-orchestrator uses fixed port {base}",
-                    service="task-orchestrator",
-                    evidence=[f"port={base}"],
-                )
-            to_port = configured_ports.get(str(to_spec.get("port_var") or "TASK_ORCHESTRATOR_HTTP_PORT"))
-            if to_port and docker_result.available:
+            base = to_spec.get("default_port_base") or 7890
+            _add(
+                findings,
+                "TASK_ORCHESTRATOR_FIXED_PORT",
+                "INFO",
+                f"task-orchestrator uses fixed port {base}",
+                service="task-orchestrator",
+                evidence=[f"port={base}"],
+            )
+            to_port = configured_ports.get(
+                str(to_spec.get("port_var") or "TASK_ORCHESTRATOR_HTTP_PORT")
+            )
+            if to_port is None:
+                to_port = int(base)
+
+            docker_identity = None
+            if docker_result.available:
                 matches = di.find_containers_for_service(
                     docker_result,
                     service_name="task-orchestrator",
-                    expected_ports=[to_port],
+                    expected_ports=[int(to_port)],
                     name_hints=["task-orchestrator", "orchestrator"],
                 )
                 for c in matches:
@@ -838,60 +1045,136 @@ def run_mcp_doctor(
                         project_root=identity.project_root,
                         workspace_id=identity.workspace_id,
                         project_id=identity.project_id,
-                        expected_ports=[to_port],
+                        expected_ports=[int(to_port)],
                         expected_name_substrings=["task-orchestrator"],
                     )
                     if st == "WRONG_PROJECT":
-                        _add(
-                            findings,
-                            "TASK_ORCHESTRATOR_WRONG_PROJECT_RUNTIME",
-                            "FAIL",
-                            f"task-orchestrator container {c.name} is labeled for another project",
-                            service="task-orchestrator",
-                            evidence=[c.name],
+                        from .task_orchestrator_identity import (
+                            identity_from_docker_labels,
                         )
-                    elif st in {"UNLABELED", "UNKNOWN"}:
+
+                        docker_identity = identity_from_docker_labels(
+                            c.labels or {},
+                            port=int(to_port),
+                            container_name=c.name,
+                        )
+                    elif st == "MATCH":
+                        from .task_orchestrator_identity import (
+                            identity_from_docker_labels,
+                        )
+
+                        docker_identity = identity_from_docker_labels(
+                            c.labels or {},
+                            port=int(to_port),
+                            container_name=c.name,
+                        )
+                        break
+                    elif st in {"UNLABELED", "UNKNOWN"} and docker_identity is None:
+                        from .task_orchestrator_identity import TOIdentity
+
+                        docker_identity = TOIdentity(
+                            port=int(to_port),
+                            source="docker_labels",
+                            confidence="UNKNOWN",
+                            evidence=[c.name, f"ownership={st}"],
+                        )
+
+            try:
+                from .task_orchestrator_identity import evaluate_fixed_port_state
+
+                # When port probes are skipped: never pretend FREE (fail-closed).
+                # Still honor Docker ownership evidence (P2) by treating the
+                # fixed port as needing identity evaluation rather than free.
+                if skip_port_probe:
+                    eval_result = evaluate_fixed_port_state(
+                        port=int(to_port),
+                        target_project_id=identity.project_id,
+                        target_project_root=identity.project_root,
+                        target_workspace_id=identity.workspace_id,
+                        target_instance_id=identity.instance_id,
+                        target_worktree_hash=identity.worktree_hash,
+                        listening=True,
+                        docker_identity=docker_identity,
+                        skip_http=True,
+                        for_start=False,
+                    )
+                    if docker_identity is None:
+                        # Explicit probe-skipped finding when no Docker evidence either.
                         _add(
                             findings,
-                            "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN",
+                            "TASK_ORCHESTRATOR_PORT_PROBE_SKIPPED",
                             "UNKNOWN",
                             (
-                                f"task-orchestrator on :{to_port} (container {c.name}) "
-                                "has unproven project identity"
+                                f"task-orchestrator fixed port :{to_port} not probed "
+                                "(skip_port_probe); ownership UNKNOWN"
                             ),
                             service="task-orchestrator",
-                            evidence=[c.name, f"port={to_port}"],
                         )
-                        unknowns.append("task-orchestrator ownership")
-            elif to_port and not skip_port_probe:
-                try:
-                    if not is_free(to_port):
-                        _add(
-                            findings,
-                            "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN",
-                            "UNKNOWN",
-                            (
-                                f"task-orchestrator port :{to_port} is listening but ownership "
-                                "is unproven (wrapper-singleton shared listener)"
-                            ),
-                            service="task-orchestrator",
-                            evidence=[f"port={to_port}"],
-                            recommendation="Confirm TASK_ORCHESTRATOR_PROJECT_ROOT matches this repo before use.",
+                        unknowns.append(
+                            "task-orchestrator ownership (port probe skipped)"
                         )
+                else:
+                    eval_result = evaluate_fixed_port_state(
+                        port=int(to_port),
+                        target_project_id=identity.project_id,
+                        target_project_root=identity.project_root,
+                        target_workspace_id=identity.workspace_id,
+                        target_instance_id=identity.instance_id,
+                        target_worktree_hash=identity.worktree_hash,
+                        is_free_fn=is_free,
+                        docker_identity=docker_identity,
+                        skip_http=False,
+                        for_start=False,
+                    )
+                for fdict in eval_result.findings:
+                    sev = fdict.get("severity") or "INFO"
+                    # Map UNKNOWN severity string to Finding severity
+                    if sev == "UNKNOWN":
+                        sev = "UNKNOWN"
+                    _add(
+                        findings,
+                        fdict.get("code") or "TASK_ORCHESTRATOR_STATUS_UNKNOWN",
+                        sev,  # type: ignore[arg-type]
+                        fdict.get("message") or "",
+                        service="task-orchestrator",
+                        evidence=list(fdict.get("evidence") or []),
+                        recommendation=fdict.get("recommendation") or "",
+                    )
+                    if fdict.get("code") in {
+                        "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN",
+                        "TASK_ORCHESTRATOR_FIXED_PORT_OCCUPIED_UNKNOWN",
+                    }:
                         unknowns.append("task-orchestrator ownership")
-                except Exception:  # noqa: BLE001
-                    pass
+            except Exception as exc:  # noqa: BLE001
+                unknowns.append(f"task-orchestrator identity probe failed: {exc}")
+                _add(
+                    findings,
+                    "TASK_ORCHESTRATOR_STATUS_UNKNOWN",
+                    "UNKNOWN",
+                    f"TO identity evaluation failed: {exc}",
+                    service="task-orchestrator",
+                )
 
     # --- Status summary findings ---
     status, exit_code = _summarize_status(findings)
     if status == "PASS":
         _add(findings, "MCP_DOCTOR_PASS", "INFO", "MCP doctor checks passed")
     elif status == "PASS_WITH_WARNINGS":
-        _add(findings, "MCP_DOCTOR_PASS_WITH_WARNINGS", "WARN", "MCP doctor passed with warnings")
+        _add(
+            findings,
+            "MCP_DOCTOR_PASS_WITH_WARNINGS",
+            "WARN",
+            "MCP doctor passed with warnings",
+        )
     elif status == "FAIL":
         _add(findings, "MCP_DOCTOR_FAIL", "FAIL", "MCP doctor found blocking failures")
     else:
-        _add(findings, "MCP_DOCTOR_UNKNOWN", "UNKNOWN", "MCP doctor could not fully determine health")
+        _add(
+            findings,
+            "MCP_DOCTOR_UNKNOWN",
+            "UNKNOWN",
+            "MCP doctor could not fully determine health",
+        )
 
     # Next actions from top FAIL/WARN
     for f in findings:
@@ -899,7 +1182,9 @@ def run_mcp_doctor(
             if f.recommendation not in next_actions:
                 next_actions.append(f.recommendation)
     if not next_actions:
-        next_actions.append("No blocking actions. Proceed to Packet 002 only if lifecycle start is required.")
+        next_actions.append(
+            "No blocking actions. Proceed to Packet 002 only if lifecycle start is required."
+        )
 
     config_sources = {
         "mcp_json": {
@@ -938,7 +1223,9 @@ def run_mcp_doctor(
     )
 
 
-def format_human_summary(report: DoctorReport, *, verbose: bool = False, max_findings: int = 5) -> str:
+def format_human_summary(
+    report: DoctorReport, *, verbose: bool = False, max_findings: int = 5
+) -> str:
     """Compact human-readable doctor summary."""
     repo_name = Path(report.repo_arg).name or report.repo_arg
     lines = [f"MCP Doctor for {repo_name}: {report.status}"]
