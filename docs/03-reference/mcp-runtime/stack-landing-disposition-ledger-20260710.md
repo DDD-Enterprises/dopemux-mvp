@@ -2,15 +2,18 @@
 id: mcp-runtime-stack-landing-disposition-20260710
 title: MCP runtime stack cumulative landing disposition ledger
 type: reference
-owner: @hu3mann
+owner: '@hu3mann'
 last_review: 2026-07-10
 next_review: 2026-10-08
+author: '@hu3mann'
+date: '2026-07-09'
+prelude: MCP runtime stack cumulative landing disposition ledger (reference) for dopemux
+  documentation and developer workflows.
 ---
-
 # MCP Runtime Stack Landing — Ancestor Disposition Ledger
 
-**Landing source tip (pre-rebase):** `dc04fd43d` (#1031 cumulative head)  
-**Landing branch:** `codex/tp-dmx-mcp-runtime-stack-landing`  
+**Landing source tip (pre-rebase):** `dc04fd43d` (#1031 cumulative head)
+**Landing branch:** `codex/tp-dmx-mcp-runtime-stack-landing`
 **Base:** current `main` (after accidental early merges of #1021/#1022/#1023)
 
 ## Packet disposition
