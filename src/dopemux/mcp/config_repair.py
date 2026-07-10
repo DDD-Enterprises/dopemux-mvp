@@ -77,6 +77,10 @@ class RepairPlan:
     _write_mcp: bool = field(default=False, repr=False)
     _write_envrc: bool = field(default=False, repr=False)
     _write_agent: bool = field(default=False, repr=False)
+    # Deferred lease persistence: plan never writes the registry; apply does.
+    _lease_persist: Optional[Dict[str, Any]] = field(default=None, repr=False)
+    _allocate_ports_fn: Any = field(default=None, repr=False)
+    _catalog: Any = field(default=None, repr=False)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -140,17 +144,19 @@ def _desired_env_map(
     project_env_exports_fn: Callable[[str, str], Dict[str, str]],
     dry_run: bool = True,
     existing_envrc: Optional[Mapping[str, str]] = None,
+    persist_leases: bool = False,
 ) -> Dict[str, str]:
     exports = {k: str(v) for k, v in project_env_exports_fn(worktree, project_root).items()}
-    # Lease-aware allocation: never persist on dry-run; prefer existing envrc ports.
+    # Lease-aware allocation. Planning never persists; only explicit post-apply
+    # calls pass persist_leases=True so a blocked/failed apply cannot consume leases.
     try:
         ports = allocate_ports_fn(
             worktree,
             list(server_names),
             catalog,
             project_root=project_root,
-            persist=not dry_run,
-            dry_run=dry_run,
+            persist=persist_leases and not dry_run,
+            dry_run=dry_run or not persist_leases,
             existing_envrc=dict(existing_envrc or {}),
             source="dopemux mcp repair-config",
         )
@@ -381,6 +387,8 @@ def plan_repair(
         if is_catalog_owned(str(name), catalog) and name not in server_names:
             server_names.append(str(name))
 
+    # Always compute ports without writing leases during plan construction.
+    # Leases are persisted only after apply_repair successfully writes config.
     desired_env = _desired_env_map(
         worktree,
         project_root,
@@ -388,9 +396,18 @@ def plan_repair(
         catalog,
         allocate_ports_fn=allocate_ports_fn,
         project_env_exports_fn=project_env_exports_fn,
-        dry_run=dry_run,
+        dry_run=True,
+        persist_leases=False,
         existing_envrc=envrc_parsed.values if envrc_parsed.present else {},
     )
+    plan._allocate_ports_fn = allocate_ports_fn
+    plan._catalog = catalog
+    plan._lease_persist = {
+        "worktree": worktree,
+        "project_root": project_root,
+        "server_names": list(server_names),
+        "existing_envrc": dict(desired_env),
+    }
     owned_keys = _catalog_owned_env_keys(catalog, server_names)
 
     # Secret-like handling on existing envrc
@@ -570,6 +587,29 @@ def apply_repair(plan: RepairPlan) -> RepairPlan:
         plan.blocking_findings.append(_block("APPLY_IO_ERROR", str(exc)))
         plan.status = "BLOCKED"
         return plan
+
+    # Persist port leases only after config files were written successfully.
+    if plan._lease_persist and plan._allocate_ports_fn is not None and plan._catalog is not None:
+        lp = plan._lease_persist
+        try:
+            _desired_env_map(
+                str(lp["worktree"]),
+                str(lp["project_root"]),
+                list(lp.get("server_names") or []),
+                plan._catalog,
+                allocate_ports_fn=plan._allocate_ports_fn,
+                project_env_exports_fn=lambda w, p: {},
+                dry_run=False,
+                persist_leases=True,
+                existing_envrc=dict(lp.get("existing_envrc") or {}),
+            )
+        except Exception as exc:  # noqa: BLE001 — config already written; warn only
+            plan.warnings.append(
+                _warn(
+                    "LEASE_PERSIST_FAILED",
+                    f"Config applied but lease registry write failed: {exc}",
+                )
+            )
 
     plan.status = "APPLIED"
     plan.warnings.append(_warn("REPAIR_APPLIED", f"Wrote repairs under {repo}."))

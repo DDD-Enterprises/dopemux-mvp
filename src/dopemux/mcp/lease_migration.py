@@ -10,7 +10,6 @@ from .port_allocator import (
     AllocatorIdentity,
     allocate_ports,
     instance_id_for_path,
-    preferred_port_for_path,
 )
 from .port_leases import PortLeaseRegistry, default_lease_registry_path
 

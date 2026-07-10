@@ -13,7 +13,6 @@ import json
 import os
 import re
 import tempfile
-from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -246,13 +245,33 @@ class PortLeaseRegistry:
         project_root: Optional[str] = None,
         worktree_hash: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
+        """Find an active lease for the given identity.
+
+        Worktree-scoped lookups (``worktree_root`` / ``worktree_hash``) never
+        return project-scoped leases. Project-scoped lookups (``project_root``
+        only, or when no worktree identity is supplied) only match
+        ``scope == \"project\"`` entries.
+        """
+        looking_worktree = worktree_root is not None or worktree_hash is not None
+        looking_project = project_root is not None and not looking_worktree
+
         for L in self.active_leases():
             if L.get("service") != service or L.get("port_role") != port_role:
                 continue
-            if worktree_hash and L.get("worktree_hash") == worktree_hash:
-                return L
-            if worktree_root and L.get("worktree_root") == worktree_root:
-                return L
+            if looking_worktree:
+                # Do not reuse a project-scoped lease for a worktree-scoped request.
+                if L.get("scope") == "project":
+                    continue
+                if worktree_hash and L.get("worktree_hash") == worktree_hash:
+                    return L
+                if worktree_root and L.get("worktree_root") == worktree_root:
+                    return L
+                continue
+            if looking_project:
+                if L.get("scope") == "project" and L.get("project_root") == project_root:
+                    return L
+                continue
+            # Fallback when no identity keys provided (legacy callers).
             if project_root and L.get("project_root") == project_root and L.get("scope") == "project":
                 return L
         return None
@@ -291,14 +310,34 @@ class PortLeaseRegistry:
         leases = self.leases()
         out: List[Dict[str, Any]] = []
         replaced = False
+        entry_scope = str(entry.get("scope") or "worktree")
         for L in leases:
             same_id = L.get("lease_id") and L.get("lease_id") == entry.get("lease_id")
-            same_slot = (
-                L.get("service") == entry.get("service")
-                and L.get("port_role") == entry.get("port_role")
-                and L.get("worktree_root") == entry.get("worktree_root")
-                and L.get("status") == "active"
-            )
+            if entry_scope == "project":
+                # Project-scoped leases dedupe across worktrees of the same project.
+                same_project = False
+                if entry.get("project_root") and L.get("project_root") == entry.get("project_root"):
+                    same_project = True
+                elif (
+                    not entry.get("project_root")
+                    and entry.get("project_id")
+                    and L.get("project_id") == entry.get("project_id")
+                ):
+                    same_project = True
+                same_slot = (
+                    L.get("status") == "active"
+                    and L.get("service") == entry.get("service")
+                    and L.get("port_role") == entry.get("port_role")
+                    and (L.get("scope") or "worktree") == "project"
+                    and same_project
+                )
+            else:
+                same_slot = (
+                    L.get("service") == entry.get("service")
+                    and L.get("port_role") == entry.get("port_role")
+                    and L.get("worktree_root") == entry.get("worktree_root")
+                    and L.get("status") == "active"
+                )
             if same_id or same_slot:
                 if not replaced:
                     # preserve created_at
