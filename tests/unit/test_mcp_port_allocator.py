@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, Set
+from typing import Any, Dict
 
 import pytest
 
@@ -77,7 +77,6 @@ def test_singleton_reserved_from_catalog():
 def test_assign_preferred_when_free(tmp_path: Path, monkeypatch):
     reg_path = tmp_path / "leases.json"
     monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
-    free: Set[int] = set()  # all free via always-true
 
     result = allocate_ports(
         ["conport", "dope-memory", "task-orchestrator"],
@@ -206,3 +205,97 @@ def test_allocate_ports_map_drop_in(tmp_path: Path, monkeypatch):
     )
     assert "CONPORT_MCP_PORT" in ports
     assert "CONPORT_HTTP_PORT" in ports
+
+
+def test_fixed_port_blocked_when_occupied_unknown(tmp_path: Path, monkeypatch):
+    """Fixed port with no foreign lease but a live socket must BLOCK, not lease."""
+    reg_path = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
+
+    result = allocate_ports(
+        ["task-orchestrator"],
+        _catalog(),
+        worktree=str(tmp_path),
+        project_root=str(tmp_path),
+        registry_path=reg_path,
+        persist=True,
+        is_free_fn=lambda p: False,  # 7890 occupied by unknown process
+    )
+    assert result.status == "BLOCKED"
+    assert any(b.get("code") == "LEASE_PORT_OCCUPIED" for b in result.blocking_findings)
+    # Must not write a lease for the occupied fixed port
+    reg = PortLeaseRegistry.load(reg_path)
+    assert reg.find_active_by_port(7890) is None
+
+
+def test_status_reused_on_second_allocation(tmp_path: Path, monkeypatch):
+    reg_path = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
+    wt = str(tmp_path / "wt")
+    (tmp_path / "wt").mkdir()
+
+    r1 = allocate_ports(
+        ["dope-memory"],
+        _catalog(),
+        worktree=wt,
+        project_root=wt,
+        registry_path=reg_path,
+        persist=True,
+        is_free_fn=lambda p: True,
+    )
+    assert r1.status in {"ASSIGNED", "REUSED"}
+    port = r1.ports["DOPE_MEMORY_PORT"]
+
+    r2 = allocate_ports(
+        ["dope-memory"],
+        _catalog(),
+        worktree=wt,
+        project_root=wt,
+        registry_path=reg_path,
+        persist=True,
+        is_free_fn=lambda p: True,
+    )
+    assert r2.ports["DOPE_MEMORY_PORT"] == port
+    assert r2.status == "REUSED"
+
+
+def test_worktree_scoped_does_not_reuse_project_lease(tmp_path: Path, monkeypatch):
+    """A worktree-scoped service must not adopt a project-scoped lease slot."""
+    reg_path = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
+    wt = tmp_path / "wt"
+    wt.mkdir()
+    proj = str(wt)
+
+    reg = PortLeaseRegistry.load(reg_path, create_missing=True)
+    # Malformed/legacy: project-scoped lease for a normally worktree service
+    reg.upsert_lease(
+        PortLease(
+            lease_id="proj_dm",
+            port=3099,
+            service="dope-memory",
+            port_role="http",
+            port_var="DOPE_MEMORY_PORT",
+            worktree_root=str(wt),
+            worktree_hash="dead",
+            project_root=proj,
+            scope="project",
+            status="active",
+        )
+    )
+    reg.save()
+
+    result = allocate_ports(
+        ["dope-memory"],
+        _catalog(),
+        worktree=str(wt),
+        project_root=proj,
+        existing_envrc={"DOPE_MEMORY_PORT": "3101"},
+        registry_path=reg_path,
+        persist=True,
+        is_free_fn=lambda p: True,
+    )
+    assert result.ports["DOPE_MEMORY_PORT"] == 3101
+    assert not any(
+        w.get("code") == "LEASE_REUSED" and w.get("port") == 3099 for w in result.warnings
+    )
