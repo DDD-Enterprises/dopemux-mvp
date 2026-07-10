@@ -5,9 +5,9 @@
       "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
       "env": {
         "DOPEMUX_WORKSPACE_ID": "${DOPEMUX_WORKSPACE_ID:-}",
-        "GEMINI_API_KEY": "${GEMINI_API_KEY=[REDACTED]
-        "VOYAGEAI_API_KEY": "${VOYAGEAI_API_KEY=[REDACTED]
-        "OPENAI_API_KEY": "${OPENAI_API_KEY=[REDACTED]
+        "GEMINI_API_KEY": "[REDACTED]",
+        "VOYAGEAI_API_KEY": "[REDACTED]",
+        "OPENAI_API_KEY": "[REDACTED]"
       },
       "description": "Knowledge graph, decisions, progress (PostgreSQL+AGE; per-worktree state)"
     },

@@ -352,8 +352,35 @@ def allocate_ports(
         status_local = "ASSIGNED"
         rebind_reason: Optional[str] = None
 
-        # Reserved host singletons (e.g. TO:7890): never lease, never block on foreign leases.
+        # Reserved host singletons (e.g. TO:7890): never project-leased.
+        # Still fail-closed if the reserved port is occupied by an unknown process
+        # (no matching lease identity) — do not pretend the singleton is free.
         if not req.lease or req.scope == "reserved_singleton":
+            free = is_free(preferred)
+            other = registry.find_active_by_port(preferred)
+            ours = bool(
+                other
+                and registry.identity_matches(
+                    other,
+                    worktree_root=identity.worktree_root,
+                    project_root=identity.project_root,
+                    worktree_hash=identity.worktree_hash,
+                )
+            )
+            if not free and not ours:
+                result.status = "BLOCKED"
+                result.blocking_findings.append(
+                    {
+                        "code": "LEASE_PORT_OCCUPIED",
+                        "service": req.service,
+                        "port": preferred,
+                        "message": (
+                            f"Reserved singleton port {preferred} for {req.service} "
+                            "is occupied by an unknown process."
+                        ),
+                    }
+                )
+                return result
             assigned = preferred
             result.ports[req.port_var] = assigned
             result.warnings.append(

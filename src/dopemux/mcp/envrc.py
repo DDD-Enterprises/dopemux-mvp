@@ -178,9 +178,10 @@ def load_envrc(path: Path | str | None) -> EnvrcParseResult:
         )
 
     values, errors = parse_envrc_text(text)
-    # Partial parse: useful keys still count as OK so doctor does not hard-fail
-    # on minor envrc noise. errors[] retains malformed-line diagnostics.
-    if values:
+    # Partial parse: usable keys with malformed lines → PARTIAL (not hard ERROR).
+    if values and errors:
+        status = "PARTIAL"
+    elif values:
         status = "OK"
     elif errors:
         status = "ERROR"
