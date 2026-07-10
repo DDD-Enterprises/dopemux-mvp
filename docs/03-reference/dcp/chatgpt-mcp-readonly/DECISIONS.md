@@ -41,6 +41,11 @@ Read ConPort directly; do not route decisions through the bridge proxy.
 The facade is a new, isolated service package.
 - *Rejected alternative:* extend an existing service (ConPort/bridge/etc.). Rejected: would blur the read-only boundary and the canonical-writer separation.
 
+### D7 — ChatGPT names opaque exposure targets, not backend runtime details
+Accepted in ADR-DCP-MCP-RO-0009. New ChatGPT exposure contracts use an opaque `target_id` that resolves through an operator-authored exposure policy registry, live runtime verification, ownership evidence adjudication, and read-only adapter allowlists. Runtime registries, catalog records, ports, leases, containers, `.mcp.json` inventory, and heuristic discovery are not exposure consent and cannot make a backend callable.
+- *Rejected alternative:* keep public `project_id` / static backend binding as the remote exposure identity. Rejected: it blurs consent with backend/runtime identity and cannot safely distinguish primary checkouts, sibling worktrees, reserved singletons, and stale or wrong-project listeners.
+- *Implementation note:* Existing facade docs and code may still contain earlier `project_id` terminology. `TP-DCP-MCP-RO-0009` records the accepted contract; runtime/API migration remains a separate implementation slice.
+
 ## Open Items Carried Forward
 
 - `UNKNOWN` (inventory `unresolved_questions`): *"Should dope-memory be queried directly, or should all chronicle reads be multiplexed through a facade wrapper to normalize output for ChatGPT?"* — to be resolved in 0005.
