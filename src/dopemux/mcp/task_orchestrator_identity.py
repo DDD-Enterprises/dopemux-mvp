@@ -8,6 +8,8 @@ fail-closed on wrong-project or unknown for start.
 from __future__ import annotations
 
 import json
+import os
+import re
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
@@ -78,6 +80,49 @@ def _ids_equal(a: Optional[str], b: Optional[str]) -> bool:
     if a is None or b is None:
         return False
     return str(a).strip().lower() == str(b).strip().lower()
+
+
+def _normalize_project_id(value: Optional[str]) -> Optional[str]:
+    """Deterministic project_id normalization for match_target.
+
+    - lower-case
+    - hyphen → underscore
+    - strip a trailing generated hash suffix when the form is
+      ``<slug>[-_]<hex8+>`` (e.g. ``dnh_crm-9a4e9aa8a329cdd5``)
+
+    Does not strip arbitrary free-text suffixes.
+    """
+    if value is None or value == "":
+        return None
+    s = str(value).strip().lower().replace("-", "_")
+    # slug + 8+ hex hash (worktree/project hash forms used by dopemux)
+    m = re.match(r"^(.+)_([0-9a-f]{8,})$", s)
+    if m:
+        return m.group(1)
+    return s
+
+
+def _ids_match_normalized(a: Optional[str], b: Optional[str]) -> bool:
+    na, nb = _normalize_project_id(a), _normalize_project_id(b)
+    if na is None or nb is None:
+        return False
+    return na == nb
+
+
+def _source_is_heuristic(source: Optional[str]) -> bool:
+    s = (source or "").lower()
+    if not s or s == "unknown":
+        return True
+    if s in {
+        "container_heuristics",
+        "name_slug",
+        "data_path_heuristic",
+        "container_name_heuristic",
+        "port_only",
+        "compose_metadata",
+    }:
+        return True
+    return "heuristic" in s
 
 
 def metadata_dir(instance_id: str, *, base: Optional[Path] = None) -> Path:
@@ -358,7 +403,15 @@ def match_target(
     project_id: Optional[str],
     project_root: Optional[str],
 ) -> str:
-    """Return OK | WRONG_PROJECT | UNKNOWN | CONFLICT."""
+    """Return OK | WRONG_PROJECT | UNKNOWN | CONFLICT.
+
+    Fail-closed rules (006R2):
+    - explicit root match + explicit ID match => OK
+    - explicit root match + explicit ID mismatch => CONFLICT (never OK)
+    - heuristic root + ID mismatch => CONFLICT/UNKNOWN (never OK)
+    - ID comparison uses deterministic normalization (case/hyphen/hash-suffix)
+    - heuristic evidence never outranks an explicit contradictory ID
+    """
     if observed is None or not observed.has_project_proof():
         return "UNKNOWN"
 
@@ -368,21 +421,29 @@ def match_target(
         else None
     )
     id_ok = (
-        _ids_equal(observed.project_id, project_id)
+        _ids_match_normalized(observed.project_id, project_id)
         if observed.project_id and project_id
         else None
     )
+    heuristic = _source_is_heuristic(observed.source)
 
     if root_ok is True and id_ok is True:
         return "OK"
     if root_ok is True and id_ok is False:
-        # Project root is authoritative; slug/id formats often differ (dNh_CRM vs dnh_crm-hash)
-        return "OK"
+        # Explicit (or heuristic) ID conflict must never become OK.
+        return "CONFLICT"
     if root_ok is False and id_ok is True:
         return "CONFLICT"
-    if root_ok is False or id_ok is False:
+    if root_ok is False and id_ok is False:
+        return "WRONG_PROJECT"
+    if root_ok is False and id_ok is None:
+        return "WRONG_PROJECT"
+    if id_ok is False and root_ok is None:
         return "WRONG_PROJECT"
     if root_ok is True and id_ok is None:
+        # Root-only: OK only for explicit high-trust sources; heuristics stay UNKNOWN.
+        if heuristic:
+            return "UNKNOWN"
         return "OK"
     if id_ok is True and root_ok is None:
         return "UNKNOWN"  # id alone insufficient without root when target has root

@@ -33,6 +33,16 @@ def _utc_now() -> str:
 
 
 def default_lease_registry_path() -> Path:
+    """Resolve the operational lease registry path.
+
+    Production default: ``~/.dopemux/mcp/runtime/port-leases.json``.
+    Override: ``DOPEMUX_MCP_PORT_LEASE_REGISTRY`` (always wins).
+
+    Under pytest (without the allow-home escape hatch), never resolve the real
+    home registry. The defense-in-depth fallback is unique per uid/worker/pid/
+    test-node so parallel pytest-xdist workers cannot share one file.
+    Tests should still inject ``tmp_path`` or the env override explicitly.
+    """
     override = os.environ.get(REGISTRY_ENV)
     if override:
         return Path(override).expanduser().resolve()
@@ -40,9 +50,28 @@ def default_lease_registry_path() -> Path:
     if os.environ.get("PYTEST_CURRENT_TEST") and not os.environ.get(
         "DOPEMUX_ALLOW_HOME_LEASE_REGISTRY"
     ):
-        import tempfile
+        import getpass
+        import hashlib
 
-        return Path(tempfile.gettempdir()) / "dopemux-pytest-port-leases.json"
+        uid = getpass.getuser() or str(os.getuid() if hasattr(os, "getuid") else "nouser")
+        worker = os.environ.get("PYTEST_XDIST_WORKER") or "gw0"
+        pid = str(os.getpid())
+        # PYTEST_CURRENT_TEST is like "path/to/test.py::test_name (call)"
+        node = os.environ.get("PYTEST_CURRENT_TEST") or "unknown"
+        session = os.environ.get("PYTEST_XDIST_TESTRUNUID") or os.environ.get(
+            "DOPEMUX_PYTEST_SESSION", "session"
+        )
+        digest = hashlib.sha1(f"{node}:{session}".encode("utf-8")).hexdigest()[:10]
+        base = (
+            Path(tempfile.gettempdir())
+            / "dopemux-mcp-tests"
+            / uid
+            / worker
+            / pid
+            / digest
+        )
+        base.mkdir(parents=True, exist_ok=True)
+        return (base / "port-leases.json").resolve()
     return (Path.home() / DEFAULT_RELATIVE).resolve()
 
 
