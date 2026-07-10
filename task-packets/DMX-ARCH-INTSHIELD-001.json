@@ -48,7 +48,7 @@
       "task-packets/DMX-ARCH-INTSHIELD-001.json"
     ],
     "verify": [
-      "pytest services/adhd_engine -q -k interruption || true"
+      "pytest services/adhd_engine -q -k interruption"
     ]
   },
   "pr": {
