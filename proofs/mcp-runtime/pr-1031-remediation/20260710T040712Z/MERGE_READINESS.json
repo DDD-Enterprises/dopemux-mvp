@@ -3,11 +3,12 @@
   "packet_id": "TP-DMX-MCP-RUNTIME-006R2",
   "pr": 1031,
   "base_pr": 1030,
-  "status": "READY_AFTER_BASE_MERGE",
-  "head": "b0e9fec8079d3d87ca9ec73a762dcfb8490e5e8f",
+  "status": "RESTACKED_READY_AFTER_BASE_MERGE",
+  "head": "7347d8f9658da83da5dcb363e0803ed35c1a8799",
   "generated_at": "2026-07-10T04:18:32Z",
   "blocking_reasons": [
-    "PR #1030 is still OPEN; #1031 must not merge before base"
+    "Restacked onto restacked #1029 (005 includes #1030 proof). Stack order: #1023 \u2192 #1027 \u2192 #1029 \u2192 #1031.",
+    "Re-check CI on restacked head before merge."
   ],
   "warnings": [
     "Doctor overall FAIL remains due to structural COMPOSE_* and formula PORT_RESERVED_COLLISION findings",
@@ -32,5 +33,5 @@
     "main_stack_memory_untouched": true
   },
   "proof": "proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z",
-  "recommended_action": "Merge #1030 first, then re-check #1031 stack base and merge if CI still green"
+  "recommended_action": "Merge stack in order #1023 \u2192 #1027 \u2192 #1029 \u2192 #1031 when each is green."
 }
