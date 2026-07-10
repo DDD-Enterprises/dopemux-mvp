@@ -1,0 +1,26 @@
+## chore/dopemux-mcp-multi-instance...origin/chore/dopemux-mcp-multi-instance [behind 1]
+ M .claude/WORKTREE_MCP_SETUP.md
+ M .envrc.dopemux-mcp
+ M .gemini/settings.json
+ M artifacts/task-orchestrator/dnh-rdcp-export/latest.json
+ M artifacts/task-orchestrator/dnh-rdcp-export/latest.md
+?? .claude/PRIMER.md
+?? .claude/PROJECT_INSTRUCTIONS.MD
+?? .claude/README.md
+?? .claude/claude_config.json
+?? .claude/context.md
+?? .claude/llms.md
+?? .claude/session.md
+?? .envrc.dopemux-mcp.bak-006r2
+?? .github/workflows/embedded-audit.yml
+?? .github/workflows/pr-steward.yml
+?? config/
+?? docs/90-adr/TEMPLATE_ADR.md
+?? docs/90-adr/TEMPLATE_ADR_LIGHT.md
+?? docs/90-adr/TEMPLATE_ADR_RECORD.md
+?? docs/task-packets/
+?? task-packets/CHECKLIST.md
+?? task-packets/INDEX.md
+?? task-packets/README.md
+?? task-packets/STATUS.md
+?? task-packets/TEMPLATE_TASK_PACKET.md
