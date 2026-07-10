@@ -23,7 +23,12 @@ applied to `dopemux-mvp`.
 > birthday-risk / missing rebind, compose lifecycle hazards (fixed
 > `mcp-conport` name, relative `./.dopemux` volume), and refuses to treat
 > unlabeled listening ports as owned. It does **not** start or stop containers.
-> Repo-aware start/stop is a later packet.
+>
+> **Config repair (TP-DMX-MCP-RUNTIME-003):** fix transport mismatches without
+> hand-editing every worktree:
+> `dopemux mcp repair-config --repo <path> --dry-run --json` then `--apply`.
+> Preserves custom mcpServers entries; never mutates `~/.claude.json`.
+> Runtime start remains `dopemux mcp start --repo <path>` (Packet 002).
 
 ---
 

@@ -5,7 +5,7 @@ type: how-to
 owner: dopemux-infra
 date: 2026-07-06
 author: '@hu3mann'
-last_review: '2026-07-07'
+last_review: '2026-07-09'
 next_review: '2026-10-05'
 prelude: Running Dopemux MCP Servers in Other Projects (how-to) for dopemux documentation
   and developer workflows.
@@ -14,30 +14,39 @@ prelude: Running Dopemux MCP Servers in Other Projects (how-to) for dopemux docu
 
 This guide explains how to connect `conport`, `dope-memory`, and `task-orchestrator`
 MCP servers to any project — a new repo, a git worktree of another project, or a
-plain directory — using **dopemux** or manually (for Claude Code / vanilla code use).
+plain directory — using **dopemux** (recommended) or carefully documented manual steps.
+
+**Primary operator flow (safe):**
+
+```bash
+cd ~/code/your-other-project
+dopemux mcp init
+dopemux mcp repair-config --dry-run
+dopemux mcp repair-config --apply
+dopemux mcp start
+source .envrc.dopemux-mcp
+claude
+dopemux mcp doctor
+```
+
+Target repos do **not** need their own `compose.yml`. `dopemux mcp start` is home-aware
+(labeled sidecars + runtime registry). `doctor` / `status` load the target repo's
+`.envrc.dopemux-mcp` and do not require compose in cwd.
+
+> [!CAUTION]
+> **UNSAFE_DOC_RECIPE_REMOVED.** Do **not** start another repo's MCP services by
+> `cd`ing into `dopemux-mvp` and injecting that repo's env into `docker compose up`.
+> That pattern can replace primary `mcp-conport` and bind the wrong `.dopemux` volume.
+> Always use `dopemux mcp start --repo <target>` from the safe flow above.
 
 ---
 
 ## Prerequisites
 
-Before you begin, make sure:
-
-1. **Dopemux services are running** (from the `dopemux-mvp` repo):
-   ```bash
-   cd ~/code/dopemux-mvp
-   dopemux mcp up          # starts Docker Compose MCP stack
-   # or for the full stack:
-   dopemux mcp start-all
-   ```
-
-2. **Docker is running** and the MCP containers are healthy:
-   ```bash
-   docker ps | grep dopemux
-   # or
-   dopemux mcp status
-   ```
-
-3. **Your target workspace directory** is a git repository (required for `dopemux mcp init`).
+1. **Shared infrastructure** (postgres, redis, etc.) is already running from the primary
+   dopemux stack once. Sidecar start uses `--no-deps` and does not re-home those services.
+2. **Docker is running**.
+3. **Target workspace** is a git repository (`dopemux mcp init` requires git).
    If it is not a git repo yet, `git init` first.
 
 ---
@@ -50,59 +59,45 @@ Before you begin, make sure:
 cd ~/code/your-other-project   # must be a git repo
 ```
 
-### Step 2 — Initialise MCP config for the workspace
+### Step 2 — Initialise MCP config
 
 ```bash
 dopemux mcp init
 ```
 
 This command:
-- Reads `mcp_catalog.yaml` from the `dopemux-mvp` repo
-- Generates a `.mcp.json` in your project root with `conport`, `dope-memory`, and
-  `task-orchestrator` entries using `${VAR}` placeholders
-- Writes `.envrc.dopemux-mcp` with stable, collision-checked port numbers unique
-  to this workspace path
-
-Example output:
-```
-✅ Wrote .mcp.json
-✅ Wrote .envrc.dopemux-mcp
-Worktree:   /Users/hue/code/your-other-project
-Instance:   a3f2
-  CONPORT_HTTP_PORT=3044  (free)
-  CONPORT_MCP_PORT=3045   (free)
-  DOPE_MEMORY_PORT=3064   (free)
-  TASK_ORCHESTRATOR_HTTP_PORT=7890  (wrapper-singleton, fixed)
-```
+- Reads the catalog (`mcp_catalog.yaml` or bundled default)
+- Generates `.mcp.json` with catalog-owned services (`conport`, `dope-memory`,
+  `task-orchestrator`) using `${VAR}` placeholders
+- Writes `.envrc.dopemux-mcp` with deterministic ports for this workspace path
 
 > [!NOTE]
-> **Port allocation is deterministic**: the same workspace path always gets the same
-> ports.  `wrapper-singleton` services (like `task-orchestrator`) always use their
-> fixed port regardless of workspace.
+> **Port allocation is deterministic** (`base + sha1(path)[:4] % 100`).
+> `wrapper-singleton` services (e.g. `task-orchestrator` on `7890`) use fixed ports.
+> Cross-worktree collision risk remains until the port-lease packet; repair-config
+> emits `PORT_HASH_BUCKET_COLLISION_RISK` and does **not** live-rebind free ports.
 
-### Step 3 — Load the port variables into your shell
+### Step 3 — Repair config (previewable)
 
-The quickest way is to source the file directly:
 ```bash
-source .envrc.dopemux-mcp
+dopemux mcp repair-config --dry-run --json   # plan only; writes nothing
+dopemux mcp repair-config --apply            # local files only
 ```
 
-Or, for persistent loading with `direnv`:
+What `repair-config` does:
+
+- Fixes catalog-owned transport mismatches (e.g. dope-memory / task-orchestrator
+  must be `"type": "http"`, conport stays `"sse"`)
+- Regenerates or patches `.envrc.dopemux-mcp` using the same allocator as `init`
+- Creates/updates `.claude/WORKTREE_MCP_SETUP.md` (agent bootstrap)
+- **Preserves** unknown/custom `.mcp.json` entries
+- **Never** mutates `~/.claude.json` (use `dopemux mcp sync-globals` explicitly)
+- **Never** starts or stops containers
+
+### Step 4 — Start sidecars (repo-aware reconciler)
+
 ```bash
-# Add to .envrc in your project
-echo 'source .envrc.dopemux-mcp' >> .envrc
-direnv allow
-```
-
-### Step 4 — Start per-worktree containers (repo-aware reconciler)
-
-**Preferred path** (Packet 002):
-
-```bash
-cd ~/code/your-other-project
-dopemux mcp init          # if not already done
-dopemux mcp doctor        # truth gate (loads .envrc.dopemux-mcp)
-dopemux mcp start         # labeled sidecars + runtime registry
+dopemux mcp start
 # or from any cwd:
 dopemux mcp start --repo ~/code/your-other-project
 dopemux mcp start --repo ~/code/your-other-project --dry-run --json
@@ -110,13 +105,13 @@ dopemux mcp start --repo ~/code/your-other-project --dry-run --json
 
 What `mcp start` does:
 
-- Runs doctor preflight; **blocks** on transport mismatch, unlabeled port owners, wrong-project containers
-- Generates compose override with **unique container names** and **absolute** target `.dopemux` volume
+- Runs doctor preflight; **blocks** on transport mismatch, unlabeled port owners,
+  wrong-project containers
+- Generates compose override with **unique container names** and **absolute** target
+  `.dopemux` volume
 - Sets `dopemux.managed=true` + project labels
 - Writes operational registry: `~/.dopemux/mcp/runtime/instances.json`
 - Does **not** adopt unlabeled containers
-
-Shared infrastructure (postgres, redis, etc.) must already be running from the primary dopemux stack (`--no-deps` sidecars).
 
 ```bash
 dopemux mcp status --repo ~/code/your-other-project --json
@@ -124,42 +119,71 @@ dopemux mcp stop --repo ~/code/your-other-project
 # Compatibility: mcp up/down --repo → start/stop
 ```
 
-> [!CAUTION]
-> **Do not** use the old clipboard pattern (env-inject into dopemux-mvp compose).
-> It can replace `mcp-conport` and bind the wrong `.dopemux` data directory.
-
-<details>
-<summary>Legacy / high-risk compose path (not recommended)</summary>
+### Step 5 — Source env and verify
 
 ```bash
-# DANGEROUS — fixed names + relative volumes:
-cd ~/code/dopemux-mvp
-env $(cat ~/code/your-other-project/.envrc.dopemux-mcp | grep -v '^#' | xargs) \
-  docker compose -f compose.yml up -d conport dope-memory
-```
-</details>
+source .envrc.dopemux-mcp
+# or: echo 'source .envrc.dopemux-mcp' >> .envrc && direnv allow
 
-### Step 5 — Verify connectivity
-
-```bash
-dopemux mcp status --repo ~/code/your-other-project
 dopemux mcp doctor --repo ~/code/your-other-project
-
-# Full health report with transport-aware probing:
-~/code/dopemux-mvp/mcp_server_health_report.sh
+dopemux mcp status --repo ~/code/your-other-project
 ```
+
+Ownership is proven by labels/registry/probes — not by "port is listening" alone.
 
 ### Step 6 — Open Claude Code (or agy)
 
 ```bash
-# In your project directory (with envrc sourced):
 claude    # Claude Code
 # or
 agy       # Antigravity CLI
 ```
 
-Both clients read `.mcp.json` at session startup. Claude Code expands the `${VAR:-default}`
-placeholders using the environment; `agy` does the same.
+Both clients read `.mcp.json` at session startup and expand `${VAR:-default}` from the
+environment.
+
+---
+
+## Global singletons vs local project services
+
+| Surface | Command | Mutates |
+|---------|---------|---------|
+| Local `.mcp.json` + `.envrc.dopemux-mcp` | `mcp init`, `mcp repair-config` | Target repo only |
+| Global `~/.claude.json` singletons | `mcp sync-globals` (explicit `--apply`) | Home global config |
+| Runtime containers | `mcp start` / `stop` / `status` | Docker + runtime registry |
+
+`repair-config` does **not** call `sync-globals`. Keep local ConPort/dope-memory in the
+target worktree; do not duplicate them into global config.
+
+---
+
+## Fleet / many worktrees
+
+```bash
+dopemux mcp fleet init --repo ~/code/your-project \
+  --worktrees ~/code/your-project --worktrees ~/code/your-project-wt-feature \
+  --dry-run --json
+
+dopemux mcp fleet init --repo ~/code/your-project \
+  --worktrees ~/code/your-project --worktrees ~/code/your-project-wt-feature \
+  --apply
+
+dopemux mcp fleet doctor --repo ~/code/your-project \
+  --worktrees ~/code/your-project --worktrees ~/code/your-project-wt-feature \
+  --json
+```
+
+Fleet commands never start containers and never modify `~/.claude.json`.
+
+---
+
+## Current limitations
+
+* Port allocator still has `%100` birthday-collision risk (see RUNTIME-004 lease packet).
+* Live free-port rebind is **not** implemented.
+* `task-orchestrator` fixed port `7890` may block multi-project simultaneous use if
+  identity cannot be proven.
+* Unlabeled existing containers are not adopted automatically.
 
 ---
 
@@ -189,26 +213,19 @@ export DOPE_MEMORY_INSTANCE_ID=a3f2                  # any 4-char hash
 
 Save these to `.envrc.dopemux-mcp` in your project root and `source` it.
 
-### Step 2 — Start Docker services
+### Step 2 — Start Docker services (prefer dopemux)
 
-From the `dopemux-mvp` directory:
+Prefer the reconciler even for partial manual setups:
+
 ```bash
-cd ~/code/dopemux-mvp
-
-# Start conport for your workspace
-CONPORT_HTTP_PORT=3044 CONPORT_INFO_PORT=4044 CONPORT_MCP_PORT=3045 \
-DOPEMUX_WORKSPACE_ID=/Users/hue/code/your-other-project \
-  docker compose -f compose.yml up -d conport
-
-# Start dope-memory for your workspace
-DOPE_MEMORY_PORT=3064 \
-DOPE_MEMORY_WORKSPACE_ID=your-other-project \
-DOPE_MEMORY_INSTANCE_ID=a3f2 \
-  docker compose -f compose.yml up -d dope-memory
-
-# task-orchestrator is a singleton — start it once:
-docker compose -f compose.yml up -d task-orchestrator
+# After .envrc.dopemux-mcp and .mcp.json exist:
+dopemux mcp start --repo ~/code/your-other-project
 ```
+
+> [!CAUTION]
+> Do **not** start sidecars by injecting another project's env into
+> `dopemux-mvp/compose.yml`. Use `dopemux mcp start --repo <target>` so
+> container names, labels, and `.dopemux` volumes stay project-scoped.
 
 ### Step 3 — Write `.mcp.json`
 
@@ -292,7 +309,8 @@ If you are using plain Claude Code without any dopemux tooling:
    export DOPEMUX_WORKSPACE_ID="$(pwd)"
    export DOPE_MEMORY_WORKSPACE_ID="$(basename $(pwd))"
    ```
-3. Make sure the Docker containers are running (see Part 2, Step 2).
+3. Make sure the Docker sidecars are running via `dopemux mcp start --repo .`
+   (see Part 2, Step 2).
 4. Launch `claude` from the project directory — it reads `.mcp.json` at startup.
 5. Verify with `/mcp` in the Claude Code session.
 
