@@ -158,3 +158,55 @@ def test_cli_up_repo_aliases_start(tmp_path, monkeypatch):
     assert result.exit_code in {0, 1, 2}, result.output
     payload = json.loads(result.output)
     assert payload["operation"] == "start"
+
+
+def test_cli_up_dry_run_without_repo_stays_legacy(monkeypatch):
+    """--dry-run/--json alone must not divert bare `mcp up` to the reconciler."""
+    called = {"legacy": False, "lifecycle": False}
+
+    def fake_run(cmd, check=True):  # noqa: ARG001
+        called["legacy"] = True
+        return SimpleNamespace(returncode=0)
+
+    def fake_lifecycle(*args, **kwargs):  # noqa: ARG001
+        called["lifecycle"] = True
+        raise AssertionError("lifecycle should not run without --repo")
+
+    monkeypatch.setattr(mcp_commands.subprocess, "run", fake_run)
+    monkeypatch.setattr(mcp_commands, "_run_lifecycle_cli", fake_lifecycle)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        mcp_commands.mcp,
+        ["up", "--services", "conport", "--dry-run", "--json"],
+    )
+    assert called["lifecycle"] is False, result.output
+    assert called["legacy"] is True, result.output
+    assert result.exit_code == 0, result.output
+
+
+def test_cli_down_dry_run_without_repo_stays_legacy(monkeypatch):
+    """--dry-run/--json alone must not divert bare `mcp down` to the reconciler."""
+    called = {"legacy": False, "lifecycle": False}
+
+    def fake_run(cmd, check=True):  # noqa: ARG001
+        called["legacy"] = True
+        return SimpleNamespace(returncode=0)
+
+    def fake_lifecycle(*args, **kwargs):  # noqa: ARG001
+        called["lifecycle"] = True
+        raise AssertionError("lifecycle should not run without --repo")
+
+    monkeypatch.setattr(mcp_commands.subprocess, "run", fake_run)
+    monkeypatch.setattr(mcp_commands, "_run_lifecycle_cli", fake_lifecycle)
+    monkeypatch.setattr(mcp_commands, "_compose_services", lambda: {"conport"})
+    monkeypatch.setattr(mcp_commands, "DEFAULT_MCP_SERVICES", {"conport"})
+
+    runner = CliRunner()
+    result = runner.invoke(
+        mcp_commands.mcp,
+        ["down", "--dry-run", "--json"],
+    )
+    assert called["lifecycle"] is False, result.output
+    assert called["legacy"] is True, result.output
+    assert result.exit_code == 0, result.output

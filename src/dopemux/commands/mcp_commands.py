@@ -230,8 +230,9 @@ def mcp_up_cmd(
 
     With ``--repo``: compatibility alias for ``dopemux mcp start --repo``.
     Without ``--repo``: legacy cwd compose / start-all-mcp-servers.sh behavior.
+    ``--dry-run`` / ``--json`` only apply with ``--repo`` (ignored otherwise).
     """
-    if repo_arg is not None or dry_run or json_output:
+    if repo_arg is not None:
         _run_lifecycle_cli(
             "start",
             repo_arg=repo_arg,
@@ -273,8 +274,9 @@ def mcp_down_cmd(
 
     With ``--repo``: compatibility alias for ``dopemux mcp stop --repo``.
     Without ``--repo``: legacy cwd compose rm behavior.
+    ``--dry-run`` / ``--json`` only apply with ``--repo`` (ignored otherwise).
     """
-    if repo_arg is not None or dry_run or json_output:
+    if repo_arg is not None:
         _run_lifecycle_cli(
             "stop",
             repo_arg=repo_arg,
