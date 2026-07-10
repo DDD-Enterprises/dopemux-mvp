@@ -12,7 +12,6 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from collections import deque
-import aiohttp
 
 logger = logging.getLogger(__name__)
 
