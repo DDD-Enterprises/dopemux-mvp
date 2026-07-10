@@ -1,0 +1,40 @@
+{
+  "name": "dopemux-dnh-crm-8d6d-dope-memory",
+  "status": "running",
+  "health": "healthy",
+  "ports": {
+    "3020/tcp": [
+      {
+        "HostIp": "127.0.0.1",
+        "HostPort": "3020"
+      }
+    ]
+  },
+  "port_bindings": {
+    "3020/tcp": [
+      {
+        "HostIp": "127.0.0.1",
+        "HostPort": "3020"
+      }
+    ]
+  },
+  "binds": [
+    "/Users/hue/code/dNh_CRM/.dopemux:/data:rw"
+  ],
+  "labels": {
+    "dopemux.catalog_service": "dope-memory",
+    "dopemux.created_by": "dopemux-mcp",
+    "dopemux.instance_id": "dnh-crm-8d6d-dope-memory",
+    "dopemux.managed": "true",
+    "dopemux.project_hash": "9a4e9aa8a329cdd5",
+    "dopemux.project_id": "dnh_crm-9a4e9aa8a329cdd5",
+    "dopemux.project_root": "/Users/hue/code/dNh_CRM",
+    "dopemux.repo_basename": "dNh_CRM",
+    "dopemux.scope": "worktree",
+    "dopemux.service": "dope-memory",
+    "dopemux.transport": "http",
+    "dopemux.workspace_id": "/Users/hue/code/dNh_CRM",
+    "dopemux.worktree_hash": "8d6d",
+    "dopemux.worktree_root": "/Users/hue/code/dNh_CRM"
+  }
+}

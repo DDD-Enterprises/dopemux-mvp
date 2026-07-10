@@ -25,11 +25,11 @@
       "url": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
       "env": {
         "TASK_ORCHESTRATOR_PROJECT_ROOT": "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}",
-        "DOPEMUX_PROJECT_ROOT": "${DOPEMUX_PROJECT_ROOT:-}",
         "DOPEMUX_WORKSPACE_ROOT": "${DOPEMUX_WORKSPACE_ROOT:-}",
+        "DOPEMUX_PROJECT_ROOT": "${DOPEMUX_PROJECT_ROOT:-}",
         "TASK_ORCHESTRATOR_HTTP_PORT": "${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
       },
-      "description": "HTTP singleton MCP Task Orchestrator with repo-scoped SQLite state"
+      "description": "Host-singleton Task Orchestrator MCP on reserved 7890 (single-active-project state)"
     }
   }
 }

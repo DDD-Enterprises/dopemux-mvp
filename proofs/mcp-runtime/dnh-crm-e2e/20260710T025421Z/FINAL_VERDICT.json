@@ -1,0 +1,107 @@
+{
+  "applied": false,
+  "blocking_reasons": [
+    "repair-config dry-run failed: fixed port 7890 leased to foreign test identity /Users/alice/code/project-a (lease registry pollution)",
+    "start --dry-run BLOCKED: TASK_ORCHESTRATOR on :7890 listening with UNKNOWN ownership (fail-closed)",
+    "start --dry-run: LEASE_ENVRC_MISMATCH for CONPORT ports vs lease registry",
+    "live start not run (mutation gate: dry-run not safe)"
+  ],
+  "config": {
+    "agent_bootstrap_status": "FAIL",
+    "envrc_status": "PASS",
+    "global_claude_mutated": false,
+    "mcp_json_status": "PASS",
+    "agent_bootstrap_note": "dNh missing .claude/WORKTREE_MCP_SETUP.md (repair apply never ran)"
+  },
+  "docker": {
+    "container_collision_status": "UNKNOWN",
+    "labels_status": "UNKNOWN"
+  },
+  "docker_ok": true,
+  "dry_safe": false,
+  "live": false,
+  "live_start_ran": false,
+  "overall_status": "BLOCKED",
+  "packet_id": "TP-DMX-MCP-RUNTIME-006",
+  "recommended_next_actions": [
+    "Operator: inspect ~/.dopemux/mcp/runtime/port-leases.json and release stale lease for /Users/alice/code/project-a on 7890 (test pollution)",
+    "Operator: identify process/container on :7890; stop only if safe and known, or accept dNh without TO",
+    "Re-run: PYTHONPATH=src python scripts/proofs/run_dnh_mcp_e2e.py --live after lease cleanup",
+    "Then repair-config --apply for dNh will write bootstrap doc + aligned envrc"
+  ],
+  "registries": {
+    "lease_registry_status": "PASS",
+    "runtime_registry_status": "UNKNOWN"
+  },
+  "repos": {
+    "dnh_head": "66994712c68ea9888b1af5a0b5dc3039961847d9",
+    "dnh_path": "/Users/hue/code/dNh_CRM",
+    "dopemux_head": "e79e49a468139fbc2a6c6a4c667411964964c6bb",
+    "dopemux_path": "/Users/hue/code/dopemux-mcp-runtime-006"
+  },
+  "residual_risks": [
+    "TO fixed 7890 may be owned by another project (fail-closed)",
+    "Live multi-worktree fleet not fully applied"
+  ],
+  "schema_version": "1.0",
+  "services": {
+    "conport": {
+      "evidence_refs": [
+        "TRANSPORT_MATCH",
+        "PORT_RESERVED_COLLISION",
+        "PORT_RESERVED_COLLISION",
+        "PORT_EXPECTED",
+        "PORT_EXPECTED",
+        "PORT_EXPECTED",
+        "COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK",
+        "COMPOSE_WORKSPACE_ID_MISSING_RISK",
+        "COMPOSE_INSTANCE_ID_ONLY_INSUFFICIENT",
+        "DOCKER_CONTAINER_NOT_FOUND",
+        "LOCAL_SERVICE_OK"
+      ],
+      "identity": "UNKNOWN",
+      "status": "UNKNOWN",
+      "transport": "sse",
+      "note": "Not started; doctor shows PORT_RESERVED_COLLISION risk on formula; config transport PASS"
+    },
+    "dope-memory": {
+      "evidence_refs": [
+        "TRANSPORT_MATCH",
+        "PORT_EXPECTED",
+        "COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK",
+        "DOCKER_CONTAINER_NOT_FOUND",
+        "LOCAL_SERVICE_OK"
+      ],
+      "identity": "UNKNOWN",
+      "status": "UNKNOWN",
+      "target_state_path_verified": null,
+      "transport": "http",
+      "volume/state_path": null,
+      "note": "Not started; container not found pre-start"
+    },
+    "task-orchestrator": {
+      "status": "FAIL",
+      "identity": "UNKNOWN",
+      "fixed_port": 7890,
+      "evidence_refs": [
+        "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN",
+        "TASK_ORCHESTRATOR_FIXED_PORT_OCCUPIED_UNKNOWN",
+        "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
+        "LEASE_BELONGS_TO_OTHER_PROJECT"
+      ],
+      "note": "Guard dog worked: did not force green; did not start foreign-colliding TO"
+    }
+  },
+  "target_repo": "dNh_CRM",
+  "warnings": [],
+  "validation": {
+    "packet_001_doctor": "PASS_COMMAND (ran; reported FAIL status for dNh \u2014 expected before start)",
+    "packet_002_lifecycle": "PASS_COMMAND (start dry-run ran; blocked safely)",
+    "packet_003_repair": "BLOCKED (TO fixed-port lease conflict during allocate)",
+    "packet_004_leases": "PASS_EVIDENCE (registry present; exposed foreign lease + envrc mismatch)",
+    "packet_005_to_identity": "PASS_BEHAVIOR (UNKNOWN owner fail-closed, not green)",
+    "live_start": "SKIPPED",
+    "global_config_mutation": "PASS (no ~/.claude.json mtime change)"
+  },
+  "recommended_next_action": "Needs operator action"
+}

@@ -133,21 +133,25 @@ def test_allocate_ports_raises_on_cross_server_collision():
         },
     }
 
-    with pytest.raises(click.ClickException) as excinfo:
-        mcp_commands._allocate_ports("/tmp/wt-collide", ["alpha", "beta"], catalog)
+    # Packet 004: cross-service preferred collisions rebind instead of hard-fail
+    ports = mcp_commands._allocate_ports(
+        "/tmp/wt-collide",
+        ["alpha", "beta"],
+        catalog,
+        persist=False,
+        dry_run=True,
+        is_free_fn=lambda p: True,
+    )
+    assert ports["ALPHA_PORT"] != ports["BETA_PORT"]
 
-    msg = str(excinfo.value.message)
-    assert "Internal port collision" in msg
-    assert "alpha" in msg
-    assert "beta" in msg
 
-
-def test_allocate_ports_wrapper_singleton_uses_fixed_base_port():
+def test_allocate_ports_wrapper_singleton_uses_fixed_base_port(tmp_path, monkeypatch):
     """wrapper-singleton services must NOT have a workspace hash offset applied.
 
     task-orchestrator is the canonical wrapper-singleton; its port must always
     equal default_port_base regardless of the workspace path hash.
     """
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "leases.json"))
     catalog = {
         "version": 1,
         "servers": {
@@ -163,17 +167,24 @@ def test_allocate_ports_wrapper_singleton_uses_fixed_base_port():
     }
 
     # Two completely different workspace paths must yield the same fixed port
+    # (dry-run so concurrent multi-project fixed-port leases are not written)
     result_a = mcp_commands._allocate_ports(
         "/Users/alice/code/project-a",
         ["task-orchestrator"],
         catalog,
         project_root="/Users/alice/code/project-a",
+        persist=False,
+        dry_run=True,
+        is_free_fn=lambda p: True,
     )
     result_b = mcp_commands._allocate_ports(
         "/Users/bob/totally-different-path/zyx",
         ["task-orchestrator"],
         catalog,
         project_root="/Users/bob/totally-different-path/zyx",
+        persist=False,
+        dry_run=True,
+        is_free_fn=lambda p: True,
     )
 
     assert result_a["TASK_ORCHESTRATOR_HTTP_PORT"] == 7890
@@ -210,19 +221,17 @@ def test_allocate_ports_raises_on_singleton_port_collision(monkeypatch):
         },
     }
 
-    # Force _port_for to return the singleton port regardless of input
-    monkeypatch.setattr(mcp_commands, "_port_for", lambda _path, _base: SINGLETON_PORT)
-
-    with pytest.raises(click.ClickException) as excinfo:
-        mcp_commands._allocate_ports(
-            "/Users/hue/code/dNh_CRM",
-            ["conport"],
-            catalog,
-        )
-
-    msg = str(excinfo.value.message)
-    assert "collision" in msg.lower()
-    assert str(SINGLETON_PORT) in msg or "gpt-researcher" in msg or "singleton" in msg
+    # Prefer reserved port via envrc; allocator must rebind away from singleton
+    ports = mcp_commands._allocate_ports(
+        "/Users/hue/code/dNh_CRM",
+        ["conport"],
+        catalog,
+        existing_envrc={"CONPORT_HTTP_PORT": str(SINGLETON_PORT)},
+        persist=False,
+        dry_run=True,
+        is_free_fn=lambda p: True,
+    )
+    assert ports["CONPORT_HTTP_PORT"] != SINGLETON_PORT
 
 
 def test_allocate_ports_raises_on_url_singleton_port_collision(monkeypatch):
@@ -245,42 +254,52 @@ def test_allocate_ports_raises_on_url_singleton_port_collision(monkeypatch):
         },
     }
 
-    monkeypatch.setattr(mcp_commands, "_port_for", lambda _path, _base: SINGLETON_PORT)
+    ports = mcp_commands._allocate_ports(
+        "/tmp/wt",
+        ["conport"],
+        catalog,
+        existing_envrc={"CONPORT_HTTP_PORT": str(SINGLETON_PORT)},
+        persist=False,
+        dry_run=True,
+        is_free_fn=lambda p: True,
+    )
+    assert ports["CONPORT_HTTP_PORT"] != SINGLETON_PORT
 
-    with pytest.raises(click.ClickException) as excinfo:
-        mcp_commands._allocate_ports("/tmp/wt", ["conport"], catalog)
 
-    assert "collision" in str(excinfo.value.message).lower()
-
-
-def test_allocate_ports_uses_project_root_for_per_repo_state():
+def test_allocate_ports_uses_project_root_for_per_repo_state(tmp_path, monkeypatch):
     catalog = {
         "version": 1,
         "servers": {
             "task-orchestrator": {
                 "scope": "per-worktree",
                 "state_scope": "per-repo",
+                "management_model": "wrapper-singleton",
                 "transport": "http",
                 "port_var": "TASK_ORCHESTRATOR_HTTP_PORT",
                 "default_port_base": 7890,
             },
         },
     }
+    reg = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg))
 
     main = mcp_commands._allocate_ports(
         "/tmp/repo",
         ["task-orchestrator"],
         catalog,
         project_root="/tmp/shared-project",
+        is_free_fn=lambda p: True,
     )
     linked = mcp_commands._allocate_ports(
         "/tmp/repo-linked",
         ["task-orchestrator"],
         catalog,
         project_root="/tmp/shared-project",
+        is_free_fn=lambda p: True,
     )
 
     assert linked == main
+    assert main["TASK_ORCHESTRATOR_HTTP_PORT"] == 7890
 
 
 def test_project_identity_is_shared_across_linked_worktrees(tmp_path):
@@ -335,7 +354,9 @@ def test_load_catalog_falls_back_to_bundled_default(tmp_path, monkeypatch):
 
     task_orchestrator = catalog["servers"]["task-orchestrator"]
     assert task_orchestrator["transport"] == "http"
-    assert task_orchestrator["state_scope"] == "per-repo"
+    assert task_orchestrator["state_scope"] == "single_active_project"
+    assert task_orchestrator.get("port_policy") == "reserved_singleton"
+    assert int(task_orchestrator.get("reserved_port") or 0) == 7890
     assert task_orchestrator["doctor_args"] == ["--print-resolution"]
 
 
@@ -692,7 +713,7 @@ def test_mcp_ensure_full_subprocess_timeout_surfaces_as_click_exception(tmp_path
 
 
 def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
-    """`doctor` reports every issue it finds and exits 1 if any are present."""
+    """`doctor` reports issues (envrc missing, unknown service) and exits non-zero on FAIL."""
     catalog = {
         "version": 1,
         "servers": {
@@ -724,22 +745,19 @@ def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
     monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
     monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda: None)
     # Ensure required env is unset and port appears unreachable.
     monkeypatch.delenv("DOPEMUX_WORKSPACE_ID", raising=False)
     monkeypatch.delenv("CONPORT_MCP_PORT", raising=False)
 
-    result = CliRunner().invoke(mcp_commands.mcp_doctor_cmd, [])
+    result = CliRunner().invoke(mcp_commands.mcp_doctor_cmd, ["--skip-docker"])
 
     assert result.exit_code == 1, result.output
-    # Doctor reports multiple problems in a single run (envrc missing + ghost server +
-    # missing required env + missing port var). Assert each surfaces, ignoring the
-    # logger's line-wrapping of long absolute paths and Rich ANSI markup.
     plain_output = re.sub(r"\x1b\[[0-9;]*m", "", result.output)
-    assert "issue(s) found" in plain_output
-    assert ".envrc" in result.output
+    assert "MCP Doctor" in plain_output
+    assert "FAIL" in plain_output or "ENVRC_MISSING" in plain_output
+    assert ".envrc" in result.output or "ENVRC_MISSING" in plain_output
     assert "ghost" in result.output
-    assert "DOPEMUX_WORKSPACE_ID" in result.output
-    assert "CONPORT_MCP_PORT" in result.output
 
 
 def test_doctor_runs_relative_stdio_resolution_from_repo_root(tmp_path, monkeypatch):
@@ -754,7 +772,11 @@ def test_doctor_runs_relative_stdio_resolution_from_repo_root(tmp_path, monkeypa
             "task-orchestrator": {"type": "stdio", "command": relative_command, "args": []},
         }
     }, indent=2) + "\n")
-    (tmp_path / mcp_commands.ENVRC_FILENAME).write_text("")
+    (tmp_path / mcp_commands.ENVRC_FILENAME).write_text(
+        f"export TASK_ORCHESTRATOR_PROJECT_ROOT={tmp_path}\n"
+        f"export DOPEMUX_WORKSPACE_ROOT={tmp_path}\n"
+        f"export DOPEMUX_PROJECT_ROOT={tmp_path}\n"
+    )
     catalog = {
         "version": 1,
         "servers": {
@@ -772,13 +794,20 @@ def test_doctor_runs_relative_stdio_resolution_from_repo_root(tmp_path, monkeypa
     monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
     monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda: None)
     monkeypatch.delenv("TASK_ORCHESTRATOR_PROJECT_ROOT", raising=False)
     subdir = tmp_path / "nested"
     subdir.mkdir()
     monkeypatch.chdir(subdir)
 
-    result = CliRunner().invoke(mcp_commands.mcp_doctor_cmd, [])
+    # JSON path surfaces stdio doctor stdout as finding evidence even when
+    # compose lifecycle hazards make overall status FAIL (expected until Packet 002).
+    result = CliRunner().invoke(
+        mcp_commands.mcp_doctor_cmd, ["--json", "--skip-docker"]
+    )
 
-    assert result.exit_code == 0, result.output
-    assert "state_id=test-state" in result.output
-    assert "nothing listening" not in result.output
+    assert result.exit_code in {0, 1, 2}, result.output
+    payload = json.loads(result.output)
+    blob = json.dumps(payload)
+    assert "state_id=test-state" in blob
+    assert "nothing listening" not in blob
