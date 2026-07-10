@@ -118,13 +118,17 @@ def generate_compose_override(
     if "conport" in services:
         cname = container_names["conport"]
         labels = labels_as_compose_map(labels_by_service["conport"])
+        http_p = int(ports.get("CONPORT_HTTP_PORT", 3004))
+        mcp_p = int(ports.get("CONPORT_MCP_PORT", 3005))
+        info_p = int(ports.get("CONPORT_INFO_PORT", 4004))
+        # ports: !override replaces compose.yml all-interface publishes with loopback-only.
         blocks.append(
             f"""  conport:
     container_name: {cname}
-    ports:
-      - "{ports.get('CONPORT_HTTP_PORT', 3004)}:3004"
-      - "{ports.get('CONPORT_MCP_PORT', 3005)}:3005"
-      - "{ports.get('CONPORT_INFO_PORT', 4004)}:4004"
+    ports: !override
+      - "127.0.0.1:{http_p}:3004"
+      - "127.0.0.1:{mcp_p}:3005"
+      - "127.0.0.1:{info_p}:4004"
     environment:
       DOPEMUX_INSTANCE_ID: "{identity.get('DOPEMUX_INSTANCE_ID', '')}"
       DOPEMUX_WORKSPACE_ID: "{identity.get('DOPEMUX_WORKSPACE_ID', '')}"
@@ -139,11 +143,12 @@ def generate_compose_override(
         cname = container_names["dope-memory"]
         labels = labels_as_compose_map(labels_by_service["dope-memory"])
         data = str(memory_data_path.resolve())
+        mem_p = int(ports.get("DOPE_MEMORY_PORT", 3020))
         blocks.append(
             f"""  dope-memory:
     container_name: {cname}
-    ports:
-      - "{ports.get('DOPE_MEMORY_PORT', 3020)}:3020"
+    ports: !override
+      - "127.0.0.1:{mem_p}:3020"
     environment:
       DOPE_MEMORY_WORKSPACE_ID: "{identity.get('DOPE_MEMORY_WORKSPACE_ID', '')}"
       DOPE_MEMORY_INSTANCE_ID: "{identity.get('DOPE_MEMORY_INSTANCE_ID', '')}"

@@ -50,7 +50,7 @@ class EnvrcParseResult:
 
     path: Optional[Path]
     present: bool
-    parse_status: str  # OK | ERROR | MISSING
+    parse_status: str  # OK | PARTIAL | ERROR | MISSING
     values: Dict[str, str] = field(default_factory=dict)
     keys_present: List[str] = field(default_factory=list)
     errors: List[str] = field(default_factory=list)
@@ -178,9 +178,10 @@ def load_envrc(path: Path | str | None) -> EnvrcParseResult:
         )
 
     values, errors = parse_envrc_text(text)
-    # Partial parse: useful keys still count as OK so doctor does not hard-fail
-    # on minor envrc noise. errors[] retains malformed-line diagnostics.
-    if values:
+    # Partial parse: usable keys with malformed lines → PARTIAL (not hard ERROR).
+    if values and errors:
+        status = "PARTIAL"
+    elif values:
         status = "OK"
     elif errors:
         status = "ERROR"
@@ -206,7 +207,7 @@ def merge_envrc_into_environ(
 ) -> Dict[str, str]:
     """Return a new env mapping with envrc values applied (envrc wins when override=True)."""
     merged = dict(base or {})
-    if envrc.parse_status in {"OK", "ERROR"} and envrc.values:
+    if envrc.parse_status in {"OK", "PARTIAL", "ERROR"} and envrc.values:
         for key, value in envrc.values.items():
             if override or key not in merged:
                 merged[key] = value

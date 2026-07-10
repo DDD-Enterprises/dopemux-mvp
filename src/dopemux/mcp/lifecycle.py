@@ -6,6 +6,7 @@ Uses Packet 001 doctor for preflight. Never adopts unlabeled containers.
 from __future__ import annotations
 
 import json
+import re
 import socket
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -220,6 +221,32 @@ def _extract_ports(env: Mapping[str, str], services: Sequence[str], catalog: Map
     return ports
 
 
+def _port_to_expected_service(
+    port: int,
+    *,
+    services: Sequence[str],
+    ports: Mapping[str, int],
+    catalog: Mapping[str, Any],
+) -> Optional[str]:
+    """Map a host port back to the requested MCP service that owns it."""
+    for svc in services:
+        svc_ports = _ports_for_service(svc, ports, catalog)
+        if any(int(p) == int(port) for p in svc_ports.values()):
+            return svc
+    # Fallback: port env-var naming conventions
+    for var, p in ports.items():
+        if int(p) != int(port):
+            continue
+        key = str(var).upper()
+        if key.startswith("CONPORT"):
+            return "conport"
+        if key.startswith("DOPE_MEMORY") or key.startswith("DOPEMEMORY"):
+            return "dope-memory"
+        if key.startswith("TASK_ORCHESTRATOR"):
+            return "task-orchestrator"
+    return None
+
+
 def _collision_checks(
     *,
     services: Sequence[str],
@@ -228,8 +255,10 @@ def _collision_checks(
     docker: di.DockerInspectResult,
     project_id: str,
     worktree_root: str,
+    catalog: Optional[Mapping[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     findings: List[Dict[str, Any]] = []
+    catalog = catalog or {}
     if not docker.available:
         findings.append(
             {
@@ -297,12 +326,78 @@ def _collision_checks(
             continue
         labels = owner.labels or {}
         managed = labels.get(dr.LABEL_MANAGED) == "true"
+        expected_svc = _port_to_expected_service(
+            int(port), services=services, ports=ports, catalog=catalog
+        )
+        expected_cname = container_names.get(expected_svc or "", "")
+        # Only treat as "ours" when name matches the *expected* MCP service/container —
+        # never the owner's own name fragment (avoids accepting <repo>_db on MCP ports).
+        expected_name_substrings = [
+            s
+            for s in (
+                expected_svc or "",
+                expected_cname,
+                "task-orchestrator" if expected_svc == "task-orchestrator" else "",
+            )
+            if s
+        ]
+        ownership = di.classify_container_ownership(
+            owner,
+            project_root=worktree_root,
+            workspace_id=worktree_root,
+            project_id=project_id,
+            expected_ports=[int(port)],
+            expected_name_substrings=expected_name_substrings,
+            project_slug_hints=[project_id, Path(worktree_root).name if worktree_root else ""],
+        )
+        owner_svc_label = labels.get("dopemux.service") or ""
+        # Explicit service-label mismatch on our port → always collision
+        if (
+            managed
+            and expected_svc
+            and owner_svc_label
+            and owner_svc_label != expected_svc
+            and labels.get("dopemux.project_id") == project_id
+        ):
+            findings.append(
+                {
+                    "code": "DOCKER_CONTAINER_PORT_COLLISION",
+                    "severity": "FAIL",
+                    "service": expected_svc,
+                    "message": (
+                        f"Port :{port} ({var}) held by same-project container "
+                        f"{owner.name} labeled service={owner_svc_label} "
+                        f"(expected {expected_svc})"
+                    ),
+                }
+            )
+            continue
+        if ownership in {"MATCH", "COMPOSE_MATCH"}:
+            # Require that COMPOSE_MATCH is not just port+slug with wrong service name
+            if ownership == "COMPOSE_MATCH" and expected_name_substrings:
+                name_l = (owner.name or "").lower()
+                if not any(s.lower() in name_l for s in expected_name_substrings if s):
+                    findings.append(
+                        {
+                            "code": "DOCKER_CONTAINER_PORT_COLLISION",
+                            "severity": "FAIL",
+                            "service": expected_svc,
+                            "message": (
+                                f"Port :{port} ({var}) occupied by same-project container "
+                                f"{owner.name} that is not the expected MCP service "
+                                f"{expected_svc or var}"
+                            ),
+                        }
+                    )
+                    continue
+            # Owned by this project (explicit labels or compose secondary) — not a foreign collision
+            continue
         if not managed:
             findings.append(
                 {
                     "code": "DOCKER_CONTAINER_PORT_COLLISION",
                     "severity": "FAIL",
-                    "service": None,
+                    "service": expected_svc,
                     "message": (
                         f"Port :{port} ({var}) occupied by unlabeled container {owner.name}"
                     ),
@@ -313,14 +408,14 @@ def _collision_checks(
                 {
                     "code": "PORT_OWNED_BY_OTHER_PROJECT",
                     "severity": "FAIL",
-                    "service": labels.get("dopemux.service"),
+                    "service": labels.get("dopemux.service") or expected_svc,
                     "message": (
                         f"Port :{port} owned by project {labels.get('dopemux.project_id')} "
                         f"via {owner.name}"
                     ),
                 }
             )
-        # Same project + managed → OK (already_running path)
+        # Same project + managed + matching service → OK (already_running path)
     return findings
 
 
@@ -426,6 +521,18 @@ def run_lifecycle(
                 "service": None,
             }
         )
+    elif envrc.parse_status == "PARTIAL":
+        warnings.append(
+            {
+                "code": "ENVRC_PARTIAL_PARSE",
+                "severity": "WARN",
+                "message": (
+                    f"envrc partial parse: {len(envrc.values)} keys loaded, "
+                    f"{len(envrc.errors)} malformed line(s)"
+                ),
+                "service": None,
+            }
+        )
     if not mcp_json.get("present"):
         blocking.append(
             {
@@ -479,6 +586,231 @@ def run_lifecycle(
     compose_proj = dr.compose_project_name(slug, worktree_hash)
 
     ports = _extract_ports(doctor_env, selected, catalog)
+
+    # Task Orchestrator fixed-port identity gate (Packet 005)
+    if op in {"start", "restart"} and "task-orchestrator" in selected:
+        try:
+            from .task_orchestrator_identity import (
+                evaluate_fixed_port_state,
+                identity_from_docker_labels,
+            )
+
+            to_spec = (catalog.get("servers") or {}).get("task-orchestrator") or {}
+            to_port = ports.get(
+                str(to_spec.get("port_var") or "TASK_ORCHESTRATOR_HTTP_PORT")
+            ) or int(to_spec.get("default_port_base") or 7890)
+            docker_identity = None
+            if docker.available:
+                from .task_orchestrator_identity import identity_from_container_heuristics
+
+                matches = di.find_containers_for_service(
+                    docker,
+                    service_name="task-orchestrator",
+                    expected_ports=[int(to_port)],
+                    name_hints=["task-orchestrator", "orchestrator"],
+                )
+                for c in matches:
+                    st = di.classify_container_ownership(
+                        c,
+                        project_root=identity.project_root,
+                        workspace_id=identity.workspace_id,
+                        project_id=identity.project_id,
+                        expected_ports=[int(to_port)],
+                        expected_name_substrings=["task-orchestrator"],
+                        project_slug_hints=[
+                            identity.project_id or "",
+                            Path(identity.project_root or "").name,
+                        ],
+                    )
+                    if st in {"MATCH", "WRONG_PROJECT"}:
+                        docker_identity = identity_from_docker_labels(
+                            c.labels or {},
+                            port=int(to_port),
+                            container_name=c.name,
+                        )
+                        break
+                    if st in {"COMPOSE_MATCH", "UNLABELED"} and docker_identity is None:
+                        docker_identity = identity_from_container_heuristics(
+                            container_name=c.name,
+                            labels=c.labels or {},
+                            port=int(to_port),
+                            target_project_root=identity.project_root,
+                            target_project_id=identity.project_id,
+                        )
+                        if st == "COMPOSE_MATCH" or docker_identity.has_project_proof():
+                            break
+            to_eval = evaluate_fixed_port_state(
+                port=int(to_port),
+                target_project_id=identity.project_id,
+                target_project_root=identity.project_root,
+                target_workspace_id=identity.workspace_id,
+                target_instance_id=identity.instance_id,
+                target_worktree_hash=identity.worktree_hash,
+                is_free_fn=is_free,
+                docker_identity=docker_identity,
+                skip_http=True,  # upstream jar has no /info|/health (006R)
+                for_start=True,
+            )
+            for f in to_eval.findings:
+                if f.get("severity") == "FAIL" or f.get("code", "").startswith(
+                    "TASK_ORCHESTRATOR_START_BLOCKED"
+                ):
+                    blocking.append(
+                        {
+                            "code": f.get("code")
+                            or to_eval.start_block_code
+                            or "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
+                            "severity": "FAIL",
+                            "message": f.get("message") or "TO start blocked",
+                            "service": "task-orchestrator",
+                        }
+                    )
+                elif f.get("severity") in {"WARN", "UNKNOWN"}:
+                    warnings.append(
+                        {
+                            "code": f.get("code"),
+                            "severity": f.get("severity"),
+                            "message": f.get("message"),
+                            "service": "task-orchestrator",
+                        }
+                    )
+            if not to_eval.start_allowed and to_eval.start_block_code:
+                if not any(
+                    b.get("code") == to_eval.start_block_code for b in blocking
+                ):
+                    blocking.append(
+                        {
+                            "code": to_eval.start_block_code,
+                            "severity": "FAIL",
+                            "message": (
+                                f"task-orchestrator start blocked "
+                                f"(match={to_eval.match} port={to_port})"
+                            ),
+                            "service": "task-orchestrator",
+                        }
+                    )
+            elif to_eval.start_allowed and to_eval.match == "OK":
+                warnings.append(
+                    {
+                        "code": "TASK_ORCHESTRATOR_START_ALLOWED",
+                        "severity": "INFO",
+                        "message": "task-orchestrator already running for target project",
+                        "service": "task-orchestrator",
+                    }
+                )
+            elif to_eval.start_allowed and to_eval.match == "FREE":
+                warnings.append(
+                    {
+                        "code": "TASK_ORCHESTRATOR_START_ALLOWED",
+                        "severity": "INFO",
+                        "message": f"task-orchestrator fixed port :{to_port} free; start allowed",
+                        "service": "task-orchestrator",
+                    }
+                )
+        except Exception as exc:  # noqa: BLE001
+            blocking.append(
+                {
+                    "code": "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
+                    "severity": "FAIL",
+                    "message": f"TO identity preflight failed: {exc}",
+                    "service": "task-orchestrator",
+                }
+            )
+
+    # Lease registry consistency (start only — recommend repair-config on mismatch)
+    if op == "start":
+        try:
+            from .port_leases import PortLeaseRegistry
+
+            lease_reg = PortLeaseRegistry.load()
+            if lease_reg.parse_status == "ERROR":
+                blocking.append(
+                    {
+                        "code": "LEASE_REGISTRY_PARSE_ERROR",
+                        "severity": "FAIL",
+                        "message": f"Lease registry unreadable: {lease_reg.error}",
+                        "service": None,
+                    }
+                )
+            elif lease_reg.parse_status == "OK":
+                # Reserved singleton ports (TO:7890) are never project-leased (006R)
+                from .port_allocator import singleton_reserved_ports
+
+                reserved = singleton_reserved_ports(catalog)
+                reserved.setdefault(7890, "task-orchestrator")
+                for var, port in ports.items():
+                    if int(port) in reserved:
+                        # Ignore invalid foreign leases on reserved ports; do not block start.
+                        warnings.append(
+                            {
+                                "code": "ALLOCATOR_RESERVED_SINGLETON_PORT",
+                                "severity": "INFO",
+                                "message": (
+                                    f"{var}={port} is reserved singleton "
+                                    f"({reserved[int(port)]}); not lease-gated"
+                                ),
+                                "service": reserved.get(int(port)),
+                            }
+                        )
+                        continue
+                    ours = [
+                        L
+                        for L in lease_reg.active_leases()
+                        if L.get("port_var") == var
+                        and (
+                            L.get("worktree_root") == (identity.worktree_root or str(target))
+                            or L.get("worktree_hash") == identity.worktree_hash
+                        )
+                    ]
+                    foreign = lease_reg.find_active_by_port(int(port))
+                    if foreign and not lease_reg.identity_matches(
+                        foreign,
+                        worktree_root=identity.worktree_root or str(target),
+                        project_root=identity.project_root,
+                        worktree_hash=identity.worktree_hash,
+                    ):
+                        blocking.append(
+                            {
+                                "code": "LEASE_BELONGS_TO_OTHER_PROJECT",
+                                "severity": "FAIL",
+                                "message": f"Port {port} ({var}) leased to another project",
+                                "service": None,
+                            }
+                        )
+                    elif ours and int(ours[0].get("port") or 0) != int(port):
+                        blocking.append(
+                            {
+                                "code": "LEASE_ENVRC_MISMATCH",
+                                "severity": "FAIL",
+                                "message": (
+                                    f"Envrc {var}={port} != lease {ours[0].get('port')}; "
+                                    "run `dopemux mcp repair-config --apply`"
+                                ),
+                                "service": None,
+                            }
+                        )
+                    elif not ours:
+                        warnings.append(
+                            {
+                                "code": "LEGACY_ENVRC_WITHOUT_LEASE",
+                                "severity": "WARN",
+                                "message": f"No lease for envrc {var}={port}",
+                                "service": None,
+                            }
+                        )
+                    else:
+                        if not is_free(int(port)):
+                            pass
+        except Exception as exc:  # noqa: BLE001
+            warnings.append(
+                {
+                    "code": "LEASE_UNKNOWN_OWNER",
+                    "severity": "WARN",
+                    "message": f"Lease check skipped: {exc}",
+                    "service": None,
+                }
+            )
+
     # Missing required ports for selected services
     for name in selected:
         spec = (catalog.get("servers") or {}).get(name) or {}
@@ -512,13 +844,19 @@ def run_lifecycle(
     container_names = {
         svc: dr.container_name_for(slug, worktree_hash, svc) for svc in selected
     }
-    # TO wrapper uses task-orchestrator-<state_id>; prefer project_hash short form
+    # Match wrapper scripts/mcp-wrappers/task-orchestrator-*-{stdio,http}:
+    # state_id = <project-slug>-<sha256(project_root)[:16]> (== ProjectIdentity.project_id)
+    # container_name = task-orchestrator-${state_id}
     if "task-orchestrator" in selected:
-        # Match wrapper: task-orchestrator-${workspace_id} where state_id is project hash-ish
-        # Use our deterministic name for managed lifecycle; note wrapper uses different name
-        container_names["task-orchestrator"] = (
-            f"task-orchestrator-{project_hash}" if project_hash else container_names["task-orchestrator"]
-        )
+        to_state_id = identity.project_id
+        if not to_state_id and project_hash:
+            # Fallback: identity-style slug (keeps . _ - like the wrapper), not docker slug.
+            to_slug = re.sub(
+                r"[^a-z0-9._-]+", "-", Path(project_root).name.lower()
+            ).strip("-") or "workspace"
+            to_state_id = f"{to_slug}-{project_hash}"
+        if to_state_id:
+            container_names["task-orchestrator"] = f"task-orchestrator-{to_state_id}"
 
     labels_by_service: Dict[str, Dict[str, str]] = {}
     for svc in selected:
@@ -550,6 +888,7 @@ def run_lifecycle(
         docker=docker,
         project_id=project_id,
         worktree_root=worktree_root,
+        catalog=catalog,
     )
     if op in {"start", "restart"}:
         blocking.extend(collision_findings)
@@ -867,8 +1206,18 @@ def _start_services(**kw: Any) -> LifecycleResult:
 
     runtime_base = reg_path.parent / f"{slug}-{worktree_hash}"
     memory_data = Path(worktree_root) / ".dopemux"
+    # Project identity used for TO container naming (must match wrapper).
+    to_state_id = ""
+    if "task-orchestrator" in selected:
+        to_cname = container_names.get("task-orchestrator") or ""
+        if to_cname.startswith("task-orchestrator-"):
+            to_state_id = to_cname[len("task-orchestrator-") :]
+        else:
+            to_state_id = identity.project_id or project_id or ""
+
     identity_env = {
         "DOPEMUX_INSTANCE_ID": identity.instance_id or worktree_hash,
+        "DOPEMUX_PROJECT_ID": identity.project_id or project_id,
         "DOPEMUX_WORKSPACE_ID": identity.workspace_id or worktree_root,
         "DOPEMUX_PROJECT_ROOT": project_root,
         "DOPEMUX_WORKTREE_ROOT": worktree_root,
@@ -881,6 +1230,10 @@ def _start_services(**kw: Any) -> LifecycleResult:
         "CONPORT_CONTAINER_NAME": container_names.get("conport", ""),
         **{k: str(v) for k, v in ports.items()},
     }
+    if to_state_id:
+        # Prefer project identity for TO naming; do not leak worktree instance id.
+        identity_env["DOPEMUX_PROJECT_ID"] = to_state_id
+
 
     override_text = ""
     env_text = dr.generate_mcp_env(identity_env)
@@ -1064,11 +1417,20 @@ def _start_services(**kw: Any) -> LifecycleResult:
                 }
             )
         elif svc == "task-orchestrator":
-            # Run wrapper with project env
+            # Run wrapper with project identity env so container name matches registry.
             env = dict(os_environ_safe(doctor_env))
             env["TASK_ORCHESTRATOR_PROJECT_ROOT"] = project_root
             env["DOPEMUX_PROJECT_ROOT"] = project_root
+            env["DOPEMUX_WORKTREE_ROOT"] = worktree_root
             env["DOPEMUX_WORKSPACE_ROOT"] = worktree_root
+            # Use lifecycle project identity (slug-hash), not envrc worktree instance id.
+            to_id = project_id
+            cname_expected = container_names.get("task-orchestrator") or ""
+            if cname_expected.startswith("task-orchestrator-"):
+                to_id = cname_expected[len("task-orchestrator-") :]
+            env["DOPEMUX_PROJECT_ID"] = to_id
+            # Wrapper prefers DOPEMUX_PROJECT_ID for naming; clear stale instance id override path
+            env["DOPEMUX_INSTANCE_ID"] = to_id
             env["TASK_ORCHESTRATOR_HTTP_PORT"] = str(
                 ports.get("TASK_ORCHESTRATOR_HTTP_PORT", 7890)
             )

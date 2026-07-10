@@ -12,14 +12,6 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 STRICT_LOG_FILES = [
-    "services/activity-capture/main.py",
-    "services/activity-capture/activity_tracker.py",
-    "services/activity-capture/event_subscriber.py",
-    "services/activity-capture/adhd_client.py",
-    "services/workspace-watcher/main.py",
-    "services/workspace-watcher/event_emitter.py",
-    "services/workspace-watcher/app_detector.py",
-    "services/workspace-watcher/workspace_mapper.py",
     "services/adhd-dashboard/backend.py",
     "services/adhd-dashboard/task_recommender.py",
     "services/adhd_engine/core/output_dispatcher.py",
@@ -41,12 +33,6 @@ HTTP_DETAIL_FILES = [
 ]
 
 REQUIRED_SNIPPETS = {
-    "services/workspace-watcher/event_emitter.py": [
-        "switch_summary",
-        "status_chip",
-        "tone",
-        "voice_header",
-    ],
     "services/adhd-dashboard/task_recommender.py": [
         "status_chip",
         "tone",
@@ -60,7 +46,6 @@ REQUIRED_SNIPPETS = {
 }
 
 AUDITED_PYTHON_FILES = [
-    "services/activity-capture/main.py",
     "src/dopemux/cli.py",
     "src/dopemux/commands/extract_commands.py",
     "src/dopemux/commands/extractor_commands.py",

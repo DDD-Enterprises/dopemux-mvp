@@ -61,6 +61,25 @@ def test_parse_malformed_line():
     assert any("malformed" in e for e in errors)
 
 
+def test_load_envrc_partial_keeps_values(tmp_path: Path):
+    """Malformed lines must not mark partial parses as ERROR when keys loaded."""
+    path = tmp_path / ".envrc.dopemux-mcp"
+    path.write_text(
+        "not a valid line\n"
+        "export CONPORT_MCP_PORT=3041\n"
+        "export DOPEMUX_INSTANCE_ID=abcd\n"
+        "also bad\n"
+    )
+    result = load_envrc(path)
+    assert result.present is True
+    assert result.parse_status == "PARTIAL"
+    assert result.values["CONPORT_MCP_PORT"] == "3041"
+    assert result.values["DOPEMUX_INSTANCE_ID"] == "abcd"
+    assert len(result.errors) >= 2
+    merged = merge_envrc_into_environ({}, result)
+    assert merged["CONPORT_MCP_PORT"] == "3041"
+
+
 def test_secret_like_redaction():
     assert is_secret_like_key("OPENAI_API_KEY") is True
     assert is_secret_like_key("CONPORT_MCP_PORT") is False
@@ -97,7 +116,7 @@ def test_load_envrc_ok(tmp_path: Path):
 
 
 def test_load_envrc_partial_parse_is_ok(tmp_path: Path):
-    """Useful keys + one malformed line must not hard-fail doctor (parse_status OK)."""
+    """Useful keys + malformed lines → PARTIAL (doctor WARN, not hard ERROR)."""
     path = tmp_path / ".envrc.dopemux-mcp"
     path.write_text(
         "export CONPORT_MCP_PORT=3041\n"
@@ -106,7 +125,7 @@ def test_load_envrc_partial_parse_is_ok(tmp_path: Path):
     )
     result = load_envrc(path)
     assert result.present is True
-    assert result.parse_status == "OK"
+    assert result.parse_status == "PARTIAL"
     assert result.values["CONPORT_MCP_PORT"] == "3041"
     assert result.values["DOPEMUX_INSTANCE_ID"] == "abcd"
     assert any("malformed" in e for e in result.errors)
@@ -129,3 +148,26 @@ def test_merge_envrc_into_environ_override(tmp_path: Path):
     merged = merge_envrc_into_environ({"CONPORT_MCP_PORT": "3005", "OTHER": "x"}, parsed)
     assert merged["CONPORT_MCP_PORT"] == "3041"
     assert merged["OTHER"] == "x"
+
+
+def test_repair_envrc_regeneration_keys(tmp_path: Path):
+    """Envrc repair path produces catalog-owned port keys without secrets."""
+    from dopemux.mcp.config_repair import _build_envrc_text
+
+    text = _build_envrc_text(
+        "/tmp/wt",
+        "/tmp/proj",
+        {
+            "DOPEMUX_WORKSPACE_ID": "/tmp/wt",
+            "DOPEMUX_PROJECT_ROOT": "/tmp/proj",
+            "DOPEMUX_INSTANCE_ID": "abcd",
+            "CONPORT_MCP_PORT": "3015",
+            "DOPE_MEMORY_PORT": "3030",
+            "CUSTOM_SAFE": "keep-me",
+        },
+        preserve_values={"CUSTOM_SAFE": "keep-me", "OPENAI_API_KEY": "sk-x"},
+    )
+    assert "export CONPORT_MCP_PORT=3015" in text
+    assert "export CUSTOM_SAFE=keep-me" in text
+    assert "OPENAI_API_KEY" not in text
+    assert "sk-x" not in text
