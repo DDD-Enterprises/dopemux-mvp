@@ -1,0 +1,121 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0010",
+  "title": "Exposure Target Registry V2 And Pure Resolver Core",
+  "branch": "claude/dcp-mcp-ro-0010-registry-v2-resolver",
+  "base_branch": "main",
+  "base_sha": "1893cffb677a3e06bfd64dd61159ee2bda15fdfc",
+  "implementation_commit": "1f420929b",
+  "scope": "services/dcp-readonly-facade registry v2 parsing + pure deterministic resolver core; facade-local docs + proof. No runtime/network/backend code.",
+  "runtime_code_changed": false,
+  "backend_code_changed": false,
+  "network_or_socket_code_introduced": false,
+  "executor_provenance": {
+    "implementation": "Claude Code Sonnet subagent (python-expert), orchestrated by Claude Code Opus",
+    "audit": "Claude Code Opus (independent of the implementer)",
+    "note": "The canonical task-packet execution.agent enum is {gemini,codex,vibe,shell} and has no 'claude' value; execution block omitted (schema-optional, no CI gate consumes it) and true provenance recorded here."
+  },
+  "depends_on": ["TP-DCP-MCP-RO-0009"],
+  "files_changed": {
+    "new_source": [
+      "services/dcp-readonly-facade/src/dcp_facade/registry_v2.py",
+      "services/dcp-readonly-facade/src/dcp_facade/resolver_core.py",
+      "services/dcp-readonly-facade/src/dcp_facade/capability.py",
+      "services/dcp-readonly-facade/schema/registry_v2.schema.json"
+    ],
+    "new_tests_fixtures": [
+      "services/dcp-readonly-facade/tests/test_registry_v2.py",
+      "services/dcp-readonly-facade/tests/test_resolver_core.py",
+      "services/dcp-readonly-facade/tests/test_capability.py",
+      "services/dcp-readonly-facade/tests/fixtures/registry_v2/*.yaml"
+    ],
+    "updated": [
+      "services/dcp-readonly-facade/registry.example.yaml",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/REGISTRY_V2_CONTRACT.md"
+    ],
+    "packet_and_proof": [
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0010.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0010.md",
+      "proof/TP-DCP-MCP-RO-0010/PROOF.json",
+      "proof/TP-DCP-MCP-RO-0010/AUDIT.md",
+      "proof/TP-DCP-MCP-RO-0010/COMMAND_LOG.md"
+    ]
+  },
+  "validation": {
+    "PASS": [
+      {"command": "python3 -m pytest -q services/dcp-readonly-facade/tests", "exit_code": 0, "result": "187 passed, 1 skipped (pre-existing live-optional)"},
+      {"command": "python3 -m compileall -q services/dcp-readonly-facade", "exit_code": 0},
+      {"command": "jsonschema.Draft7Validator.check_schema(registry_v2.schema.json)", "exit_code": 0},
+      {"command": "purity scan of registry_v2/resolver_core/capability (requests|httpx|urllib|socket|subprocess|os.system|shell|docker)", "exit_code": 1, "result": "no real I/O primitives (only literal family name 'docker_mcp_gateway')"},
+      {"command": "secret scan of 0010 new files (sk-[A-Za-z0-9]{20,}|API_KEY=|Bearer|PASSWORD=|SECRET=|TOKEN=)", "exit_code": 1, "result": "ZERO secrets in new files"},
+      {"command": "real-world _derive_roots on this linked worktree", "exit_code": 0, "result": "project_root=/Users/hue/code/dopemux-mvp, worktree_root=workspace (correct)"},
+      {"command": "duplicate target_id fixture parse", "exit_code": 0, "result": "targets == [] (fail-closed, ambiguity blocks)"}
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      {"command": "pal codereview (gpt-5-codex / gemini-2.5-pro)", "reason": "provider outage — OpenAI 401 invalid key, Google 429 quota=0", "mitigation": "Opus independent manual audit + advisor() second opinion (governed fallback)", "residual_risk": "no third-party model codereview signal; mitigated by two independent Claude-tier reviews"},
+      {"command": "live per-worktree runtime/mount exemplar (Gate 0C)", "reason": "out of scope for 0010 (pure/deterministic); required only for 0012 final acceptance", "residual_risk": "none for 0010"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "Independent Opus audit of TP-DCP-MCP-RO-0010 (registry v2 + pure resolver core) against ADR-DCP-MCP-RO-0009: manual read of registry_v2/resolver_core/capability + schema/tests; real-world _derive_roots verification on this linked worktree; fixture parse + purity/secret scans; advisor() second opinion (PAL external codereview NOT_RUN due to provider outage).",
+    "exit_code": 0,
+    "report_path": "proof/TP-DCP-MCP-RO-0010/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-0010-LOW-1",
+        "severity": "LOW",
+        "title": "Duplicate target_id hardened to fail-closed (ambiguity blocks)",
+        "status": "RESOLVED",
+        "body": "Original implementation used keep-first + warn for a duplicate target_id. Per ADR-DCP-MCP-RO-0009 'Ambiguity blocks', changed to fail-closed: the already-accepted entry is dropped and the id poisoned so no later entry revives it. Test + fixture + contract doc updated."
+      },
+      {
+        "id": "F-0010-INFO-1",
+        "severity": "INFO",
+        "title": "project_root trust deferred to 0011/0012",
+        "status": "ACCEPTED_RISK",
+        "body": "project_root is derived from local .git metadata and trusted downstream. The 0011 runtime join must re-validate per-service project identity and must not treat a crafted .git gitfile as ownership authority."
+      },
+      {
+        "id": "F-0010-INFO-2",
+        "severity": "INFO",
+        "title": "Submodule/symlinked-.git derivation reasoned, not live-tested",
+        "status": "ACCEPTED_RISK",
+        "body": "Linked-worktree derivation verified on real metadata. Submodule (no commondir -> block) and symlinked-.git (treated as primary) layouts are reasoned to fail closed but not exercised live; worst case is a false block, never a wrong-repo bind."
+      },
+      {
+        "id": "F-0010-LOW-2",
+        "severity": "LOW",
+        "title": "PAL external codereview NOT_RUN (provider outage)",
+        "status": "ACCEPTED_RISK",
+        "body": "pal codereview attempted on gpt-5-codex (OpenAI 401) and gemini-2.5-pro (Google 429 quota=0); both unavailable. Mitigated by independent Opus manual audit + advisor() second opinion."
+      }
+    ],
+    "fixes_applied": [
+      "Duplicate target_id now fails closed (ambiguity blocks): drop first entry + poison id (was keep-first).",
+      "Stray v1 'projects' key alongside v2 'targets' now records a drift warning (was silent ignore).",
+      "Discard validate_workspace raw error explicitly to avoid abs-path leak in caller reasons (cosmetic _err -> _)."
+    ],
+    "remaining_risks": [
+      "project_root trust is defense-in-depth deferred to 0011/0012.",
+      "submodule/symlinked-.git derivation reasoned, not live-tested (fail-closed).",
+      "PAL external codereview NOT_RUN (provider outage)."
+    ],
+    "skip_reason": null
+  },
+  "deviations": [
+    "FAMILY_POLICY_TABLE is a 2-tuple (resolution_class, chatgpt_posture) per the packet brief; no fabricated port_policy for the 8 families the ADR does not specify.",
+    "Block reasons deliberately do not forward validate_workspace()'s raw error (which can embed absolute paths) — stricter than v1.",
+    "v1-shaped documents fail closed rather than being coerced, per packet instruction."
+  ],
+  "handoff_to_0011": "0011 runtime/catalog join MUST re-validate per-service project identity and MUST NOT treat a project_root derived from a poisoned/crafted .git gitfile as ownership authority; ownership evidence belongs at the 0011/0012 tier.",
+  "rollback": "git reset --hard 1893cffb677a3e06bfd64dd61159ee2bda15fdfc  (drops the 0010 branch commits; nothing merged to main)",
+  "residual_risks": [
+    "project_root trust is defense-in-depth deferred to 0011/0012.",
+    "submodule/symlinked-.git derivation reasoned, not live-tested (fail-closed).",
+    "PAL external codereview NOT_RUN (provider outage)."
+  ]
+}
