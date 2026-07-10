@@ -221,6 +221,13 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toMatch(/<Tooltip title=\{isNotificationCopied \? 'Copied!' : 'Click to copy message, click X to dismiss'\} arrow describeChild>/);
   expect(appContent).toMatch(/aria-label=\{isNotificationCopied \? `\$\{notificationLabel\} \(Copied\)` : `Copy signal: \$\{notificationLabel\}`\}/);
   expect(appContent).toContain('onClick={() => handleCopyNotification(notification)}');
-  expect(appContent).toMatch(/animation:\s*'copy-success 0.4s ease-out'/);
+  // Clipboard payload must match chip/ARIA label (timestamp + type + message), not bare message
+  expect(appContent).toMatch(
+    /const formattedMessage = `\$\{formatTimestamp\(notification\.timestamp\)\} \$\{notification\.notificationType\}: \$\{notification\.message\}`;[\s\S]*?await navigator\.clipboard\.writeText\(formattedMessage\);/
+  );
+  // Anchor animation on notification-copy block so recommendation chip's copy-success cannot satisfy this assert
+  expect(appContent).toMatch(
+    /\.\.\.\(isNotificationCopied && \{[\s\S]*?animation:\s*'copy-success 0\.4s ease-out'/
+  );
   expect(appContent).toContain('tabIndex={0}');
 });
