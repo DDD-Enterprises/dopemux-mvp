@@ -1,35 +1,35 @@
 {
   "mcpServers": {
     "conport": {
-      "type": "sse",
-      "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
+      "description": "Knowledge graph, decisions, progress (PostgreSQL+AGE; per-worktree state)",
       "env": {
         "DOPEMUX_WORKSPACE_ID": "${DOPEMUX_WORKSPACE_ID:-}",
-        "GEMINI_API_KEY": "${GEMINI_API_KEY=[REDACTED]
-        "VOYAGEAI_API_KEY": "${VOYAGEAI_API_KEY=[REDACTED]
-        "OPENAI_API_KEY": "${OPENAI_API_KEY=[REDACTED]
+        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
+        "VOYAGEAI_API_KEY": "${VOYAGEAI_API_KEY:-}"
       },
-      "description": "Knowledge graph, decisions, progress (PostgreSQL+AGE; per-worktree state)"
+      "type": "sse",
+      "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"
     },
     "dope-memory": {
-      "type": "http",
-      "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
+      "description": "Temporal chronicle and working-context (per worktree instance)",
       "env": {
-        "DOPE_MEMORY_WORKSPACE_ID": "${DOPE_MEMORY_WORKSPACE_ID:-}",
-        "DOPE_MEMORY_INSTANCE_ID": "${DOPE_MEMORY_INSTANCE_ID:-}"
+        "DOPE_MEMORY_INSTANCE_ID": "${DOPE_MEMORY_INSTANCE_ID:-}",
+        "DOPE_MEMORY_WORKSPACE_ID": "${DOPE_MEMORY_WORKSPACE_ID:-}"
       },
-      "description": "Temporal chronicle and working-context (per worktree instance)"
+      "type": "http",
+      "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp"
     },
-    "ta[REDACTED_SK]": {
-      "type": "http",
-      "url": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
+    "task-orchestrator": {
+      "description": "HTTP singleton MCP Task Orchestrator with repo-scoped SQLite state",
       "env": {
-        "TASK_ORCHESTRATOR_PROJECT_ROOT": "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}",
-        "DOPEMUX_WORKSPACE_ROOT": "${DOPEMUX_WORKSPACE_ROOT:-}",
         "DOPEMUX_PROJECT_ROOT": "${DOPEMUX_PROJECT_ROOT:-}",
-        "TASK_ORCHESTRATOR_HTTP_PORT": "${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
+        "DOPEMUX_WORKSPACE_ROOT": "${DOPEMUX_WORKSPACE_ROOT:-}",
+        "TASK_ORCHESTRATOR_HTTP_PORT": "${TASK_ORCHESTRATOR_HTTP_PORT:-7890}",
+        "TASK_ORCHESTRATOR_PROJECT_ROOT": "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}"
       },
-      "description": "HTTP singleton MCP Task Orchestrator with repo-scoped SQLite state"
+      "type": "http",
+      "url": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp"
     }
   }
 }

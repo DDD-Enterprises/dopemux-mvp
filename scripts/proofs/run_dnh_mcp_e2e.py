@@ -7,6 +7,7 @@ Live apply/start only if dry-run is safe and --live is passed.
 
 from __future__ import annotations
 
+import ast
 import json
 import os
 import re
@@ -23,9 +24,27 @@ PROOF = DOPEMUX_ROOT / "proofs" / "mcp-runtime" / "dnh-crm-e2e" / TS
 LOG: List[str] = []
 CMD_LOG: List[Dict[str, Any]] = []
 
+_SECRET_KEY_NAME_RE = re.compile(
+    r"(?i)(?:api[_-]?key|token|secret|password|bearer|authorization|private[_-]?key|credential)"
+)
+# OpenAI-style live tokens only (avoid mangling identifiers like task-orchestrator).
+_SK_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9_-])sk-[A-Za-z0-9]{10,}")
+# JSON: "KEY": "value" where KEY looks secret-like
+_JSON_QUOTED_SECRET_RE = re.compile(
+    r'(?i)("([^"\\]*(?:api[_-]?key|token|secret|password|bearer|authorization|private[_-]?key|credential)[^"\\]*)"\s*:\s*")((?:\\.|[^"\\])*)(")'
+)
+
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def proof_relpath() -> str:
+    """Repo-relative proof directory path (portable across machines)."""
+    try:
+        return str(PROOF.relative_to(DOPEMUX_ROOT))
+    except ValueError:
+        return str(PROOF)
 
 
 def write(name: str, content: str) -> Path:
@@ -43,17 +62,104 @@ def skip(name: str, reason: str) -> Path:
     return write_json(name, {"status": "SKIPPED", "reason": reason, "at": utc_now()})
 
 
+def _is_secret_key_name(key: str) -> bool:
+    return bool(_SECRET_KEY_NAME_RE.search(key))
+
+
+def _is_placeholder_value(value: str) -> bool:
+    """True for env-template values like ${VAR} or ${VAR:-default} with no live secret."""
+    s = value.strip()
+    if not s.startswith("${") or not s.endswith("}"):
+        return False
+    inner = s[2:-1]
+    # Placeholder defaults that are empty or another ${...} stay as-is.
+    if ":-" in inner:
+        default = inner.split(":-", 1)[1]
+        if not default or (default.startswith("${") and default.endswith("}")):
+            return True
+        # Non-empty default that looks like a live secret should still be redacted.
+        if _SK_TOKEN_RE.search(default) or len(default) > 8 and not default.startswith("$"):
+            return False
+        return True
+    return True
+
+
+def _redact_scalar_string(value: str) -> str:
+    if _SK_TOKEN_RE.search(value):
+        return _SK_TOKEN_RE.sub("[REDACTED_SK]", value)
+    return value
+
+
+def redact_json_value(obj: Any) -> Any:
+    """Recursively redact secret-like dict values while preserving JSON structure."""
+    if isinstance(obj, dict):
+        out: Dict[str, Any] = {}
+        for k, v in obj.items():
+            if isinstance(k, str) and _is_secret_key_name(k) and isinstance(v, str):
+                if _is_placeholder_value(v):
+                    out[k] = v
+                elif not v:
+                    out[k] = v
+                else:
+                    out[k] = "[REDACTED]"
+            else:
+                out[k] = redact_json_value(v)
+        return out
+    if isinstance(obj, list):
+        return [redact_json_value(x) for x in obj]
+    if isinstance(obj, str):
+        return _redact_scalar_string(obj)
+    return obj
+
+
+def redact_json_text(text: str) -> str:
+    """Redact secrets in a JSON document without breaking parseability."""
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        return redact_text(text)
+    return json.dumps(redact_json_value(data), indent=2, sort_keys=True) + "\n"
+
+
 def redact_text(text: str) -> str:
-    # Redact common secret patterns
-    text = re.sub(r"(?i)(api[_-]?key|token|secret|password|bearer)\s*[:=]\s*\S+", r"\1=[REDACTED]", text)
-    text = re.sub(r"sk-[A-Za-z0-9]{10,}", "[REDACTED_SK]", text)
+    """Redact secrets in free-form text; preserve valid JSON when possible.
+
+    Prefer structured JSON redaction. For non-JSON dumps:
+    - quoted JSON secret pairs ("KEY": "value")
+    - full env-style KEY=value / KEY: value assignments
+    - sk-* live tokens (word-boundary guarded)
+    """
+    stripped = text.lstrip()
+    if stripped.startswith("{") or stripped.startswith("["):
+        try:
+            json.loads(text)
+            return redact_json_text(text)
+        except json.JSONDecodeError:
+            pass
+
+    def _json_secret_repl(m: re.Match[str]) -> str:
+        key = m.group(2)
+        val = m.group(3)
+        # Unescape enough to check placeholders; keep structure always.
+        if _is_placeholder_value(val) or not val:
+            return m.group(0)
+        return f'{m.group(1)}[REDACTED]{m.group(4)}'
+
+    text = _JSON_QUOTED_SECRET_RE.sub(_json_secret_repl, text)
+    # Full-key assignments only (avoids splitting GEMINI_API_KEY mid-key).
+    text = re.sub(
+        r"(?i)\b([A-Za-z_][A-Za-z0-9_]*(?:api[_-]?key|token|secret|password|bearer|authorization)[A-Za-z0-9_]*)\s*=\s*(?![{\[])\S+",
+        r"\1=[REDACTED]",
+        text,
+    )
+    text = _SK_TOKEN_RE.sub("[REDACTED_SK]", text)
     return text
 
 
 def redact_envrc(text: str) -> str:
     try:
         sys.path.insert(0, str(DOPEMUX_ROOT / "src"))
-        from dopemux.mcp.envrc import is_secret_like_key, redact_value, parse_envrc_text
+        from dopemux.mcp.envrc import redact_value, parse_envrc_text
 
         values, _ = parse_envrc_text(text)
         lines = []
@@ -143,7 +249,10 @@ def main() -> int:
     mcp_path = DNH / ".mcp.json"
     envrc_path = DNH / ".envrc.dopemux-mcp"
     if mcp_path.exists():
-        write("MCP_JSON_BEFORE.redacted.json", redact_text(mcp_path.read_text(encoding="utf-8")))
+        write(
+            "MCP_JSON_BEFORE.redacted.json",
+            redact_json_text(mcp_path.read_text(encoding="utf-8")),
+        )
     else:
         skip("MCP_JSON_BEFORE.redacted.json", "missing")
     if envrc_path.exists():
@@ -170,16 +279,21 @@ def main() -> int:
         [
             sys.executable,
             "-c",
-            "from dopemux.commands.mcp_commands import mcp; print(sorted(mcp.commands.keys()))",
+            "import json; from dopemux.commands.mcp_commands import mcp; "
+            "print(json.dumps(sorted(mcp.commands.keys())))",
         ],
     )
     write("DOPMUX_MCP_COMMANDS.txt", out + err)
     required = {"doctor", "start", "status", "repair-config", "fleet"}
     present = set()
+    raw_cmds = (out or "").strip()
     try:
-        present = set(eval(out.strip() or "[]"))  # noqa: S307 — controlled local output
-    except Exception:
-        present = set()
+        present = set(json.loads(raw_cmds or "[]"))
+    except json.JSONDecodeError:
+        try:
+            present = set(ast.literal_eval(raw_cmds or "[]"))
+        except (ValueError, SyntaxError, TypeError):
+            present = set()
     missing = sorted(required - present)
     if missing:
         write_json(
@@ -253,7 +367,10 @@ def main() -> int:
 
     # config after
     if mcp_path.exists():
-        write("MCP_JSON_AFTER.redacted.json", redact_text(mcp_path.read_text(encoding="utf-8")))
+        write(
+            "MCP_JSON_AFTER.redacted.json",
+            redact_json_text(mcp_path.read_text(encoding="utf-8")),
+        )
     else:
         skip("MCP_JSON_AFTER.redacted.json", "missing")
     if envrc_path.exists():
@@ -548,7 +665,12 @@ def main() -> int:
     write("DOPMUX_GIT_STATUS_AFTER.txt", out + err)
 
     claude_after = claude.stat().st_mtime if claude.exists() else None
-    global_mutated = claude_before is not None and claude_after is not None and claude_after != claude_before
+    # Creation (absent -> present) counts as mutation, not only mtime changes.
+    global_mutated = (claude_before is None and claude_after is not None) or (
+        claude_before is not None
+        and claude_after is not None
+        and claude_after != claude_before
+    )
 
     # Analyze mcp.json transports
     mcp_status = "UNKNOWN"
@@ -736,7 +858,7 @@ def main() -> int:
         "created_at": utc_now(),
         "repo": "DDD-Enterprises/dopemux-mvp",
         "target_repo": "dNh_CRM",
-        "proof_path": str(PROOF),
+        "proof_path": proof_relpath(),
         "authoritative_artifacts": [
             "FINAL_VERDICT.json",
             "DNH_DOCTOR_AFTER.json",
@@ -786,7 +908,7 @@ def main() -> int:
 - **agent bootstrap doc:** {agent_status}
 - **TO identity:** {to_v.get('identity')}
 - **dope-memory volume verified:** {volume_ok}
-- **proof:** `{PROOF}`
+- **proof:** `{proof_relpath()}`
 
 ## Service table
 
@@ -812,8 +934,9 @@ def main() -> int:
 """,
     )
 
-    print(json.dumps({"proof": str(PROOF), "overall_status": overall}, indent=2))
-    return 0 if overall in {"VERIFIED", "PARTIAL", "BLOCKED"} else 1
+    print(json.dumps({"proof": proof_relpath(), "overall_status": overall}, indent=2))
+    # BLOCKED/FAILED/UNKNOWN are unsuccessful validation outcomes for wrappers/CI.
+    return 0 if overall in {"VERIFIED", "PARTIAL"} else 1
 
 
 if __name__ == "__main__":
