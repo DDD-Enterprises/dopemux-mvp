@@ -77,28 +77,8 @@ else
 fi
 echo ""
 
-# Step 5: Start Workspace Watcher (automatic workspace switch detection)
-echo "👁️  Step 5/6: Starting Workspace Watcher..."
-cd "$PROJECT_ROOT/services/workspace-watcher"
-
-# Kill any existing instances
-pkill -9 -f "workspace-watcher/main.py" 2>/dev/null || true
-sleep 1
-
-# Start Workspace Watcher (5s poll interval)
-nohup python main.py --interval 5 > /tmp/workspace_watcher.log 2>&1 &
-WATCHER_PID=$!
-
-# Wait briefly for startup
-sleep 2
-
-# Verify it started
-if ps -p $WATCHER_PID >/dev/null 2>&1; then
-    echo "✅ Workspace Watcher started (PID: $WATCHER_PID, polling every 5s)"
-else
-    echo "⚠️  Workspace Watcher failed to start - check /tmp/workspace_watcher.log"
-fi
-echo ""
+# NOTE (2026-07-09 graveyard): workspace-watcher removed — dead service;
+# file-activity signals now flow from native hooks, not a poller.
 
 # Step 6: Start F-NEW-8 Break Suggester (intelligent break detection)
 echo "🎯 Step 6/7: Starting Break Suggester (F-NEW-8)..."
@@ -122,28 +102,8 @@ else
 fi
 echo ""
 
-# Step 7: Start ADHD Notifier (break reminders + hyperfocus alerts + F-NEW-8 integration)
-echo "🔔 Step 7/7: Starting ADHD Notifier..."
-cd "$PROJECT_ROOT/services/adhd-notifier"
-
-# Kill any existing instances
-pkill -9 -f "adhd-notifier/main.py" 2>/dev/null || true
-sleep 1
-
-# Start ADHD Notifier (60s check interval)
-nohup python main.py --interval 60 > /tmp/adhd_notifier.log 2>&1 &
-NOTIFIER_PID=$!
-
-# Wait briefly for startup
-sleep 2
-
-# Verify it started
-if ps -p $NOTIFIER_PID >/dev/null 2>&1; then
-    echo "✅ ADHD Notifier started (PID: $NOTIFIER_PID, checking every 60s)"
-else
-    echo "⚠️  ADHD Notifier failed to start - check /tmp/adhd_notifier.log"
-fi
-echo ""
+# NOTE (2026-07-09 graveyard): adhd-notifier removed — capability ported to
+# the ADHD engine output dispatcher (DesktopNotificationChannel).
 
 echo "=========================================="
 echo "🎉 All Dopemux services started!"
