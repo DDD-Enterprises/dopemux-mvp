@@ -129,3 +129,26 @@ def test_merge_envrc_into_environ_override(tmp_path: Path):
     merged = merge_envrc_into_environ({"CONPORT_MCP_PORT": "3005", "OTHER": "x"}, parsed)
     assert merged["CONPORT_MCP_PORT"] == "3041"
     assert merged["OTHER"] == "x"
+
+
+def test_repair_envrc_regeneration_keys(tmp_path: Path):
+    """Envrc repair path produces catalog-owned port keys without secrets."""
+    from dopemux.mcp.config_repair import _build_envrc_text
+
+    text = _build_envrc_text(
+        "/tmp/wt",
+        "/tmp/proj",
+        {
+            "DOPEMUX_WORKSPACE_ID": "/tmp/wt",
+            "DOPEMUX_PROJECT_ROOT": "/tmp/proj",
+            "DOPEMUX_INSTANCE_ID": "abcd",
+            "CONPORT_MCP_PORT": "3015",
+            "DOPE_MEMORY_PORT": "3030",
+            "CUSTOM_SAFE": "keep-me",
+        },
+        preserve_values={"CUSTOM_SAFE": "keep-me", "OPENAI_API_KEY": "sk-x"},
+    )
+    assert "export CONPORT_MCP_PORT=3015" in text
+    assert "export CUSTOM_SAFE=keep-me" in text
+    assert "OPENAI_API_KEY" not in text
+    assert "sk-x" not in text
