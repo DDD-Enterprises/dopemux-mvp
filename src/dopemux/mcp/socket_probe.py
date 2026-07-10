@@ -6,7 +6,6 @@ Never starts processes. Timeout-bounded connect checks only.
 from __future__ import annotations
 
 import socket
-from typing import Optional
 
 
 DEFAULT_TIMEOUT_S = 0.25
