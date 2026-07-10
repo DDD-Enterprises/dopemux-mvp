@@ -171,13 +171,8 @@ if [ "$VERIFY" = true ]; then
         echo "❌ Not responding - check /tmp/adhd_engine.log"
     fi
 
-    # Check Activity Capture
-    echo -n "  Activity Capture (8096): "
-    if curl -sf http://localhost:8096/health > /dev/null 2>&1; then
-        echo "✅ Healthy"
-    else
-        echo "❌ Not responding - check: docker logs dopemux-activity-capture"
-    fi
+    # NOTE (2026-07-09 graveyard): activity-capture removed — engine consumes
+    # native_hook_activity events directly; no port-8096 health check.
 
     echo ""
 fi
@@ -185,7 +180,6 @@ fi
 echo "🔗 Service URLs:"
 echo "  DopeconBridge: http://localhost:3016/health"
 echo "  Task Orchestrator:  http://localhost:8000/health (stdio MCP)"
-echo "  Activity Capture:   http://localhost:8096/health"
 echo "  ADHD Engine:        http://localhost:8095/health"
 echo "  ADHD Dashboard:     http://localhost:8097 (optional, start manually)"
 echo "  ConPort MCP:        http://localhost:3004"
