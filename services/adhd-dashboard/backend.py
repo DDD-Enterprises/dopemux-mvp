@@ -55,7 +55,7 @@ SERVICE_NAME = "adhd-dashboard"
 API_KEY = os.getenv("DASHBOARD_API_KEY") or None
 ADHD_ENGINE_API_KEY = os.getenv("ADHD_ENGINE_API_KEY") or None
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
-ACTIVITY_CAPTURE_URL = os.getenv("ACTIVITY_CAPTURE_URL", "http://localhost:8096")
+# activity-capture was removed (graveyard 2026-07); metrics are local/stub only.
 ADHD_ENGINE_URL = os.getenv("ADHD_ENGINE_URL", "http://localhost:8095")
 DASHBOARD_USER_ID = os.getenv("DASHBOARD_USER_ID", "default")
 ALLOWED_ORIGINS = os.getenv(
@@ -402,17 +402,24 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = DASHBOARD_USER
 
 @app.get("/api/metrics")
 async def get_metrics(api_key: str = Security(verify_api_key)):
+    """Local dashboard metrics (activity-capture service removed)."""
     del api_key
     start_time = time.time()
-    try:
-        timeout = aiohttp.ClientTimeout(total=5)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            payload = await _get_json(session, f"{ACTIVITY_CAPTURE_URL}/metrics")
-        _record_request("/api/metrics", "success", start_time)
-        return payload
-    except Exception as exc:
-        _record_request("/api/metrics", "error", start_time)
-        raise HTTPException(status_code=502, detail=brand_error(str(exc))) from exc
+    payload = {
+        "source": "adhd-dashboard-local",
+        "activity_capture": "removed",
+        "sessions_tracked": 0,
+        "activities_logged": 0,
+        "session_active": False,
+        "current_session_duration_minutes": 0,
+        "workspace_switches": 0,
+        "note": (
+            "activity-capture (:8096) was deleted; engine consumes "
+            "native_hook_activity events directly."
+        ),
+    }
+    _record_request("/api/metrics", "success", start_time)
+    return payload
 
 
 @app.get("/api/task-recommendations")
@@ -501,7 +508,7 @@ async def health_check():
         "status": "healthy",
         "service": SERVICE_NAME,
         "redis_url": REDIS_URL,
-        "activity_capture_url": ACTIVITY_CAPTURE_URL,
+        "activity_capture": "removed",
         "adhd_engine_url": ADHD_ENGINE_URL,
     }
 

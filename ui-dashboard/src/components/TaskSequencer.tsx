@@ -53,6 +53,7 @@ interface CognitiveState {
 
 interface TaskSequencerProps {
   cognitiveState: CognitiveState;
+  onError?: (message: string) => void;
 }
 
 const INITIAL_TASKS: Task[] = [
@@ -145,15 +146,24 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   }, [tasks, cognitiveState.status]);
 
   const handleCopyTaskTitle = (title: string) => {
-    if (!navigator.clipboard?.writeText) return;
-    void navigator.clipboard.writeText(title).then(() => {
-      setIsTaskTitleCopied(true);
-      if (copyTaskTitleTimeoutRef.current) clearTimeout(copyTaskTitleTimeoutRef.current);
-      copyTaskTitleTimeoutRef.current = setTimeout(() => {
-        setIsTaskTitleCopied(false);
-        copyTaskTitleTimeoutRef.current = null;
-      }, 2000);
-    });
+    if (!navigator.clipboard?.writeText) {
+      onError?.('Clipboard API is not supported in this browser or context.');
+      return;
+    }
+    void navigator.clipboard
+      .writeText(title)
+      .then(() => {
+        setIsTaskTitleCopied(true);
+        if (copyTaskTitleTimeoutRef.current) clearTimeout(copyTaskTitleTimeoutRef.current);
+        copyTaskTitleTimeoutRef.current = setTimeout(() => {
+          setIsTaskTitleCopied(false);
+          copyTaskTitleTimeoutRef.current = null;
+        }, 2000);
+      })
+      .catch((err) => {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        onError?.(`Failed to copy task title: ${errorMsg}`);
+      });
   };
 
   const startTask = (taskId: string) => {

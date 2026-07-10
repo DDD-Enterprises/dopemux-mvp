@@ -24,6 +24,7 @@ prelude: Packet roadmap and dependency chain for the read-only MCP evidence faca
 | TP-DCP-MCP-RO-0006 | Dope Context And Task Orchestrator Read Adapters | HIGH | Add dope-context + task-orchestrator read adapters; deny `search_all`/index/sync/transition/PM/bridge. | 0005 |
 | TP-DCP-MCP-RO-0007 | Secure MCP Tunnel Integration Docs And Manual Validation | MEDIUM | Document loopback tunnel setup, redacted configs, manual validation, ChatGPT connector flow. | 0006 |
 | TP-DCP-MCP-RO-0008 | Hardening Cross Project Isolation And PR Readiness | HIGH | Cross-project isolation, injection/redaction, stale-proof, denylist regression, PR readiness. | 0007 |
+| TP-DCP-MCP-RO-0009 | ChatGPT MCP Exposure Target Contract ADR | HIGH | Record accepted `target_id`, runtime-resolution, ownership-evidence, and response-redaction contract; runtime implementation remains blocked until the target base contains the MCP runtime stack through PR #1031. | 0008 |
 
 ## Sequencing rationale
 
@@ -34,5 +35,6 @@ The series is deliberately **docs-first → identity → local-only scaffold →
 3. **0005–0006** add service-backed reads one trust-tier at a time (structured memory first, then search + workflow), each with denylist tests.
 4. **0007** documents the tunnel without committing secrets.
 5. **0008** is the acceptance/hardening slice — no new features, only isolation, injection, redaction, and stale-proof regression tests.
+6. **0009** is the post-hardening contract ADR slice. It supersedes caller-facing `project_id` language for new exposure contracts with opaque `target_id` language, but does not change runtime code until the MCP runtime stack is current on the implementation base.
 
 Each packet emits a proof bundle under `proof/TP-DCP-MCP-RO-<n>/` (`PROOF.json`, `COMMAND_LOG.md`, `AUDIT.md`) per AGENTS.md §9.

@@ -804,11 +804,11 @@ function App() {
             />
           </Grid>
           <Grid item xs={12} lg={layout.compactMode ? 12 : 4}>
-            <TaskSequencer cognitiveState={cognitiveState} />
+            <TaskSequencer cognitiveState={cognitiveState} onError={setErrorMessage} />
           </Grid>
           {layout.showPredictions && (
             <Grid item xs={12} lg={4}>
-              <PredictionPanel prediction={cognitiveState.prediction} />
+              <PredictionPanel prediction={cognitiveState.prediction} onError={setErrorMessage} />
             </Grid>
           )}
           {layout.showTeamDashboard && !isMobile && (
