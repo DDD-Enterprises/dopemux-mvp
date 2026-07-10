@@ -1,0 +1,10 @@
+# Invalid: service family outside the 9 ADR-DCP-MCP-RO-0009 families.
+targets:
+  - target_id: "bad"
+    workspace_path: "/abs/ws"
+    enabled: true
+    identity:
+      project: "proj"
+    service_policies:
+      totally_unknown_family:
+        enabled: true

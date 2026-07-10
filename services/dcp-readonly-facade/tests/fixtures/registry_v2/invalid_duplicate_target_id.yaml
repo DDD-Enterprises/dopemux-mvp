@@ -1,0 +1,13 @@
+# Invalid (parser-level, not schema-level): duplicate target_id — ambiguity
+# blocks (ADR-DCP-MCP-RO-0009), so BOTH entries are dropped (fail-closed).
+targets:
+  - target_id: "dup"
+    workspace_path: "/abs/ws1"
+    enabled: true
+    identity:
+      project: "proj1"
+  - target_id: "dup"
+    workspace_path: "/abs/ws2"
+    enabled: true
+    identity:
+      project: "proj2"

@@ -1,0 +1,19 @@
+# Valid registry v2 fixture — no secrets, no real paths.
+approved_roots:
+  - /abs/approved/root
+
+targets:
+  - target_id: "dopemux-main"
+    workspace_path: "/abs/approved/root/dopemux-mvp"
+    enabled: true
+    binding_mode: "PRIMARY_CHECKOUT_ONLY"
+    identity:
+      project: "dopemux-mvp"
+      owner: "hu3mann"
+    service_policies:
+      conport:
+        enabled: true
+      dope_memory:
+        enabled: true
+      pal:
+        enabled: false
