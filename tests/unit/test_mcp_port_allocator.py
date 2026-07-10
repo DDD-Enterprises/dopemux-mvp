@@ -208,24 +208,36 @@ def test_allocate_ports_map_drop_in(tmp_path: Path, monkeypatch):
 
 
 def test_fixed_port_blocked_when_occupied_unknown(tmp_path: Path, monkeypatch):
-    """Fixed port with no foreign lease but a live socket must BLOCK, not lease."""
+    """Non-reserved fixed port with a live socket must BLOCK, not lease.
+
+    TO:7890 is reserved_singleton (006R) and is intentionally not blocked by the
+    allocator (ownership is doctor's job). Use a synthetic fixed service instead.
+    """
     reg_path = tmp_path / "leases.json"
     monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
+    cat = _catalog()
+    cat["servers"]["fake-fixed"] = {
+        "scope": "per-worktree",
+        "transport": "http",
+        "port_var": "FAKE_FIXED_PORT",
+        "default_port_base": 7777,
+        "management_model": "wrapper-singleton",
+    }
 
     result = allocate_ports(
-        ["task-orchestrator"],
-        _catalog(),
+        ["fake-fixed"],
+        cat,
         worktree=str(tmp_path),
         project_root=str(tmp_path),
         registry_path=reg_path,
         persist=True,
-        is_free_fn=lambda p: False,  # 7890 occupied by unknown process
+        is_free_fn=lambda p: False,  # 7777 occupied by unknown process
     )
     assert result.status == "BLOCKED"
     assert any(b.get("code") == "LEASE_PORT_OCCUPIED" for b in result.blocking_findings)
     # Must not write a lease for the occupied fixed port
     reg = PortLeaseRegistry.load(reg_path)
-    assert reg.find_active_by_port(7890) is None
+    assert reg.find_active_by_port(7777) is None
 
 
 def test_status_reused_on_second_allocation(tmp_path: Path, monkeypatch):
