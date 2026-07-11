@@ -1,0 +1,156 @@
+{
+  "execution_base_sha": "b176747b339685e781de04268c46b7ae123abfbf",
+  "incidents": [
+    {
+      "additions": 13,
+      "changed_file_count": 1,
+      "clobber_pr": 720,
+      "clobbered_domains": [
+        "Task Orchestrator Claude command surface and protocols (reported; not reproduced as landed deletion from current merge delta)"
+      ],
+      "current_controls_that_should_have_detected_it": [
+        "Exact landed-tree witness would have shown only the UI delta captured for #720; additional historical evidence is needed for the reported clobber."
+      ],
+      "current_controls_that_would_still_miss_it": [
+        "Current packet evidence does not prove #720 as a stale-branch deletion incident."
+      ],
+      "deletions": 11,
+      "evidence_refs": [
+        "raw/pr-720/pr.json",
+        "raw/pr-720/files.json",
+        "raw/pr-720/landed-name-status.txt",
+        "raw/pr-720/landed-diff-stat.txt",
+        "raw/pr-734/pr.json",
+        "raw/pr-734/landed-name-status.txt"
+      ],
+      "incident_id": "STALE-CLOBBER-720",
+      "main_before_merge_sha": "74455398397305d3f630ac4c4b8b8f8f36b5a683",
+      "merge_sha": "fbcae03d61ea87018467dba24d93f5fadef98105",
+      "protected_surfaces_lost": [],
+      "remaining_risks": [
+        "Current evidence confirms repair PR #734 added the reported surface, but PR #720 landed delta does not show the deletion mechanics; causality remains CONFLICTING."
+      ],
+      "repair_merge_sha": "309a12a9f8d6ea4f399854f9079205a8b5dd134a",
+      "repair_pr": 734,
+      "repair_pr_head_sha": "ebc159578b40e7607d26705718b396afe88ca71d",
+      "repair_status": "UNKNOWN",
+      "source_base_sha": "74455398397305d3f630ac4c4b8b8f8f36b5a683",
+      "source_head_sha": "4869ea3c56094543e67720138a5d079afb4e5327"
+    },
+    {
+      "additions": 105,
+      "changed_file_count": 19,
+      "clobber_pr": 932,
+      "clobbered_domains": [
+        "ConPort migration foundation",
+        "dependency/proof lock integrity"
+      ],
+      "current_controls_that_should_have_detected_it": [
+        "Complete deletion-aware enumeration",
+        "Protected surface registry for ConPort migrations/proof",
+        "Intent-bound destructive-diff gate"
+      ],
+      "current_controls_that_would_still_miss_it": [
+        "ACMR-only root-hygiene inputs omit deletions",
+        "Advisory PR Steward is not required and exits green in workflow"
+      ],
+      "deletions": 2523,
+      "evidence_refs": [
+        "raw/pr-932/pr.json",
+        "raw/pr-932/files.json",
+        "raw/pr-932/landed-name-status.txt",
+        "raw/pr-932/landed-diff-stat.txt",
+        "raw/pr-936/pr.json",
+        "raw/pr-936/landed-name-status.txt"
+      ],
+      "incident_id": "STALE-CLOBBER-932",
+      "main_before_merge_sha": "c45b2c8e7a995b3d47537367d909fafaa7ac12cf",
+      "merge_sha": "559d7e2fa6ba5335763a57a1fe0dbe79b0e1dfa1",
+      "protected_surfaces_lost": [
+        "claudedocs/proof/DMX-CONPORT-OPTIMAL-101/DMX-CONPORT-OPTIMAL-101-PROOF.md",
+        "docker/mcp-servers-source/conport/migrations/conport_migration_gate.py",
+        "proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/live/pre_apply_schema.sql",
+        "proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/plan.md",
+        "proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/proof.md",
+        "proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/research.md",
+        "proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py",
+        "task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json"
+      ],
+      "remaining_risks": [],
+      "repair_merge_sha": "92e8ae42cdafff11bd289a5aa56d0d44e0cd46fc",
+      "repair_pr": 936,
+      "repair_pr_head_sha": "b34a665fec9c9b39b00c9cbdb079d829961a5952",
+      "repair_status": "COMPLETE",
+      "source_base_sha": "c45b2c8e7a995b3d47537367d909fafaa7ac12cf",
+      "source_head_sha": "92ba9980b51b0d22b3859042343c652fa9eb46dc"
+    },
+    {
+      "additions": 394,
+      "changed_file_count": 137,
+      "clobber_pr": 1025,
+      "clobbered_domains": [
+        "MCP runtime stack",
+        "MCP tests",
+        "MCP proofs",
+        "MCP docs/configuration"
+      ],
+      "current_controls_that_should_have_detected_it": [
+        "Complete deletion-aware enumeration",
+        "Protected surface registry for MCP runtime/tests/proofs",
+        "Fresh-base sanitizer preserving current main",
+        "Exact-candidate readiness gate"
+      ],
+      "current_controls_that_would_still_miss_it": [
+        "ACMR-only root-hygiene inputs omit deletions",
+        "GitHub patch endpoint refused the 20k+ line diff",
+        "Dry-run audit proof can present PASS without execution"
+      ],
+      "deletions": 27676,
+      "evidence_refs": [
+        "raw/pr-1025/pr.json",
+        "raw/pr-1025/files.json",
+        "raw/pr-1025/landed-name-status.txt",
+        "raw/pr-1025/landed-diff-stat.txt",
+        "raw/pr-1037/pr.json",
+        "raw/pr-1037/landed-name-status.txt"
+      ],
+      "incident_id": "STALE-CLOBBER-1025",
+      "main_before_merge_sha": "7f904d78e01702d2d21b0ac953eb3b8611dda971",
+      "merge_sha": "8af764b142587ea4421b5a361c5892e804537793",
+      "protected_surfaces_lost": [
+        "docs/03-reference/mcp-runtime/stack-landing-disposition-ledger-20260710.md",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/AGENT_BOOTSTRAP_DOC_CHECK.md",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/COMMAND_LOG.md",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_DOCTOR_AFTER.json",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_DOCTOR_BEFORE.json",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_GIT_STATUS_AFTER.txt",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_GIT_STATUS_BEFORE.txt",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_REPAIR_APPLY.json",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_REPAIR_DRY_RUN.json",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_START_DRY_RUN.json",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_START_RESULT.json",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_STATUS_AFTER.json",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOCKER_INSPECT_REDACTED.json",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOCKER_PS_AFTER.txt",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOCKER_PS_BEFORE.txt",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOPMUX_GIT_STATUS_AFTER.txt",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOPMUX_GIT_STATUS_BEFORE.txt",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOPMUX_MCP_COMMANDS.txt",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/EMBEDDED_AUDIT.md",
+        "proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/ENVRC_AFTER.redacted.txt",
+        "... 96 more"
+      ],
+      "remaining_risks": [
+        "Reserved-singleton port behavior remains an open runtime regression outside this packet."
+      ],
+      "repair_merge_sha": "b176747b339685e781de04268c46b7ae123abfbf",
+      "repair_pr": 1037,
+      "repair_pr_head_sha": "f4b0326878919649a7d18917278668ec904a6756",
+      "repair_status": "COMPLETE",
+      "source_base_sha": "7f904d78e01702d2d21b0ac953eb3b8611dda971",
+      "source_head_sha": "9e06272c6934007bfb82677973d39a2b381e622a"
+    }
+  ],
+  "schema_version": "1.0",
+  "supervisor_reported_base_sha": "b176747b339685e781de04268c46b7ae123abfbf"
+}

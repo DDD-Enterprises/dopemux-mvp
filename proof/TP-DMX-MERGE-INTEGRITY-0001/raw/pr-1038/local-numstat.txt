@@ -1,0 +1,3 @@
+4	0	.Jules/palette.md
+49	8	ui-dashboard/src/components/TaskSequencer.tsx
+3	3	ui-dashboard/src/components/__tests__/Accessibility.test.tsx

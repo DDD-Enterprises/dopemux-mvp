@@ -1,0 +1,86 @@
+[
+  {
+    "id": 13063360,
+    "name": "Default branch protection (restored after history rewrite)",
+    "target": "branch",
+    "source_type": "Repository",
+    "source": "DDD-Enterprises/dopemux-mvp",
+    "enforcement": "active",
+    "conditions": {
+      "ref_name": {
+        "exclude": [],
+        "include": [
+          "~DEFAULT_BRANCH"
+        ]
+      }
+    },
+    "rules": [
+      {
+        "type": "deletion"
+      },
+      {
+        "type": "non_fast_forward"
+      },
+      {
+        "type": "pull_request",
+        "parameters": {
+          "required_approving_review_count": 0,
+          "dismiss_stale_reviews_on_push": false,
+          "required_reviewers": [],
+          "require_code_owner_review": false,
+          "dismissal_restriction": {
+            "enabled": false,
+            "allowed_actors": []
+          },
+          "require_last_push_approval": false,
+          "required_review_thread_resolution": true,
+          "allowed_merge_methods": [
+            "squash",
+            "rebase"
+          ]
+        }
+      },
+      {
+        "type": "copilot_code_review",
+        "parameters": {
+          "review_on_push": false,
+          "review_draft_pull_requests": false
+        }
+      }
+    ],
+    "node_id": "RRS_lACqUmVwb3NpdG9yec4_IjD3zgDHVMA",
+    "created_at": "2026-02-20T18:49:41.392-08:00",
+    "updated_at": "2026-04-21T12:30:04.081-07:00",
+    "bypass_actors": [
+      {
+        "actor_id": null,
+        "actor_type": "OrganizationAdmin",
+        "bypass_mode": "always"
+      },
+      {
+        "actor_id": null,
+        "actor_type": "DeployKey",
+        "bypass_mode": "always"
+      },
+      {
+        "actor_id": 4,
+        "actor_type": "RepositoryRole",
+        "bypass_mode": "always"
+      },
+      {
+        "actor_id": 5,
+        "actor_type": "RepositoryRole",
+        "bypass_mode": "always"
+      }
+    ],
+    "current_user_can_bypass": "always",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/DDD-Enterprises/dopemux-mvp/rulesets/13063360"
+      },
+      "html": {
+        "href": "https://github.com/DDD-Enterprises/dopemux-mvp/rules/13063360"
+      }
+    }
+  }
+]

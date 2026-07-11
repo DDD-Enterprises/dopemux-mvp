@@ -1,0 +1,14 @@
+ docker/mcp-servers-source/conport/Dockerfile       |   1 +
+ .../mcp-servers-source/conport/enhanced_server.py  |  12 +-
+ .../migrations/004_unified_query_indexes.sql       |  32 +-
+ .../migrations/007_worktree_support_simple.sql     |  12 +-
+ .../conport/migrations/README.md                   |  23 +
+ .../conport/migrations/conport_migration_gate.py   | 642 +++++++++++++++
+ docker/mcp-servers-source/conport/schema.sql       |  12 +-
+ .../live/pre_apply_schema.sql                      | 891 +++++++++++++++++++++
+ .../plan.md                                        |  37 +
+ .../proof.md                                       | 113 +++
+ .../research.md                                    |  32 +
+ .../test_conport_migration_gate.py                 | 372 +++++++++
+ ...PORT-OPTIMAL-100-migration-foundation-gate.json | 132 +++
+ 13 files changed, 2279 insertions(+), 32 deletions(-)

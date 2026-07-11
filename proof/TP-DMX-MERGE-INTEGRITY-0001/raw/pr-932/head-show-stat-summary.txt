@@ -1,0 +1,38 @@
+commit 92ba9980b51b0d22b3859042343c652fa9eb46dc
+Author: hu3mann <167156098+hu3mann@users.noreply.github.com>
+Date:   Fri Jun 19 20:07:26 2026 +0000
+
+    🎨 Palette: Refine TeamDashboard tooltip structure
+    
+    - Moved summary Tooltip to wrap only the header Box to avoid collision with nested tooltips.
+    - Moved cursor: 'help' to the header Box.
+    - Maintained card-level interactive surface (tabIndex, aria-label, focus lift).
+    
+    Co-authored-by: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.github.com>
+
+ .../DMX-CONPORT-OPTIMAL-101-PROOF.md               | 207 -----
+ docker/mcp-servers-source/conport/Dockerfile       |   1 -
+ .../mcp-servers-source/conport/enhanced_server.py  |  12 +-
+ .../migrations/004_unified_query_indexes.sql       |  32 +-
+ .../migrations/007_worktree_support_simple.sql     |  12 +-
+ .../conport/migrations/README.md                   |  23 -
+ .../conport/migrations/conport_migration_gate.py   | 642 ---------------
+ docker/mcp-servers-source/conport/schema.sql       |  12 +-
+ package-lock.json                                  |  30 +-
+ .../live/pre_apply_schema.sql                      | 891 ---------------------
+ .../plan.md                                        |  37 -
+ .../proof.md                                       | 113 ---
+ .../research.md                                    |  32 -
+ .../test_conport_migration_gate.py                 | 372 ---------
+ ...PORT-OPTIMAL-100-migration-foundation-gate.json | 132 ---
+ ui-dashboard/package-lock.json                     |  14 +-
+ ui-dashboard/src/components/TeamDashboard.tsx      |  43 +-
+ 17 files changed, 70 insertions(+), 2535 deletions(-)
+ delete mode 100644 claudedocs/proof/DMX-CONPORT-OPTIMAL-101/DMX-CONPORT-OPTIMAL-101-PROOF.md
+ delete mode 100644 docker/mcp-servers-source/conport/migrations/conport_migration_gate.py
+ delete mode 100644 proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/live/pre_apply_schema.sql
+ delete mode 100644 proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/plan.md
+ delete mode 100644 proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/proof.md
+ delete mode 100644 proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/research.md
+ delete mode 100644 proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py
+ delete mode 100644 task-packets/generated/DMX-CONPORT-OPTIMAL/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate.json

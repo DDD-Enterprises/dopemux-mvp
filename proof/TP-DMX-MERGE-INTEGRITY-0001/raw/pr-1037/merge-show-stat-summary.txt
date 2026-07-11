@@ -1,0 +1,310 @@
+commit b176747b339685e781de04268c46b7ae123abfbf
+Author: Dj Dom <167156098+hu3mann@users.noreply.github.com>
+Date:   Fri Jul 10 14:37:08 2026 -0700
+
+    fix(mcp): restore runtime stack clobbered off main by #1025 (27.7K-line regression) (#1037)
+    
+    ## Incident
+    
+    PR #1025 (`8af764b14` — "feat(ui): copyable AI forecast in
+    PredictionPanel") **accidentally deleted the entire MCP runtime stack
+    from `main`**. It was merged with no review and, despite its UI title,
+    its diff was **394 insertions / 27,676 deletions across 137 files** — a
+    stale-branch clobber (the recurring palette/UI-clobber pattern; cf.
+    prior PR #734).
+    
+    **Lost from `main`:** the output of PRs #1022–#1032 (repo-aware
+    multi-project MCP runtime):
+    - 17 `src/dopemux/mcp/` modules: `runtime_registry`, `port_leases`,
+    `docker_runtime`, `doctor`, `lifecycle`, `fleet`, `config_repair`,
+    `task_orchestrator_identity`, `port_allocator`, `socket_probe`,
+    `runtime_state`, `port_diagnostics`, `agent_bootstrap`,
+    `docker_inspect`, `envrc`, `mcp_json`, `lease_migration`
+    - 17 runtime unit tests + 80 runtime proof bundles
+    - reverted backend wiring in `mcp_commands.py`, `default_catalog.yaml`,
+    `instance_overlay.py`, `.mcp.json`, `mcp_catalog.yaml`,
+    task-orchestrator singleton wrapper/service, and the MCP how-to docs
+    
+    This broke `dopemux mcp` (doctor/registry/lifecycle/port-leases) on
+    `main` and blocked downstream work (the DCP-MCP-RO facade Phase-2 chain
+    depends on this runtime stack).
+    
+    ## Fix — surgical restore
+    
+    Restored from `7f904d78e` (the commit immediately before #1025, last
+    good state):
+    - **116 deleted files re-added** + **16 clobber-reverted
+    backend/doc/config/test files restored**.
+    - **Preserved** #1025's legitimate UI change: `ui-dashboard/*` (App,
+    PredictionPanel, TaskSequencer, Accessibility test) +
+    `.Jules/palette.md` — untouched.
+    - No clobbered path was re-touched by any commit after #1025, so the
+    restore is purely additive (132 files, +27,517 / −258).
+    
+    ## Validation (PASS)
+    - 17/17 restored `dopemux.mcp.*` modules import.
+    - **197 restored runtime unit tests pass** (all `tests/unit/test_mcp_*`
+    + `tests/mcp/test_provision`).
+    - `compileall src/dopemux/mcp` clean.
+    - `tests/unit` + `tests/mcp` collection clean (no import breakage).
+    
+    ## Scope note
+    This is a regression repair outside the DCP-MCP-RO packet series, done
+    to unblock it (Gate 0B). A brief root-cause note + a prevention
+    suggestion (CI guard flagging large cross-area deletions in a PR) will
+    follow.
+    
+    ## Rollback
+    `git revert f4b032687` (single commit).
+    
+    Co-authored-by: Claude Opus 4.8 <noreply@anthropic.com>
+
+ .claude/WORKTREE_MCP_SETUP.md                      |   56 +
+ .mcp.json                                          |    4 +-
+ .pre-commit-config.yaml                            |    2 +-
+ config/repo_hygiene/root_hygiene_policy.json       |    1 +
+ docs/02-how-to/mcp-setup-other-repos.md            |  223 ++-
+ docs/02-how-to/mcp-transport-and-port-bugs.md      |   35 +
+ docs/02-how-to/multi-instance-workflow.md          |   10 +
+ .../stack-landing-disposition-ledger-20260710.md   |   48 +
+ mcp_catalog.yaml                                   |    8 +-
+ .../20260710T025421Z/AGENT_BOOTSTRAP_DOC_CHECK.md  |    8 +
+ .../dnh-crm-e2e/20260710T025421Z/COMMAND_LOG.md    |   92 +
+ .../20260710T025421Z/DNH_DOCTOR_AFTER.json         |  953 ++++++++++
+ .../20260710T025421Z/DNH_DOCTOR_BEFORE.json        |  953 ++++++++++
+ .../20260710T025421Z/DNH_GIT_STATUS_AFTER.txt      |   23 +
+ .../20260710T025421Z/DNH_GIT_STATUS_BEFORE.txt     |   23 +
+ .../20260710T025421Z/DNH_REPAIR_APPLY.json         |    5 +
+ .../20260710T025421Z/DNH_REPAIR_DRY_RUN.json       |    5 +
+ .../20260710T025421Z/DNH_START_DRY_RUN.json        |  375 ++++
+ .../20260710T025421Z/DNH_START_RESULT.json         |    5 +
+ .../20260710T025421Z/DNH_STATUS_AFTER.json         |  196 ++
+ .../20260710T025421Z/DOCKER_INSPECT_REDACTED.json  |    1 +
+ .../20260710T025421Z/DOCKER_PS_AFTER.txt           |    1 +
+ .../20260710T025421Z/DOCKER_PS_BEFORE.txt          |   25 +
+ .../20260710T025421Z/DOPMUX_GIT_STATUS_AFTER.txt   |    4 +
+ .../20260710T025421Z/DOPMUX_GIT_STATUS_BEFORE.txt  |    4 +
+ .../20260710T025421Z/DOPMUX_MCP_COMMANDS.txt       |    1 +
+ .../dnh-crm-e2e/20260710T025421Z/EMBEDDED_AUDIT.md |    6 +
+ .../20260710T025421Z/ENVRC_AFTER.redacted.txt      |   15 +
+ .../20260710T025421Z/ENVRC_BEFORE.redacted.txt     |   15 +
+ .../20260710T025421Z/ENV_REDACTION_REPORT.md       |    6 +
+ .../20260710T025421Z/FINAL_VERDICT.json            |  107 ++
+ .../dnh-crm-e2e/20260710T025421Z/FLEET_DOCTOR.json |   28 +
+ .../20260710T025421Z/LEASE_REGISTRY_REDACTED.json  |  795 ++++++++
+ .../dnh-crm-e2e/20260710T025421Z/MANIFEST.json     |   60 +
+ .../20260710T025421Z/MCP_JSON_AFTER.redacted.json  |   35 +
+ .../20260710T025421Z/MCP_JSON_BEFORE.redacted.json |   35 +
+ .../RUNTIME_REGISTRY_REDACTED.json                 |    5 +
+ .../dnh-crm-e2e/20260710T025421Z/SUMMARY.md        |   38 +
+ .../TASK_ORCHESTRATOR_IDENTITY.json                |   93 +
+ .../20260710T034241Z/DNH_DOCTOR_AFTER.json         | 1080 +++++++++++
+ .../20260710T034241Z/FINAL_VERDICT.json            |   62 +
+ .../20260710T034241Z/LEASE_RECONCILE_APPLY.json    |   16 +
+ .../20260710T034241Z/LEASE_RECONCILE_DRY_RUN.json  |   16 +
+ .../dnh-crm-e2e/20260710T034241Z/MANIFEST.json     |    8 +
+ .../dnh-crm-e2e/20260710T034241Z/PARENT_PROOF.txt  |    1 +
+ .../dnh-crm-e2e/20260710T034241Z/SUMMARY.md        |   21 +
+ .../20260710T041715Z/AGENT_BOOTSTRAP_DOC_CHECK.md  |    8 +
+ .../dnh-crm-e2e/20260710T041715Z/COMMAND_LOG.md    |   92 +
+ .../20260710T041715Z/DNH_DOCTOR_AFTER.json         | 1187 ++++++++++++
+ .../20260710T041715Z/DNH_DOCTOR_BEFORE.json        | 1187 ++++++++++++
+ .../20260710T041715Z/DNH_DOCTOR_LIVE_AFTER.json    | 1187 ++++++++++++
+ .../20260710T041715Z/DNH_GIT_STATUS_AFTER.txt      |   26 +
+ .../20260710T041715Z/DNH_GIT_STATUS_BEFORE.txt     |   26 +
+ .../20260710T041715Z/DNH_REPAIR_APPLY.json         |    5 +
+ .../20260710T041715Z/DNH_REPAIR_DRY_RUN.json       |   49 +
+ .../20260710T041715Z/DNH_START_APPLY_LIVE.json     |   74 +
+ .../20260710T041715Z/DNH_START_DRY_RUN.json        |  339 ++++
+ .../20260710T041715Z/DNH_START_RESULT.json         |    5 +
+ .../20260710T041715Z/DNH_STATUS_AFTER.json         |  983 ++++++++++
+ .../20260710T041715Z/DOCKER_INSPECT_REDACTED.json  |   87 +
+ .../20260710T041715Z/DOCKER_PS_AFTER.txt           |   26 +
+ .../20260710T041715Z/DOCKER_PS_BEFORE.txt          |   26 +
+ .../20260710T041715Z/DOPMUX_GIT_STATUS_AFTER.txt   |    2 +
+ .../20260710T041715Z/DOPMUX_GIT_STATUS_BEFORE.txt  |    4 +
+ .../20260710T041715Z/DOPMUX_MCP_COMMANDS.txt       |    1 +
+ .../dnh-crm-e2e/20260710T041715Z/EMBEDDED_AUDIT.md |    6 +
+ .../20260710T041715Z/ENVRC_AFTER.redacted.txt      |   15 +
+ .../20260710T041715Z/ENVRC_BEFORE.redacted.txt     |   15 +
+ .../20260710T041715Z/ENV_REDACTION_REPORT.md       |    6 +
+ .../20260710T041715Z/FINAL_VERDICT.json            |   96 +
+ .../20260710T041715Z/FINAL_VERDICT_006R2.json      |  100 +
+ .../dnh-crm-e2e/20260710T041715Z/FLEET_DOCTOR.json |   28 +
+ .../20260710T041715Z/LEASE_REGISTRY_REDACTED.json  |  988 ++++++++++
+ .../20260710T041715Z/LIVE_CONPORT_SSE.txt          |    3 +
+ .../20260710T041715Z/LIVE_DOPE_MEMORY_HEALTH.json  |    1 +
+ .../20260710T041715Z/LIVE_DOPE_MEMORY_MCP_INIT.txt |    3 +
+ .../20260710T041715Z/LIVE_DOPE_MEMORY_SIDECAR.json |   40 +
+ .../MAIN_STACK_MEMORY_UNTOUCHED.txt                |    1 +
+ .../dnh-crm-e2e/20260710T041715Z/MANIFEST.json     |   55 +
+ .../20260710T041715Z/MCP_JSON_AFTER.redacted.json  |   35 +
+ .../20260710T041715Z/MCP_JSON_BEFORE.redacted.json |   35 +
+ .../RUNTIME_REGISTRY_REDACTED.json                 |   57 +
+ .../dnh-crm-e2e/20260710T041715Z/SUMMARY.md        |   25 +
+ .../dnh-crm-e2e/20260710T041715Z/SUMMARY_006R2.md  |    9 +
+ .../TASK_ORCHESTRATOR_IDENTITY.json                |  104 ++
+ .../20260710T040712Z/CI_FAILURE_ANALYSIS.md        |   88 +
+ .../20260710T040712Z/COMPLETE_CI_FAILURE_FIX.md    |   60 +
+ .../20260710T040712Z/DOCS_FAILURE_FIX.md           |   36 +
+ .../20260710T040712Z/MERGE_READINESS.json          |   36 +
+ .../task-orchestrator-http-singleton.sh            |  117 +-
+ scripts/proofs/run_dnh_mcp_e2e.py                  |  943 ++++++++++
+ services/task-orchestrator/app/main.py             |   26 +-
+ src/dopemux/commands/mcp_commands.py               |  719 +++++++-
+ src/dopemux/mcp/agent_bootstrap.py                 |  213 +++
+ src/dopemux/mcp/config_repair.py                   |  641 +++++++
+ src/dopemux/mcp/default_catalog.yaml               |    8 +-
+ src/dopemux/mcp/docker_inspect.py                  |  302 +++
+ src/dopemux/mcp/docker_runtime.py                  |  358 ++++
+ src/dopemux/mcp/doctor.py                          | 1272 +++++++++++++
+ src/dopemux/mcp/envrc.py                           |  234 +++
+ src/dopemux/mcp/fleet.py                           |  412 +++++
+ src/dopemux/mcp/instance_overlay.py                |  167 +-
+ src/dopemux/mcp/lease_migration.py                 |  111 ++
+ src/dopemux/mcp/lifecycle.py                       | 1925 ++++++++++++++++++++
+ src/dopemux/mcp/mcp_json.py                        |  299 +++
+ src/dopemux/mcp/port_allocator.py                  |  734 ++++++++
+ src/dopemux/mcp/port_diagnostics.py                |  453 +++++
+ src/dopemux/mcp/port_leases.py                     |  529 ++++++
+ src/dopemux/mcp/runtime_registry.py                |  272 +++
+ src/dopemux/mcp/runtime_state.py                   |  619 +++++++
+ src/dopemux/mcp/socket_probe.py                    |   54 +
+ src/dopemux/mcp/task_orchestrator_identity.py      |  835 +++++++++
+ tests/mcp/test_provision.py                        |   32 +-
+ tests/unit/test_mcp_agent_bootstrap.py             |   85 +
+ tests/unit/test_mcp_commands_catalog.py            |  115 +-
+ tests/unit/test_mcp_commands_lifecycle.py          |  212 +++
+ tests/unit/test_mcp_commands_repair.py             |  167 ++
+ tests/unit/test_mcp_config_repair.py               |  342 ++++
+ tests/unit/test_mcp_docker_inspect.py              |  312 ++++
+ tests/unit/test_mcp_doctor_repo_aware.py           |  489 +++++
+ tests/unit/test_mcp_envrc.py                       |  173 ++
+ tests/unit/test_mcp_fleet.py                       |  192 ++
+ tests/unit/test_mcp_lease_migration.py             |   61 +
+ tests/unit/test_mcp_lifecycle.py                   |  385 ++++
+ tests/unit/test_mcp_port_allocator.py              |  301 +++
+ tests/unit/test_mcp_port_diagnostics.py            |  177 ++
+ tests/unit/test_mcp_port_leases.py                 |  209 +++
+ tests/unit/test_mcp_runtime_launcher.py            |   87 +
+ tests/unit/test_mcp_runtime_registry.py            |  171 ++
+ tests/unit/test_mcp_socket_probe.py                |   21 +
+ tests/unit/test_mcp_task_orchestrator_identity.py  |  318 ++++
+ .../unit/test_task_orchestrator_http_singleton.py  |   24 +-
+ 132 files changed, 27517 insertions(+), 258 deletions(-)
+ create mode 100644 docs/03-reference/mcp-runtime/stack-landing-disposition-ledger-20260710.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/AGENT_BOOTSTRAP_DOC_CHECK.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/COMMAND_LOG.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_DOCTOR_AFTER.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_DOCTOR_BEFORE.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_GIT_STATUS_AFTER.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_GIT_STATUS_BEFORE.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_REPAIR_APPLY.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_REPAIR_DRY_RUN.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_START_DRY_RUN.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_START_RESULT.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DNH_STATUS_AFTER.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOCKER_INSPECT_REDACTED.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOCKER_PS_AFTER.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOCKER_PS_BEFORE.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOPMUX_GIT_STATUS_AFTER.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOPMUX_GIT_STATUS_BEFORE.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/DOPMUX_MCP_COMMANDS.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/EMBEDDED_AUDIT.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/ENVRC_AFTER.redacted.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/ENVRC_BEFORE.redacted.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/ENV_REDACTION_REPORT.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/FINAL_VERDICT.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/FLEET_DOCTOR.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/LEASE_REGISTRY_REDACTED.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/MANIFEST.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/MCP_JSON_AFTER.redacted.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/MCP_JSON_BEFORE.redacted.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/RUNTIME_REGISTRY_REDACTED.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/SUMMARY.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T025421Z/TASK_ORCHESTRATOR_IDENTITY.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T034241Z/DNH_DOCTOR_AFTER.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T034241Z/FINAL_VERDICT.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T034241Z/LEASE_RECONCILE_APPLY.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T034241Z/LEASE_RECONCILE_DRY_RUN.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T034241Z/MANIFEST.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T034241Z/PARENT_PROOF.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T034241Z/SUMMARY.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/AGENT_BOOTSTRAP_DOC_CHECK.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/COMMAND_LOG.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DNH_DOCTOR_AFTER.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DNH_DOCTOR_BEFORE.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DNH_DOCTOR_LIVE_AFTER.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DNH_GIT_STATUS_AFTER.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DNH_GIT_STATUS_BEFORE.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DNH_REPAIR_APPLY.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DNH_REPAIR_DRY_RUN.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DNH_START_APPLY_LIVE.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DNH_START_DRY_RUN.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DNH_START_RESULT.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DNH_STATUS_AFTER.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DOCKER_INSPECT_REDACTED.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DOCKER_PS_AFTER.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DOCKER_PS_BEFORE.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DOPMUX_GIT_STATUS_AFTER.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DOPMUX_GIT_STATUS_BEFORE.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/DOPMUX_MCP_COMMANDS.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/EMBEDDED_AUDIT.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/ENVRC_AFTER.redacted.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/ENVRC_BEFORE.redacted.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/ENV_REDACTION_REPORT.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/FINAL_VERDICT.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/FINAL_VERDICT_006R2.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/FLEET_DOCTOR.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/LEASE_REGISTRY_REDACTED.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/LIVE_CONPORT_SSE.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/LIVE_DOPE_MEMORY_HEALTH.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/LIVE_DOPE_MEMORY_MCP_INIT.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/LIVE_DOPE_MEMORY_SIDECAR.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/MAIN_STACK_MEMORY_UNTOUCHED.txt
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/MANIFEST.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/MCP_JSON_AFTER.redacted.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/MCP_JSON_BEFORE.redacted.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/RUNTIME_REGISTRY_REDACTED.json
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/SUMMARY.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/SUMMARY_006R2.md
+ create mode 100644 proofs/mcp-runtime/dnh-crm-e2e/20260710T041715Z/TASK_ORCHESTRATOR_IDENTITY.json
+ create mode 100644 proofs/mcp-runtime/pr-1031-remediation/20260710T040712Z/CI_FAILURE_ANALYSIS.md
+ create mode 100644 proofs/mcp-runtime/pr-1031-remediation/20260710T040712Z/COMPLETE_CI_FAILURE_FIX.md
+ create mode 100644 proofs/mcp-runtime/pr-1031-remediation/20260710T040712Z/DOCS_FAILURE_FIX.md
+ create mode 100644 proofs/mcp-runtime/pr-1031-remediation/20260710T040712Z/MERGE_READINESS.json
+ create mode 100644 scripts/proofs/run_dnh_mcp_e2e.py
+ create mode 100644 src/dopemux/mcp/agent_bootstrap.py
+ create mode 100644 src/dopemux/mcp/config_repair.py
+ create mode 100644 src/dopemux/mcp/docker_inspect.py
+ create mode 100644 src/dopemux/mcp/docker_runtime.py
+ create mode 100644 src/dopemux/mcp/doctor.py
+ create mode 100644 src/dopemux/mcp/envrc.py
+ create mode 100644 src/dopemux/mcp/fleet.py
+ create mode 100644 src/dopemux/mcp/lease_migration.py
+ create mode 100644 src/dopemux/mcp/lifecycle.py
+ create mode 100644 src/dopemux/mcp/mcp_json.py
+ create mode 100644 src/dopemux/mcp/port_allocator.py
+ create mode 100644 src/dopemux/mcp/port_diagnostics.py
+ create mode 100644 src/dopemux/mcp/port_leases.py
+ create mode 100644 src/dopemux/mcp/runtime_registry.py
+ create mode 100644 src/dopemux/mcp/runtime_state.py
+ create mode 100644 src/dopemux/mcp/socket_probe.py
+ create mode 100644 src/dopemux/mcp/task_orchestrator_identity.py
+ create mode 100644 tests/unit/test_mcp_agent_bootstrap.py
+ create mode 100644 tests/unit/test_mcp_commands_lifecycle.py
+ create mode 100644 tests/unit/test_mcp_commands_repair.py
+ create mode 100644 tests/unit/test_mcp_config_repair.py
+ create mode 100644 tests/unit/test_mcp_docker_inspect.py
+ create mode 100644 tests/unit/test_mcp_doctor_repo_aware.py
+ create mode 100644 tests/unit/test_mcp_envrc.py
+ create mode 100644 tests/unit/test_mcp_fleet.py
+ create mode 100644 tests/unit/test_mcp_lease_migration.py
+ create mode 100644 tests/unit/test_mcp_lifecycle.py
+ create mode 100644 tests/unit/test_mcp_port_allocator.py
+ create mode 100644 tests/unit/test_mcp_port_diagnostics.py
+ create mode 100644 tests/unit/test_mcp_port_leases.py
+ create mode 100644 tests/unit/test_mcp_runtime_launcher.py
+ create mode 100644 tests/unit/test_mcp_runtime_registry.py
+ create mode 100644 tests/unit/test_mcp_socket_probe.py
+ create mode 100644 tests/unit/test_mcp_task_orchestrator_identity.py

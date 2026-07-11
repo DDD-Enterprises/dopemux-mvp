@@ -1,0 +1,8 @@
+1	1	.claude/commands/dx/block.md
+3	3	.claude/commands/dx/cancel.md
+2	2	.claude/commands/dx/complete-tree.md
+1	1	.claude/commands/dx/next.md
+1	1	.claude/commands/dx/preview.md
+31	30	.claude/commands/dx/reopen.md
+1	1	.claude/commands/dx/start.md
+9	10	docs/03-reference/orchestrator-note-filling-protocol.md

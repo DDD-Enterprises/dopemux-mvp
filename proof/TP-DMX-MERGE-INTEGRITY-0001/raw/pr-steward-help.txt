@@ -1,0 +1,20 @@
+usage: pr-steward [-h] --repo REPO --pr PR --out OUT [--strict]
+                  [--fixture-dir FIXTURE_DIR] [--proof-path PROOF_PATH]
+                  [--allow-closed] [--format {json,text}]
+
+Check-only PR Steward review intake.
+
+options:
+  -h, --help            show this help message and exit
+  --repo REPO           GitHub repository owner/name.
+  --pr PR               Pull request number.
+  --out OUT             Output directory.
+  --strict              Require final CI/check state before READY.
+  --fixture-dir FIXTURE_DIR
+                        Offline fixture directory containing harvest.json.
+  --proof-path PROOF_PATH
+                        Proof JSON path used in live mode to verify audit
+                        status and PR head SHA.
+  --allow-closed        Allow closed or merged PRs to be reported without
+                        PR_CLOSED blocker.
+  --format {json,text}  Print JSON readiness or text summary.

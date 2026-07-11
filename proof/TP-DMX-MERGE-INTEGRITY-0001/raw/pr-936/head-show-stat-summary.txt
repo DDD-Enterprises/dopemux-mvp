@@ -1,0 +1,8 @@
+commit b34a665fec9c9b39b00c9cbdb079d829961a5952
+Author: DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…) <167156098+hu3mann@users.noreply.github.com>
+Date:   Fri Jun 19 20:08:41 2026 -0700
+
+    fix(conport): markdownlint heading false-positive in ADR
+
+ docs/90-adr/adr-conport-migration-foundation-gate.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
