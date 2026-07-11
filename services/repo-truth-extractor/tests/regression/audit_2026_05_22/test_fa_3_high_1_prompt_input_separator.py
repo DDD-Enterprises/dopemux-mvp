@@ -45,7 +45,10 @@ DELIMITER_TOKENS = (
 
 
 @pytest.mark.xfail(
-    reason="FA-3-HIGH-1: Zero of 138 prompts have an INPUT/INSTRUCTION delimiter. Add e.g. <repo_content>...</repo_content> tags in the prompt templates so the model can be trained to treat untrusted content."
+    reason="FA-3-HIGH-1: Zero of 138 prompts have an INPUT/INSTRUCTION delimiter. Add e.g. <repo_content>...</repo_content> tags in the prompt templates so the model can be trained to treat untrusted content. "
+    "Owning packet: TP-RTE-TRUTH-R3-002 (build_partition_context wrap + shared prompt_prefix preamble). "
+    "TP-RTE-TRUTH-R0-002: strict=True added so a future fix XPASSes loudly instead of rotting silently.",
+    strict=True,
 )
 def test_at_least_one_prompt_has_input_delimiter() -> None:
     """xfail until prompts adopt a delimiter convention."""

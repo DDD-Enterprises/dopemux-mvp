@@ -56,7 +56,10 @@ def test_status_json_is_fully_readonly(tmp_path: Path) -> None:
 
 
 @pytest.mark.xfail(
-    reason="FA-7-MED-1: --status (text) writes telemetry/TERMINAL_TIMELINE.jsonl under typo'd run-id. PR #603 fixed phase dirs but missed the telemetry sidecar."
+    reason="FA-7-MED-1: --status (text) writes telemetry/TERMINAL_TIMELINE.jsonl under typo'd run-id. PR #603 fixed phase dirs but missed the telemetry sidecar. "
+    "Owning packet: TP-RTE-TRUTH-R2-005 (wrap telemetry writer in `if not readonly_introspection:`). "
+    "TP-RTE-TRUTH-R0-002: strict=True added so a future fix XPASSes loudly instead of rotting silently.",
+    strict=True,
 )
 def test_status_text_should_be_fully_readonly(tmp_path: Path) -> None:
     """xfail until --status (text) wraps telemetry writer in readonly_introspection."""

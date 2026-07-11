@@ -1,0 +1,65 @@
+{
+  "packet_id": "TP-RTE-TRUTH-R0-002",
+  "title": "Strict xfail + TP-ref discipline (FA-3/FA-7/FA-8)",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "outcome": "IMPLEMENTED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-audit-improvement-f4beb7",
+  "authority_input": "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md §4 R0-002 (F-02); A5-ops-gates-proof.md §1.2/§1.4",
+  "files_modified": [
+    "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py",
+    "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py",
+    "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py"
+  ],
+  "files_created": [
+    "task-packets/generated/TP-RTE-TRUTH-R0-002.json",
+    "proof/rte-truth-program/TP-RTE-TRUTH-R0-002/PROOF.json"
+  ],
+  "decisions": [
+    {
+      "marker": "FA-3 (test_at_least_one_prompt_has_input_delimiter)",
+      "action": "strict=True added",
+      "owning_packet": "TP-RTE-TRUTH-R3-002",
+      "rationale": "Deterministic, not env-conditioned; re-verified xfail this pass."
+    },
+    {
+      "marker": "FA-7 (test_status_text_should_be_fully_readonly)",
+      "action": "strict=True added",
+      "owning_packet": "TP-RTE-TRUTH-R2-005",
+      "rationale": "Deterministic subprocess characterization test, not env-conditioned; re-verified xfail this pass."
+    },
+    {
+      "marker": "FA-8 (test_preflight_probe_succeeds_with_valid_keys)",
+      "action": "left non-strict; comment + TP reference added, no strict flip",
+      "owning_packet": "TP-RTE-TRUTH-R2-004",
+      "rationale": "skipif-gated on live OPENROUTER_API_KEY, absent this pass (dry-run-only, no live calls). Cannot verify current xfail/XPASS state without live credentials — flipping to strict here would assert without evidence, violating the fail-closed-on-missing-evidence rule."
+    }
+  ],
+  "commands_run": [
+    {
+      "command": "grep -rn xfail services/repo-truth-extractor/tests/",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "confirmed FA-3/FA-7/FA-8 were the only non-strict markers; Cluster D (5 markers) already strict=True"
+    },
+    {
+      "command": "PYTHONPATH=src uv run --frozen pytest -v services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "result": "1 passed, 1 skipped, 2 xfailed in 1.40s",
+      "note": "FA-3 XFAIL (strict), FA-7 XFAIL (strict), FA-8 SKIPPED (no OPENROUTER_API_KEY) — no XPASS, no regression"
+    }
+  ],
+  "runtime_code_changed": false,
+  "docs_changed": [],
+  "no_live_llm_calls": true,
+  "no_execute_flag_used": true,
+  "residual_risks": [
+    "FA-8's actual current pass/fail state under live OPENROUTER_API_KEY remains unverified this pass (by design — dry-run mandate); its owning packet TP-RTE-TRUTH-R2-004 must re-verify with live credentials before considering strict=True.",
+    "FA-3/FA-7 underlying defects are NOT fixed by this packet — only marker hygiene; fixes remain owned by TP-RTE-TRUTH-R3-002 and TP-RTE-TRUTH-R2-005 respectively."
+  ],
+  "cleanup_status": "no_temp_files_created",
+  "next_recommended_packet": "TP-RTE-TRUTH-R0-003"
+}
