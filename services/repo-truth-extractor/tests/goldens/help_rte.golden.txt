@@ -1,0 +1,18 @@
+Usage: python -m dopemux rte [OPTIONS] COMMAND [ARGS]...
+
+  Canonical operator entrypoint for Repo Truth Extractor.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  doctor         Run extraction diagnostics and deterministic re-process...
+  list           List extraction phases and effective pipeline order.
+  preflight      Run preflight diagnostics for an extraction run.
+  promptset      Promptset utilities for Repo Truth Extractor.
+  run            Run the Repo Truth Extractor.
+  scan           Delegate a deterministic repo scan to the legacy v3...
+  status         Show extraction run status.
+  trace          Compatibility alias for canonical v5 dry-run extraction.
+  validate-live  Run the fail-closed v5 live validation workflow.
+  wizard         🧙 Ritual Guide: Guided extraction flight-deck walkthrough

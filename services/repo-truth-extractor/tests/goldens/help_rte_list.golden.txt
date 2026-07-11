@@ -1,0 +1,9 @@
+Usage: python -m dopemux rte list [OPTIONS]
+
+  List extraction phases and effective pipeline order.
+
+  Displays the full sequence of extraction phases for the selected pipeline.
+
+Options:
+  --pipeline-version [v5|v4|v3]  [default: v5]
+  --help                         Show this message and exit.
