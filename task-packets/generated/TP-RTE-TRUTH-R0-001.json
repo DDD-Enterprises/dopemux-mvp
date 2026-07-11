@@ -1,0 +1,121 @@
+{
+  "id": "TP-RTE-TRUTH-R0-001",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / service-anchored gitignore rules",
+  "invariants": [
+    "Treat services/repo-truth-extractor/extraction/ as an RTE-runtime-owned output path that must never be committed going forward.",
+    "Do not run git rm --cached on any currently tracked file (that is TP-RTE-TRUTH-R0-008, blocked on an operator fixtures decision).",
+    "Only add ignore rules; do not modify any other .gitignore section.",
+    "Do not touch RTE runtime code, CI, tests, or promptsets."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R0",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7"
+  },
+  "commit": {
+    "message": "chore(rte): TP-RTE-TRUTH-R0-001 — service-anchored gitignore rules",
+    "allowlist": [
+      ".gitignore",
+      "task-packets/generated/TP-RTE-TRUTH-R0-001.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R0-001/PROOF.json"
+    ],
+    "verify": [
+      "git check-ignore -v services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_PROBE/spend_ledger.json",
+      "git check-ignore -v services/repo-truth-extractor/extraction/repo-truth-extractor/v5/doctor/PROBE.json",
+      "git status --porcelain services/repo-truth-extractor/extraction/",
+      "git ls-files services/repo-truth-extractor/extraction/ | wc -l"
+    ]
+  },
+  "pr": {
+    "title": "chore(rte): service-anchored gitignore rules",
+    "body": "## Summary\n- add services/repo-truth-extractor-anchored mirrors of the existing root-anchored extraction/ ignore rules (F-01, rules half only)\n\n## Scope\n- .gitignore only; no git rm --cached (that is the blocked R0-008 sweep)\n\n## Validation\n- git check-ignore -v on new run/doctor artifact paths under the service dir\n- confirmed 119 already-tracked files remain tracked and unmodified",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Confirm the real output path is not matched by existing root-anchored ignore rules.",
+      "requirements": [
+        "git check-ignore -v against services/repo-truth-extractor/extraction/... must show no match before the fix."
+      ],
+      "commands": [
+        "git check-ignore -v services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/foo/spend_ledger.json"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Command exits non-zero (no match) before the fix is applied."
+      ],
+      "context_files": [
+        ".gitignore",
+        "claudedocs/rte-truth-program-2026-07/A5-ops-gates-proof.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add service-anchored mirrors of the runs/doctor/latest_run_id/quarantine/prescan ignore rules under services/repo-truth-extractor/extraction/.",
+      "requirements": [
+        "Do not remove or alter any existing root-anchored rule.",
+        "New rules must not accidentally widen scope to unrelated services/ paths."
+      ],
+      "commands": [
+        "git check-ignore -v services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_PROBE/spend_ledger.json",
+        "git check-ignore -v services/repo-truth-extractor/extraction/repo-truth-extractor/v5/doctor/PROBE.json"
+      ],
+      "expected_files": [
+        ".gitignore"
+      ],
+      "validation": [
+        "New run/doctor artifact paths are now ignored.",
+        "Existing tracked files are untouched (git status clean on that subtree)."
+      ],
+      "context_files": [
+        ".gitignore"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Verify no existing tracked files were untracked and write proof.",
+      "requirements": [
+        "119 previously tracked files under services/repo-truth-extractor/extraction/ remain tracked.",
+        "Record commands/exit codes in PROOF.json."
+      ],
+      "commands": [
+        "git status --porcelain services/repo-truth-extractor/extraction/",
+        "git ls-files services/repo-truth-extractor/extraction/ | wc -l"
+      ],
+      "expected_files": [
+        "proof/rte-truth-program/TP-RTE-TRUTH-R0-001/PROOF.json"
+      ],
+      "validation": [
+        "git status shows no changes under the tracked extraction/ subtree.",
+        "File count unchanged at 119."
+      ],
+      "context_files": [
+        "proof/rte-truth-program/TP-RTE-TRUTH-R0-001/PROOF.json"
+      ]
+    }
+  ]
+}
