@@ -1,0 +1,91 @@
+{
+  "id": "TP-RTE-TRUTH-R2-004",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / go-live safety cluster (gate opt-in, FA-8, Gemini timeout, webhook redaction, help truth)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Gate: un-opted PAL/preflight skip => NO_GO; --allow-conditional restores CONDITIONAL_GO.",
+    "FA-8: fix the preflight probe payload (suspect call_llm shape) until test XPASSes, then drop the skipif/xfail double-gate.",
+    "Gemini client gets timeout_seconds threaded; RUN_MANIFEST stores webhook flag, not URL; --max-cost-usd help text states the auto-applied profile default.",
+    "Findings covered: F-13b, F-19b, F-19c, F-19d, F-14."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R1-004"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R2",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R2-004 \u2014 go-live safety cluster",
+    "allowlist": [
+      "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+      "services/repo-truth-extractor/llm_runtime.py",
+      "services/repo-truth-extractor/reporting.py",
+      "src/dopemux/cli.py",
+      "services/repo-truth-extractor/tests/",
+      "services/repo-truth-extractor/tests/goldens/",
+      "task-packets/generated/TP-RTE-TRUTH-R2-004.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R2-004/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): go-live safety cluster",
+    "body": "F-13b/F-19b/F-19c/F-19d/F-14.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement the five safety items; run gate + regression tests.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/regression -q",
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'gate or preflight'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+        "services/repo-truth-extractor/llm_runtime.py",
+        "services/repo-truth-extractor/reporting.py",
+        "src/dopemux/cli.py"
+      ],
+      "validation": [
+        "Gate NO_GO on un-opted skip; FA-8 green (marker removed); manifests hold flag only."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A5-ops-gates-proof.md",
+        "claudedocs/rte-truth-program-2026-07/A6-fresh-eyes.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "id": "TP-RTE-TRUTH-R0-004",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / service lint config + extractor-lint CI (warn-only baseline)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Do NOT reformat run_extraction_v5.py; ruleset must pass on current code or use a scoped per-file ignore baseline.",
+    "mypy stays out of the blocking path this packet; ruff job warn-only or required-lenient per A5 draft.",
+    "Findings covered: F-04."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R0",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "chore(rte): TP-RTE-TRUTH-R0-004 \u2014 service lint config + extractor-lint CI",
+    "allowlist": [
+      "services/repo-truth-extractor/ruff.toml",
+      ".github/workflows/ci-complete.yml",
+      "task-packets/generated/TP-RTE-TRUTH-R0-004.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R0-004/PROOF.json"
+    ],
+    "verify": [
+      "ruff check services/repo-truth-extractor"
+    ]
+  },
+  "pr": {
+    "title": "chore(rte): service ruff config + lint CI job",
+    "body": "F-04: zero lint jobs anywhere despite strict declared mypy profile.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Create services/repo-truth-extractor/ruff.toml (lenient baseline per A5 \u00a73.4 draft) and iterate until `ruff check` is clean.",
+      "requirements": [
+        "No source-file edits to satisfy lint; config/baseline only."
+      ],
+      "commands": [
+        "ruff check services/repo-truth-extractor --statistics"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/ruff.toml"
+      ],
+      "validation": [
+        "ruff exits 0 on the service."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A5-ops-gates-proof.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add extractor-lint job to ci-complete.yml running the service ruff config.",
+      "requirements": [
+        "Job must not gate merges harder than intended (warn-only or lenient-required)."
+      ],
+      "commands": [
+        "grep -n 'extractor-lint' .github/workflows/ci-complete.yml"
+      ],
+      "expected_files": [
+        ".github/workflows/ci-complete.yml"
+      ],
+      "validation": [
+        "Job present and wired."
+      ],
+      "context_files": [
+        ".github/workflows/ci-complete.yml"
+      ]
+    }
+  ]
+}

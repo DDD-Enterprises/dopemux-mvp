@@ -1,0 +1,80 @@
+{
+  "id": "TP-RTE-TRUTH-R0-003",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / pytest-timeout on extractor-full CI",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "CI-only change plus dependency addition; do not alter which tests run.",
+    "Findings covered: F-03."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R0",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "S"
+  },
+  "commit": {
+    "message": "chore(rte): TP-RTE-TRUTH-R0-003 \u2014 pytest-timeout on extractor-full",
+    "allowlist": [
+      ".github/workflows/ci-complete.yml",
+      "task-packets/generated/TP-RTE-TRUTH-R0-003.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R0-003/PROOF.json"
+    ],
+    "verify": [
+      "grep -c 'timeout' .github/workflows/ci-complete.yml"
+    ]
+  },
+  "pr": {
+    "title": "chore(rte): pytest-timeout on extractor-full CI",
+    "body": "F-03: one hung test currently burns the whole 45-min job.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Add pytest-timeout to the extractor test dependency set and wire --timeout=120 --timeout-method=thread into the extractor-full job.",
+      "requirements": [
+        "Job must still pass; slow legitimate tests get explicit @pytest.mark.timeout overrides rather than a raised global."
+      ],
+      "commands": [
+        "grep -n 'timeout' .github/workflows/ci-complete.yml"
+      ],
+      "expected_files": [
+        ".github/workflows/ci-complete.yml"
+      ],
+      "validation": [
+        "extractor-full invocation carries the timeout flags."
+      ],
+      "context_files": [
+        ".github/workflows/ci-complete.yml",
+        "claudedocs/rte-truth-program-2026-07/A5-ops-gates-proof.md"
+      ]
+    }
+  ]
+}

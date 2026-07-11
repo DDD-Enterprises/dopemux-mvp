@@ -1,0 +1,85 @@
+{
+  "id": "TP-RTE-TRUTH-R4-002",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / definition-site inversion (rte canonical, upgrades hidden alias)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "7 decorators \u2192 @rte.command; alias-back loop attaches to upgrades; upgrades.hidden=True + deprecation warning on invoke; wizard subprocess builder retargeted to rte run; BOTH surfaces keep working (goldens: help texts change intentionally \u2014 regenerate once, itemize in proof).",
+    "Traps (A4 \u00a71.3): shared _pipeline_version_options safe; extractor group shadowing must survive.",
+    "Findings covered: F-42."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R1-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R4",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "refactor(rte): TP-RTE-TRUTH-R4-002 \u2014 rte is the definition site; upgrades hidden alias",
+    "allowlist": [
+      "src/dopemux/cli.py",
+      "src/dopemux/commands/",
+      "services/repo-truth-extractor/tests/goldens/",
+      "tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R4-002.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R4-002/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "refactor(rte): definition-site inversion",
+    "body": "F-42.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Invert definition sites per A4's move list; regenerate help goldens deliberately; run CLI tests.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+        "mise exec -- python -m pytest tests/ -q -k 'cli or rte' || true"
+      ],
+      "expected_files": [
+        "src/dopemux/cli.py",
+        "src/dopemux/commands/upgrades_commands.py"
+      ],
+      "validation": [
+        "dopemux rte --help shows all commands natively; upgrades hidden but functional with warning."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A4-cli-ux-docs.md"
+      ]
+    }
+  ]
+}

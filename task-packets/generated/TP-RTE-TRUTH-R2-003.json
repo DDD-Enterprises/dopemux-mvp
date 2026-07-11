@@ -1,0 +1,85 @@
+{
+  "id": "TP-RTE-TRUTH-R2-003",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / cap hardening + ledger atomicity + --llm-temperature",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Pre-check-before-spend (close the one-call overshoot); cost_cap_mode wired or removed; SPEND_LEDGER writes atomic (tmp + os.replace); --llm-temperature range-validated 0-2 preserving gpt-5 omission rule.",
+    "Findings covered: F-13, F-15, F-38 (temp)."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R2-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R2",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R2-003 \u2014 cap hardening, atomic ledger, temperature flag",
+    "allowlist": [
+      "services/repo-truth-extractor/extractor/costing.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/llm_runtime.py",
+      "services/repo-truth-extractor/tests/",
+      "services/repo-truth-extractor/tests/goldens/",
+      "task-packets/generated/TP-RTE-TRUTH-R2-003.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R2-003/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): cap hardening + atomic spend ledger + --llm-temperature",
+    "body": "F-13, F-15, temperature.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement the three hardenings with unit tests (overshoot test, atomicity crash test, temperature passthrough test).",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'spend or temperature or cap'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/extractor/costing.py",
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/llm_runtime.py"
+      ],
+      "validation": [
+        "All three behaviors asserted."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A2-cost-truthfulness.md"
+      ]
+    }
+  ]
+}

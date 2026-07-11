@@ -1,0 +1,82 @@
+{
+  "id": "TP-RTE-TRUTH-R4-001",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / wizard execute-path repair",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Fix ux/wizard/extraction.py:48-49 --prescan-dir \u2192 the real flag (--prescan-import-dir) or add passthrough; add Stage-0 DPMX_LIVE_OK preflight BEFORE the 14 phase prompts; routing-policy becomes click.Choice.",
+    "Wizard --execute must build a valid rte run command for every phase \u2014 verify by capturing the constructed command in dry-run.",
+    "Findings covered: F-40."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R4",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R4-001 \u2014 wizard execute-path repair",
+    "allowlist": [
+      "src/dopemux/ux/wizard/",
+      "src/dopemux/commands/audit_commands.py",
+      "tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R4-001.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R4-001/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): wizard --execute actually works",
+    "body": "F-40 (CRIT). Highest operator impact.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Repair the wizard per F-40; add a journey test that walks all 14 phases in dry-run asserting each constructed command parses.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest tests/ -q -k 'wizard' || true",
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+      ],
+      "expected_files": [
+        "src/dopemux/ux/wizard/extraction.py",
+        "src/dopemux/commands/audit_commands.py"
+      ],
+      "validation": [
+        "All phase commands Click-parse; consent preflight fires first."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A4-cli-ux-docs.md"
+      ]
+    }
+  ]
+}

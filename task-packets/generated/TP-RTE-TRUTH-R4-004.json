@@ -1,0 +1,82 @@
+{
+  "id": "TP-RTE-TRUTH-R4-004",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / flag standardization + status/trace/promptset-audit cleanup",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Single --workers/-w (--partition-workers hidden alias); routing-policy consistent Choice everywhere; wizard estimate reads lib/pricing_surface (kill static ROUTING_LADDERS drift); reconcile 3 status impls; rte trace live-mode documented or removed; scan phase list includes S.",
+    "Findings covered: F-43, F-44."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R4-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R4",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R4-004 \u2014 flag standardization + surface cleanup",
+    "allowlist": [
+      "src/dopemux/",
+      "services/repo-truth-extractor/tests/goldens/",
+      "tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R4-004.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R4-004/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): consistent flags across RTE surfaces",
+    "body": "F-43/F-44.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement standardization; regenerate help goldens deliberately.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+      ],
+      "expected_files": [
+        "src/dopemux/cli.py",
+        "src/dopemux/commands/audit_commands.py"
+      ],
+      "validation": [
+        "Consistent flags across surfaces; goldens updated + itemized."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A4-cli-ux-docs.md"
+      ]
+    }
+  ]
+}

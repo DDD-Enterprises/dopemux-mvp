@@ -1,0 +1,92 @@
+{
+  "id": "TP-RTE-TRUTH-R1-004",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / extract extractor/costing.py \u2014 System A corrected cut",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "SEAM RULE: golden hashes must be byte-identical pre/post; a seam PR that needs a golden update is not behavior-preserving and must be reworked, not re-goldened.",
+    "R1 owns run_extraction_v5.py exclusively; no other wave may touch it while R1 runs.",
+    "Facade re-exports in run_extraction_v5.py must keep every moved symbol importable at its old path.",
+    "Apply A1 seam corrections (r1 orchestrator note + A1-architecture.md \u00a72).",
+    "CORRECTED CUT (A1): costing is TWO systems. Extract System A only \u2014 Decimal SpendTracker (singleton ~:4196), SpendTrackerState (~:4183), estimate_usage_cost_usd (~:4526), CostLimitExceededError (~:11200), baseline-rate shims (~:340\u2013356) \u2014 behind a get_active_spend_tracker() accessor.",
+    "System B (cfg.ledger guards: _check_projected_cost_limit ~:11424, _accumulate_runtime_spend ~:11498) STAYS in v5 this packet \u2014 R2-001 reconciles the two systems.",
+    "This packet unblocks R2; do not start R2 fixes here.",
+    "Findings covered: F-09."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R1-003"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R1",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "L"
+  },
+  "commit": {
+    "message": "refactor(rte): TP-RTE-TRUTH-R1-004 \u2014 extract costing System A (SpendTracker)",
+    "allowlist": [
+      "services/repo-truth-extractor/extractor/costing.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R1-004.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R1-004/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "refactor(rte): extract costing System A seam",
+    "body": "Seam 2 corrected cut per A1. Golden-hash verified.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Extract System A to extractor/costing.py with get_active_spend_tracker(); update_run_manifest_status and other call sites use the accessor; add System A unit tests.",
+      "requirements": [
+        "Capped-run parity: golden harness + spend/gate test files pass."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_cost_profiles.py -q"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/extractor/costing.py",
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ],
+      "validation": [
+        "Goldens byte-identical; cost-profile + spend tests pass."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A1-architecture.md",
+        "claudedocs/rte-truth-program-2026-07/A2-cost-truthfulness.md"
+      ]
+    }
+  ]
+}

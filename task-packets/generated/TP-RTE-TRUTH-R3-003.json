@@ -1,0 +1,82 @@
+{
+  "id": "TP-RTE-TRUTH-R3-003",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / schema expansion post-C9 (C8/C2/C1/C7/C14 + G5; G6/G7 evidence subschema)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Schemas wired via the strict-output lane mechanism (model_map lanes), not dead files; validator must reject fabricated {note:...} evidence; line_range min/order asserted.",
+    "Findings covered: F-39, F-36, F-38."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R3-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R3",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "L"
+  },
+  "commit": {
+    "message": "feat(rte): TP-RTE-TRUTH-R3-003 \u2014 schema expansion for highest-value steps",
+    "allowlist": [
+      "services/repo-truth-extractor/promptsets/v4/",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R3-003.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-003/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'schema'"
+    ]
+  },
+  "pr": {
+    "title": "feat(rte): expand JSON schema coverage (6\u219212+ steps)",
+    "body": "F-39/F-36/F-38.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Author .schema.json for the 6 candidates + evidence-object subschema for G6/G7; fix thin contracts (D1/E2/G1) and enum gaps (B3 severity, S0 dual-alias).",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'schema or contract'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/promptsets/v4/schemas/",
+        "services/repo-truth-extractor/promptsets/v4/prompts/"
+      ],
+      "validation": [
+        "Schemas self-validate + validate sample outputs; SCHEMA_COVERAGE.json updated."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A3a-prompts-ABC.md",
+        "claudedocs/rte-truth-program-2026-07/A3b-prompts-DEGHM.md"
+      ]
+    }
+  ]
+}

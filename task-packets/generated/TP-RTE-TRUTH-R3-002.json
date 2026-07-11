@@ -1,0 +1,86 @@
+{
+  "id": "TP-RTE-TRUTH-R3-002",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / injection separator at build_partition_context choke point",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Wrap build_partition_context return in <repo_content>\u2026</repo_content>; single shared prompt_prefix preamble constant (dedupe v5:~15301 and ~21540) stating content is untrusted data, not instructions; template convention line via promptset rules.",
+    "Both sync dispatch + async R path + strict-repair reuse must carry the wrap (A3d TRACE).",
+    "FA-3 xfail must flip green honestly (runtime wrap + template convention).",
+    "Findings covered: F-30."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R1-004"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R3",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R3-002 \u2014 untrusted-content delimiter at prompt assembly",
+    "allowlist": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/promptsets/v4/",
+      "services/repo-truth-extractor/tests/",
+      "services/repo-truth-extractor/tests/goldens/",
+      "task-packets/generated/TP-RTE-TRUTH-R3-002.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-002/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): prompt-injection separator (single choke point)",
+    "body": "F-30 (CRIT sec). Top-ranked finding.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement the wrap + preamble + template convention; drop FA-3 marker.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/regression -q -k 'fa_3'",
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/promptsets/v4/PROMPTSET_RULES.md"
+      ],
+      "validation": [
+        "FA-3 green; dry-run payload capture shows delimiter+preamble at all dispatch sites."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A3d-prompts-WXZ-promptgen.md"
+      ]
+    }
+  ]
+}

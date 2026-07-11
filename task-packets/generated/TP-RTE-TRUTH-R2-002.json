@@ -1,0 +1,83 @@
+{
+  "id": "TP-RTE-TRUTH-R2-002",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / tokenizer + per-lane output ratios; printed preview assumptions",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "One shared estimate_tokens; output_ratio[lane][family] table replacing the 15/10/2% contradictions; every preview prints pricing sha, tokenizer, ratios, multipliers.",
+    "Findings covered: F-12."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R2-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R2",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R2-002 \u2014 unified tokenizer + printed estimate assumptions",
+    "allowlist": [
+      "services/repo-truth-extractor/lib/prescan/cost_estimator.py",
+      "services/repo-truth-extractor/extractor/costing.py",
+      "services/repo-truth-extractor/tests/",
+      "services/repo-truth-extractor/tests/goldens/",
+      "task-packets/generated/TP-RTE-TRUTH-R2-002.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R2-002/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): honest token/output estimation with printed assumptions",
+    "body": "F-12.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Unify token estimation + output ratios (cost_estimator.py:33,49; v5:11066,11071,11083); print assumptions in preview header; fixture tolerances.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'cost or preview or estimator'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/lib/prescan/cost_estimator.py",
+        "services/repo-truth-extractor/extractor/costing.py"
+      ],
+      "validation": [
+        "Fixtures pass; preview header states assumptions."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A2-cost-truthfulness.md"
+      ]
+    }
+  ]
+}

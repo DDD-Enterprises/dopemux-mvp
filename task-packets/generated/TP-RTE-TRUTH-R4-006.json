@@ -1,0 +1,82 @@
+{
+  "id": "TP-RTE-TRUTH-R4-006",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / dead truth_run code + generated-promptset decision",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Remove ~380 unreachable lines after raise in extract_commands.truth_run; decide generated promptset: either CI-gate run_sync+integrity or annotate disposable and regenerate (pick ONE, log ConPort decision).",
+    "Findings covered: F-47, F-48."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R4-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R4",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "S"
+  },
+  "commit": {
+    "message": "chore(rte): TP-RTE-TRUTH-R4-006 \u2014 dead code + generated-set decision",
+    "allowlist": [
+      "src/dopemux/commands/extract_commands.py",
+      "services/repo-truth-extractor/promptsets/generated/",
+      "task-packets/generated/TP-RTE-TRUTH-R4-006.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R4-006/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "chore(rte): truth_run dead code + generated promptset disposition",
+    "body": "F-47/F-48.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Delete dead code; implement the generated-set decision.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+      ],
+      "expected_files": [
+        "src/dopemux/commands/extract_commands.py",
+        "services/repo-truth-extractor/promptsets/generated/"
+      ],
+      "validation": [
+        "Tests pass; decision recorded."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A4-cli-ux-docs.md",
+        "claudedocs/rte-truth-program-2026-07/A3d-prompts-WXZ-promptgen.md"
+      ]
+    }
+  ]
+}

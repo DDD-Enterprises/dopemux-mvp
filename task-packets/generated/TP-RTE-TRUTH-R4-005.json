@@ -1,0 +1,81 @@
+{
+  "id": "TP-RTE-TRUTH-R4-005",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / docs sweep to canonical rte surface",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Quickstart rewritten on rte + DPMX_LIVE_OK + correct default profile; 8 active docs de-upgrades'd; 10 truth-snapshots regenerated or annotated; user-journey pair deduped; ADR/archive mentions stay historical.",
+    "Acceptance: docs/ grep shows zero RUNNABLE `dopemux upgrades` outside deprecation notes + archives.",
+    "Findings covered: F-41, F-46."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R4-001",
+    "TP-RTE-TRUTH-R4-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R4",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "docs(rte): TP-RTE-TRUTH-R4-005 \u2014 canonical rte docs sweep",
+    "allowlist": [
+      "docs/",
+      "task-packets/generated/TP-RTE-TRUTH-R4-005.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R4-005/PROOF.json"
+    ],
+    "verify": [
+      "grep -rc 'dopemux upgrades' docs/ || true"
+    ]
+  },
+  "pr": {
+    "title": "docs(rte): docs sweep to rte canon",
+    "body": "F-41 (CRIT) + F-46.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Execute the A4 \u00a73 worklist exactly.",
+      "requirements": [],
+      "commands": [
+        "grep -rn 'dopemux upgrades' docs/ | wc -l"
+      ],
+      "expected_files": [
+        "docs/"
+      ],
+      "validation": [
+        "Runnable-upgrades count zero outside allowed classes; quickstart journey test passes."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A4-cli-ux-docs.md"
+      ]
+    }
+  ]
+}
