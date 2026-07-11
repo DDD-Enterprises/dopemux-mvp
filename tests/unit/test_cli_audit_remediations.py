@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
+import dopemux.ux.wizard as wizard_module
 from dopemux.cli import cli
 from dopemux.commands import mcp_commands
 from dopemux.routing_cli import _set_routing_mode
@@ -156,3 +157,21 @@ def test_native_hooks_register_refuses_invalid_settings_json():
         assert result.exit_code != 0
         assert "Invalid JSON" in result.output
         assert settings_path.read_text(encoding="utf-8") == "{not-json"
+
+
+def test_audit_wizard_rejects_unknown_routing_policy_before_runner(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _Runner:
+        def __init__(self, *_args, **_kwargs) -> None:
+            pytest.fail("WizardRunner must not be constructed for invalid policy")
+
+    monkeypatch.setattr(wizard_module, "WizardRunner", _Runner)
+
+    result = CliRunner().invoke(
+        cli,
+        ["audit", "wizard", "--routing-policy", "not-a-policy"],
+    )
+
+    assert result.exit_code != 0
+    assert "Invalid value for '--routing-policy'" in result.output
