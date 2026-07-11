@@ -3,7 +3,7 @@ Author: Dj Dom <167156098+hu3mann@users.noreply.github.com>
 Date:   Fri Jun 19 12:58:00 2026 -0700
 
     feat(conport): add migration foundation gate (#917)
-    
+
     ## Summary
     - adds an explicit operator-gated ConPort migration runner/verifier with
     ledger and checksum drift detection
@@ -11,7 +11,7 @@ Date:   Fri Jun 19 12:58:00 2026 -0700
     startup DDL
     - hardens migration 004/007 for public schema/idempotent replay and
     records packet proof
-    
+
     ## Validation
     - PASS: pytest proof test: 10 passed
     - PASS: py_compile enhanced_server.py and conport_migration_gate.py
@@ -22,7 +22,7 @@ Date:   Fri Jun 19 12:58:00 2026 -0700
     - PASS: docker compose up -d conport; health endpoint returned 200
     - PASS: in-container migration gate verify for 001,002,003,004,007
     - PASS: apply without DPMX_CONPORT_MIGRATION_APPLY=1 failed closed
-    
+
     ## NOT_RUN / Risk
     - production or staging DB mutation was not run
     - full repo suite was not run

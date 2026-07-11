@@ -1972,7 +1972,7 @@ index 000000000..1fdf22cf0
 +
 +**2a — Preflight read.** Call `get_context(itemId="<id>")`. Capture: `role`, `statusLabel`, `canAdvance`, missing required notes, `noteProgress`, `guidancePointer`.
 +
-+**2b — Gate check.** 
++**2b — Gate check.**
 +- If `role == "terminal"` → stop: "Already terminal; nothing to start. Use `/dx:reopen <id>` to send it back to queue."
 +- If `role == "blocked"` → stop: "Item is blocked; `start` is not valid from blocked. Resume it with `/dx:resume <id>`."
 +- If `canAdvance == false` → **do not transition.** Show the missing required notes and stop:
@@ -3972,12 +3972,12 @@ index 4ec578495..3a24e2784 100644
 @@ -25,7 +25,7 @@ Parse `$ARGUMENTS`:
  - `--scope <ancestor-uuid>` → restrict to items under this parent (`parentId` param).
  - `--no-details` → drop summary + tags from each blocked item (compact mode for very large block lists).
- 
+
 -Defaults: workspace-wide; `includeItemDetails=true` (set false only when `--no-details` passed); `includeAncestors=true`.
 +Defaults: workspace-wide; `includeBlockerDetails=true` (set false only when `--no-details` passed).
- 
+
  ---
- 
+
 @@ -34,8 +34,7 @@ Defaults: workspace-wide; `includeItemDetails=true` (set false only when `--no-d
  ```
  get_blocked_items({
@@ -3987,7 +3987,7 @@ index 4ec578495..3a24e2784 100644
 +  includeBlockerDetails: <false if --no-details, else true>
  })
  ```
- 
+
 @@ -84,7 +83,7 @@ Group output by `blockType`. Within each group, sort by priority (high first) th
    ⛔ <title>  (<short-prefix>)
        Role:       blocked  │  Priority: <priority>  │  Complexity: <complexity>
@@ -3995,7 +3995,7 @@ index 4ec578495..3a24e2784 100644
 -      <if includeItemDetails (default): "Tags: <tags>" line; otherwise omit>
 +      <if includeBlockerDetails (default): "Tags: <tags>" line; otherwise omit>
        <if blockedBy non-empty: blockedBy list — usually empty for explicit blocks>
- 
+
  ── Dependency blocks (blockType="dependency") ──
 @@ -92,7 +91,7 @@ Group output by `blockType`. Within each group, sort by priority (high first) th
    ⛔ <title>  (<short-prefix>)
@@ -4011,14 +4011,14 @@ index 33c28607c..734e07ede 100644
 --- a/.claude/commands/dx/complete-tree.md
 +++ b/.claude/commands/dx/complete-tree.md
 @@ -41,7 +41,7 @@ About to complete <N> items under <title> (topological order<, root included | r
- 
+
  **2c — Complete pass.**
  ```
 -complete_tree({ rootId: "<id>", trigger: "complete", includeRoot: <false if --no-root, else true> })
 +complete_tree({ itemId: "<id>", trigger: "complete" })
  ```
  Each result: `applied` / `skipped` (skippedReason) / `gateErrors` (missing notes). Already-terminal items report as skipped.
- 
+
 diff --git a/.claude/commands/dx/complete.md b/.claude/commands/dx/complete.md
 index 906447195..086307547 100644
 --- a/.claude/commands/dx/complete.md
@@ -4037,7 +4037,7 @@ index 82be29938..da135cb3b 100644
 +++ b/.claude/commands/dx/notes.md
 @@ -85,5 +85,5 @@ Next actions:
  ## Notes for Claude
- 
+
  - **This is a read-only wrapper. Never mutate workflow state from this command.**
 -- This is the **list** half of note reading; the single-note **get** is `/dx:note read <noteId>` (already in `note.md`). `/dx:search` finds notes by text; `/dx:notes` lists everything on a known item.
 +- This is the **list** half of note reading; the single-note **get** is `/dx:note read <noteId>` (already in `note.md`). `/dx:search` finds work-items by title/status; note full-text search is not available — use `/dx:notes <id>` to list note headers for a known item, then `/dx:note read <noteId>` to fetch the body.
@@ -4060,7 +4060,7 @@ index 9b5f7f932..d16b710d3 100644
 --- a/CHANGELOG.md
 +++ b/CHANGELOG.md
 @@ -4,6 +4,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
- 
+
  ## [Unreleased]
  ### Added
 +- Restored task-orchestrator Claude-surface infrastructure (17 `/dx:` slash commands, `.taskorchestrator/config.yaml` schema, ADR, reference docs, and external MCP wrapper snapshots) that was removed by the stale-branch merge in PR #720. Unblocks PR #724 (TP-CS-101 plugin hooks). Added `.taskorchestrator` to the root-hygiene allowlist.
@@ -4100,14 +4100,14 @@ index 28ca78480..ee7047275 100644
 +     summary: "<one-line summary of what just shipped — include agent id here for attribution>"
     }])
  ```
- 
+
 @@ -189,17 +188,13 @@ Per `AGENTS.md §9`: **no proof means incomplete**. The gate is mechanical.
- 
+
  ## Actor attribution
- 
+
 -`advance_item` and `manage_notes` accept an optional `actor` field. Dopemux convention:
 +The current `advance_item` and `manage_notes` MCP schema accepts `{itemId, trigger, summary?}` — there is no structured `actor` field in the deployed schema. Encode agent attribution in `summary` until structured actor support is added:
- 
+
  ```
 -{
 -  "id": "worktree-<basename>-<branch>",   // e.g. "worktree-dopemux-mvp-task-orchestrator-claude-surface"
@@ -4116,41 +4116,41 @@ index 28ca78480..ee7047275 100644
 -}
 +summary: "[worktree-dopemux-mvp-feat-branch / subagent] Completed extraction phase"
  ```
- 
+
 -Currently: `actor_authentication.enabled` is **off** in `.taskorchestrator/config.yaml` — claims are self-reported (Stage 1 trust). Operators can flip to enabled for stricter enforcement later.
 +When structured actor support is added to the upstream MCP, this section will be updated with the accepted field shape. Do not pass an `actor` object to `advance_item` — it will fail schema validation.
- 
+
  ---
- 
+
 diff --git a/docs/90-adr/adr-task-orchestrator-claude-surface-integration.md b/docs/90-adr/adr-task-orchestrator-claude-surface-integration.md
 index f370bb39d..8a6dc0660 100644
 --- a/docs/90-adr/adr-task-orchestrator-claude-surface-integration.md
 +++ b/docs/90-adr/adr-task-orchestrator-claude-surface-integration.md
 @@ -48,7 +48,7 @@ The *Claude-facing surface* of that integration is missing.
- 
+
  * No `.taskorchestrator/config.yaml` exists at the repo root → zero schemas defined → zero gate enforcement → `guidancePointer` is permanently `null` for every work item.
  * No `/dx:` slash commands target the orchestrator MCP — operators call `mcp__task-orchestrator__*` tools by hand.
 -* Claude-facing doctrine docs ([.claude/CLAUDE.md](../../.claude/CLAUDE.md), [.claude/modules/coordination/authority-matrix.md](../../.claude/modules/coordination/authority-matrix.md), [.claude/agents/project-manager.md](../../.claude/agents/project-manager.md), [.claude/modules/shared/superclaude-workflows.md](../../.claude/modules/shared/superclaude-workflows.md), [.claude/modules/shared/sprint.md](../../.claude/modules/shared/sprint.md)) **still state that ConPort owns task storage and that task-orchestrator was "removed"**, directly contradicting `AGENTS.md §6` and the existing workflow-authority ADR.
 +* Claude-facing doctrine docs ([.claude/claude.md](../../.claude/claude.md), [.claude/modules/coordination/authority-matrix.md](../../.claude/modules/coordination/authority-matrix.md), [.claude/agents/project-manager.md](../../.claude/agents/project-manager.md), [.claude/modules/shared/superclaude-workflows.md](../../.claude/modules/shared/superclaude-workflows.md), [.claude/modules/shared/sprint.md](../../.claude/modules/shared/sprint.md)) **still state that ConPort owns task storage and that task-orchestrator was "removed"**, directly contradicting `AGENTS.md §6` and the existing workflow-authority ADR.
  * Hooks don't surface orchestrator context at session start; agents don't know how to consume `guidancePointer`; the PAL chain mandated by `AGENTS.md §5` has no mechanical enforcement at the orchestrator layer.
  * Cross-agent surfaces (`AGENTS.md` for Codex, `.github/copilot-instructions.md` for GitHub Copilot, `.claude/personas/*.agent.md` for personas) lack orchestrator operational guidance.
- 
+
 @@ -72,7 +72,7 @@ The Claude-facing surface of task-orchestrator integration is owned by a dedicat
  5. **PAL chain → required-notes mapping** per `AGENTS.md §5`: every chain stage (`analyze`, `planner`, `codereview`, `precommit`, plus risky-chain `thinkdeep` and `challenge-*` rungs) becomes a note key with a matching role-phase placement and `skill:` field that invokes the named PAL tool.
  6. **Proof bundle as `complete`-gate** per `AGENTS.md §9`: the `proof-bundle` note (review-phase, `required: true`) holds the full bundle (TP path/ID, worktree path, branch, repo identity, slices, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL or blocker, residual risks, `UNKNOWN`s, cleanup status). Mechanical enforcement: `advance_item(trigger="complete")` fails if the note is unfilled.
- 
+
 -Cross-agent applicability: `AGENTS.md` (Codex), `.claude/CLAUDE.md` (Claude Code), `.github/copilot-instructions.md` (Copilot), `config/instructions/agents.instructions.md` (Copilot custom-agent), `.claude/personas/*.agent.md` (personas) each receive an "Orchestrator Operations" section linked to the shared note-filling protocol doc.
 +Cross-agent applicability: `AGENTS.md` (Codex), `.claude/claude.md` (Claude Code), `.github/copilot-instructions.md` (Copilot), `config/instructions/agents.instructions.md` (Copilot custom-agent), `.claude/personas/*.agent.md` (personas) each receive an "Orchestrator Operations" section linked to the shared note-filling protocol doc.
- 
+
  Schema posture starts with **Option A — Soft gates, broad coverage (~6 schemas + `default` fallback, composed via traits)**: queue/work phases carry rich `description` + `guidance` + `skill` fields but `required: false`; only `proof-bundle` in `review` is `required: true`. Existing 19 `DMX-ORCH-INTEGRATION` TPs continue to advance freely (no retroactive blocking). Tighter postures (Option B hard gates) are reversible upward by editing trait definitions.
- 
+
 @@ -105,7 +105,7 @@ Add Claude-surface TPs as additional children under `32df1792` instead of a new
- 
+
  ### Alternative 2 — Skip ADR and proceed by convention
- 
+
 -Document the integration in `.claude/CLAUDE.md` only; no ADR; rely on convention to maintain doctrine consistency.
 +Document the integration in `.claude/claude.md` only; no ADR; rely on convention to maintain doctrine consistency.
- 
+
  * **Pros**: Faster to ship; no ratification review cycle.
  * **Cons**: Doctrine drift recurs (Claude-facing modules already drifted out of sync with `AGENTS.md §6` and the workflow-authority ADR). Without a ratified ADR for the Claude-surface, the next person to touch CLAUDE.md re-introduces the old pattern. No genealogy linking schema config decisions back to a canonical source.
 @@ -180,7 +180,7 @@ How do we prove this ADR is correctly implemented?
@@ -4208,58 +4208,58 @@ index b4410d548..4c9efa91f 100644
 --- a/.claude/commands/dx/block.md
 +++ b/.claude/commands/dx/block.md
 @@ -36,7 +36,7 @@ Authoring reference: [`docs/03-reference/dx-command-authoring.md`](../../../docs
- 
+
  **2c — Confirm + transition.** Show what will pause, then:
  ```
 -advance_item(transitions=[{ itemId: "<id>", trigger: "block", summary: "<reason or 'blocked via /dx:block'>" }])
 +advance_item({ itemId: "<id>", trigger: "block", summary: "<reason or 'blocked via /dx:block'>" })
  ```
  The orchestrator saves `previousRole` automatically so `resume` can restore it.
- 
+
 @@ -67,7 +67,7 @@ Next actions:
- 
+
  ## Error Handling
- 
+
 -**Item not found** / **already terminal or blocked** (handled in 2b) / **orchestrator unavailable**: report clearly; for the unavailable case, fall back to `advance_item(transitions=[{itemId, trigger:"block"}])` directly.
 +**Item not found** / **already terminal or blocked** (handled in 2b) / **orchestrator unavailable**: report clearly; for the unavailable case, fall back to `advance_item({itemId, trigger:"block"})` directly.
- 
+
  ---
- 
+
 diff --git a/.claude/commands/dx/cancel.md b/.claude/commands/dx/cancel.md
 index 31918caa4..561a06d00 100644
 --- a/.claude/commands/dx/cancel.md
 +++ b/.claude/commands/dx/cancel.md
 @@ -42,7 +42,7 @@ If the item itself has non-terminal children, warn that they are NOT auto-cancel
- 
+
  **2d — Confirm (required) + transition.** Cancellation is a deliberate abandonment — confirm before acting, then:
  ```
 -advance_item(transitions=[{ itemId: "<id>", trigger: "cancel", summary: "<reason or 'cancelled via /dx:cancel'>" }])
 +advance_item({ itemId: "<id>", trigger: "cancel", summary: "<reason or 'cancelled via /dx:cancel'>" })
  ```
- 
+
  > No `actor` param — attribution rides in `summary`.
 @@ -76,7 +76,7 @@ Next actions:
- 
+
  ## Error Handling
- 
+
 -**Item not found** / **already terminal** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item(transitions=[{itemId, trigger:"cancel"}])` directly.
 +**Item not found** / **already terminal** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item({itemId, trigger:"cancel"})` directly.
- 
+
  ---
- 
+
 diff --git a/.claude/commands/dx/complete.md b/.claude/commands/dx/complete.md
 index 086307547..c6c4b229c 100644
 --- a/.claude/commands/dx/complete.md
 +++ b/.claude/commands/dx/complete.md
 @@ -57,7 +57,7 @@ Confirm before proceeding.
- 
+
  **2d — Complete.**
  ```
 -advance_item(transitions=[{ itemId: "<id>", trigger: "complete", summary: "<--summary or 'complete via /dx:complete'>" }])
 +advance_item({ itemId: "<id>", trigger: "complete", summary: "<--summary or 'complete via /dx:complete'>" })
  ```
  > No `actor` field — use `summary` (see authoring reference). The `Actor:` field in session-resume stays `—` until `claim_item` ships.
- 
+
 diff --git a/.claude/commands/dx/context.md b/.claude/commands/dx/context.md
 index 8c6836411..c48958ab3 100644
 --- a/.claude/commands/dx/context.md
@@ -4274,22 +4274,22 @@ index 8c6836411..c48958ab3 100644
    "mcp__task-orchestrator__get_context",
 @@ -27,7 +27,7 @@ Three modes, picked automatically based on arguments:
  Parse `$ARGUMENTS`:
- 
+
  - If first arg looks like a UUID or hex prefix (≥4 hex chars) → **Item mode**
 -- Else if `--since <timestamp>` provided → **Session resume mode**
 +- Else if `--session` provided → **Session resume mode**
  - Else → **Health check mode**
- 
+
  ---
 @@ -77,7 +77,7 @@ Filed notes (filed > 0):
- 
+
  ## Phase 2b: Session Resume Mode
- 
+
 -Call `mcp__task-orchestrator__get_context(since="<timestamp>")`.
 +Call `mcp__task-orchestrator__get_context(mode="session")`.
- 
+
  Render:
- 
+
 diff --git a/.claude/commands/dx/next.md b/.claude/commands/dx/next.md
 index 5a9335a08..9d5fd1baa 100644
 --- a/.claude/commands/dx/next.md
@@ -4300,17 +4300,17 @@ index 5a9335a08..9d5fd1baa 100644
  - `--scope <uuid>` → pass to `parentId` parameter (scope to subtree)
 -- `--limit N` → pass to `limit` parameter (default: 3 for ADHD-friendly disclosure; max: 10)
 +- `--limit N` → limit display to N results client-side (default: 3 for ADHD-friendly disclosure; max: 10)
- 
+
 -Default if no arguments: `limit=3, includeAncestors=true`.
 +Default if no arguments: display top 3 results from returned list.
- 
+
  ---
- 
+
  ## Phase 2: Fetch Candidates
- 
+
 -Call `mcp__task-orchestrator__get_next_item` with parsed parameters PLUS `includeAncestors: true`.
 +Call `mcp__task-orchestrator__get_next_item` with parsed parameters (parentId, role, priority, tags only).
- 
+
  ```
  get_next_item({
 -  limit: <N or 3>,
@@ -4323,57 +4323,57 @@ index 0ab696775..fe8412aae 100644
 --- a/.claude/commands/dx/reopen.md
 +++ b/.claude/commands/dx/reopen.md
 @@ -36,7 +36,7 @@ Authoring reference: [`docs/03-reference/dx-command-authoring.md`](../../../docs
- 
+
  **2c — Confirm + transition.** Note whether you're reviving a `done` or a `cancelled` item, then:
  ```
 -advance_item(transitions=[{ itemId: "<id>", trigger: "reopen", summary: "reopened via /dx:reopen" }])
 +advance_item({ itemId: "<id>", trigger: "cancel", summary: "reopened via /dx:reopen" })  <!-- NOTE: reopen is not a valid trigger; use cancel then re-create, or verify schema -->
  ```
  Result: TERMINAL → QUEUE, `statusLabel` cleared, gates bypassed on this hop.
- 
+
 @@ -65,7 +65,7 @@ Next actions:
- 
+
  ## Error Handling
- 
+
 -**Item not found** / **not terminal** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item(transitions=[{itemId, trigger:"reopen"}])` directly.
 +**Item not found** / **not terminal** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item({itemId, trigger:"cancel"})` directly.  <!-- reopen is not a valid trigger enum value -->
- 
+
  ---
- 
+
 diff --git a/.claude/commands/dx/resume.md b/.claude/commands/dx/resume.md
 index bbffd9dc2..e57bb9931 100644
 --- a/.claude/commands/dx/resume.md
 +++ b/.claude/commands/dx/resume.md
 @@ -34,7 +34,7 @@ Authoring reference: [`docs/03-reference/dx-command-authoring.md`](../../../docs
- 
+
  **2c — Transition.**
  ```
 -advance_item(transitions=[{ itemId: "<id>", trigger: "resume", summary: "resumed via /dx:resume" }])
 +advance_item({ itemId: "<id>", trigger: "resume", summary: "resumed via /dx:resume" })
  ```
  Restores the saved `previousRole` (BLOCKED → previousRole).
- 
+
 @@ -67,7 +67,7 @@ Next actions:
- 
+
  ## Error Handling
- 
+
 -**Item not found** / **not blocked** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item(transitions=[{itemId, trigger:"resume"}])` directly.
 +**Item not found** / **not blocked** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item({itemId, trigger:"resume"})` directly.
- 
+
  ---
- 
+
 diff --git a/.claude/commands/dx/start.md b/.claude/commands/dx/start.md
 index 1fdf22cf0..49c478801 100644
 --- a/.claude/commands/dx/start.md
 +++ b/.claude/commands/dx/start.md
 @@ -54,7 +54,7 @@ If no id is given, stop and ask for one (do not guess).
- 
+
  **2c — Transition.** Call:
  ```
 -advance_item(transitions=[{ itemId: "<id>", trigger: "start", summary: "<--summary or 'start via /dx:start'>" }])
 +advance_item({ itemId: "<id>", trigger: "start", summary: "<--summary or 'start via /dx:start'>" })
  ```
- 
+
  > **No `actor` field.** `advance_item` accepts only `{itemId, trigger, summary?}`. To attribute the transition today, include your actor id in `--summary` (Dopemux convention `worktree-<basename>-<branch>`). Structured actor attribution awaits `claim_item`.
 @@ -108,7 +108,7 @@ Next actions:
  **Orchestrator MCP unavailable**:
@@ -4382,23 +4382,23 @@ index 1fdf22cf0..49c478801 100644
 -  Fallback: mcp__task-orchestrator__advance_item(transitions=[{itemId, trigger:"start"}]) after a manual get_context gate check.
 +  Fallback: mcp__task-orchestrator__advance_item(itemId, trigger:"start") after a manual get_context gate check.
  ```
- 
+
  **Gate failure on the actual call** (race: notes changed between preflight and transition): report the orchestrator's `expectedNotes`/error verbatim; do not retry blindly.
 diff --git a/docs/03-reference/dx-command-authoring.md b/docs/03-reference/dx-command-authoring.md
 index 1361f52ea..d05891fae 100644
 --- a/docs/03-reference/dx-command-authoring.md
 +++ b/docs/03-reference/dx-command-authoring.md
 @@ -73,7 +73,7 @@ Doctrine (CLAUDE.md, the plan) describes `advance_item(trigger="start", actor={i
- 
+
  Consequences for write wrappers:
- 
+
 -- Pass only supported fields: `advance_item(transitions=[{itemId, trigger, summary}])`.
 +- Pass only supported fields: `advance_item(itemId, trigger, summary?)`.
  - The `summary` field IS supported — use it for the human reason for the transition. Operators who need attribution *now* may include their actor id in the summary text.
  - `/dx:context` session-resume mode renders an `Actor:` field; for advance_item-driven transitions it will show `—` until `claim_item` (and its actor plumbing) ships. Document this in the command's Notes so the empty field isn't read as a bug.
- 
+
 @@ -90,12 +90,12 @@ Verified against the loaded MCP schemas (2026-05-27). Re-verify if the orchestra
- 
+
  | Tool | Shape | Notes |
  |---|---|---|
 -| `advance_item` | `transitions:[{itemId, trigger, summary?}]` | triggers: `start` (queue→work→review→terminal), `complete` (→terminal, requires all required notes), `block`/`hold` (→blocked, saves previousRole), `resume` (blocked→previousRole), `cancel` (→terminal, statusLabel=cancelled), `reopen` (terminal→queue, **bypasses gates**). No `actor`. |
@@ -4410,7 +4410,7 @@ index 1361f52ea..d05891fae 100644
 -| `get_context` | `()` health-check · `(itemId)` gate status + notes · `(since)` session-resume | read-only. Item mode returns `canAdvance` + missing required notes + `guidancePointer` + `noteProgress`. |
 +| `get_context` | `()` health-check · `(itemId)` gate status + notes · `(mode="session")` session-resume | read-only. Item mode returns `canAdvance` + missing required notes + `guidancePointer` + `noteProgress`. |
  | `get_next_status` | `(itemId)` → `{recommendation: Ready\|Blocked\|Terminal, currentRole, nextRole?, trigger?, blockers?}` | read-only; takes **only `itemId`** (no `trigger` input) and *returns* the recommended next `trigger`. Don't author a wrapper that passes a trigger to it. |
- 
+
  ### Gate behavior (task-packet schema)
 
 From ff487ef44eb3a7051c9c9d30d96158c5be4fd90b Mon Sep 17 00:00:00 2001
@@ -4438,28 +4438,28 @@ index 4c9efa91f..9d5ce2ae9 100644
 +++ b/.claude/commands/dx/block.md
 @@ -31,7 +31,7 @@ Authoring reference: [`docs/03-reference/dx-command-authoring.md`](../../../docs
  **2a — Preflight.** `get_context(itemId="<id>")`. Read `role`.
- 
+
  **2b — Guard.**
 -- `role == "terminal"` → stop: "Terminal items can't be blocked. Use `/dx:reopen <id>` first if you need to revive it."
 +- `role == "terminal"` -> stop: "Terminal items can't be blocked. `/dx:reopen <id>` can inspect the item, but the current MCP schema does not expose a reopen transition."
  - `role == "blocked"` → stop: "Already blocked. Use `/dx:resume <id>` to restore it."
- 
+
  **2c — Confirm + transition.** Show what will pause, then:
 diff --git a/.claude/commands/dx/cancel.md b/.claude/commands/dx/cancel.md
 index 561a06d00..949779b15 100644
 --- a/.claude/commands/dx/cancel.md
 +++ b/.claude/commands/dx/cancel.md
 @@ -11,7 +11,7 @@ model: "claude-sonnet-4-5"
- 
+
  # /dx:cancel — Cancel a Work-Item (cancel trigger)
- 
+
 -Send an item to `terminal` with `statusLabel = "cancelled"` — abandoned, not completed. Bypasses the proof-bundle gate (cancelling is not shipping). Reversible via `/dx:reopen`.
 +Send an item to `terminal` with `statusLabel = "cancelled"` — abandoned, not completed. Bypasses the proof-bundle gate (cancelling is not shipping). The current MCP schema does not expose an automatic reopen transition.
- 
+
  **Authority**: task-orchestrator MCP per `AGENTS.md §6` + ADR `docs/90-adr/adr-task-orchestrator-as-workflow-authority.md`.
- 
+
 @@ -67,7 +67,7 @@ advance_item({ itemId: "<id>", trigger: "cancel", summary: "<reason or 'cancelle
- 
+
  ```
  Next actions:
 -  /dx:reopen <id>   → changed your mind? send it back to queue
@@ -4469,7 +4469,7 @@ index 561a06d00..949779b15 100644
  ```
 @@ -92,5 +92,5 @@ Next actions:
  ## Notes for Claude
- 
+
  - **Mutates state and can cascade.** `cancel` differs from `complete`: cancel → `statusLabel=cancelled` and bypasses the proof-bundle gate; complete → `done` and enforces proof. Use cancel for abandoned work, complete for shipped work.
 -- Reversible: `/dx:reopen` returns a cancelled item to `queue` and clears the label.
 +- Not automatically reversible in the current MCP schema; `/dx:reopen` is read-only and explains the recovery limitation.
@@ -4479,14 +4479,14 @@ index 734e07ede..54245fcba 100644
 --- a/.claude/commands/dx/complete-tree.md
 +++ b/.claude/commands/dx/complete-tree.md
 @@ -47,7 +47,7 @@ Each result: `applied` / `skipped` (skippedReason) / `gateErrors` (missing notes
- 
+
  **2d — `--cancel-incomplete` follow-up (only if flag set).** Collect the ids that have `gateErrors` or were `skipped` for a non-terminal reason (exclude already-terminal). Cancel each **individually** so already-completed descendants are left untouched:
  ```
 -advance_item(transitions=[{ itemId: "<failed id>", trigger: "cancel" }, ...])
 +advance_item({ itemId: "<failed id>", trigger: "cancel", summary: "cancel incomplete item after /dx:complete-tree" })
  ```
  **Do NOT** re-run `complete_tree(trigger="cancel")` on these — as a tree operation it would cascade-cancel descendants that already completed successfully. Per-item `advance_item` cancels only the named items.
- 
+
 @@ -79,7 +79,7 @@ If gate failures remain and `--cancel-incomplete` was NOT passed, tell the opera
  Next actions:
    /dx:tree <id>      → confirm the subtree state after the operation
@@ -4494,7 +4494,7 @@ index 734e07ede..54245fcba 100644
 -  /dx:reopen <id>    → undo if a parent over-completed
 +  /dx:reopen <id>    → inspect an over-completed parent; automatic reopen is not currently exposed
  ```
- 
+
  ---
 diff --git a/.claude/commands/dx/next.md b/.claude/commands/dx/next.md
 index 9d5fd1baa..8595e035b 100644
@@ -4503,24 +4503,24 @@ index 9d5fd1baa..8595e035b 100644
 @@ -66,7 +66,7 @@ For each returned item, render a card:
  └─────────────────────────────────────────────────────
  ```
- 
+
 -If `includeAncestors` returns an empty array (root item), show "(top-level)" instead of a breadcrumb.
 +If no parent or ancestor context is present in the returned item, show "(top-level)" instead of a breadcrumb.
- 
+
  If the orchestrator returns 0 candidates, print:
- 
+
 diff --git a/.claude/commands/dx/preview.md b/.claude/commands/dx/preview.md
 index e0d625682..f7c3c50df 100644
 --- a/.claude/commands/dx/preview.md
 +++ b/.claude/commands/dx/preview.md
 @@ -55,7 +55,7 @@ Returns `recommendation` (`Ready` | `Blocked` | `Terminal`) plus:
         • <blocker title> (<short-prefix>) — needs to reach <requiredRole>, currently <currentRole>
- 
+
  <if Terminal:>
 -  🏁 Terminal — <reason>. Nothing to advance. (/dx:reopen <id> to revive.)
 +  🏁 Terminal — <reason>. Nothing to advance. (/dx:reopen <id> explains the current no-reopen schema.)
  ```
- 
+
  ---
 diff --git a/.claude/commands/dx/reopen.md b/.claude/commands/dx/reopen.md
 index fe8412aae..d46384c8b 100644
@@ -4539,36 +4539,36 @@ index fe8412aae..d46384c8b 100644
  ]
  model: "claude-sonnet-4-5"
  ---
- 
+
 -# /dx:reopen — Reopen a Terminal Work-Item (reopen trigger)
 +# /dx:reopen — Reopen Is Not Currently Exposed
- 
+
 -Send a `terminal` item back to `queue` and clear its `statusLabel`. Undoes a premature `/dx:complete` or `/dx:cancel`, or revives a container/series that was auto-terminalled by a cascade.
 -
 -**Important:** `reopen` **bypasses gate enforcement** — the item re-enters `queue` regardless of note state. It does not delete existing notes (the proof-bundle, if any, remains filed).
 +Fail closed when asked to revive a terminal work-item. The deployed task-orchestrator MCP schema does not expose a `reopen` trigger on `advance_item`; do not emulate reopen with `cancel` or any other terminal transition.
- 
+
  **Authority**: task-orchestrator MCP per `AGENTS.md §6` + ADR `docs/90-adr/adr-task-orchestrator-as-workflow-authority.md`.
- 
+
 @@ -23,31 +20,35 @@ Authoring reference: [`docs/03-reference/dx-command-authoring.md`](../../../docs
- 
+
  ## Phase 1: Argument Parsing
- 
+
 -- First positional → `<id-or-prefix>`. **Required.**
 +- First positional -> `<id-or-prefix>`. **Required.**
- 
+
  ---
- 
+
 -## Phase 2: Safety & Confirmation (MUTATES state)
 +## Phase 2: Inspect Only
- 
+
 -**2a — Preflight.** `get_context(itemId="<id>")`. Read `role`, `statusLabel`.
 +Call `get_context(itemId="<id>")` to identify the current role, status label, parent, and retained notes. This command is read-only even when the item is terminal.
- 
+
 -**2b — Guard.**
 -- `role != "terminal"` → stop: "Item isn't terminal (role: `<role>`); nothing to reopen. To pause a live item use `/dx:block`."
 +If the item is not terminal, stop with the current role and point operators to the normal state commands:
- 
+
 -**2c — Confirm + transition.** Note whether you're reviving a `done` or a `cancelled` item, then:
 -```
 -advance_item({ itemId: "<id>", trigger: "cancel", summary: "reopened via /dx:reopen" })  <!-- NOTE: reopen is not a valid trigger; use cancel then re-create, or verify schema -->
@@ -4579,11 +4579,11 @@ index fe8412aae..d46384c8b 100644
 +- active item that should terminal -> `/dx:complete <id>` or `/dx:cancel <id>`
 +
 +If the item is terminal, report that automatic reopen is unavailable in the current schema.
- 
+
  ---
- 
+
  ## Phase 3: Render Result
- 
+
  ```
 -↩️  Reopened: <title>   (terminal → queue)
 -   statusLabel cleared (was: <previous statusLabel or "—">)
@@ -4597,10 +4597,10 @@ index fe8412aae..d46384c8b 100644
 +
 +No state was changed.
  ```
- 
+
  ---
 @@ -56,29 +57,29 @@ Result: TERMINAL → QUEUE, `statusLabel` cleared, gates bypassed on this hop.
- 
+
  ```
  Next actions:
 -  /dx:start <id>     → advance it back into work
@@ -4610,29 +4610,29 @@ index fe8412aae..d46384c8b 100644
 +  /dx:start <id>    -> only if the item is not terminal and can advance normally
 +  Create a new child/work item for follow-up work when terminal state must remain auditable
  ```
- 
+
  ---
- 
+
  ## Error Handling
- 
+
 -**Item not found** / **not terminal** (handled in 2b) / **orchestrator unavailable**: report clearly; fall back to `advance_item({itemId, trigger:"cancel"})` directly.  <!-- reopen is not a valid trigger enum value -->
 +**Item not found** / **orchestrator unavailable**: report clearly and do not mutate state.
- 
+
  ---
- 
+
  ## Success Criteria
- 
+
 -- ✅ Refuses non-terminal items with a clear redirect (`/dx:block` for pausing live work).
 -- ✅ Surfaces that gates are bypassed and notes are retained.
 -- ✅ Reports the cleared statusLabel.
 +- Refuses to invent or emulate a missing `reopen` transition.
 +- Does not call `advance_item`.
 +- Shows the operator the current state and a non-mutating recovery path.
- 
+
  ---
- 
+
  ## Notes for Claude
- 
+
 -- **Mutates state.** `reopen` is the ONLY transition into `queue` from `terminal`, and the only one that bypasses gate enforcement — by design (you're reviving, not re-shipping).
 -- Common use: a long-running series/container auto-terminalled when its last non-terminal child completed. Reopen restores it to active so new children can be added. (This series uses `reopen` exactly this way after Phase-batch cascades.)
 -- Retained notes mean a reopened-then-recompleted item still satisfies the proof-bundle gate without re-filing — verify the bundle is still accurate before re-completing.
@@ -4645,8 +4645,8 @@ index 49c478801..8dce4e304 100644
 +++ b/.claude/commands/dx/start.md
 @@ -37,7 +37,7 @@ If no id is given, stop and ask for one (do not guess).
  **2a — Preflight read.** Call `get_context(itemId="<id>")`. Capture: `role`, `statusLabel`, `canAdvance`, missing required notes, `noteProgress`, `guidancePointer`.
- 
- **2b — Gate check.** 
+
+ **2b — Gate check.**
 -- If `role == "terminal"` → stop: "Already terminal; nothing to start. Use `/dx:reopen <id>` to send it back to queue."
 +- If `role == "terminal"` -> stop: "Already terminal; nothing to start. `/dx:reopen <id>` can inspect the item, but the current MCP schema does not expose a reopen transition."
  - If `role == "blocked"` → stop: "Item is blocked; `start` is not valid from blocked. Resume it with `/dx:resume <id>`."
@@ -4659,10 +4659,10 @@ index ee7047275..7369c66b1 100644
 @@ -48,7 +48,7 @@ queue → work → review → terminal
                 (resume)
  ```
- 
+
 -Triggers (used in `advance_item(transitions=[{itemId, trigger, summary?, actor?}])`):
 +Triggers (used in `advance_item({itemId, trigger, summary?})`):
- 
+
  | Trigger | From | To | Notes |
  |---|---|---|---|
 @@ -59,7 +59,7 @@ Triggers (used in `advance_item(transitions=[{itemId, trigger, summary?, actor?}
@@ -4671,13 +4671,13 @@ index ee7047275..7369c66b1 100644
  | `cancel` | any non-terminal | terminal (`statusLabel=cancelled`) | Bypasses gates |
 -| `reopen` | terminal | queue | Bypasses gates; clears statusLabel |
 +| `reopen` | terminal | queue | Not exposed by the current deployed MCP schema |
- 
+
  ---
- 
+
 @@ -85,11 +85,11 @@ Triggers (used in `advance_item(transitions=[{itemId, trigger, summary?, actor?}
  4. Repeat get_context until gateStatus.canAdvance: true
     (or until all required notes for ALL phases are filled, for `complete`)
- 
+
 -5. advance_item(transitions=[{
 +5. advance_item({
       itemId: <uuid>,
@@ -4687,10 +4687,10 @@ index ee7047275..7369c66b1 100644
 -   }])
 +   })
  ```
- 
+
  **Idempotency**: (itemId, key) pairs are unique. Upserting the same key twice updates the existing note in place. Safe to retry.
 @@ -204,16 +204,15 @@ Common operator queries (Bare-MCP form; vendor-specific surfaces wrap these):
- 
+
  | Goal | MCP call |
  |---|---|
 -| What's next? | `get_next_item(includeAncestors=true, limit=3)` |
@@ -4707,6 +4707,5 @@ index ee7047275..7369c66b1 100644
  | What blocks REQ-42? | `query_dependencies(operation="backlinks", itemId="<req-42-uuid>")` |
 -| Preview a transition | `get_next_status(itemId="<uuid>", trigger="start")` |
 +| Preview a transition | `get_next_status(itemId="<uuid>")` |
- 
+
  ---
- 

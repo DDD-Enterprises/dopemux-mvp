@@ -3,9 +3,9 @@ Author: hu3mann <167156098+hu3mann@users.noreply.github.com>
 Date:   Fri Jul 10 23:35:54 2026 +0000
 
     feat(ui): add soft confirmation for skip task action
-    
+
     This change implements a two-step confirmation pattern for the "Skip" action in the TaskSequencer component. Users now need to click the Skip button twice within a 3-second window to confirm a skip, preventing impulsive or accidental sequence jumps.
-    
+
     Key improvements:
     - Added `isSkipConfirming` state with a 3-second auto-reset.
     - Swapped Skip icon to `AlertTriangle` and updated label to "Confirm Skip?" during the pending state.
@@ -13,9 +13,9 @@ Date:   Fri Jul 10 23:35:54 2026 +0000
     - Updated `aria-label` to be context-aware (Confirm skip vs Skip to [Task]).
     - Fixed a pre-existing ARIA role violation in `PredictionPanel.tsx` tests during loading state.
     - Verified with accessibility tests and manual frontend verification.
-    
+
     ♿ Accessibility: Ensures non-reversible sequence jumps have clear confirmation and descriptive ARIA labels.
-    
+
     Co-authored-by: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.github.com>
 
  .Jules/palette.md                                  |  4 ++

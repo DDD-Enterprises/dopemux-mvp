@@ -3,7 +3,7 @@ Author: Dj Dom <167156098+hu3mann@users.noreply.github.com>
 Date:   Thu Jul 9 23:16:12 2026 -0700
 
     feat(ui): copyable AI forecast in PredictionPanel (#1025)
-    
+
     UI-only PredictionPanel copy + a11y; TaskSequencer onError. Rebased onto main post #1032/#1026.
 
  .Jules/palette.md                                  |   11 +-

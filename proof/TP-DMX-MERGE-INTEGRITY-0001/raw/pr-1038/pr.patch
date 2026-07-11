@@ -44,19 +44,19 @@ index c8e4370df..f1a0ba9c4 100644
 @@ -83,7 +83,7 @@ const INITIAL_TASKS: Task[] = [
    },
  ];
- 
+
 -const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
 +const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }) => {
    const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
    const headerRef = useRef<HTMLHeadingElement>(null);
- 
+
 @@ -96,6 +96,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
    const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
    const [isTaskTitleCopied, setIsTaskTitleCopied] = useState(false);
    const copyTaskTitleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 +  const [isSkipConfirming, setIsSkipConfirming] = useState(false);
 +  const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
- 
+
    useEffect(() => {
      let interval: ReturnType<typeof setInterval>;
 @@ -128,6 +130,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
@@ -68,10 +68,10 @@ index c8e4370df..f1a0ba9c4 100644
 +      }
      };
    }, []);
- 
+
 @@ -183,6 +188,22 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
    };
- 
+
    const skipTask = (taskId: string) => {
 +    if (!isSkipConfirming) {
 +      setIsSkipConfirming(true);
@@ -152,13 +152,13 @@ index 6c79c5f99..b4ffff8fb 100644
 @@ -37,8 +37,8 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
    // Root paper no longer has role=button (dedicated copy control pattern)
    expect(paper).not.toHaveAttribute('role', 'button');
- 
+
 -  const roastBox = screen.getByRole('button');
 -  expect(roastBox).toHaveAttribute('aria-label', 'No forecast available');
 +  const roastBox = screen.getByLabelText('No forecast available');
 +  expect(roastBox).toBeDefined();
    expect(roastBox).toHaveAttribute('tabIndex', '-1');
- 
+
    // Test 2: With critical prediction
 @@ -117,7 +117,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator',
    expect(content).toContain('getCompletionTransitionTask(currentTaskId, tasks, optimizedTasks)');

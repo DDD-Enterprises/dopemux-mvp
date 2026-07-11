@@ -88,7 +88,7 @@ index 1acabb855..17035cadd 100644
 +COPY docker/mcp-servers-source/conport/migrations /app/migrations
  COPY docker/mcp-servers-source/conport/info_server.py .
  COPY docker/mcp-servers-source/conport/start_with_info.sh .
- 
+
 diff --git a/docker/mcp-servers-source/conport/enhanced_server.py b/docker/mcp-servers-source/conport/enhanced_server.py
 index e0b03ad76..978802c14 100644
 --- a/docker/mcp-servers-source/conport/enhanced_server.py
@@ -96,7 +96,7 @@ index e0b03ad76..978802c14 100644
 @@ -474,13 +474,11 @@ async def _ensure_schema(self) -> None:
              logger.warning("⚠️  Schema verification query returned no rows; proceeding anyway")
              logger.info("✅ Schema verification OK")
- 
+
 -        # Ensure optional columns for instance isolation exist
 -        try:
 -            async with self.db_pool.acquire() as conn:
@@ -109,7 +109,7 @@ index e0b03ad76..978802c14 100644
 +            "/app/migrations/conport_migration_gate.py before enabling "
 +            "schema-dependent features."
 +        )
- 
+
      async def get_context(self, request):
          """Get active context for workspace with worktree instance support"""
 diff --git a/docker/mcp-servers-source/conport/migrations/004_unified_query_indexes.sql b/docker/mcp-servers-source/conport/migrations/004_unified_query_indexes.sql
@@ -122,44 +122,44 @@ index 4c90fb428..1353f9b3c 100644
  CREATE INDEX IF NOT EXISTS idx_decisions_user_fts
 -ON ag_catalog.decisions USING GIN (user_id, to_tsvector('english', summary || ' ' || COALESCE(rationale, '')));
 +ON public.decisions USING GIN (to_tsvector('english', summary || ' ' || COALESCE(rationale, '')));
- 
+
  -- Index 2: User + Workspace + Recency
  -- Enables: Recent decisions per user per workspace
  -- Query: WHERE user_id = ? AND workspace_id = ? ORDER BY created_at DESC
  CREATE INDEX IF NOT EXISTS idx_decisions_user_workspace_recent
 -ON ag_catalog.decisions(user_id, workspace_id, created_at DESC);
 +ON public.decisions(user_id, workspace_id, created_at DESC);
- 
+
  -- Index 3: User-scoped workspace list (for quick workspace enumeration)
  -- Enables: Fast DISTINCT workspace_id queries
  -- Query: SELECT DISTINCT workspace_id WHERE user_id = ?
  CREATE INDEX IF NOT EXISTS idx_decisions_user_workspace
 -ON ag_catalog.decisions(user_id, workspace_id);
 +ON public.decisions(user_id, workspace_id);
- 
+
  -- =====================================================================
  -- Progress Entries Indexes (for workspace summaries)
 @@ -33,11 +33,11 @@ ON ag_catalog.decisions(user_id, workspace_id);
- 
+
  -- Index 4: User + Workspace + Status (for aggregations)
  CREATE INDEX IF NOT EXISTS idx_progress_user_workspace_status
 -ON ag_catalog.progress_entries(user_id, workspace_id, status);
 +ON public.progress_entries(user_id, workspace_id, status);
- 
+
  -- Index 5: User + Recent activity
  CREATE INDEX IF NOT EXISTS idx_progress_user_recent
 -ON ag_catalog.progress_entries(user_id, created_at DESC);
 +ON public.progress_entries(user_id, created_at DESC);
- 
+
  -- =====================================================================
  -- Custom Data Indexes (for cross-workspace custom queries)
 @@ -45,7 +45,7 @@ ON ag_catalog.progress_entries(user_id, created_at DESC);
- 
+
  -- Index 6: User + Category (for custom data queries)
  CREATE INDEX IF NOT EXISTS idx_custom_data_user_category
 -ON ag_catalog.custom_data(user_id, category);
 +ON public.custom_data(user_id, category);
- 
+
  -- =====================================================================
  -- Validation
 @@ -57,7 +57,7 @@ DECLARE
@@ -169,11 +169,11 @@ index 4c90fb428..1353f9b3c 100644
 -    WHERE schemaname = 'ag_catalog'
 +    WHERE schemaname = 'public'
        AND indexname LIKE 'idx_%user%';
- 
+
      RAISE NOTICE '';
 @@ -76,18 +76,18 @@ END $$;
  -- =====================================================================
- 
+
  -- Analyze tables for query planner
 -ANALYZE ag_catalog.decisions;
 -ANALYZE ag_catalog.progress_entries;
@@ -181,7 +181,7 @@ index 4c90fb428..1353f9b3c 100644
 +ANALYZE public.decisions;
 +ANALYZE public.progress_entries;
 +ANALYZE public.custom_data;
- 
+
  -- =====================================================================
  -- Rollback Instructions
  -- =====================================================================
@@ -209,16 +209,16 @@ index 946c699b1..9ee1b8d3b 100644
  -- Value = isolated to specific worktree (IN_PROGRESS/PLANNED tasks)
 -ALTER TABLE progress_entries ADD COLUMN instance_id VARCHAR(255);
 +ALTER TABLE progress_entries ADD COLUMN IF NOT EXISTS instance_id VARCHAR(255);
- 
+
  -- Add created_by_instance to decisions for provenance tracking
 -ALTER TABLE decisions ADD COLUMN created_by_instance VARCHAR(255);
 +ALTER TABLE decisions ADD COLUMN IF NOT EXISTS created_by_instance VARCHAR(255);
- 
+
  -- Add instance_id to workspace_contexts for per-instance active context
  -- Allows each worktree to have independent active_context
 -ALTER TABLE workspace_contexts ADD COLUMN instance_id VARCHAR(255);
 +ALTER TABLE workspace_contexts ADD COLUMN IF NOT EXISTS instance_id VARCHAR(255);
- 
+
  -- Make (workspace_id, instance_id) unique
  -- Main worktree: instance_id = NULL
  -- Linked worktrees: instance_id = "worktree-name"
@@ -226,19 +226,19 @@ index 946c699b1..9ee1b8d3b 100644
 -CREATE UNIQUE INDEX idx_workspace_contexts_workspace_instance
 +CREATE UNIQUE INDEX IF NOT EXISTS idx_workspace_contexts_workspace_instance
      ON workspace_contexts(workspace_id, COALESCE(instance_id, ''));
- 
+
  -- =====================================================================
 @@ -40,10 +40,10 @@ ALTER TABLE progress_entries ALTER COLUMN workspace_id SET NOT NULL;
  -- =====================================================================
- 
+
  -- Index for instance-based queries
 -CREATE INDEX idx_progress_instance ON progress_entries(instance_id);
 +CREATE INDEX IF NOT EXISTS idx_progress_instance ON progress_entries(instance_id);
- 
+
  -- Composite index for common query pattern (workspace + instance)
 -CREATE INDEX idx_progress_workspace_instance ON progress_entries(workspace_id, instance_id);
 +CREATE INDEX IF NOT EXISTS idx_progress_workspace_instance ON progress_entries(workspace_id, instance_id);
- 
+
  -- =====================================================================
  -- DATA MIGRATION
 diff --git a/docker/mcp-servers-source/conport/migrations/README.md b/docker/mcp-servers-source/conport/migrations/README.md
@@ -247,7 +247,7 @@ index 9f33539ce..8dbbf1443 100644
 +++ b/docker/mcp-servers-source/conport/migrations/README.md
 @@ -1,5 +1,28 @@
  # ConPort Database Migrations
- 
+
 +## Migration Foundation Gate
 +
 +`conport_migration_gate.py` is the explicit ConPort migration runner/verifier.
@@ -272,7 +272,7 @@ index 9f33539ce..8dbbf1443 100644
 +recorded in `public.conport_schema_migrations`.
 +
  ## Migration 007: Worktree Multi-Instance Support
- 
+
  **Purpose**: Add minimal worktree support for parallel task workflows.
 diff --git a/docker/mcp-servers-source/conport/migrations/conport_migration_gate.py b/docker/mcp-servers-source/conport/migrations/conport_migration_gate.py
 new file mode 100644
@@ -986,12 +986,12 @@ index f19f4ce27..a90293b72 100644
      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
  );
- 
+
 -CREATE UNIQUE INDEX idx_workspace_contexts_workspace_id ON workspace_contexts(workspace_id);
 +CREATE UNIQUE INDEX idx_workspace_contexts_workspace_instance
 +    ON workspace_contexts(workspace_id, COALESCE(instance_id, ''::VARCHAR));
  CREATE INDEX idx_workspace_contexts_updated_at ON workspace_contexts(updated_at);
- 
+
  -- =====================================================================
 @@ -37,6 +39,7 @@ CREATE TABLE decisions (
      tags TEXT[] DEFAULT '{}',
@@ -1015,7 +1015,7 @@ index f19f4ce27..a90293b72 100644
  CREATE INDEX idx_progress_decision_link ON progress_entries(linked_decision_id);
 +CREATE INDEX idx_progress_instance ON progress_entries(instance_id);
 +CREATE INDEX idx_progress_workspace_instance ON progress_entries(workspace_id, instance_id);
- 
+
  -- =====================================================================
  -- SESSION TRACKING (ADHD-specific)
 @@ -260,7 +266,7 @@ ORDER BY
@@ -2974,5 +2974,5 @@ index 3ca4d482b..6efc13c2d 100644
 -#917's. The word "legacy" in the no-mutate message is #928's wording for "a
 +PR #917's. The word "legacy" in the no-mutate message is PR #928's wording for "a
  pre-existing ledger this gate does not own."
- 
+
  ## Consequences

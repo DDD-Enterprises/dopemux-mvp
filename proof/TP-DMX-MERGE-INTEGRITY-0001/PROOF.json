@@ -1,0 +1,83 @@
+{
+  "audit_metadata": {
+    "audited_diff_sha256": "2cc8862c392f3d81a7781d5abf0174077a8e411c51f1f0e41e211a6b671c80e0",
+    "audited_tree_sha": "5fd0e960aa219014c227cfe22a98c02ac67b038d",
+    "auditor_provider": "AGY / Google Antigravity route",
+    "auditor_runner": "agy 1.1.1",
+    "auditor_verdict": "PASS_WITH_RISKS"
+  },
+  "authoritative_artifacts": [
+    "merge-integrity-investigation.md",
+    "adr-dmx-merge-integrity-agent-patch-admission.md",
+    "merge-integrity-architecture.md",
+    "implementation-series-plan.md",
+    "INCIDENT_MATRIX.json",
+    "GITHUB_CONTROLS_SNAPSHOT.json",
+    "AUDIT.md",
+    "HANDOFF.json"
+  ],
+  "bundle_id": "TP-DMX-MERGE-INTEGRITY-0001-001",
+  "chain_of_custody": {
+    "created_at": "2026-07-11T23:36:29Z",
+    "documented": true,
+    "parent_bundle_ids": [],
+    "source_version": "1.0"
+  },
+  "created_at": "2026-07-11T23:36:29Z",
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "agy",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "Candidate construction, validation, and final readiness must not execute inside the untrusted pull_request context of an agent branch because workflow YAML could be modified by the candidate source.",
+        "id": "AGY-001",
+        "severity": "HIGH",
+        "status": "OPEN",
+        "title": "Implementation must run final gates in trusted context"
+      },
+      {
+        "body": "The architecture requires explicit mass_deletion_intent and additional gates; implementation packet TP-DMX-MERGE-INTEGRITY-0003 must define exact approval and override mechanics before enforcement.",
+        "id": "AGY-002",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "Mass-deletion gates must be concretized before implementation"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "agy --model sonnet --mode plan --print-timeout 10m --print <AUDITOR_PROMPT.md>",
+    "remaining_risks": [
+      "GitHub merge queue tree-SHA binding unproven until implementation.",
+      "Same-file conflict friction is accepted.",
+      "Review state can change between final readiness and merge unless executor rechecks immediately.",
+      "Trusted-runner isolation and mass-deletion gate detail remain implementation obligations."
+    ],
+    "report_path": "proof/TP-DMX-MERGE-INTEGRITY-0001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "handoff_refs": [
+    "TP-DMX-MERGE-INTEGRITY-0001-HANDOFF-001"
+  ],
+  "parent_bundle_refs": [],
+  "repository_state": {
+    "audited_content_sha": "b71e13a9b8691217dc6b35d148ccc122bc7d0f06",
+    "base_branch": "main",
+    "execution_base_sha": "b176747b339685e781de04268c46b7ae123abfbf",
+    "final_proof_head_sha": "SELF_REFERENTIAL_RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
+    "repository": "DDD-Enterprises/dopemux-mvp"
+  },
+  "review_order_hint": 1,
+  "run_id": "merge-integrity-investigation-20260711T233629Z",
+  "skill": "merge-integrity-architecture-investigation",
+  "status": "READY_FOR_REVIEW",
+  "supporting_artifacts": [
+    "COMMAND_LOG.md",
+    "EVIDENCE_LEDGER.md",
+    "AUDITOR_RAW.txt",
+    "DIFF_STAT.txt",
+    "DIFF.patch"
+  ],
+  "validation_state": "PASSED"
+}

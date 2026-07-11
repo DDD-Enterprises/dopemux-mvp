@@ -3,11 +3,11 @@ Author: hu3mann <167156098+hu3mann@users.noreply.github.com>
 Date:   Fri Jun 19 20:07:26 2026 +0000
 
     🎨 Palette: Refine TeamDashboard tooltip structure
-    
+
     - Moved summary Tooltip to wrap only the header Box to avoid collision with nested tooltips.
     - Moved cursor: 'help' to the header Box.
     - Maintained card-level interactive surface (tabIndex, aria-label, focus lift).
-    
+
     Co-authored-by: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.github.com>
 
  .../DMX-CONPORT-OPTIMAL-101-PROOF.md               | 207 -----

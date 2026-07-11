@@ -1,0 +1,48 @@
+# Audit Verdict
+
+```text
+PASS_WITH_RISKS
+```
+
+---
+
+## 1. Concise Findings
+
+The proposed architecture (`ADR-DMX-MERGE-INTEGRITY-0001` and `DMX-MIA-0001`) presents a robust, zero-trust admission model that treats agent-produced branches as untrusted patch material rather than direct merge candidates.
+
+Below is the evaluation against the 14 audit challenges:
+
+1. **Blocked PRs #932 and #1025:** **Yes.** Complete changed-file enumeration (replacing the deletion-blind `--diff-filter=ACMR` filter) combined with the Candidate Sanitizer would have detected and blocked the unauthorized deletions of ConPort migrations/proofs and the MCP runtime stack.
+2. **Honest PR #720 Conflict Resolution:** **Yes.** The investigation and incident matrix correctly identify that current git evidence does not reproduce PR #720 as a stale-branch deletion clobber. By marking this causality as unresolved/conflicting, the design honestly avoids over-generalization.
+3. **Mass Deletions Gates:** **Yes.** Legitimate mass deletions are blocked by default and permitted only when the Change Intent Registry explicitly declares `mass_deletion_intent` alongside a review of protected surfaces.
+4. **Evaluating PR #1038 Without Trust:** **Yes.** The design classifies PR #1038 using provenance signals (such as the presence of `.Jules/*` paths) rather than its branch name or title, and blocks the PR read-only due to its unresolved review threads and missing proof.
+5. **Authority Leakage Prevention:** **Yes.** The design explicitly treats PR text, labels, branches, and GitHub UI elements as unverified claims. Verification is pinned strictly to SHA-bound audit proofs, and worktree hygiene is kept strictly advisory.
+6. **Race Condition Avoidance:** **Yes.** The final Transactional Merge Executor re-checks the expected head SHA, tree SHA, review threads, checks, and policy labels immediately prior to execution, invalidating the merge if any state changed.
+7. **Self-Reference & Stale-Proof Protection:** **Yes.** The final gate excludes its own status context from the required-check evaluation loop, preventing self-reference deadlocks. Readiness is invalidated immediately upon base branch or candidate head mutations.
+8. **Pagination and Patch-Size Limits:** **Yes.** The design uses local git diffs to bypass GitHub's 20,000-line patch retrieval limit and explicitly introduces `HARVEST_INCOMPLETE` blocks to handle pagination overflows.
+9. **Event-Loop & Check Deadlocks:** **Yes.** Splitting the PR Steward into a read-only intake phase and a read-only final readiness phase prevents cyclic dependency loops.
+10. **Solo-Operator Deadlock Prevention:** **Yes.** Proposes a structured, recorded, time-bound, and SHA-pinned supervisor override protocol to bypass review constraints without compromising the complete enumeration check.
+11. **Banded Destructive Permissions:** **Yes.** The Candidate Sanitizer applies only authorized patch hunks to current `main` (avoiding wholesale branch imports), and the Post-Merge Sentinel freezes/reports mismatches rather than running broad automatic reverts.
+12. **Read-Only PR Steward:** **Yes.** The ADR and architecture strictly enforce a read-only boundary on the PR Steward; it never mutates source PRs.
+13. **Bounded Patch Sanitization on Current `main`:** **Yes.** The sanitizer is designed to transplant only authorized hunks onto a fresh candidate branch based on current `main`.
+14. **Heuristics as Secondary Signals:** **Yes.** File-count and line-count thresholds are classified strictly as secondary risk signals, not as authorization criteria.
+
+---
+
+## 2. Required Fixes
+*No blocking fixes are required to adopt the proposed design documents, but the following engineering enhancements must be addressed during implementation:*
+* **Audit-Proof Schema Anchoring:** Ensure `scripts/audit/pr_audit_router.py` does not default to `PASS` when run in `--dry-run` or skipped modes. Skip/dry-run states must explicitly result in a non-passing verdict.
+* **Pagination Strictness:** Hard-code a maximum limit of review threads/comments that the harvesting tool can process before forcing a fallback to a supervisor override, avoiding partial evaluations.
+
+---
+
+## 3. Accepted Risks
+* **GitHub Merge Queue Alignment:** The GitHub Merge Queue relies on internal grouping and re-sequencing logic that may mutate tree SHAs dynamically. We accept the risk that integration-time adjustments will be needed to align expected-head enforcement with Merge Queue behaviors.
+* **Supervisor Override Lockout Hazard:** In a solo-operator setup, an incorrectly configured override schema could lead to repository lockouts. This risk is accepted pending local validation of the override protocol.
+* **Same-File Concurrent Conflict Blinks:** Concurrent PRs touching overlapping lines in the same file will block automatically for manual adjudication. This operational overhead is accepted as the price of ensuring merge integrity.
+
+---
+
+## 4. Residual Uncertainty
+* **GitHub API Edge Cases:** API rate limits or sporadic network failures during the final readiness state harvesting may cause transient `HARVEST_INCOMPLETE` failures, causing harmless but friction-inducing build blocks.
+* **External Workflow Behavior:** If external non-required GitHub Actions mutate files on candidate branches after readiness validation but before the merge transaction completes, the expected-head check will refuse the merge. The frequency of such occurrences in a busy repository remains uncertain.

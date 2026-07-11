@@ -39,7 +39,7 @@ index 1acabb855..17035cadd 100644
 +COPY docker/mcp-servers-source/conport/migrations /app/migrations
  COPY docker/mcp-servers-source/conport/info_server.py .
  COPY docker/mcp-servers-source/conport/start_with_info.sh .
- 
+
 diff --git a/docker/mcp-servers-source/conport/enhanced_server.py b/docker/mcp-servers-source/conport/enhanced_server.py
 index e0b03ad76..978802c14 100644
 --- a/docker/mcp-servers-source/conport/enhanced_server.py
@@ -47,7 +47,7 @@ index e0b03ad76..978802c14 100644
 @@ -474,13 +474,11 @@ async def _ensure_schema(self) -> None:
              logger.warning("⚠️  Schema verification query returned no rows; proceeding anyway")
              logger.info("✅ Schema verification OK")
- 
+
 -        # Ensure optional columns for instance isolation exist
 -        try:
 -            async with self.db_pool.acquire() as conn:
@@ -60,7 +60,7 @@ index e0b03ad76..978802c14 100644
 +            "/app/migrations/conport_migration_gate.py before enabling "
 +            "schema-dependent features."
 +        )
- 
+
      async def get_context(self, request):
          """Get active context for workspace with worktree instance support"""
 diff --git a/docker/mcp-servers-source/conport/migrations/004_unified_query_indexes.sql b/docker/mcp-servers-source/conport/migrations/004_unified_query_indexes.sql
@@ -73,44 +73,44 @@ index 4c90fb428..1353f9b3c 100644
  CREATE INDEX IF NOT EXISTS idx_decisions_user_fts
 -ON ag_catalog.decisions USING GIN (user_id, to_tsvector('english', summary || ' ' || COALESCE(rationale, '')));
 +ON public.decisions USING GIN (to_tsvector('english', summary || ' ' || COALESCE(rationale, '')));
- 
+
  -- Index 2: User + Workspace + Recency
  -- Enables: Recent decisions per user per workspace
  -- Query: WHERE user_id = ? AND workspace_id = ? ORDER BY created_at DESC
  CREATE INDEX IF NOT EXISTS idx_decisions_user_workspace_recent
 -ON ag_catalog.decisions(user_id, workspace_id, created_at DESC);
 +ON public.decisions(user_id, workspace_id, created_at DESC);
- 
+
  -- Index 3: User-scoped workspace list (for quick workspace enumeration)
  -- Enables: Fast DISTINCT workspace_id queries
  -- Query: SELECT DISTINCT workspace_id WHERE user_id = ?
  CREATE INDEX IF NOT EXISTS idx_decisions_user_workspace
 -ON ag_catalog.decisions(user_id, workspace_id);
 +ON public.decisions(user_id, workspace_id);
- 
+
  -- =====================================================================
  -- Progress Entries Indexes (for workspace summaries)
 @@ -33,11 +33,11 @@ ON ag_catalog.decisions(user_id, workspace_id);
- 
+
  -- Index 4: User + Workspace + Status (for aggregations)
  CREATE INDEX IF NOT EXISTS idx_progress_user_workspace_status
 -ON ag_catalog.progress_entries(user_id, workspace_id, status);
 +ON public.progress_entries(user_id, workspace_id, status);
- 
+
  -- Index 5: User + Recent activity
  CREATE INDEX IF NOT EXISTS idx_progress_user_recent
 -ON ag_catalog.progress_entries(user_id, created_at DESC);
 +ON public.progress_entries(user_id, created_at DESC);
- 
+
  -- =====================================================================
  -- Custom Data Indexes (for cross-workspace custom queries)
 @@ -45,7 +45,7 @@ ON ag_catalog.progress_entries(user_id, created_at DESC);
- 
+
  -- Index 6: User + Category (for custom data queries)
  CREATE INDEX IF NOT EXISTS idx_custom_data_user_category
 -ON ag_catalog.custom_data(user_id, category);
 +ON public.custom_data(user_id, category);
- 
+
  -- =====================================================================
  -- Validation
 @@ -57,7 +57,7 @@ DECLARE
@@ -120,11 +120,11 @@ index 4c90fb428..1353f9b3c 100644
 -    WHERE schemaname = 'ag_catalog'
 +    WHERE schemaname = 'public'
        AND indexname LIKE 'idx_%user%';
- 
+
      RAISE NOTICE '';
 @@ -76,18 +76,18 @@ END $$;
  -- =====================================================================
- 
+
  -- Analyze tables for query planner
 -ANALYZE ag_catalog.decisions;
 -ANALYZE ag_catalog.progress_entries;
@@ -132,7 +132,7 @@ index 4c90fb428..1353f9b3c 100644
 +ANALYZE public.decisions;
 +ANALYZE public.progress_entries;
 +ANALYZE public.custom_data;
- 
+
  -- =====================================================================
  -- Rollback Instructions
  -- =====================================================================
@@ -160,16 +160,16 @@ index 946c699b1..9ee1b8d3b 100644
  -- Value = isolated to specific worktree (IN_PROGRESS/PLANNED tasks)
 -ALTER TABLE progress_entries ADD COLUMN instance_id VARCHAR(255);
 +ALTER TABLE progress_entries ADD COLUMN IF NOT EXISTS instance_id VARCHAR(255);
- 
+
  -- Add created_by_instance to decisions for provenance tracking
 -ALTER TABLE decisions ADD COLUMN created_by_instance VARCHAR(255);
 +ALTER TABLE decisions ADD COLUMN IF NOT EXISTS created_by_instance VARCHAR(255);
- 
+
  -- Add instance_id to workspace_contexts for per-instance active context
  -- Allows each worktree to have independent active_context
 -ALTER TABLE workspace_contexts ADD COLUMN instance_id VARCHAR(255);
 +ALTER TABLE workspace_contexts ADD COLUMN IF NOT EXISTS instance_id VARCHAR(255);
- 
+
  -- Make (workspace_id, instance_id) unique
  -- Main worktree: instance_id = NULL
  -- Linked worktrees: instance_id = "worktree-name"
@@ -177,19 +177,19 @@ index 946c699b1..9ee1b8d3b 100644
 -CREATE UNIQUE INDEX idx_workspace_contexts_workspace_instance
 +CREATE UNIQUE INDEX IF NOT EXISTS idx_workspace_contexts_workspace_instance
      ON workspace_contexts(workspace_id, COALESCE(instance_id, ''));
- 
+
  -- =====================================================================
 @@ -40,10 +40,10 @@ ALTER TABLE progress_entries ALTER COLUMN workspace_id SET NOT NULL;
  -- =====================================================================
- 
+
  -- Index for instance-based queries
 -CREATE INDEX idx_progress_instance ON progress_entries(instance_id);
 +CREATE INDEX IF NOT EXISTS idx_progress_instance ON progress_entries(instance_id);
- 
+
  -- Composite index for common query pattern (workspace + instance)
 -CREATE INDEX idx_progress_workspace_instance ON progress_entries(workspace_id, instance_id);
 +CREATE INDEX IF NOT EXISTS idx_progress_workspace_instance ON progress_entries(workspace_id, instance_id);
- 
+
  -- =====================================================================
  -- DATA MIGRATION
 diff --git a/docker/mcp-servers-source/conport/migrations/README.md b/docker/mcp-servers-source/conport/migrations/README.md
@@ -198,7 +198,7 @@ index 9f33539ce..8dbbf1443 100644
 +++ b/docker/mcp-servers-source/conport/migrations/README.md
 @@ -1,5 +1,28 @@
  # ConPort Database Migrations
- 
+
 +## Migration Foundation Gate
 +
 +`conport_migration_gate.py` is the explicit ConPort migration runner/verifier.
@@ -223,7 +223,7 @@ index 9f33539ce..8dbbf1443 100644
 +recorded in `public.conport_schema_migrations`.
 +
  ## Migration 007: Worktree Multi-Instance Support
- 
+
  **Purpose**: Add minimal worktree support for parallel task workflows.
 diff --git a/docker/mcp-servers-source/conport/migrations/conport_migration_gate.py b/docker/mcp-servers-source/conport/migrations/conport_migration_gate.py
 new file mode 100644
@@ -2041,7 +2041,7 @@ index fbc3b4140..687a93410 100644
 @@ -34,6 +34,16 @@
      "007_worktree_support_simple.sql",
  }
- 
+
 +BASE_SCHEMA_TABLES = (
 +    "workspace_contexts",
 +    "decisions",
@@ -2067,13 +2067,13 @@ index fbc3b4140..687a93410 100644
 +    1: "001_enhanced_decision_model",
 +    2: "002_decision_patterns_table",
 +}
- 
- 
+
+
  class GateError(RuntimeError):
 @@ -285,44 +303,208 @@ def _exists_query(conn, query: str, args: tuple[Any, ...]) -> bool:
          return bool(cur.fetchone()[0])
- 
- 
+
+
 +def table_exists(conn, schema: str, table: str) -> bool:
 +    return _exists_query(
 +        conn,
@@ -2259,12 +2259,12 @@ index fbc3b4140..687a93410 100644
 +
  def verify_schema_objects(conn, schema: str) -> list[str]:
      errors: list[str] = []
- 
+
      for table in REQUIRED_TABLES:
 -        if not _exists_query(conn, "SELECT to_regclass(%s) IS NOT NULL", (f"{schema}.{table}",)):
 +        if not table_exists(conn, schema, table):
              errors.append(f"missing table {schema}.{table}")
- 
+
      for table, column in REQUIRED_COLUMNS:
 -        if not _exists_query(
 -            conn,
@@ -2281,7 +2281,7 @@ index fbc3b4140..687a93410 100644
 -        ):
 +        if not column_exists(conn, schema, table, column):
              errors.append(f"missing column {schema}.{table}.{column}")
- 
+
      for index in REQUIRED_INDEXES:
 -        if not _exists_query(
 -            conn,
@@ -2297,17 +2297,17 @@ index fbc3b4140..687a93410 100644
 -        ):
 +        if not index_exists(conn, schema, index):
              errors.append(f"missing index {schema}.{index}")
- 
+
 +    for view in REQUIRED_VIEWS:
 +        if not view_exists(conn, schema, view):
 +            errors.append(f"missing view {schema}.{view}")
 +
      return errors
- 
- 
+
+
 @@ -331,10 +513,15 @@ def apply_migrations(database_url: str, migrations: Sequence[Migration], schema:
          raise GateError(f"refusing to mutate database without {APPLY_ENV}=1")
- 
+
      applied: list[str] = []
 +    adopted: list[str] = []
      skipped: list[str] = []
@@ -2324,11 +2324,11 @@ index fbc3b4140..687a93410 100644
 @@ -358,7 +545,7 @@ def apply_migrations(database_url: str, migrations: Sequence[Migration], schema:
          if ledger_errors or schema_errors:
              raise GateError("; ".join(ledger_errors + schema_errors))
- 
+
 -    return {"applied": applied, "skipped": skipped}
 +    return {"adopted": adopted, "applied": applied, "skipped": skipped}
- 
- 
+
+
  def verify_migrations(database_url: str, migrations: Sequence[Migration], schema: str) -> dict[str, Any]:
 diff --git a/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/proof.md b/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/proof.md
 index aac2bda08..fcf265e42 100644
@@ -2336,7 +2336,7 @@ index aac2bda08..fcf265e42 100644
 +++ b/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/proof.md
 @@ -21,6 +21,8 @@ Scope: migration packaging, explicit migration gate runtime, idempotent migratio
  ## Changes
- 
+
  - Added explicit ConPort migration gate: `docker/mcp-servers-source/conport/migrations/conport_migration_gate.py`.
 +- Added base-schema preflight before ledger mutation so fresh databases fail closed without poisoned failed ledger rows.
 +- Added adoption of already-applied legacy migrations into the ledger when schema evidence or legacy migration markers indicate prior application; final verification still requires expected schema objects and views.
@@ -2345,7 +2345,7 @@ index aac2bda08..fcf265e42 100644
  - Hardened migration SQL for replay/idempotency:
 @@ -35,7 +37,7 @@ Scope: migration packaging, explicit migration gate runtime, idempotent migratio
  PASS:
- 
+
  - `python3 -m pytest -q proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py`
 -  - Result: `10 passed`
 +  - Result: `13 passed`
@@ -2369,17 +2369,17 @@ index aac2bda08..fcf265e42 100644
    - Result: exit 0; applicable hooks passed, unrelated file-pattern hooks skipped
 +- PR CI after review fix:
 +  - Result before review fix: all checks passed on head `19c1db99e752c1a58570d787db1ce6f435fde115`; GitHub still blocked merge because unresolved review conversations remained.
- 
+
  Local-dev apply evidence:
- 
+
 diff --git a/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py b/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py
 index 11c513e57..8cb69ca46 100644
 --- a/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py
 +++ b/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py
 @@ -102,6 +102,98 @@ def test_ledger_validation_detects_checksum_mismatch(tmp_path):
      assert "checksum mismatch for 004_unified_query_indexes.sql" in errors
- 
- 
+
+
 +def test_apply_preflights_base_schema_before_ledger_mutation(tmp_path, monkeypatch):
 +    _write_required_migrations(tmp_path)
 +    monkeypatch.setenv(gate.APPLY_ENV, "1")
@@ -2496,8 +2496,8 @@ index 687a93410..03ee91785 100644
 +++ b/docker/mcp-servers-source/conport/migrations/conport_migration_gate.py
 @@ -113,6 +113,15 @@ def validate_identifier(value: str, label: str = "identifier") -> str:
      return value
- 
- 
+
+
 +def validate_supported_schema(schema: str) -> str:
 +    if schema != DEFAULT_SCHEMA:
 +        raise GateError(
@@ -2509,7 +2509,7 @@ index 687a93410..03ee91785 100644
 +
  def _checksum(path: Path) -> str:
      return hashlib.sha256(path.read_bytes()).hexdigest()
- 
+
 @@ -577,7 +586,11 @@ def build_parser() -> argparse.ArgumentParser:
          default=Path(__file__).resolve().parent,
          help="Directory containing ConPort SQL migrations.",
@@ -2521,8 +2521,8 @@ index 687a93410..03ee91785 100644
 +        help="Target schema name. Only public is supported by current ConPort SQL migrations.",
 +    )
      return parser
- 
- 
+
+
 @@ -588,7 +601,7 @@ def main(argv: Sequence[str] | None = None) -> int:
      try:
          if not args.database_url:
@@ -2546,7 +2546,7 @@ index fcf265e42..9cdd6fc0f 100644
  - Hardened migration SQL for replay/idempotency:
 @@ -37,7 +38,7 @@ Scope: migration packaging, explicit migration gate runtime, idempotent migratio
  PASS:
- 
+
  - `python3 -m pytest -q proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py`
 -  - Result: `13 passed`
 +  - Result: `14 passed`
@@ -2559,8 +2559,8 @@ index 8cb69ca46..767b4e507 100644
 +++ b/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py
 @@ -84,6 +84,30 @@ def test_schema_identifier_validation_fails_closed(tmp_path, monkeypatch):
      assert code == 2
- 
- 
+
+
 +def test_non_public_schema_is_rejected_before_migration_execution(tmp_path, monkeypatch):
 +    _write_required_migrations(tmp_path)
 +    monkeypatch.setenv(gate.APPLY_ENV, "1")
@@ -2613,19 +2613,19 @@ index 03ee91785..52f53e4ff 100644
  from typing import Any, Sequence
 -from urllib.parse import unquote, urlparse
 +from urllib.parse import unquote, urlparse, urlsplit, urlunsplit
- 
- 
+
+
  APPLY_ENV = "DPMX_CONPORT_MIGRATION_APPLY"
 @@ -267,25 +267,26 @@ def record_migration(
- 
- 
+
+
  def build_psql_invocation(database_url: str, migration: Migration) -> tuple[list[str], dict[str, str]]:
 -    parsed = urlparse(normalize_database_url(database_url))
 +    normalized_url = normalize_database_url(database_url)
 +    parsed = urlparse(normalized_url)
      if parsed.scheme not in {"postgresql", "postgres"}:
          raise GateError(f"unsupported PostgreSQL URL scheme: {parsed.scheme}")
- 
+
 -    args = ["psql", "-v", "ON_ERROR_STOP=1"]
 -    if parsed.hostname:
 -        args.extend(["-h", parsed.hostname])
@@ -2654,8 +2654,8 @@ index 03ee91785..52f53e4ff 100644
 +
 +    args = ["psql", "-v", "ON_ERROR_STOP=1", "-d", safe_url, "-f", str(migration.path)]
      return args, env
- 
- 
+
+
 diff --git a/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/proof.md b/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/proof.md
 index 9cdd6fc0f..5447ca56b 100644
 --- a/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/proof.md
@@ -2672,7 +2672,7 @@ index 9cdd6fc0f..5447ca56b 100644
  - Hardened migration SQL for replay/idempotency:
 @@ -38,7 +41,8 @@ Scope: migration packaging, explicit migration gate runtime, idempotent migratio
  PASS:
- 
+
  - `python3 -m pytest -q proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py`
 -  - Result: `14 passed`
 +  - Result before review-thread URI fix: `14 passed`
@@ -2686,8 +2686,8 @@ index 767b4e507..de95fa18c 100644
 +++ b/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py
 @@ -237,6 +237,30 @@ def test_psql_invocation_keeps_password_out_of_process_args(tmp_path):
      assert "-f" in args
- 
- 
+
+
 +def test_psql_invocation_preserves_libpq_uri_options(tmp_path):
 +    migration = gate.Migration(
 +        version=1,
@@ -2740,8 +2740,8 @@ index 52f53e4ff..1447c3ddc 100644
  from typing import Any, Sequence
 -from urllib.parse import unquote, urlparse, urlsplit, urlunsplit
 +from urllib.parse import unquote, unquote_plus, urlparse, urlsplit
- 
- 
+
+
  APPLY_ENV = "DPMX_CONPORT_MIGRATION_APPLY"
 @@ -282,9 +282,26 @@ def build_psql_invocation(database_url: str, migration: Migration) -> tuple[list
          userinfo, hostinfo = safe_netloc.rsplit("@", 1)
@@ -2770,7 +2770,7 @@ index 52f53e4ff..1447c3ddc 100644
 +        safe_url += f"?{safe_query}"
 +    if split_url.fragment:
 +        safe_url += f"#{split_url.fragment}"
- 
+
      args = ["psql", "-v", "ON_ERROR_STOP=1", "-d", safe_url, "-f", str(migration.path)]
      return args, env
 @@ -454,8 +471,11 @@ def migration_schema_errors(conn, schema: str, version: int) -> list[str]:
@@ -2817,8 +2817,8 @@ index de95fa18c..4aff89b33 100644
 +++ b/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py
 @@ -261,6 +261,59 @@ def test_psql_invocation_preserves_libpq_uri_options(tmp_path):
      )
- 
- 
+
+
 +def test_psql_invocation_preserves_empty_host_libpq_uri(tmp_path):
 +    migration = gate.Migration(
 +        version=1,
@@ -2923,12 +2923,12 @@ index f19f4ce27..8afa43e74 100644
      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
  );
- 
+
 -CREATE UNIQUE INDEX idx_workspace_contexts_workspace_id ON workspace_contexts(workspace_id);
 +CREATE UNIQUE INDEX idx_workspace_contexts_workspace_instance
 +    ON workspace_contexts(workspace_id, COALESCE(instance_id, ''));
  CREATE INDEX idx_workspace_contexts_updated_at ON workspace_contexts(updated_at);
- 
+
  -- =====================================================================
 @@ -37,6 +39,7 @@ CREATE TABLE decisions (
      tags TEXT[] DEFAULT '{}',
@@ -2952,7 +2952,7 @@ index f19f4ce27..8afa43e74 100644
  CREATE INDEX idx_progress_decision_link ON progress_entries(linked_decision_id);
 +CREATE INDEX idx_progress_instance ON progress_entries(instance_id);
 +CREATE INDEX idx_progress_workspace_instance ON progress_entries(workspace_id, instance_id);
- 
+
  -- =====================================================================
  -- SESSION TRACKING (ADHD-specific)
 @@ -291,4 +297,4 @@ ON CONFLICT DO NOTHING;
@@ -2993,8 +2993,8 @@ index 4aff89b33..90a7b92f5 100644
 +++ b/proof/conport-optimal-100-migration-foundation-gate/DMX-CONPORT-OPTIMAL-100-migration-foundation-gate/test_conport_migration_gate.py
 @@ -218,6 +218,21 @@ def test_marker_based_adoption_still_requires_final_view_verification(monkeypatc
      )
- 
- 
+
+
 +def test_migration_007_adoption_requires_workspace_instance_unique_index(monkeypatch):
 +    monkeypatch.setattr(gate, "table_exists", lambda *_args: True)
 +    monkeypatch.setattr(gate, "column_exists", lambda *_args: True)
@@ -3015,8 +3015,8 @@ index 4aff89b33..90a7b92f5 100644
          version=1,
 @@ -335,6 +350,16 @@ def test_startup_no_longer_runs_hidden_enhanced_schema_alters():
      assert "conport_migration_gate.py" in source
- 
- 
+
+
 +def test_base_schema_matches_instance_route_contract():
 +    source = (CONPORT_DIR / "schema.sql").read_text(encoding="utf-8")
 +
@@ -3050,12 +3050,12 @@ index 8afa43e74..a90293b72 100644
 +++ b/docker/mcp-servers-source/conport/schema.sql
 @@ -23,7 +23,7 @@ CREATE TABLE workspace_contexts (
  );
- 
+
  CREATE UNIQUE INDEX idx_workspace_contexts_workspace_instance
 -    ON workspace_contexts(workspace_id, COALESCE(instance_id, ''));
 +    ON workspace_contexts(workspace_id, COALESCE(instance_id, ''::VARCHAR));
  CREATE INDEX idx_workspace_contexts_updated_at ON workspace_contexts(updated_at);
- 
+
  -- =====================================================================
 @@ -266,7 +266,7 @@ ORDER BY
  -- Insert initial context for existing workspace
@@ -3075,6 +3075,6 @@ index 90a7b92f5..f96300db3 100644
      assert "idx_progress_instance" in source
      assert "idx_progress_workspace_instance" in source
 +    assert "ON CONFLICT (workspace_id, (COALESCE(instance_id, ''::VARCHAR)))" in source
- 
- 
+
+
  def test_migration_004_targets_public_schema_not_ag_catalog():

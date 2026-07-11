@@ -3,22 +3,22 @@ Author: DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’
 Date:   Fri Jul 10 14:31:30 2026 -0700
 
     fix(mcp): restore runtime stack clobbered off main by #1025
-    
+
     PR #1025 (feat(ui): copyable AI forecast in PredictionPanel) accidentally
     deleted the entire MCP runtime stack from main: 116 files removed + 16 files
     reverted (27,676 lines), wiping the output of PRs #1022-#1032 (runtime_registry,
     port_leases, docker_runtime, doctor, lifecycle, fleet, config_repair,
     task_orchestrator_identity, port_allocator, socket_probe, +more) plus their
     unit tests and runtime proof bundles.
-    
+
     Surgical restore from 7f904d78e (parent of #1025): re-adds the 116 deleted
     files and reverts the 16 clobbered backend/doc/config/test files, while
     PRESERVING #1025's legitimate UI change (ui-dashboard/* + .Jules/palette.md).
     No file re-touched after #1025, so the restore is purely additive.
-    
+
     Verified locally: 17/17 restored modules import; 197 restored runtime unit
     tests pass; compileall clean; tests/unit+tests/mcp collection clean.
-    
+
     Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 
  .claude/WORKTREE_MCP_SETUP.md                      |   56 +

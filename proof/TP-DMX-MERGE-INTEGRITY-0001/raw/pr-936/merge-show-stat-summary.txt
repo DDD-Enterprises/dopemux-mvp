@@ -3,9 +3,9 @@ Author: Dj Dom <167156098+hu3mann@users.noreply.github.com>
 Date:   Fri Jun 19 20:37:36 2026 -0700
 
     fix(conport): restore migration foundation gate (clobbered by #932) + ledger hardening (#936)
-    
+
     ## Summary
-    
+
     Restores the ConPort migration foundation gate to `main` and ports the
     unique
     ledger-safety hardening from PR #928 onto it. Opened as the focused
@@ -13,15 +13,15 @@ Date:   Fri Jun 19 20:37:36 2026 -0700
     salvage #928's value — but during investigation the task's premise
     turned out to
     be broken: **#917's gate is not on `main`.**
-    
+
     ### What happened (verified)
-    
+
     | | |
     |---|---|
     | PR #917 merged the gate | `c45b2c8e7`, 2026-06-19 **19:58Z** |
     | PR #932 "🎨 Palette: Team Dashboard" reverted it | `559d7e2fa`,
     2026-06-19 **20:12Z** |
-    
+
     #932 was based on pre-#917 `main`; its merge **reverted #917 wholesale**
     —
     `removed` `migrations/conport_migration_gate.py` + its test, and
@@ -33,9 +33,9 @@ Date:   Fri Jun 19 20:37:36 2026 -0700
     files — a
     stale-branch clobber, not an intentional change. There was no existing
     restore/revert PR.
-    
+
     ### What this PR does
-    
+
     1. **Restores #917** at its canonical paths: the gate, its
     operator-gating
     wiring (`Dockerfile` `COPY … migrations`, `enhanced_server.py`,
@@ -64,7 +64,7 @@ Date:   Fri Jun 19 20:37:36 2026 -0700
     `docs/90-adr/adr-conport-migration-foundation-gate.md`
     (absent from `main`), documenting the gate, the clobber+restore, and the
     port.
-    
+
     **Output-contract note:** #917's `{"status":"pass"|"fail-closed"}`
     envelope and
     exit `0`/`2` are preserved. #928's
@@ -76,9 +76,9 @@ Date:   Fri Jun 19 20:37:36 2026 -0700
     the *envelope* stays #917's. "legacy" in the no-mutate message is #928's
     wording
     for "a pre-existing ledger this gate does not own."
-    
+
     ## Validation
-    
+
     - **PASS** — `pytest` gate suite **28/28** (20 restored #917 tests + 8
     new
     hardening tests covering native/foreign-ledger, verify fail-closed,
@@ -103,24 +103,24 @@ Date:   Fri Jun 19 20:37:36 2026 -0700
     covered by
     the unit + container tests. Residual risk: low (no positive-path logic
     changed).
-    
+
     ## Closes / supersedes
-    
+
     Once merged, supersedes **#928** (DRAFT) — this lands #928's unique
     hardening
     value on a restored canonical gate. #928 will be closed pointing here.
-    
+
     ## Out of scope
-    
+
     #932 touched **19 files**; only the ConPort gate subset was
     clobbered/restored
     here. The other 17 files were not audited for additional stale-branch
     clobbers.
-    
+
     🤖 Generated with [Claude Code](https://claude.com/claude-code)
-    
+
     ---------
-    
+
     Co-authored-by: Claude Opus 4.8 <noreply@anthropic.com>
 
  docker/mcp-servers-source/conport/Dockerfile       |   1 +

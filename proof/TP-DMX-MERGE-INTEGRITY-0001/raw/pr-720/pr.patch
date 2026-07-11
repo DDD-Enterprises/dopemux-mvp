@@ -42,13 +42,13 @@ index 7ede5eb2a..55148f9b9 100644
 +  TrendingUp,
 +  Zap,
 +} from 'lucide-react';
- 
+
  import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
  import CognitiveLoadGauge from './components/CognitiveLoadGauge';
 @@ -126,6 +141,28 @@ const formatTimestamp = (dateStr: string) => {
    return `[${hh}:${mm}:${ss}]`;
  };
- 
+
 +const getNotificationIcon = (type: string) => {
 +  const iconSize = 14;
 +  switch (type) {
@@ -91,7 +91,7 @@ index 7ede5eb2a..55148f9b9 100644
 +            </Tooltip>
            </Box>
          </Box>
- 
+
 @@ -621,6 +658,7 @@ function App() {
                  return (
                    <Fade in={true} key={`${notification.timestamp}-${notification.message}`}>
@@ -195,19 +195,19 @@ index afd657c4e..e7ed0f657 100644
  - **Validation buckets**: report **PASS / FAIL / NOT_RUN** — never collapse `NOT_RUN` into `PASS`.
  - **Contract-sensitive surfaces** (schemas, migrations, event payloads, MCP manifests, hooks, proof bundles) require canonical-writer inspection before editing.
  - **Security**: least privilege, fail-closed, never expose secrets, strict tool isolation in MCP/agent flows.
- 
+
 -**Required final response shape**: Change Summary · Authority Used · Analysis Performed · Validation Performed (PASS/FAIL/NOT_RUN) · Remaining Uncertainty · Files Touched · Git State · Rollback Plan · Requested Next Step. For repo-changing work, also produce the proof bundle from [AGENTS.md §9](../AGENTS.md) — and per [§12 Orchestrator Operations](../AGENTS.md), the bundle goes into the `proof-bundle` note on the work-item that completes via `advance_item(trigger="complete")`.
 +**Required final response shape**: Change Summary · Authority Used · Analysis Performed · Validation Performed (PASS/FAIL/NOT_RUN) · Remaining Uncertainty · Files Touched · Git State · Rollback Plan · Requested Next Step. For repo-changing work, also produce the proof bundle from [AGENTS.md §8](../AGENTS.md).
- 
+
  **Full doctrine**: [.claude/modules/shared/governance-principles.md](modules/shared/governance-principles.md).
- 
+
 @@ -31,17 +31,14 @@
  - **Decision Reduction**: Maximum 3 options to reduce cognitive overwhelm
  - **Task Chunking**: Break work into 25-minute segments with visual progress
- 
+
 -## ⚡ Task & Cognitive Architecture
 +## ⚡ Simplified Task & Cognitive Architecture
- 
+
 -### Workflow Authority (task-orchestrator)
 -
 -**Per [`AGENTS.md §6`](../AGENTS.md) + [adr-task-orchestrator-as-workflow-authority](../docs/90-adr/adr-task-orchestrator-as-workflow-authority.md) (accepted)**: task-orchestrator is the canonical workflow authority. Work-item state, role transitions, gates, blockers, and next-action logic live here.
@@ -223,7 +223,7 @@ index afd657c4e..e7ed0f657 100644
 +- **SuperClaude**: PRD parsing via `/dx:prd-parse` with PAL planner, 25 standard commands, 15 specialized agents, `/dx:` custom commands for ADHD workflows
 +- **Python ADHD Engine**: Energy tracking, cognitive load calculation, break monitoring, attention state analysis, smart task routing, hyperfocus protection
 +- **React Ink Dashboard**: Visual task progress, ADHD metrics, attention-aware UI, real-time updates
- 
+
  ### Cognitive Plane
  **Authorities**: Code intelligence, navigation, context preservation, semantic understanding
 @@ -51,8 +48,8 @@
@@ -234,12 +234,12 @@ index afd657c4e..e7ed0f657 100644
 -- **Conflict Resolution**: task-orchestrator owns workflow state; ConPort owns decisions/knowledge graph; never duplicate workflow state across both
 +- **Event Routing**: SuperClaude → Python ADHD Engine → ConPort → Dashboard (all async)
 +- **Conflict Resolution**: ConPort is source of truth for tasks, decisions, and ADHD state
- 
+
  ## 🎯 Mode-Aware Operation
- 
+
 @@ -81,101 +78,19 @@ mcp__conport__get_recent_activity_summary --workspace_id "$WORKSPACE_ID" --hours
  ```
- 
+
  ### Sprint Management (mem4sprint)
 -
 -Sprint goals are task-orchestrator work-items with schema `sprint-goal` (lifecycle PERMANENT). ConPort `active_context` retains PLAN/ACT mode tracking; it does **not** store workflow state.
@@ -265,7 +265,7 @@ index afd657c4e..e7ed0f657 100644
 +mcp__conport__update_active_context --workspace_id "$WORKSPACE_ID" --patch_content '{"mode": "PLAN", "sprint_id": "S-2025.09"}'
 +mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_goals" --key "S-2025.09-G1" --value '{"type": "sprint_goal", "content": "Goal description", "sprint_id": "S-2025.09", "status": "planned"}'
  ```
- 
+
 -Full methodology, entity mapping, and PRD decomposition flow: [`.claude/modules/shared/sprint.md`](modules/shared/sprint.md).
 -
  ### Authority Routing
@@ -345,9 +345,9 @@ index afd657c4e..e7ed0f657 100644
 +- **Decisions**: Log in ConPort only (single source of truth)
 +- **Code Navigation**: Serena LSP only (LSP protocol + semantic analysis)
 +- **Knowledge Graph**: ConPort PostgreSQL AGE only (decisions, patterns, relationships)
- 
+
  ## 🎯 SuperClaude Integration (v4.1.5)
- 
+
 diff --git a/.claude/commands/dx/backlinks.md b/.claude/commands/dx/backlinks.md
 deleted file mode 100644
 index c4cc57842..000000000
@@ -1393,26 +1393,26 @@ index a853bdbf9..7cdf32e8c 100644
 -model: "claude-sonnet-4-5"
 +model: "claude-sonnet-4-5-20250929"
  ---
- 
+
 -# /dx:implement — ADHD Implementation Session
 +# /dx:implement - ADHD Implementation Session
- 
+
 -Start an ADHD-optimized 25-minute focused implementation session. Drives task selection, session
 -lifecycle, and completion gate surfacing through the task-orchestrator.
 +Start an ADHD-optimized 25-minute focused implementation session with intelligent task assessment and break management.
- 
+
 -> **Authority**: task-orchestrator MCP per `AGENTS.md §6` + ADR
 -> `docs/90-adr/adr-task-orchestrator-as-workflow-authority.md`.
 +**Purpose**: Provide structured, supportive implementation sessions that respect ADHD needs for focus, breaks, and progress tracking.
- 
+
  ---
- 
+
 -## Phase 1: Argument Parsing + Task Selection
 +## Phase 1: Task Selection & ADHD Assessment
- 
+
 -Parse `$ARGUMENTS`:
 +### Step 1.1: Get Task
- 
+
 -- **`<item-id>` provided** — treat as orchestrator work-item UUID. Call
 -  `get_context(itemId=<item-id>)` to confirm the item exists and read its current role, title,
 -  ancestors, and gate status. Skip the selection prompt.
@@ -1420,10 +1420,10 @@ index a853bdbf9..7cdf32e8c 100644
 -  get the top 3 ADHD-ranked queue items, then display them and ask the user to pick one (max 3
 -  options — ADHD-safe).
 +**If task_id provided in $ARGUMENTS**:
- 
+
 -**Selection display** (no-arg path):
 +- Query ConPort for specific task:
- 
+
 -```
 -── Next Up ──────────────────────────────────────────
 -  1. [ab12cd34] Sprint Goal › Task Title
@@ -1431,21 +1431,21 @@ index a853bdbf9..7cdf32e8c 100644
 +  ```bash
 +  Use mcp__conport__get_progress with workspace_id "/Users/hue/code/dopemux-mvp" and limit 100
 +  ```
- 
+
 -  2. [ef56gh78] Sprint Goal › Other Task
 -     priority: medium · complexity: 3
 +- Find task matching provided ID or description substring
- 
+
 -  3. [ij90kl12] Sprint Goal › Yet Another
 -     priority: medium · complexity: 6
 -─────────────────────────────────────────────────────
 -Which task? (1/2/3 or paste UUID)
 -```
 +**If no task_id provided**:
- 
+
 -Show the full UUID once (in parentheses) after the short prefix.
 +- Query ConPort for TODO tasks:
- 
+
 -### Step 1.2: ADHD Engine Assessment (Optional)
 +  ```bash
 +  Use mcp__conport__get_progress with:
@@ -1453,10 +1453,10 @@ index a853bdbf9..7cdf32e8c 100644
 +    status_filter: "TODO"
 +    limit: 10
 +  ```
- 
+
 -Derive complexity (0.0–1.0) from the item's `complexity` field (divide by 10), then:
 +- Show available tasks with brief descriptions
- 
+
 -```bash
 -curl -s -X POST http://localhost:8095/api/v1/assess-task \
 -  -H "Content-Type: application/json" \
@@ -1472,10 +1472,10 @@ index a853bdbf9..7cdf32e8c 100644
 -  }' | python -m json.tool
 -```
 +### Step 1.2: Assess Task Suitability (ADHD Engine Integration)
- 
+
 -Display results compactly:
 +For the selected task:
- 
+
 -```
 -⚡ Energy Match: XX%    🧠 Cognitive Load: LOW/MED/HIGH    ✅ Suitability: XX%
 -💡 <recommendation>
@@ -1485,12 +1485,12 @@ index a853bdbf9..7cdf32e8c 100644
 +   - Standard feature: 0.5-0.6
 +   - Complex architecture/debugging: 0.8
 +   - Use your judgment based on description
- 
+
 -If suitability < 0.6, warn and offer to select a different task. If the ADHD Engine is
 -unavailable, show `⚠️ ADHD assessment unavailable — proceeding with standard session` and
 -continue.
 +2. **Call ADHD Engine for assessment**:
- 
+
 ----
 +   ```bash
 +   Use Bash tool:
@@ -1507,21 +1507,21 @@ index a853bdbf9..7cdf32e8c 100644
 +       }
 +     }' | python -m json.tool
 +   ```
- 
+
 -## Phase 2: Session Start (Safety & Confirmation)
 +3. **Display ADHD Assessment Results**:
- 
+
 -### Step 2.1: Preflight Read
 +   ```
 +   ═══════════════════════════════════════════
 +   ADHD Task Assessment
 +   ═══════════════════════════════════════════
- 
+
 -Call `get_context(itemId=CHOSEN_UUID)` before any transition:
 +   ⚡ Energy Match: [suitability_score as percentage]
 +   🧠 Cognitive Load: [cognitive_load_level]
 +   ✅ Suitability: [energy_match as percentage]
- 
+
 -- **role = queue** → proceed to Step 2.2
 -- **role = work** → item already in progress; skip transition, log "Re-entering active session"
 -- **role = review or terminal** → warn user; do not start a new session on a closed item
@@ -1529,11 +1529,11 @@ index a853bdbf9..7cdf32e8c 100644
 +   [Loop through recommendations array and display each]
 +   💡 [message]
 +      → [suggested_actions as bullet points]
- 
+
 -### Step 2.2: Start Transition (queue only)
 +   ═══════════════════════════════════════════
 +   ```
- 
+
 -```
 -advance_item(transitions=[{
 -  itemId: CHOSEN_UUID,
@@ -1549,14 +1549,14 @@ index a853bdbf9..7cdf32e8c 100644
 +   - If suitability >= 0.6 or user confirms: Proceed
 +
 +**Error Handling**: If ADHD Engine unavailable:
- 
+
 -### Step 2.3: Update Session Context
 +- Show: "⚠️ ADHD assessment unavailable (is adhd-engine running?)"
 +- Show: "Proceeding with standard 25-minute session"
 +- Continue to Phase 2
 +
 +---
- 
+
 +## Phase 2: Session Start
 +
 +### Step 2.1: Update ConPort Task Status
@@ -1584,17 +1584,17 @@ index a853bdbf9..7cdf32e8c 100644
      "target_duration": 25
    }
  ```
- 
+
 -### Step 2.4: Session Banner
 +### Step 2.3: Display Session Start
 +
 +Show to user:
- 
+
  ```
  🚀 Implementation Session Started
 -═══════════════════════════════════════════════
 +═══════════════════════════════════════════
- 
+
 -📋 Task: [ITEM_TITLE]
 -🆔 ID:   [ab12cd34]  (full UUID shown once)
 -▸ Role:  work
@@ -1602,7 +1602,7 @@ index a853bdbf9..7cdf32e8c 100644
 +📋 Task: [TASK_DESCRIPTION]
 +⏱️ Duration: 25 minutes
  🎯 Focus: Stay on this task, minimize context switches
- 
+
 -Orchestrator tracking active. Let's build! 💪
 -═══════════════════════════════════════════════
 +ADHD Support Active:
@@ -1613,18 +1613,18 @@ index a853bdbf9..7cdf32e8c 100644
 +Let's build! 💪
 +═══════════════════════════════════════════
  ```
- 
+
  ---
- 
+
  ## Phase 3: Implementation Work
- 
+
 -You are now in focused implementation mode.
 +**Instructions for Implementation Phase**:
 +
 +You are now in focused implementation mode. Follow these ADHD-supportive guidelines:
- 
+
  ### Work Guidelines
- 
+
 -- **Stay Focused** — work on this one task only
 -- **Save Frequently** — after each meaningful change, save work
 -- **Minimize Switches** — keep lookups brief, return to task
@@ -1632,9 +1632,9 @@ index a853bdbf9..7cdf32e8c 100644
 +- **Save Frequently**: After each meaningful change, save your work
 +- **Track Progress**: Update your mental progress estimate
 +- **Minimize Switches**: If you need to look something up, keep it brief and return to task
- 
+
  ### ADHD Accommodations
- 
+
 -- **If stuck**: break the current step into smaller pieces; start with the easiest part
 -- **If distracted**: acknowledge, gently return focus — no judgment
 -- **If overwhelmed**: pause, reassess; it's okay to break early and adjust approach
@@ -1655,13 +1655,13 @@ index a853bdbf9..7cdf32e8c 100644
 +- Pause and reassess
 +- Consider if task complexity was underestimated
 +- It's okay to break early and adjust approach
- 
+
  ### Progress Checkpoints
- 
+
 -After each major step (file created, test passing, feature working), optionally file a running
 -note:
 +After each major step (file created, test passing, feature working):
- 
+
 -```
 -manage_notes(operation="upsert", notes=[{
 -  itemId: CHOSEN_UUID,
@@ -1673,21 +1673,21 @@ index a853bdbf9..7cdf32e8c 100644
 +- Briefly note progress
 +- Optionally save to ConPort with progress note
 +- Celebrate small wins internally
- 
+
  ---
- 
+
  ## Phase 4: Session Completion
- 
+
 -After 25 minutes or when the task reaches a natural checkpoint, ask:
 +**After 25 minutes of work OR when task reaches natural checkpoint**:
 +
 +### Step 4.1: Check Completion Status
 +
 +Ask user:
- 
+
  ```
  Session checkpoint reached!
- 
+
 -1. ✅ DONE          — task complete, ready to close
 -2. 🔄 IN_PROGRESS   — still working, good progress
 -3. ⛔ BLOCKED        — hit a blocker
@@ -1700,7 +1700,7 @@ index a853bdbf9..7cdf32e8c 100644
 +
 +What's the status?
  ```
- 
+
 -### DONE Path
 +### Step 4.2: Update ConPort
 +
@@ -1711,23 +1711,23 @@ index a853bdbf9..7cdf32e8c 100644
 +  status: USER_SELECTED_STATUS
 +  description: "DESCRIPTION (+ brief progress note)"
 +```
- 
+
 -Call `get_context(itemId=CHOSEN_UUID)` and inspect `gateStatus.canAdvance` + `gateStatus.missingNotes`:
 +### Step 4.3: Break Reminder
- 
+
 -**If `gateStatus.canAdvance: false`** (gates pending):
 +Show break recommendation:
- 
+
  ```
 -⚠️ Gates pending before you can complete:
 +☕ Time for a 5-Minute Break!
 +═══════════════════════════════════════════
- 
+
 -Missing notes:
 -  • proof-bundle (review) — REQUIRED
 -  • <other keys from gateStatus.missingNotes>
 +You've been focused for 25 minutes - great work!
- 
+
 -Run: /dx:note CHOSEN_UUID proof-bundle
 -Then: /dx:complete CHOSEN_UUID
 -```
@@ -1737,23 +1737,23 @@ index a853bdbf9..7cdf32e8c 100644
 +• Stretch (release tension)
 +• Deep breathing (3-5 breaths)
 +• Look away from screen (20-20-20 rule)
- 
+
 -**If `gateStatus.canAdvance: true`** (all gates clear):
 +Set a 5-minute timer and step away.
 +You've earned this break! 💙
- 
+
 -```
 -✅ ✅ ✅ Gates are clear!
 -Run: /dx:complete CHOSEN_UUID
 +═══════════════════════════════════════════
  ```
- 
+
 -Do **not** call `advance_item(trigger="complete")` from this command — delegate to `/dx:complete`.
 +### Step 4.4: Celebration (if DONE)
- 
+
 -### BLOCKED Path
 +If status is DONE:
- 
+
 -Ask the user for a brief reason, then:
 -
 -```
@@ -1764,19 +1764,19 @@ index a853bdbf9..7cdf32e8c 100644
 -}])
  ```
 +✅ ✅ ✅ AWESOME! TASK COMPLETE! ✅ ✅ ✅
- 
+
 -### IN_PROGRESS / CONTEXT_SWITCH
 +[TASK_DESCRIPTION]
- 
+
 -No orchestrator transition — item stays in `work`. Update session context only (Step 4.1 below).
 +🎉 You crushed it!
- 
+
 -### All Paths: Close Session Context
 +Next steps:
 +- Take that well-deserved break
 +- Then: /dx:implement for next task
 +- Or: /dx:stats to see your progress
- 
+
 +Keep up the great work!
  ```
 -mcp__conport__update_active_context:
@@ -1794,7 +1794,7 @@ index a853bdbf9..7cdf32e8c 100644
      "session_completed": true
    }
  ```
- 
+
 -### Break Reminder
 -
 -```
@@ -1809,25 +1809,25 @@ index a853bdbf9..7cdf32e8c 100644
 -```
 -
  ---
- 
+
  ## Error Handling
- 
+
 -**task-orchestrator unavailable** — if `get_next_item` or `advance_item` fail:
 -- Show `⚠️ task-orchestrator unavailable — workflow state won't be updated`
 -- Offer to continue the session without state tracking
 -- Suggest running `get_context()` health-check when available
 +**If ConPort MCP unavailable**:
- 
+
 -**ADHD Engine unavailable** — handled in Phase 1; session continues without assessment.
 +- Show: "⚠️ ConPort unavailable - progress won't be saved"
 +- Continue session anyway (user's choice)
 +- Suggest: "Save work manually and retry later"
- 
+
 -**Invalid UUID** — if `get_context(itemId=X)` returns not-found:
 -- Show `⚠️ Item X not found in orchestrator`
 -- Fall back to no-arg selection path
 +**If ADHD Engine unavailable**:
- 
+
 -**User interrupts mid-session** — ADHD-friendly; work is preserved in edited files.
 -Resume any time with `/dx:implement <uuid>`.
 +- Already handled in Phase 1
@@ -1838,11 +1838,11 @@ index a853bdbf9..7cdf32e8c 100644
 +- That's okay! ADHD-friendly design
 +- Work is saved if user used Write/Edit tools
 +- Can resume with /dx:session resume
- 
+
  ---
- 
+
  ## Success Criteria
- 
+
 -- ✅ Task selected from orchestrator queue or confirmed by UUID
 -- ✅ `advance_item(trigger="start")` called, or re-entry logged (role=work)
 -- ✅ ConPort `active_context` updated with session metadata
@@ -1855,11 +1855,11 @@ index a853bdbf9..7cdf32e8c 100644
 -- ✅ Encouraging, ADHD-supportive tone maintained throughout
 -- ✅ Scannable at a glance in <10s
 +- ✅ Supportive, encouraging tone maintained throughout
- 
+
  ---
- 
+
  ## Notes for Claude
- 
+
 -**This is a write command.** Always preflight-read with `get_context(itemId)` before any
 -`advance_item` call (Phase 2.1). Never transition blind.
 -
@@ -2747,7 +2747,7 @@ index 1fdf22cf0..000000000
 -
 -**2a — Preflight read.** Call `get_context(itemId="<id>")`. Capture: `role`, `statusLabel`, `canAdvance`, missing required notes, `noteProgress`, `guidancePointer`.
 -
--**2b — Gate check.** 
+-**2b — Gate check.**
 -- If `role == "terminal"` → stop: "Already terminal; nothing to start. Use `/dx:reopen <id>` to send it back to queue."
 -- If `role == "blocked"` → stop: "Item is blocked; `start` is not valid from blocked. Resume it with `/dx:resume <id>`."
 -- If `canAdvance == false` → **do not transition.** Show the missing required notes and stop:
@@ -3009,7 +3009,7 @@ index 12cda96af..c7a839d32 100644
 --- a/.claude/modules/coordination/authority-matrix.md
 +++ b/.claude/modules/coordination/authority-matrix.md
 @@ -11,16 +11,12 @@
- 
+
  | System | OWNS (Exclusive Authority) | NEVER Does |
  |--------|---------------------------|------------|
 -| **task-orchestrator (MCP)** | **Workflow state machine** (queue→work→review→terminal+blocked)<br/>**Role transitions** (start, complete, block, resume, cancel, reopen, cascade)<br/>**Gate enforcement** (required notes per phase via schemas)<br/>**Complete-gate**: `proof-bundle` note required for `advance_item(complete)` per AGENTS.md §9<br/>**Dependencies** (BLOCKS edges with unblockAt thresholds)<br/>**Claim mechanism** (worktree-parallel coordination)<br/>**Schema config** (`.taskorchestrator/config.yaml` — contract-sensitive surface per AGENTS.md §6) | PM entity storage (Leantime owns)<br/>Decision rationale storage (ConPort owns)<br/>Code navigation<br/>ADHD recommendations<br/>Memory/chronicle (dope-memory owns) |
@@ -3027,12 +3027,12 @@ index 12cda96af..c7a839d32 100644
 -| **dope-context** | AST-aware code+docs hybrid search<br/>Semantic retrieval over code/docs | Workflow / decision / chronicle authority |
 +| **React Ink Dashboard** | Visual task progress display<br/>ADHD metric visualization<br/>Real-time event rendering<br/>User interaction (task selection)<br/>Break reminders & notifications | Task data storage<br/>Business logic<br/>Authority decisions<br/>Data persistence |
 +| **Integration Bridge** | Async event routing (Redis Streams)<br/>Event bus pub/sub coordination<br/>MetaMCP role enforcement<br/>Multi-instance isolation | Task storage<br/>Decision logic<br/>PRD parsing<br/>ADHD calculations |
- 
+
  ## 🔄 Communication Flow Patterns
- 
+
 @@ -50,34 +46,24 @@
  ### Implementation Flow Example
- 
+
  ```
 -1. User: /dx:next (or /dx:implement)
 -   └─> task-orchestrator.get_next_item(includeAncestors=true)
@@ -3078,10 +3078,10 @@ index 12cda96af..c7a839d32 100644
             └─> Dashboard shows notification: "Great work! Time for 5min break"
 +               └─> ConPort logs break in custom_data
  ```
- 
+
  ## ⚡ Event Flow Authority
 @@ -86,54 +72,36 @@
- 
+
  | Event Type | Authoritative Source | Can Update | Can Read | Event Flow |
  |------------|---------------------|------------|----------|-----------|
 -| **Workflow state** (role, gates, transitions) | task-orchestrator | task-orchestrator only via `advance_item` | All systems | orchestrator → Bridge ("item-started", "item-completed", "item-blocked") → All subscribers |
@@ -3097,11 +3097,11 @@ index 12cda96af..c7a839d32 100644
  | **Code Navigation** | Serena LSP | Serena only | ADHD Engine (for context) | Serena → (optional) ConPort decision → Bridge |
 -| **Session State** | ConPort `active_context` | ADHD Engine + slash commands update | Dashboard, ConPort | ADHD Engine → ConPort `update_active_context` → Bridge → Dashboard |
 +| **Session State** | ADHD Engine | ADHD Engine updates → ConPort stores | Dashboard, ConPort | ADHD Engine → ConPort → Bridge → Dashboard |
- 
+
  ## 🛡️ Violation Prevention
- 
+
  ### Common Violations to Prevent
- 
+
 -❌ **Any system modifying workflow state outside of task-orchestrator**
 -- **Why wrong**: workflow legality lives in the orchestrator's state machine. Direct DB pokes or competing stores create drift.
 -- **Correct**: all role transitions go through `advance_item`; all required notes via `manage_notes(upsert)`.
@@ -3120,27 +3120,27 @@ index 12cda96af..c7a839d32 100644
 +❌ **Serena modifying task status**
 +- **Why wrong**: Serena is for code navigation, ConPort owns task data
 +- **Correct**: Serena reads ConPort for context, never modifies tasks
- 
+
  ❌ **SuperClaude directly storing decisions**
 -- **Why wrong**: SuperClaude parses PRDs and wraps the orchestrator. ConPort stores decisions.
 -- **Correct**: SuperClaude generates JSON → Human approves → ConPort `log_decision` + orchestrator `create_work_tree` for the resulting work-items.
 +- **Why wrong**: SuperClaude parses PRDs, ConPort stores decisions
 +- **Correct**: SuperClaude generates JSON → Human approves → ConPort stores
- 
+
 -❌ **ADHD Engine mutating orchestrator state**
 -- **Why wrong**: ADHD Engine recommends; the orchestrator owns advancement.
 -- **Correct**: ADHD Engine queries orchestrator (`get_next_item`) → recommends to user → user picks → user invokes `advance_item`.
 +❌ **ADHD Engine storing task data**
 +- **Why wrong**: ADHD Engine recommends, ConPort stores
 +- **Correct**: ADHD Engine queries ConPort → recommends → user selects → ConPort updates
- 
+
 -❌ **Dashboard modifying ConPort or orchestrator directly**
 -- **Why wrong**: Dashboard is view layer only.
 -- **Correct**: Dashboard triggers user action → Python service or slash command → orchestrator/ConPort → Bridge event → Dashboard re-render.
 +❌ **Dashboard modifying ConPort directly**
 +- **Why wrong**: Dashboard is view layer only
 +- **Correct**: Dashboard triggers user action → Python service → ConPort update → Bridge event → Dashboard re-render
- 
+
  ❌ **Integration Bridge storing data**
 -- **Why wrong**: Bridge is routing only, not storage.
 -- **Correct**: Bridge routes events; orchestrator / ConPort / Serena / ADHD Engine / dope-memory store data.
@@ -3150,9 +3150,9 @@ index 12cda96af..c7a839d32 100644
 -- **Correct**: ADR linkage + operator authorization + `schemas_metadata.retro_id` for genealogy.
 +- **Why wrong**: Bridge is routing only, not storage
 +- **Correct**: Bridge routes events, ConPort/Serena/ADHD Engine store data
- 
+
  ### Authority Enforcement Checks
- 
+
 @@ -141,16 +109,12 @@
  # Integration Bridge enforces these rules
  def check_authority(operation: str, requester: str) -> bool:
@@ -3174,12 +3174,12 @@ index 12cda96af..c7a839d32 100644
 +        "lsp_operations": ["serena"],
 +        "route_events": ["integration_bridge"],
      }
- 
+
      allowed_systems = AUTHORITY_RULES.get(operation, [])
 @@ -164,45 +128,32 @@ def check_authority(operation: str, requester: str) -> bool:
- 
+
  ## 🎯 Quick Decision Guide
- 
+
 -**Need to pick the next work item?** → `mcp__task-orchestrator__get_next_item` (or `/dx:next`)
 -**Need to advance a work item?** → `mcp__task-orchestrator__advance_item` (or `/dx:start`, `/dx:complete`)
 -**Need to file PAL chain output / proof bundle / evidence?** → `mcp__task-orchestrator__manage_notes(upsert)` (or `/dx:note`)
@@ -3196,12 +3196,12 @@ index 12cda96af..c7a839d32 100644
 +**Need to log a decision?** → ConPort `log_decision`
  **Need to route events?** → Integration Bridge
  **Need to show UI?** → React Ink Dashboard
- 
+
 -**Need to coordinate multiple systems?** → orchestrator emits event via Bridge → All subscribers react
 +**Need to coordinate multiple systems?** → Integration Bridge publishes event → All subscribers react
- 
+
  ## 📊 Authority Decision Tree
- 
+
  ```
 -┌─ Need to interact with work items?
 +┌─ Need to interact with tasks?
@@ -3232,13 +3232,13 @@ index 12cda96af..c7a839d32 100644
 -   └─> React Ink Dashboard subscribes to orchestrator events via Integration Bridge
 +└─ Display tasks in UI?
 +   └─> React Ink Dashboard subscribes to Integration Bridge events
- 
+
  ┌─ Need to interact with code?
  │
 @@ -248,27 +199,20 @@ Integration Bridge enforces tool-level access per role:
- 
+
  **Migration Notes:**
- 
+
 -**What Changed from v2.0 (2026-05-27)**:
 -- ✅ **Restored**: task-orchestrator (now the canonical **workflow authority** per [adr-task-orchestrator-as-workflow-authority](../../../docs/90-adr/adr-task-orchestrator-as-workflow-authority.md) — accepted). Earlier "removed" status reflected a temporary architectural pivot that was reversed when the workflow-authority gap became evident. v3.8.0 image with schema config now active.
 -- ✅ **Restored**: Leantime as PM operational system of record (per AGENTS.md §6). Leantime owns PM entities; defers workflow legality to task-orchestrator.
@@ -3262,9 +3262,9 @@ index 12cda96af..c7a839d32 100644
 +- ✅ Added: Python ADHD Engine for cognitive optimization
 +- ✅ Kept: Integration Bridge (now simpler event routing, not cross-plane coordination)
 +- ✅ Kept: Serena LSP (code intelligence)
- 
+
  ---
- 
+
  **See Also:**
  - `.claude/modules/coordination/integration-bridge.md` - Event routing details
  - `.claude/modules/superclaude-integration.md` - SuperClaude configuration
@@ -3280,7 +3280,7 @@ index 7adf68f45..5da16542d 100644
 +++ b/.claude/modules/coordination/integration-bridge.md
 @@ -26,38 +26,35 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
  - MetaMCP role-based tool filtering enforcement
- 
+
  **Integration Bridge NEVER:**
 -- Owns workflow state (task-orchestrator authority — per AGENTS.md §6 + accepted workflow-authority ADR)
 -- Stores decisions (ConPort authority)
@@ -3290,9 +3290,9 @@ index 7adf68f45..5da16542d 100644
  - Provides LSP operations (Serena authority)
 -- Stores PM entity records (Leantime authority)
 +- Stores decisions (ConPort authority)
- 
+
  ## Event Coordination Patterns
- 
+
  ### Simplified Event Flow
  ```bash
 -# PRD to Work-Item Creation Flow (orchestrator-first)
@@ -3334,12 +3334,12 @@ index 7adf68f45..5da16542d 100644
 +7. Integration Bridge → publishes "progress_updated" event
 +8. Dashboard → updates progress bar
  ```
- 
+
  ### Redis Streams Architecture
 @@ -118,38 +115,16 @@ async for msg_id, msg_data in bus.subscribe("dopemux:events", "dashboard"):
- 
+
  ### Event Types
- 
+
 -**Workflow events** (canonical source: task-orchestrator MCP per AGENTS.md §6):
 -
 -| Event Type | Publisher | Subscribers | Purpose |
@@ -3367,7 +3367,7 @@ index 7adf68f45..5da16542d 100644
 +| `decision_logged` | ConPort | All services | New architectural decision |
  | `adhd_state_changed` | ADHD Engine | Dashboard | Energy/attention updated |
  | `break_reminder` | ADHD Engine | Dashboard, User | Time for break |
- 
+
 -**Decision events** (canonical source: ConPort):
 -
 -| Event Type | Publisher | Subscribers | Purpose |
@@ -3377,16 +3377,16 @@ index 7adf68f45..5da16542d 100644
 -**Deprecated**: `tasks_imported`, `progress_updated` (ConPort progress_entry no longer represents workflow state; replaced by `item-created` and the role-transition events above).
 -
  ## REST API Endpoints
- 
+
  ### Integration Bridge HTTP API
 diff --git a/.claude/modules/shared/event-patterns.md b/.claude/modules/shared/event-patterns.md
 index bcb155da7..00767fc8c 100644
 --- a/.claude/modules/shared/event-patterns.md
 +++ b/.claude/modules/shared/event-patterns.md
 @@ -32,105 +32,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
- 
+
  ## Event Schemas
- 
+
 -### Workflow Events (canonical source: task-orchestrator)
 -
 -Per AGENTS.md §6 and the accepted workflow-authority ADR, task-orchestrator emits the canonical workflow events. These supersede the historical `task-master`/`leantime`/`ConPort`-sourced workflow events documented in subsequent subsections (kept for reference but **deprecated**).
@@ -3487,7 +3487,7 @@ index bcb155da7..00767fc8c 100644
 -
 -The events below are kept for reference but **superseded** by the orchestrator events above. Workflow state changes flow through task-orchestrator now; the `task-master`/`leantime`/`ConPort`-sourced events documented here predate the workflow-authority ADR.
 +### Task Lifecycle Events
- 
+
  #### Task Created Event
  ```json
 diff --git a/.claude/modules/shared/governance-principles.md b/.claude/modules/shared/governance-principles.md
@@ -3497,7 +3497,7 @@ index 0fb2791c0..d44c35b05 100644
 @@ -142,22 +142,6 @@ This is the project doctrine layer over [AGENTS.md §2 (Truth Order)](../../../A
  * Risky or architecture-sensitive chain: `analyze → thinkdeep → challenge → planner → challenge → implement → codereview → precommit → challenge`
  * If `execution.agent = "gemini"`: `pal_chain.enabled = true`
- 
+
 -### Chain output → orchestrator notes (mechanical mapping)
 -
 -Per [AGENTS.md §12 Orchestrator Operations](../../../AGENTS.md) and the schema config at [`.taskorchestrator/config.yaml`](../../../.taskorchestrator/config.yaml), each PAL chain stage's output goes into a note key of the same name on the work-item. Codex minimum chain → 4 note keys:
@@ -3515,11 +3515,11 @@ index 0fb2791c0..d44c35b05 100644
 -File chain outputs via `mcp__task-orchestrator__manage_notes(operation="upsert", notes=[{itemId, key, role, body}])`. The orchestrator's `proof-bundle` complete-gate is mechanical — it fails closed without a filled bundle, per AGENTS.md §9.
 -
  What this means for Claude Code sessions in this repo:
- 
+
  ### analyze
 @@ -282,20 +266,18 @@ Do not silently fork contracts downstream. Preserve separation between:
  Treat as high-risk in this repo:
- 
+
  * `dopetask-canonical-spec.json` and Task Packet contracts
 -* **`.taskorchestrator/config.yaml`** — work-item schemas, traits, status_labels, schemas_metadata. Schema/trait changes propagate across all in-flight items via the orchestrator's gate enforcement; require ADR linkage + `schemas_metadata.retro_id` for genealogy
  * ConPort schemas (decisions, progress, custom_data, links)
@@ -3536,22 +3536,22 @@ index 0fb2791c0..d44c35b05 100644
  * SuperClaude command files under `.claude/commands/`
  * Hook dispatcher (`src/dopemux/claude/native_hooks.py`) and `.claude/hooks/`
 -* External MCP wrapper script at `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` (outside the repo; snapshots committed to `scripts/external-references/`)
- 
+
  Before modifying any of these:
- 
+
 @@ -412,7 +394,7 @@ Rules:
  * `medium` means unresolved uncertainty
  * `low` means assumptions dominate
- 
+
 -Never present low-confidence reasoning as settled fact. Final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §9](../../../AGENTS.md).
 +Never present low-confidence reasoning as settled fact. Final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §8](../../../AGENTS.md).
- 
+
  ---
- 
+
 @@ -462,6 +444,4 @@ Every substantial response must contain:
- 
+
  Do not omit uncertainty for aesthetics.
- 
+
 -For repo-changing work, also produce the full proof bundle per [AGENTS.md §9](../../../AGENTS.md): TP path/ID, worktree path, branch, repo identity result, slices completed, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks, `UNKNOWN`s, cleanup status. No proof means incomplete.
 -
 -**Mechanical enforcement**: per [AGENTS.md §12 Orchestrator Operations](../../../AGENTS.md), the proof bundle is the **`proof-bundle` note** on the work-item completing via `advance_item(trigger="complete")`. The orchestrator's `task-packet` (and other change-producing) schema marks `proof-bundle` as `required: true` in the review phase, so `complete` fails closed without a filled bundle. The protocol for filling notes (including which PAL chain output goes into which note key) is the canonical cross-agent reference at [`docs/03-reference/orchestrator-note-filling-protocol.md`](../../../docs/03-reference/orchestrator-note-filling-protocol.md).
@@ -3562,7 +3562,7 @@ index ca94ea247..40ed78f78 100644
 +++ b/.claude/modules/shared/sprint.md
 @@ -1,283 +1,308 @@
  # Sprint Management Module (mem4sprint)
- 
+
 -**Module Version**: 2.0.0 (post-orchestrator-authority reconciliation, TP-CS-023)
 -**Framework**: mem4sprint — ADHD-optimized sprint **methodology**, now backed by task-orchestrator (workflow) + ConPort (decisions/observations).
 -**Modes**: PLAN/ACT mode-aware via ConPort `active_context`.
@@ -3697,7 +3697,7 @@ index ca94ea247..40ed78f78 100644
 -```
 -
 -### 2. Populate with subtasks / stories
- 
+
 -Use `create_work_tree` to scaffold children under the sprint goal — see [PRD Decomposition Flow](#prd-decomposition-flow) below.
 -
 -### 3. Run the sprint
@@ -3719,7 +3719,7 @@ index ca94ea247..40ed78f78 100644
 +  "provenance": {"agent": "dev", "tool": "mem4sprint", "ts": ""}
 +}
 +```
- 
+
 -### 5. Close the sprint (PERMANENT lifecycle semantics)
 +#### Story Template
 +```json
@@ -3734,7 +3734,7 @@ index ca94ea247..40ed78f78 100644
 +  "provenance": {"agent": "planner", "tool": "mem4sprint", "ts": ""}
 +}
 +```
- 
+
 -`sprint-goal` has `lifecycle: PERMANENT` — **no auto-cascade**. Operator closes the sprint explicitly:
 +#### Artifact Template
 +```json
@@ -3749,7 +3749,7 @@ index ca94ea247..40ed78f78 100644
 +  "provenance": {"agent": "dev", "tool": "mem4sprint", "ts": ""}
 +}
 +```
- 
+
 -- **Completed sprint**: confirm all child work-items are `terminal`; file `progress-summary` (work-phase, optional but recommended) as a closure record; once the retrospective work-item is also `terminal`, `advance_item(trigger="complete")` on the sprint goal. The sprint-goal schema does **not** define a `proof-bundle` note — each subtask (task-packet / bug-fix / feature-implementation) carries its own per AGENTS.md §9. Sprint closure rolls up child proofs plus a ConPort decision summarizing outcome.
 -- **Abandoned sprint**: `advance_item(trigger="cancel")` — `statusLabel` becomes `cancelled`.
 +### Extended Entity Templates
@@ -3766,7 +3766,7 @@ index ca94ea247..40ed78f78 100644
 +  "provenance": {"agent": "qa", "tool": "mem4sprint", "ts": ""}
 +}
 +```
- 
+
 -The PERMANENT lifecycle is deliberate: sprints stay queryable indefinitely as audit anchors for their child work.
 +#### Blocker Template
 +```json
@@ -3779,7 +3779,7 @@ index ca94ea247..40ed78f78 100644
 +  "provenance": {"agent": "pm", "tool": "mem4sprint", "ts": ""}
 +}
 +```
- 
+
 ----
 +#### Risk Template
 +```json
@@ -3793,13 +3793,13 @@ index ca94ea247..40ed78f78 100644
 +  "provenance": {"agent": "architect", "tool": "mem4sprint", "ts": ""}
 +}
 +```
- 
+
  ## PLAN/ACT Mode Management
- 
+
 -ConPort `active_context` retains authority for **mode and focus tracking** (not workflow state). This stays unchanged.
 +### PLAN Mode (active_context.mode = "PLAN")
 +**Triggers:** Sprint planning, architecture discussions, story breakdown, goal setting
- 
+
 -```bash
 -# PLAN mode (architecture, sprint planning, story breakdown)
 -mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp" \
@@ -3809,7 +3809,7 @@ index ca94ea247..40ed78f78 100644
 +- Synthesize approaches and ask clarifying questions
 +- Log decisions with rationale
 +- Focus on strategic thinking
- 
+
 -# ACT mode (implementation, debugging, testing)
 +**Commands:**
 +```bash
@@ -3855,11 +3855,11 @@ index ca94ea247..40ed78f78 100644
 -     └─> Capture the PRD-decomposition decision; link_conport_items → sprint-goal UUID
 +  --patch_content '{"mode": "PLAN", "sprint_id": "S-2025.09", "focus": "Sprint planning"}'
  ```
- 
+
 -One `create_work_tree` call creates **one root + its direct children only** (depth cap < 3); call once per story for multi-story sprints. The `type` field on each item drives schema activation (and gate enforcement); tag-only items fall through to the `default` schema. `ref` is a local handle for `deps` wiring within the same call (response returns real UUIDs). PAL (`pal/planner`) is the canonical reasoning surface. Human review is non-negotiable: orchestrator writes only happen after approval.
 +### ACT Mode (active_context.mode = "ACT")
 +**Triggers:** Feature implementation, bug fixing, testing, code review
- 
+
 ----
 -
 -## Sprint Query Patterns
@@ -3870,7 +3870,7 @@ index ca94ea247..40ed78f78 100644
 +- Execute minimal changes with documentation
 +- Link artifacts, tests, and decisions
 +- Focus on execution
- 
+
 +**Commands:**
 +```bash
 +# Set execution mode
@@ -3879,13 +3879,13 @@ index ca94ea247..40ed78f78 100644
  ```
 -# All items under a sprint goal
 -query_items(operation="overview", itemId="<sprint-goal-uuid>")
- 
+
 -# Subtasks in active states
 -query_items(operation="search",
 -  parentId="<sprint-goal-uuid>",
 -  role="work")
 +## Sprint Workflow Patterns
- 
+
 -# Next ADHD-ranked item under this sprint
 -get_next_item(parentId="<sprint-goal-uuid>", limit=3, includeAncestors=true)
 -
@@ -3913,7 +3913,7 @@ index ca94ea247..40ed78f78 100644
 +  --target_item_type "custom_data" --target_item_id "S-2025.09-G1" \
 +  --relationship_type "IMPLEMENTS"
  ```
- 
+
 -### Decisions, risks, metrics (ConPort)
 -
 +### Development Workflow
@@ -3946,24 +3946,24 @@ index ca94ea247..40ed78f78 100644
 +  --target_item_type "custom_data" --target_item_id "S-2025.09-A1" \
 +  --relationship_type "PRODUCES"
  ```
- 
+
 ----
 -
 -## ADHD Optimizations
 +## Sprint Query Patterns
- 
+
 -### Visual sprint progress
 +### Find Current Sprint Items
 +```bash
 +# Get all items for current sprint
 +mcp__conport__search_custom_data_value_fts --workspace_id "/Users/hue/code/dopemux-mvp" \
 +  --query_term 'value_text:"sprint_id:S-2025.09"' --limit 20
- 
+
 -Counts come straight from `query_items` child-role totals (no manual roll-up):
 +# Find blocked items
 +mcp__conport__search_custom_data_value_fts --workspace_id "/Users/hue/code/dopemux-mvp" \
 +  --query_term 'value_text:"status:blocked" value_text:"sprint_id:S-2025.09"' --limit 10
- 
+
 -```
 -sprint_overview = query_items(operation="overview", itemId="<sprint-goal-uuid>")
 -# sprint_overview.childCounts: { queue: N, work: N, review: N, blocked: N, terminal: N }
@@ -3972,14 +3972,14 @@ index ca94ea247..40ed78f78 100644
 +mcp__conport__search_decisions_fts --workspace_id "/Users/hue/code/dopemux-mvp" \
 +  --query_term 'tags:"S-2025.09"' --limit 5
  ```
- 
+
 -### Next action recommendation
 +### Sprint Analytics
 +```bash
 +# Sprint velocity
 +mcp__conport__get_custom_data --workspace_id "/Users/hue/code/dopemux-mvp" \
 +  --category "sprint_metrics" --key "S-2025.09_velocity"
- 
+
 +# Retrospective items
 +mcp__conport__search_custom_data_value_fts --workspace_id "/Users/hue/code/dopemux-mvp" \
 +  --query_term 'category:"retrospective" value_text:"sprint_id:S-2025.09"' --limit 10
@@ -3993,7 +3993,7 @@ index ca94ea247..40ed78f78 100644
 -The Python ADHD engine (see [adhd-patterns.md](adhd-patterns.md)) queries orchestrator candidates, then re-ranks by current energy + complexity. Read-only — never modifies orchestrator state. Sprint-level: cap simultaneous `work` items per operator at 1-2 to prevent attention fragmentation. Per-session: 25-min focus, 60-min warn, 90-min mandatory break (engine-enforced).
 -
 ----
- 
+
 -## Relationship System
 -
 -Two link kinds, two systems. Use the right one.
@@ -4002,7 +4002,7 @@ index ca94ea247..40ed78f78 100644
 -
 -Use for sprint-internal sequencing: subtask BLOCKS subtask, story BLOCKS story, etc.
 +## ADHD Optimizations
- 
+
 +### Visual Progress Indicators
 +```bash
 +# Sprint burndown
@@ -4032,7 +4032,7 @@ index ca94ea247..40ed78f78 100644
 -### Cross-domain genealogy → ConPort linkage convention
 -
 -ConPort `link_conport_items` only links ConPort entities (decision / system_pattern / progress_entry / custom_data). To record a **decision↔orchestrator work-item** edge, follow the convention in [orchestrator-note-filling-protocol.md](../../../docs/03-reference/orchestrator-note-filling-protocol.md):
- 
+
 -1. Store the orchestrator work-item UUID in the ConPort decision's `implementation_details` (or tag with `orchestrator:<uuid>`).
 -2. Optionally create a ConPort `custom_data` shadow entry (`category: "orchestrator-shadow"`, `key: <uuid>`, `value: {title, role}`) and link via `link_conport_items` if you need bidirectional graph traversal.
 -
@@ -4085,10 +4085,10 @@ index ca94ea247..40ed78f78 100644
 +      --query_term 'value_text:"status:planned" value_text:"sprint_id:'$SPRINT_ID'"' --limit 3
 +}
  ```
- 
+
 -**Workflow state**: task-orchestrator owns it. ConPort retains decisions, knowledge graph, active_context, risks/metrics — see [authority-matrix.md](../coordination/authority-matrix.md) for the canonical split.
 +## Relationship System
- 
+
 -**See `~/.claude/MCP_ConPort.md`** for ConPort tool details; **`.taskorchestrator/config.yaml`** for current schemas.
 +### Supported Relationships
 +- `BLOCKED_BY`: Item cannot proceed due to dependency
@@ -4118,7 +4118,7 @@ index 23d9f12de..a3fa6960d 100644
 +++ b/.claude/modules/shared/superclaude-workflows.md
 @@ -1,262 +1,929 @@
  # SuperClaude + Dopemux Workflow Integration
- 
+
 -**Purpose**: Integration patterns for using SuperClaude commands with Dopemux's orchestrator-driven workflow stack.
 -**Audience**: Developers using Dopemux with SuperClaude framework.
 -**Module Version**: 2.0.0 (post-orchestrator-authority reconciliation, TP-CS-022)
@@ -4126,7 +4126,7 @@ index 23d9f12de..a3fa6960d 100644
 +**Purpose**: Integration patterns for using SuperClaude commands with Dopemux's enhanced MCP stack
 +**Audience**: Developers using Dopemux with SuperClaude framework
 +**Last Updated**: 2025-10-03 (Decision #142-144)
- 
+
 -> **What changed in 2.0**: workflow state moved from ConPort `progress_entry` to `task-orchestrator` (per [adr-task-orchestrator-as-workflow-authority](../../../docs/90-adr/adr-task-orchestrator-as-workflow-authority.md), accepted). "Zen" MCP was renamed to "PAL". This file is now a pointer-heavy integration guide, not a duplicate of canonical doctrine.
 +---
 +
@@ -4173,15 +4173,15 @@ index 23d9f12de..a3fa6960d 100644
 +   ConPort log_decision              # Document architectural choices
 +   └─> Knowledge graph tracking
 +```
- 
+
  ---
- 
+
 -## Authority & Boundary Alignment
 +## ConPort + Serena + SuperClaude Integration
- 
+
 -This file **IS** the operator-facing guide for `/sc:` (SuperClaude) and `/dx:` (Dopemux) command surfaces and how they hand off to the underlying MCP stack.
 +### Three-Layer Architecture
- 
+
 -This file **IS NOT** the source of truth for:
 +```
 +Layer 1: ConPort (Knowledge & Memory)
@@ -4199,7 +4199,7 @@ index 23d9f12de..a3fa6960d 100644
 +├─ Commands: 25 /sc: commands for different tasks
 +└─ Agents: 16 specialists (Frontend, Backend, Security, etc.)
 +```
- 
+
 -| Topic | Canonical source |
 -|---|---|
 -| System authority boundaries | [authority-matrix.md](../coordination/authority-matrix.md) |
@@ -4209,7 +4209,7 @@ index 23d9f12de..a3fa6960d 100644
 -| ADHD engine internals (energy, breaks, cognitive load) | [adhd-patterns.md](adhd-patterns.md) |
 -| PAL chain & proof-bundle complete-gate | [AGENTS.md §5 + §9](../../../AGENTS.md) |
 +### Data Flow
- 
+
 -If something here contradicts a canonical source, the canonical source wins.
 +```
 +User Request
@@ -4229,9 +4229,9 @@ index 23d9f12de..a3fa6960d 100644
 +    └─> /sc:save ───────────> ConPort: Persist session
 +                         └──> ConPort: Log decisions
 +```
- 
+
  ---
- 
+
 -## Command Selection Guide (`/sc:` vs `/dx:`)
 +## Command Selection Guide
 +
@@ -4250,27 +4250,27 @@ index 23d9f12de..a3fa6960d 100644
 +- `/sc:brainstorm` - Requirements discovery (uses Zen consensus)
 +- `/sc:estimate` - Development estimation
 +- `/sc:design` - Architecture design
- 
+
 -Two command surfaces coexist:
 +**Implementation**:
 +- `/sc:implement` - Feature development
 +- `/sc:improve` - Code quality enhancement
 +- `/sc:cleanup` - Dead code removal
 +- `/sc:build` - Build and packaging
- 
+
 -- **`/sc:` (SuperClaude)** — 25 standard commands. Multi-agent coordination, framework workflows, broad task verbs. Lives at `~/.claude/commands/sc/`.
 -- **`/dx:` (Dopemux)** — orchestrator-wrapping commands plus Dopemux-specific UX. Lives at `~/.claude/commands/dx/` and `.claude/commands/dx/`.
 +**Research & Documentation**:
 +- `/sc:research` - Deep research (Exa + GPT-Researcher + Zen)
 +- `/sc:document` - Documentation generation
 +- `/sc:explain` - Educational explanations
- 
+
 -### When to use which
 +**Session Management**:
 +- `/sc:load` - Restore context (from ConPort)
 +- `/sc:save` - Persist session (to ConPort)
 +- `/sc:reflect` - Task validation (with Serena)
- 
+
 -| Situation | Prefer | Why |
 -|---|---|---|
 -| Picking next work item | `/dx:next` | ADHD-ranked, orchestrator-aware, includes ancestor breadcrumb. |
@@ -4283,20 +4283,20 @@ index 23d9f12de..a3fa6960d 100644
 +**Workflow**:
 +- `/sc:workflow` - PRD to implementation (uses Zen planner)
 +- `/sc:task` - Complex task management
- 
+
 -### /sc: catalog
 +[Full command reference](.claude/commands/sc/)
- 
+
 -25 commands shipped under `~/.claude/commands/sc/`: `analyze`, `brainstorm`, `build`, `business-panel`, `cleanup`, `design`, `document`, `estimate`, `explain`, `git`, `help`, `implement`, `improve`, `index`, `load`, `reflect`, `research`, `save`, `select-tool`, `spawn`, `spec-panel`, `task`, `test`, `troubleshoot`, `workflow`.
 +### /dx: Commands (Dopemux Custom)
- 
+
 -### /dx: shipping status (per [DMX-ORCH-CLAUDE-SURFACE](../../../docs/90-adr/adr-task-orchestrator-claude-surface-integration.md))
 +**When to use /dx: commands**:
 +- Dopemux-specific workflows
 +- Direct MCP integration needed
 +- ADHD-optimized sessions
 +- Custom automation
- 
+
 -| Phase | Command | Status | Wraps |
 -|---|---|---|---|
 -| 2 | `/dx:next` | shipped | `get_next_item(includeAncestors=true, limit=3)` |
@@ -4310,7 +4310,7 @@ index 23d9f12de..a3fa6960d 100644
 -| 5a | `/dx:packet` | not shipped | full TP lifecycle wrapper per AGENTS.md §4 |
 -| 6 | `/dx:retro` | not shipped | manual retrospective trigger |
 +**Planned Commands**:
- 
+
 -Until Phase 4 write commands ship, the bare-MCP path documented in [.claude/CLAUDE.md §Orchestrator Operations](../../CLAUDE.md) is the fallback (`manage_items`, `advance_item`, `manage_notes`).
 +- `/dx:prd-parse` - PRD decomposition with Zen planner + ConPort import
 +- `/dx:implement` - ADHD-optimized 25min sessions with auto-save
@@ -4320,9 +4320,9 @@ index 23d9f12de..a3fa6960d 100644
 +- `/dx:switch-role` - MetaMCP role switching (QUICKFIX, ACT, PLAN, RESEARCH, ALL)
 +
 +**Status**: Specifications complete, implementation pending
- 
+
  ---
- 
+
 -## Primary Development Flow
 +## MCP Selection by Task Type
 +
@@ -4344,7 +4344,7 @@ index 23d9f12de..a3fa6960d 100644
 +```
 +
 +### Planning Tasks
- 
+
 -The workflow follows the orchestrator's `queue → work → review → terminal` state machine. ConPort retains decision/genealogy roles; SuperClaude wraps PAL reasoning; Serena handles code navigation.
 +**Simple Breakdown** (linear steps):
 +```
@@ -4352,7 +4352,7 @@ index 23d9f12de..a3fa6960d 100644
 +Example: "Break down authentication feature"
 +Command: /sc:workflow
 +```
- 
+
 -### Discovery and start
 +**Complex Planning** (alternatives, branching):
 +```
@@ -4360,7 +4360,7 @@ index 23d9f12de..a3fa6960d 100644
 +Example: "Migration strategy with multiple approaches"
 +Direct: zen/planner with is_branch_point
 +```
- 
+
 +**Multi-Perspective Decision**:
  ```
 -1. /dx:context                              # health check: active/blocked/stalled
@@ -4375,10 +4375,10 @@ index 23d9f12de..a3fa6960d 100644
 +Example: "Should we use microservices or monolith?"
 +Direct: zen/consensus with 3 models (for/against/neutral)
  ```
- 
+
 -### During work
 +### Implementation Tasks
- 
+
 +**Feature Development**:
  ```
 -- Implementation via /sc:implement, direct Edit, pal calls, etc.
@@ -4391,7 +4391,7 @@ index 23d9f12de..a3fa6960d 100644
 +Flow: Context7 (patterns) → Zen (planning) → Magic (UI) → Playwright (tests)
 +Example: "/sc:implement user profile component --framework react"
  ```
- 
+
 -### Completion (the proof-bundle gate)
 +**Code Navigation**:
 +```
@@ -4399,7 +4399,7 @@ index 23d9f12de..a3fa6960d 100644
 +Tools: find_symbol, get_symbols_overview, find_referencing_symbols
 +Example: Navigate from API endpoint to database layer
 +```
- 
+
 +**Code Quality**:
  ```
 -1. Run pal/codereview + pal/precommit (mandatory for repo-changing work
@@ -4422,10 +4422,10 @@ index 23d9f12de..a3fa6960d 100644
 +Flow: Identify issues → Zen multi-model validation → Apply fixes
 +Example: "/sc:improve --focus performance"
  ```
- 
+
 -If `advance_item(complete)` fails, the mechanical complete-gate is doing its job — file the missing proof-bundle, then retry.
 +### Debugging Tasks
- 
+
 -> **Command status callout**: `/dx:start`, `/dx:complete`, `/dx:note`, `/dx:block`, `/dx:resume`, `/dx:cancel`, `/dx:reopen`, `/dx:depends` are **Phase 4 — not shipped yet**. Use bare `advance_item` / `manage_notes` directly today. See the `/dx:` shipping status table above.
 +**Systematic Investigation**:
 +```
@@ -4433,7 +4433,7 @@ index 23d9f12de..a3fa6960d 100644
 +Flow: Hypothesis → Evidence gathering → Root cause → Fix validation
 +Example: "Why does memory usage grow unbounded?"
 +```
- 
+
 -For full event payload shapes, see [event-patterns.md](event-patterns.md).
 -For the standard note-filling loop, see [orchestrator-note-filling-protocol.md](../../../docs/03-reference/orchestrator-note-filling-protocol.md).
 +**Quick Troubleshooting**:
@@ -4442,14 +4442,14 @@ index 23d9f12de..a3fa6960d 100644
 +Flow: Error analysis → Serena navigation → Fix suggestion
 +Example: "/sc:troubleshoot authentication failing intermittently"
 +```
- 
+
  ---
- 
+
  ## ADHD Session Workflow
- 
+
 -The Python ADHD Engine and the orchestrator are decoupled: the engine queries orchestrator state for candidate items, then layers energy/cognitive-load filters on top. The orchestrator never reads ADHD state. See [adhd-patterns.md](adhd-patterns.md) for engine internals.
 +### 25-Minute Focus Session
- 
+
 -### 25-minute focus session
 +```
 +Session Start (2 min)
@@ -4501,7 +4501,7 @@ index 23d9f12de..a3fa6960d 100644
 +├─ Check open files           # Restore file positions
 +└─ Gentle re-orientation      # Clear next action
 +```
- 
+
 +---
 +
 +## Documentation Workflow
@@ -4546,7 +4546,7 @@ index 23d9f12de..a3fa6960d 100644
 -├─ /dx:context                       # restore session state
 -├─ /dx:next                          # ADHD-ranked candidates, filtered by current energy
 -└─ Pick + advance_item(trigger=start) # /dx:start ships in Phase 4
- 
+
 -Implementation (≈20 min)
 -├─ /sc:implement, direct edits, pal calls
 -├─ ConPort active_context auto-saves periodically (hook-driven)
@@ -4589,7 +4589,7 @@ index 23d9f12de..a3fa6960d 100644
 +## Script Management
 +
 +### Script Organization
- 
+
 -Session end (≈3 min)
 -├─ Either: file proof-bundle + advance_item(trigger=complete)   # work done
 -├─ Or:     advance_item(trigger=block) or just pause             # work persists
@@ -4603,7 +4603,7 @@ index 23d9f12de..a3fa6960d 100644
 +├── mcp/           MCP server management
 +└── ui/            Dashboard and UI scripts
 +```
- 
+
 -Break (5 min, mandatory after 25)
 +### Script Standards
 +
@@ -4624,7 +4624,7 @@ index 23d9f12de..a3fa6960d 100644
 +
 +# TEMP: Remove after <reason> (if temporary)
  ```
- 
+
 -### Hyperfocus protection
 +**Production Scripts**:
 +- Full documentation in header
@@ -4642,7 +4642,7 @@ index 23d9f12de..a3fa6960d 100644
 +```bash
 +# Tag temporary scripts
 +grep -r "TEMP:" scripts/
- 
+
 +# Review quarterly
 +scripts/audit_temporary_scripts.sh
 +
@@ -4676,7 +4676,7 @@ index 23d9f12de..a3fa6960d 100644
 +  implementation_details: "How it will be implemented"
 +  tags: ["category", "feature", "adhd"]
  ```
- 
+
 -Hyperfocus events are emitted to the integration bridge but do not modify orchestrator state.
 +**Then Create ADR**:
 +```bash
@@ -4685,10 +4685,10 @@ index 23d9f12de..a3fa6960d 100644
 +2. Reference ConPort decision ID
 +3. Link from feature hub
 +```
- 
+
 -### Context-switch recovery
 +### Progress Tracking
- 
+
 +**Task Hierarchy**:
 +```
 +Parent Task (Epic)
@@ -4700,7 +4700,7 @@ index 23d9f12de..a3fa6960d 100644
 -├─ Auto-save hook → .dopemux/context.db updated
 -├─ Orchestrator work-item stays in work role
 -└─ ConPort active_context preserved
- 
+
 -Resume
 -├─ /dx:context                  # session-resume mode: recent transitions + stalled
 -├─ Review work-phase notes      # what evidence was captured before interruption
@@ -4723,7 +4723,7 @@ index 23d9f12de..a3fa6960d 100644
 +    files_affected: ["auth.py", "session.py"]
 +  }
  ```
- 
+
 -### Energy-aware task selection
 +### Knowledge Graph
 +
@@ -4737,7 +4737,7 @@ index 23d9f12de..a3fa6960d 100644
 +  target_item_id: "225"
 +  relationship_type: "implements"
 +```
- 
+
 -`/dx:next` already orders by orchestrator priority + complexity. For explicit energy matching, query `get_next_item(limit=10)` and let the engine re-rank against your current state (see [adhd-patterns.md](adhd-patterns.md) §energy matching).
 +**Relationship Types**:
 +- `builds_upon` - Decision builds on previous
@@ -4746,15 +4746,15 @@ index 23d9f12de..a3fa6960d 100644
 +- `implements` - Task implements decision
 +- `depends_on` - Dependency relationship
 +- `supersedes` - Replaces previous decision
- 
+
  ---
- 
+
 -## MCP Selection Quick Reference
 +## Serena Workflow Patterns
- 
+
 -When picking the right MCP for a sub-task. See per-MCP docs for capability detail.
 +### Code Navigation
- 
+
 -| Task | Primary MCP | Reference |
 -|---|---|---|
 -| Multi-model reasoning (analyze/planner/codereview/debug/consensus) | PAL | [MCP_PAL.md](~/.claude/MCP_PAL.md) |
@@ -4774,19 +4774,19 @@ index 23d9f12de..a3fa6960d 100644
 +serena/find_symbol:
 +  name_path: "authenticate"
 +  include_body: false
- 
+
 -### Authority routing reminder
 +# Get file overview
 +serena/get_symbols_overview:
 +  relative_path: "src/auth/authentication.py"
- 
+
 -Per [authority-matrix.md](../coordination/authority-matrix.md):
 +# Find all callers
 +serena/find_referencing_symbols:
 +  name_path: "authenticate"
 +  relative_path: "src/auth/authentication.py"
 +```
- 
+
 -- Workflow state mutations → **task-orchestrator only** (never ConPort `progress_entry`).
 -- Decision authority → **ConPort only** (`log_decision`).
 -- Code navigation → **Serena only**.
@@ -4914,9 +4914,9 @@ index 23d9f12de..a3fa6960d 100644
 +- Recommendations aligned with expertise
 +- Code examples following best practices
 +- Validation criteria
- 
+
  ---
- 
+
 -## Cross-reference Map
 +## MCP Documentation Reference
 +
@@ -4933,7 +4933,7 @@ index 23d9f12de..a3fa6960d 100644
 +| UI generation | Magic | - | SuperClaude default |
 +| Testing | Playwright | - | SuperClaude default |
 +| Code transforms | Morphllm | - | SuperClaude default |
- 
+
 -- [authority-matrix.md](../coordination/authority-matrix.md) — system authority boundaries, violation prevention.
 -- [event-patterns.md](event-patterns.md) — workflow event payloads, routing rules.
 -- [adhd-patterns.md](adhd-patterns.md) — ADHD engine, energy, sessions, breaks.
@@ -5161,11 +5161,11 @@ index 23d9f12de..a3fa6960d 100644
 +# Check database
 +sqlite3 .dopemux/context.db "SELECT * FROM session_metadata ORDER BY last_active DESC LIMIT 5"
 +```
- 
+
  ---
- 
+
  ## Quick Reference Card
- 
+
  ```
 -┌─────────────────────────────────────────────────────────────┐
 -│            Dopemux + SuperClaude Quick Reference            │
@@ -5214,9 +5214,9 @@ index 23d9f12de..a3fa6960d 100644
 +│ Mandatory Break:    At 90 minutes                       │
 +└─────────────────────────────────────────────────────────┘
 +```
- 
+
  ---
- 
+
 -**See `~/.claude/MCP_*.md`** for per-MCP details (auto-imported via `~/.claude/CLAUDE.md`).
 -**See `~/.claude/commands/sc/<command>.md`** for per-command details.
 +**For MCP details**, see `~/.claude/MCP_*.md` (auto-imported)
@@ -5228,7 +5228,7 @@ index c29a65417..2843dcb11 100644
 +++ b/.claude/personas/PERSONA_INDEX.md
 @@ -63,16 +63,3 @@ Flagged here, **not** deleted — leave consolidation for a deliberate review pa
  ## Agents directory (curated active set)
- 
+
  The companion `agents/` directory contains a smaller curated set used directly by `/dx:` and `/sc:` flows: `architect`, `developer`, `project-manager`, `researcher`. See `agents/_index.md` for those. **personas/** is the full library; **agents/** is the curated active set.
 -
 -## Task-Orchestrator awareness
@@ -5937,15 +5937,15 @@ index 7899c4651..1212a0338 100644
 @@ -138,11 +138,11 @@ No proof means incomplete.
  - `scripts/dopetask` is the observed runtime, but operator naming still drifts through TaskX language.
  - MCP and proxy config surfaces are inconsistent in places, including stale port assumptions and missing launch targets.
- 
+
 -## 11. Claude-Code Doctrine Alignment
 +## 10. Claude-Code Doctrine Alignment
- 
+
  This file is the Codex-facing authority. The Claude-Code-facing companion is `.claude/claude.md`, which embeds a brief governance section and links to the full canonical module at `.claude/modules/shared/governance-principles.md`.
- 
+
 -The canonical module elaborates the same Truth Order (§2), proof-and-finality regime (§9), and architecture-boundary discipline (§6) for Claude-Code sessions. It additionally covers:
 +The canonical module elaborates the same Truth Order (§2), proof-and-finality regime (§8), and architecture-boundary discipline (§6) for Claude-Code sessions. It additionally covers:
- 
+
  - inspect-before-edit, minimal correct change, deterministic-systems-first
  - canonical writer rules and contract-sensitive surfaces specific to this repo
 @@ -157,35 +157,3 @@ When updating doctrine, keep these three files in sync:
@@ -5990,7 +5990,7 @@ index 00f422451..9d98dc394 100644
 +++ b/config/instructions/agents.instructions.md
 @@ -989,101 +989,3 @@ Each level can override settings from previous levels.
  - ⚠️ Some properties may behave differently
- 
+
  When creating agents for multiple environments, focus on common properties and test in all target environments. Use `target` property to create environment-specific agents when necessary.
 -
 ----
@@ -6522,7 +6522,7 @@ index 2d0485997..7b83bd11e 100644
 @@ -11,18 +11,15 @@ prelude: Compact component catalog for Dopemux systems, authorities, and drift m
  ---
  # Component Catalog
- 
+
 -This catalog is a compact operator reference. The per-system docs under
 -[`docs/03-reference/systems/`](.) (`system-<name>.md`) remain the richer
 -source for tiering and detailed evidence.
@@ -6530,7 +6530,7 @@ index 2d0485997..7b83bd11e 100644
 -> **Task Orchestrator dual-surface note**: two distinct runtimes share the "Task Orchestrator" name — the in-repo FastAPI workflow service AND the upstream stdio MCP container that holds workflow-state authority per the accepted ADR. See [`task-orchestrator/system-taskorchestrator.md`](task-orchestrator/system-taskorchestrator.md) §9 for the canonical disambiguation.
 +This catalog is a compact operator reference. `SERVICE_CATALOG.md` and the
 +system docs remain the richer source for tiering and detailed evidence.
- 
+
  | Component | Role | Authority | Drift / UNKNOWN |
  | --- | --- | --- | --- |
  | `dopemux` | Operator CLI and control surface | startup, routing, MCP/server coordination | Does not own downstream PM, memory, retrieval, or execution truth. |
@@ -6546,16 +6546,16 @@ index 8c2267f78..334db9549 100644
 --- a/docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md
 +++ b/docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md
 @@ -16,7 +16,7 @@ prelude: System Taskorchestrator (reference) for dopemux documentation and devel
- 
+
  Task Orchestrator is the workflow-coordination service surface for dopemux. In the inspected runtime code it exposes HTTP, WebSocket, and MCP surfaces for workflow idea/epic operations, project workflow views, PM-plane write routing, and cross-plane coordination.
- 
+
 -This service must not be confused with the upstream 14-tool stdio MCP Task Orchestrator container used by Codex and `dopemux mcp` local configs. The upstream stdio MCP runtime is launched through `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` and runs as a singleton Docker container (one per workspace) with container-local, volume-backed persistence. The in-repo service described here is the Dopemux FastAPI workflow service. See §9 for the full upstream-MCP coverage.
 +This service must not be confused with the upstream 13-tool stdio MCP Task Orchestrator container used by Codex and `dopemux mcp` local configs. The upstream stdio MCP runtime is launched through `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` and stores repo-scoped SQLite state under the operator's local data directory. The in-repo service described here is the Dopemux FastAPI workflow service.
- 
+
  Its canonical authority slice is narrow:
  - workflow-significant API behavior and transition routing exposed by `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py`, `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/api/project_workflow.py`, and `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/api/pm_tools.py`
 @@ -58,7 +58,7 @@ It does not own durable PM entity truth, chronicle truth, or structured retrieva
- 
+
  - Canonical runtime code: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py`
  - Canonical stdio MCP wrapper: `/Users/hue/code/dopemux-mvp/services/task-orchestrator/mcp_stdio.py`
 -- Upstream 14-tool stdio MCP launcher for Codex/local MCP clients: `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh`
@@ -6569,21 +6569,21 @@ index 8c2267f78..334db9549 100644
  - Workflow persistence writes through DopeconBridge custom-data categories `workflow_ideas`, `workflow_epics`, and `workflow_audit` in `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/services/workflow_store.py`.
 -- The upstream stdio MCP Task Orchestrator (now 14 tools at v3.8.0) uses container-local storage managed inside a singleton Docker container scoped per workspace; persistence is volume-backed, not a repo-keyed SQLite file. That storage is not the authority for the in-repo FastAPI workflow service. See §9 below for the full upstream-MCP coverage.
 +- The upstream 13-tool stdio MCP Task Orchestrator uses a separate local SQLite database keyed by local git repository identity. That database is not the storage authority for the in-repo FastAPI workflow service.
- 
+
  ## 5. System Boundaries
- 
+
 @@ -125,10 +125,10 @@ Storage surfaces:
  - Operational
    `/Users/hue/code/dopemux-mvp/compose.yml`, `/Users/hue/code/dopemux-mvp/docker/compose.core.yml`, and `/Users/hue/code/dopemux-mvp/services/registry.yaml` for current exposed port `8000`.
    `/Users/hue/code/dopemux-mvp/services/task-orchestrator/mcp_stdio.py` for stdio MCP launch.
 -  `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` for the upstream 14-tool stdio MCP runtime used by Codex/local MCP config.
 +  `/Users/hue/plugins/dopemux-mission-control/scripts/task-orchestrator-current-stdio.sh` for the upstream 13-tool stdio MCP runtime used by Codex/local MCP config.
- 
+
  - Unknown
 -  The repo-wide relationship between the in-repo FastAPI workflow service and the upstream 14-tool stdio MCP Task Orchestrator remains a boundary, not a unified runtime contract.
 +  The repo-wide relationship between the in-repo FastAPI workflow service and the upstream 13-tool stdio MCP Task Orchestrator remains a boundary, not a unified runtime contract.
    Repo-wide agent authority remains `UNKNOWN`; the Task Orchestrator agent package is only one competing family.
- 
+
  ## 7. Known Drift / Issues
 @@ -156,84 +156,3 @@ Storage surfaces:
  - Treat bridge-mediated workflow storage as a dependency boundary, not as proof that DopeconBridge is the workflow authority.
@@ -6695,9 +6695,9 @@ index e01cac8a4..c60478db1 100644
      - adr-conport-as-decision-progress-and-context-authority
 -    - adr-task-orchestrator-claude-surface-integration
  ---
- 
+
  # ADR: Task Orchestrator as workflow authority
- 
+
 -**Status:** Accepted (ratified 2026-05-27)
 -**Date:** 2026-03-11 (ratified 2026-05-27)
 +**Status:** Proposed

@@ -1,0 +1,40 @@
+```text
+PASS_WITH_RISKS
+```
+
+### Concise Findings
+
+1. **Blocking of PRs #932 and #1025**: The design replaces deletion-blind file checkers (which used `git diff --diff-filter=ACMR`) with a complete git-object changed-file manifest enumeration that captures deletions. Destructive actions on protected surfaces (like ConPort migration code/proofs or the MCP runtime stack) would be blocked by the Candidate Sanitizer due to lack of explicit authorization in the Change Intent Registry.
+2. **Honest Handling of PR #720**: The design correctly notes the conflicting evidence (where Git logs show only a single UI file delta, but restoration claims imply broader loss) and routes unresolved provenance or conflicting metadata to fail-closed/supervisor review instead of forcing an artificial resolution.
+3. **Legitimate Mass Deletion**: Mass deletions cannot bypass security checks via heuristics. They require explicit opt-in (`mass_deletion_intent`) in the Change Intent Registry, triggering extra human/supervisor validation gates and protected-surface review.
+4. **Processing PR #1038 Without Trusting PR Metadata**: PR #1038 is processed read-only and classified as `agent_palette_jules` based on file markers (`.Jules/palette.md`) and comment participants (`google-labs-jules`), rather than the user-controlled title or branch name. It remains blocked because of unresolved review threads and missing exact proof.
+5. **Authority Leakage Prevention**: The design isolates authorization to declarative registries (Change Intent and Protected Surface), completely discounting agent claims in titles, bodies, labels, branch names, or generated proof files. Worktree hygiene is strictly advisory and report-only.
+6. **Race Conditions Mitigation**: High transactional consistency is achieved by invalidating readiness on any changes to PR head SHA, tree SHA, diff hash, review thread activity, label mutations, or base branch state. Rechecks are run immediately before the transactional merge executor runs.
+7. **Avoiding Self-Reference and Stale Proof**: Stale proof is eliminated by binding all proof to the exact candidate head SHA, tree SHA, and diff hash. Circular required-check deadlocks are prevented by excluding the final readiness gate's own status context from the required-check manifest evaluation.
+8. **GitHub Pagination & Patch-Size Limits**: Complete enumeration utilizes local git operations within a dedicated validation worktree, bypassing GitHub's API limitations on large diffs and avoiding truncating large changes (which failed for PR #1025).
+9. **Event-Loop & Required-Check Deadlocks**: Splitting the PR Steward into an advisory early Intake stage and a final validation Readiness stage prevents status checks from deadlocking each other.
+10. **Solo-Operator Review Deadlocks**: An explicit, recorded, and time-bound Supervisor Override contract is established to allow solo maintainers to proceed during emergencies without bypassing basic validation metrics.
+11. **Unbounded Destructive Permissions**: The sanitizer's write actions are strictly bounded to the authorized patch transplantation scope. The Transactional Merge Executor's permission model is restricted solely to merging the candidate SHA and writing status checks.
+12. **Read-Only PR Steward**: The PR Steward remains strictly read-only across both stages; execution is handed off to the separate Transactional Merge Executor.
+13. **Candidate Sanitizer Bounded Patch**: The sanitizer starts from current `main` and transplants only authorized patch hunks; it never imports the agent branch's tree wholesale, preventing hidden or malicious files from slipping in.
+14. **Heuristics vs. Authorization**: Line-count and file-count thresholds are treated strictly as secondary risk signals to flag anomalous changes, not as direct authorization metrics.
+
+---
+
+### Required Fixes
+* **None for this packet**: No immediate code fixes are required as this is a design and architectural review. The proposed implementation plan (`TP-DMX-MERGE-INTEGRITY-0002` through `0007`) correctly isolates and sequences the necessary deliverables.
+
+---
+
+### Accepted Risks
+
+1. **GitHub Merge Queue & Ruleset Discrepancies**: Classic branch protection reports merge commits as allowed, whereas the ruleset specifies squash and rebase only. This policy interaction must be handled at the merge-execution level.
+2. **Override Authentication Proof**: While the override contract is defined, the design accepts the risk of relying on downstream implementation to enforce strong cryptographic or administrative identity binding for the supervisor's key.
+3. **Dirty Primary Workspace**: The local primary checkout remains dirty with unrelated changes. The design relies on clean, isolated worktrees for validation, but dirty local environments continue to present a hygiene risk for local developer operations.
+
+---
+
+### Residual Uncertainty
+
+1. **GitHub Merge Queue Behavior**: The actual mechanics of branch protection and merge queue tree-SHA binding under rapid concurrent merges remain unproven and will require validation during the rollout of `TP-DMX-MERGE-INTEGRITY-0006`.
+2. **Reserved-Singleton Port Allocator**: The port allocator runtime regression (where port 7890 blocks execution if occupied by an unrelated process) remains open and must be remediated in a separate, out-of-scope packet.

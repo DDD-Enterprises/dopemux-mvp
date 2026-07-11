@@ -3,16 +3,16 @@ Author: Dj Dom <167156098+hu3mann@users.noreply.github.com>
 Date:   Fri Jul 10 14:37:08 2026 -0700
 
     fix(mcp): restore runtime stack clobbered off main by #1025 (27.7K-line regression) (#1037)
-    
+
     ## Incident
-    
+
     PR #1025 (`8af764b14` — "feat(ui): copyable AI forecast in
     PredictionPanel") **accidentally deleted the entire MCP runtime stack
     from `main`**. It was merged with no review and, despite its UI title,
     its diff was **394 insertions / 27,676 deletions across 137 files** — a
     stale-branch clobber (the recurring palette/UI-clobber pattern; cf.
     prior PR #734).
-    
+
     **Lost from `main`:** the output of PRs #1022–#1032 (repo-aware
     multi-project MCP runtime):
     - 17 `src/dopemux/mcp/` modules: `runtime_registry`, `port_leases`,
@@ -24,13 +24,13 @@ Date:   Fri Jul 10 14:37:08 2026 -0700
     - reverted backend wiring in `mcp_commands.py`, `default_catalog.yaml`,
     `instance_overlay.py`, `.mcp.json`, `mcp_catalog.yaml`,
     task-orchestrator singleton wrapper/service, and the MCP how-to docs
-    
+
     This broke `dopemux mcp` (doctor/registry/lifecycle/port-leases) on
     `main` and blocked downstream work (the DCP-MCP-RO facade Phase-2 chain
     depends on this runtime stack).
-    
+
     ## Fix — surgical restore
-    
+
     Restored from `7f904d78e` (the commit immediately before #1025, last
     good state):
     - **116 deleted files re-added** + **16 clobber-reverted
@@ -40,23 +40,23 @@ Date:   Fri Jul 10 14:37:08 2026 -0700
     `.Jules/palette.md` — untouched.
     - No clobbered path was re-touched by any commit after #1025, so the
     restore is purely additive (132 files, +27,517 / −258).
-    
+
     ## Validation (PASS)
     - 17/17 restored `dopemux.mcp.*` modules import.
     - **197 restored runtime unit tests pass** (all `tests/unit/test_mcp_*`
     + `tests/mcp/test_provision`).
     - `compileall src/dopemux/mcp` clean.
     - `tests/unit` + `tests/mcp` collection clean (no import breakage).
-    
+
     ## Scope note
     This is a regression repair outside the DCP-MCP-RO packet series, done
     to unblock it (Gate 0B). A brief root-cause note + a prevention
     suggestion (CI guard flagging large cross-area deletions in a PR) will
     follow.
-    
+
     ## Rollback
     `git revert f4b032687` (single commit).
-    
+
     Co-authored-by: Claude Opus 4.8 <noreply@anthropic.com>
 
  .claude/WORKTREE_MCP_SETUP.md                      |   56 +
