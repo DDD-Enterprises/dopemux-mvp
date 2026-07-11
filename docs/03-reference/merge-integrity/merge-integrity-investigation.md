@@ -6,8 +6,11 @@ owner: '@hu3mann'
 author: Codex
 date: '2026-07-11'
 status: proposed
+last_review: '2026-07-11'
+next_review: '2026-10-09'
+prelude: Merge Integrity Investigation (reference) for dopemux documentation and developer
+  workflows.
 ---
-
 # Merge Integrity Investigation
 
 Packet: `TP-DMX-MERGE-INTEGRITY-0001`
