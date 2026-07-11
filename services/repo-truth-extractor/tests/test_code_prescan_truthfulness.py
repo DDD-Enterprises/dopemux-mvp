@@ -11,6 +11,7 @@ SERVICE_ROOT = ROOT / "services" / "repo-truth-extractor"
 if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
+import lib.prescan.code_prescan as code_prescan_module
 from lib.prescan.code_intelligence_report import CodeIntelligenceBuilder
 from lib.prescan.code_prescan import CodePrescan
 from lib.prescan.dependency_graph import DependencyGraph
