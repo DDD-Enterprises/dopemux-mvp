@@ -12,7 +12,7 @@
   "network_or_socket_code_introduced": false,
   "executor_provenance": {
     "implementation": "Codex",
-    "codereview": "Gemini external inspection checkpoint plus local review",
+    "codereview": "Gemini external inspection checkpoint, GitHub review reconciliation, and local review",
     "note": "The external Gemini final review call was unavailable because the configured provider quota returned 429 RESOURCE_EXHAUSTED; no clean external verdict is claimed."
   },
   "files_changed": [
@@ -31,14 +31,15 @@
   ],
   "validation": {
     "PASS": [
-      {"command": "pytest -q services/dcp-readonly-facade/tests", "exit_code": 0, "result": "207 passed, 1 skipped (live optional)"},
+      {"command": "pytest -q services/dcp-readonly-facade/tests/test_runtime_catalog_join.py", "exit_code": 0, "result": "10 passed"},
+      {"command": "pytest -q services/dcp-readonly-facade/tests", "exit_code": 0, "result": "PASS; 1 live optional test skipped"},
       {"command": "pytest -q tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py", "exit_code": 0, "result": "32 passed"},
       {"command": "python -m compileall -q services/dcp-readonly-facade", "exit_code": 0},
       {"command": "TP packet validation against dopetask-canonical-spec.json", "exit_code": 0},
       {"command": "fleet-catalog.schema.json Draft7Validator.check_schema", "exit_code": 0},
-      {"command": "purity scan for forbidden I/O imports/calls", "exit_code": 0},
+      {"command": "AST purity scan for forbidden I/O imports/calls", "exit_code": 0},
       {"command": "secret scan over changed files", "exit_code": 0},
-      {"command": "git diff HEAD^ HEAD --check", "exit_code": 0},
+      {"command": "git diff --check", "exit_code": 0},
       {"command": "pre-commit run --files scoped packet files", "exit_code": 0}
     ],
     "FAIL": [],
@@ -58,21 +59,22 @@
     "findings": [],
     "fixes_applied": [
       "Added the two catalog schema fields already present in the restored task-orchestrator catalog entry.",
-      "Removed the repository-rejected auxiliary superpowers plan artifact from the packet allowlist."
+      "Removed the repository-rejected auxiliary superpowers plan artifact from the packet allowlist.",
+      "Made RuntimeCatalogEntry.callable computed and non-overridable so internal and public non-callable state cannot diverge.",
+      "Aligned the packet public-serialization invariant with the redacted public capability shape."
     ],
     "remaining_risks": [
-      "External Gemini final review verdict unavailable due provider quota.",
+      "External Gemini final review verdict unavailable due to provider quota.",
       "Live liveness, protocol, ownership, mount/data scope, freshness, and backend authorization remain later gates.",
       "Existing v1 facade tools remain project_id-based and are intentionally not rewired."
     ],
     "skip_reason": null
   },
   "residual_risks": [
-    "External Gemini final review verdict unavailable due provider quota.",
+    "External Gemini final review verdict unavailable due to provider quota.",
     "No live runtime or ownership evidence is claimed.",
-    "to_mcp_wrapper and to_compose_rest remain blocked.",
-    "External Gemini final review verdict unavailable due provider quota."
+    "to_mcp_wrapper and to_compose_rest remain blocked."
   ],
-  "rollback": "git revert 485c87444f90235853f5e1b52c64c1ed852bdd1a",
-  "cleanup": "PR #1041 published; unrelated occupied 0011 worktree was not modified."
+  "rollback": "Revert the merge or squash commit for PR #1041. Before merge, revert the branch commits in reverse order so implementation, proof, and PR metadata roll back together.",
+  "cleanup": "PR #1041 published; branch-owner worktree used only for scoped review fixes."
 }

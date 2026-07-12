@@ -9,8 +9,10 @@ blocks ambiguity, and serializes no operational infrastructure fields.
 
 The external Gemini codereview completed its inspection phase with zero reported
 issues. Its final provider call was unavailable because the configured Gemini
-quota returned HTTP 429 / `RESOURCE_EXHAUSTED`. A local review of the complete
-changed module, tests, schema, packet, and contract found no additional issue.
+quota returned HTTP 429 / `RESOURCE_EXHAUSTED`. Follow-up GitHub review found a
+mutable internal `callable` constructor input and a public-contract wording
+mismatch; both were corrected and covered by focused tests. The local review
+also corrected the proof rollback instruction and duplicate risk wording.
 
 Accepted risks and unknowns:
 

@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from dcp_facade.registry_v2 import FAMILY_POLICY_TABLE, ExposureTarget, ServicePolicy
 from dcp_facade.resolver_core import ResolvedTarget
-from dcp_facade.runtime_catalog_join import join_runtime_catalog
+from dcp_facade.runtime_catalog_join import RuntimeCatalogEntry, join_runtime_catalog
 
 
 def _resolved(*families: str) -> ResolvedTarget:
@@ -226,3 +228,15 @@ def test_public_result_redacts_operational_details():
     }
     for forbidden in ("runtime-secret-id", "3020", "127.0.0.1", "/approved"):
         assert forbidden not in rendered
+
+
+def test_runtime_catalog_entry_rejects_callable_override():
+    with pytest.raises(TypeError):
+        RuntimeCatalogEntry(
+            family="conport",
+            catalog_name="conport",
+            state="UNKNOWN",
+            candidate_count=1,
+            callable=True,
+            reason="runtime candidate joined; live verification required",
+        )
