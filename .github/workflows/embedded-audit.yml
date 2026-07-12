@@ -183,7 +183,8 @@ jobs:
         run: |
           mkdir -p ../embedded-audit-artifacts
           if [ ! -f scripts/audit/run_embedded_audit.py ]; then
-            # Structured diagnostic only — no forged trusted provenance.
+            # Structured diagnostic only — schema-valid SKIPPED (none/unknown),
+            # executed=false; no forged trusted provenance. Enforce still reds.
             python - <<'PY'
           import json
           import os
@@ -195,6 +196,7 @@ jobs:
           )
           out = Path("../embedded-audit-artifacts")
           out.mkdir(parents=True, exist_ok=True)
+          report_path = "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md"
           proof = {
               "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
               "repo": os.environ["GITHUB_REPOSITORY"],
@@ -205,12 +207,12 @@ jobs:
               "github_mutation_route_added": False,
               "embedded_audit": {
                   "required": True,
-                  "status": "NEEDS_SUPERVISOR",
+                  "status": "SKIPPED",
                   "auditor_tool": "none",
                   "auditor_model": "unknown",
                   "invocation": None,
                   "exit_code": None,
-                  "report_path": "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md",
+                  "report_path": report_path,
                   "findings": [],
                   "fixes_applied": [],
                   "remaining_risks": [reason],
@@ -221,7 +223,7 @@ jobs:
               json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
           )
           (out / "AUDITOR_REPORT.md").write_text(
-              f"# Embedded audit\n\nstatus: NEEDS_SUPERVISOR\n\nreason: {reason}\n",
+              f"# Embedded audit\n\nstatus: SKIPPED\n\nreason: {reason}\n",
               encoding="utf-8",
           )
           PY
@@ -249,7 +251,7 @@ jobs:
           from pathlib import Path
 
           # Inline diagnostic shape mirrors build_diagnostic_failure_proof:
-          # executed=false, NEEDS_SUPERVISOR, no trusted provenance.
+          # executed=false, schema-valid SKIPPED (none/unknown), no trusted provenance.
           reason = "Requested PR head SHA could not be fetched or no longer matches the PR head."
           artifact_dir = Path("embedded-audit-artifacts")
           report_path = "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md"
@@ -263,7 +265,7 @@ jobs:
               "github_mutation_route_added": False,
               "embedded_audit": {
                   "required": True,
-                  "status": "NEEDS_SUPERVISOR",
+                  "status": "SKIPPED",
                   "auditor_tool": "none",
                   "auditor_model": "unknown",
                   "invocation": None,
@@ -279,7 +281,7 @@ jobs:
               json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
           )
           (artifact_dir / "AUDITOR_REPORT.md").write_text(
-              f"# Embedded audit\n\nstatus: NEEDS_SUPERVISOR\n\nreason: {reason}\n",
+              f"# Embedded audit\n\nstatus: SKIPPED\n\nreason: {reason}\n",
               encoding="utf-8",
           )
           PY
@@ -300,19 +302,37 @@ jobs:
 
           proof_path = Path("embedded-audit-artifacts/PROOF.json")
           if not proof_path.is_file():
+              # Schema-valid SKIPPED diagnostic; hard enforce still fails closed.
               fallback = Path("embedded-audit-artifacts")
               fallback.mkdir(parents=True, exist_ok=True)
+              reason = "Independent audit proof is missing."
+              report_path = "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md"
               proof = {
+                  "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
                   "executed": False,
-                  "embedded_audit": {"status": "NEEDS_SUPERVISOR"},
                   "pr_number": int(os.environ.get("EXPECTED_PR") or 0),
                   "head_sha": os.environ.get("EXPECTED_HEAD_SHA") or "",
                   "repo": os.environ.get("GITHUB_REPOSITORY") or "",
+                  "mutation_performed": False,
+                  "github_mutation_route_added": False,
+                  "embedded_audit": {
+                      "required": True,
+                      "status": "SKIPPED",
+                      "auditor_tool": "none",
+                      "auditor_model": "unknown",
+                      "invocation": None,
+                      "exit_code": None,
+                      "report_path": report_path,
+                      "findings": [],
+                      "fixes_applied": [],
+                      "remaining_risks": [reason],
+                      "skip_reason": reason,
+                  },
               }
               (fallback / "PROOF.json").write_text(
                   json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
               )
-              raise SystemExit("Independent audit proof is missing.")
+              raise SystemExit(reason)
 
           trusted_root = Path("trusted-source")
           if trusted_root.is_dir():

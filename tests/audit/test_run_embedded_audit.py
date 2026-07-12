@@ -448,11 +448,69 @@ def test_diagnostic_failure_proof_has_no_trusted_provenance() -> None:
         reason="missing emitter",
     )
     assert proof["executed"] is False
-    assert proof["embedded_audit"]["status"] == "NEEDS_SUPERVISOR"
+    assert proof["embedded_audit"]["status"] == "SKIPPED"
+    assert proof["embedded_audit"]["auditor_tool"] == "none"
+    assert proof["embedded_audit"]["auditor_model"] == "unknown"
+    assert proof["embedded_audit"]["invocation"] is None
+    assert proof["embedded_audit"]["exit_code"] is None
+    assert proof["embedded_audit"]["skip_reason"] == "missing emitter"
     assert "provenance" not in proof
+    jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
     errors = independent_audit_errors(proof)
     assert any("audit_not_executed" in e for e in errors)
     assert any("provenance" in e for e in errors)
+    with pytest.raises(SystemExit):
+        enforce_independent_audit_proof(
+            proof, expected_pr=1042, expected_head_sha="c" * 40
+        )
+
+
+def test_diagnostic_missing_emitter_workflow_shape_is_schema_valid_skipped() -> None:
+    """Missing-emitter branch must emit SKIPPED+none/unknown (schema), not NEEDS_SUPERVISOR."""
+    text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    # Both diagnostic paths use schema-valid SKIPPED with none/unknown.
+    assert "missing on the trusted ref" in text
+    assert "could not be fetched or no longer matches the PR head" in text
+    assert '"status": "SKIPPED"' in text
+    assert '"auditor_tool": "none"' in text
+    assert '"auditor_model": "unknown"' in text
+    # Invalid combo must not appear in diagnostic emission blocks.
+    # (PASS_WITH_RISKS / NEEDS_SUPERVISOR may still appear elsewhere for other reasons.)
+    missing_emitter_block = text.split("is missing on the trusted ref.", 1)[1][:1200]
+    assert '"status": "SKIPPED"' in missing_emitter_block
+    assert '"status": "NEEDS_SUPERVISOR"' not in missing_emitter_block
+    head_mismatch_block = text.split(
+        "could not be fetched or no longer matches the PR head.", 1
+    )[1][:1200]
+    assert '"status": "SKIPPED"' in head_mismatch_block
+    assert '"status": "NEEDS_SUPERVISOR"' not in head_mismatch_block
+
+
+def test_diagnostic_head_mismatch_and_missing_emitter_proofs_schema_and_enforce() -> None:
+    """Both diagnostic shapes: schema-valid SKIPPED; hard enforce still fails closed."""
+    reasons = (
+        "Trusted audit emitter scripts/audit/run_embedded_audit.py is missing on the trusted ref.",
+        "Requested PR head SHA could not be fetched or no longer matches the PR head.",
+    )
+    for reason in reasons:
+        proof = build_diagnostic_failure_proof(
+            packet_id="TP-DMX-AUDIT-CI-PROVENANCE-104",
+            repo="DDD-Enterprises/dopemux-mvp",
+            pr_number=1042,
+            head_sha="d" * 40,
+            reason=reason,
+        )
+        jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
+        assert proof["executed"] is False
+        assert proof["embedded_audit"]["status"] == "SKIPPED"
+        with pytest.raises(SystemExit) as exc:
+            enforce_independent_audit_proof(
+                proof,
+                expected_pr=1042,
+                expected_head_sha="d" * 40,
+                expected_repo="DDD-Enterprises/dopemux-mvp",
+            )
+        assert "audit_not_executed" in str(exc.value)
 
 
 def test_collector_and_enforce_parity_matrix() -> None:

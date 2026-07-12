@@ -151,6 +151,10 @@ def build_diagnostic_failure_proof(
 
     Used for workflow failure paths (missing emitter, head mismatch, etc.).
     Must not forge independent-embedded-audit provenance.
+
+    Schema rule: auditor_tool=none / auditor_model=unknown are only valid with
+    status=SKIPPED. Hard enforcement still rejects executed!=true, so SKIPPED
+    remains red while the artifact stays schema-valid.
     """
     report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
     return {
@@ -162,19 +166,7 @@ def build_diagnostic_failure_proof(
         "executed": False,
         "mutation_performed": False,
         "github_mutation_route_added": False,
-        "embedded_audit": {
-            "required": True,
-            "status": "NEEDS_SUPERVISOR",
-            "auditor_tool": "none",
-            "auditor_model": "unknown",
-            "invocation": None,
-            "exit_code": None,
-            "report_path": report_path,
-            "findings": [],
-            "fixes_applied": [],
-            "remaining_risks": [reason],
-            "skip_reason": reason,
-        },
+        "embedded_audit": _skipped_audit(report_path=report_path, reason=reason),
     }
 
 
