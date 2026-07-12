@@ -5,8 +5,8 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "codex/tp-dmx-merge-integrity-foundation",
   "base_sha": "b176747b339685e781de04268c46b7ae123abfbf",
-  "head_sha": "POST_PUSH_BIND",
-  "generated_at": "2026-07-12T19:49:54Z",
+  "head_sha": "67229e85312083fb814309b006259462fdacbefd",
+  "generated_at": "2026-07-12T19:49:59Z",
   "changed_files": [
     ".github/workflows/embedded-audit.yml",
     ".github/workflows/pr-steward.yml",
@@ -57,7 +57,7 @@
   "mutation_performed": false,
   "merge_authorized": false,
   "live_default_branch_proven": false,
-  "pr_head_ref_oid": "b21ac7b1f0487c7b2866631b2ab67d1b8068f486",
+  "pr_head_ref_oid": "67229e85312083fb814309b006259462fdacbefd",
   "head_sha_note": "After this commit is included, supervisor must re-read gh pr view headRefOid. If a subsequent proof-only commit exists, that newer SHA is exact head.",
   "remote_branch_tip": "b21ac7b1f0487c7b2866631b2ab67d1b8068f486",
   "commits_on_branch": [
@@ -69,5 +69,7 @@
     "ded3cf0a6 test(audit): lock fail-closed provenance and workflow behavior",
     "65bcc14e1 fix(audit): bind pull-request-target metadata and proof identity",
     "b67bb7645 fix(audit): fail closed on independent audit evidence"
-  ]
+  ],
+  "local_head_at_record": "67229e85312083fb814309b006259462fdacbefd",
+  "head_match": true
 }

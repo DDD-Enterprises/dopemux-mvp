@@ -19,3 +19,12 @@ TP-DMX-MERGE-INTEGRITY-0001R2 Phase A / TP-DMX-MERGE-INTEGRITY-0004 foundation
 
 ## Merge
 NEEDS_SUPERVISOR — implementer must not merge.
+
+## Exact published head (supervisor gate)
+
+- local HEAD: 
+- PR headRefOid: 
+- match: true
+- recorded_at: 2026-07-12T19:49:59Z
+
+If match is false, re-fetch before disposition. Do not merge on stale head.
