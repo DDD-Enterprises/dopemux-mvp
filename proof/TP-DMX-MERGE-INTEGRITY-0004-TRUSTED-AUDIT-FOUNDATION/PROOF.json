@@ -5,8 +5,8 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "codex/tp-dmx-merge-integrity-foundation",
   "base_sha": "b176747b339685e781de04268c46b7ae123abfbf",
-  "head_sha": "67229e85312083fb814309b006259462fdacbefd",
-  "generated_at": "2026-07-12T19:49:59Z",
+  "head_sha": "SEE_PR_HEAD_REF_OID",
+  "generated_at": "2026-07-12T20:15:00Z",
   "changed_files": [
     ".github/workflows/embedded-audit.yml",
     ".github/workflows/pr-steward.yml",
@@ -35,6 +35,9 @@
     },
     "git_diff_check": {
       "exit_code": 0
+    },
+    "validate_audit_proof": {
+      "exit_code": 0
     }
   },
   "tests": {
@@ -43,33 +46,43 @@
   },
   "precommit": "PASS",
   "embedded_audit": {
-    "status": "PASS_WITH_RISKS",
-    "auditor_tool": "pal-stdio-codereview+secaudit",
-    "auditor_model": "gemini-2.5-pro",
-    "invocation": "pal-stdio codereview + secaudit; external expert 429; internal findings retained",
-    "exit_code": null,
+    "required": true,
+    "status": "NEEDS_SUPERVISOR",
+    "auditor_tool": "pal-mcp-clink",
+    "auditor_model": "gemini",
+    "invocation": "pal-stdio codereview+secaudit internal complete; external Gemini expert 429; independent exact-head auditor still required",
+    "exit_code": 1,
+    "report_path": "proof/TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-0004-DOCS-SCHEMA-1",
+        "severity": "HIGH",
+        "title": "Committed PROOF.json failed embedded_audit schema (docs CI)",
+        "status": "RESOLVED",
+        "body": "proof-embedded-audit-schema rejected invalid auditor_tool/auditor_model enums and missing required embedded_audit fields. Fixed to schema-valid NEEDS_SUPERVISOR object with AUDITOR_REPORT.md."
+      },
+      {
+        "id": "F-0004-INDEP-1",
+        "severity": "BLOCKING",
+        "title": "Independent exact-head auditor receipt missing",
+        "status": "OPEN",
+        "body": "PAL internal findings and a 429 external expert attempt are not an independent embedded-auditor gate. Supervisor requires AGY/Sonnet, Claude Code, or Gemini CLI receipt bound to the exact PR head, stored externally without a proof-only rebinding commit."
+      }
+    ],
+    "fixes_applied": [
+      "Schema-valid embedded_audit object and AUDITOR_REPORT.md for docs CI",
+      "pull_request_target metadata + hard proof enforcement + Steward run identity (code)"
+    ],
     "remaining_risks": [
       "Live default-branch workflow behavior not proven until PR #1042 merges",
       "Soft runner exit depends on hard enforce remaining complete",
-      "Branch-protection check-name migration required (out of packet)"
-    ]
+      "Branch-protection check-name migration required (out of packet)",
+      "Independent exact-head auditor receipt is external and must match PR headRefOid"
+    ],
+    "skip_reason": null
   },
   "mutation_performed": false,
   "merge_authorized": false,
   "live_default_branch_proven": false,
-  "pr_head_ref_oid": "67229e85312083fb814309b006259462fdacbefd",
-  "head_sha_note": "After this commit is included, supervisor must re-read gh pr view headRefOid. If a subsequent proof-only commit exists, that newer SHA is exact head.",
-  "remote_branch_tip": "b21ac7b1f0487c7b2866631b2ab67d1b8068f486",
-  "commits_on_branch": [
-    "b21ac7b1f docs(proof): bind PROOF to published PR head SHA",
-    "cfd114cd3 docs(proof): finalize PROOF binding fields for supervisor gate",
-    "a938aae05 docs(proof): rebind PROOF head to tip",
-    "aba75afbf docs(proof): bind PROOF.json to remediation head SHA",
-    "b04262385 docs(proof): add trusted-audit foundation evidence",
-    "ded3cf0a6 test(audit): lock fail-closed provenance and workflow behavior",
-    "65bcc14e1 fix(audit): bind pull-request-target metadata and proof identity",
-    "b67bb7645 fix(audit): fail closed on independent audit evidence"
-  ],
-  "local_head_at_record": "67229e85312083fb814309b006259462fdacbefd",
-  "head_match": true
+  "head_sha_note": "Authoritative exact head is GitHub PR headRefOid after this commit is pushed. Do not treat head_sha string as final-head evidence."
 }
