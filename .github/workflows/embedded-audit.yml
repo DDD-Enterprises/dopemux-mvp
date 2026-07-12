@@ -78,7 +78,10 @@ jobs:
           else
             test -n "$actual_trusted_ref"
           fi
-          test -f trusted-source/scripts/audit/run_embedded_audit.py
+          # Do not hard-fail here when run_embedded_audit.py is absent.
+          # The emit step writes a schema-valid SKIPPED diagnostic PROOF so
+          # artifact upload + Steward can still bind the head and overwrite a
+          # prior green "PR Steward / final readiness" status with failure.
 
       - name: Verify requested head SHA
         id: head_integrity
