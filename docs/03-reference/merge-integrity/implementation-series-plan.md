@@ -117,24 +117,27 @@ Stop conditions:
 
 ### TP-DMX-MERGE-INTEGRITY-0006
 
-Objective: Add transactional merge executor and exact-head revalidation.
+Objective: Add transactional merge executor, expected-base revalidation, and protected-reference capability qualification.
 
 Validation gates:
 
-- Expected head mismatch refuses merge.
-- Expected tree mismatch refuses merge.
+- Expected base, candidate parent, head, or tree mismatch refuses merge.
+- Non-forced protected-reference update is the only proposed atomic primitive; normal PR merge is forbidden as fallback.
+- Controlled race advances `main` after readiness and proves stale candidate refusal.
+- Qualification proves token permissions, protection, checks, and PR semantics before enablement.
+- Candidate construction, validation, and readiness run from trusted source only.
 - Changed reviews, review threads, checks, policy, labels, or base SHA invalidate readiness.
 - Executor cannot mutate existing source PR.
 
 Proof requirements:
 
 - `MERGE_EXECUTION.json`
-- expected-head recheck log
-- dry-run and controlled fixture execution
+- expected-base/head recheck log
+- dry-run, controlled race fixture, and protected-reference qualification record
 
 Stop conditions:
 
-- GitHub API behavior cannot prove expected-head enforcement.
+- Protected reference cannot advance under repository rules, or race behavior differs from documented non-fast-forward semantics.
 - Executor needs broad write scope beyond merge and status reporting.
 
 ### TP-DMX-MERGE-INTEGRITY-0007

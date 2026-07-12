@@ -1,4 +1,0 @@
- .Jules/palette.md                                  |  4 ++
- ui-dashboard/src/components/TaskSequencer.tsx      | 57 +++++++++++++++++++---
- .../components/__tests__/Accessibility.test.tsx    |  6 +--
- 3 files changed, 56 insertions(+), 11 deletions(-)

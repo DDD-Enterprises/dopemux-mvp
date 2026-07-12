@@ -195,7 +195,7 @@ OBSERVED / INFERRED:
 | L7 synthetic or stale audit proof | DETECTION_FAILURE |
 | L8 weak or bypassable branch rules | PROCESS_RISK |
 | L9 review timing and stale approval | PROCESS_RISK |
-| L10 missing exact-candidate transactional merge | PRIMARY_CAUSE |
+| L10 missing exact-candidate transactional merge | PREVENTION_CONTROL_FAILURE |
 | L11 missing post-merge tree witness | DETECTION_FAILURE |
 | L12 local worktree accumulation | PROCESS_RISK |
 

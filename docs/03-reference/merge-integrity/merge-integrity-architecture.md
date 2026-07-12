@@ -45,12 +45,12 @@ PROPOSED:
 - Merge Integrity Engine owns deterministic classification and candidate construction.
 - PR Steward Intake owns read-only early harvest and advisory blockers.
 - Final Readiness Gate owns exact-candidate admission.
-- Transactional Merge Executor owns expected-head merge execution.
+- Transactional Merge Executor owns qualified expected-base fast-forward admission.
 - Post-Merge Sentinel owns landed-tree comparison and reporting.
 
 ## Trust Model
 
-PROPOSED: Agent branches are untrusted. GitHub PR metadata, titles, bodies, labels, and comments are claims. Source branches and generated proof are evidence only after validation. A candidate becomes merge-eligible only when it is reconstructed from current `main`, matches explicit intent, passes protected-surface rules, and has exact tree-bound proof.
+PROPOSED: Agent branches are untrusted. Candidate construction, validation, audit, and final readiness execute only from trusted default-branch or pinned trusted workflow logic; they never execute candidate-branch workflow logic. A candidate becomes merge-eligible only when reconstructed from current `main`, intent-bound, protected-surface validated, and proven against an exact tree.
 
 ## Provenance Classes
 
@@ -160,6 +160,7 @@ Per-commit analysis is evidence for transient destructive states, but final admi
 PROPOSED: Candidate construction records:
 
 - current `main` SHA
+- expected base SHA and candidate parent SHA
 - source PR base SHA
 - source PR head SHA
 - candidate branch SHA
@@ -167,7 +168,7 @@ PROPOSED: Candidate construction records:
 - candidate diff SHA256
 - files changed from current `main`
 
-If current `main` changes before final readiness, the candidate is stale.
+If current `main` changes before final readiness, the candidate is stale. If it changes after readiness, a non-forced reference update must reject a candidate whose parent is no longer the `main` tip.
 
 ## Candidate Sanitizer
 
@@ -212,23 +213,25 @@ PROPOSED: Audit proof includes:
 - findings
 - remaining risks
 
-Dry-run and skipped audits cannot be `PASS`.
+Dry-run, skipped, route-unavailable, runner-error, malformed, stale, or wrong-head audits cannot be `PASS`. Required audit absence blocks readiness. Final-head proof is a trusted workflow artifact emitted after the commit exists; a committed proof does not claim its own SHA.
 
 ## Transactional Merge Executor
 
-PROPOSED: Merge execution accepts only:
+PROPOSED: Exact admission uses a preconstructed candidate commit whose parent equals expected `main`, followed by a protected Git reference update with `force=false`. An intervening base advance makes that update non-fast-forward and must fail. This primitive is disabled until controlled race, permission, branch-protection, required-check, and PR-semantics qualification passes. Normal PR merge is not an exact-admission fallback because it binds only PR head.
+
+The executor accepts only:
 
 - candidate PR number
-- expected head SHA
+- expected base SHA, candidate parent SHA, and candidate commit SHA
 - expected tree SHA
 - exact readiness artifact reference
 - operator approval or supervisor override reference
 
-It refuses if the candidate head or tree differs from readiness evidence.
+It refuses head, parent, tree, qualification, or fast-forward mismatch and never force-updates or falls back to normal PR merge.
 
-## Expected-Head Enforcement
+## Exact-Candidate Revalidation
 
-PROPOSED: Every final action re-reads GitHub state. If head SHA, tree SHA, checks, reviews, review threads, labels affecting policy, or ruleset-relevant state changed, readiness is invalidated and the merge is refused.
+PROPOSED: Every final action re-reads GitHub state. Base SHA, head SHA, tree SHA, checks, reviews, threads, labels, or ruleset-relevant changes invalidate readiness. The final reference update, not a post-read normal PR merge, is the base-race boundary.
 
 ## Post-Merge Sentinel
 
@@ -258,6 +261,7 @@ SOURCE_PR
   -> CANDIDATE_BUILT_FROM_CURRENT_MAIN
   -> CANDIDATE_VALIDATED
   -> CANDIDATE_AUDITED
+  -> PROTECTED_REFERENCE_CAPABILITY_QUALIFIED
   -> FINAL_READINESS_READY
   -> EXPECTED_HEAD_RECHECKED
   -> MERGED
@@ -278,6 +282,8 @@ Blocking states:
 - `BLOCKED_REVIEW_THREAD`
 - `BLOCKED_STALE_CANDIDATE`
 - `BLOCKED_EXPECTED_HEAD_MISMATCH`
+- `BLOCKED_EXPECTED_BASE_MISMATCH`
+- `BLOCKED_REFERENCE_CAPABILITY_UNQUALIFIED`
 - `BLOCKED_POST_MERGE_MISMATCH`
 
 ## Invalidating Events
@@ -333,12 +339,13 @@ PROPOSED: Replay cases:
 3. Candidate sanitizer dry-run.
 4. Required final readiness on protected surfaces.
 5. Required final readiness on all agent provenance classes.
-6. Transactional merge executor.
-7. Post-merge sentinel enforcement.
+6. Protected-reference qualification and controlled race test.
+7. Transactional merge executor.
+8. Post-merge sentinel enforcement.
 
 ## Acceptance Criteria
 
-PROPOSED: The architecture is implemented only when historical replay, canary classification, exact-candidate proof, final readiness, expected-head merge, and post-merge sentinel all pass in CI and local proof runs.
+PROPOSED: The architecture is implemented only when historical replay, canary classification, trusted audit, final readiness, protected-reference qualification with controlled base-race test, and post-merge sentinel all pass. Local audit cannot replace trusted current-head evidence.
 
 ## Failure Behavior
 

@@ -1,3 +1,0 @@
-agy=/Users/hue/.local/bin/agy
-antigravity=claude=/Users/hue/.local/bin/claude
-gemini=/opt/homebrew/bin/gemini

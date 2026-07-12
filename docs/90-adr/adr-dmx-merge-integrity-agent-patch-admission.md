@@ -33,7 +33,7 @@ OBSERVED: Branch protection and rulesets exist, strict status checks and convers
 
 ## Decision
 
-Agent-produced branches are untrusted patch sources rather than direct merge candidates. Their authorized changes are transplanted onto a fresh candidate from current main, validated against explicit intent and protected surfaces, audited and proven against the exact candidate tree, and merged only through a final exact-SHA readiness gate.
+Agent-produced branches are untrusted patch sources rather than direct merge candidates. Their authorized changes are transplanted onto a fresh candidate from current main, validated against explicit intent and protected surfaces, audited and proven against the exact candidate tree, and admitted only through qualified expected-base fast-forward reference update.
 
 Binding invariants:
 
@@ -48,7 +48,9 @@ Binding invariants:
 - PR Steward remains read-only and split between early intake and final readiness.
 - Dry-run or skipped audits cannot produce passing embedded-audit status.
 - Audit, proof, review, readiness, and merge bind to the exact candidate head SHA, tree SHA, and diff hash.
-- Merge execution uses expected-head enforcement.
+- Candidate construction, validation, audit, and final readiness use trusted workflow logic and never execute candidate-branch workflow logic.
+- Candidate parent equals expected `main`; protected reference update uses `force=false` and is disabled until controlled race and permission qualification pass.
+- Normal GitHub PR merge is not an exact-admission fallback because it does not bind expected base or tree.
 - Post-merge verification compares the landed tree and freezes/report mismatches instead of blindly reverting.
 - Worktree hygiene is report-only by default and never substitutes for merge authority.
 - Intentional mass deletion remains possible only through explicit intent, protected-surface review, and additional gates.
