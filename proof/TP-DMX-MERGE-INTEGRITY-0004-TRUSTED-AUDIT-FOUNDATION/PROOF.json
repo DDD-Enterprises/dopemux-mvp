@@ -1,0 +1,61 @@
+{
+  "packet_id": "TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION",
+  "remediation_packet": "TP-DMX-MERGE-INTEGRITY-0001R2",
+  "pr_number": 1042,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "codex/tp-dmx-merge-integrity-foundation",
+  "base_sha": "b176747b339685e781de04268c46b7ae123abfbf",
+  "head_sha_pre_commit": "b67bb764575aaab43f643c51cbef1912f950bbc2",
+  "head_sha": "PENDING_COMMIT",
+  "generated_at": "2026-07-12T19:48:57Z",
+  "changed_files": [
+    ".github/workflows/embedded-audit.yml",
+    ".github/workflows/pr-steward.yml",
+    "scripts/audit/run_embedded_audit.py",
+    "tools/pr_steward/collector.py",
+    "tests/audit/test_run_embedded_audit.py",
+    "tests/pr_steward/test_intake.py",
+    "task-packets/TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION.json",
+    "proof/TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION/**"
+  ],
+  "commands": {
+    "pytest": {
+      "exit_code": 0
+    },
+    "compileall": {
+      "exit_code": 0
+    },
+    "yaml_parse": {
+      "exit_code": 0
+    },
+    "packet_schema": {
+      "exit_code": 0
+    },
+    "precommit": {
+      "exit_code": 0
+    },
+    "git_diff_check": {
+      "exit_code": 0
+    }
+  },
+  "tests": {
+    "focused_audit_steward": "PASS",
+    "exit_code": 0
+  },
+  "precommit": "PASS",
+  "embedded_audit": {
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "pal-stdio-codereview+secaudit",
+    "auditor_model": "gemini-2.5-pro",
+    "invocation": "pal-stdio codereview + secaudit; external expert 429; internal findings retained",
+    "exit_code": null,
+    "remaining_risks": [
+      "Live default-branch workflow behavior not proven until PR #1042 merges",
+      "Soft runner exit depends on hard enforce remaining complete",
+      "Branch-protection check-name migration required (out of packet)"
+    ]
+  },
+  "mutation_performed": false,
+  "merge_authorized": false,
+  "live_default_branch_proven": false
+}
