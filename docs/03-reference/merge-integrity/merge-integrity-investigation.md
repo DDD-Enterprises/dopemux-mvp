@@ -109,6 +109,7 @@ OBSERVED:
 - Last-push approval is not required.
 - Administrators are not enforced by classic protection.
 - Ruleset `Default branch protection (restored after history rewrite)` is active for the default branch and allows squash and rebase merge methods.
+- `.github/CODEOWNERS` exists, but all listed ownership surfaces resolve to `@hu3mann`; it declares routing without creating independent review for PRs authored under that account.
 
 CONFLICTING:
 
@@ -125,6 +126,14 @@ OBSERVED: `.github/workflows/pr-steward.yml` runs the steward with `continue-on-
 OBSERVED: The same workflow first refreshes audit proof with `scripts.audit.pr_audit_router --dry-run`. The router writes `executed: false` but still emits `embedded_audit.status: PASS`.
 
 INFERRED: Deletion-blind validation plus advisory readiness lets destructive regressions present as narrow UI work, especially when intent is expressed only in PR title/body text.
+
+## Current Merge-Specialist Admission Primitives
+
+OBSERVED: `src/dopemux_pr_merge_specialist/merge.py` obtains `headRefOid` and calls GraphQL `mergePullRequest` with `expectedHeadOid` for the rebase path. If that operation fails, its ungated `gh pr merge` fallback is disabled for that path.
+
+OBSERVED: `src/dopemux_pr_merge_specialist/queue_drain.py` passes `execute=True` through a steward finalization gate before calling the merge helper. The code therefore contains a mutation-capable seam even though the development-factory documentation currently treats DCP live merge execution as hard-blocked.
+
+INFERRED: Existing expected-head binding is insufficient for merge integrity. It does not prove a sanitized candidate, expected base, candidate parent, candidate tree, explicit path intent, or protected-surface policy. A future executor must inventory and gate every non-sanitized merge path for agent and unknown provenance rather than assuming this is a greenfield merge-control surface.
 
 ## Branch Protection And Ruleset Posture
 
@@ -195,7 +204,7 @@ OBSERVED / INFERRED:
 | L7 synthetic or stale audit proof | DETECTION_FAILURE |
 | L8 weak or bypassable branch rules | PROCESS_RISK |
 | L9 review timing and stale approval | PROCESS_RISK |
-| L10 missing exact-candidate transactional merge | PREVENTION_CONTROL_FAILURE |
+| L10 existing head-bound merge is insufficient for exact base/parent/tree admission | PREVENTION_CONTROL_FAILURE |
 | L11 missing post-merge tree witness | DETECTION_FAILURE |
 | L12 local worktree accumulation | PROCESS_RISK |
 
@@ -209,4 +218,4 @@ OBSERVED: PR #1038 changed-head risk remains live while the PR is open. Any impl
 
 ## Final Design Recommendation
 
-PROPOSED: Adopt fresh-base patch sanitization and exact-candidate merge admission. Agent branches provide patch material only. Authorized changes are re-applied onto current `main`, checked against machine-readable intent and protected-surface policy, audited against the exact candidate tree, merged only if expected head matches, and verified after merge by a landed-tree witness.
+PROPOSED: Adopt fresh-base patch sanitization and exact-candidate merge admission. Agent and unknown-provenance branches provide patch material only. Authorized changes are re-applied onto current `main`, checked against machine-readable intent and protected-surface policy, audited against the exact candidate tree, admitted only after expected base, parent, head, and tree revalidation, and verified after merge by a landed-tree witness. Human-managed and dependency-automation residual merge paths require separately documented evidence and never become an implicit sanitizer fallback.

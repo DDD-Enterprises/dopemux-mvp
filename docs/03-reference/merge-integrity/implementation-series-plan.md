@@ -23,7 +23,7 @@ This plan does not author full implementation packets. It orders the packet seri
 | `TP-DMX-MERGE-INTEGRITY-0003` | Change Intent and Protected Surface policy contracts | 0002 | High | schemas, policy config, docs | Codex | independent Sonnet | advisory | revert policy contract |
 | `TP-DMX-MERGE-INTEGRITY-0004` | Audit-proof correction and two-stage PR Steward | 0002, 0003 | High | scripts/audit, tools/pr_steward, workflows, schemas | Codex or Claude Code | independent Sonnet plus targeted Gemini | advisory then required dry-run | revert steward/audit changes |
 | `TP-DMX-MERGE-INTEGRITY-0005` | Fresh-base Candidate Sanitizer and provenance binding | 0002, 0003, 0004 | Critical | new sanitizer module, tests, proof schemas | Claude Code with Codex review | Sonnet/Opus architecture audit | dry-run candidate PRs | delete sanitizer gate |
-| `TP-DMX-MERGE-INTEGRITY-0006` | Transactional merge executor and exact-head revalidation | 0005 | Critical | merge-specialist executor, GitHub workflow, schemas | Claude Code with Codex review | Sonnet plus GitHub-state review | protected-surface required gate | disable executor check |
+| `TP-DMX-MERGE-INTEGRITY-0006` | Transactional merge executor and exact base/parent/head/tree revalidation | 0005 | Critical | merge-specialist executor, GitHub workflow, schemas | Claude Code with Codex review | Sonnet plus GitHub-state review | protected-surface required gate | disable executor check |
 | `TP-DMX-MERGE-INTEGRITY-0007` | Post-merge sentinel, historical replay, and worktree hygiene reporting | 0006 | High | sentinel, replay fixtures, hygiene reporter | Codex | Gemini broad contradiction review | report-only then required sentinel | disable sentinel enforcement |
 
 ## Packet Details
@@ -122,12 +122,14 @@ Objective: Add transactional merge executor, expected-base revalidation, and pro
 Validation gates:
 
 - Expected base, candidate parent, head, or tree mismatch refuses merge.
-- Non-forced protected-reference update is the only proposed atomic primitive; normal PR merge is forbidden as fallback.
+- Non-forced protected-reference update is the only proposed atomic primitive for agent and unknown provenance; normal PR merge is forbidden as their fallback.
 - Controlled race advances `main` after readiness and proves stale candidate refusal.
 - Qualification proves token permissions, protection, checks, and PR semantics before enablement.
 - Candidate construction, validation, and readiness run from trusted source only.
 - Changed reviews, review threads, checks, policy, labels, or base SHA invalidate readiness.
 - Executor cannot mutate existing source PR.
+- Every existing merge-specialist and workflow mutation path is classified and either bound to sanitized admission or rejected for agent and unknown provenance.
+- Human-managed and dependency-automation residual merge paths are explicitly policy-bound; ambiguous provenance fails closed.
 
 Proof requirements:
 
@@ -163,6 +165,8 @@ Stop conditions:
 - Hygiene reporter becomes merge authority.
 
 ## Separate Remediation Packet
+
+Documentation remediation for this draft PR is `TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION`. It is not a numbered implementation-series packet and must not consume `0004`, which remains reserved for the audit-proof and two-stage Steward implementation objective above.
 
 Proposed packet: `TP-DMX-MCP-RUNTIME-RESERVED-SINGLETON-PORT-REPAIR-001`
 

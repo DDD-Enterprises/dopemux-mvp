@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "capture_class": "redacted-decision-grade-github-control-snapshot",
+  "captured_at": "2026-07-12T16:47:28Z",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "sources": [
+    {
+      "endpoint": "GET /repos/DDD-Enterprises/dopemux-mvp/branches/main/protection",
+      "captured_fields": [
+        "required_status_checks.strict",
+        "required_status_checks.contexts",
+        "required_pull_request_reviews.required_approving_review_count",
+        "required_pull_request_reviews.dismiss_stale_reviews",
+        "required_pull_request_reviews.require_code_owner_reviews",
+        "required_pull_request_reviews.require_last_push_approval",
+        "required_linear_history.enabled",
+        "required_conversation_resolution.enabled",
+        "allow_force_pushes.enabled",
+        "allow_deletions.enabled"
+      ]
+    },
+    {
+      "endpoint": "GET /repos/DDD-Enterprises/dopemux-mvp/rulesets",
+      "captured_fields": ["id", "name", "enforcement", "target", "rules"]
+    },
+    {
+      "path": ".github/CODEOWNERS",
+      "sha256": "6a7adc7ce80d622fd83e2196709aa86f19d66c0d138a458c0b1771939f55d54c"
+    }
+  ],
+  "branch_protection": {
+    "strict_status_checks": true,
+    "required_status_contexts": [
+      "🔒 Security Review",
+      "📚 Documentation Check",
+      "identity-check",
+      "🧪 Unit Tests",
+      "Analyze (python)",
+      "Analyze (javascript-typescript)",
+      "Analyze (ruby)",
+      "📊 CI Pipeline Summary"
+    ],
+    "required_approving_review_count": 0,
+    "dismiss_stale_reviews": false,
+    "require_code_owner_reviews": false,
+    "require_last_push_approval": false,
+    "require_linear_history": true,
+    "require_conversation_resolution": true,
+    "allow_force_pushes": false,
+    "allow_deletions": false
+  },
+  "rulesets": [
+    {
+      "id": 13063360,
+      "name": "Default branch protection (restored after history rewrite)",
+      "enforcement": "active",
+      "target": "branch"
+    }
+  ],
+  "limitations": [
+    "This is an observation at capture time, not a durable claim about future GitHub settings.",
+    "Actor bypass permissions and merge-queue availability require live re-read before implementation or merge execution."
+  ]
+}

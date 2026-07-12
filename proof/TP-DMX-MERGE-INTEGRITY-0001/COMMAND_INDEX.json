@@ -1,1 +1,47 @@
-{"schema_version":"1.0","commands":[{"id":"pr-state","cwd":"/Users/hue/code/dopemux-merge-integrity-0001","command":"gh pr view 1040 --repo DDD-Enterprises/dopemux-mvp --json state,isDraft,headRefOid,baseRefOid,mergeable,mergeStateStatus","exit_code":0,"result":"Draft and mergeable at reviewed head; live state must be reread."},{"id":"branch-protection","cwd":"/Users/hue/code/dopemux-merge-integrity-0001","command":"gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection","exit_code":0,"result":"Strict checks observed; protected-reference admission remains unqualified."},{"id":"historical-diff","cwd":"/Users/hue/code/dopemux-merge-integrity-0001","command":"git diff --find-renames <main-before-merge> <merge-commit>","exit_code":0,"result":"#932 and #1025 destructive landed deltas observed; #720 remains conflicting."}]}
+{
+  "schema_version": "1.1",
+  "commands": [
+    {
+      "id": "pr-state",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "gh pr view 1040 --repo DDD-Enterprises/dopemux-mvp --json state,isDraft,headRefOid,baseRefOid,mergeable,mergeStateStatus",
+      "exit_code": 0,
+      "result": "Draft state was observed; live PR state must be reread before any readiness claim."
+    },
+    {
+      "id": "branch-protection",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection",
+      "exit_code": 0,
+      "result": "Captured in GITHUB_CONTROL_CAPTURE.json; protected-reference admission remains unqualified."
+    },
+    {
+      "id": "rulesets",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "gh api repos/DDD-Enterprises/dopemux-mvp/rulesets",
+      "exit_code": 0,
+      "result": "Captured in GITHUB_CONTROL_CAPTURE.json; bypass actors and merge queue remain unknown."
+    },
+    {
+      "id": "historical-932",
+      "cwd": "/Users/hue/code/dopemux-mvp",
+      "command": "git diff --name-status --find-renames c45b2c8e7a995b3d47537367d909fafaa7ac12cf 559d7e2fa6ba5335763a57a1fe0dbe79b0e1dfa1",
+      "exit_code": 0,
+      "result": "Destructive ConPort migration and proof-surface deletion observed."
+    },
+    {
+      "id": "historical-1025",
+      "cwd": "/Users/hue/code/dopemux-mvp",
+      "command": "git diff --name-status --find-renames 7f904d78e01702d2d21b0ac953eb3b8611dda971 8af764b142587ea4421b5a361c5892e804537793",
+      "exit_code": 0,
+      "result": "116 deleted paths and the MCP runtime clobber observed."
+    },
+    {
+      "id": "historical-720",
+      "cwd": "/Users/hue/code/dopemux-mvp",
+      "command": "git diff --name-status --find-renames 74455398397305d3f630ac4c4b8b8f8f36b5a683 fbcae03d61ea87018467dba24d93f5fadef98105",
+      "exit_code": 0,
+      "result": "One landed UI path observed; this packet does not prove #720/#734 causality."
+    }
+  ]
+}

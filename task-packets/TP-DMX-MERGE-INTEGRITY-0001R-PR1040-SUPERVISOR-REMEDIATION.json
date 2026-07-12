@@ -1,0 +1,102 @@
+{
+  "id": "TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION",
+  "project": "dopemux-mvp",
+  "target": "Repair PR #1040 documentation and proof so the draft accurately distinguishes observed controls, proposed admission architecture, and blocked final-head evidence.",
+  "invariants": [
+    "PR #1040 remains docs and proof only; executable audit and Steward repair is isolated in PR #1042.",
+    "Dry-run, skipped, route-unavailable, runner-error, malformed, stale, and wrong-head audit artifacts cannot produce PASS or READY.",
+    "PR Steward remains read-only and can consume exact current-head audit only after PR #1042 lands.",
+    "Exact candidate admission is disabled until protected-reference fast-forward behavior and permissions are qualified by a controlled race test; agent and unknown provenance have no normal PR merge fallback.",
+    "Git proof remains compact and records custody, digest, immutable evidence references, and explicit blockers rather than recursive raw captures.",
+    "The reserved-singleton port allocator repair remains out of scope."
+  ],
+  "depends_on": [
+    "TP-DMX-MERGE-INTEGRITY-0001",
+    "PR #1042 trusted audit foundation"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MERGE-INTEGRITY",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-MERGE-INTEGRITY-0001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-merge-integrity-0001-investigation-adr",
+    "base_branch": "main",
+    "stacked_because": "Remediates supervisor findings on the existing draft investigation and ADR PR."
+  },
+  "commit": {
+    "message": "docs(merge-integrity): reconcile ADR admission and proof contract",
+    "allowlist": [
+      "docs/03-reference/merge-integrity/implementation-series-plan.md",
+      "docs/03-reference/merge-integrity/merge-integrity-architecture.md",
+      "docs/03-reference/merge-integrity/merge-integrity-investigation.md",
+      "docs/90-adr/adr-dmx-merge-integrity-agent-patch-admission.md",
+      "proof/TP-DMX-MERGE-INTEGRITY-0001/COMMAND_INDEX.json",
+      "proof/TP-DMX-MERGE-INTEGRITY-0001/EVIDENCE_MANIFEST.json",
+      "proof/TP-DMX-MERGE-INTEGRITY-0001/GITHUB_CONTROL_CAPTURE.json",
+      "proof/TP-DMX-MERGE-INTEGRITY-0001/HANDOFF.json",
+      "proof/TP-DMX-MERGE-INTEGRITY-0001/PROOF.json",
+      "proof/TP-DMX-MERGE-INTEGRITY-0001/SUMMARY.md",
+      "task-packets/TP-DMX-MERGE-INTEGRITY-0004-PR1040-SUPERVISOR-REMEDIATION.json",
+      "task-packets/TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION.json",
+      "git diff --check",
+      "pre-commit run --files <changed-files>"
+    ]
+  },
+  "pr": {
+    "title": "docs(merge-integrity): correct PR 1040 admission and proof contract",
+    "body": "Remediates supervisor documentation and proof findings for PR #1040. The branch remains draft. Runtime audit and final-Steward foundation is isolated in PR #1042.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "architecture-reconciliation",
+      "task": "Reconcile the proposed ADR and supporting architecture with observed GitHub controls, existing merge-specialist primitives, and the agent versus non-agent admission boundary.",
+      "validation": [
+        "The draft makes no unsupported runtime, merge, or GitHub-settings claim.",
+        "Existing expected-head controls are documented as insufficient for expected base, parent, and tree admission."
+      ]
+    },
+    {
+      "id": "proof-and-packet-repair",
+      "task": "Repair compact evidence custody and remove the task-packet series identity collision without changing implementation-series packet numbering.",
+      "validation": [
+        "The remediation packet does not use implementation-series ID 0004.",
+        "Proof declares PASS, FAIL, or NOT_RUN without treating skipped audit evidence as PASS."
+      ]
+    },
+    {
+      "id": "final-validation",
+      "task": "Validate the documentation and packet artifacts while preserving draft and blocked-external posture.",
+      "validation": [
+        "JSON parses and validates against the canonical Task Packet schema.",
+        "Diff hygiene and configured pre-commit checks run with recorded outcomes."
+      ]
+    }
+  ]
+}

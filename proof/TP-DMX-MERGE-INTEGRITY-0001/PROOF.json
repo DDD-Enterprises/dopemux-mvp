@@ -1,1 +1,111 @@
-{"bundle_id":"TP-DMX-MERGE-INTEGRITY-0001-002","repository":"DDD-Enterprises/dopemux-mvp","status":"BLOCKED","validation_state":"BLOCKED_EXTERNAL","embedded_audit":{"required":true,"status":"SKIPPED","auditor_tool":"none","auditor_model":"unknown","invocation":null,"exit_code":null,"report_path":"proof/TP-DMX-MERGE-INTEGRITY-0001/AUDITOR_REPORT.md","findings":[],"fixes_applied":[],"remaining_risks":["No trusted current-head audit artifact exists.","EMBEDDED_AUDIT_TOKEN availability is UNKNOWN.","Protected-reference exact-admission capability is unqualified."],"skip_reason":"Committed proof cannot authenticate its own final SHA; trusted workflow emits final-head receipt after commit."},"authoritative_artifacts":["EVIDENCE_MANIFEST.json","COMMAND_INDEX.json","HANDOFF.json"],"final_head_receipt":{"required":true,"producer":"trusted embedded-audit workflow after PR #1042","status":"MISSING","head_sha":null}}
+{
+  "bundle_id": "TP-DMX-MERGE-INTEGRITY-0001-003",
+  "packet_id": "TP-DMX-MERGE-INTEGRITY-0001",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "branch": "codex/tp-dmx-merge-integrity-0001-investigation-adr",
+  "worktree_path": "/Users/hue/code/dopemux-merge-integrity-0001",
+  "head_sha": "f7e351716aa225d8f364d8c69db4c8c745796161",
+  "head_binding": {
+    "status": "REQUIRES_TRUSTED_POST_COMMIT_RECEIPT",
+    "reason": "A repository-committed proof cannot attest to the SHA of the commit that contains it.",
+    "final_head_receipt_status": "MISSING"
+  },
+  "status": "BLOCKED",
+  "validation_state": "BLOCKED_EXTERNAL",
+  "executed": false,
+  "execution_results": [],
+  "files_changed": [
+    "docs/03-reference/merge-integrity/implementation-series-plan.md",
+    "docs/03-reference/merge-integrity/merge-integrity-architecture.md",
+    "docs/03-reference/merge-integrity/merge-integrity-investigation.md",
+    "docs/90-adr/adr-dmx-merge-integrity-agent-patch-admission.md",
+    "proof/TP-DMX-MERGE-INTEGRITY-0001/COMMAND_INDEX.json",
+    "proof/TP-DMX-MERGE-INTEGRITY-0001/EVIDENCE_MANIFEST.json",
+    "proof/TP-DMX-MERGE-INTEGRITY-0001/GITHUB_CONTROL_CAPTURE.json",
+    "proof/TP-DMX-MERGE-INTEGRITY-0001/HANDOFF.json",
+    "proof/TP-DMX-MERGE-INTEGRITY-0001/PROOF.json",
+    "proof/TP-DMX-MERGE-INTEGRITY-0001/SUMMARY.md",
+    "task-packets/TP-DMX-MERGE-INTEGRITY-0004-PR1040-SUPERVISOR-REMEDIATION.json",
+    "task-packets/TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION.json"
+  ],
+  "validations": [
+    {
+      "name": "PR #1025 landed deletion replay",
+      "status": "PASS",
+      "evidence": "SUMMARY.md; COMMAND_INDEX.json#historical-1025"
+    },
+    {
+      "name": "PR #932 landed deletion replay",
+      "status": "PASS",
+      "evidence": "SUMMARY.md; COMMAND_INDEX.json#historical-932"
+    },
+    {
+      "name": "PR #720 destructive-clobber causal replay",
+      "status": "NOT_RUN",
+      "evidence": "Current landed diff shows one UI path; causality remains conflicting."
+    },
+    {
+      "name": "Task Packet schema validation",
+      "status": "NOT_RUN",
+      "evidence": "Must run against the renamed remediation packet before commit."
+    },
+    {
+      "name": "Configured pre-commit hooks",
+      "status": "NOT_RUN",
+      "evidence": "Must run against the final changed-file set before commit."
+    },
+    {
+      "name": "Trusted final-head independent audit",
+      "status": "NOT_RUN",
+      "evidence": "Requires PR #1042 to land and a trusted post-commit workflow receipt."
+    }
+  ],
+  "pal_codereview_status": "NEEDS_SUPERVISOR",
+  "precommit_status": "NOT_RUN",
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-MERGE-INTEGRITY-0001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "No trusted current-head audit artifact exists.",
+      "EMBEDDED_AUDIT_TOKEN availability is UNKNOWN.",
+      "Protected-reference exact-admission capability is unqualified."
+    ],
+    "skip_reason": "Committed proof cannot authenticate its own final SHA; trusted workflow emits final-head receipt after commit."
+  },
+  "authoritative_artifacts": [
+    "EVIDENCE_MANIFEST.json",
+    "GITHUB_CONTROL_CAPTURE.json",
+    "COMMAND_INDEX.json",
+    "SUMMARY.md",
+    "HANDOFF.json"
+  ],
+  "residual_risks": [
+    "PR #720/#734 causality remains conflicting.",
+    "The architecture is proposed only and has no enforcement on main.",
+    "The protected-reference primitive needs controlled race and permission qualification."
+  ],
+  "unknowns": [
+    "Final current-head audit verdict",
+    "Merge-queue behavior",
+    "GitHub bypass actor list",
+    "Protected-reference permission and race semantics"
+  ],
+  "stop_conditions_met": [
+    "Runtime implementation is not authorized by this packet.",
+    "Final readiness cannot be claimed without the trusted post-commit receipt."
+  ],
+  "cleanup_status": "PENDING",
+  "final_head_receipt": {
+    "required": true,
+    "producer": "trusted embedded-audit workflow after PR #1042",
+    "status": "MISSING",
+    "head_sha": null
+  }
+}

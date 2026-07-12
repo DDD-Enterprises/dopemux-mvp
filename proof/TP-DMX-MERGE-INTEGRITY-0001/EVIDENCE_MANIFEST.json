@@ -1,1 +1,53 @@
-{"bundle_id":"TP-DMX-MERGE-INTEGRITY-0001-002","repository":"DDD-Enterprises/dopemux-mvp","capture_class":"compact-reference-manifest","retention":{"git_objects":"repository history retention","github_actions":"workflow artifact retention","raw_capture_policy":"not committed; reproduce from Git object IDs or GitHub artifact references"},"incidents":[{"id":"STALE-CLOBBER-720","classification":"CONFLICTING","clobber_pr":720,"repair_pr":734,"merge_commit":"fbcae03d61ea87018467dba24d93f5fadef98105"},{"id":"STALE-CLOBBER-932","classification":"OBSERVED","clobber_pr":932,"repair_pr":936,"merge_commit":"559d7e2fa6ba5335763a57a1fe0dbe79b0e1dfa1"},{"id":"STALE-CLOBBER-1025","classification":"OBSERVED","clobber_pr":1025,"repair_pr":1037,"merge_commit":"8af764b142587ea4421b5a361c5892e804537793"}],"current_pr":{"number":1040,"base_sha_at_initial_review":"b176747b339685e781de04268c46b7ae123abfbf","trusted_audit_foundation_pr":1042,"trusted_audit_foundation_ref":"https://github.com/DDD-Enterprises/dopemux-mvp/pull/1042"},"historical_audit":{"content_sha":"b71e13a9b8691217dc6b35d148ccc122bc7d0f06","verdict":"PASS_WITH_RISKS","scope":"not final-head evidence"}}
+{
+  "bundle_id": "TP-DMX-MERGE-INTEGRITY-0001-003",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "capture_class": "compact-reference-manifest",
+  "retention": {
+    "git_objects": "repository history retention",
+    "github_actions": "workflow artifact retention",
+    "raw_capture_policy": "not committed; reproduce from Git object IDs or GitHub artifact references"
+  },
+  "incidents": [
+    {
+      "id": "STALE-CLOBBER-720",
+      "classification": "CONFLICTING",
+      "clobber_pr": 720,
+      "repair_pr": 734,
+      "merge_commit": "fbcae03d61ea87018467dba24d93f5fadef98105"
+    },
+    {
+      "id": "STALE-CLOBBER-932",
+      "classification": "OBSERVED",
+      "clobber_pr": 932,
+      "repair_pr": 936,
+      "merge_commit": "559d7e2fa6ba5335763a57a1fe0dbe79b0e1dfa1"
+    },
+    {
+      "id": "STALE-CLOBBER-1025",
+      "classification": "OBSERVED",
+      "clobber_pr": 1025,
+      "repair_pr": 1037,
+      "merge_commit": "8af764b142587ea4421b5a361c5892e804537793"
+    }
+  ],
+  "github_control_capture": {
+    "path": "proof/TP-DMX-MERGE-INTEGRITY-0001/GITHUB_CONTROL_CAPTURE.json",
+    "sha256": "f151285e44378067aa39e8826a1569c2fcfc56734d73c7d7baa507710757032f",
+    "captured_at": "2026-07-12T16:47:28Z",
+    "source_endpoints": [
+      "GET /repos/DDD-Enterprises/dopemux-mvp/branches/main/protection",
+      "GET /repos/DDD-Enterprises/dopemux-mvp/rulesets"
+    ]
+  },
+  "current_pr": {
+    "number": 1040,
+    "base_sha_at_initial_review": "b176747b339685e781de04268c46b7ae123abfbf",
+    "trusted_audit_foundation_pr": 1042,
+    "trusted_audit_foundation_ref": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1042"
+  },
+  "historical_audit": {
+    "content_sha": "b71e13a9b8691217dc6b35d148ccc122bc7d0f06",
+    "verdict": "PASS_WITH_RISKS",
+    "scope": "not final-head evidence"
+  }
+}

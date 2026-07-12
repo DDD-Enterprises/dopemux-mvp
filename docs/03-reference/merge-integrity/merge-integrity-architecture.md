@@ -56,16 +56,13 @@ PROPOSED: Agent branches are untrusted. Candidate construction, validation, audi
 
 PROPOSED:
 
-- `agent_palette_jules`: branches and files indicating Jules/Palette generation, including `.Jules/*`.
-- `agent_codex`: Codex-generated source or review actions.
-- `agent_claude_code`: Claude Code generated branches or handoffs.
-- `agent_agy_antigravity`: AGY/Antigravity generated branches.
-- `agent_gemini`: Gemini-generated branches or audit outputs.
-- `dependency_automation`: dependency update tools.
-- `human_manual`: manually authored human branch with evidence.
-- `unknown`: insufficient or conflicting signals.
+- `managed_agent`: an agent operating from a Dopemux-created worktree with recorded source base, task packet, allowlist, identity, and proof. Codex and Claude Code may qualify when those receipts exist.
+- `external_agent`: an externally managed branch, including Jules/Palette, hosted agents, and any source whose lifecycle Dopemux cannot prove.
+- `dependency_automation`: a dependency update constrained to declared manifests, lockfiles, and generated dependency artifacts.
+- `human_managed`: a human-created branch with a valid Task Packet or bounded micro-change intent.
+- `unknown`: missing or conflicting signals.
 
-UNKNOWN provenance fails closed or routes to supervisor classification.
+Classification considers source-base receipt, packet provenance, branch and commit metadata, GitHub App identity, co-author trailers, runner session, and file markers such as `.Jules/*`. PR author alone is never sufficient. `managed_agent`, `external_agent`, and `unknown` require fresh-base sanitization. `unknown` fails closed until classified or explicitly authorized for bounded investigation.
 
 ## Change Intent Registry
 
@@ -89,25 +86,13 @@ PR text can propose intent but cannot authorize it.
 
 ## Protected Surface Registry
 
-PROPOSED: Protected surfaces include:
+PROPOSED: Protected status is a path-and-authority decision, not a file-count heuristic. The first registry is tiered so routine documentation does not inherit the same friction as runtime admission controls.
 
-- `src/dopemux/mcp/**`
-- `tests/unit/test_mcp_*.py`
-- `.github/workflows/**`
-- `scripts/audit/**`
-- `tools/pr_steward/**`
-- `src/dopemux_pr_merge_specialist/**`
-- `schemas/**`
-- `mcp_catalog.yaml`
-- `.mcp.json`
-- `.pre-commit-config.yaml`
-- `proof/**`
-- `proofs/**`
-- `task-packets/**`
-- `docs/90-adr/**`
-- `docs/03-reference/**`
+- **Tier 1: hard protected.** `src/dopemux/mcp/**`, ConPort migration/schema paths, `.github/workflows/**`, `scripts/audit/**`, `tools/pr_steward/**`, `src/dopemux_pr_merge_specialist/**`, `schemas/**`, and active catalog or compose configuration. Deletion is blocked by default and mutation requires explicit intent plus the registry-defined tests and audit.
+- **Tier 2: governance protected.** `task-packets/**`, selected proof and proof-schema contracts, `docs/90-adr/**`, and the merge-integrity policy itself. Mutation requires declared intent, review evidence, and a custody-preserving proof update; it does not require a runtime-style deletion exception unless the registry entry says so.
+- **Tier 3: advisory risk surfaces.** General reference and how-to documentation, including most of `docs/03-reference/**`. These changes remain in complete enumeration and intent checks, but their risk is a signal rather than a default hard block.
 
-Registry entries define owners, allowed operations, extra reviewers or auditors, whether deletion is normally allowed, and rollback expectations.
+Registry entries define path patterns, authority tier, allowed operations, required tests or reviewers, deletion policy, rollback expectation, and the policy version that governed the candidate. Registry changes are themselves Tier 2.
 
 ## Merge Integrity Engine
 
@@ -187,10 +172,16 @@ For mass deletion, explicit intent and protected-surface gates are mandatory.
 
 PROPOSED:
 
-- Intake Steward: read-only, early, advisory, harvests PR state, review threads, changed files, checks, provenance signals, and proof state.
-- Final Readiness Steward: required gate, exact candidate only, refuses stale or incomplete evidence.
+- Intake Steward: read-only, early, advisory, harvests PR state, review threads, changed files, checks, provenance signals, and proof state. It may emit `INTAKE_CLEAR`, `NEEDS_IMPLEMENTER`, `NEEDS_SUPERVISOR`, `BLOCKED`, or `CHECKS_PENDING`; it never emits final `READY`.
+- Final Readiness Steward: read-only, event-driven required gate after expected checks are terminal or a merge-group candidate exists. It re-harvests the exact candidate and emits `READY`, `NEEDS_IMPLEMENTER`, `NEEDS_SUPERVISOR`, `BLOCKED`, or `STALE`.
 
-PR Steward remains read-only in both stages.
+PR Steward remains read-only in both stages. Until this ADR is accepted and the final gate is implemented, `docs/03-reference/development-factory/pr-steward-and-readiness.md` remains the current contract: Steward is advisory and its readiness artifact is not merge authority. This proposal changes neither that runtime posture nor the DCP red merge seam.
+
+## Relationship To Existing Proof And Merge Contracts
+
+OBSERVED: `docs/03-reference/development-factory/evidence-and-proof-flow.md` requires packet identity, head binding, validation states, review/precommit status, residual risks, and cleanup state. Merge-integrity packets use that proof envelope plus candidate-specific base, parent, tree, diff, intent, policy, audit, and review fingerprints. A repository-committed proof cannot attest to its own final commit SHA; a trusted post-commit workflow must emit the final-head receipt.
+
+OBSERVED: `src/dopemux_pr_merge_specialist/merge.py` already uses `expectedHeadOid`, and `queue_drain.py` has an execution seam. They remain separate mutation-capable code surfaces. This architecture does not create a second merge authority: GitHub remains the merge authority, and any future executor must explicitly gate or reject non-sanitized paths for agent and unknown provenance classes.
 
 ## Required-Check Manifest
 
@@ -213,11 +204,11 @@ PROPOSED: Audit proof includes:
 - findings
 - remaining risks
 
-Dry-run, skipped, route-unavailable, runner-error, malformed, stale, or wrong-head audits cannot be `PASS`. Required audit absence blocks readiness. Final-head proof is a trusted workflow artifact emitted after the commit exists; a committed proof does not claim its own SHA.
+Dry-run, skipped, route-unavailable, runner-error, malformed, stale, or wrong-head audits cannot be `PASS`. The strict canonical `embedded_audit` object expresses non-execution as `status: SKIPPED`; a top-level audit receipt records `executed: false` and any execution results without extending that compatibility-sensitive nested schema. Required audit absence blocks readiness. Final-head proof is a trusted workflow artifact emitted after the commit exists; a committed proof does not claim its own SHA.
 
 ## Transactional Merge Executor
 
-PROPOSED: Exact admission uses a preconstructed candidate commit whose parent equals expected `main`, followed by a protected Git reference update with `force=false`. An intervening base advance makes that update non-fast-forward and must fail. This primitive is disabled until controlled race, permission, branch-protection, required-check, and PR-semantics qualification passes. Normal PR merge is not an exact-admission fallback because it binds only PR head.
+PROPOSED: Exact admission for `managed_agent`, `external_agent`, and `unknown` uses a preconstructed sanitized candidate commit whose parent equals expected `main`, followed by a protected Git reference update with `force=false`. An intervening base advance makes that update non-fast-forward and must fail. This primitive is disabled until controlled race, permission, branch-protection, required-check, and PR-semantics qualification passes. The existing expected-head GraphQL merge is evidence of a useful primitive, not a substitute for expected base, parent, tree, scope, or sanitizer provenance.
 
 The executor accepts only:
 
@@ -227,11 +218,13 @@ The executor accepts only:
 - exact readiness artifact reference
 - operator approval or supervisor override reference
 
-It refuses head, parent, tree, qualification, or fast-forward mismatch and never force-updates or falls back to normal PR merge.
+It refuses base, head, parent, tree, qualification, or fast-forward mismatch and never force-updates or falls back to normal PR merge for an agent or unknown-provenance candidate.
+
+For `human_managed` and explicitly constrained `dependency_automation`, a normal GitHub PR merge remains a residual path only when its provenance is unambiguous, all non-transactional evidence is current, and an operator authorizes that class. It is not an exact-admission claim, cannot be silently selected after sanitizer failure, and must be reclassified to `unknown` if provenance or scope conflicts.
 
 ## Exact-Candidate Revalidation
 
-PROPOSED: Every final action re-reads GitHub state. Base SHA, head SHA, tree SHA, checks, reviews, threads, labels, or ruleset-relevant changes invalidate readiness. The final reference update, not a post-read normal PR merge, is the base-race boundary.
+PROPOSED: Every final action re-reads GitHub state. Base SHA, candidate parent, head SHA, tree SHA, checks, reviews, threads, labels, intent, policy, audit, proof, or ruleset-relevant changes invalidate readiness. The qualified final reference update, not a post-read normal PR merge, is the agent-candidate base-race boundary.
 
 ## Post-Merge Sentinel
 
@@ -263,7 +256,7 @@ SOURCE_PR
   -> CANDIDATE_AUDITED
   -> PROTECTED_REFERENCE_CAPABILITY_QUALIFIED
   -> FINAL_READINESS_READY
-  -> EXPECTED_HEAD_RECHECKED
+  -> EXPECTED_BASE_PARENT_HEAD_TREE_RECHECKED
   -> MERGED
   -> LANDED_TREE_VERIFIED
 ```
@@ -303,7 +296,7 @@ PROPOSED: Invalidate readiness on:
 
 ## Override Contract
 
-PROPOSED: Supervisor override must be explicit, recorded, scoped, time-bound, and linked to exact candidate SHA. Overrides cannot bypass complete enumeration, exact-head enforcement, or post-merge sentinel.
+PROPOSED: Supervisor override must be explicit, recorded, scoped, time-bound, single-use, and linked to the exact candidate base, head, and tree. It records blocked codes, authorized path scope, reason, approver, independent-audit reference when required, and expiry. Overrides cannot bypass complete enumeration, candidate identity, protected-reference qualification, or post-merge sentinel; they never launder a failed gate into `PASS`.
 
 ## Proof And Readiness Schemas
 
@@ -317,11 +310,11 @@ PROPOSED:
 - `MERGE_EXECUTION.json`
 - `POST_MERGE_SENTINEL.json`
 
-All schemas include `schema_version`, `created_at`, `repo`, `base_branch`, `candidate_head_sha`, and `candidate_tree_sha` where applicable.
+All schemas include `schema_version`, `created_at`, `repo`, `base_branch`, `candidate_head_sha`, and `candidate_tree_sha` where applicable. `MERGE_READINESS.json` additionally binds source base/head, candidate base/parent/head/tree/diff, intent and policy hashes, audit execution and tree hash, complete required-check state, review-thread state, proof freshness, and any override receipt.
 
 ## GitHub Enforcement Posture
 
-PROPOSED: GitHub branch protection remains necessary but not sufficient. The repository should add final readiness as a required check only after the final gate is implemented and self-deadlock behavior is proven.
+PROPOSED: GitHub branch protection remains necessary but not sufficient. The repository should add final readiness as a required check only after the final gate is implemented, its expected-check manifest is reconciled with GitHub policy, and self-deadlock behavior is proven. CODEOWNERS can add routing requirements but cannot substitute for independent review in the current single-owner topology.
 
 ## Historical Replay Requirements
 
@@ -332,13 +325,15 @@ PROPOSED: Replay cases:
 - #1038 must classify as Palette/Jules source and block on unresolved review threads and missing exact proof.
 - A legitimate #1026-style mass deletion must pass only with explicit mass-deletion intent and protected-surface gates.
 
+PR #720/#734 remains a conflicting historical report rather than a must-block fixture until an immutable replay demonstrates a destructive landed delta or a source-history operation that the candidate model must detect.
+
 ## Rollout Stages
 
 1. Observe only.
 2. Advisory intake.
 3. Candidate sanitizer dry-run.
 4. Required final readiness on protected surfaces.
-5. Required final readiness on all agent provenance classes.
+5. Required final readiness on all agent and unknown provenance classes.
 6. Protected-reference qualification and controlled race test.
 7. Transactional merge executor.
 8. Post-merge sentinel enforcement.
@@ -366,3 +361,5 @@ OBSERVED: Reserved-singleton port allocator behavior remains an open runtime reg
 - `schemas/pr_steward/*`
 - `schemas/project_control_plane/*`
 - future `tools/merge_integrity/*` or equivalent package chosen by implementation packet
+
+Before the executor packet can be complete, every existing merge-specialist or workflow mutation path must be classified and either bound to sanitized candidate admission for agent/unknown provenance or explicitly rejected for those classes.

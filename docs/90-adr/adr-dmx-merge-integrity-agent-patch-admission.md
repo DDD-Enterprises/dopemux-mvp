@@ -29,11 +29,15 @@ OBSERVED: PR #932 and PR #1025 landed destructive unrelated deletions while pres
 
 OBSERVED: Current repository controls contain deletion-blind changed-file collectors, advisory PR Steward workflow behavior, dry-run audit proof that can emit `embedded_audit.status: PASS` while `executed: false`, and branch rules that do not bind PR intent to exact file scope.
 
+OBSERVED: `.github/CODEOWNERS` exists, but its listed repository surfaces resolve to `@hu3mann`. It is a useful ownership declaration, not independent review for a PR authored under that account.
+
+OBSERVED: The merge-specialist has a GraphQL `mergePullRequest` path with `expectedHeadOid` and an `execute=True` queue-drain seam. Head binding is useful, but it does not bind candidate base, parent, tree, intent, protected-surface policy, or fresh-base sanitization.
+
 OBSERVED: Branch protection and rulesets exist, strict status checks and conversation resolution are configured, force pushes and branch deletion are blocked, but required approval count is 0, stale reviews are not dismissed, last-push approval is not required, and PR Steward final readiness is not an observed required check.
 
 ## Decision
 
-Agent-produced branches are untrusted patch sources rather than direct merge candidates. Their authorized changes are transplanted onto a fresh candidate from current main, validated against explicit intent and protected surfaces, audited and proven against the exact candidate tree, and admitted only through qualified expected-base fast-forward reference update.
+Agent-produced and unknown-provenance branches are untrusted patch sources rather than direct merge candidates. Their authorized changes are transplanted onto a fresh candidate from current main, validated against explicit intent and protected surfaces, audited and proven against the exact candidate tree, and admitted only through a qualified expected-base, parent, head, and tree revalidation path.
 
 Binding invariants:
 
@@ -50,7 +54,8 @@ Binding invariants:
 - Audit, proof, review, readiness, and merge bind to the exact candidate head SHA, tree SHA, and diff hash.
 - Candidate construction, validation, audit, and final readiness use trusted workflow logic and never execute candidate-branch workflow logic.
 - Candidate parent equals expected `main`; protected reference update uses `force=false` and is disabled until controlled race and permission qualification pass.
-- Normal GitHub PR merge is not an exact-admission fallback because it does not bind expected base or tree.
+- Normal GitHub PR merge is not an exact-admission fallback for agent or unknown-provenance candidates because it does not bind expected base or tree.
+- A human-managed or dependency-automation candidate may use a separately documented GitHub PR merge path only after the same intent, enumeration, protected-surface, audit, proof, and required-check evidence is current and an operator authorizes that class. Ambiguous provenance resolves to `unknown`, not to this residual path.
 - Post-merge verification compares the landed tree and freezes/report mismatches instead of blindly reverting.
 - Worktree hygiene is report-only by default and never substitutes for merge authority.
 - Intentional mass deletion remains possible only through explicit intent, protected-surface review, and additional gates.
@@ -203,7 +208,7 @@ Operational cost increases: every agent PR needs intake classification, candidat
 2. Add Change Intent and Protected Surface policy contracts.
 3. Correct audit-proof semantics and split PR Steward into intake and final readiness.
 4. Add fresh-base Candidate Sanitizer and provenance binding.
-5. Add transactional merge executor with expected-head revalidation.
+5. Add transactional merge executor with expected-base, parent, head, and tree revalidation.
 6. Add post-merge sentinel, historical replay, and worktree hygiene reporting.
 
 Rollback approach: before adoption, remove the new gates and leave PR Steward advisory. After adoption, rollback must be a focused revert PR for the affected policy/runtime slice.
