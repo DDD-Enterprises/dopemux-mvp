@@ -159,7 +159,7 @@ jobs:
           } > ../embedded-audit-artifacts/PAL_CLINK_AUDIT_INPUT.md
           set +e
           if [ -f scripts/audit/pal_clink_runner.py ]; then
-            python scripts/audit/pal_clink_runner.py \
+            python -m scripts.audit.pal_clink_runner \
               --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
               --prompt ../embedded-audit-artifacts/PAL_CLINK_AUDIT_INPUT.md \
               --pal-output-json ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json \
