@@ -2,8 +2,10 @@
 
 ## Review result
 
-`PASS_WITH_RISKS` for local acceptance. No blocking, high, medium, or low
-findings were identified during the available review.
+`PASS_WITH_RISKS` for local acceptance. The original available review reported
+no blocking, high, medium, or low findings. Follow-up GitHub review identified
+and resolved a non-callable-state hardening issue and a public-contract wording
+mismatch; no unresolved blocking finding remains.
 
 ## External review evidence
 

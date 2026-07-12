@@ -56,15 +56,19 @@ class RuntimeCatalogEntry:
     catalog_name: Optional[str]
     state: str
     candidate_count: int
-    callable: bool
     reason: str
+
+    @property
+    def callable(self) -> bool:
+        """Candidate evidence is never callable in this packet."""
+        return False
 
     def to_public_dict(self) -> dict[str, Any]:
         """Return the redacted public capability shape."""
         return {
             "family": self.family,
             "state": self.state,
-            "callable": False,
+            "callable": self.callable,
             "reason": self.reason,
         }
 
@@ -149,7 +153,6 @@ def _entry(
         catalog_name=catalog_name,
         state=state,
         candidate_count=candidate_count,
-        callable=False,
         reason=reason,
     )
 

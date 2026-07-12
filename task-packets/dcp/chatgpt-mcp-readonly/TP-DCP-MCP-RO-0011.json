@@ -11,7 +11,7 @@
     "to_mcp_wrapper and to_compose_rest remain BLOCKED; the join never makes Task Orchestrator callable.",
     "Configured, discovered, live, ownership-verified, and callable remain separate states; callable is always false in this packet.",
     "No socket, network, subprocess, Docker, backend, port-lease, tunnel, authentication, adapter, or facade API migration behavior is introduced.",
-    "Public serialization contains only service family, capability state, candidate count, callable=false, and opaque reasons.",
+    "Public serialization contains only service family, capability state, callable=false, and opaque reasons.",
     "STOP IF: the required result would need live protocol verification, ownership adjudication, mount inspection, or backend I/O."
   ],
   "depends_on": [

@@ -13,8 +13,11 @@ Pull request: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1041
 ## PASS
 
 ```text
+pytest -q services/dcp-readonly-facade/tests/test_runtime_catalog_join.py
+10 passed
+
 pytest -q services/dcp-readonly-facade/tests
-207 passed, 1 skipped
+PASS; 1 live optional test skipped
 
 pytest -q tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py
 32 passed
@@ -28,13 +31,13 @@ PASS
 fleet-catalog.schema.json Draft7Validator.check_schema
 PASS
 
-purity scan for forbidden network/socket/subprocess imports and calls
+AST purity scan for forbidden network/socket/subprocess imports and calls
 PASS: no forbidden I/O imports/calls
 
 secret scan over changed source/tests/docs/packet files
 PASS: no secret patterns
 
-git diff HEAD^ HEAD --check
+git diff --check
 PASS
 
 pre-commit run --files <scoped packet files>
