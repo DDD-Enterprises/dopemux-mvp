@@ -101,6 +101,12 @@ def build_embedded_audit_proof(
         "pr_number": int(pr_number),
         "head_sha": head_sha,
         "generated_at": generated_at or _utc_now_seconds(),
+        "executed": bool(
+            token_present
+            and not route_error
+            and not pal_output_error
+            and pal_output is not None
+        ),
         "mutation_performed": False,
         "github_mutation_route_added": False,
         "embedded_audit": embedded_audit,

@@ -354,9 +354,14 @@ def test_live_collection_uses_proof_path_for_ready_state(
         json.dumps(
             {
                 "head_sha": pr_head,
+                "executed": True,
                 "embedded_audit": {
                     "status": "PASS_WITH_RISKS",
                     "report_path": "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
+                },
+                "provenance": {
+                    "proof_author": "independent-embedded-audit",
+                    "workflow": "embedded-audit.yml",
                 },
             }
         ),
@@ -398,6 +403,61 @@ def test_live_collection_uses_proof_path_for_ready_state(
     assert readiness["proof"]["proof_head_sha"] == pr_head
     assert readiness["proof"]["matches_pr_head"] is True
     assert readiness["proof"]["proof_freshness"]["status"] == "CURRENT"
+
+
+def test_live_collection_rejects_dry_run_or_unproven_audit_proof(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "b" * 40
+    proof_path = tmp_path / "PROOF.json"
+    proof_path.write_text(
+        json.dumps(
+            {
+                "head_sha": pr_head,
+                "dry_run": True,
+                "executed": False,
+                "embedded_audit": {
+                    "status": "PASS",
+                    "report_path": "proof/TP-DMX-PR-AUDIT-ROUTER-001/AUDITOR_REPORT.md",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def fake_run(args: list[str]) -> subprocess.CompletedProcess[str]:
+        if args[:3] == ["gh", "auth", "status"]:
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if args[:3] == ["gh", "pr", "view"]:
+            return subprocess.CompletedProcess(
+                args,
+                0,
+                json.dumps(base_pr_payload(head_sha=pr_head)),
+                "",
+            )
+        raise AssertionError(f"unexpected gh command: {args}")
+
+    monkeypatch.setattr(collector, "_run", fake_run)
+    monkeypatch.setattr(collector, "_fetch_review_threads", lambda **_: ([], []))
+
+    harvest = collector.collect_from_github(
+        "DDD-Enterprises/dopemux-mvp",
+        704,
+        proof_path=proof_path,
+    )
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    assert readiness["readiness"] == "BLOCKED"
+    assert readiness["embedded_audit"]["status"] == "NEEDS_SUPERVISOR"
+    assert "EMBEDDED_AUDIT_NEEDS_SUPERVISOR" in readiness["blockers"]
 
 
 def test_trusted_author_association_is_nonblocking() -> None:

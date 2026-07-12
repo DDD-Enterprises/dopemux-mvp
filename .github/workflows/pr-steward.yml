@@ -1,12 +1,13 @@
 name: PR Steward
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_run:
+    workflows: [embedded-audit]
+    types: [completed]
   workflow_dispatch:
     inputs:
-      pr_number:
-        description: Pull request number to inspect
+      audit_run_id:
+        description: Completed embedded-audit workflow run ID to inspect
         required: true
         type: string
 
@@ -20,57 +21,60 @@ permissions:
 
 jobs:
   pr-steward:
-    name: advisory check-only intake
+    name: final readiness
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Checkout
+      - name: Checkout trusted Steward source
         uses: actions/checkout@v4
 
-      - name: Set PR number
-        id: pr
+      - name: Set audit run ID
+        id: audit_run
         env:
           EVENT_NAME: ${{ github.event_name }}
-          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
-          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          EVENT_AUDIT_RUN_ID: ${{ github.event.workflow_run.id }}
+          INPUT_AUDIT_RUN_ID: ${{ inputs.audit_run_id }}
         run: |
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            printf 'number=%s\n' "$EVENT_PR_NUMBER" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            audit_run_id="$EVENT_AUDIT_RUN_ID"
           else
-            printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
+            audit_run_id="$INPUT_AUDIT_RUN_ID"
           fi
+          test -n "$audit_run_id"
+          printf 'id=%s\n' "$audit_run_id" >> "$GITHUB_OUTPUT"
 
-      - name: Refresh PR audit proof
+      - name: Download completed independent audit artifact
+        id: audit
         run: |
-          python -m scripts.audit.pr_audit_router \
-            --dry-run \
-            --packet-id TP-DMX-PR-AUDIT-ROUTER-001 \
-            --git-sha "${{ github.event.pull_request.head.sha || github.sha }}" \
-            --out proof/TP-DMX-PR-AUDIT-ROUTER-001/MULTI_MODEL_PR_AUDIT.json
+          rm -rf independent-audit-download independent-audit
+          gh run download "${{ steps.audit_run.outputs.id }}" --dir independent-audit-download
+          proof_path="$(find independent-audit-download -type f -name PROOF.json -print -quit)"
+          test -n "$proof_path"
+          mkdir -p independent-audit
+          cp "$proof_path" independent-audit/PROOF.json
+          jq -e '.pr_number | numbers' independent-audit/PROOF.json >/dev/null
+          jq -e '.head_sha | strings' independent-audit/PROOF.json >/dev/null
+          printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
+          printf 'pr_number=%s\n' "$(jq -er '.pr_number' independent-audit/PROOF.json)" >> "$GITHUB_OUTPUT"
 
       - name: Run PR Steward
         id: steward
-        continue-on-error: true
         run: |
-          set +e
           python -m tools.pr_steward.intake \
             --repo "$GITHUB_REPOSITORY" \
-            --pr "${{ steps.pr.outputs.number }}" \
+            --pr "${{ steps.audit.outputs.pr_number }}" \
             --out pr-steward-artifacts \
             --strict \
             --format text \
-            --proof-path proof/TP-DMX-PR-AUDIT-ROUTER-001/MULTI_MODEL_PR_AUDIT.json
-          status=$?
-          printf 'exit_code=%s\n' "$status" >> "$GITHUB_OUTPUT"
-          exit 0
+            --proof-path independent-audit/PROOF.json
 
       - name: Write job summary
         if: always()
         run: |
           {
-            printf '## PR Steward advisory result\n\n'
-            printf -- '- exit_code: %s\n' '${{ steps.steward.outputs.exit_code }}'
+            printf '## PR Steward final readiness\n\n'
+            printf -- '- audit_run_id: %s\n' '${{ steps.audit_run.outputs.id }}'
             printf -- '- mutation_performed: false\n\n'
             if [ -f pr-steward-artifacts/PR_STEWARD_SUMMARY.md ]; then
               cat pr-steward-artifacts/PR_STEWARD_SUMMARY.md

@@ -1,0 +1,77 @@
+{
+  "id": "TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION",
+  "project": "dopemux-mvp",
+  "target": "Make independent embedded-audit and final PR Steward evidence fail closed, trusted-source-only, and bound to the live pull-request head.",
+  "invariants": [
+    "Audit and final-readiness workflow logic runs from trusted default-branch source and never checks out or executes candidate-branch workflow code.",
+    "Dry-run, skipped, missing, malformed, stale, wrong-head, and unproven audit evidence cannot produce PASS or READY.",
+    "Artifacts are retained for diagnosis even when the required audit or final Steward job fails.",
+    "PR Steward remains read-only.",
+    "This packet does not change branch protection, merge state, rulesets, or the reserved-singleton port allocator."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MERGE-INTEGRITY",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-merge-integrity-foundation",
+    "base_branch": "main",
+    "stacked_because": "Must land before PR #1040 can receive trusted current-head audit and final-readiness evidence."
+  },
+  "commit": {
+    "message": "fix(audit): fail closed on independent audit evidence",
+    "allowlist": [
+      ".github/workflows/embedded-audit.yml",
+      ".github/workflows/pr-steward.yml",
+      "scripts/audit/run_embedded_audit.py",
+      "scripts/audit/pr_audit_router.py",
+      "tools/pr_steward/collector.py",
+      "tests/audit/test_pr_audit_router.py",
+      "tests/audit/test_run_embedded_audit.py",
+      "tests/pr_steward/test_intake.py",
+      "task-packets/TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION.json"
+    ],
+    "verify": [
+      "uv run pytest -q tests/audit/test_pr_audit_router.py tests/audit/test_run_embedded_audit.py tests/pr_steward/test_intake.py --no-cov",
+      "python -m json.tool task-packets/TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION.json",
+      "git diff --check",
+      "pre-commit run --files <changed-files>"
+    ]
+  },
+  "pr": {
+    "title": "fix(audit): make independent audit and Steward fail closed",
+    "body": "Trusted audit and final-readiness foundation for merge-integrity. No merge or branch-protection mutation is performed.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "thinkdeep", "challenge", "planner", "challenge", "implement", "codereview", "precommit", "challenge"]
+  },
+  "steps": [
+    {
+      "id": "audit-proof-fail-closed",
+      "task": "Require independent audit execution provenance and fail the workflow when required evidence is not passing.",
+      "validation": ["Focused audit tests first fail then pass for dry-run and skipped evidence."]
+    },
+    {
+      "id": "steward-artifact-binding",
+      "task": "Make final Steward download and validate the completed independent-audit artifact for the current PR head.",
+      "validation": ["Focused Steward tests reject advisory or wrong-head proof and accept a matching independent artifact."]
+    },
+    {
+      "id": "validate",
+      "task": "Run focused tests, YAML and packet parsing, diff hygiene, and pre-commit before publication.",
+      "validation": ["All commands pass or external prerequisites are reported as blocking."]
+    }
+  ]
+}

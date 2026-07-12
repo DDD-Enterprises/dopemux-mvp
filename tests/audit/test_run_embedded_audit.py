@@ -12,6 +12,7 @@ from scripts.audit.run_embedded_audit import build_embedded_audit_proof, run_cli
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "schemas" / "proof" / "embedded_audit.schema.json"
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "embedded-audit.yml"
+STEWARD_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "pr-steward.yml"
 
 
 def _schema() -> dict:
@@ -57,6 +58,7 @@ def test_build_embedded_audit_proof_normalizes_pass_with_redacted_provenance() -
 
     jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
     assert proof["embedded_audit"]["status"] == "PASS"
+    assert proof["executed"] is True
     assert proof["embedded_audit"]["auditor_tool"] == "pal-mcp-clink"
     assert proof["provenance"]["proof_author"] == "independent-embedded-audit"
     assert proof["provenance"]["trusted_token_status"] == "AVAILABLE"
@@ -80,6 +82,7 @@ def test_build_embedded_audit_proof_skips_fail_closed_without_trusted_token() ->
 
     jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
     assert proof["embedded_audit"]["status"] == "SKIPPED"
+    assert proof["executed"] is False
     assert proof["embedded_audit"]["auditor_tool"] == "none"
     assert proof["provenance"]["trusted_token_status"] == "UNKNOWN"
     assert "separate least-privilege token" in proof["embedded_audit"]["skip_reason"]
@@ -118,6 +121,7 @@ def test_run_cli_writes_proof_and_auditor_report(tmp_path: Path) -> None:
     proof = json.loads((out_dir / "PROOF.json").read_text(encoding="utf-8"))
     jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
     assert proof["embedded_audit"]["status"] == "PASS"
+    assert proof["executed"] is True
     report_text = (out_dir / proof["embedded_audit"]["report_path"]).read_text(
         encoding="utf-8"
     )
@@ -153,6 +157,7 @@ def test_run_cli_skips_when_route_json_is_missing(tmp_path: Path) -> None:
     proof = json.loads((out_dir / "PROOF.json").read_text(encoding="utf-8"))
     jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
     assert proof["embedded_audit"]["status"] == "SKIPPED"
+    assert proof["executed"] is False
     assert "auditor route JSON" in proof["embedded_audit"]["skip_reason"]
     assert (out_dir / proof["embedded_audit"]["report_path"]).is_file()
 
@@ -190,20 +195,21 @@ def test_run_cli_skips_when_supplied_pal_output_json_is_missing(
     proof = json.loads((out_dir / "PROOF.json").read_text(encoding="utf-8"))
     jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
     assert proof["embedded_audit"]["status"] == "SKIPPED"
+    assert proof["executed"] is False
     assert "PAL clink output JSON" in proof["embedded_audit"]["skip_reason"]
     assert (out_dir / proof["embedded_audit"]["report_path"]).is_file()
 
 
-def test_embedded_audit_workflow_is_read_only_and_not_pull_request_target() -> None:
+def test_embedded_audit_workflow_uses_trusted_source_and_least_privilege() -> None:
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
     permissions = text.split("permissions:\n", 1)[1].split("\njobs:", 1)[0]
 
-    assert "pull_request_target" not in text
+    assert "pull_request_target:" in text
+    assert "pull_request:" not in text
     assert "contents: read" in text
     assert "pull-requests: read" in text
     assert "checks: read" in text
     assert "statuses: read" in text
-    assert "continue-on-error: true" in text
     assert ": write" not in permissions
     assert "scripts/audit/run_embedded_audit.py" in text
 
@@ -218,15 +224,14 @@ def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
     assert "TRUSTED_FALLBACK_SHA" not in text
     assert "working-directory: trusted-source" in text
     assert "id: head_integrity" in text
-    assert "HEAD_VERIFIED: ${{ steps.head_integrity.outputs.verified }}" in text
-    assert 'if [ "$HEAD_VERIFIED" != "true" ]; then' in text
-    assert "Emit skipped embedded audit proof" in text
-    assert "Emit embedded audit proof with trusted token" in text
+    assert "Emit independent embedded audit proof" in text
+    assert "Enforce independent audit result" in text
     assert "EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}" in text
     assert "refs/pull/${PR_NUMBER}/head" in text
     assert 'pr_head_sha" = "$EXPECTED_HEAD_SHA"' in text
-    assert "requested head SHA could not be fetched or did not match" in text
-    assert "ref does not yet contain scripts/audit/run_embedded_audit.py" in text
+    assert "Requested PR head SHA could not be fetched or no longer matches the PR head." in text
+    assert "Emit skipped embedded audit proof" not in text
+    assert "NEEDS_SUPERVISOR" in text
     assert "git -C trusted-source fetch --no-tags --depth=1 origin" in text
     assert "Checkout requested head" not in text
     assert "ref: ${{ steps.pr.outputs.head_sha }}" not in text
@@ -255,3 +260,14 @@ def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
         'if [ "$actual_head_sha" = "$EXPECTED_HEAD_SHA" ] '
         '&& [ "$pr_head_sha" = "$EXPECTED_HEAD_SHA" ]; then'
     ) in text
+
+
+def test_pr_steward_workflow_uses_completed_independent_audit_artifact() -> None:
+    text = STEWARD_WORKFLOW_PATH.read_text(encoding="utf-8")
+
+    assert "workflow_run:" in text
+    assert "workflows: [embedded-audit]" in text
+    assert "gh run download" in text
+    assert "independent-audit/PROOF.json" in text
+    assert "--proof-path independent-audit/PROOF.json" in text
+    assert "scripts.audit.pr_audit_router" not in text

@@ -266,14 +266,20 @@ def _proof_state(
     if not isinstance(payload, dict):
         return _missing_proof_state(proof_path), ["proof_unparseable: root is not an object"]
 
+    errors: list[str] = []
     embedded = payload.get("embedded_audit") or {}
     if not isinstance(embedded, dict):
         embedded = {}
+    audit_status = str(embedded.get("status") or "SKIPPED")
+    independent_errors = _independent_audit_errors(payload)
+    if independent_errors:
+        audit_status = "NEEDS_SUPERVISOR"
+        errors.extend(independent_errors)
     proof_head_sha = _proof_head_sha(payload)
     proof_freshness = _proof_freshness(payload, proof_head_sha, pr_head_sha)
     return {
         "embedded_audit": {
-            "status": str(embedded.get("status") or "SKIPPED"),
+            "status": audit_status,
             "report_path": str(
                 embedded.get("report_path")
                 or f"{proof_path.parent.as_posix()}/AUDITOR_REPORT.md"
@@ -287,7 +293,24 @@ def _proof_state(
             ),
             "proof_freshness": proof_freshness,
         },
-    }, []
+    }, errors
+
+
+def _independent_audit_errors(payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if payload.get("dry_run") is True:
+        errors.append("audit_proof_dry_run: final readiness requires an executed audit")
+    if payload.get("executed") is not True:
+        errors.append("audit_not_executed: final readiness requires executed=true")
+    provenance = payload.get("provenance")
+    if not isinstance(provenance, dict):
+        errors.append("audit_provenance_missing: final readiness requires trusted provenance")
+        return errors
+    if provenance.get("proof_author") != "independent-embedded-audit":
+        errors.append("audit_provenance_untrusted: unexpected proof author")
+    if provenance.get("workflow") != "embedded-audit.yml":
+        errors.append("audit_provenance_untrusted: unexpected workflow")
+    return errors
 
 
 def _missing_proof_state(proof_path: Path | None) -> dict[str, Any]:
