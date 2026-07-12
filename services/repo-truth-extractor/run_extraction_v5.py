@@ -22,7 +22,6 @@ import sys
 import threading
 import tempfile
 import time
-import textwrap
 import importlib.util
 import random
 import uuid
@@ -265,6 +264,15 @@ reporting_write_step_metrics_snapshot = rte_write_step_metrics_snapshot
 from extractor.phases.base import PhaseRunnerDeps
 from extractor.phases.a import run_phase as extracted_run_phase_A
 from extractor.phases.z import run_phase as extracted_run_phase_Z
+from extractor.cli_args import (
+    DEFAULT_FILE_TRUNCATE_CHARS,
+    DEFAULT_MAX_CHARS,
+    DEFAULT_MAX_FILES_CODE,
+    DEFAULT_MAX_FILES_DOCS,
+    OperatorArgumentParser,
+    ParserContext,
+    build_parser as build_cli_parser,
+)
 from extractor.ui import UI as ExtractedUI, UiConfig
 
 try:
@@ -597,6 +605,16 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
 ROUTING_POLICY_VERSION = "RTE_ROUTING_V1"
 DEFAULT_ROUTING_POLICY = "balanced_openrouter"
 DEFAULT_COST_PROFILE = "value-default"
+ROUTING_POLICY_CHOICES = (
+    "cost",
+    "balanced",
+    "balanced_openrouter",
+    "balanced_grok_openrouter",
+    "quality",
+    "openrouter",
+    "gemini_primary",
+    "optimal",
+)
 
 # ---------------------------------------------------------------------------
 # Cost profiles (May 2026 redesign, Phase E6).
@@ -2442,72 +2460,32 @@ def current_doctor_root(repo_root: Path) -> Path:
     )
 
 
-class OperatorArgumentParser(argparse.ArgumentParser):
-    def format_help(self) -> str:
-        quick_reference = textwrap.dedent(
-            f"""
-            Operator Quick Reference
-              Common:
-                --preset {FIRST_LIVE_PRESET_NAME} --dry-run --run-id local_probe
-                --print-cost-preview --phase A --dry-run
-                --print-routing-guide
-              Advanced:
-                --routing-policy balanced_openrouter
-                --output-root /abs/path/to/sandboxed-artifacts
-              Diagnostics:
-                --list-phases
-                --print-config --phase A --dry-run
-                --preflight-providers --phase D
-              Recovery / Resume:
-                --resume --phase D --run-id <RUN_ID>
-                --status --run-id <RUN_ID>
+def build_parser() -> OperatorArgumentParser:
+    """Build the v5 parser while retaining this module's legacy import facade."""
 
-            Examples
-              Validator-first staged first live:
-                python services/repo-truth-extractor/run_extraction_v5.py --preset {FIRST_LIVE_PRESET_NAME} --dry-run --run-id first_live_probe
-              Explicit cost preview:
-                python services/repo-truth-extractor/run_extraction_v5.py --print-cost-preview --phase A --dry-run --run-id cost_probe
-              Isolated artifact root:
-                python services/repo-truth-extractor/run_extraction_v5.py --phase A --dry-run --output-root /tmp/rte-v5-sandbox
-            """
-        ).strip()
-        return quick_reference + "\n\n" + super().format_help()
-
-    def error(self, message: str) -> None:
-        detail = str(message or "")
-        guidance: List[str] = []
-        if "argument --routing-policy: invalid choice" in detail:
-            guidance.extend(
-                [
-                    f"Valid routing policies: {', '.join(sorted(ROUTING_LADDERS.keys()))}.",
-                    f"Example: --routing-policy {DEFAULT_ROUTING_POLICY}",
-                ]
-            )
-        elif "argument --phase: invalid choice" in detail:
-            guidance.extend(
-                [
-                    f"Valid phases: {', '.join(PHASES)} plus S_INT or ALL.",
-                    "Example: --phase A --dry-run",
-                ]
-            )
-        elif "DPMX_LIVE_OK" in detail or "explicit consent" in detail:
-            guidance.extend(
-                [
-                    "Use --dry-run first to inspect inputs, routes, and estimated cost.",
-                    f"Only rerun live with --execute and {DPMX_LIVE_OK_ENV}=1 after approval.",
-                ]
-            )
-        elif "--phase is required" in detail:
-            guidance.extend(
-                [
-                    "Use --phase <PHASE> for execution, or one of the introspection modes such as --list-phases, --print-config, or --print-cost-preview.",
-                    f"Example: --phase A --dry-run or --preset {FIRST_LIVE_PRESET_NAME} --dry-run",
-                ]
-            )
-        if guidance:
-            detail = detail.rstrip() + "\n\n" + "\n".join(guidance)
-        super().error(detail)
-
+    return build_cli_parser(
+        ParserContext(
+            phases=PHASES,
+            dpmx_live_ok_env=DPMX_LIVE_OK_ENV,
+            first_live_preset_name=FIRST_LIVE_PRESET_NAME,
+            staged_safe_preset_name=STAGED_SAFE_PRESET_NAME,
+            default_gemini_model_id=DEFAULT_GEMINI_MODEL_ID,
+            cost_profiles=COST_PROFILES,
+            cost_profile_aliases=COST_PROFILE_ALIASES,
+            cost_profile_alias_metadata=COST_PROFILE_ALIAS_METADATA,
+            default_cost_profile=DEFAULT_COST_PROFILE,
+            routing_policy_choices=ROUTING_POLICY_CHOICES,
+            routing_ladders=ROUTING_LADDERS,
+            default_routing_policy=DEFAULT_ROUTING_POLICY,
+            s_prompts_modes=S_PROMPTS_MODES,
+            interactive_safe_batch_wait_seconds=INTERACTIVE_SAFE_BATCH_WAIT_SECONDS,
+            verify_phase_choices=VERIFY_PHASE_CHOICES,
+            promptgen_default_max_files=PROMPTGEN_DEFAULT_MAX_FILES,
+            promptgen_default_max_bytes=PROMPTGEN_DEFAULT_MAX_BYTES,
+            promptgen_default_excerpt_bytes=PROMPTGEN_DEFAULT_EXCERPT_BYTES,
+            promptgen_default_output_dir=PROMPTGEN_DEFAULT_OUTPUT_DIR,
+        )
+    )
 
 class UI(ExtractedUI):
     """Compatibility facade that injects this runner module's shared writers."""
@@ -21341,417 +21319,7 @@ def main() -> None:
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     except (AttributeError, ValueError):
         pass
-    parser = OperatorArgumentParser(
-        "Master Extraction Runner",
-        description=(
-            "Repo Truth Extractor v5 runtime. Use --dry-run for preview. "
-            f"Live execution requires explicit consent via {DPMX_LIVE_OK_ENV}=1."
-        ),
-        epilog=(
-            "Quick start: python services/repo-truth-extractor/run_extraction_v5.py "
-            "--phase A --dry-run --run-id local_preview. "
-            f"For live execution, rerun with --execute and {DPMX_LIVE_OK_ENV}=1."
-        ),
-    )
-    parser.add_argument("--skip-prescan", action="store_true", help="Skip the integrated Stage 0 prescan.")
-    parser.add_argument("--prescan-import-dir", type=str, help="Import precomputed prescan from external directory.")
-    parser.add_argument("--prescan-online", action="store_true", help="Authorize online LLM passes during integrated prescan.")
-    parser.add_argument(
-        "--prescan-allow-scope-reduction",
-        action="store_true",
-        help=(
-            "Allow prescan skip hints to remove files from execution scope. Disabled by default "
-            "so prescan remains non-authoritative for first baseline runs."
-        ),
-    )
-    parser.add_argument("--allow-online-llm", action="store_true", help="Authorize online LLM spend for the whole run.")
-    parser.add_argument(
-        "--preset",
-        choices=[FIRST_LIVE_PRESET_NAME, STAGED_SAFE_PRESET_NAME],
-        default=None,
-        help="Apply a staged operator-safe rollout preset.",
-    )
-    parser.add_argument(
-        "--preset-stage",
-        choices=["initial", "post-review", "full"],
-        default="initial",
-        help="Preset stage to execute. 'initial' runs A/H/D/C, 'post-review' runs R/X/T/Z/S/SP.",
-    )
-    parser.add_argument(
-        "--skip-pre-live-validator",
-        action="store_true",
-        help="Skip the validator-first gate for live preset execution.",
-    )
-    parser.add_argument(
-        "--output-root",
-        type=str,
-        default=None,
-        help="Override the v5 artifact root for this run (for isolated experiments or CI sandboxes).",
-    )
-    parser.add_argument("--sync", action="store_true", help="Synchronize prompt source scopes with modern architecture.")
-    parser.add_argument("--phase", choices=PHASES + ["S_INT", "ALL"], required=False)
-    parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument(
-        "--execute",
-        action="store_true",
-        help=(
-            "Explicitly permit live provider execution. Requires "
-            f"{DPMX_LIVE_OK_ENV}=1."
-        ),
-    )
-    parser.add_argument("--max-files-docs", type=int, default=35)
-    parser.add_argument("--max-files-code", type=int, default=20)
-    parser.add_argument("--max-chars", type=int, default=650000)
-    parser.add_argument("--max-request-bytes", type=int, default=200000)
-    parser.add_argument("--file-truncate-chars", type=int, default=70000)
-    parser.add_argument("--home-scan-mode", choices=["safe", "full"], default="safe")
-    parser.add_argument("--resume", action="store_true")
-    parser.add_argument(
-        "--fail-fast-auth", dest="fail_fast_auth", action="store_true", default=True
-    )
-    parser.add_argument(
-        "--no-fail-fast-auth", dest="fail_fast_auth", action="store_false"
-    )
-    parser.add_argument(
-        "--gemini-auth-mode",
-        choices=["api_key", "bearer", "both", "query_key", "auto"],
-        default="auto",
-    )
-    parser.add_argument(
-        "--gemini-model-id",
-        type=str,
-        default=DEFAULT_GEMINI_MODEL_ID,
-        help="Override Gemini model ID for all Gemini-routed phases.",
-    )
-    parser.add_argument(
-        "--routing-policy",
-        choices=[
-            "cost",
-            "balanced",
-            "balanced_openrouter",
-            "balanced_grok_openrouter",
-            "quality",
-            "openrouter",
-            "gemini_primary",
-            "optimal",
-        ],
-        default=None,
-        help=(
-            "DEPRECATED: legacy routing policy. Prefer --cost-profile. "
-            "When set, this value is mapped to a cost profile via "
-            "LEGACY_ROUTING_POLICY_TO_COST_PROFILE and a deprecation warning is emitted."
-        ),
-    )
-    parser.add_argument(
-        "--cost-profile",
-        choices=sorted(list(COST_PROFILES.keys()) + list(COST_PROFILE_ALIASES.keys())),
-        default=None,
-        metavar="PROFILE",
-        help=(
-            f"Cost profile selecting model tier + service_tier + cached-input + "
-            f"batch behavior. Default: {DEFAULT_COST_PROFILE}. "
-            f"Known profiles: {', '.join(sorted(COST_PROFILES.keys()))}. "
-            "Workload aliases: "
-            f"{', '.join(sorted(COST_PROFILE_ALIAS_METADATA.keys()))}. "
-            "Additional rte-cost-* aliases are normalized through the cost-profile "
-            "resolver. Replaces --routing-policy. See "
-            "claudedocs/research/routing-design-2026-05.md."
-        ),
-    )
-    parser.add_argument(
-        "--disable-provider",
-        action="append",
-        default=[],
-        metavar="PROVIDER",
-        help=(
-            "Manual kill-switch: disable a provider for this run (skips any route "
-            "with this provider). Repeatable. Valid values: openai, anthropic, "
-            "gemini, xai, openrouter. Per Phase D consensus this replaces the "
-            "rejected app-level circuit breaker."
-        ),
-    )
-    parser.add_argument(
-        "--model-alias",
-        action="append",
-        default=[],
-        metavar="ALIAS=MODEL_ID",
-        help=(
-            "Override a cell-level model alias (e.g., "
-            "--model-alias SYNTH_MODEL=openrouter/anthropic/claude-opus-4.7). "
-            "Value is 'provider/model'; anthropic only via openrouter/. "
-            "Repeatable. Canonical cell keys: BULK_DOCS_MODEL, BULK_CODE_MODEL, "
-            "CE_MODEL, SYNTH_MODEL (CE/SYNTH must stay on openai|openrouter)."
-        ),
-    )
-    parser.add_argument(
-        "--s-prompts",
-        choices=sorted(S_PROMPTS_MODES),
-        default=None,
-        help="Compatibility flag retained for older invocations. Phase S now always uses legacy prompts; use phase SP for registry-backed pipeline prompts.",
-    )
-    parser.add_argument(
-        "--s-steps",
-        type=str,
-        default=None,
-        help="Comma-separated subset of Phase S base steps (S0-S12) to execute.",
-    )
-    parser.add_argument("--disable-escalation", action="store_true")
-    parser.add_argument("--escalation-max-hops", type=int, default=2)
-    parser.add_argument(
-        "--batch-mode",
-        dest="batch_mode",
-        action="store_true",
-        default=False,
-        help="Use Batch API for LLM calls (default: False).",
-    )
-    parser.add_argument(
-        "--no-batch",
-        dest="batch_mode",
-        action="store_false",
-        help="Disable Batch API and use synchronous calls.",
-    )
-    parser.add_argument(
-        "--batch-submit-only",
-        action="store_true",
-        help="Submit batch jobs and persist metadata without inline polling/fetch.",
-    )
-    parser.add_argument(
-        "--batch-watch",
-        action="store_true",
-        help="Poll submitted batch jobs, fetch results, and emit webhook notifications.",
-    )
-    parser.add_argument(
-        "--batch-provider",
-        choices=["auto", "openai", "gemini", "xai"],
-        default="auto",
-    )
-    parser.add_argument("--batch-poll-seconds", type=int, default=30)
-    parser.add_argument(
-        "--batch-wait-timeout-seconds",
-        type=int,
-        default=86400,
-        help=(
-            "Batch polling timeout in seconds. 86400 is the legacy default and can leave long-running waits behind; "
-            f"{INTERACTIVE_SAFE_BATCH_WAIT_SECONDS} is the safer interactive value."
-        ),
-    )
-    parser.add_argument("--batch-max-requests-per-job", type=int, default=2000)
-    parser.add_argument(
-        "--batch-retrieve",
-        action="store_true",
-        help="Retrieve OpenAI batch results and integrate with webhook system.",
-    )
-    parser.add_argument(
-        "--batch-ids",
-        type=str,
-        nargs="+",
-        help="List of batch IDs to retrieve.",
-    )
-    parser.add_argument(
-        "--retrieve-provider",
-        choices=["openai", "gemini"],
-        default="openai",
-        help="Batch provider for retrieval (openai or gemini).",
-    )
-    parser.add_argument(
-        "--gemini-transport",
-        choices=["sdk", "openai_compat_http"],
-        default="sdk",
-    )
-    parser.add_argument(
-        "--openai-transport",
-        choices=["openai_sdk"],
-        default="openai_sdk",
-    )
-    parser.add_argument(
-        "--xai-transport",
-        choices=["openai_sdk"],
-        default="openai_sdk",
-    )
-    # TP-RTX-V5-GROK-DOC-COMPARISON-STEP-0001: comparison lane CLI args
-    parser.add_argument(
-        "--compare-mode",
-        choices=["additional"],
-        default=None,
-        help=(
-            "Enable comparison lane. 'additional' runs a secondary model alongside "
-            "canonical without affecting pass/fail. Disabled by default."
-        ),
-    )
-    parser.add_argument(
-        "--compare-model",
-        type=str,
-        default=None,
-        help="Model ID to use for the comparison lane (e.g. grok-4.20-beta).",
-    )
-    parser.add_argument(
-        "--compare-provider",
-        type=str,
-        default=None,
-        help="Provider slug for the comparison model (e.g. xai). Inferred from registry if omitted.",
-    )
-    parser.add_argument(
-        "--compare-steps",
-        type=str,
-        default=None,
-        help=(
-            "Comma-separated list of step IDs to run comparison on "
-            "(e.g. H9,A9). Defaults to COMPARISON_ELIGIBLE_STEPS allowlist."
-        ),
-    )
-    parser.add_argument(
-        "--retry-policy", choices=["none", "default"], default="default"
-    )
-    parser.add_argument("--retry-max-attempts", type=int, default=4)
-    parser.add_argument("--retry-base-seconds", type=float, default=2.0)
-    parser.add_argument("--retry-max-seconds", type=float, default=30.0)
-    parser.add_argument("--phase-auth-fail-threshold", type=int, default=5)
-    parser.add_argument("--partition-workers", type=int, default=1)
-    parser.add_argument(
-        "--executor",
-        choices=["thread", "process"],
-        default="thread",
-        help="Executor type: thread (default) or process",
-    )
-    parser.add_argument("--debug-phase-inputs", action="store_true")
-    parser.add_argument("--fail-fast-missing-inputs", action="store_true")
-    parser.add_argument("--run-id", type=str)
-    parser.add_argument(
-        "--max-cost-usd",
-        type=float,
-        default=None,
-        help="Hard per-run live spend cap in USD. Requires pricing coverage and partition_workers=1.",
-    )
-    parser.add_argument("--no-write-latest", action="store_true")
-    parser.add_argument("--write-latest-even-on-dry-run", action="store_true")
-    parser.add_argument(
-        "--audit-sample-rate",
-        type=float,
-        default=0.15,
-        help="Fraction of phase outputs to audit with judge model (0 to disable).",
-    )
-    parser.add_argument(
-        "--doctor",
-        action="store_true",
-        help=(
-            "Write shared doctor diagnostic artifacts. These are advisory only and do not "
-            "satisfy launch or certification authority."
-        ),
-    )
-    parser.add_argument(
-        "--doctor-auth",
-        action="store_true",
-        help=(
-            "Write shared authentication doctor diagnostics. These are advisory only and do not "
-            "satisfy launch or certification authority."
-        ),
-    )
-    parser.add_argument(
-        "--preflight-providers",
-        action="store_true",
-        help=(
-            "Run provider preflight for the current invocation and write a shared diagnostic copy. "
-            "Launch authority uses the run-scoped PROVIDER_PREFLIGHT.json under runs/<run_id>/."
-        ),
-    )
-    parser.add_argument("--coverage-report", action="store_true")
-    parser.add_argument("--ui", choices=["auto", "rich", "plain"], default="auto")
-    parser.add_argument("--status", action="store_true")
-    parser.add_argument("--status-json", action="store_true")
-    parser.add_argument("--watch", type=float)
-    parser.add_argument("--quiet", action="store_true")
-    parser.add_argument("--jsonl-events", action="store_true")
-    parser.add_argument("--pretty", action="store_true")
-    parser.add_argument("--print-promptpack", action="store_true")
-    parser.add_argument(
-        "--print-routing-guide",
-        action="store_true",
-        help="Print routing policy intent, cost tendency, and override caveats.",
-    )
-    parser.add_argument(
-        "--print-prescan-guide",
-        action="store_true",
-        help="Print prescan usage guidance, including when it helps and when it is safe to skip.",
-    )
-    parser.add_argument(
-        "--print-cost-preview",
-        action="store_true",
-        help="During dry-run, emit the per-phase cost preview derived from the resolved inventory and routes.",
-    )
-    parser.add_argument(
-        "--list-phases",
-        action="store_true",
-        help="Print phase code, name, purpose, dependencies, and default route summary as JSON.",
-    )
-    parser.add_argument("--print-run-order", action="store_true")
-    parser.add_argument("--print-phase-routing", action="store_true")
-    parser.add_argument("--tail-run-log", action="store_true")
-    parser.add_argument("--tail-lines", type=int, default=200)
-    parser.add_argument("--since", type=str, default="")
-    parser.add_argument("--step", type=str)
-    parser.add_argument("--d0-max-files", type=int)
-    parser.add_argument("--d1-max-files", type=int)
-    parser.add_argument("--show-provider-usage", action="store_true")
-    parser.add_argument(
-        "--print-phase-prompts",
-        nargs="?",
-        const="ALL",
-        type=str,
-        help="Print prompt files and declared outputs for PHASE or ALL.",
-    )
-    parser.add_argument("--verify-phase-output", choices=VERIFY_PHASE_CHOICES)
-    parser.add_argument("--print-config", action="store_true")
-    parser.add_argument("--gemini-list-models", action="store_true")
-    # TP-WEBHOOKS-0002: async pilot flags
-    parser.add_argument(
-        "--async-provider",
-        choices=["openai"],
-        default=None,
-        help="Submit Phase R partitions asynchronously via the given provider's API.",
-    )
-    parser.add_argument(
-        "--finalize",
-        action="store_true",
-        help="Finalize Phase R by reading webhook completions from the ledger.",
-    )
-    promptgen_group = parser.add_argument_group("promptgen")
-    promptgen_group.add_argument("--promptgen-scan", action="store_true")
-    promptgen_group.add_argument(
-        "--promptgen-max-files", type=int, default=PROMPTGEN_DEFAULT_MAX_FILES
-    )
-    promptgen_group.add_argument(
-        "--promptgen-max-bytes", type=int, default=PROMPTGEN_DEFAULT_MAX_BYTES
-    )
-    promptgen_group.add_argument(
-        "--promptgen-excerpt-bytes", type=int, default=PROMPTGEN_DEFAULT_EXCERPT_BYTES
-    )
-    promptgen_group.add_argument("--promptgen-include-globs", action="append")
-    promptgen_group.add_argument("--promptgen-exclude-globs", action="append")
-    promptgen_group.add_argument(
-        "--promptgen-output-dir", type=str, default=PROMPTGEN_DEFAULT_OUTPUT_DIR
-    )
-    parser.add_argument(
-        "--promptset-root",
-        type=str,
-        default=None,
-        help=(
-            "Override prompt root directory. Points to a generated promptset "
-            "directory (from `dopemux extractor init`) or any directory containing "
-            "prompt files. Equivalent to setting REPO_TRUTH_EXTRACTOR_PROMPT_ROOT."
-        ),
-    )
-    parser.add_argument(
-        "--prescan-dir",
-        type=str,
-        default=None,
-        help="Path to prescan output dir for intelligence-informed extraction.",
-    )
-    parser.add_argument(
-        "--profile",
-        type=str,
-        default=None,
-        help="Extraction profile name (e.g., P09_INTEGRATION_SURFACE_V1). Filters phases and overrides budgets.",
-    )
+    parser = build_parser()
     raw_argv = list(sys.argv[1:])
     args = parser.parse_args()
     if args.execute:
@@ -22600,19 +22168,19 @@ def main() -> None:
         if _selected_budgets:
             _max_files = [int(budget["max_files"]) for budget in _selected_budgets if "max_files" in budget]
             if _max_files:
-                if args.max_files_docs == 35:
+                if args.max_files_docs == DEFAULT_MAX_FILES_DOCS:
                     args.max_files_docs = min(_max_files)
-                if args.max_files_code == 20:
+                if args.max_files_code == DEFAULT_MAX_FILES_CODE:
                     args.max_files_code = min(_max_files)
             _max_chars = [int(budget["max_chars"]) for budget in _selected_budgets if "max_chars" in budget]
-            if _max_chars and args.max_chars == 650000:
+            if _max_chars and args.max_chars == DEFAULT_MAX_CHARS:
                 args.max_chars = min(_max_chars)
             _truncate_chars = [
                 int(budget["file_truncate_chars"])
                 for budget in _selected_budgets
                 if "file_truncate_chars" in budget
             ]
-            if _truncate_chars and args.file_truncate_chars == 70000:
+            if _truncate_chars and args.file_truncate_chars == DEFAULT_FILE_TRUNCATE_CHARS:
                 args.file_truncate_chars = min(_truncate_chars)
 
     phase_sequence = resolve_phase_list(args.phase)
@@ -22651,28 +22219,6 @@ def main() -> None:
             cfg=cfg,
             phase_sequence=phase_sequence or preset_phase_sequence or [],
         )
-    if args.print_config:
-        print_config(args, root, run_id, dirs, cfg, phase_sequence, run_context)
-        sys.exit(0)
-    if args.print_run_order:
-        targets = phase_sequence if phase_sequence else PHASES
-        sys.exit(print_run_order(targets))
-    if args.print_phase_routing:
-        targets = phase_sequence if phase_sequence else PHASES
-        sys.exit(print_phase_routing(targets, cfg))
-    if args.print_phase_prompts is not None:
-        token = (
-            str(args.print_phase_prompts).strip().upper()
-            if args.print_phase_prompts
-            else "ALL"
-        )
-        if token == "ALL":
-            targets = PHASES
-        elif token in PHASES:
-            targets = [token]
-        else:
-            parser.error("--print-phase-prompts expects ALL or a single phase letter.")
-        sys.exit(print_phase_prompts(targets))
     should_gate_promptset = bool(phase_sequence) and (
         args.preflight_providers
         or args.doctor
