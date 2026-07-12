@@ -5,7 +5,7 @@
   "base_branch": "main",
   "base_sha": "b176747b339685e781de04268c46b7ae123abfbf",
   "implementation_commit": "485c87444f90235853f5e1b52c64c1ed852bdd1a",
-  "pr_url": null,
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1041",
   "scope": "Pure facade-local join of TP-0010 resolved targets with canonical catalog and operational runtime evidence. No live I/O, backend calls, ownership proof, adapter rewiring, or Task Orchestrator exposure.",
   "runtime_code_changed": true,
   "backend_code_changed": false,
@@ -71,8 +71,8 @@
     "External Gemini final review verdict unavailable due provider quota.",
     "No live runtime or ownership evidence is claimed.",
     "to_mcp_wrapper and to_compose_rest remain blocked.",
-    "No PR URL exists until publication."
+    "External Gemini final review verdict unavailable due provider quota."
   ],
   "rollback": "git revert 485c87444f90235853f5e1b52c64c1ed852bdd1a",
-  "cleanup": "Dedicated implementation branch remains for PR publication; unrelated occupied 0011 worktree was not modified."
+  "cleanup": "PR #1041 published; unrelated occupied 0011 worktree was not modified."
 }
