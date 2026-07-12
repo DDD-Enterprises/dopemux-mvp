@@ -1,7 +1,7 @@
 name: embedded-audit
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
     inputs:
@@ -37,29 +37,36 @@ jobs:
           INPUT_HEAD_SHA: ${{ inputs.head_sha }}
           TRUSTED_FALLBACK_REF: ${{ github.event.repository.default_branch }}
         run: |
-          if [ "$EVENT_NAME" = "pull_request" ]; then
+          # pull_request_target and legacy pull_request both carry pull_request
+          # event metadata. workflow_dispatch uses validated inputs only.
+          if [ "$EVENT_NAME" = "pull_request" ] || [ "$EVENT_NAME" = "pull_request_target" ]; then
             printf 'number=%s\n' "$EVENT_PR_NUMBER" >> "$GITHUB_OUTPUT"
             printf 'head_sha=%s\n' "$EVENT_HEAD_SHA" >> "$GITHUB_OUTPUT"
             printf 'trusted_ref=%s\n' "$EVENT_BASE_SHA" >> "$GITHUB_OUTPUT"
-          else
+            test -n "$EVENT_PR_NUMBER"
+            test -n "$EVENT_HEAD_SHA"
+            test -n "$EVENT_BASE_SHA"
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
             printf 'head_sha=%s\n' "$INPUT_HEAD_SHA" >> "$GITHUB_OUTPUT"
             printf 'trusted_ref=%s\n' "$TRUSTED_FALLBACK_REF" >> "$GITHUB_OUTPUT"
-          fi
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            test -n "$EVENT_HEAD_SHA"
-            test -n "$EVENT_BASE_SHA"
-          else
+            test -n "$INPUT_PR_NUMBER"
             test -n "$INPUT_HEAD_SHA"
             test -n "$TRUSTED_FALLBACK_REF"
+          else
+            echo "Unsupported event: $EVENT_NAME" >&2
+            exit 1
           fi
 
       - name: Checkout trusted audit source
         uses: actions/checkout@v4
         with:
+          # Trusted base/default-branch code only. Candidate head is fetched as
+          # data later and never checked out as the working tree.
           ref: ${{ steps.pr.outputs.trusted_ref }}
           fetch-depth: 2
           path: trusted-source
+          persist-credentials: false
 
       - name: Verify trusted audit source
         env:
@@ -71,6 +78,10 @@ jobs:
           else
             test -n "$actual_trusted_ref"
           fi
+          # Do not hard-fail here when run_embedded_audit.py is absent.
+          # The emit step writes a schema-valid SKIPPED diagnostic PROOF so
+          # artifact upload + Steward can still bind the head and overwrite a
+          # prior green "PR Steward / final readiness" status with failure.
 
       - name: Verify requested head SHA
         id: head_integrity
@@ -78,6 +89,8 @@ jobs:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
         run: |
+          # Candidate material is fetched as objects only (no candidate checkout,
+          # no candidate script execution, no credentials on candidate tree).
           if git -C trusted-source fetch --no-tags --depth=1 origin "$EXPECTED_HEAD_SHA"; then
             actual_head_sha="$(git -C trusted-source rev-parse FETCH_HEAD)"
           else
@@ -91,7 +104,7 @@ jobs:
           fi
 
       - name: Static auditor route preflight
-        continue-on-error: true
+        if: always() && steps.head_integrity.outputs.verified == 'true'
         working-directory: trusted-source
         run: |
           mkdir -p ../embedded-audit-artifacts
@@ -118,8 +131,12 @@ jobs:
           fi
 
       - name: Run PAL clink audit
+        # Soft exit is intentional: the runner may emit a machine-readable error
+        # payload with exit 0 so later steps always emit a diagnostic proof and
+        # the hard enforcement step remains the sole green/red authority.
+        # Tests prove synthetic error results cannot pass enforcement.
         if: always() && steps.head_integrity.outputs.verified == 'true'
-        continue-on-error: true
+        id: runner
         working-directory: trusted-source
         run: |
           base_sha="$(git rev-parse HEAD)"
@@ -155,42 +172,40 @@ jobs:
             printf '{"status":"error","risks":["PAL clink runner did not emit output; exit_code=%s"]}\n' "$status" \
               > ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json
           fi
+          printf 'exit_code=%s\n' "$status" >> "$GITHUB_OUTPUT"
+          # Soft exit: hard proof enforcement is authoritative (see step comments).
           exit 0
 
-      - name: Emit skipped embedded audit proof
-        if: always()
+      - name: Emit independent embedded audit proof
+        if: always() && steps.head_integrity.outputs.verified == 'true'
         working-directory: trusted-source
         env:
-          HEAD_VERIFIED: ${{ steps.head_integrity.outputs.verified }}
+          EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
         run: |
-          if [ "$HEAD_VERIFIED" != "true" ]; then
-            SKIP_REASON="Independent embedded audit skipped because the requested head SHA could not be fetched or did not match the requested PR head."
-          elif [ ! -f scripts/audit/run_embedded_audit.py ]; then
-            SKIP_REASON="Independent embedded audit skipped because the trusted source ref does not yet contain scripts/audit/run_embedded_audit.py."
-          else
-            exit 0
-          fi
-          export SKIP_REASON
+          mkdir -p ../embedded-audit-artifacts
+          if [ ! -f scripts/audit/run_embedded_audit.py ]; then
+            # Structured diagnostic only — schema-valid SKIPPED (none/unknown),
+            # executed=false; no forged trusted provenance. Enforce still reds.
             python - <<'PY'
           import json
           import os
-          from datetime import datetime, timezone
           from pathlib import Path
 
-          packet_id = "TP-DMX-AUDIT-CI-PROVENANCE-104"
-          report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
-          reason = os.environ["SKIP_REASON"]
-          out_dir = Path("../embedded-audit-artifacts")
-          out_dir.mkdir(parents=True, exist_ok=True)
+          reason = (
+              "Trusted audit emitter scripts/audit/run_embedded_audit.py "
+              "is missing on the trusted ref."
+          )
+          out = Path("../embedded-audit-artifacts")
+          out.mkdir(parents=True, exist_ok=True)
+          report_path = "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md"
           proof = {
-              "packet_id": packet_id,
+              "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
               "repo": os.environ["GITHUB_REPOSITORY"],
-              "pr_number": int("${{ steps.pr.outputs.number }}"),
-              "head_sha": "${{ steps.pr.outputs.head_sha }}",
-              "generated_at": datetime.now(timezone.utc)
-              .replace(microsecond=0)
-              .isoformat()
-              .replace("+00:00", "Z"),
+              "pr_number": int(os.environ["PR_NUMBER"]),
+              "head_sha": os.environ["HEAD_SHA"],
+              "executed": False,
               "mutation_performed": False,
               "github_mutation_route_added": False,
               "embedded_audit": {
@@ -206,51 +221,138 @@ jobs:
                   "remaining_risks": [reason],
                   "skip_reason": reason,
               },
-              "provenance": {
-                  "proof_author": "independent-embedded-audit",
-                  "workflow": "embedded-audit.yml",
-                  "trusted_token_status": "UNKNOWN",
-                  "token_source": "EMBEDDED_AUDIT_TOKEN",
-                  "token_value_recorded": False,
-                  "permissions": {
-                      "actions": "read",
-                      "checks": "read",
-                      "contents": "read",
-                      "pull-requests": "read",
-                      "statuses": "read",
-                  },
-                  "engine_authored_proof": False,
-                  "engine_requested_only": True,
-              },
           }
-          (out_dir / "PROOF.json").write_text(
-              json.dumps(proof, indent=2, sort_keys=True) + "\n",
+          (out / "PROOF.json").write_text(
+              json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+          (out / "AUDITOR_REPORT.md").write_text(
+              f"# Embedded audit\n\nstatus: SKIPPED\n\nreason: {reason}\n",
               encoding="utf-8",
           )
-          report_file = out_dir / report_path
-          report_file.parent.mkdir(parents=True, exist_ok=True)
-          report_text = f"# Embedded audit\n\nstatus: SKIPPED\n\nreason: {reason}\n"
-          report_file.write_text(report_text, encoding="utf-8")
-          (out_dir / "AUDITOR_REPORT.md").write_text(report_text, encoding="utf-8")
           PY
-
-      - name: Emit embedded audit proof with trusted token
-        if: always() && steps.head_integrity.outputs.verified == 'true'
-        working-directory: trusted-source
-        env:
-          EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}
-        run: |
-          if [ ! -f scripts/audit/run_embedded_audit.py ]; then
             exit 0
           fi
           python scripts/audit/run_embedded_audit.py \
             --packet-id "TP-DMX-AUDIT-CI-PROVENANCE-104" \
             --repo "$GITHUB_REPOSITORY" \
-            --pr "${{ steps.pr.outputs.number }}" \
-            --head-sha "${{ steps.pr.outputs.head_sha }}" \
+            --pr "${PR_NUMBER}" \
+            --head-sha "${HEAD_SHA}" \
             --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
             --pal-output-json ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json \
             --out ../embedded-audit-artifacts
+
+      - name: Emit unavailable independent audit proof
+        if: always() && steps.head_integrity.outputs.verified != 'true'
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          mkdir -p embedded-audit-artifacts
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          # Inline diagnostic shape mirrors build_diagnostic_failure_proof:
+          # executed=false, schema-valid SKIPPED (none/unknown), no trusted provenance.
+          reason = "Requested PR head SHA could not be fetched or no longer matches the PR head."
+          artifact_dir = Path("embedded-audit-artifacts")
+          report_path = "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md"
+          proof = {
+              "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
+              "repo": os.environ["GITHUB_REPOSITORY"],
+              "pr_number": int(os.environ["PR_NUMBER"]),
+              "head_sha": os.environ["HEAD_SHA"],
+              "executed": False,
+              "mutation_performed": False,
+              "github_mutation_route_added": False,
+              "embedded_audit": {
+                  "required": True,
+                  "status": "SKIPPED",
+                  "auditor_tool": "none",
+                  "auditor_model": "unknown",
+                  "invocation": None,
+                  "exit_code": None,
+                  "report_path": report_path,
+                  "findings": [],
+                  "fixes_applied": [],
+                  "remaining_risks": [reason],
+                  "skip_reason": reason,
+              },
+          }
+          (artifact_dir / "PROOF.json").write_text(
+              json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+          (artifact_dir / "AUDITOR_REPORT.md").write_text(
+              f"# Embedded audit\n\nstatus: SKIPPED\n\nreason: {reason}\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Enforce independent audit result
+        if: always()
+        env:
+          EXPECTED_PR: ${{ steps.pr.outputs.number }}
+          EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          # Hard gate: status alone is never sufficient. Requires executed=true,
+          # trusted provenance, matching PR/head, and PASS|PASS_WITH_RISKS.
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          proof_path = Path("embedded-audit-artifacts/PROOF.json")
+          if not proof_path.is_file():
+              # Schema-valid SKIPPED diagnostic; hard enforce still fails closed.
+              fallback = Path("embedded-audit-artifacts")
+              fallback.mkdir(parents=True, exist_ok=True)
+              reason = "Independent audit proof is missing."
+              report_path = "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md"
+              proof = {
+                  "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
+                  "executed": False,
+                  "pr_number": int(os.environ.get("EXPECTED_PR") or 0),
+                  "head_sha": os.environ.get("EXPECTED_HEAD_SHA") or "",
+                  "repo": os.environ.get("GITHUB_REPOSITORY") or "",
+                  "mutation_performed": False,
+                  "github_mutation_route_added": False,
+                  "embedded_audit": {
+                      "required": True,
+                      "status": "SKIPPED",
+                      "auditor_tool": "none",
+                      "auditor_model": "unknown",
+                      "invocation": None,
+                      "exit_code": None,
+                      "report_path": report_path,
+                      "findings": [],
+                      "fixes_applied": [],
+                      "remaining_risks": [reason],
+                      "skip_reason": reason,
+                  },
+              }
+              (fallback / "PROOF.json").write_text(
+                  json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+              )
+              raise SystemExit(reason)
+
+          trusted_root = Path("trusted-source")
+          if trusted_root.is_dir():
+              sys.path.insert(0, str(trusted_root.resolve()))
+          else:
+              sys.path.insert(0, str(Path.cwd()))
+
+          from scripts.audit.run_embedded_audit import enforce_independent_audit_proof
+
+          proof = json.loads(proof_path.read_text(encoding="utf-8"))
+          enforce_independent_audit_proof(
+              proof,
+              expected_pr=int(os.environ["EXPECTED_PR"]),
+              expected_head_sha=os.environ["EXPECTED_HEAD_SHA"],
+              expected_repo=os.environ.get("GITHUB_REPOSITORY"),
+          )
+          PY
 
       - name: Write job summary
         if: always()
@@ -258,14 +360,16 @@ jobs:
           {
             printf '## Embedded audit\n\n'
             printf -- '- mutation_performed: false\n'
-            printf -- '- proof_author: independent-embedded-audit\n'
+            printf -- '- proof_author: independent-embedded-audit (only when executed=true)\n'
             printf -- '- token_value_recorded: false\n'
+            printf -- '- soft_runner_exit: intentional; hard enforcement is authoritative\n'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload embedded audit artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: embedded-audit-${{ steps.pr.outputs.number }}
+          # Collision-resistant identity: purpose + PR + exact head SHA.
+          name: embedded-audit-pr-${{ steps.pr.outputs.number }}-head-${{ steps.pr.outputs.head_sha }}-proof
           path: embedded-audit-artifacts/
           if-no-files-found: error

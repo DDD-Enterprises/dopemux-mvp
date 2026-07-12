@@ -204,7 +204,7 @@ def _build_proof(
         "executed": False,
         "execution_results": [],
         "embedded_audit": {
-            "status": "PASS",
+            "status": "NEEDS_SUPERVISOR",
             "report_path": f"proof/{packet_id}/AUDITOR_REPORT.md",
         },
     }
