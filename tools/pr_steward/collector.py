@@ -48,6 +48,8 @@ def collect_from_github(
     proof_state, initial_proof_errors = _proof_state(
         proof_path=proof_path,
         pr_head_sha=None,
+        expected_pr=pr_number,
+        expected_repo=repo,
     )
     auth = _run(["gh", "auth", "status"])
     if auth.returncode != 0:
@@ -93,6 +95,8 @@ def collect_from_github(
     proof_state, proof_errors = _proof_state(
         proof_path=proof_path,
         pr_head_sha=str(pr_payload.get("headRefOid") or ""),
+        expected_pr=pr_number,
+        expected_repo=repo,
     )
     errors.extend(proof_errors)
     threads, thread_errors = _fetch_review_threads(repo=repo, pr_number=pr_number)
@@ -253,7 +257,11 @@ def _incomplete_harvest(
 
 
 def _proof_state(
-    *, proof_path: Path | None, pr_head_sha: str | None
+    *,
+    proof_path: Path | None,
+    pr_head_sha: str | None,
+    expected_pr: int | None = None,
+    expected_repo: str | None = None,
 ) -> tuple[dict[str, Any], list[str]]:
     if proof_path is None:
         return _missing_proof_state(None), ["proof_missing: --proof-path not provided"]
@@ -271,7 +279,12 @@ def _proof_state(
     if not isinstance(embedded, dict):
         embedded = {}
     audit_status = str(embedded.get("status") or "SKIPPED")
-    independent_errors = _independent_audit_errors(payload)
+    independent_errors = _independent_audit_errors(
+        payload,
+        expected_pr=expected_pr,
+        expected_head_sha=pr_head_sha,
+        expected_repo=expected_repo,
+    )
     if independent_errors:
         audit_status = "NEEDS_SUPERVISOR"
         errors.extend(independent_errors)
@@ -296,17 +309,29 @@ def _proof_state(
     }, errors
 
 
-def _independent_audit_errors(payload: dict[str, Any]) -> list[str]:
+def _independent_audit_errors(
+    payload: dict[str, Any],
+    *,
+    expected_pr: int | None = None,
+    expected_head_sha: str | None = None,
+    expected_repo: str | None = None,
+) -> list[str]:
     """Delegate to the shared independent-audit proof validator.
 
     Parity with the embedded-audit workflow hard gate is intentional: both
-    surfaces must accept and reject the same proof shapes.
+    surfaces must accept and reject the same proof shapes. When known, pass
+    expected PR/repo/head so a proof from another PR cannot produce READY.
     """
     # Local import keeps collector importable when scripts/ is unavailable in
     # tightly packaged test contexts, while remaining the single contract path.
     from scripts.audit.run_embedded_audit import independent_audit_errors
 
-    return independent_audit_errors(payload)
+    return independent_audit_errors(
+        payload,
+        expected_pr=expected_pr,
+        expected_head_sha=expected_head_sha or None,
+        expected_repo=expected_repo,
+    )
 
 
 def _missing_proof_state(proof_path: Path | None) -> dict[str, Any]:

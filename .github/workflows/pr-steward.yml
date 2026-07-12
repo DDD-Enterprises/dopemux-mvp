@@ -15,7 +15,10 @@ permissions:
   contents: read
   pull-requests: read
   checks: read
-  statuses: read
+  # statuses: write posts readiness against the *candidate PR head* so the
+  # required check can attach to the PR commit (workflow_run jobs run on
+  # default-branch GITHUB_SHA and would otherwise be invisible to PR protection).
+  statuses: write
   actions: read
   issues: read
 
@@ -267,6 +270,29 @@ jobs:
             --format text \
             --proof-path independent-audit/PROOF.json
 
+      - name: Publish readiness status on candidate PR head
+        if: always() && steps.proof.outputs.head_sha != ''
+        env:
+          PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
+          PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
+          STEWARD_OUTCOME: ${{ steps.steward.outcome }}
+        run: |
+          # workflow_run jobs execute against default-branch GITHUB_SHA. Publish
+          # an explicit commit status on the validated candidate head so branch
+          # protection can require "PR Steward / final readiness" on the PR.
+          if [ "${STEWARD_OUTCOME}" = "success" ]; then
+            state="success"
+            description="final readiness READY for PR ${PR_NUMBER}"
+          else
+            state="failure"
+            description="final readiness not READY for PR ${PR_NUMBER}"
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/${PR_HEAD_SHA}" \
+            -f state="${state}" \
+            -f context="PR Steward / final readiness" \
+            -f description="${description}" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
       - name: Write job summary
         if: always()
         run: |
@@ -275,7 +301,8 @@ jobs:
             printf -- '- audit_run_id: %s\n' '${{ steps.audit_run.outputs.id }}'
             printf -- '- validated_head_sha: %s\n' '${{ steps.proof.outputs.head_sha }}'
             printf -- '- pr_number: %s\n' '${{ steps.proof.outputs.pr_number }}'
-            printf -- '- mutation_performed: false\n\n'
+            printf -- '- candidate_head_status_context: PR Steward / final readiness\n'
+            printf -- '- mutation_performed: false (read-only steward; status publish only)\n\n'
             if [ -f pr-steward-artifacts/PR_STEWARD_SUMMARY.md ]; then
               cat pr-steward-artifacts/PR_STEWARD_SUMMARY.md
             else

@@ -325,6 +325,9 @@ def test_pr_steward_workflow_uses_completed_independent_audit_artifact() -> None
     assert r"^embedded-audit-pr-(\d+)-head-([0-9a-f]{40})-proof$" in text
     assert "jq -s" in text
     assert "live_head" in text
+    assert "Publish readiness status on candidate PR head" in text
+    assert 'context="PR Steward / final readiness"' in text
+    assert "statuses: write" in text
 
 
 def _passing_proof(**overrides: object) -> dict:

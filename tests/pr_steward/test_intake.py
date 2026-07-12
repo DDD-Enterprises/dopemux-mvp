@@ -353,6 +353,8 @@ def test_live_collection_uses_proof_path_for_ready_state(
     proof_path.write_text(
         json.dumps(
             {
+                "repo": "DDD-Enterprises/dopemux-mvp",
+                "pr_number": 704,
                 "head_sha": pr_head,
                 "executed": True,
                 "embedded_audit": {
@@ -616,6 +618,33 @@ def test_independent_audit_errors_rejects_status_pass_executed_false() -> None:
         }
     )
     assert any("audit_not_executed" in e for e in errors)
+
+
+def test_live_collection_rejects_proof_bound_to_other_pr(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "a" * 40
+    readiness = _blocked_by_independent_audit(
+        tmp_path,
+        monkeypatch,
+        {
+            "repo": "DDD-Enterprises/dopemux-mvp",
+            "pr_number": 999,
+            "head_sha": pr_head,
+            "executed": True,
+            "embedded_audit": {
+                "status": "PASS",
+                "report_path": "proof/x/AUDITOR_REPORT.md",
+            },
+            "provenance": {
+                "proof_author": "independent-embedded-audit",
+                "workflow": "embedded-audit.yml",
+            },
+        },
+        pr_head,
+    )
+    assert readiness["readiness"] == "BLOCKED"
+    assert "EMBEDDED_AUDIT_NEEDS_SUPERVISOR" in readiness["blockers"]
 
 
 def test_trusted_author_association_is_nonblocking() -> None:
