@@ -307,7 +307,8 @@ def test_pr_steward_workflow_uses_completed_independent_audit_artifact() -> None
     assert "--proof-path independent-audit/PROOF.json" in text
     assert "scripts.audit.pr_audit_router" not in text
     assert "Validate audit workflow-run identity" in text
-    assert "run_conclusion_not_success" in text
+    assert "conclusion_ok=" in text
+    assert "publish failure status" in text or "Publish readiness status" in text
     assert "repository_missing" in text
     assert 'name == "embedded-audit" and path.endswith("embedded-audit.yml")' in text
     assert "embedded-audit-pr-" in text

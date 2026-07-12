@@ -104,10 +104,11 @@ jobs:
               errors.append("run_head_sha_missing")
 
           conclusion = str(run.get("conclusion") or "")
-          # Final readiness requires a successful audit conclusion. Failed runs
-          # retain artifacts for diagnosis but cannot produce READY.
-          if conclusion != "success":
-              errors.append(f"run_conclusion_not_success: conclusion={conclusion!r}")
+          # Do NOT abort identity validation solely because conclusion != success.
+          # Failed/re-run audits must still bind candidate head and publish a
+          # failure status so a prior green status cannot stick.
+          if not conclusion:
+              errors.append("run_conclusion_missing")
 
           if errors:
               print("Audit workflow-run identity validation failed:", file=sys.stderr)
@@ -119,12 +120,21 @@ jobs:
           with out.open("a", encoding="utf-8") as fh:
               fh.write(f"run_head_sha={run_head_sha}\n")
               fh.write(f"conclusion={conclusion}\n")
+              fh.write(
+                  f"conclusion_ok={'true' if conclusion == 'success' else 'false'}\n"
+              )
               fh.write(f"workflow_name={name}\n")
               fh.write(f"workflow_path={path}\n")
           print(
               f"Validated embedded-audit run {run_id} "
               f"run_head_sha={run_head_sha} conclusion={conclusion}"
           )
+          if conclusion != "success":
+              print(
+                  f"NOTE: audit conclusion={conclusion!r}; continuing to bind "
+                  "candidate head and publish failure status.",
+                  file=sys.stderr,
+              )
           PY
 
       - name: Select and download independent audit artifact
@@ -132,6 +142,7 @@ jobs:
         env:
           AUDIT_RUN_ID: ${{ steps.audit_run.outputs.id }}
           EXPECTED_REPO: ${{ github.repository }}
+          AUDIT_CONCLUSION: ${{ steps.run_identity.outputs.conclusion }}
         run: |
           set -euo pipefail
           rm -rf independent-audit-download independent-audit
@@ -142,6 +153,8 @@ jobs:
           # IMPORTANT: PR head SHA comes from the artifact name (and later PROOF),
           # not from workflow_run.head_sha (unreliable under pull_request_target).
           # --paginate may emit multiple JSON objects; slurp+merge with jq -s.
+          # Runs even when audit conclusion != success so failure status can be
+          # published against the candidate head (overwriting stale green).
           gh api "repos/${EXPECTED_REPO}/actions/runs/${AUDIT_RUN_ID}/artifacts" \
             --paginate \
             | jq -s 'map(.artifacts // []) | add | {artifacts: .}' \
@@ -226,6 +239,18 @@ jobs:
           live_head="$(gh api "repos/${EXPECTED_REPO}/pulls/${SELECTED_PR}" --jq .head.sha)"
           test "$live_head" = "$EXPECTED_HEAD_SHA"
 
+          # Bind identity outputs BEFORE hard enforce so failure status can still
+          # be published when the audit conclusion or proof is non-passing.
+          printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
+          printf 'pr_head_sha=%s\n' "$EXPECTED_HEAD_SHA" >> "$GITHUB_OUTPUT"
+          printf 'pr_number=%s\n' "$SELECTED_PR" >> "$GITHUB_OUTPUT"
+
+          # Hard gate: non-success audit conclusion cannot produce READY.
+          if [ "${AUDIT_CONCLUSION}" != "success" ]; then
+            echo "Audit workflow conclusion is ${AUDIT_CONCLUSION}; refusing READY." >&2
+            exit 2
+          fi
+
           export PROOF_PR="$proof_pr"
           export EXPECTED_HEAD_SHA
           python - <<'PY'
@@ -247,11 +272,9 @@ jobs:
           print("Independent audit proof identity enforcement: PASS")
           PY
 
-          printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
-          printf 'pr_head_sha=%s\n' "$EXPECTED_HEAD_SHA" >> "$GITHUB_OUTPUT"
-
       - name: Bind proof identity outputs
         id: proof
+        if: always() && hashFiles('independent-audit/PROOF.json') != ''
         run: |
           pr_number="$(jq -er '.pr_number' independent-audit/PROOF.json)"
           head_sha="$(jq -er '.head_sha' independent-audit/PROOF.json)"
@@ -261,6 +284,7 @@ jobs:
 
       - name: Run PR Steward
         id: steward
+        if: success()
         run: |
           python -m tools.pr_steward.intake \
             --repo "$GITHUB_REPOSITORY" \
@@ -276,22 +300,32 @@ jobs:
           PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
           PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
           STEWARD_OUTCOME: ${{ steps.steward.outcome }}
+          AUDIT_OUTCOME: ${{ steps.audit.outcome }}
+          AUDIT_CONCLUSION: ${{ steps.run_identity.outputs.conclusion }}
         run: |
           # workflow_run jobs execute against default-branch GITHUB_SHA. Publish
           # an explicit commit status on the validated candidate head so branch
           # protection can require "PR Steward / final readiness" on the PR.
-          if [ "${STEWARD_OUTCOME}" = "success" ]; then
+          # Always overwrite prior status for this context on this head, including
+          # when a later failed audit re-runs after an earlier green.
+          if [ "${AUDIT_CONCLUSION}" = "success" ] \
+            && [ "${AUDIT_OUTCOME}" = "success" ] \
+            && [ "${STEWARD_OUTCOME}" = "success" ]; then
             state="success"
             description="final readiness READY for PR ${PR_NUMBER}"
           else
             state="failure"
-            description="final readiness not READY for PR ${PR_NUMBER}"
+            description="final readiness not READY for PR ${PR_NUMBER} (audit=${AUDIT_CONCLUSION}/${AUDIT_OUTCOME} steward=${STEWARD_OUTCOME})"
           fi
           gh api "repos/${GITHUB_REPOSITORY}/statuses/${PR_HEAD_SHA}" \
             -f state="${state}" \
             -f context="PR Steward / final readiness" \
             -f description="${description}" \
             -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          # Fail the job when not READY so the workflow itself is red.
+          if [ "${state}" != "success" ]; then
+            exit 1
+          fi
 
       - name: Write job summary
         if: always()
