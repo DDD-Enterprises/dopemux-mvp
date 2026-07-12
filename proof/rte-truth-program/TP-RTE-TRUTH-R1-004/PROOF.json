@@ -1,0 +1,153 @@
+{
+  "packet_id": "TP-RTE-TRUTH-R1-004",
+  "packet_path": "task-packets/generated/TP-RTE-TRUTH-R1-004.json",
+  "tree_item_id": "2842683f-33f5-4f51-921c-a2055a0c0bbd",
+  "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-audit-improvement-f4beb7",
+  "base_head": "e7fea1ffc",
+  "commit_sha": null,
+  "recommended_execution": {
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "max"
+  },
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "marker_present": true
+  },
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-RTE-TRUTH-R1-004.json",
+    "claudedocs/rte-truth-program-2026-07/A1-architecture.md",
+    "claudedocs/rte-truth-program-2026-07/A2-cost-truthfulness.md",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/lib/spend_ledger.py",
+    "services/repo-truth-extractor/tests/test_truth_harness_goldens.py"
+  ],
+  "scope": {
+    "dry_run_only": true,
+    "live_provider_calls": false,
+    "dpmx_live_ok_set": false,
+    "execute_commands_run": false
+  },
+  "changes": [
+    {
+      "file": "services/repo-truth-extractor/extractor/costing.py",
+      "summary": "Created the canonical System A SpendTracker owner, including state, lock, pricing math, registry loading, ledger snapshots, lifecycle, record path, cost-cap exception, and baseline-rate shims."
+    },
+    {
+      "file": "services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "Replaced System A implementation with dependency-injected compatibility facades, re-exported moved symbols, and changed cost-abort reads to the canonical accessor; System B cfg.ledger functions remain in the runner."
+    },
+    {
+      "file": "services/repo-truth-extractor/tests/test_costing_seam.py",
+      "summary": "Added direct System A initialization, active-accessor, post-response breach, and snapshot coverage."
+    },
+    {
+      "file": "services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py",
+      "summary": "Converted tests from direct monolith-global mutation to lifecycle and accessor use, and reset the extracted singleton at each test boundary."
+    }
+  ],
+  "golden_diff_itemized": [],
+  "validation": [
+    {
+      "status": "FAIL",
+      "exit_code": 2,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_costing_seam.py -q",
+      "purpose": "RED verification before extraction",
+      "summary": "Collection failed because extractor.costing did not yet exist."
+    },
+    {
+      "status": "FAIL",
+      "exit_code": 1,
+      "command": "combined targeted cost, ledger, preflight, and golden pytest suite",
+      "purpose": "Cross-module regression discovery",
+      "summary": "The first combined run exposed a test-process singleton leak from cost-cap tests into a later prelive test. Test-boundary reset coverage was added before the final run."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_costing_seam.py services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py services/repo-truth-extractor/tests/test_spend_ledger.py services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py services/repo-truth-extractor/tests/test_spend_truth.py services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_direct_model_spend_guard.py services/repo-truth-extractor/tests/test_preflight_cost_profile.py services/repo-truth-extractor/tests/test_run_extraction_v5_prelive_hardening.py services/repo-truth-extractor/tests/test_truth_harness_goldens.py services/repo-truth-extractor/tests/test_v5_golden_fixture_smoke.py -q",
+      "summary": "Final targeted cost, System B ledger, preflight, and golden suite passed; the documented slow golden was skipped."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m py_compile services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/extractor/costing.py",
+      "summary": "Runner and extracted costing module compiled."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- ruff check services/repo-truth-extractor/extractor/costing.py services/repo-truth-extractor/tests/test_costing_seam.py services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py",
+      "summary": "All changed isolated modules and tests passed scoped lint."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "System B source-boundary inspection",
+      "summary": "_pricing_preview, _check_projected_cost_limit, _accumulate_runtime_spend, and _reserve_projected_spend remain in run_extraction_v5.py and were not modified by this packet."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "git diff --check",
+      "summary": "No whitespace errors."
+    },
+    {
+      "status": "FAIL",
+      "exit_code": 1,
+      "command": "mise exec -- ruff check services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "The monolith retains 38 pre-existing Ruff violations, matching the verified base-file count; no new runner lint violation was introduced."
+    }
+  ],
+  "codereview": {
+    "status": "completed_findings_resolved",
+    "reviewer": "dmx_reviewer",
+    "agent_id": "019f5647-7f95-7751-997c-ca00d0de99b7",
+    "findings": [
+      {
+        "severity": "HIGH",
+        "summary": "The runner imports the new costing module, so omitting the untracked module or its seam test from the commit would break runner import and remove coverage.",
+        "resolution": "The final staging inventory explicitly includes extractor/costing.py and test_costing_seam.py with the runner facade."
+      },
+      {
+        "severity": "MEDIUM",
+        "summary": "Unrelated local .claude configuration and cache state are outside the packet allowlist.",
+        "resolution": "The unrelated files are preserved as user-owned working-tree state and explicitly excluded from staging."
+      }
+    ]
+  },
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-RTE-TRUTH-R1-004/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "The embedded-audit schema does not represent the dmx_reviewer result; its outcome is recorded in codereview."
+    ],
+    "skip_reason": "TP-RTE-TRUTH-R1-004 did not require a legacy embedded-audit tool. Independent code review is recorded separately."
+  },
+  "precommit_status": "PASS",
+  "residual_risks": [
+    "The documented slow cost-preview golden remains skipped unless RTE_TRUTH_SLOW_GOLDENS=1 is explicitly enabled.",
+    "The full runner Ruff check is not clean because the base file already has 38 violations.",
+    "No live extraction, provider call, --execute path, or DPMX_LIVE_OK=1 path was exercised."
+  ],
+  "unknowns": [],
+  "rollback": {
+    "strategy": "Revert the eventual TP-RTE-TRUTH-R1-004 commit.",
+    "files": [
+      "services/repo-truth-extractor/extractor/costing.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_costing_seam.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R1-004/PROOF.json"
+    ]
+  }
+}

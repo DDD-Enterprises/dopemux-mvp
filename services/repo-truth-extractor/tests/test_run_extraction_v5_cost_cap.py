@@ -9,6 +9,13 @@ import sys
 import pytest
 
 
+SERVICE_ROOT = Path(__file__).resolve().parents[1]
+if str(SERVICE_ROOT) not in sys.path:
+    sys.path.insert(0, str(SERVICE_ROOT))
+
+from extractor import costing  # noqa: E402
+
+
 def _load_runner_module():
     root = Path(__file__).resolve().parents[3]
     module_path = root / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
@@ -22,6 +29,13 @@ def _load_runner_module():
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+@pytest.fixture(autouse=True)
+def _reset_extracted_spend_tracker():
+    costing.reset_spend_tracker()
+    yield
+    costing.reset_spend_tracker()
 
 
 def _make_cfg(runner, **overrides):
@@ -52,6 +66,39 @@ def _make_cfg(runner, **overrides):
     }
     payload.update(overrides)
     return runner.RunnerConfig(**payload)
+
+
+def _initialize_test_spend_tracker(
+    runner,
+    tmp_path: Path,
+    *,
+    run_id: str,
+    max_cost_usd: Decimal,
+    pricing_registry: dict[str, dict[str, Decimal]],
+):
+    runner.reset_spend_tracker()
+    runner.load_pricing_registry = lambda path=runner.PRICING_CONFIG_PATH: (
+        pricing_registry,
+        "sha-test",
+    )
+    runner.collect_provider_routes = (
+        lambda phases, routing_policy, selected_step_ids_by_phase=None, cost_profile=None, **_kw: {
+            "openrouter:openai/gpt-5-mini:OPENROUTER_API_KEY": {
+                "provider": "openrouter",
+                "model_id": "openai/gpt-5-mini",
+                "api_key_env": "OPENROUTER_API_KEY",
+            }
+        }
+    )
+    runner.initialize_spend_tracker(
+        run_root=tmp_path,
+        run_id=run_id,
+        cfg=_make_cfg(runner, max_cost_usd=float(max_cost_usd)),
+        phases=["A"],
+    )
+    state = runner.get_active_spend_tracker()
+    assert state is not None
+    return state
 
 
 def test_initialize_spend_tracker_writes_empty_ledger_when_routes_are_priced(
@@ -221,23 +268,17 @@ def test_update_run_manifest_startup_failure_marks_manifest_failed(
 
 def test_record_request_cost_marks_breach_and_writes_ledger(tmp_path: Path) -> None:
     runner = _load_runner_module()
-    runner.reset_spend_tracker()
-    runner._ACTIVE_SPEND_TRACKER = runner.SpendTrackerState(
-        run_root=tmp_path,
+    _initialize_test_spend_tracker(
+        runner,
+        tmp_path,
         run_id="cost_cap_breach",
         max_cost_usd=Decimal("0.10"),
-        pricing_source="test",
-        pricing_sha256="sha",
         pricing_registry={
             "openrouter/openai/gpt-5-mini": {
                 "input_cost_per_m": Decimal("0.40"),
                 "output_cost_per_m": Decimal("1.60"),
             }
         },
-        total_cost_usd=Decimal("0"),
-        cost_abort_triggered=False,
-        abort_reason=None,
-        entries=[],
     )
     meta = {
         "response_summary": {
@@ -269,19 +310,21 @@ def test_record_request_cost_marks_breach_and_writes_ledger(tmp_path: Path) -> N
 
 def test_call_llm_blocks_after_cost_abort(monkeypatch, tmp_path: Path) -> None:
     runner = _load_runner_module()
-    runner.reset_spend_tracker()
-    runner._ACTIVE_SPEND_TRACKER = runner.SpendTrackerState(
-        run_root=tmp_path,
+    state = _initialize_test_spend_tracker(
+        runner,
+        tmp_path,
         run_id="already_aborted",
         max_cost_usd=Decimal("0.10"),
-        pricing_source="test",
-        pricing_sha256="sha",
-        pricing_registry={},
-        total_cost_usd=Decimal("0.11"),
-        cost_abort_triggered=True,
-        abort_reason="cost_cap_exceeded total_cost_usd=0.11 max_cost_usd=0.1",
-        entries=[],
+        pricing_registry={
+            "openrouter/openai/gpt-5-mini": {
+                "input_cost_per_m": Decimal("0.40"),
+                "output_cost_per_m": Decimal("1.60"),
+            }
+        },
     )
+    state.total_cost_usd = Decimal("0.11")
+    state.cost_abort_triggered = True
+    state.abort_reason = "cost_cap_exceeded total_cost_usd=0.11 max_cost_usd=0.1"
     cfg = _make_cfg(runner)
     monkeypatch.setattr(runner, "_live_llm_calls_blocked_for_tests", lambda: False)
     monkeypatch.setattr(runner, "resolve_api_key", lambda provider, env: ("key", env))
