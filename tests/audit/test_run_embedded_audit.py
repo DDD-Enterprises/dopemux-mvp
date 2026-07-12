@@ -5,8 +5,16 @@ import json
 from pathlib import Path
 
 import jsonschema
+import pytest
 
-from scripts.audit.run_embedded_audit import build_embedded_audit_proof, run_cli
+from scripts.audit.run_embedded_audit import (
+    build_diagnostic_failure_proof,
+    build_embedded_audit_proof,
+    enforce_independent_audit_proof,
+    independent_audit_errors,
+    run_cli,
+)
+from tools.pr_steward.collector import _independent_audit_errors
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -205,13 +213,30 @@ def test_embedded_audit_workflow_uses_trusted_source_and_least_privilege() -> No
     permissions = text.split("permissions:\n", 1)[1].split("\njobs:", 1)[0]
 
     assert "pull_request_target:" in text
-    assert "pull_request:" not in text
+    # Trigger must not use untrusted pull_request alone; legacy name may appear
+    # only inside metadata shell equality checks.
+    assert "on:\n  pull_request_target:" in text or "on:\n  pull_request_target" in text
     assert "contents: read" in text
     assert "pull-requests: read" in text
     assert "checks: read" in text
     assert "statuses: read" in text
     assert ": write" not in permissions
     assert "scripts/audit/run_embedded_audit.py" in text
+    assert "persist-credentials: false" in text
+
+
+def test_embedded_audit_workflow_handles_pull_request_target_metadata() -> None:
+    """Regression: trigger is pull_request_target; shell must not only match pull_request."""
+    text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    assert 'EVENT_NAME" = "pull_request_target"' in text or \
+        "\"$EVENT_NAME\" = \"pull_request_target\"" in text or \
+        '[ "$EVENT_NAME" = "pull_request_target" ]' in text
+    assert '[ "$EVENT_NAME" = "pull_request" ] || [ "$EVENT_NAME" = "pull_request_target" ]' in text
+    assert '[ "$EVENT_NAME" = "workflow_dispatch" ]' in text
+    assert "EVENT_PR_NUMBER" in text
+    assert "EVENT_HEAD_SHA" in text
+    assert "INPUT_PR_NUMBER" in text
+    assert "INPUT_HEAD_SHA" in text
 
 
 def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
@@ -226,12 +251,14 @@ def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
     assert "id: head_integrity" in text
     assert "Emit independent embedded audit proof" in text
     assert "Enforce independent audit result" in text
+    assert "enforce_independent_audit_proof" in text
     assert "EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}" in text
     assert "refs/pull/${PR_NUMBER}/head" in text
     assert 'pr_head_sha" = "$EXPECTED_HEAD_SHA"' in text
     assert "Requested PR head SHA could not be fetched or no longer matches the PR head." in text
     assert "Emit skipped embedded audit proof" not in text
     assert "NEEDS_SUPERVISOR" in text
+    assert '"executed": False' in text or '"executed": false' in text
     assert "git -C trusted-source fetch --no-tags --depth=1 origin" in text
     assert "Checkout requested head" not in text
     assert "ref: ${{ steps.pr.outputs.head_sha }}" not in text
@@ -260,6 +287,14 @@ def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
         'if [ "$actual_head_sha" = "$EXPECTED_HEAD_SHA" ] '
         '&& [ "$pr_head_sha" = "$EXPECTED_HEAD_SHA" ]; then'
     ) in text
+    # Soft runner exit is intentional; hard enforcement is authoritative.
+    assert "Soft exit is intentional" in text or "soft_runner_exit" in text
+    assert "missing on the trusted ref" in text
+    assert "embedded-audit-pr-${{ steps.pr.outputs.number }}-head-${{ steps.pr.outputs.head_sha }}-proof" in text
+    # Candidate must not be checked out as working tree with secrets.
+    assert "path: candidate" not in text
+    assert "EMBEDDED_AUDIT_TOKEN" in text
+    # Token only appears in emit step context (trusted scripts), not in candidate checkout.
 
 
 def test_pr_steward_workflow_uses_completed_independent_audit_artifact() -> None:
@@ -271,3 +306,195 @@ def test_pr_steward_workflow_uses_completed_independent_audit_artifact() -> None
     assert "independent-audit/PROOF.json" in text
     assert "--proof-path independent-audit/PROOF.json" in text
     assert "scripts.audit.pr_audit_router" not in text
+    assert "Validate audit workflow-run identity" in text
+    assert "run_conclusion_not_success" in text
+    assert "embedded-audit-pr-" in text
+    assert "Exactly one expected proof artifact is required" in text
+    # Artifact name must use validated proof identity, not stale steps.pr.
+    assert "name: pr-steward-${{ steps.pr.outputs.number }}" not in text
+    assert "pr-steward-pr-${{ steps.proof.outputs.pr_number }}-head-${{ steps.proof.outputs.head_sha }}-readiness" in text
+    assert "final readiness" in text
+    assert "advisory check-only intake" in text  # documented old name for migration
+    assert "enforce_independent_audit_proof" in text
+    assert "persist-credentials: false" in text
+
+
+def _passing_proof(**overrides: object) -> dict:
+    proof: dict = {
+        "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
+        "repo": "DDD-Enterprises/dopemux-mvp",
+        "pr_number": 1042,
+        "head_sha": "a" * 40,
+        "executed": True,
+        "dry_run": False,
+        "embedded_audit": {
+            "status": "PASS",
+            "report_path": "proof/x/AUDITOR_REPORT.md",
+        },
+        "provenance": {
+            "proof_author": "independent-embedded-audit",
+            "workflow": "embedded-audit.yml",
+        },
+    }
+    proof.update(overrides)
+    return proof
+
+
+def test_enforce_accepts_passing_independent_audit() -> None:
+    proof = _passing_proof()
+    enforce_independent_audit_proof(
+        proof,
+        expected_pr=1042,
+        expected_head_sha="a" * 40,
+        expected_repo="DDD-Enterprises/dopemux-mvp",
+    )
+
+
+@pytest.mark.parametrize(
+    "overrides,expected_fragment",
+    [
+        ({"executed": False}, "audit_not_executed"),
+        ({"provenance": None}, "audit_provenance_missing"),
+        (
+            {"provenance": {"proof_author": "self", "workflow": "embedded-audit.yml"}},
+            "unexpected proof author",
+        ),
+        (
+            {
+                "provenance": {
+                    "proof_author": "independent-embedded-audit",
+                    "workflow": "other.yml",
+                }
+            },
+            "unexpected workflow",
+        ),
+        ({"pr_number": 999}, "audit_pr_mismatch"),
+        ({"head_sha": "b" * 40}, "audit_head_mismatch"),
+        ({"dry_run": True}, "audit_proof_dry_run"),
+        ({"dry_run": "true"}, "audit_proof_malformed_dry_run"),
+    ],
+)
+def test_enforce_rejects_spoof_and_mismatch_shapes(
+    overrides: dict, expected_fragment: str
+) -> None:
+    proof = _passing_proof(**overrides)
+    with pytest.raises(SystemExit) as exc:
+        enforce_independent_audit_proof(
+            proof,
+            expected_pr=1042,
+            expected_head_sha="a" * 40,
+            expected_repo="DDD-Enterprises/dopemux-mvp",
+        )
+    assert expected_fragment in str(exc.value)
+
+
+def test_enforce_rejects_status_pass_without_execution() -> None:
+    """status=PASS alone must never green the gate."""
+    proof = _passing_proof(executed=False)
+    proof["embedded_audit"]["status"] = "PASS"
+    with pytest.raises(SystemExit) as exc:
+        enforce_independent_audit_proof(
+            proof,
+            expected_pr=1042,
+            expected_head_sha="a" * 40,
+        )
+    assert "audit_not_executed" in str(exc.value)
+
+
+def test_enforce_rejects_non_passing_status_even_when_executed() -> None:
+    proof = _passing_proof()
+    proof["embedded_audit"]["status"] = "NEEDS_SUPERVISOR"
+    with pytest.raises(SystemExit) as exc:
+        enforce_independent_audit_proof(
+            proof,
+            expected_pr=1042,
+            expected_head_sha="a" * 40,
+        )
+    assert "did not pass" in str(exc.value)
+
+
+def test_diagnostic_failure_proof_has_no_trusted_provenance() -> None:
+    proof = build_diagnostic_failure_proof(
+        packet_id="TP-DMX-AUDIT-CI-PROVENANCE-104",
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=1042,
+        head_sha="c" * 40,
+        reason="missing emitter",
+    )
+    assert proof["executed"] is False
+    assert proof["embedded_audit"]["status"] == "NEEDS_SUPERVISOR"
+    assert "provenance" not in proof
+    errors = independent_audit_errors(proof)
+    assert any("audit_not_executed" in e for e in errors)
+    assert any("provenance" in e for e in errors)
+
+
+def test_collector_and_enforce_parity_matrix() -> None:
+    """Both surfaces must accept/reject the same cases."""
+    cases = [
+        (_passing_proof(), True),
+        (_passing_proof(executed=False), False),
+        (_passing_proof(provenance=None), False),
+        (
+            _passing_proof(
+                provenance={
+                    "proof_author": "forged",
+                    "workflow": "embedded-audit.yml",
+                }
+            ),
+            False,
+        ),
+        (
+            _passing_proof(
+                provenance={
+                    "proof_author": "independent-embedded-audit",
+                    "workflow": "wrong.yml",
+                }
+            ),
+            False,
+        ),
+        (_passing_proof(dry_run=True, executed=True), False),
+        (_passing_proof(dry_run="true"), False),
+        (_passing_proof(head_sha="d" * 40), True),  # no expected head in collector
+    ]
+    for proof, expect_ok in cases:
+        collector_errors = _independent_audit_errors(proof)
+        shared_errors = independent_audit_errors(proof)
+        assert collector_errors == shared_errors
+        assert (not shared_errors) is expect_ok
+        if expect_ok and proof.get("head_sha") == "a" * 40:
+            enforce_independent_audit_proof(
+                proof, expected_pr=1042, expected_head_sha="a" * 40
+            )
+        if not expect_ok:
+            # status may still be PASS; enforce must still fail on identity errors
+            with pytest.raises(SystemExit):
+                enforce_independent_audit_proof(
+                    proof,
+                    expected_pr=1042,
+                    expected_head_sha="a" * 40,
+                )
+
+
+def test_synthetic_runner_error_payload_cannot_pass_enforcement() -> None:
+    """PAL soft-exit error JSON must not green the workflow via status alone."""
+    # Emulates workflow synthesizing {"status":"error",...} then building a
+    # skipped/failed proof; enforcement must reject executed!=true / non-PASS.
+    synthetic_pal = {"status": "error", "risks": ["runner failed"]}
+    # Even if a bad actor rewrote status to PASS with executed false:
+    forged = {
+        "executed": False,
+        "pr_number": 1042,
+        "head_sha": "a" * 40,
+        "embedded_audit": {"status": "PASS"},
+        "provenance": {
+            "proof_author": "independent-embedded-audit",
+            "workflow": "embedded-audit.yml",
+        },
+        "pal_hint": synthetic_pal,
+    }
+    with pytest.raises(SystemExit) as exc:
+        enforce_independent_audit_proof(
+            forged, expected_pr=1042, expected_head_sha="a" * 40
+        )
+    assert "audit_not_executed" in str(exc.value)

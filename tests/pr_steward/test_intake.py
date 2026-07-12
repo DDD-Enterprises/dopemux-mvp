@@ -460,6 +460,164 @@ def test_live_collection_rejects_dry_run_or_unproven_audit_proof(
     assert "EMBEDDED_AUDIT_NEEDS_SUPERVISOR" in readiness["blockers"]
 
 
+def _blocked_by_independent_audit(
+    tmp_path: Path, monkeypatch, proof_body: dict, pr_head: str
+) -> dict:
+    proof_path = tmp_path / "PROOF.json"
+    proof_path.write_text(json.dumps(proof_body), encoding="utf-8")
+
+    def fake_run(args: list[str]) -> subprocess.CompletedProcess[str]:
+        if args[:3] == ["gh", "auth", "status"]:
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if args[:3] == ["gh", "pr", "view"]:
+            return subprocess.CompletedProcess(
+                args,
+                0,
+                json.dumps(base_pr_payload(head_sha=pr_head)),
+                "",
+            )
+        raise AssertionError(f"unexpected gh command: {args}")
+
+    monkeypatch.setattr(collector, "_run", fake_run)
+    monkeypatch.setattr(collector, "_fetch_review_threads", lambda **_: ([], []))
+    harvest = collector.collect_from_github(
+        "DDD-Enterprises/dopemux-mvp",
+        704,
+        proof_path=proof_path,
+    )
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    return readiness
+
+
+def test_live_collection_rejects_pass_with_executed_true_missing_provenance(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "c" * 40
+    readiness = _blocked_by_independent_audit(
+        tmp_path,
+        monkeypatch,
+        {
+            "head_sha": pr_head,
+            "executed": True,
+            "embedded_audit": {
+                "status": "PASS",
+                "report_path": "proof/x/AUDITOR_REPORT.md",
+            },
+        },
+        pr_head,
+    )
+    assert readiness["readiness"] == "BLOCKED"
+    assert "EMBEDDED_AUDIT_NEEDS_SUPERVISOR" in readiness["blockers"]
+
+
+def test_live_collection_rejects_wrong_proof_author(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "d" * 40
+    readiness = _blocked_by_independent_audit(
+        tmp_path,
+        monkeypatch,
+        {
+            "head_sha": pr_head,
+            "executed": True,
+            "embedded_audit": {"status": "PASS", "report_path": "proof/x/AUDITOR_REPORT.md"},
+            "provenance": {
+                "proof_author": "self-attested",
+                "workflow": "embedded-audit.yml",
+            },
+        },
+        pr_head,
+    )
+    assert readiness["readiness"] == "BLOCKED"
+
+
+def test_live_collection_rejects_wrong_workflow_provenance(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "e" * 40
+    readiness = _blocked_by_independent_audit(
+        tmp_path,
+        monkeypatch,
+        {
+            "head_sha": pr_head,
+            "executed": True,
+            "embedded_audit": {"status": "PASS", "report_path": "proof/x/AUDITOR_REPORT.md"},
+            "provenance": {
+                "proof_author": "independent-embedded-audit",
+                "workflow": "not-embedded-audit.yml",
+            },
+        },
+        pr_head,
+    )
+    assert readiness["readiness"] == "BLOCKED"
+
+
+def test_live_collection_rejects_stale_wrong_head_sha(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "f" * 40
+    stale_head = "0" * 40
+    readiness = _blocked_by_independent_audit(
+        tmp_path,
+        monkeypatch,
+        {
+            "head_sha": stale_head,
+            "executed": True,
+            "embedded_audit": {
+                "status": "PASS",
+                "report_path": "proof/x/AUDITOR_REPORT.md",
+            },
+            "provenance": {
+                "proof_author": "independent-embedded-audit",
+                "workflow": "embedded-audit.yml",
+            },
+        },
+        pr_head,
+    )
+    # Collector independent-audit errors do not encode expected head; head
+    # freshness is a separate blocker. READY must be impossible.
+    assert readiness["readiness"] in {"BLOCKED", "NEEDS_SUPERVISOR"}
+    assert readiness["readiness"] != "READY"
+    assert readiness["proof"]["matches_pr_head"] is False
+
+
+def test_independent_audit_errors_rejects_malformed_dry_run_string() -> None:
+    errors = collector._independent_audit_errors(
+        {
+            "executed": True,
+            "dry_run": "true",
+            "embedded_audit": {"status": "PASS"},
+            "provenance": {
+                "proof_author": "independent-embedded-audit",
+                "workflow": "embedded-audit.yml",
+            },
+        }
+    )
+    assert any("malformed_dry_run" in e for e in errors)
+
+
+def test_independent_audit_errors_rejects_status_pass_executed_false() -> None:
+    errors = collector._independent_audit_errors(
+        {
+            "executed": False,
+            "embedded_audit": {"status": "PASS"},
+            "provenance": {
+                "proof_author": "independent-embedded-audit",
+                "workflow": "embedded-audit.yml",
+            },
+        }
+    )
+    assert any("audit_not_executed" in e for e in errors)
+
+
 def test_trusted_author_association_is_nonblocking() -> None:
     harvest = base_ready_harvest()
     harvest["reviews"] = [
