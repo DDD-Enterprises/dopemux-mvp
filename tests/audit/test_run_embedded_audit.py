@@ -308,6 +308,8 @@ def test_pr_steward_workflow_uses_completed_independent_audit_artifact() -> None
     assert "scripts.audit.pr_audit_router" not in text
     assert "Validate audit workflow-run identity" in text
     assert "run_conclusion_not_success" in text
+    assert "repository_missing" in text
+    assert 'name == "embedded-audit" and path.endswith("embedded-audit.yml")' in text
     assert "embedded-audit-pr-" in text
     assert "Exactly one expected proof artifact is required" in text
     # Artifact name must use validated proof identity, not stale steps.pr.
@@ -317,6 +319,12 @@ def test_pr_steward_workflow_uses_completed_independent_audit_artifact() -> None
     assert "advisory check-only intake" in text  # documented old name for migration
     assert "enforce_independent_audit_proof" in text
     assert "persist-credentials: false" in text
+    # PR head for artifact selection comes from artifact name, not run.head_sha
+    # (unreliable under pull_request_target).
+    assert "EXPECTED_HEAD_SHA: ${{ steps.run_identity.outputs.head_sha }}" not in text
+    assert r"^embedded-audit-pr-(\d+)-head-([0-9a-f]{40})-proof$" in text
+    assert "jq -s" in text
+    assert "live_head" in text
 
 
 def _passing_proof(**overrides: object) -> dict:
@@ -386,6 +394,20 @@ def test_enforce_rejects_spoof_and_mismatch_shapes(
             expected_repo="DDD-Enterprises/dopemux-mvp",
         )
     assert expected_fragment in str(exc.value)
+
+
+def test_independent_audit_errors_rejects_missing_repo_when_expected() -> None:
+    proof = _passing_proof()
+    proof.pop("repo", None)
+    errors = independent_audit_errors(
+        proof, expected_repo="DDD-Enterprises/dopemux-mvp"
+    )
+    assert any("audit_repo_missing" in e for e in errors)
+    proof["repo"] = ""
+    errors = independent_audit_errors(
+        proof, expected_repo="DDD-Enterprises/dopemux-mvp"
+    )
+    assert any("audit_repo_missing" in e for e in errors)
 
 
 def test_enforce_rejects_status_pass_without_execution() -> None:

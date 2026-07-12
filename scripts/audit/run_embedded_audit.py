@@ -88,8 +88,13 @@ def independent_audit_errors(
             )
 
     if expected_repo is not None:
-        proof_repo = str(payload.get("repo") or "")
-        if proof_repo and proof_repo != expected_repo:
+        proof_repo = str(payload.get("repo") or "").strip()
+        if not proof_repo:
+            errors.append(
+                "audit_repo_missing: final readiness requires proof.repo when "
+                "expected_repo is provided"
+            )
+        elif proof_repo != expected_repo:
             errors.append(
                 f"audit_repo_mismatch: proof repo={proof_repo!r} "
                 f"expected={expected_repo}"

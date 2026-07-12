@@ -77,24 +77,27 @@ jobs:
           if run_id != expected_id:
               errors.append(f"run_id_mismatch: {run_id} != {expected_id}")
 
-          repo_full = (run.get("repository") or {}).get("full_name") or expected_repo
-          if repo_full != expected_repo:
+          # Fail closed: missing repository identity is an error, not a default.
+          repo_full = (run.get("repository") or {}).get("full_name")
+          if not repo_full:
+              errors.append("repository_missing: actions run lacks repository.full_name")
+          elif repo_full != expected_repo:
               errors.append(f"repository_mismatch: {repo_full!r} != {expected_repo!r}")
 
           name = str(run.get("name") or "")
           path = str(run.get("path") or "")
-          if not (
-              name == "embedded-audit"
-              or path.endswith("embedded-audit.yml")
-          ):
+          # Require both display name and workflow path for fail-closed identity.
+          if not (name == "embedded-audit" and path.endswith("embedded-audit.yml")):
               errors.append(f"workflow_mismatch: name={name!r} path={path!r}")
 
           status = str(run.get("status") or "")
           if status != "completed":
               errors.append(f"run_not_completed: status={status!r}")
 
-          head_sha = str(run.get("head_sha") or "")
-          if not head_sha:
+          # run.head_sha is NOT used for PR-head artifact identity.
+          # For pull_request_target, GitHub may report the base/default SHA here.
+          run_head_sha = str(run.get("head_sha") or "")
+          if not run_head_sha:
               errors.append("run_head_sha_missing")
 
           conclusion = str(run.get("conclusion") or "")
@@ -111,13 +114,13 @@ jobs:
 
           out = Path(os.environ["GITHUB_OUTPUT"])
           with out.open("a", encoding="utf-8") as fh:
-              fh.write(f"head_sha={head_sha}\n")
+              fh.write(f"run_head_sha={run_head_sha}\n")
               fh.write(f"conclusion={conclusion}\n")
               fh.write(f"workflow_name={name}\n")
               fh.write(f"workflow_path={path}\n")
           print(
               f"Validated embedded-audit run {run_id} "
-              f"head={head_sha} conclusion={conclusion}"
+              f"run_head_sha={run_head_sha} conclusion={conclusion}"
           )
           PY
 
@@ -125,7 +128,6 @@ jobs:
         id: audit
         env:
           AUDIT_RUN_ID: ${{ steps.audit_run.outputs.id }}
-          EXPECTED_HEAD_SHA: ${{ steps.run_identity.outputs.head_sha }}
           EXPECTED_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
@@ -133,9 +135,14 @@ jobs:
           mkdir -p independent-audit-download independent-audit
 
           # Select exactly one artifact by naming contract:
-          #   embedded-audit-pr-<PR>-head-<40-hex>-proof
+          #   embedded-audit-pr-<PR>-head-<40-hex-pr-head>-proof
+          # IMPORTANT: PR head SHA comes from the artifact name (and later PROOF),
+          # not from workflow_run.head_sha (unreliable under pull_request_target).
+          # --paginate may emit multiple JSON objects; slurp+merge with jq -s.
           gh api "repos/${EXPECTED_REPO}/actions/runs/${AUDIT_RUN_ID}/artifacts" \
-            --paginate > /tmp/audit-artifacts.json
+            --paginate \
+            | jq -s 'map(.artifacts // []) | add | {artifacts: .}' \
+            > /tmp/audit-artifacts.json
 
           python - <<'PY'
           import json
@@ -144,18 +151,20 @@ jobs:
           import sys
           from pathlib import Path
 
-          expected_head = os.environ["EXPECTED_HEAD_SHA"]
           payload = json.loads(Path("/tmp/audit-artifacts.json").read_text(encoding="utf-8"))
           artifacts = payload.get("artifacts") or []
+          # Capture PR number and candidate head SHA from the artifact name itself.
           pattern = re.compile(
-              rf"^embedded-audit-pr-(\d+)-head-{re.escape(expected_head)}-proof$"
+              r"^embedded-audit-pr-(\d+)-head-([0-9a-f]{40})-proof$"
           )
           matches = []
           for art in artifacts:
               name = str(art.get("name") or "")
               m = pattern.match(name)
               if m:
-                  matches.append((name, int(m.group(1)), art.get("id")))
+                  matches.append(
+                      (name, int(m.group(1)), m.group(2), art.get("id"))
+                  )
 
           if not matches:
               print(
@@ -169,23 +178,29 @@ jobs:
 
           if len(matches) != 1:
               print("Multiple matching proof artifacts:", file=sys.stderr)
-              for name, pr, _ in matches:
-                  print(f"  - {name} (pr={pr})", file=sys.stderr)
+              for name, pr, head, _ in matches:
+                  print(f"  - {name} (pr={pr} head={head})", file=sys.stderr)
               raise SystemExit("Exactly one expected proof artifact is required")
 
-          name, pr_number, artifact_id = matches[0]
+          name, pr_number, pr_head_sha, artifact_id = matches[0]
           out = Path(os.environ["GITHUB_OUTPUT"])
           with out.open("a", encoding="utf-8") as fh:
               fh.write(f"artifact_name={name}\n")
               fh.write(f"pr_number={pr_number}\n")
+              fh.write(f"pr_head_sha={pr_head_sha}\n")
               fh.write(f"artifact_id={artifact_id}\n")
           Path("/tmp/selected-artifact-name.txt").write_text(name + "\n", encoding="utf-8")
           Path("/tmp/selected-pr-number.txt").write_text(str(pr_number) + "\n", encoding="utf-8")
-          print(f"Selected artifact {name} for PR {pr_number}")
+          Path("/tmp/selected-pr-head-sha.txt").write_text(pr_head_sha + "\n", encoding="utf-8")
+          print(
+              f"Selected artifact {name} for PR {pr_number} "
+              f"candidate_head={pr_head_sha}"
+          )
           PY
 
           ARTIFACT_NAME="$(cat /tmp/selected-artifact-name.txt | tr -d '\n')"
           SELECTED_PR="$(cat /tmp/selected-pr-number.txt | tr -d '\n')"
+          EXPECTED_HEAD_SHA="$(cat /tmp/selected-pr-head-sha.txt | tr -d '\n')"
 
           gh run download "${AUDIT_RUN_ID}" \
             --name "${ARTIFACT_NAME}" \
@@ -204,7 +219,12 @@ jobs:
           test "$proof_pr" = "$SELECTED_PR"
           test "$proof_head" = "$EXPECTED_HEAD_SHA"
 
+          # Cross-check live PR head still matches the artifact-bound head.
+          live_head="$(gh api "repos/${EXPECTED_REPO}/pulls/${SELECTED_PR}" --jq .head.sha)"
+          test "$live_head" = "$EXPECTED_HEAD_SHA"
+
           export PROOF_PR="$proof_pr"
+          export EXPECTED_HEAD_SHA
           python - <<'PY'
           import json
           import os
@@ -225,6 +245,7 @@ jobs:
           PY
 
           printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
+          printf 'pr_head_sha=%s\n' "$EXPECTED_HEAD_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Bind proof identity outputs
         id: proof
