@@ -801,6 +801,7 @@ function App() {
               load={cognitiveState.load}
               status={cognitiveState.status}
               recommendation={cognitiveState.recommendation}
+              onError={setErrorMessage}
             />
           </Grid>
           <Grid item xs={12} lg={layout.compactMode ? 12 : 4}>

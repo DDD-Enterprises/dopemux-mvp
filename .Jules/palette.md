@@ -161,3 +161,7 @@
 ## 2025-06-01 - [Consolidated Card-Level Interaction]
 **Learning:** Nesting interactive elements (like a "Copy" button) inside a focusable card surface creates a redundant and confusing experience for keyboard and screen reader users (nested tab stops). Consolidating the interaction onto the root container (Card-Level Interactive Surface) simplifies the tab order and provides a more direct, high-bandwidth interaction path.
 **Action:** When adding secondary actions like "Copy to Clipboard" to dashboard panels, prefer making the entire card the interactive surface rather than nesting small buttons.
+
+## 2026-07-12 - [Hardening Interactive Surfaces with Global Error Propagation]
+**Learning:** Components performing side-effect interactions (like Clipboard API calls) can fail due to browser permissions or environment limitations. Propagating these errors via an `onError` prop to the root `App.tsx` (using the global error alert system) ensures consistent user feedback and avoids "silent failures" in deeply nested components.
+**Action:** Always provide an `onError?: (msg: string) => void` prop for interactive surface components to allow centralized handling of interaction failures.

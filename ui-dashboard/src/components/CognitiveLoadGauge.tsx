@@ -1,6 +1,7 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Brain } from 'lucide-react';
+import { Brain, Check, Copy } from 'lucide-react';
 
 import { brandTokens, statusStyles, getDynamicRoast } from '../theme';
 
@@ -8,29 +9,79 @@ interface CognitiveLoadGaugeProps {
   load: number;
   status: keyof typeof statusStyles;
   recommendation: string;
+  onError?: (message: string) => void;
 }
 
 export default function CognitiveLoadGauge({
   load,
   status,
   recommendation,
+  onError,
 }: CognitiveLoadGaugeProps) {
   const statusMeta = statusStyles[status];
   const normalizedLoad = Math.max(0, Math.min(100, Math.round(load * 100)));
   const roast = getDynamicRoast('Cognitive Load', load);
 
+  const [isCopied, setIsCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCopy = useCallback(async () => {
+    if (!navigator.clipboard?.writeText) {
+      onError?.('Clipboard API is not supported in this browser or context.');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(`Cognitive Load: ${normalizedLoad}% (${statusMeta.label}) - AI Recommendation: ${recommendation}`);
+      setIsCopied(true);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => {
+        setIsCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      onError?.(`Failed to copy recommendation: ${errorMsg}`);
+    }
+  }, [normalizedLoad, statusMeta.label, recommendation, onError]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+        copyTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   return (
-    <Tooltip title={`AI Recommendation: ${recommendation}. ${roast}`} arrow>
+    <Tooltip title={isCopied ? 'Copied!' : `AI Recommendation: ${recommendation}. Click to copy details.`} arrow>
       <Paper
+        role="button"
         tabIndex={0}
-        aria-label={`Cognitive load ${normalizedLoad} percent, ${statusMeta.label}. AI Recommendation: ${recommendation}. ${roast}`}
+        onClick={handleCopy}
+        onKeyDown={(e) => {
+          if (e.repeat) return;
+          if (e.key === ' ') e.preventDefault();
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            void handleCopy();
+          }
+        }}
+        onKeyUp={(e) => {
+          if (e.repeat) return;
+          if (e.key === ' ') {
+            e.preventDefault();
+            void handleCopy();
+          }
+        }}
+        aria-label={isCopied ? `Recommendation copied: ${recommendation}` : `Cognitive load ${normalizedLoad} percent, ${statusMeta.label}. AI Recommendation: ${recommendation}. Click to copy details.`}
         sx={{
           p: 3,
           minHeight: 300,
           borderRadius: 3,
           background: brandTokens.gradients.focusCard,
           border: `1px solid ${statusMeta.border}`,
-          cursor: 'help',
+          cursor: 'copy',
           outline: 'none',
           transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
           '@keyframes load-pulse': {
@@ -38,7 +89,14 @@ export default function CognitiveLoadGauge({
             '70%': { boxShadow: `0 0 0 12px ${alpha(statusMeta.color, 0)}` },
             '100%': { boxShadow: `0 0 0 0px ${alpha(statusMeta.color, 0)}` },
           },
-          animation: status === 'high' || status === 'critical' ? 'load-pulse 2s infinite' : 'none',
+          '@keyframes copy-success-glow': {
+            '0%': { transform: 'scale(1)' },
+            '50%': { transform: 'scale(1.02)', boxShadow: `0 0 20px ${alpha(brandTokens.colors.serumMint, 0.4)}` },
+            '100%': { transform: 'scale(1)' },
+          },
+          animation: isCopied
+            ? 'copy-success-glow 0.4s ease-out'
+            : (status === 'high' || status === 'critical' ? 'load-pulse 2s infinite' : 'none'),
           '@media (prefers-reduced-motion: reduce)': {
             animation: 'none',
           },
@@ -78,9 +136,16 @@ export default function CognitiveLoadGauge({
           <Typography variant="body2" className="dopemux-roast" sx={{ mb: 1 }}>
             {roast}
           </Typography>
-          <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 0.5, lineHeight: 1.2 }}>
-            AI Recommendation
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1.2 }}>
+              AI Recommendation
+            </Typography>
+            {isCopied ? (
+              <Check size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
+            ) : (
+              <Copy size={14} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
+            )}
+          </Box>
           <Typography variant="body2" color="text.secondary">
             {recommendation}
           </Typography>
