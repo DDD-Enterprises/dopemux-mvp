@@ -14,7 +14,7 @@ Pull request: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1041
 
 ```text
 pytest -q services/dcp-readonly-facade/tests/test_runtime_catalog_join.py
-10 passed
+11 passed
 
 pytest -q services/dcp-readonly-facade/tests
 PASS; 1 live optional test skipped

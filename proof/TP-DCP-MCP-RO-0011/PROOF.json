@@ -31,7 +31,7 @@
   ],
   "validation": {
     "PASS": [
-      {"command": "pytest -q services/dcp-readonly-facade/tests/test_runtime_catalog_join.py", "exit_code": 0, "result": "10 passed"},
+      {"command": "pytest -q services/dcp-readonly-facade/tests/test_runtime_catalog_join.py", "exit_code": 0, "result": "11 passed"},
       {"command": "pytest -q services/dcp-readonly-facade/tests", "exit_code": 0, "result": "PASS; 1 live optional test skipped"},
       {"command": "pytest -q tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py", "exit_code": 0, "result": "32 passed"},
       {"command": "python -m compileall -q services/dcp-readonly-facade", "exit_code": 0},
@@ -61,7 +61,8 @@
       "Added the two catalog schema fields already present in the restored task-orchestrator catalog entry.",
       "Removed the repository-rejected auxiliary superpowers plan artifact from the packet allowlist.",
       "Made RuntimeCatalogEntry.callable computed and non-overridable so internal and public non-callable state cannot diverge.",
-      "Aligned the packet public-serialization invariant with the redacted public capability shape."
+      "Aligned the packet public-serialization invariant with the redacted public capability shape.",
+      "Treat any non-mapping runtime registry member as malformed input so mixed valid and invalid records fail closed."
     ],
     "remaining_risks": [
       "External Gemini final review verdict unavailable due to provider quota.",

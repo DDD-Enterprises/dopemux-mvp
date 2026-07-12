@@ -6,6 +6,8 @@ The implementation is a pure, facade-local join. It accepts already-loaded
 catalog/runtime mappings, uses explicit service-family translation, requires
 exact project/worktree identity for the two conditionally readable families,
 blocks ambiguity, and serializes no operational infrastructure fields.
+Any non-mapping member in the runtime instance list invalidates the complete
+operational input rather than being silently discarded.
 
 The external Gemini codereview completed its inspection phase with zero reported
 issues. Its final provider call was unavailable because the configured Gemini

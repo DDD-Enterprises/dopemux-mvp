@@ -150,6 +150,19 @@ def test_malformed_runtime_registry_is_unknown_and_non_callable():
     assert entry.callable is False
 
 
+def test_malformed_runtime_member_blocks_candidate_join():
+    runtime = _runtime(service="conport")
+    runtime["instances"].append([])
+
+    result = join_runtime_catalog(_resolved("conport"), _catalog(), runtime)
+
+    entry = result.entries[0]
+    assert entry.state == "UNKNOWN"
+    assert entry.candidate_count == 0
+    assert entry.reason == "operational runtime registry unavailable"
+    assert entry.callable is False
+
+
 def test_catalog_policy_drift_blocks_candidate_join():
     catalog = _catalog()
     catalog["servers"]["conport"]["management_model"] = "wrapper-singleton"
