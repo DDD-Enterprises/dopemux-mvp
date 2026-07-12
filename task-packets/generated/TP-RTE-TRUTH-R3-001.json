@@ -1,15 +1,15 @@
 {
   "id": "TP-RTE-TRUTH-R3-001",
   "project": "dopemux-mvp",
-  "target": "repo-truth-extractor / C9 merge reconciliation (gates all schema work) + proof-field namespacing",
+  "target": "repo-truth-extractor / C9 merge reconciliation (gates all prompt schema work)",
   "invariants": [
     "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
     "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
     "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
     "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
     "C9 Outputs == Schema == procedure; NO field downgrade of C1/C2/C7/C8 rich schemas; ordering coherent (C9 cannot own artifacts produced after it).",
-    "Namespace proof fixture/expected-output fields so verdict greps stop false-positiving (F-51).",
-    "Findings covered: F-20, F-51."
+    "F-51 proof-bundle schema and expected-output namespacing is explicitly deferred to TP-RTE-TRUTH-R3-007.",
+    "Findings covered: F-20."
   ],
   "depends_on": [],
   "repo_binding": {
@@ -39,6 +39,7 @@
       "services/repo-truth-extractor/promptsets/v4/",
       "services/repo-truth-extractor/tests/",
       "task-packets/generated/TP-RTE-TRUTH-R3-001.json",
+      "task-packets/generated/TP-RTE-TRUTH-R3-007.json",
       "proof/rte-truth-program/TP-RTE-TRUTH-R3-001/PROOF.json"
     ],
     "verify": [
@@ -47,7 +48,7 @@
   },
   "pr": {
     "title": "fix(rte): C9 canonical merge no longer degrades Gen-2 schemas",
-    "body": "F-20 (CRIT) + F-51.",
+    "body": "F-20 (CRIT). F-51 is tracked separately by TP-RTE-TRUTH-R3-007.",
     "base": "claude/rte-audit-improvement-f4beb7"
   },
   "pal_chain": {

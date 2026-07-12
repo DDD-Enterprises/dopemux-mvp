@@ -1,0 +1,147 @@
+{
+  "id": "TP-RTE-TRUTH-R3-007",
+  "project": "dopemux-mvp",
+  "target": "proof governance / canonical bundle schema, aggregate verdict extraction, path derivation, and expected-output namespacing",
+  "invariants": [
+    "DRY-RUN ONLY: no live provider calls, remote mutations, merges, or destructive proof rewrites.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md and A5-ops-gates-proof.md before implementation; they define F-51 and the false-positive evidence.",
+    "Canonical proof-schema and validator ownership is UNKNOWN until S1 reconciles docs/governance, docs/03-reference/governance, schemas/proof, the RTE proof_contract helper, proof consumers, and existing bundle families.",
+    "Use consensus before choosing a canonical writer because existing proof contracts overlap and may conflict.",
+    "Aggregate packet verdicts must remain distinct from nested fixture inputs, expected outputs, intermediate RED states, and audited subsystem verdicts.",
+    "Unknown or unsupported proof shapes must remain UNKNOWN or fail closed; no grep-based or permissive aggregate PASS inference.",
+    "Proof directory derivation from Task Packet ID must be deterministic, documented, and compatibility-aware for existing series layouts.",
+    "Preserve historical evidence semantics. Any migration of TP-RTE-S7-DRIFT-FIX-001 must be additive or explicitly lossless and must retain the observed expected FAIL for injected stale input.",
+    "Findings covered: F-51."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R3",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "recommended_model": "gpt-5.6-sol",
+    "recommended_reasoning_effort": "xhigh",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(proof): TP-RTE-TRUTH-R3-007 - canonical proof verdict contract",
+    "allowlist": [
+      "docs/governance/proof-bundle-schema.md",
+      "docs/03-reference/governance/proof-bundle-schema.md",
+      "schemas/proof/",
+      "scripts/validate_proof_bundle.py",
+      "services/repo-truth-extractor/lib/proof_contract.py",
+      "services/repo-truth-extractor/tests/test_proof_contract.py",
+      "tests/test_proof_bundle_contract.py",
+      "proof/TP-RTE-S7-DRIFT-FIX-001/PROOF.json",
+      "task-packets/generated/TP-RTE-TRUTH-LOAD-PLAN.md",
+      "task-packets/generated/TP-RTE-TRUTH-R3-007.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-007/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest tests/test_proof_bundle_contract.py services/repo-truth-extractor/tests/test_proof_contract.py -q",
+      "mise exec -- python scripts/validate_proof_bundle.py proof/TP-RTE-S7-DRIFT-FIX-001/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "fix(proof): canonical aggregate verdict and fixture namespace contract",
+    "body": "F-51. Resolve proof-contract authority before implementing deterministic verdict and path semantics.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "consensus",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Map every current proof schema, validator, writer, status consumer, and directory convention; use consensus to choose one canonical writer and an explicit compatibility policy.",
+      "requirements": [
+        "Do not edit schemas, validators, or historical proofs before the authority decision is recorded.",
+        "Classify each inspected surface as canonical, derived, compatibility-only, deprecated, or UNKNOWN."
+      ],
+      "commands": [
+        "rg -n \"validation_state|aggregate.*verdict|PROOF.json|proof-bundle\" docs schemas scripts services tests"
+      ],
+      "expected_files": [
+        "docs/03-reference/governance/proof-bundle-schema.md"
+      ],
+      "validation": [
+        "The chosen canonical writer, rejected alternatives, compatibility policy, consumer inventory, and remaining UNKNOWNs are explicit before implementation."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A5-ops-gates-proof.md",
+        "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Use TDD to implement the canonical proof schema and validator, deterministic Task Packet ID to proof-path derivation, and aggregate-versus-nested verdict extraction.",
+      "requirements": [
+        "A nested fixture or expected-output FAIL must not override an aggregate PASSED result.",
+        "Missing aggregate status must not be silently inferred as PASS.",
+        "Legacy layouts must be classified explicitly rather than rewritten implicitly."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest tests/test_proof_bundle_contract.py services/repo-truth-extractor/tests/test_proof_contract.py -q"
+      ],
+      "expected_files": [
+        "schemas/proof/",
+        "scripts/validate_proof_bundle.py",
+        "tests/test_proof_bundle_contract.py"
+      ],
+      "validation": [
+        "Focused tests demonstrate RED then GREEN for nested expected FAIL, missing aggregate status, deterministic path derivation, and unsupported legacy shapes."
+      ],
+      "context_files": [
+        "docs/governance/proof-bundle-schema.md",
+        "services/repo-truth-extractor/lib/proof_contract.py",
+        "services/repo-truth-extractor/tests/test_proof_contract.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Migrate the representative S7 proof losslessly and validate both its aggregate passing result and its nested expected gate failure under the canonical contract.",
+      "requirements": [
+        "Retain the expected FAIL evidence for the deliberately injected stale step.",
+        "Do not alter runtime claims, test counts, commit references, or historical command evidence."
+      ],
+      "commands": [
+        "mise exec -- python scripts/validate_proof_bundle.py proof/TP-RTE-S7-DRIFT-FIX-001/PROOF.json",
+        "mise exec -- python -m pytest tests/test_proof_bundle_contract.py services/repo-truth-extractor/tests/test_proof_contract.py -q"
+      ],
+      "expected_files": [
+        "proof/TP-RTE-S7-DRIFT-FIX-001/PROOF.json",
+        "proof/rte-truth-program/TP-RTE-TRUTH-R3-007/PROOF.json"
+      ],
+      "validation": [
+        "Validator reports the S7 bundle aggregate as passing while preserving the nested expected FAIL as fixture evidence, with no grep-based ambiguity."
+      ],
+      "context_files": [
+        "proof/TP-RTE-S7-DRIFT-FIX-001/PROOF.json"
+      ]
+    }
+  ]
+}

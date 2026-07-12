@@ -1,0 +1,223 @@
+{
+  "packet_id": "TP-RTE-TRUTH-R3-001",
+  "packet_path": "task-packets/generated/TP-RTE-TRUTH-R3-001.json",
+  "tree_item_id": "99183b55-05e7-4f5e-acff-da7c73309526",
+  "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-audit-improvement-f4beb7",
+  "base_head": "fd68063c4f87463b61d1e25f039e87bb410681c6",
+  "commit_sha": null,
+  "recommended_execution": {
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "xhigh"
+  },
+  "execution_variance": {
+    "recommended_model_status": "UNAVAILABLE_IN_PAL",
+    "pal_analyze_fallback": "gpt-5.5-pro",
+    "pal_analyze_fallback_status": "FAILED_EXTERNAL_QUOTA",
+    "pal_planner_fallback": "gemini-3.1-pro-preview",
+    "pal_planner_fallback_status": "PASS",
+    "pal_codereview_fallback": "gemini-3.1-pro-preview",
+    "pal_codereview_external_status": "FAILED_EXTERNAL_QUOTA"
+  },
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "marker_present": true,
+    "worktree_root": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+    "primary_checkout_used_for_edits": false
+  },
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-RTE-TRUTH-R3-001.json",
+    "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md",
+    "claudedocs/rte-truth-program-2026-07/A3a-prompts-ABC.md",
+    "claudedocs/rte-truth-program-2026-07/A5-ops-gates-proof.md",
+    "services/repo-truth-extractor/promptsets/v4/artifacts.yaml",
+    "services/repo-truth-extractor/promptsets/v4/promptset.yaml",
+    "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md",
+    "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md",
+    "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md"
+  ],
+  "scope": {
+    "finding": "F-20",
+    "dry_run_only": true,
+    "live_provider_calls": false,
+    "dpmx_live_ok_set": false,
+    "execute_commands_run": false,
+    "f51_implemented": false,
+    "f51_followup_packet": "TP-RTE-TRUTH-R3-007",
+    "f51_followup_tree_item_id": "3e271ce6-536f-47fe-8b0a-5e48178e1a5d"
+  },
+  "slices_completed": [
+    "C9 output ownership and ordering reconciliation",
+    "mechanical preservation of rich C1, C2, and C8 producer fields",
+    "explicit C9 construction contracts for Python API, service endpoint, service catalog, and code-surface QA artifacts",
+    "F-51 scope split into a dedicated proof-governance packet"
+  ],
+  "changes": [
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md",
+      "lines_added": 73,
+      "lines_deleted": 151,
+      "summary": "Reduced C9 to its 16 canonical artifacts, preserved upstream producer fields, retained C7/C8 ownership boundaries, removed post-C9 artifact ownership, and made every derived surface construction procedure explicit."
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/promptset.yaml",
+      "lines_added": 14,
+      "lines_deleted": 3,
+      "summary": "Aligned C9 inputs and outputs with artifacts.yaml and the repaired prompt contract."
+    },
+    {
+      "file": "services/repo-truth-extractor/tests/test_c9_merge_contract.py",
+      "lines_added": 133,
+      "lines_deleted": 0,
+      "summary": "Added contract tests for output/schema/registry identity, producer-field preservation, ownership boundaries, and complete procedure coverage."
+    },
+    {
+      "file": "task-packets/generated/TP-RTE-TRUTH-R3-001.json",
+      "lines_added": 5,
+      "lines_deleted": 4,
+      "summary": "Narrowed the packet to F-20 and recorded F-51 as a separate follow-up."
+    },
+    {
+      "file": "task-packets/generated/TP-RTE-TRUTH-R3-007.json",
+      "lines_added": 147,
+      "lines_deleted": 0,
+      "summary": "Created the dedicated F-51 proof-governance packet with an explicit UNKNOWN canonical-writer gate and risky PAL chain."
+    },
+    {
+      "file": "proof/rte-truth-program/TP-RTE-TRUTH-R3-001/PROOF.json",
+      "lines_added": null,
+      "lines_deleted": 0,
+      "summary": "Recorded repository identity, scope, validation, review, risk, rollback, and finality evidence."
+    }
+  ],
+  "tdd": {
+    "red_status": "PRIOR_CHECKPOINT_EVIDENCE",
+    "red_summary": "The prior workflow checkpoint and orchestrator implementation-progress note record three intended contract failures before the C9 repair. The RED state was not recreated in this continuation because doing so would require temporarily reverting the validated implementation.",
+    "green_status": "PASS",
+    "green_command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_c9_merge_contract.py -q",
+    "green_exit_code": 0,
+    "green_summary": "3 passed."
+  },
+  "validation": [
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m jsonschema -i task-packets/generated/TP-RTE-TRUTH-R3-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "summary": "Narrowed R3-001 packet validates against the canonical Task Packet schema; the jsonschema CLI emitted only its deprecation warning."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m jsonschema -i task-packets/generated/TP-RTE-TRUTH-R3-007.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "summary": "Dedicated F-51 packet validates against the canonical Task Packet schema; the jsonschema CLI emitted only its deprecation warning."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_c9_merge_contract.py -q",
+      "summary": "3 C9 merge-contract tests passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'promptset'",
+      "summary": "33 promptset-selected tests passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python scripts/repo_truth_extractor_promptset_audit_v4.py --repo-root . --strict",
+      "summary": "All 136 prompts rated complete; zero partial, zero stub, zero lint failures, and zero global issues."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+      "summary": "27 passed and one documented slow capture skipped."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- ruff check services/repo-truth-extractor/tests/test_c9_merge_contract.py",
+      "summary": "Changed Python test file passed Ruff."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "git diff --check",
+      "summary": "No whitespace errors; git emitted a non-fatal fsmonitor IPC warning."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "pre-commit run --files services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md services/repo-truth-extractor/promptsets/v4/promptset.yaml services/repo-truth-extractor/tests/test_c9_merge_contract.py task-packets/generated/TP-RTE-TRUTH-R3-001.json task-packets/generated/TP-RTE-TRUTH-R3-007.json proof/rte-truth-program/TP-RTE-TRUTH-R3-001/PROOF.json",
+      "summary": "Applicable repository hooks passed; non-applicable documentation and schema hooks skipped explicitly."
+    },
+    {
+      "status": "NOT_RUN",
+      "exit_code": null,
+      "command": "live/provider extraction",
+      "summary": "Forbidden by the Task Packet dry-run invariant."
+    },
+    {
+      "status": "NOT_RUN",
+      "exit_code": null,
+      "command": "RTE_TRUTH_SLOW_GOLDENS=1 golden capture",
+      "summary": "The harness documents this approximately 259-second capture as opt-in; the normal golden contract run skipped it."
+    }
+  ],
+  "pal": {
+    "analyze": {
+      "status": "COMPLETED_LOCAL_RECORD_EXTERNAL_FAILED",
+      "summary": "PAL recorded the inspected files and three scope/finality issues, but the gpt-5.5-pro expert call failed with insufficient quota after gpt-5.6-sol was rejected as unavailable."
+    },
+    "planner": {
+      "status": "PASS",
+      "model": "gemini-3.1-pro-preview",
+      "summary": "Approved the minimal F-20 closure and dedicated F-51 packet split."
+    },
+    "challenge": {
+      "status": "PASS",
+      "summary": "Kept proof canonical ownership UNKNOWN, avoided a false C9 dependency, restored the orchestrator item to work, and left the out-of-allowlist load plan unchanged."
+    }
+  },
+  "codereview": {
+    "status": "COMPLETED_FINDING_RESOLVED_EXTERNAL_QUOTA",
+    "continuation_id": "8dddd47c-cfa5-400a-96f4-bbc079e2efe3",
+    "files_examined": 10,
+    "findings": [
+      {
+        "severity": "MEDIUM",
+        "summary": "TP-RTE-TRUTH-R3-007.json was initially outside the R3-001 commit allowlist.",
+        "resolution": "Added the exact packet path to the R3-001 allowlist and reran canonical packet-schema validation and git diff --check successfully."
+      }
+    ],
+    "remaining_findings": [],
+    "external_validation": "Gemini expert validation failed closed with RESOURCE_EXHAUSTED after the two-step local PAL review completed."
+  },
+  "precommit_status": "PASS",
+  "residual_risks": [
+    "The documented slow golden capture remains skipped unless RTE_TRUTH_SLOW_GOLDENS=1 is explicitly enabled.",
+    "The C9 repair changes prompt contracts only; no live extraction or provider response was exercised.",
+    "TP-RTE-TRUTH-R3-007 has no resolved orchestrator note schema despite type=task-packet, so its repo packet and proof gates must be enforced directly.",
+    "The R3 series load plan does not yet list R3-007 because it is outside the R3-001 allowlist; R3-007 explicitly allowlists its later registration."
+  ],
+  "unknowns": [
+    "Canonical proof-schema and validator ownership remains UNKNOWN and is the first gate in TP-RTE-TRUTH-R3-007.",
+    "PAL gpt-5.6-sol availability under the intended execution credentials remains UNKNOWN; the configured PAL server rejected that model."
+  ],
+  "rollback": {
+    "strategy": "Revert the eventual TP-RTE-TRUTH-R3-001 commit. Before commit, remove only the six R3-001/R3-007 files listed here from the working diff; preserve unrelated .claude state.",
+    "files": [
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md",
+      "services/repo-truth-extractor/promptsets/v4/promptset.yaml",
+      "services/repo-truth-extractor/tests/test_c9_merge_contract.py",
+      "task-packets/generated/TP-RTE-TRUTH-R3-001.json",
+      "task-packets/generated/TP-RTE-TRUTH-R3-007.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-001/PROOF.json"
+    ]
+  },
+  "cleanup_status": "Dedicated worktree retained because the branch contains sequential RTE packets; unrelated .claude files preserved and excluded from staging."
+}
