@@ -107,7 +107,9 @@ def _runtime_instances(runtime_registry: Any) -> Optional[list[Mapping[str, Any]
     instances = runtime_registry.get("instances")
     if not isinstance(instances, list):
         return None
-    return [instance for instance in instances if isinstance(instance, Mapping)]
+    if any(not isinstance(instance, Mapping) for instance in instances):
+        return None
+    return instances
 
 
 def _catalog_matches_contract(family: str, spec: Any) -> bool:

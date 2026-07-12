@@ -22,6 +22,7 @@ mismatch; no unresolved blocking finding remains.
 - Exact canonical project-root and worktree-root matching.
 - Ambiguous candidate sets block without selection.
 - Missing/malformed operational data remains `UNKNOWN`.
+- Any non-mapping runtime instance invalidates the complete runtime input.
 - Blocked Task Orchestrator families never become callable.
 - Public serialization omits paths, ports, URLs, containers, instance IDs,
   lease IDs, and raw runtime records.
