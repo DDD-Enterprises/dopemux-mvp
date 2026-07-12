@@ -225,6 +225,17 @@ def test_embedded_audit_workflow_uses_trusted_source_and_least_privilege() -> No
     assert "persist-credentials: false" in text
 
 
+def test_embedded_audit_workflow_invokes_pal_runner_as_package_module() -> None:
+    text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    runner_step = text.split("- name: Run PAL clink audit", 1)[1].split(
+        "- name: Emit independent embedded audit proof", 1
+    )[0]
+
+    assert "working-directory: trusted-source" in runner_step
+    assert "python -m scripts.audit.pal_clink_runner" in runner_step
+    assert "python scripts/audit/pal_clink_runner.py" not in runner_step
+
+
 def test_embedded_audit_workflow_handles_pull_request_target_metadata() -> None:
     """Regression: trigger is pull_request_target; shell must not only match pull_request."""
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
