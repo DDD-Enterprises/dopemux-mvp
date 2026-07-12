@@ -5,8 +5,8 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "codex/tp-dmx-merge-integrity-foundation",
   "base_sha": "b176747b339685e781de04268c46b7ae123abfbf",
-  "head_sha": "a938aae05d8ddc6a308bad3299fe9c7b11c4a627",
-  "generated_at": "2026-07-12T19:49:27Z",
+  "head_sha": "b67bb764575aaab43f643c51cbef1912f950bbc2",
+  "generated_at": "2026-07-12T19:49:32Z",
   "changed_files": [
     ".github/workflows/embedded-audit.yml",
     ".github/workflows/pr-steward.yml",
@@ -57,5 +57,7 @@
   "mutation_performed": false,
   "merge_authorized": false,
   "live_default_branch_proven": false,
-  "head_sha_binding": "branch_tip_at_proof_write; PR head after push is authoritative for supervisor gate"
+  "head_sha_binding": "branch_tip_at_proof_write; PR head after push is authoritative for supervisor gate",
+  "pr_head_ref_oid": "b67bb764575aaab43f643c51cbef1912f950bbc2",
+  "head_sha_note": "Authoritative exact head is the git tip after this commit is pushed (see PR headRefOid)."
 }
