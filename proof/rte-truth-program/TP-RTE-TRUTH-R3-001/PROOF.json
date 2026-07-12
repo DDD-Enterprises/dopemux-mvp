@@ -203,9 +203,11 @@
     "remote": "origin",
     "branch": "claude/rte-audit-improvement-f4beb7",
     "pushed_through_commit": "97f8867b36d4d7c2a4dfb66c725bd1372e5f5219",
-    "pr_url": null,
-    "pr_status": "NOT_CREATED",
-    "pr_blocker": "The Task Packet declares claude/rte-audit-improvement-f4beb7 as both execution branch and PR base, and no existing open PR owns this head; a self-base PR is invalid."
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1043",
+    "pr_status": "DRAFT",
+    "pr_base": "main",
+    "pr_base_authority": "Explicit operator request to create the PR, using the repository default branch observed from GitHub.",
+    "pr_blocker": null
   },
   "residual_risks": [
     "The documented slow golden capture remains skipped unless RTE_TRUTH_SLOW_GOLDENS=1 is explicitly enabled.",
