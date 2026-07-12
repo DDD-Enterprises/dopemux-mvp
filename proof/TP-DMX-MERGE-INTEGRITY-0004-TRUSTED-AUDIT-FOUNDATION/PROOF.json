@@ -5,8 +5,7 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "codex/tp-dmx-merge-integrity-foundation",
   "base_sha": "b176747b339685e781de04268c46b7ae123abfbf",
-  "head_sha_pre_commit": "b67bb764575aaab43f643c51cbef1912f950bbc2",
-  "head_sha": "PENDING_COMMIT",
+  "head_sha": "31e9f0abc6a452763b5384efea357ac5373dfc11",
   "generated_at": "2026-07-12T19:48:57Z",
   "changed_files": [
     ".github/workflows/embedded-audit.yml",
