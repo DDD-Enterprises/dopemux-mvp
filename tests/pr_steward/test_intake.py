@@ -759,6 +759,192 @@ def test_required_skipped_check_is_successful_nonblocking() -> None:
     assert ci_triage["failed_required_count"] == 0
 
 
+def test_prior_steward_self_failure_can_recover_to_ready() -> None:
+    """A prior failed Steward self-status must not sticky-red a later READY run."""
+    harvest = base_ready_harvest()
+    head_sha = harvest["pr"]["headRefOid"]
+    harvest["checks"] = [
+        {
+            "name": "unit",
+            "status": "COMPLETED",
+            "conclusion": "SUCCESS",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "name": "PR Steward / final readiness",
+            "context": "PR Steward / final readiness",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+    readiness = artifacts["MERGE_READINESS.json"]
+    ci_triage = artifacts["CI_TRIAGE.json"]
+    assert isinstance(readiness, dict)
+    assert isinstance(ci_triage, dict)
+    assert readiness["readiness"] == "READY"
+    assert "FAILED_CHECK" not in readiness["blockers"]
+    # Self-status preserved in triage evidence
+    names = [c["name"] for c in ci_triage["checks"]]
+    assert "PR Steward / final readiness" in names
+    self_entries = [
+        c for c in ci_triage["checks"] if c["name"] == "PR Steward / final readiness"
+    ]
+    assert self_entries
+    assert self_entries[0]["blocking"] is False
+    assert "excluded from readiness" in self_entries[0]["rationale"]
+    # Required external checks still counted; self-status is not
+    assert ci_triage["required_check_count"] == 1
+    assert ci_triage["failed_required_count"] == 0
+
+
+def test_external_failed_checks_still_block_readiness() -> None:
+    harvest = base_ready_harvest()
+    head_sha = harvest["pr"]["headRefOid"]
+    harvest["checks"] = [
+        {
+            "name": "unit",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "name": "PR Steward / final readiness",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    assert readiness["readiness"] != "READY"
+    assert "FAILED_CHECK" in readiness["blockers"]
+
+
+def test_similar_steward_status_names_are_not_excluded() -> None:
+    harvest = base_ready_harvest()
+    head_sha = harvest["pr"]["headRefOid"]
+    harvest["checks"] = [
+        {
+            "name": "PR Steward / final readiness EXTRA",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "name": "PR Steward / advisory check-only intake",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "context": "PR Steward / final readiness",  # exact — excluded
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+    readiness = artifacts["MERGE_READINESS.json"]
+    ci_triage = artifacts["CI_TRIAGE.json"]
+    assert isinstance(readiness, dict)
+    assert isinstance(ci_triage, dict)
+    assert "FAILED_CHECK" in readiness["blockers"]
+    assert readiness["readiness"] != "READY"
+    # Two similar names remain required+blocking; exact self-status does not
+    assert ci_triage["required_check_count"] == 2
+    assert ci_triage["failed_required_count"] == 2
+
+
+def test_multiple_historical_self_status_entries_do_not_poison_reruns() -> None:
+    harvest = base_ready_harvest()
+    head_sha = harvest["pr"]["headRefOid"]
+    harvest["checks"] = [
+        {
+            "name": "unit",
+            "status": "COMPLETED",
+            "conclusion": "SUCCESS",
+            "required": True,
+            "headSha": head_sha,
+        },
+        # Multiple historical self-status rows (failure + success) must not block.
+        {
+            "name": "PR Steward / final readiness",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "name": "PR Steward / final readiness",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "context": "PR Steward / final readiness",
+            "status": "COMPLETED",
+            "conclusion": "SUCCESS",
+            "required": True,
+            "headSha": head_sha,
+        },
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+    readiness = artifacts["MERGE_READINESS.json"]
+    ci_triage = artifacts["CI_TRIAGE.json"]
+    assert isinstance(readiness, dict)
+    assert isinstance(ci_triage, dict)
+    assert readiness["readiness"] == "READY"
+    assert "FAILED_CHECK" not in readiness["blockers"]
+    self_entries = [
+        c
+        for c in ci_triage["checks"]
+        if c["name"] == "PR Steward / final readiness"
+    ]
+    assert len(self_entries) == 3
+    assert all(c["blocking"] is False for c in self_entries)
+    assert ci_triage["required_check_count"] == 1
+    assert ci_triage["failed_required_count"] == 0
+
+
 def base_ready_harvest() -> dict:
     head_sha = "head000000000000000000000000000000000000"
     return {

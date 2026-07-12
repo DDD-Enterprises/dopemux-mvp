@@ -308,6 +308,8 @@ jobs:
           # protection can require "PR Steward / final readiness" on the PR.
           # Always overwrite prior status for this context on this head, including
           # when a later failed audit re-runs after an earlier green.
+          # Classifier excludes this exact context from readiness evaluation so a
+          # prior failed self-status cannot sticky-red the next Steward run.
           if [ "${AUDIT_CONCLUSION}" = "success" ] \
             && [ "${AUDIT_OUTCOME}" = "success" ] \
             && [ "${STEWARD_OUTCOME}" = "success" ]; then
