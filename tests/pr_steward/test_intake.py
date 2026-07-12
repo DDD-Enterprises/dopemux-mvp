@@ -353,10 +353,17 @@ def test_live_collection_uses_proof_path_for_ready_state(
     proof_path.write_text(
         json.dumps(
             {
+                "repo": "DDD-Enterprises/dopemux-mvp",
+                "pr_number": 704,
                 "head_sha": pr_head,
+                "executed": True,
                 "embedded_audit": {
                     "status": "PASS_WITH_RISKS",
                     "report_path": "proof/TP-DMX-PR-STEWARD-001/AUDITOR_REPORT.md",
+                },
+                "provenance": {
+                    "proof_author": "independent-embedded-audit",
+                    "workflow": "embedded-audit.yml",
                 },
             }
         ),
@@ -398,6 +405,246 @@ def test_live_collection_uses_proof_path_for_ready_state(
     assert readiness["proof"]["proof_head_sha"] == pr_head
     assert readiness["proof"]["matches_pr_head"] is True
     assert readiness["proof"]["proof_freshness"]["status"] == "CURRENT"
+
+
+def test_live_collection_rejects_dry_run_or_unproven_audit_proof(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "b" * 40
+    proof_path = tmp_path / "PROOF.json"
+    proof_path.write_text(
+        json.dumps(
+            {
+                "head_sha": pr_head,
+                "dry_run": True,
+                "executed": False,
+                "embedded_audit": {
+                    "status": "PASS",
+                    "report_path": "proof/TP-DMX-PR-AUDIT-ROUTER-001/AUDITOR_REPORT.md",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def fake_run(args: list[str]) -> subprocess.CompletedProcess[str]:
+        if args[:3] == ["gh", "auth", "status"]:
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if args[:3] == ["gh", "pr", "view"]:
+            return subprocess.CompletedProcess(
+                args,
+                0,
+                json.dumps(base_pr_payload(head_sha=pr_head)),
+                "",
+            )
+        raise AssertionError(f"unexpected gh command: {args}")
+
+    monkeypatch.setattr(collector, "_run", fake_run)
+    monkeypatch.setattr(collector, "_fetch_review_threads", lambda **_: ([], []))
+
+    harvest = collector.collect_from_github(
+        "DDD-Enterprises/dopemux-mvp",
+        704,
+        proof_path=proof_path,
+    )
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    assert readiness["readiness"] == "BLOCKED"
+    assert readiness["embedded_audit"]["status"] == "NEEDS_SUPERVISOR"
+    assert "EMBEDDED_AUDIT_NEEDS_SUPERVISOR" in readiness["blockers"]
+
+
+def _blocked_by_independent_audit(
+    tmp_path: Path, monkeypatch, proof_body: dict, pr_head: str
+) -> dict:
+    proof_path = tmp_path / "PROOF.json"
+    proof_path.write_text(json.dumps(proof_body), encoding="utf-8")
+
+    def fake_run(args: list[str]) -> subprocess.CompletedProcess[str]:
+        if args[:3] == ["gh", "auth", "status"]:
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if args[:3] == ["gh", "pr", "view"]:
+            return subprocess.CompletedProcess(
+                args,
+                0,
+                json.dumps(base_pr_payload(head_sha=pr_head)),
+                "",
+            )
+        raise AssertionError(f"unexpected gh command: {args}")
+
+    monkeypatch.setattr(collector, "_run", fake_run)
+    monkeypatch.setattr(collector, "_fetch_review_threads", lambda **_: ([], []))
+    harvest = collector.collect_from_github(
+        "DDD-Enterprises/dopemux-mvp",
+        704,
+        proof_path=proof_path,
+    )
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    return readiness
+
+
+def test_live_collection_rejects_pass_with_executed_true_missing_provenance(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "c" * 40
+    readiness = _blocked_by_independent_audit(
+        tmp_path,
+        monkeypatch,
+        {
+            "head_sha": pr_head,
+            "executed": True,
+            "embedded_audit": {
+                "status": "PASS",
+                "report_path": "proof/x/AUDITOR_REPORT.md",
+            },
+        },
+        pr_head,
+    )
+    assert readiness["readiness"] == "BLOCKED"
+    assert "EMBEDDED_AUDIT_NEEDS_SUPERVISOR" in readiness["blockers"]
+
+
+def test_live_collection_rejects_wrong_proof_author(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "d" * 40
+    readiness = _blocked_by_independent_audit(
+        tmp_path,
+        monkeypatch,
+        {
+            "head_sha": pr_head,
+            "executed": True,
+            "embedded_audit": {"status": "PASS", "report_path": "proof/x/AUDITOR_REPORT.md"},
+            "provenance": {
+                "proof_author": "self-attested",
+                "workflow": "embedded-audit.yml",
+            },
+        },
+        pr_head,
+    )
+    assert readiness["readiness"] == "BLOCKED"
+
+
+def test_live_collection_rejects_wrong_workflow_provenance(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "e" * 40
+    readiness = _blocked_by_independent_audit(
+        tmp_path,
+        monkeypatch,
+        {
+            "head_sha": pr_head,
+            "executed": True,
+            "embedded_audit": {"status": "PASS", "report_path": "proof/x/AUDITOR_REPORT.md"},
+            "provenance": {
+                "proof_author": "independent-embedded-audit",
+                "workflow": "not-embedded-audit.yml",
+            },
+        },
+        pr_head,
+    )
+    assert readiness["readiness"] == "BLOCKED"
+
+
+def test_live_collection_rejects_stale_wrong_head_sha(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "f" * 40
+    stale_head = "0" * 40
+    readiness = _blocked_by_independent_audit(
+        tmp_path,
+        monkeypatch,
+        {
+            "head_sha": stale_head,
+            "executed": True,
+            "embedded_audit": {
+                "status": "PASS",
+                "report_path": "proof/x/AUDITOR_REPORT.md",
+            },
+            "provenance": {
+                "proof_author": "independent-embedded-audit",
+                "workflow": "embedded-audit.yml",
+            },
+        },
+        pr_head,
+    )
+    # Collector independent-audit errors do not encode expected head; head
+    # freshness is a separate blocker. READY must be impossible.
+    assert readiness["readiness"] in {"BLOCKED", "NEEDS_SUPERVISOR"}
+    assert readiness["readiness"] != "READY"
+    assert readiness["proof"]["matches_pr_head"] is False
+
+
+def test_independent_audit_errors_rejects_malformed_dry_run_string() -> None:
+    errors = collector._independent_audit_errors(
+        {
+            "executed": True,
+            "dry_run": "true",
+            "embedded_audit": {"status": "PASS"},
+            "provenance": {
+                "proof_author": "independent-embedded-audit",
+                "workflow": "embedded-audit.yml",
+            },
+        }
+    )
+    assert any("malformed_dry_run" in e for e in errors)
+
+
+def test_independent_audit_errors_rejects_status_pass_executed_false() -> None:
+    errors = collector._independent_audit_errors(
+        {
+            "executed": False,
+            "embedded_audit": {"status": "PASS"},
+            "provenance": {
+                "proof_author": "independent-embedded-audit",
+                "workflow": "embedded-audit.yml",
+            },
+        }
+    )
+    assert any("audit_not_executed" in e for e in errors)
+
+
+def test_live_collection_rejects_proof_bound_to_other_pr(
+    tmp_path: Path, monkeypatch
+) -> None:
+    pr_head = "a" * 40
+    readiness = _blocked_by_independent_audit(
+        tmp_path,
+        monkeypatch,
+        {
+            "repo": "DDD-Enterprises/dopemux-mvp",
+            "pr_number": 999,
+            "head_sha": pr_head,
+            "executed": True,
+            "embedded_audit": {
+                "status": "PASS",
+                "report_path": "proof/x/AUDITOR_REPORT.md",
+            },
+            "provenance": {
+                "proof_author": "independent-embedded-audit",
+                "workflow": "embedded-audit.yml",
+            },
+        },
+        pr_head,
+    )
+    assert readiness["readiness"] == "BLOCKED"
+    assert "EMBEDDED_AUDIT_NEEDS_SUPERVISOR" in readiness["blockers"]
 
 
 def test_trusted_author_association_is_nonblocking() -> None:
@@ -508,6 +755,192 @@ def test_required_skipped_check_is_successful_nonblocking() -> None:
     assert isinstance(ci_triage, dict)
     assert readiness["readiness"] == "READY"
     assert "FAILED_CHECK" not in readiness["blockers"]
+    assert ci_triage["required_check_count"] == 1
+    assert ci_triage["failed_required_count"] == 0
+
+
+def test_prior_steward_self_failure_can_recover_to_ready() -> None:
+    """A prior failed Steward self-status must not sticky-red a later READY run."""
+    harvest = base_ready_harvest()
+    head_sha = harvest["pr"]["headRefOid"]
+    harvest["checks"] = [
+        {
+            "name": "unit",
+            "status": "COMPLETED",
+            "conclusion": "SUCCESS",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "name": "PR Steward / final readiness",
+            "context": "PR Steward / final readiness",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+    readiness = artifacts["MERGE_READINESS.json"]
+    ci_triage = artifacts["CI_TRIAGE.json"]
+    assert isinstance(readiness, dict)
+    assert isinstance(ci_triage, dict)
+    assert readiness["readiness"] == "READY"
+    assert "FAILED_CHECK" not in readiness["blockers"]
+    # Self-status preserved in triage evidence
+    names = [c["name"] for c in ci_triage["checks"]]
+    assert "PR Steward / final readiness" in names
+    self_entries = [
+        c for c in ci_triage["checks"] if c["name"] == "PR Steward / final readiness"
+    ]
+    assert self_entries
+    assert self_entries[0]["blocking"] is False
+    assert "excluded from readiness" in self_entries[0]["rationale"]
+    # Required external checks still counted; self-status is not
+    assert ci_triage["required_check_count"] == 1
+    assert ci_triage["failed_required_count"] == 0
+
+
+def test_external_failed_checks_still_block_readiness() -> None:
+    harvest = base_ready_harvest()
+    head_sha = harvest["pr"]["headRefOid"]
+    harvest["checks"] = [
+        {
+            "name": "unit",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "name": "PR Steward / final readiness",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert isinstance(readiness, dict)
+    assert readiness["readiness"] != "READY"
+    assert "FAILED_CHECK" in readiness["blockers"]
+
+
+def test_similar_steward_status_names_are_not_excluded() -> None:
+    harvest = base_ready_harvest()
+    head_sha = harvest["pr"]["headRefOid"]
+    harvest["checks"] = [
+        {
+            "name": "PR Steward / final readiness EXTRA",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "name": "PR Steward / advisory check-only intake",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "context": "PR Steward / final readiness",  # exact — excluded
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+    readiness = artifacts["MERGE_READINESS.json"]
+    ci_triage = artifacts["CI_TRIAGE.json"]
+    assert isinstance(readiness, dict)
+    assert isinstance(ci_triage, dict)
+    assert "FAILED_CHECK" in readiness["blockers"]
+    assert readiness["readiness"] != "READY"
+    # Two similar names remain required+blocking; exact self-status does not
+    assert ci_triage["required_check_count"] == 2
+    assert ci_triage["failed_required_count"] == 2
+
+
+def test_multiple_historical_self_status_entries_do_not_poison_reruns() -> None:
+    harvest = base_ready_harvest()
+    head_sha = harvest["pr"]["headRefOid"]
+    harvest["checks"] = [
+        {
+            "name": "unit",
+            "status": "COMPLETED",
+            "conclusion": "SUCCESS",
+            "required": True,
+            "headSha": head_sha,
+        },
+        # Multiple historical self-status rows (failure + success) must not block.
+        {
+            "name": "PR Steward / final readiness",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "name": "PR Steward / final readiness",
+            "status": "COMPLETED",
+            "conclusion": "FAILURE",
+            "required": True,
+            "headSha": head_sha,
+        },
+        {
+            "context": "PR Steward / final readiness",
+            "status": "COMPLETED",
+            "conclusion": "SUCCESS",
+            "required": True,
+            "headSha": head_sha,
+        },
+    ]
+
+    artifacts = build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        strict=True,
+        allow_closed=False,
+    )
+    readiness = artifacts["MERGE_READINESS.json"]
+    ci_triage = artifacts["CI_TRIAGE.json"]
+    assert isinstance(readiness, dict)
+    assert isinstance(ci_triage, dict)
+    assert readiness["readiness"] == "READY"
+    assert "FAILED_CHECK" not in readiness["blockers"]
+    self_entries = [
+        c
+        for c in ci_triage["checks"]
+        if c["name"] == "PR Steward / final readiness"
+    ]
+    assert len(self_entries) == 3
+    assert all(c["blocking"] is False for c in self_entries)
     assert ci_triage["required_check_count"] == 1
     assert ci_triage["failed_required_count"] == 0
 

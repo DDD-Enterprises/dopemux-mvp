@@ -22,6 +22,11 @@ PENDING_CHECK_STATUSES = {"queued", "in_progress", "requested", "waiting", "pend
 CURRENT_PROOF_STATUSES = {"CURRENT", "CURRENT_WITH_SELF_REFERENCE_EXCEPTION", "FRESH"}
 STALE_PROOF_STATUSES = {"STALE"}
 MISSING_PROOF_STATUSES = {"MISSING"}
+# Exact context published by .github/workflows/pr-steward.yml against the
+# candidate PR head. Must be excluded from readiness evaluation so a prior
+# failed self-status cannot sticky-red the next Steward run on the same head.
+# Raw harvest still retains the entry for evidence.
+STEWARD_SELF_STATUS_CONTEXT = "PR Steward / final readiness"
 
 
 class ProofFreshness(dict):
@@ -481,6 +486,14 @@ def _resolved_review_comment_dispositions(
     return dispositions
 
 
+def _is_steward_self_status(check: dict[str, Any] | Any) -> bool:
+    """True only for the exact Steward self-status context name."""
+    if not isinstance(check, dict):
+        return False
+    name = str(check.get("name") or check.get("context") or "")
+    return name == STEWARD_SELF_STATUS_CONTEXT
+
+
 def _classify_checks(
     checks: list[Any], *, pr_head_sha: str, strict: bool
 ) -> dict[str, Any]:
@@ -494,16 +507,41 @@ def _classify_checks(
     unknown_count = 0
 
     for index, check in enumerate(checks):
+        if not isinstance(check, dict):
+            continue
         name = str(check.get("name") or check.get("context") or f"check-{index}")
         required = bool(check.get("isRequired") is True or check.get("required") is True)
-        if required:
-            required_count += 1
         status = _normalize_status(check.get("status") or check.get("state"))
         conclusion = _normalize_conclusion(check.get("conclusion"))
         if conclusion is None and check.get("state") == "FAILURE":
             conclusion = "failure"
         url = check.get("detailsUrl") or check.get("targetUrl") or check.get("url")
         head_sha = str(check.get("headSha") or check.get("head_sha") or pr_head_sha)
+
+        # Preserve self-status in triage payload, but never let it block readiness.
+        # Otherwise a failed prior publish sticky-reds the next Steward run.
+        if _is_steward_self_status(check):
+            payload_checks.append(
+                {
+                    "name": name,
+                    "required": required,
+                    "status": status,
+                    "conclusion": conclusion,
+                    "url": url,
+                    "head_sha": head_sha,
+                    "blocking": False,
+                    "blockers": [],
+                    "rationale": (
+                        "Steward self-status "
+                        f"{STEWARD_SELF_STATUS_CONTEXT!r} retained as harvest "
+                        "evidence but excluded from readiness evaluation."
+                    ),
+                }
+            )
+            continue
+
+        if required:
+            required_count += 1
 
         blocking = False
         rationale = "Check is nonblocking or successful."
@@ -687,6 +725,11 @@ def _embedded_audit(harvest: dict[str, Any]) -> dict[str, str]:
 
 def _detect_mixed_sha_checks(checks: list[Any], *, pr_head_sha: str) -> bool:
     for check in checks:
+        if not isinstance(check, dict):
+            continue
+        # Self-status is Steward-published evidence, not foreign SHA noise.
+        if _is_steward_self_status(check):
+            continue
         raw_sha = check.get("headSha") or check.get("head_sha")
         sha = (raw_sha or "").strip() if isinstance(raw_sha, str) else ""
         if sha and sha != pr_head_sha:

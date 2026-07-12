@@ -1,0 +1,112 @@
+{
+  "id": "TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION",
+  "project": "dopemux-mvp",
+  "target": "Make independent embedded-audit and final PR Steward evidence fail closed, trusted-source-only, bound to the live pull-request head, with hard proof enforcement (executed+provenance+identity) and workflow-run artifact identity.",
+  "invariants": [
+    "Audit and final-readiness workflow logic runs from trusted default-branch source and never checks out or executes candidate-branch workflow code.",
+    "Dry-run, skipped, missing, malformed, stale, wrong-head, and unproven audit evidence cannot produce PASS or READY.",
+    "Hard enforcement requires executed=true, trusted provenance, matching PR/head, and embedded_audit.status in {PASS, PASS_WITH_RISKS}.",
+    "pull_request_target metadata is handled explicitly; workflow scripts never treat only pull_request event name as the sole branch.",
+    "PR Steward validates Actions run identity before downloading artifacts and selects exactly one named proof artifact.",
+    "Artifacts are retained for diagnosis even when the required audit or final Steward job fails.",
+    "PR Steward remains read-only.",
+    "This packet does not change branch protection, merge state, rulesets, or the reserved-singleton port allocator.",
+    "CHECK-NAME MIGRATION: old='PR Steward / advisory check-only intake' new='PR Steward / final readiness'; branch-protection follow-up required (out of packet scope)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MERGE-INTEGRITY",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-dmx-merge-integrity-foundation",
+    "base_branch": "main",
+    "stacked_because": "Must land before PR #1040 can receive trusted current-head audit and final-readiness evidence."
+  },
+  "commit": {
+    "message": "fix(audit): bind pull-request-target metadata and proof identity",
+    "allowlist": [
+      ".github/workflows/embedded-audit.yml",
+      ".github/workflows/pr-steward.yml",
+      "scripts/audit/run_embedded_audit.py",
+      "scripts/audit/pr_audit_router.py",
+      "tools/pr_steward/collector.py",
+      "tests/audit/test_pr_audit_router.py",
+      "tests/audit/test_run_embedded_audit.py",
+      "tests/pr_steward/test_intake.py",
+      "task-packets/TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION.json",
+      "proof/TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION/**"
+    ],
+    "verify": [
+      "uv run pytest -q tests/audit/test_pr_audit_router.py tests/audit/test_run_embedded_audit.py tests/pr_steward/test_intake.py --no-cov",
+      "python -m json.tool task-packets/TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION.json",
+      "git diff --check",
+      "pre-commit run --files <changed-files>"
+    ]
+  },
+  "pr": {
+    "title": "fix(audit): make independent audit and Steward fail closed",
+    "body": "Trusted audit and final-readiness foundation for merge-integrity.\n\nCHECK-NAME MIGRATION (branch-protection follow-up required):\n- old: PR Steward / advisory check-only intake\n- new: PR Steward / final readiness\n- embedded-audit job: independent embedded audit\n\nNo merge or branch-protection mutation is performed by this PR.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "proof-identity-hard-gate",
+      "task": "Bind pull_request_target metadata, hard-enforce independent-audit proof (executed+provenance+PR+head+status), emit structured diagnostic proofs without forged provenance, and require Steward workflow-run identity plus exact artifact naming (embedded-audit-pr-<n>-head-<sha>-proof).",
+      "validation": [
+        "Focused tests cover pull_request_target metadata, spoof matrices, soft-runner/hard-enforce, and Steward run-identity/artifact selection strings."
+      ]
+    },
+    {
+      "id": "audit-proof-fail-closed",
+      "task": "Require independent audit execution provenance and fail the workflow when required evidence is not passing.",
+      "validation": [
+        "Focused audit tests first fail then pass for dry-run and skipped evidence."
+      ]
+    },
+    {
+      "id": "steward-artifact-binding",
+      "task": "Make final Steward download and validate the completed independent-audit artifact for the current PR head.",
+      "validation": [
+        "Focused Steward tests reject advisory or wrong-head proof and accept a matching independent artifact."
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Run focused tests, YAML and packet parsing, diff hygiene, and pre-commit before publication.",
+      "validation": [
+        "All commands pass or external prerequisites are reported as blocking."
+      ]
+    },
+    {
+      "id": "check-name-migration-record",
+      "task": "Record check-name migration for supervisor branch-protection follow-up: old 'PR Steward / advisory check-only intake' -> new 'PR Steward / final readiness'. Do not modify branch protection in this packet.",
+      "validation": [
+        "Migration string present in packet invariants and PR body after publication."
+      ]
+    }
+  ]
+}
