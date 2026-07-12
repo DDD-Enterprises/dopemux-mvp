@@ -21,6 +21,12 @@ permissions:
 
 jobs:
   pr-steward:
+    # CHECK-NAME MIGRATION (branch-protection follow-up required, out of packet scope):
+    #   old check name: PR Steward / advisory check-only intake
+    #   new check name: PR Steward / final readiness
+    # Branch protection / rulesets that pin the old name will not enforce this gate
+    # until updated in an authorized follow-on packet. This packet does not modify
+    # branch protection.
     name: final readiness
     runs-on: ubuntu-latest
     env:
@@ -28,6 +34,8 @@ jobs:
     steps:
       - name: Checkout trusted Steward source
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set audit run ID
         id: audit_run
@@ -44,26 +52,195 @@ jobs:
           test -n "$audit_run_id"
           printf 'id=%s\n' "$audit_run_id" >> "$GITHUB_OUTPUT"
 
-      - name: Download completed independent audit artifact
-        id: audit
+      - name: Validate audit workflow-run identity
+        id: run_identity
+        env:
+          AUDIT_RUN_ID: ${{ steps.audit_run.outputs.id }}
+          EXPECTED_REPO: ${{ github.repository }}
         run: |
+          # Do not trust arbitrary PROOF.json until the Actions run itself is
+          # proven to be the expected embedded-audit workflow in this repository.
+          gh api "repos/${EXPECTED_REPO}/actions/runs/${AUDIT_RUN_ID}" > /tmp/audit-run.json
+
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          run = json.loads(Path("/tmp/audit-run.json").read_text(encoding="utf-8"))
+          expected_repo = os.environ["EXPECTED_REPO"]
+          expected_id = int(os.environ["AUDIT_RUN_ID"])
+          errors = []
+
+          run_id = int(run.get("id") or 0)
+          if run_id != expected_id:
+              errors.append(f"run_id_mismatch: {run_id} != {expected_id}")
+
+          repo_full = (run.get("repository") or {}).get("full_name") or expected_repo
+          if repo_full != expected_repo:
+              errors.append(f"repository_mismatch: {repo_full!r} != {expected_repo!r}")
+
+          name = str(run.get("name") or "")
+          path = str(run.get("path") or "")
+          if not (
+              name == "embedded-audit"
+              or path.endswith("embedded-audit.yml")
+          ):
+              errors.append(f"workflow_mismatch: name={name!r} path={path!r}")
+
+          status = str(run.get("status") or "")
+          if status != "completed":
+              errors.append(f"run_not_completed: status={status!r}")
+
+          head_sha = str(run.get("head_sha") or "")
+          if not head_sha:
+              errors.append("run_head_sha_missing")
+
+          conclusion = str(run.get("conclusion") or "")
+          # Final readiness requires a successful audit conclusion. Failed runs
+          # retain artifacts for diagnosis but cannot produce READY.
+          if conclusion != "success":
+              errors.append(f"run_conclusion_not_success: conclusion={conclusion!r}")
+
+          if errors:
+              print("Audit workflow-run identity validation failed:", file=sys.stderr)
+              for err in errors:
+                  print(f"  - {err}", file=sys.stderr)
+              raise SystemExit(1)
+
+          out = Path(os.environ["GITHUB_OUTPUT"])
+          with out.open("a", encoding="utf-8") as fh:
+              fh.write(f"head_sha={head_sha}\n")
+              fh.write(f"conclusion={conclusion}\n")
+              fh.write(f"workflow_name={name}\n")
+              fh.write(f"workflow_path={path}\n")
+          print(
+              f"Validated embedded-audit run {run_id} "
+              f"head={head_sha} conclusion={conclusion}"
+          )
+          PY
+
+      - name: Select and download independent audit artifact
+        id: audit
+        env:
+          AUDIT_RUN_ID: ${{ steps.audit_run.outputs.id }}
+          EXPECTED_HEAD_SHA: ${{ steps.run_identity.outputs.head_sha }}
+          EXPECTED_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
           rm -rf independent-audit-download independent-audit
-          gh run download "${{ steps.audit_run.outputs.id }}" --dir independent-audit-download
+          mkdir -p independent-audit-download independent-audit
+
+          # Select exactly one artifact by naming contract:
+          #   embedded-audit-pr-<PR>-head-<40-hex>-proof
+          gh api "repos/${EXPECTED_REPO}/actions/runs/${AUDIT_RUN_ID}/artifacts" \
+            --paginate > /tmp/audit-artifacts.json
+
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          from pathlib import Path
+
+          expected_head = os.environ["EXPECTED_HEAD_SHA"]
+          payload = json.loads(Path("/tmp/audit-artifacts.json").read_text(encoding="utf-8"))
+          artifacts = payload.get("artifacts") or []
+          pattern = re.compile(
+              rf"^embedded-audit-pr-(\d+)-head-{re.escape(expected_head)}-proof$"
+          )
+          matches = []
+          for art in artifacts:
+              name = str(art.get("name") or "")
+              m = pattern.match(name)
+              if m:
+                  matches.append((name, int(m.group(1)), art.get("id")))
+
+          if not matches:
+              print(
+                  "No exact-name artifact found; refusing arbitrary PROOF.json selection.",
+                  file=sys.stderr,
+              )
+              print("Available artifacts:", file=sys.stderr)
+              for art in artifacts:
+                  print(f"  - {art.get('name')}", file=sys.stderr)
+              raise SystemExit("Expected embedded-audit proof artifact not found")
+
+          if len(matches) != 1:
+              print("Multiple matching proof artifacts:", file=sys.stderr)
+              for name, pr, _ in matches:
+                  print(f"  - {name} (pr={pr})", file=sys.stderr)
+              raise SystemExit("Exactly one expected proof artifact is required")
+
+          name, pr_number, artifact_id = matches[0]
+          out = Path(os.environ["GITHUB_OUTPUT"])
+          with out.open("a", encoding="utf-8") as fh:
+              fh.write(f"artifact_name={name}\n")
+              fh.write(f"pr_number={pr_number}\n")
+              fh.write(f"artifact_id={artifact_id}\n")
+          Path("/tmp/selected-artifact-name.txt").write_text(name + "\n", encoding="utf-8")
+          Path("/tmp/selected-pr-number.txt").write_text(str(pr_number) + "\n", encoding="utf-8")
+          print(f"Selected artifact {name} for PR {pr_number}")
+          PY
+
+          ARTIFACT_NAME="$(cat /tmp/selected-artifact-name.txt | tr -d '\n')"
+          SELECTED_PR="$(cat /tmp/selected-pr-number.txt | tr -d '\n')"
+
+          gh run download "${AUDIT_RUN_ID}" \
+            --name "${ARTIFACT_NAME}" \
+            --dir independent-audit-download
+
+          proof_count="$(find independent-audit-download -type f -name PROOF.json | wc -l | tr -d ' ')"
+          test "$proof_count" = "1"
           proof_path="$(find independent-audit-download -type f -name PROOF.json -print -quit)"
-          test -n "$proof_path"
-          mkdir -p independent-audit
           cp "$proof_path" independent-audit/PROOF.json
+
           jq -e '.pr_number | numbers' independent-audit/PROOF.json >/dev/null
           jq -e '.head_sha | strings' independent-audit/PROOF.json >/dev/null
+
+          proof_pr="$(jq -er '.pr_number' independent-audit/PROOF.json)"
+          proof_head="$(jq -er '.head_sha' independent-audit/PROOF.json)"
+          test "$proof_pr" = "$SELECTED_PR"
+          test "$proof_head" = "$EXPECTED_HEAD_SHA"
+
+          export PROOF_PR="$proof_pr"
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path.cwd()))
+          from scripts.audit.run_embedded_audit import enforce_independent_audit_proof
+
+          proof = json.loads(Path("independent-audit/PROOF.json").read_text(encoding="utf-8"))
+          enforce_independent_audit_proof(
+              proof,
+              expected_pr=int(os.environ["PROOF_PR"]),
+              expected_head_sha=os.environ["EXPECTED_HEAD_SHA"],
+              expected_repo=os.environ["EXPECTED_REPO"],
+          )
+          print("Independent audit proof identity enforcement: PASS")
+          PY
+
           printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
-          printf 'pr_number=%s\n' "$(jq -er '.pr_number' independent-audit/PROOF.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Bind proof identity outputs
+        id: proof
+        run: |
+          pr_number="$(jq -er '.pr_number' independent-audit/PROOF.json)"
+          head_sha="$(jq -er '.head_sha' independent-audit/PROOF.json)"
+          printf 'pr_number=%s\n' "$pr_number" >> "$GITHUB_OUTPUT"
+          printf 'head_sha=%s\n' "$head_sha" >> "$GITHUB_OUTPUT"
+          printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
 
       - name: Run PR Steward
         id: steward
         run: |
           python -m tools.pr_steward.intake \
             --repo "$GITHUB_REPOSITORY" \
-            --pr "${{ steps.audit.outputs.pr_number }}" \
+            --pr "${{ steps.proof.outputs.pr_number }}" \
             --out pr-steward-artifacts \
             --strict \
             --format text \
@@ -75,6 +252,8 @@ jobs:
           {
             printf '## PR Steward final readiness\n\n'
             printf -- '- audit_run_id: %s\n' '${{ steps.audit_run.outputs.id }}'
+            printf -- '- validated_head_sha: %s\n' '${{ steps.proof.outputs.head_sha }}'
+            printf -- '- pr_number: %s\n' '${{ steps.proof.outputs.pr_number }}'
             printf -- '- mutation_performed: false\n\n'
             if [ -f pr-steward-artifacts/PR_STEWARD_SUMMARY.md ]; then
               cat pr-steward-artifacts/PR_STEWARD_SUMMARY.md
@@ -87,6 +266,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pr-steward-${{ steps.pr.outputs.number }}
+          # Attributable name from validated independent-audit proof identity
+          # (not a stale steps.pr.outputs.number reference).
+          name: pr-steward-pr-${{ steps.proof.outputs.pr_number }}-head-${{ steps.proof.outputs.head_sha }}-readiness
           path: pr-steward-artifacts/
           if-no-files-found: warn

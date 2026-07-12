@@ -297,20 +297,16 @@ def _proof_state(
 
 
 def _independent_audit_errors(payload: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
-    if payload.get("dry_run") is True:
-        errors.append("audit_proof_dry_run: final readiness requires an executed audit")
-    if payload.get("executed") is not True:
-        errors.append("audit_not_executed: final readiness requires executed=true")
-    provenance = payload.get("provenance")
-    if not isinstance(provenance, dict):
-        errors.append("audit_provenance_missing: final readiness requires trusted provenance")
-        return errors
-    if provenance.get("proof_author") != "independent-embedded-audit":
-        errors.append("audit_provenance_untrusted: unexpected proof author")
-    if provenance.get("workflow") != "embedded-audit.yml":
-        errors.append("audit_provenance_untrusted: unexpected workflow")
-    return errors
+    """Delegate to the shared independent-audit proof validator.
+
+    Parity with the embedded-audit workflow hard gate is intentional: both
+    surfaces must accept and reject the same proof shapes.
+    """
+    # Local import keeps collector importable when scripts/ is unavailable in
+    # tightly packaged test contexts, while remaining the single contract path.
+    from scripts.audit.run_embedded_audit import independent_audit_errors
+
+    return independent_audit_errors(payload)
 
 
 def _missing_proof_state(proof_path: Path | None) -> dict[str, Any]:
