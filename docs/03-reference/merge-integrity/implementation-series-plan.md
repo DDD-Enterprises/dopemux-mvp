@@ -166,7 +166,15 @@ Stop conditions:
 
 ## Separate Remediation Packet
 
-Documentation remediation for this draft PR is `TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION`. It is not a numbered implementation-series packet and must not consume `0004`, which remains reserved for the audit-proof and two-stage Steward implementation objective above.
+Documentation remediation for this draft PR is `TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION`. It is not a numbered implementation-series packet and must not consume `0004`.
+
+**Series-ID custody note (OBSERVED after PR #1042):** the trusted-audit foundation that landed on `main` as PR #1042 used packet id `TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION`. That is a foundation/remediation identity, not completion of the full series-plan objective for `0004` (audit-proof correction and two-stage PR Steward). Remaining series-plan `0004` work must:
+
+1. treat the landed foundation as a dependency, not as already-finished two-stage Steward;
+2. avoid a second competing packet id that reuses `0004` for unrelated scope;
+3. keep remediation suffixes (`0001R`, `0004-TRUSTED-AUDIT-FOUNDATION`) distinct from future implementation slices.
+
+PR #1040 remediation uses `0001R` only and does not claim series `0002`–`0007` implementation.
 
 Proposed packet: `TP-DMX-MCP-RUNTIME-RESERVED-SINGLETON-PORT-REPAIR-001`
 

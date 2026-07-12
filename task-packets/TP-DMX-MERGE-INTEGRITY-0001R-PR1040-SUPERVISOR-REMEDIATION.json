@@ -39,13 +39,15 @@
       "docs/03-reference/merge-integrity/merge-integrity-architecture.md",
       "docs/03-reference/merge-integrity/merge-integrity-investigation.md",
       "docs/90-adr/adr-dmx-merge-integrity-agent-patch-admission.md",
+      "docs/90-adr/adr-index.md",
+      "proof/TP-DMX-MERGE-INTEGRITY-0001/AUDIT.md",
+      "proof/TP-DMX-MERGE-INTEGRITY-0001/AUDITOR_REPORT.md",
       "proof/TP-DMX-MERGE-INTEGRITY-0001/COMMAND_INDEX.json",
       "proof/TP-DMX-MERGE-INTEGRITY-0001/EVIDENCE_MANIFEST.json",
       "proof/TP-DMX-MERGE-INTEGRITY-0001/GITHUB_CONTROL_CAPTURE.json",
       "proof/TP-DMX-MERGE-INTEGRITY-0001/HANDOFF.json",
       "proof/TP-DMX-MERGE-INTEGRITY-0001/PROOF.json",
       "proof/TP-DMX-MERGE-INTEGRITY-0001/SUMMARY.md",
-      "task-packets/TP-DMX-MERGE-INTEGRITY-0004-PR1040-SUPERVISOR-REMEDIATION.json",
       "task-packets/TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION.json"
     ],
     "verify": [

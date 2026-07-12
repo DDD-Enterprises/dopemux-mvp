@@ -1,5 +1,15 @@
-# Audit Status
+# Audit — TP-DMX-MERGE-INTEGRITY-0001
 
-Current-head independent audit: `NEEDS_SUPERVISOR`.
+## Verdict (committed)
 
-The earlier AGY/Sonnet verdict audited `b71e13a9b8691217dc6b35d148ccc122bc7d0f06`, not a final PR head. It is historical design feedback only. The required receipt is a trusted `embedded-audit` artifact emitted after #1042 lands and the final #1040 commit exists.
+**SKIPPED / PENDING_EXTERNAL** for final-head independent audit of this PR.
+
+## Foundation dependency
+
+PR #1042 landed the trusted audit foundation on main. That does **not** substitute for an exact-head receipt on PR #1040.
+
+## Residual risks
+
+- Live audit/Steward for this head not yet run
+- ADR proposed only
+- Protected-reference qualification missing

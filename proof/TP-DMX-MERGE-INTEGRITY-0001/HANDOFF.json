@@ -1,1 +1,24 @@
-{"handoff_id":"TP-DMX-MERGE-INTEGRITY-0001-HANDOFF-003","repo":"DDD-Enterprises/dopemux-mvp","branch":"codex/tp-dmx-merge-integrity-0001-investigation-adr","governing_posture":"HOLD_DRAFT","blocking_reasons":["PR #1042 must land before trusted current-head audit can run.","EMBEDDED_AUDIT_TOKEN and an actual independent verdict are external prerequisites.","Protected-reference exact-admission requires controlled race and permission qualification.","Draft PR policy prevents READY until deliberate operator promotion after supervisor rereview."],"warnings":["#720 causality remains CONFLICTING.","Existing expectedHeadOid merge controls are insufficient for exact base, parent, tree, intent, and policy admission.","Reserved-singleton repair is out of scope.","Historical AGY audit covers b71e13a9 only."],"recommended_next_step":"Validate and publish this docs/proof remediation on draft PR #1040; then land and qualify #1042, obtain a trusted final-head artifact, run final Steward after checks are terminal, and request supervisor rereview."}
+{
+  "handoff_id": "TP-DMX-MERGE-INTEGRITY-0001-HANDOFF-004",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "codex/tp-dmx-merge-integrity-0001-investigation-adr",
+  "pr": 1040,
+  "governing_posture": "READY_FOR_REVIEW_PENDING_EXTERNAL",
+  "pr_1042": {
+    "merged": true,
+    "merge_sha": "db9b844fc7b1731af953b7c996581082fb3f096f"
+  },
+  "blocking_reasons": [
+    "Trusted final-head independent audit receipt for exact PR #1040 head is still missing.",
+    "PR Steward final readiness for exact PR #1040 head is still missing.",
+    "Protected-reference exact-admission requires controlled race and permission qualification.",
+    "ADR remains proposed; architecture is not IMPLEMENTATION_COMPLETE."
+  ],
+  "warnings": [
+    "#720 causality remains CONFLICTING.",
+    "Existing expectedHeadOid merge controls are insufficient for exact base, parent, tree, intent, and policy admission.",
+    "Reserved-singleton repair is out of scope.",
+    "Series packet TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION landed via #1042; remaining series-plan 0004 work is not complete."
+  ],
+  "recommended_next_step": "Push rebased branch; run trusted embedded-audit + Steward on exact head; mark ready only after local gates pass; stop for supervisor disposition of #1040."
+}
