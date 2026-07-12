@@ -5,8 +5,8 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "codex/tp-dmx-merge-integrity-foundation",
   "base_sha": "b176747b339685e781de04268c46b7ae123abfbf",
-  "head_sha": "b67bb764575aaab43f643c51cbef1912f950bbc2",
-  "generated_at": "2026-07-12T19:49:32Z",
+  "head_sha": "POST_PUSH_BIND",
+  "generated_at": "2026-07-12T19:49:54Z",
   "changed_files": [
     ".github/workflows/embedded-audit.yml",
     ".github/workflows/pr-steward.yml",
@@ -57,7 +57,17 @@
   "mutation_performed": false,
   "merge_authorized": false,
   "live_default_branch_proven": false,
-  "head_sha_binding": "branch_tip_at_proof_write; PR head after push is authoritative for supervisor gate",
-  "pr_head_ref_oid": "b67bb764575aaab43f643c51cbef1912f950bbc2",
-  "head_sha_note": "Authoritative exact head is the git tip after this commit is pushed (see PR headRefOid)."
+  "pr_head_ref_oid": "b21ac7b1f0487c7b2866631b2ab67d1b8068f486",
+  "head_sha_note": "After this commit is included, supervisor must re-read gh pr view headRefOid. If a subsequent proof-only commit exists, that newer SHA is exact head.",
+  "remote_branch_tip": "b21ac7b1f0487c7b2866631b2ab67d1b8068f486",
+  "commits_on_branch": [
+    "b21ac7b1f docs(proof): bind PROOF to published PR head SHA",
+    "cfd114cd3 docs(proof): finalize PROOF binding fields for supervisor gate",
+    "a938aae05 docs(proof): rebind PROOF head to tip",
+    "aba75afbf docs(proof): bind PROOF.json to remediation head SHA",
+    "b04262385 docs(proof): add trusted-audit foundation evidence",
+    "ded3cf0a6 test(audit): lock fail-closed provenance and workflow behavior",
+    "65bcc14e1 fix(audit): bind pull-request-target metadata and proof identity",
+    "b67bb7645 fix(audit): fail closed on independent audit evidence"
+  ]
 }
