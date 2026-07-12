@@ -5,6 +5,51 @@
 **Executor**: Grok (`grok-code-fast-1`) per operator directive; opus-class review at PAL codereview steps; orchestrator tree root `7212c3b8` (tags `rte-truth`)
 **Global rules**: dry-run only (no `--execute`, no `DPMX_LIVE_OK`); golden harness (`tests/test_truth_harness_goldens.py`) is the behavior contract; seam PRs may NOT update goldens; R2/R4 packets that intentionally change goldens must itemize the diff in PROOF.json.
 
+## Recommended model routing
+
+The existing `execution.agent` / `execution.model` fields remain the original executor intent. The new `execution.recommended_model` and `execution.recommended_reasoning_effort` fields are the current Codex routing recommendation.
+
+| Packet | Recommended model | Reasoning |
+|---|---|---|
+| R0-001 | `gpt-5.6-luna` | `medium` |
+| R0-002 | `gpt-5.6-luna` | `medium` |
+| R0-003 | `gpt-5.6-luna` | `medium` |
+| R0-004 | `gpt-5.6-luna` | `high` |
+| R0-005 | `gpt-5.6-terra` | `high` |
+| R0-006 | `gpt-5.6-terra` | `high` |
+| R0-007 | `gpt-5.6-luna` | `high` |
+| R0-008 | `gpt-5.6-sol` | `max` |
+| R1-001 | `gpt-5.6-terra` | `xhigh` |
+| R1-002 | `gpt-5.6-terra` | `xhigh` |
+| R1-003 | `gpt-5.6-terra` | `xhigh` |
+| R1-004 | `gpt-5.6-sol` | `max` |
+| R2-001 | `gpt-5.6-sol` | `max` |
+| R2-002 | `gpt-5.6-terra` | `xhigh` |
+| R2-003 | `gpt-5.6-sol` | `max` |
+| R2-004 | `gpt-5.6-sol` | `max` |
+| R2-005 | `gpt-5.6-sol` | `max` |
+| R3-001 | `gpt-5.6-sol` | `xhigh` |
+| R3-002 | `gpt-5.6-sol` | `max` |
+| R3-003 | `gpt-5.6-sol` | `max` |
+| R3-004 | `gpt-5.6-sol` | `max` |
+| R3-005a | `gpt-5.6-terra` | `high` |
+| R3-005b | `gpt-5.6-sol` | `xhigh` |
+| R3-005c | `gpt-5.6-sol` | `xhigh` |
+| R3-005d | `gpt-5.6-sol` | `xhigh` |
+| R3-005e | `gpt-5.6-terra` | `high` |
+| R3-006 | `gpt-5.6-sol` | `xhigh` |
+| R4-001 | `gpt-5.6-terra` | `xhigh` |
+| R4-002 | `gpt-5.6-terra` | `xhigh` |
+| R4-003 | `gpt-5.6-terra` | `xhigh` |
+| R4-004 | `gpt-5.6-terra` | `xhigh` |
+| R4-005 | `gpt-5.6-luna` | `medium` |
+| R4-006 | `gpt-5.6-terra` | `xhigh` |
+| R5-001 | `gpt-5.6-sol` | `max` |
+
+Every handoff must display the selected packet and both routing tags in its requested-next-step line:
+
+`Requested Next Step: <packet> | recommended model: <model> | reasoning: <effort>`
+
 ## Status at load
 | Packet | Status |
 |---|---|
@@ -27,3 +72,7 @@
 3. R1-001..004 (unblocks R2/R3-002/R4-002 chains)
 4. R2-001 (pricing truth CRIT)
 5. R3-002 (injection separator CRIT)
+
+## Requested next step
+
+`TP-RTE-TRUTH-R1-002 | recommended model: gpt-5.6-terra | reasoning: xhigh`

@@ -1,0 +1,94 @@
+{
+  "change_id": "RTE-TRUTH-ROUTING-METADATA",
+  "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-audit-improvement-f4beb7",
+  "base_head": "8bbf7624e",
+  "commit_sha": null,
+  "scope": {
+    "packet_count": 34,
+    "packet_glob": "task-packets/generated/TP-RTE-TRUTH-R[0-5]-*.json",
+    "runtime_code_changed": false,
+    "orchestrator_items_updated": 34
+  },
+  "authority_used": [
+    "User instruction to tag every packet with recommended model and reasoning level",
+    "AGENTS.md",
+    "task-packets/generated/TP-RTE-TRUTH-LOAD-PLAN.md",
+    "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+  ],
+  "changes": [
+    "Added execution.recommended_model and execution.recommended_reasoning_effort to all 34 RTE remediation packets.",
+    "Extended the canonical execution schema for existing Grok/model/estimated_diff metadata and made both recommendation fields mandatory for RTE-TRUTH series packets.",
+    "Added the complete routing matrix and mandatory requested-next-step display format to the load plan.",
+    "Mirrored packet recommendations into all 34 Task Orchestrator leaf items as model-* and reasoning-* tags plus a readable summary."
+  ],
+  "routing_distribution": {
+    "models": {
+      "gpt-5.6-luna": 6,
+      "gpt-5.6-terra": 13,
+      "gpt-5.6-sol": 15
+    },
+    "reasoning_effort": {
+      "medium": 4,
+      "high": 6,
+      "xhigh": 14,
+      "max": 10
+    }
+  },
+  "validation": [
+    {
+      "status": "PASS",
+      "command": "Draft7Validator over all 34 RTE packet JSON files",
+      "summary": "All packets parse, contain both recommendation fields, and validate against the canonical schema."
+    },
+    {
+      "status": "PASS",
+      "command": "Routing matrix reconciliation",
+      "summary": "All 34 packet values match the load-plan table exactly; original executor agent/model fields remain unchanged."
+    },
+    {
+      "status": "PASS",
+      "command": "Negative schema mutations",
+      "summary": "The schema rejects unknown routing values and rejects either missing recommendation field on an RTE-TRUTH packet."
+    },
+    {
+      "status": "PASS",
+      "command": "Task Orchestrator tag reconciliation",
+      "summary": "All 34 leaf items carry matching model-* and reasoning-* tags; R1-002 readable summary round-tripped."
+    },
+    {
+      "status": "PASS",
+      "command": "git diff --check",
+      "summary": "No whitespace errors."
+    },
+    {
+      "status": "FAIL",
+      "command": "mise exec -- pre-commit run --files <changed files>",
+      "summary": "Aggregate pre-commit failed only because the docs-filename-hygiene system python3 lacks PyYAML."
+    },
+    {
+      "status": "PASS",
+      "command": "mise exec -- python scripts/check_docs_filename_hygiene.py --audit --all-files",
+      "summary": "The same hook logic passed under project Python: total=5157 active=3789 quarantine=1368 exempt=2292 violations=0."
+    }
+  ],
+  "review": {
+    "reviewer": "gpt-5.6-luna",
+    "agent_id": "019f5439-b5f0-79c1-a7a3-cba72cade408",
+    "status": "completed_findings_resolved",
+    "findings": [
+      {
+        "severity": "P2",
+        "summary": "Recommendation fields were optional in the first schema revision, so future RTE packets could omit them.",
+        "resolution": "Added a scoped Draft 7 condition requiring both fields whenever series.id starts with RTE-TRUTH-."
+      }
+    ]
+  },
+  "residual_risks": [
+    "Recommended models are policy metadata, not a runtime-enforced scheduler constraint.",
+    "Future model families require a canonical schema enum update before packet assignment."
+  ],
+  "rollback": {
+    "strategy": "Revert the eventual routing metadata commit; orchestrator tags require a matching metadata rollback if the recommendation policy is withdrawn."
+  }
+}

@@ -26,6 +26,8 @@
   },
   "execution": {
     "agent": "grok",
+    "recommended_model": "gpt-5.6-luna",
+    "recommended_reasoning_effort": "high",
     "model": "grok-code-fast-1",
     "branch": "claude/rte-audit-improvement-f4beb7",
     "base_branch": "claude/rte-audit-improvement-f4beb7",
