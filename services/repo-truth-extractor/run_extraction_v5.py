@@ -263,6 +263,9 @@ reporting_write_run_manifest = rte_write_run_manifest
 reporting_write_step_metrics_snapshot = rte_write_step_metrics_snapshot
 from extractor.phases.base import PhaseRunnerDeps
 from extractor.phases.a import run_phase as extracted_run_phase_A
+from extractor.phases.c import run_phase as extracted_run_phase_C
+from extractor.phases.d import run_phase as extracted_run_phase_D
+from extractor.phases.x import run_phase as extracted_run_phase_X
 from extractor.phases.z import run_phase as extracted_run_phase_Z
 from extractor.cli_args import (
     DEFAULT_FILE_TRUNCATE_CHARS,
@@ -3378,6 +3381,8 @@ def _phase_runner_deps() -> PhaseRunnerDeps:
         run_phase_inner=_run_phase_inner,
         selected_execution_step_ids_for_phase=_selected_execution_step_ids_for_phase,
         collect_phase_artifacts=collect_phase_artifacts,
+        plan_repo_scan_phase=_plan_repo_scan_phase_impl,
+        plan_x_phase=_plan_x_phase_impl,
     )
 
 
@@ -20082,57 +20087,13 @@ def run_phase_H(
 def run_phase_C(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    targets = [
-        "src",
-        "services",
-        "shared",
-        "plugins",
-        "tools",
-        "scripts",
-        "tests",
-        "docker/mcp-servers-source",
-        "docker/mcp-servers",
-        "components",
-    ]
-    plan = _plan_repo_scan_phase_impl(
-        cwd=Path.cwd(),
-        collector_factory=Collector,
-        merge_scan_excludes=_merge_scan_excludes,
-        repo_scan_excludes=REPO_SCAN_EXCLUDES,
-        base_excludes=[".git", "node_modules", "venv", ".venv", "docs", "test-results"],
-        targets=targets,
-    )
-    _run_phase_inner(
-        "C",
-        dirs,
-        cfg,
-        plan.collector,
-        plan.targets,
-        ui=ui,
-        selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "C"),
-    )
+    extracted_run_phase_C(_phase_runner_deps(), dirs, cfg, ui=ui)
 
 
 def run_phase_D(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    plan = _plan_repo_scan_phase_impl(
-        cwd=Path.cwd(),
-        collector_factory=Collector,
-        merge_scan_excludes=_merge_scan_excludes,
-        repo_scan_excludes=REPO_SCAN_EXCLUDES,
-        base_excludes=[".git"],
-        targets=["docs"],
-    )
-    _run_phase_inner(
-        "D",
-        dirs,
-        cfg,
-        plan.collector,
-        plan.targets,
-        ui=ui,
-        selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "D"),
-    )
+    extracted_run_phase_D(_phase_runner_deps(), dirs, cfg, ui=ui)
 
 
 def run_phase_E(
@@ -21009,22 +20970,7 @@ def run_phase_R(
 def run_phase_X(
     dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None
 ) -> None:
-    collector_factory = Collector
-    plan = _plan_x_phase_impl(
-        cwd=Path.cwd(),
-        collector_factory=collector_factory,
-        merge_scan_excludes=_merge_scan_excludes,
-        repo_scan_excludes=REPO_SCAN_EXCLUDES,
-    )
-    _run_phase_inner(
-        "X",
-        dirs,
-        cfg,
-        plan.collector,
-        plan.targets,
-        ui=ui,
-        selected_step_ids=_selected_execution_step_ids_for_phase(cfg, "X"),
-    )
+    extracted_run_phase_X(_phase_runner_deps(), dirs, cfg, ui=ui)
 
 
 def run_phase_T(
