@@ -83,7 +83,7 @@ const INITIAL_TASKS: Task[] = [
   },
 ];
 
-const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
+const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }) => {
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
   const headerRef = useRef<HTMLHeadingElement>(null);
 
@@ -94,6 +94,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const [heartbeat, setHeartbeat] = useState<number>(Date.now());
   const [isResetConfirming, setIsResetConfirming] = useState(false);
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isSkipConfirming, setIsSkipConfirming] = useState(false);
+  const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isTaskTitleCopied, setIsTaskTitleCopied] = useState(false);
   const copyTaskTitleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -124,6 +126,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return () => {
       if (resetTimeoutRef.current) {
         clearTimeout(resetTimeoutRef.current);
+      }
+      if (skipConfirmTimeoutRef.current) {
+        clearTimeout(skipConfirmTimeoutRef.current);
       }
       if (copyTaskTitleTimeoutRef.current) {
         clearTimeout(copyTaskTitleTimeoutRef.current);
@@ -183,6 +188,22 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const skipTask = (taskId: string) => {
+    if (!isSkipConfirming) {
+      setIsSkipConfirming(true);
+      if (skipConfirmTimeoutRef.current) clearTimeout(skipConfirmTimeoutRef.current);
+      skipConfirmTimeoutRef.current = setTimeout(() => {
+        setIsSkipConfirming(false);
+        skipConfirmTimeoutRef.current = null;
+      }, 3000);
+      return;
+    }
+
+    if (skipConfirmTimeoutRef.current) {
+      clearTimeout(skipConfirmTimeoutRef.current);
+      skipConfirmTimeoutRef.current = null;
+    }
+    setIsSkipConfirming(false);
+
     const nextTask = getSkipTransitionTask(taskId, optimizedTasks);
     if (!nextTask) return;
     setCurrentTaskId(nextTask.id);
@@ -388,6 +409,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             transform: 'scale(1.05)',
             filter: `drop-shadow(0 0 4px ${alpha(brandTokens.colors.serumMint, 0.4)})`,
           },
+        },
+        '@keyframes skip-pulse': {
+          '0%': { transform: 'scale(1)' },
+          '50%': {
+            transform: 'scale(1.03)',
+            boxShadow: `0 0 12px ${alpha(brandTokens.colors.saintGold, 0.4)}`,
+          },
+          '100%': { transform: 'scale(1)' },
         },
         '@keyframes timer-pulse': {
           '0%, 100%': { opacity: 1 },
@@ -648,9 +677,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               title={
                 optimizedTasks.length <= 1
                   ? 'No other tasks to skip to'
-                  : nextTaskAfterSkip
-                    ? `Skip to: ${nextTaskAfterSkip.title}`
-                    : 'Skip to next task'
+                  : isSkipConfirming
+                    ? 'Confirm to skip current task'
+                    : nextTaskAfterSkip
+                      ? `Skip to: ${nextTaskAfterSkip.title}`
+                      : 'Skip to next task'
               }
               arrow
             >
@@ -663,24 +694,40 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   borderRadius: 1,
                   outline: 'none',
                   '&:focus-visible': {
-                    boxShadow: `0 0 0 2px ${brandTokens.colors.gremlinPink}`,
+                    boxShadow: `0 0 0 2px ${isSkipConfirming ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink}`,
                   },
                 }}
               >
                 <Button
                   size="small"
                   variant="text"
-                  startIcon={<SkipForward aria-hidden="true" />}
+                  startIcon={
+                    isSkipConfirming ? (
+                      <AlertTriangle aria-hidden="true" size={16} />
+                    ) : (
+                      <SkipForward aria-hidden="true" size={16} />
+                    )
+                  }
                   onClick={() => skipTask(currentTask.id)}
-                  sx={{ color: brandTokens.colors.gremlinPink }}
+                  sx={{
+                    color: isSkipConfirming ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
+                    transition: 'all 0.2s ease',
+                    ...(isSkipConfirming && {
+                      animation: 'skip-pulse 1.5s infinite',
+                    }),
+                  }}
                   aria-label={
-                    nextTaskAfterSkip
-                      ? `Skip ${currentTask.title}, proceed to ${nextTaskAfterSkip.title}`
-                      : `Skip task: ${currentTask.title}`
+                    isSkipConfirming
+                      ? nextTaskAfterSkip
+                        ? `Confirm skip ${currentTask.title}, proceed to ${nextTaskAfterSkip.title}`
+                        : `Confirm skip task: ${currentTask.title}`
+                      : nextTaskAfterSkip
+                        ? `Skip ${currentTask.title}, proceed to ${nextTaskAfterSkip.title}`
+                        : `Skip task: ${currentTask.title}`
                   }
                   disabled={optimizedTasks.length <= 1}
                 >
-                  Skip
+                  {isSkipConfirming ? 'Confirm Skip?' : 'Skip'}
                 </Button>
               </Box>
             </Tooltip>
