@@ -1,0 +1,10 @@
+{
+  "docs_placement_policy": "config/docs_hygiene/docs_placement_policy.yaml",
+  "checked_directories": [
+    "docs/06-research/auditor-fleet/",
+    "docs/05-audit-reports/auditor-fleet/"
+  ],
+  "check_only_mode": true,
+  "findings": "All created docs are pointer-only references as requested. No raw evidence duplicates.",
+  "status": "PASS"
+}

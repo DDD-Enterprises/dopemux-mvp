@@ -1,0 +1,3 @@
+ .claude/claude_config.json | 6 +++---
+ task-packets/INDEX.md      | 1 +
+ 2 files changed, 4 insertions(+), 3 deletions(-)

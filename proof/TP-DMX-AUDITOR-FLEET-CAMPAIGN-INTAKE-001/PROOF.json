@@ -1,0 +1,18 @@
+{
+  "project": "dopemux-mvp",
+  "campaign_id": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "intake_packet_id": "TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001",
+  "status": "INTAKE_WITH_GAPS",
+  "verification_metrics": {
+    "expected_accepted": 51,
+    "collected_accepted": 51,
+    "hash_verified": 51,
+    "missing": 4,
+    "excluded": 26
+  },
+  "safeties": {
+    "symlinks_rejected": true,
+    "path_allowlist_pass": true,
+    "secrets_found": 0
+  }
+}
