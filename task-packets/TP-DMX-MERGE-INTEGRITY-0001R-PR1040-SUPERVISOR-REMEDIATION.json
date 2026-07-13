@@ -3,16 +3,17 @@
   "project": "dopemux-mvp",
   "target": "Repair PR #1040 documentation and proof so the draft accurately distinguishes observed controls, proposed admission architecture, and blocked final-head evidence.",
   "invariants": [
-    "PR #1040 remains docs and proof only; executable audit and Steward repair is isolated in PR #1042.",
+    "PR #1040 remains docs and proof only; trusted audit and Steward foundations landed in PR #1042 and the import-path repair landed in PR #1044.",
     "Dry-run, skipped, route-unavailable, runner-error, malformed, stale, and wrong-head audit artifacts cannot produce PASS or READY.",
-    "PR Steward remains read-only and can consume exact current-head audit only after PR #1042 lands.",
+    "PR Steward remains read-only and can consume exact current-head audit only from trusted main after PR #1042 and PR #1044.",
     "Exact candidate admission is disabled until protected-reference fast-forward behavior and permissions are qualified by a controlled race test; agent and unknown provenance have no normal PR merge fallback.",
     "Git proof remains compact and records custody, digest, immutable evidence references, and explicit blockers rather than recursive raw captures.",
     "The reserved-singleton port allocator repair remains out of scope."
   ],
   "depends_on": [
     "TP-DMX-MERGE-INTEGRITY-0001",
-    "PR #1042 trusted audit foundation"
+    "PR #1042 trusted audit foundation",
+    "PR #1044 trusted PAL runner import-path repair"
   ],
   "repo_binding": {
     "project_id": "DDD-Enterprises/dopemux-mvp",
@@ -48,17 +49,19 @@
       "proof/TP-DMX-MERGE-INTEGRITY-0001/HANDOFF.json",
       "proof/TP-DMX-MERGE-INTEGRITY-0001/PROOF.json",
       "proof/TP-DMX-MERGE-INTEGRITY-0001/SUMMARY.md",
+      "proof/TP-DMX-MERGE-INTEGRITY-0001/VALIDATION.md",
       "task-packets/TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION.json"
     ],
     "verify": [
       "python -m json.tool task-packets/TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION.json",
       "git diff --check",
-      "pre-commit run --files <changed-files>"
+      "pre-commit run --files <changed-files>",
+      "canonical proof and handoff contract validation with recorded compact stdout/stderr"
     ]
   },
   "pr": {
     "title": "docs(merge-integrity): correct PR 1040 admission and proof contract",
-    "body": "Remediates supervisor documentation and proof findings for PR #1040. The branch remains draft. Runtime audit and final-Steward foundation is isolated in PR #1042.",
+    "body": "Remediates supervisor documentation and proof findings for PR #1040. The branch remains draft. Trusted audit and final-Steward foundations are on main through PR #1042 and the #1044 runner repair; final readiness remains blocked pending a new exact-head receipt.",
     "base": "main"
   },
   "pal_chain": {

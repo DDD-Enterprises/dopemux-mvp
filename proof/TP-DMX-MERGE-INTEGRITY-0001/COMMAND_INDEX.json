@@ -1,47 +1,112 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
+  "capture_class": "compact-command-index",
+  "run_id": "merge-integrity-reaudit-20260713T002157Z-005",
   "commands": [
     {
-      "id": "pr-state",
+      "id": "historical-1025-deletion-replay",
       "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
-      "command": "gh pr view 1040 --repo DDD-Enterprises/dopemux-mvp --json state,isDraft,headRefOid,baseRefOid,mergeable,mergeStateStatus",
-      "exit_code": 0,
-      "result": "Draft state was observed; live PR state must be reread before any readiness claim."
-    },
-    {
-      "id": "branch-protection",
-      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
-      "command": "gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection",
-      "exit_code": 0,
-      "result": "Captured in GITHUB_CONTROL_CAPTURE.json; protected-reference admission remains unqualified."
-    },
-    {
-      "id": "rulesets",
-      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
-      "command": "gh api repos/DDD-Enterprises/dopemux-mvp/rulesets",
-      "exit_code": 0,
-      "result": "Captured in GITHUB_CONTROL_CAPTURE.json; bypass actors and merge queue remain unknown."
-    },
-    {
-      "id": "historical-932",
-      "cwd": "/Users/hue/code/dopemux-mvp",
-      "command": "git diff --name-status --find-renames c45b2c8e7a995b3d47537367d909fafaa7ac12cf 559d7e2fa6ba5335763a57a1fe0dbe79b0e1dfa1",
-      "exit_code": 0,
-      "result": "Destructive ConPort migration and proof-surface deletion observed."
-    },
-    {
-      "id": "historical-1025",
-      "cwd": "/Users/hue/code/dopemux-mvp",
       "command": "git diff --name-status --find-renames 7f904d78e01702d2d21b0ac953eb3b8611dda971 8af764b142587ea4421b5a361c5892e804537793",
       "exit_code": 0,
-      "result": "116 deleted paths and the MCP runtime clobber observed."
+      "stdout_bytes": 8117,
+      "stdout_sha256": "6b193ca1f07c7c727593e00f29b354137c57363461c53c27ed8be52146c3e363",
+      "stdout_summary": "137 changed paths; 116 deleted paths.",
+      "immutable_input_refs": [
+        "git-commit:7f904d78e01702d2d21b0ac953eb3b8611dda971",
+        "git-commit:8af764b142587ea4421b5a361c5892e804537793"
+      ],
+      "output_reference": "stdout is reproducible from immutable Git objects and bound by stdout_sha256; the count is summarized in SUMMARY.md."
     },
     {
-      "id": "historical-720",
-      "cwd": "/Users/hue/code/dopemux-mvp",
-      "command": "git diff --name-status --find-renames 74455398397305d3f630ac4c4b8b8f8f36b5a683 fbcae03d61ea87018467dba24d93f5fadef98105",
+      "id": "historical-932-replay",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "git diff --name-status --find-renames c45b2c8e7a995b3d47537367d909fafaa7ac12cf 559d7e2fa6ba5335763a57a1fe0dbe79b0e1dfa1",
       "exit_code": 0,
-      "result": "One landed UI path observed; this packet does not prove #720/#734 causality."
+      "immutable_input_refs": [
+        "git-commit:c45b2c8e7a995b3d47537367d909fafaa7ac12cf",
+        "git-commit:559d7e2fa6ba5335763a57a1fe0dbe79b0e1dfa1"
+      ],
+      "output_reference": "Replay result is summarized in SUMMARY.md; exact output is reproducible from the immutable Git objects."
+    },
+    {
+      "id": "phase-b-main-identity",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "git rev-parse origin/main",
+      "exit_code": 0,
+      "stdout_summary": "45b5ee3f320e777111a6f00227072efeb725996b",
+      "output_reference": "VALIDATION.md#phase-b-main-identity"
+    },
+    {
+      "id": "github-control-capture",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "gh api repos/DDD-Enterprises/dopemux-mvp/branches/main/protection; gh api repos/DDD-Enterprises/dopemux-mvp/rulesets",
+      "exit_code": 0,
+      "stdout_summary": "Redacted decision-grade fields are committed in GITHUB_CONTROL_CAPTURE.json.",
+      "output_reference": "GITHUB_CONTROL_CAPTURE.json#source_input_sha256"
+    },
+    {
+      "id": "reviewed-head-audit-receipt",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "gh run view 29210810173 --log-failed; gh api repos/DDD-Enterprises/dopemux-mvp/actions/runs/29210810173/artifacts",
+      "exit_code": 0,
+      "stdout_summary": "Runner import failed; artifact 8265092641 is named for PR #1040 and head 9d39b9112cb2b9dd547ab09765427019ccd95704.",
+      "output_reference": "EVIDENCE_MANIFEST.json#actions_receipts[0]"
+    },
+    {
+      "id": "reviewed-head-steward-receipt",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "gh run view 29210832105 --log-failed",
+      "exit_code": 0,
+      "stdout_summary": "Steward selected the audit artifact, rejected executed=false, skipped evaluation, and published failure.",
+      "output_reference": "EVIDENCE_MANIFEST.json#actions_receipts[1]"
+    },
+    {
+      "id": "packet-schema-validation",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "python - <<'PY' (exact script in VALIDATION.md#task-packet-schema) PY",
+      "exit_code": 0,
+      "stdout_summary": "task_packet_schema: PASS; schema SHA-256 62abd93a27b7307e5b78aa8a46d967937e257817e41822f2edfc73162d4535ed; execution extra fields are permitted.",
+      "output_reference": "VALIDATION.md#task-packet-schema"
+    },
+    {
+      "id": "proof-and-handoff-contract-validation",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "python - <<'PY' (exact script in VALIDATION.md#proof-and-handoff-contract) PY",
+      "exit_code": 0,
+      "stdout_summary": "proof_contract: PASS; handoff_contract: PASS; historical audit receipt is FAIL and final-head receipt remains required.",
+      "output_reference": "VALIDATION.md#proof-and-handoff-contract"
+    },
+    {
+      "id": "embedded-audit-proof-schema",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "uv run --frozen python scripts/audit/validate_audit_proof.py proof/TP-DMX-MERGE-INTEGRITY-0001/PROOF.json",
+      "exit_code": 0,
+      "stdout_summary": "PASS proof/TP-DMX-MERGE-INTEGRITY-0001/PROOF.json; Result: 1/1 PASS.",
+      "output_reference": "VALIDATION.md#embedded-audit-proof"
+    },
+    {
+      "id": "json-parse",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "python -m json.tool proof/TP-DMX-MERGE-INTEGRITY-0001/PROOF.json; python -m json.tool proof/TP-DMX-MERGE-INTEGRITY-0001/HANDOFF.json; python -m json.tool proof/TP-DMX-MERGE-INTEGRITY-0001/EVIDENCE_MANIFEST.json; python -m json.tool proof/TP-DMX-MERGE-INTEGRITY-0001/GITHUB_CONTROL_CAPTURE.json; python -m json.tool proof/TP-DMX-MERGE-INTEGRITY-0001/COMMAND_INDEX.json; python -m json.tool task-packets/TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION.json",
+      "exit_code": 0,
+      "stdout_summary": "json_parse: PASS",
+      "output_reference": "VALIDATION.md#json-parse"
+    },
+    {
+      "id": "diff-hygiene",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout_summary": "diff_check: PASS",
+      "output_reference": "VALIDATION.md#diff-hygiene"
+    },
+    {
+      "id": "precommit",
+      "cwd": "/Users/hue/code/dopemux-merge-integrity-0001",
+      "command": "pre-commit run --files docs/03-reference/merge-integrity/implementation-series-plan.md docs/03-reference/merge-integrity/merge-integrity-architecture.md docs/03-reference/merge-integrity/merge-integrity-investigation.md docs/90-adr/adr-dmx-merge-integrity-agent-patch-admission.md docs/90-adr/adr-index.md proof/TP-DMX-MERGE-INTEGRITY-0001/AUDIT.md proof/TP-DMX-MERGE-INTEGRITY-0001/AUDITOR_REPORT.md proof/TP-DMX-MERGE-INTEGRITY-0001/COMMAND_INDEX.json proof/TP-DMX-MERGE-INTEGRITY-0001/EVIDENCE_MANIFEST.json proof/TP-DMX-MERGE-INTEGRITY-0001/GITHUB_CONTROL_CAPTURE.json proof/TP-DMX-MERGE-INTEGRITY-0001/HANDOFF.json proof/TP-DMX-MERGE-INTEGRITY-0001/PROOF.json proof/TP-DMX-MERGE-INTEGRITY-0001/SUMMARY.md proof/TP-DMX-MERGE-INTEGRITY-0001/VALIDATION.md task-packets/TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION.json",
+      "exit_code": 0,
+      "stdout_summary": "15 remediation files checked; all applicable hooks passed.",
+      "output_reference": "VALIDATION.md#pre-commit"
     }
   ]
 }

@@ -17,32 +17,31 @@ Packet: `TP-DMX-MERGE-INTEGRITY-0001`
 
 ## Executive Verdict
 
-OBSERVED: `origin/main` for this run is `b176747b339685e781de04268c46b7ae123abfbf`, matching the supervisor-reported restoration baseline. The latest confirmed clobber, PR #1025, removed 137 files with 27,676 deletions, including the MCP runtime stack, tests, proofs, and docs. PR #1037 restored that stack at the execution base.
+OBSERVED (incident baseline): the initial investigation ran from `b176747b339685e781de04268c46b7ae123abfbf`, matching the supervisor-reported restoration baseline. PR #1025 changed 137 files, including 116 deleted paths, and removed 27,676 lines, including the MCP runtime stack, tests, proofs, and docs. PR #1037 restored that stack.
 
 OBSERVED: PR #932 removed the ConPort migration foundation and proof artifacts; PR #936 restored them. CONFLICTING: Current Git and GitHub evidence does not reproduce PR #720 as a destructive deletion clobber. PR #720 landed one UI file change, while PR #734 later added the reported Task Orchestrator Claude command surface and protocols. The #720 causal story remains unresolved in this packet.
 
 PROPOSED: Agent-produced branches must be treated as untrusted patch sources, not direct merge candidates. The durable fix is a fresh-base candidate sanitizer plus exact-candidate readiness and merge admission.
 
-## Execution Base
+## Execution Bases
 
 OBSERVED:
 
 - supervisor_reported_base_sha: `b176747b339685e781de04268c46b7ae123abfbf`
-- actual_execution_base_sha: `b176747b339685e781de04268c46b7ae123abfbf`
-- difference_if_any: none observed
+- phase_a_execution_base_sha: `b176747b339685e781de04268c46b7ae123abfbf`
+- phase_b_trusted_runtime_base_sha: `45b5ee3f320e777111a6f00227072efeb725996b` (PR #1042 plus the #1044 import-path repair)
+- difference_if_any: Phase B is a later operational baseline; it is not evidence that the incident was re-executed.
 - worktree: `/Users/hue/code/dopemux-merge-integrity-0001`
 - branch: `codex/tp-dmx-merge-integrity-0001-investigation-adr`
 
 ## Evidence Sources
 
-OBSERVED evidence is stored under `proof/TP-DMX-MERGE-INTEGRITY-0001/raw/`.
+OBSERVED evidence is represented by the compact manifest, control capture, command index, and immutable GitHub Actions artifact references under `proof/TP-DMX-MERGE-INTEGRITY-0001/`. No `raw/` corpus is committed on this PR.
 
-- GitHub repository settings: `repository-settings.json`, `repository-rest.json`
-- Branch protection and rulesets: `main-protection.json`, `rulesets.json`, `ruleset-details.json`
-- PR metadata, files, diffs, and local landed deltas: `raw/pr-720`, `raw/pr-734`, `raw/pr-917`, `raw/pr-932`, `raw/pr-936`, `raw/pr-1025`, `raw/pr-1037`, `raw/pr-1038`
-- PR #1038 review threads: `raw/pr-1038/review-threads.json`
-- PR Steward read-only run for #1038: `raw/pr-steward-1038/`
-- Governance searches and copied source files: `raw/governance-pattern-search.txt`, `raw/files/`
+- GitHub branch protection and rulesets: `GITHUB_CONTROL_CAPTURE.json` with endpoint and input-digest references
+- Historical incident replay: `COMMAND_INDEX.json` with exact Git object inputs, command output digests, and replay commands
+- Current trusted-audit failure: Actions runs `29210810173` and `29210832105`, plus audit artifact `8265092641`
+- Current runtime repair: PR #1044 merge commit `45b5ee3f320e777111a6f00227072efeb725996b`
 
 ## Incident Timeline
 
@@ -94,9 +93,9 @@ UNKNOWN:
 - #720/#734 causality is not proven from current PR and git evidence.
 - No integration execution was performed for restored MCP runtime behavior in this packet.
 
-## Current Controls Inventory
+## Incident / Phase A Controls (Before PR #1042)
 
-OBSERVED:
+OBSERVED at the incident-era baseline `b176747b339685e781de04268c46b7ae123abfbf`:
 
 - Classic branch protection exists for `main`.
 - Required status checks are configured: security review, documentation check, identity check, unit tests, CodeQL analyses, and CI summary.
@@ -115,17 +114,32 @@ CONFLICTING:
 
 - Repository settings report merge commits, squash, and rebase as allowed, while the active default-branch ruleset pull request rule lists squash and rebase. Enforcement interaction should be treated as GitHub-policy-specific unless verified at merge time.
 
-## Controls Failure Analysis
+## Phase A Controls Failure Analysis
 
 OBSERVED: `.github/workflows/ci-complete.yml` uses `git diff --name-only --diff-filter=ACMR` for root hygiene input. This excludes deletions.
 
 OBSERVED: `src/dopemux_pr_merge_specialist/validation.py` and the vendored skill copy use `--diff-filter=ACMR` to collect changed files for validation. This excludes deletions.
 
-OBSERVED: `.github/workflows/pr-steward.yml` runs the steward with `continue-on-error: true`, captures the exit code, and exits `0`, making the workflow advisory.
+OBSERVED at the Phase A baseline: `.github/workflows/pr-steward.yml` ran the steward with `continue-on-error: true`, captured the exit code, and exited `0`, making the workflow advisory.
 
-OBSERVED: The same workflow first refreshes audit proof with `scripts.audit.pr_audit_router --dry-run`. The router writes `executed: false` but still emits `embedded_audit.status: PASS`.
+OBSERVED at the Phase A baseline: the same workflow refreshed audit proof with `scripts.audit.pr_audit_router --dry-run`. The router wrote `executed: false` while emitting `embedded_audit.status: PASS`.
 
-INFERRED: Deletion-blind validation plus advisory readiness lets destructive regressions present as narrow UI work, especially when intent is expressed only in PR title/body text.
+INFERRED: Phase A deletion-blind validation plus advisory readiness let destructive regressions present as narrow UI work, especially when intent was expressed only in PR title/body text.
+
+## Phase B Current Controls (After PR #1042 and PR #1044)
+
+OBSERVED on trusted `main` at `45b5ee3f320e777111a6f00227072efeb725996b`:
+
+- PR #1042 changed `embedded-audit` to `pull_request_target`, checks out trusted default-branch source, treats the candidate head as data, emits named per-PR/head proof artifacts, and fails closed unless independent proof is executed, trusted, exact-head-bound, and `PASS` or `PASS_WITH_RISKS`.
+- PR #1042 changed PR Steward to consume the completed audit workflow artifact, enforce its repository/PR/head identity, run final readiness only after successful audit enforcement, and publish `PR Steward / final readiness` against the candidate head.
+- PR #1044 changed the trusted runner invocation to `python -m scripts.audit.pal_clink_runner`, correcting the observed package-import failure without weakening the audit gate.
+- Phase B still does not implement the proposed fresh-base sanitizer, protected-reference executor, or capability qualification. `expectedHeadOid` and `queue_drain` remain insufficient for exact candidate admission.
+
+## Current Live Failure And Recovery Boundary
+
+OBSERVED: At reviewed PR head `9d39b9112cb2b9dd547ab09765427019ccd95704`, `embedded-audit` run `29210810173` emitted exactly one correctly named proof artifact (`8265092641`) but failed because the pre-#1044 trusted runner invoked `scripts/audit/pal_clink_runner.py` directly and raised `ModuleNotFoundError: No module named 'scripts'`. PR Steward run `29210832105` selected that artifact, rejected its non-executed audit proof, skipped Steward evaluation, and published final readiness failure.
+
+OBSERVED: PR #1044 is now on `main`. No exact-head independent-audit and Steward receipt exists yet for the rebased successor of this PR #1040 head. Therefore final readiness remains `BLOCKED`; the prior failure is preserved as historical evidence, not treated as the status of a repaired runtime.
 
 ## Current Merge-Specialist Admission Primitives
 
@@ -143,17 +157,17 @@ UNKNOWN: Merge queue posture was not proven from captured repository settings.
 
 ## PR Steward Race And Failure Modes
 
-OBSERVED: The steward harvests PR state and review threads read-only, but review thread pagination is capped at the first 100 threads and first 50 comments per thread.
+OBSERVED at the Phase A capture: the steward harvested PR state and review threads read-only, but review thread pagination was capped at the first 100 threads and first 50 comments per thread.
 
-OBSERVED: A strict read-only run against PR #1038 exited `2` with readiness `BLOCKED`, mutation_performed `false`, and blockers including `HARVEST_INCOMPLETE`, `UNRESOLVED_REVIEW_THREAD`, `EMBEDDED_AUDIT_SKIPPED`, and `PROOF_MISSING`.
+OBSERVED at the Phase A capture: a strict read-only run against PR #1038 exited `2` with readiness `BLOCKED`, mutation_performed `false`, and blockers including `HARVEST_INCOMPLETE`, `UNRESOLVED_REVIEW_THREAD`, `EMBEDDED_AUDIT_SKIPPED`, and `PROOF_MISSING`.
 
-INFERRED: PR Steward is useful as intake but cannot be the final merge-admission authority while it is advisory, proof-file-dependent, and not bound to an exact sanitized candidate tree.
+INFERRED: Phase A PR Steward was useful as intake but could not be final merge-admission authority while advisory, proof-file-dependent, and not bound to an exact sanitized candidate tree. Phase B final readiness is fail-closed but still does not implement the proposed sanitizer or atomic admission executor.
 
 ## Audit-Proof Integrity
 
-OBSERVED: `scripts/audit/pr_audit_router.py` is dry-run by default. Its proof builder sets `executed: false` while also setting `embedded_audit.status: PASS`.
+OBSERVED at the Phase A baseline: `scripts/audit/pr_audit_router.py` was dry-run by default. Its proof builder set `executed: false` while setting `embedded_audit.status: PASS`.
 
-OBSERVED: `.github/workflows/pr-steward.yml` refreshes that dry-run proof immediately before running PR Steward.
+OBSERVED at the Phase A baseline: `.github/workflows/pr-steward.yml` refreshed that dry-run proof immediately before running PR Steward.
 
 PROPOSED: Dry-run or skipped audits must never produce a passing embedded-audit status. Audit proof must be bound to head SHA, tree SHA, diff hash, route invocation, model/tool metadata, and auditor verdict.
 

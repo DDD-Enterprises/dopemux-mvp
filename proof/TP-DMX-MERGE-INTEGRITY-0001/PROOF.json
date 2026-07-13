@@ -1,25 +1,28 @@
 {
-  "bundle_id": "TP-DMX-MERGE-INTEGRITY-0001-004",
+  "bundle_id": "TP-DMX-MERGE-INTEGRITY-0001-005",
+  "run_id": "merge-integrity-reaudit-20260713T002157Z-005",
+  "skill": "governance",
+  "created_at": "2026-07-13T00:21:57Z",
   "packet_id": "TP-DMX-MERGE-INTEGRITY-0001",
   "remediation_packet": "TP-DMX-MERGE-INTEGRITY-0001R-PR1040-SUPERVISOR-REMEDIATION",
   "repository": "DDD-Enterprises/dopemux-mvp",
   "branch": "codex/tp-dmx-merge-integrity-0001-investigation-adr",
   "worktree_path": "/Users/hue/code/dopemux-merge-integrity-0001",
-  "base_sha": "db9b844fc7b1731af953b7c996581082fb3f096f",
-  "head_sha": "SEE_PR_HEAD_REF_OID",
+  "base_sha": "45b5ee3f320e777111a6f00227072efeb725996b",
+  "head_sha": "b1311119f66da12ccedbe6d81f6c27f3d19524e0",
   "head_binding": {
     "status": "REQUIRES_TRUSTED_POST_COMMIT_RECEIPT",
-    "reason": "A repository-committed proof cannot attest to the SHA of the commit that contains it. Authoritative exact head is GitHub PR headRefOid after push.",
+    "reason": "This committed bundle records the actual branch head at proof-generation start. A repository-committed proof cannot attest to the SHA of the commit that contains it; authoritative final head is the post-push trusted workflow receipt.",
     "final_head_receipt_status": "MISSING",
     "pr_1042_foundation": {
       "merged": true,
       "merge_sha": "db9b844fc7b1731af953b7c996581082fb3f096f",
-      "note": "Trusted audit foundation is on main; final-head receipt for this PR still requires live embedded-audit + Steward on the rebased candidate head."
+      "note": "Trusted audit foundation is on main; PR #1044 additionally repaired the trusted runner import path at 45b5ee3f320e777111a6f00227072efeb725996b. Final-head receipt for this PR still requires live embedded-audit and Steward on the rebased candidate head."
     }
   },
-  "status": "READY_FOR_REVIEW",
-  "validation_state": "PASSED_LOCAL_PENDING_EXTERNAL",
-  "packet_status": "READY_FOR_REVIEW",
+  "status": "BLOCKED",
+  "validation_state": "PARTIAL",
+  "packet_status": "BLOCKED",
   "adr_status": "proposed",
   "executed": false,
   "execution_results": [],
@@ -34,12 +37,12 @@
   ],
   "validations": [
     {
-      "name": "PR #1042 merged on origin/main",
+      "name": "PR #1042 and PR #1044 merged on origin/main",
       "status": "PASS",
-      "evidence": "merge_sha db9b844fc7b1731af953b7c996581082fb3f096f is ancestor of origin/main"
+      "evidence": "origin/main is 45b5ee3f320e777111a6f00227072efeb725996b; it contains #1042 and #1044."
     },
     {
-      "name": "Rebase onto post-1042 main",
+      "name": "Rebase onto post-#1044 main",
       "status": "PASS",
       "evidence": "git rebase origin/main exit 0"
     },
@@ -56,31 +59,79 @@
     {
       "name": "Task Packet schema validation",
       "status": "PASS",
-      "evidence": "jsonschema validate vs dopetask-canonical-spec.json"
+      "evidence": "VALIDATION.md#task-packet-schema; schema SHA-256 62abd93a27b7307e5b78aa8a46d967937e257817e41822f2edfc73162d4535ed. The checked-in schema permits execution.base_branch and execution.stacked_because."
     },
     {
-      "name": "JSON parse remediation packet",
+      "name": "JSON and governance envelope validation",
       "status": "PASS",
-      "evidence": "python -m json.tool exit 0"
+      "evidence": "VALIDATION.md#proof-and-handoff-contract and #json-parse."
     },
     {
       "name": "Configured pre-commit hooks",
-      "status": "NOT_RUN",
-      "evidence": "Record at pre-push slice"
+      "status": "PASS",
+      "evidence": "VALIDATION.md#pre-commit."
     },
     {
-      "name": "Trusted final-head independent audit",
-      "status": "NOT_RUN",
-      "evidence": "Requires live embedded-audit workflow receipt for current PR head after push"
+      "name": "Embedded audit nested-schema validation",
+      "status": "PASS",
+      "evidence": "VALIDATION.md#embedded-audit-proof."
     },
     {
-      "name": "PR Steward final readiness",
+      "name": "Diff hygiene",
+      "status": "PASS",
+      "evidence": "VALIDATION.md#diff-hygiene."
+    },
+    {
+      "name": "Historical reviewed-head independent audit",
+      "status": "FAIL",
+      "evidence": "GitHub Actions run 29210810173 artifact 8265092641: direct runner execution raised ModuleNotFoundError and proof has executed=false."
+    },
+    {
+      "name": "Historical reviewed-head PR Steward final readiness",
+      "status": "FAIL",
+      "evidence": "GitHub Actions run 29210832105 selected the audit artifact, rejected non-executed proof, skipped Steward, and published failure."
+    },
+    {
+      "name": "Trusted final-head independent audit for rebased successor",
       "status": "NOT_RUN",
-      "evidence": "Requires successful embedded-audit then Steward on exact head"
+      "evidence": "Requires live embedded-audit workflow receipt for the final pushed PR head after #1044."
+    },
+    {
+      "name": "PR Steward final readiness for rebased successor",
+      "status": "NOT_RUN",
+      "evidence": "Requires successful exact-head embedded audit then Steward on the same final head."
     }
   ],
   "pal_codereview_status": "NEEDS_SUPERVISOR",
-  "precommit_status": "NOT_RUN",
+  "precommit_status": "PASS",
+  "model_routing_receipt": {
+    "analysis": "gpt-5",
+    "planning": "gpt-5",
+    "implementation": "gpt-5",
+    "codereview": "NOT_RUN",
+    "precommit": "gpt-5",
+    "note": "The independent audit model is recorded separately in audit_receipt; no final-head external receipt exists yet."
+  },
+  "review_receipt": {
+    "tool": "pal/codereview",
+    "model": "gemini-3.1-pro-preview",
+    "status": "NOT_RUN",
+    "reason": "The external provider returned HTTP 429 RESOURCE_EXHAUSTED during final review; no verdict was produced."
+  },
+  "audit_receipt": {
+    "tool": "pal/clink",
+    "auditor_model": "unknown",
+    "configured_auditor_model": "claude-audit",
+    "status": "FAIL",
+    "executed": false,
+    "workflow_run_id": 29210810173,
+    "artifact_id": 8265092641,
+    "artifact_digest": "sha256:db8c38f181b0ac9ad863d777010a44962cefbff886fb84518ec2d35c7239eeda",
+    "receipt_id": "github-actions-29210810173-artifact-8265092641",
+    "cost_usd": null,
+    "head_sha": "9d39b9112cb2b9dd547ab09765427019ccd95704",
+    "reason": "Trusted runner used direct script execution and raised ModuleNotFoundError: No module named 'scripts'. PR #1044 repaired this on main; no successor-head receipt exists yet."
+  },
   "embedded_audit": {
     "required": true,
     "status": "SKIPPED",
@@ -91,30 +142,52 @@
     "report_path": "proof/TP-DMX-MERGE-INTEGRITY-0001/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [
-      "Rebased onto main containing PR #1042 trusted audit foundation",
+      "Rebased onto main containing PR #1042 trusted audit foundation and PR #1044 trusted PAL runner import-path repair",
       "Removed stale 0004 remediation allowlist entry; series-ID custody note for 0004 foundation vs future 0004 work"
     ],
     "remaining_risks": [
-      "No trusted current-head audit artifact for this PR head yet.",
+      "No trusted current-head audit artifact for the rebased successor yet.",
       "Protected-reference exact-admission capability remains unqualified.",
       "Architecture and ADR remain proposed only."
     ],
-    "skip_reason": "Committed proof cannot authenticate its own final SHA; trusted workflow must emit final-head receipt after push of this head."
+    "skip_reason": "Historical reviewed-head audit failed before execution. The rebased successor requires a new trusted workflow receipt after push."
   },
   "authoritative_artifacts": [
     "EVIDENCE_MANIFEST.json",
     "GITHUB_CONTROL_CAPTURE.json",
     "COMMAND_INDEX.json",
-    "SUMMARY.md",
-    "HANDOFF.json"
+    "HANDOFF.json",
+    "VALIDATION.md"
   ],
+  "supporting_artifacts": [
+    "AUDIT.md",
+    "AUDITOR_REPORT.md",
+    "SUMMARY.md"
+  ],
+  "handoff_refs": [
+    "TP-DMX-MERGE-INTEGRITY-0001-HANDOFF-005"
+  ],
+  "parent_bundle_refs": [
+    "TP-DMX-MERGE-INTEGRITY-0001-004"
+  ],
+  "review_order_hint": 1,
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "codex-gpt-5-2026-07-13",
+    "parent_bundle_ids": [
+      "TP-DMX-MERGE-INTEGRITY-0001-004"
+    ],
+    "created_at": "2026-07-13T00:21:57Z",
+    "trusted_runtime_base_sha": "45b5ee3f320e777111a6f00227072efeb725996b"
+  },
   "residual_risks": [
     "PR #720/#734 causality remains conflicting.",
     "The architecture is proposed only and has no enforcement of full admission model on main beyond #1042 foundation.",
-    "The protected-reference primitive needs controlled race and permission qualification."
+    "The protected-reference primitive needs controlled race and permission qualification.",
+    "No external PAL code-review verdict is available because the configured provider returned HTTP 429."
   ],
   "unknowns": [
-    "Final current-head audit verdict for this PR",
+    "Final current-head audit verdict for the rebased successor of this PR",
     "Merge-queue behavior",
     "GitHub bypass actor list",
     "Protected-reference permission and race semantics"
@@ -126,7 +199,7 @@
   "cleanup_status": "PENDING",
   "final_head_receipt": {
     "required": true,
-    "producer": "trusted embedded-audit workflow (post PR #1042)",
+    "producer": "trusted embedded-audit workflow (post PR #1042 and #1044)",
     "status": "MISSING",
     "head_sha": null
   },

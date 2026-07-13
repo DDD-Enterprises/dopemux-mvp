@@ -1,16 +1,25 @@
 {
-  "handoff_id": "TP-DMX-MERGE-INTEGRITY-0001-HANDOFF-004",
+  "handoff_id": "TP-DMX-MERGE-INTEGRITY-0001-HANDOFF-005",
+  "source_skill": "governance",
+  "target_skill": "supervisor-review",
+  "run_id": "merge-integrity-reaudit-20260713T002157Z-005",
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "codex/tp-dmx-merge-integrity-0001-investigation-adr",
+  "base_branch": "main",
   "pr": 1040,
-  "governing_posture": "READY_FOR_REVIEW_PENDING_EXTERNAL",
+  "governing_posture": "NO_GO_LIMIT_TO_ARTIFACTS_ONLY",
   "pr_1042": {
     "merged": true,
     "merge_sha": "db9b844fc7b1731af953b7c996581082fb3f096f"
   },
+  "pr_1044": {
+    "merged": true,
+    "merge_sha": "45b5ee3f320e777111a6f00227072efeb725996b"
+  },
   "blocking_reasons": [
-    "Trusted final-head independent audit receipt for exact PR #1040 head is still missing.",
-    "PR Steward final readiness for exact PR #1040 head is still missing.",
+    "The historical exact-head audit failed before execution; its artifact is diagnostic evidence only.",
+    "Trusted final-head independent audit receipt for the rebased successor of PR #1040 is missing.",
+    "PR Steward final readiness for that same exact head is missing.",
     "Protected-reference exact-admission requires controlled race and permission qualification.",
     "ADR remains proposed; architecture is not IMPLEMENTATION_COMPLETE."
   ],
@@ -18,7 +27,30 @@
     "#720 causality remains CONFLICTING.",
     "Existing expectedHeadOid merge controls are insufficient for exact base, parent, tree, intent, and policy admission.",
     "Reserved-singleton repair is out of scope.",
-    "Series packet TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION landed via #1042; remaining series-plan 0004 work is not complete."
+    "Series packet TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION landed via #1042; remaining series-plan 0004 work is not complete.",
+    "The re-audit claim that execution.base_branch and execution.stacked_because violate the canonical Task Packet schema is contradicted by the checked-in schema, which explicitly permits both fields.",
+    "External PAL code review returned HTTP 429 RESOURCE_EXHAUSTED and produced no verdict."
   ],
-  "recommended_next_step": "Push rebased branch; run trusted embedded-audit + Steward on exact head; mark ready only after local gates pass; stop for supervisor disposition of #1040."
+  "recommended_next_step": "BLOCK_AND_AWAIT_FIX",
+  "authoritative_artifacts": [
+    "PROOF.json",
+    "HANDOFF.json",
+    "EVIDENCE_MANIFEST.json",
+    "GITHUB_CONTROL_CAPTURE.json",
+    "COMMAND_INDEX.json",
+    "VALIDATION.md"
+  ],
+  "supporting_artifacts": [
+    "AUDIT.md",
+    "AUDITOR_REPORT.md",
+    "SUMMARY.md"
+  ],
+  "chain_of_custody": {
+    "parent_bundle_ids": [
+      "TP-DMX-MERGE-INTEGRITY-0001-004"
+    ],
+    "created_at": "2026-07-13T00:21:57Z",
+    "skill_version": "codex-gpt-5-2026-07-13",
+    "trusted_runtime_base_sha": "45b5ee3f320e777111a6f00227072efeb725996b"
+  }
 }

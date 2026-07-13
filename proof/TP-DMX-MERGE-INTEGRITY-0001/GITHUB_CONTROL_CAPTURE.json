@@ -1,7 +1,7 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "capture_class": "redacted-decision-grade-github-control-snapshot",
-  "captured_at": "2026-07-12T16:47:28Z",
+  "captured_at": "2026-07-13T00:21:57Z",
   "repository": "DDD-Enterprises/dopemux-mvp",
   "sources": [
     {
@@ -28,6 +28,10 @@
       "sha256": "6a7adc7ce80d622fd83e2196709aa86f19d66c0d138a458c0b1771939f55d54c"
     }
   ],
+  "source_input_sha256": {
+    "main_protection": "c352302dd4b2022e75f28621fb32f4f1a01f5c5b89c98f632a49806bd8c5d302",
+    "rulesets": "72304dd8af53e535bc142e8df5e0972ca731d681aba61050e493a3fa756d3336"
+  },
   "branch_protection": {
     "strict_status_checks": true,
     "required_status_contexts": [
@@ -57,6 +61,13 @@
       "target": "branch"
     }
   ],
+  "trusted_audit_runtime": {
+    "foundation_pr": 1042,
+    "foundation_merge_sha": "db9b844fc7b1731af953b7c996581082fb3f096f",
+    "runner_import_repair_pr": 1044,
+    "runner_import_repair_merge_sha": "45b5ee3f320e777111a6f00227072efeb725996b",
+    "observed_boundary": "Trusted default-branch workflows execute candidate content as data and fail closed; protected-reference admission remains unqualified."
+  },
   "limitations": [
     "This is an observation at capture time, not a durable claim about future GitHub settings.",
     "Actor bypass permissions and merge-queue availability require live re-read before implementation or merge execution."

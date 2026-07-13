@@ -25,9 +25,21 @@ Proposed.
 
 ## Context
 
-OBSERVED: PR #932 and PR #1025 landed destructive unrelated deletions while presenting as narrow UI or feature changes. PR #1025 removed 137 files and 27,676 lines, including the MCP runtime stack, tests, proofs, and docs. PR #932 removed ConPort migration-foundation proof and source surfaces. CONFLICTING: The reported #720 clobber was not reproduced as a destructive landed delta from current evidence.
+OBSERVED: PR #932 and PR #1025 landed destructive unrelated deletions while presenting as narrow UI or feature changes. PR #1025 changed 137 files, including 116 deleted paths, and removed 27,676 lines, including the MCP runtime stack, tests, proofs, and docs. PR #932 removed ConPort migration-foundation proof and source surfaces. CONFLICTING: The reported #720 clobber was not reproduced as a destructive landed delta from current evidence.
 
-OBSERVED: Current repository controls contain deletion-blind changed-file collectors, advisory PR Steward workflow behavior, dry-run audit proof that can emit `embedded_audit.status: PASS` while `executed: false`, and branch rules that do not bind PR intent to exact file scope.
+### Incident / Phase A Controls (Before PR #1042)
+
+OBSERVED at the incident-era baseline: repository controls contained deletion-blind changed-file collectors, advisory PR Steward workflow behavior, dry-run audit proof that could emit `embedded_audit.status: PASS` while `executed: false`, and branch rules that did not bind PR intent to exact file scope.
+
+### Phase B Current Controls (After PR #1042 and PR #1044)
+
+OBSERVED on trusted `main` at `45b5ee3f320e777111a6f00227072efeb725996b`: `embedded-audit` executes from trusted default-branch workflow source under `pull_request_target`; it treats the candidate as data and fails closed unless an exact-head independent proof is executed and passing. PR Steward consumes that named artifact, validates provenance and exact PR/head identity, and publishes failure when audit or Steward cannot reach `READY`. PR #1044 corrected the trusted runner package-import invocation.
+
+OBSERVED: These Phase B controls correct proof-laundering and trusted-source behavior, but do not implement fresh-base sanitization, protected-reference capability qualification, or the proposed atomic executor. Existing `expectedHeadOid` and queue-drain paths remain insufficient for exact base, parent, and tree admission.
+
+### Current Live Failure
+
+OBSERVED: At PR #1040 reviewed head `9d39b9112cb2b9dd547ab09765427019ccd95704`, the pre-#1044 trusted runner failed with `ModuleNotFoundError: No module named 'scripts'`; the audit proof was non-executed and final Steward published failure. PR #1044 is now merged, but no post-#1044 exact-head audit and final-Steward receipt exists for this rebased PR head. This ADR therefore remains proposed and this PR remains blocked.
 
 OBSERVED: `.github/CODEOWNERS` exists, but its listed repository surfaces resolve to `@hu3mann`. It is a useful ownership declaration, not independent review for a PR authored under that account.
 
@@ -130,7 +142,7 @@ Decision: Rejected as sole mechanism; usable as a protected-surface input.
 
 Benefits: Centralizes intake, review, and readiness.
 
-Limitations: Current Steward is advisory, proof-path-dependent, and not an exact-candidate merge executor.
+Limitations: The Phase A Steward was advisory and proof-path-dependent; Phase B final readiness is fail-closed but still is not an exact-candidate merge executor.
 
 Failure modes: Event-loop deadlocks, pending-check races, and stale proof.
 

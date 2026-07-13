@@ -52,6 +52,8 @@ PROPOSED:
 
 PROPOSED: Agent branches are untrusted. Candidate construction, validation, audit, and final readiness execute only from trusted default-branch or pinned trusted workflow logic; they never execute candidate-branch workflow logic. A candidate becomes merge-eligible only when reconstructed from current `main`, intent-bound, protected-surface validated, and proven against an exact tree.
 
+OBSERVED Phase B boundary: PR #1042 implements trusted-source embedded-audit and artifact-bound final-Steward foundations; PR #1044 corrects their package-module runner invocation. They provide fail-closed audit/readiness evidence only. The sanitizer, exact admission executor, and protected-reference capability qualification described here remain proposed and disabled.
+
 ## Provenance Classes
 
 PROPOSED:

@@ -1,5 +1,9 @@
 {
-  "bundle_id": "TP-DMX-MERGE-INTEGRITY-0001-003",
+  "bundle_id": "TP-DMX-MERGE-INTEGRITY-0001-005",
+  "run_id": "merge-integrity-reaudit-20260713T002157Z-005",
+  "skill": "governance",
+  "created_at": "2026-07-13T00:21:57Z",
+  "validation_state": "PARTIAL",
   "repository": "DDD-Enterprises/dopemux-mvp",
   "capture_class": "compact-reference-manifest",
   "retention": {
@@ -32,8 +36,8 @@
   ],
   "github_control_capture": {
     "path": "proof/TP-DMX-MERGE-INTEGRITY-0001/GITHUB_CONTROL_CAPTURE.json",
-    "sha256": "f151285e44378067aa39e8826a1569c2fcfc56734d73c7d7baa507710757032f",
-    "captured_at": "2026-07-12T16:47:28Z",
+    "sha256": "57e75544fd3b7704ed2e8207d970ebbae69092aefbca58adbb49b2bc4431068c",
+    "captured_at": "2026-07-13T00:21:57Z",
     "source_endpoints": [
       "GET /repos/DDD-Enterprises/dopemux-mvp/branches/main/protection",
       "GET /repos/DDD-Enterprises/dopemux-mvp/rulesets"
@@ -42,12 +46,42 @@
   "current_pr": {
     "number": 1040,
     "base_sha_at_initial_review": "b176747b339685e781de04268c46b7ae123abfbf",
+    "phase_b_trusted_runtime_base_sha": "45b5ee3f320e777111a6f00227072efeb725996b",
+    "reviewed_head_with_failed_audit": "9d39b9112cb2b9dd547ab09765427019ccd95704",
     "trusted_audit_foundation_pr": 1042,
-    "trusted_audit_foundation_ref": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1042"
+    "trusted_audit_foundation_ref": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1042",
+    "trusted_runner_repair_pr": 1044,
+    "trusted_runner_repair_ref": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1044"
   },
   "historical_audit": {
     "content_sha": "b71e13a9b8691217dc6b35d148ccc122bc7d0f06",
     "verdict": "PASS_WITH_RISKS",
     "scope": "not final-head evidence"
+  },
+  "actions_receipts": [
+    {
+      "kind": "failed_independent_audit",
+      "workflow_run_id": 29210810173,
+      "artifact_id": 8265092641,
+      "artifact_digest": "sha256:db8c38f181b0ac9ad863d777010a44962cefbff886fb84518ec2d35c7239eeda",
+      "head_sha": "9d39b9112cb2b9dd547ab09765427019ccd95704",
+      "status": "FAILED",
+      "reason": "Direct PAL runner invocation failed with ModuleNotFoundError before an executed audit result."
+    },
+    {
+      "kind": "failed_final_readiness",
+      "workflow_run_id": 29210832105,
+      "head_sha": "9d39b9112cb2b9dd547ab09765427019ccd95704",
+      "status": "FAILED",
+      "reason": "Steward selected the audit artifact, rejected executed=false, skipped evaluation, and published failure."
+    }
+  ],
+  "chain_of_custody": {
+    "documented": true,
+    "source_version": "codex-gpt-5-2026-07-13",
+    "parent_bundle_ids": [
+      "TP-DMX-MERGE-INTEGRITY-0001-004"
+    ],
+    "created_at": "2026-07-13T00:21:57Z"
   }
 }
