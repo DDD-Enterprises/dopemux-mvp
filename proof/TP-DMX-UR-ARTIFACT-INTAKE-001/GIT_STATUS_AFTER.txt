@@ -1,0 +1,10 @@
+## codex/ur-artifact-intake-001...origin/main
+ M task-packets/INDEX.md
+?? audit_inputs/universal_router/
+?? docs/05-audit-reports/universal-router/
+?? docs/94-architecture/
+?? proof/TP-DMX-UR-ARTIFACT-INTAKE-001/
+?? task-packets/TP-DMX-UR-ARTIFACT-INTAKE-001.json
+?? task-packets/TP-DMX-UR-ARTIFACT-INTAKE-001.md
+?? task-packets/UR-TP-001.json
+?? task-packets/UR-TP-001.md

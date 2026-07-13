@@ -1,0 +1,144 @@
+{
+  "packet_id": "TP-DMX-UR-ARTIFACT-INTAKE-001",
+  "series": "UR-ROUTER-GOV-001",
+  "branch": "codex/ur-artifact-intake-001",
+  "base": "main",
+  "head_sha": "45b5ee3f320e777111a6f00227072efeb725996b",
+  "head_sha_note": "Base commit the staged diff sits on; the intake changes are staged/uncommitted, so no commit yet contains them. Re-pin to the PR head SHA before the FINALIZATION gate.",
+  "generated_at": "2026-07-13T07:27:09Z",
+  "agent": "claude-opus-4-8 (primary objective battery) + claude-sonnet clink corroboration route",
+  "kind": "docs/evidence intake (final packet)",
+  "final_packet": true,
+  "mutation_performed": false,
+  "runtime_or_schema_change": false,
+  "secret_values_recorded": false,
+  "files_changed": {
+    "summary": "55 added, 1 modified (task-packets/INDEX.md); all within packet allowlist",
+    "by_area": {
+      "audit_inputs/universal_router": 42,
+      "docs/94-architecture/universal-router": 1,
+      "docs/05-audit-reports/universal-router": 1,
+      "task-packets": 5,
+      "proof/TP-DMX-UR-ARTIFACT-INTAKE-001": 7
+    },
+    "full_inventory_refs": [
+      "audit_inputs/universal_router/ARTIFACT_MANIFEST.json",
+      "proof/TP-DMX-UR-ARTIFACT-INTAKE-001/DESTINATION_SHA256SUMS.txt"
+    ]
+  },
+  "validations": [
+    {
+      "name": "base_pin",
+      "command": "git rev-parse HEAD == origin/main",
+      "result": "PASS",
+      "detail": "45b5ee3f320e777111a6f00227072efeb725996b"
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --cached --check",
+      "result": "PASS"
+    },
+    {
+      "name": "allowlist_discipline",
+      "command": "name-only vs packet allowlist",
+      "result": "PASS",
+      "detail": "55A+1M all within allowlist"
+    },
+    {
+      "name": "arch_extraction_inventory",
+      "command": "count UR-ARCH-001/DELIVERABLES",
+      "result": "PASS",
+      "detail": "exactly 20"
+    },
+    {
+      "name": "audit_bundle_self_integrity",
+      "command": "shasum -a 256 -c SHA256SUMS.txt",
+      "result": "PASS",
+      "detail": "16/16 OK"
+    },
+    {
+      "name": "original_archive_identity",
+      "command": "shasum -a 256 both zips",
+      "result": "PASS",
+      "detail": "match packet-required SHA-256"
+    },
+    {
+      "name": "supervisor_adjudication_identity",
+      "command": "shasum -a 256 md+json",
+      "result": "PASS"
+    },
+    {
+      "name": "destination_manifest_integrity",
+      "command": "recompute sha256+size for every manifest entry",
+      "result": "PASS",
+      "detail": "41/41, 0 problems"
+    },
+    {
+      "name": "index_registration",
+      "command": "grep packet ids in INDEX.md",
+      "result": "PASS",
+      "detail": "one row each, no dup"
+    },
+    {
+      "name": "task_packet_json_parse",
+      "command": "python -m json.tool x3",
+      "result": "PASS"
+    },
+    {
+      "name": "task_packet_schema",
+      "command": "dopemux orchestrator packet validate x2",
+      "result": "PASS",
+      "detail": "status PASS, errors none"
+    },
+    {
+      "name": "docs_hygiene_precommit",
+      "command": "pre-commit run --files (8 files)",
+      "result": "PASS",
+      "detail": "all hooks Passed, no mutation"
+    },
+    {
+      "name": "secret_scan",
+      "command": "heuristic regex over staged text",
+      "result": "PASS"
+    },
+    {
+      "name": "pr_steward_intake_gate_S4",
+      "command": "pr-steward intake/gate",
+      "result": "NOT_RUN",
+      "detail": "no PR yet; MERGE_READINESS.json absent; regenerate + re-pin proof to PR head before FINALIZATION gate"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "Claude Code Opus objective evidence battery (recomputed SHA-256 for all 41 manifest entries; shasum -c on the audit bundle; dopemux orchestrator packet validate; allowlist regex; pre-commit docs hygiene; secret scan) at base HEAD 45b5ee3f. Soft corroboration: independent Claude Code Sonnet clink audit (claude-audit route, --permission-mode plan) captured in review_bundle/CLINK_AUDIT_RAW.json",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-UR-ARTIFACT-INTAKE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-UR-INTAKE-INFO-1",
+        "severity": "INFO",
+        "title": "Archived FINAL_AUDIT_VERDICT.json carries a placeholder audit_bundle_sha256",
+        "status": "ACCEPTED_RISK",
+        "body": "UR-AUDIT-001R3/DELIVERABLES/12_FINAL_AUDIT_VERDICT.json has audit_bundle_sha256='SEE_SHA256SUMS_TXT_AND_OPERATOR_SUMMARY'. Real per-file hashes live in the bundle SHA256SUMS.txt (verified 16/16 OK). This is inside an immutable archived artifact and is correctly left byte-identical per the archives-immutable invariant; the intake does not modify it."
+      },
+      {
+        "id": "F-UR-INTAKE-INFO-2",
+        "severity": "INFO",
+        "title": "Auditor and artifact provenance are runner-configured, not provider-attested",
+        "status": "ACCEPTED_RISK",
+        "body": "Pointer-doc author fields are self-reported ('GPT-5.6 Pro (claimed)', 'Claude Opus via Claude Code (runner-configured, not provider-attested)'), and this audit's own model identity (Sonnet via clink / Opus session) is likewise not provider-attested (UR-OQ-007). Both pointer docs disclose this; acceptable for evidence intake."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Pointer-doc author attribution is self-reported and unattested; both docs disclose this, but downstream consumers must not treat provenance as provider-attested.",
+      "Archived UR-ARCH-001 deliverables and UR-AUDIT-001R3 findings are PROPOSED/design-tier for a not-yet-built router; pointer docs mark ACCEPTED_FOR_UR_TP_001_WITH_AUDIT_CONDITIONS, so readers must go through the pointer docs, not treat raw DELIVERABLES prose as runtime truth.",
+      "PR-scoped PR Steward intake/gate (packet step S4) is NOT_RUN: no PR exists yet, no MERGE_READINESS.json, and this proof's 1h TTL (steward_gate ttl_seconds=3600) means it must be regenerated and re-pinned to the actual PR head SHA before the FINALIZATION gate."
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS_WITH_RISKS"
+}
