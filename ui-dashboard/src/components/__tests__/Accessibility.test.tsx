@@ -38,6 +38,7 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
   expect(paper).not.toHaveAttribute('role', 'button');
 
   const roastBox = screen.getByLabelText('No forecast available');
+  expect(roastBox).not.toHaveAttribute('role', 'button');
   expect(roastBox).toHaveAttribute('tabIndex', '-1');
 
   // Test 2: With critical prediction
@@ -115,7 +116,8 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}');
   expect(content).toContain('getCompletionTransitionTask(currentTaskId, tasks, optimizedTasks)');
   expect(content).toContain('getSkipTransitionTask(currentTaskId, optimizedTasks)');
-  expect(content).toMatch(/aria-label=\{\s*nextTaskAfterCompletion\s*\n\s*\?\s*`Complete \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterCompletion\.title\}`\s*\n\s*:\s*`Complete \$\{currentTask\.title\}, finish ritual`\s*\}/);
+  expect(content).toMatch(/aria-label=\{\s*nextTaskAfterCompletion\s*[\s\S]*\?\s*`Complete \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterCompletion\.title\}`\s*[\s\S]*:\s*`Complete \$\{currentTask\.title\}, finish ritual`\s*\}/);
+  expect(content).toMatch(/aria-label=\{\s*isSkipConfirming\s*[\s\S]*nextTaskAfterSkip\s*[\s\S]*`Confirm skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Confirm skip task: \$\{currentTask\.title\}`\s*[\s\S]*:\s*nextTaskAfterSkip\s*[\s\S]*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
   // New LinearProgress for task progress
   expect(content).toContain('aria-label={`Progress for task: ${currentTask.title}`}');
@@ -158,7 +160,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('const [isSkipConfirming, setIsSkipConfirming] = useState(false);');
   expect(content).toContain('const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);');
   expect(content).toContain("animation: 'skip-pulse 1.5s infinite'");
-  expect(content).toMatch(/aria-label=\{\s*isSkipConfirming\s*\n\s*\?\s*nextTaskAfterSkip\s*\n\s*\?\s*`Confirm skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*\n\s*:\s*`Confirm skip task: \$\{currentTask\.title\}`\s*\n\s*:\s*nextTaskAfterSkip\s*\n\s*\?\s*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*\n\s*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
+  expect(content).toMatch(/aria-label=\{\s*isSkipConfirming\s*[\s\S]*nextTaskAfterSkip\s*[\s\S]*`Confirm skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Confirm skip task: \$\{currentTask\.title\}`\s*[\s\S]*:\s*nextTaskAfterSkip\s*[\s\S]*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
   expect(content).toContain('{isSkipConfirming ? \'Confirm Skip?\' : \'Skip\'}');
   expect(content).toContain('<AlertTriangle aria-hidden="true" size={16} />');
 });
