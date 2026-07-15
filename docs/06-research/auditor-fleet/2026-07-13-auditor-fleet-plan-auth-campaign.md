@@ -1,3 +1,15 @@
+---
+id: 2026-07-13-auditor-fleet-plan-auth-campaign
+title: 2026 07 13 Auditor Fleet Plan Auth Campaign
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-15'
+last_review: '2026-07-15'
+next_review: '2026-10-13'
+prelude: 2026 07 13 Auditor Fleet Plan Auth Campaign (reference) for dopemux documentation
+  and developer workflows.
+---
 # Research Index: Auditor Fleet Campaign DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13
 
 This index points to the canonical campaign evidence stored under `audit_inputs/`.

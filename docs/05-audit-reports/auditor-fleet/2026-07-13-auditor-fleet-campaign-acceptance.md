@@ -1,3 +1,15 @@
+---
+id: 2026-07-13-auditor-fleet-campaign-acceptance
+title: 2026 07 13 Auditor Fleet Campaign Acceptance
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-15'
+last_review: '2026-07-15'
+next_review: '2026-10-13'
+prelude: 2026 07 13 Auditor Fleet Campaign Acceptance (reference) for dopemux documentation
+  and developer workflows.
+---
 # Acceptance Report Pointer: DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13
 
 ## Summary
