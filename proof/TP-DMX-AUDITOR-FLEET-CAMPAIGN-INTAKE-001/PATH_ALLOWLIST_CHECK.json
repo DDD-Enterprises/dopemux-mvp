@@ -1,16 +1,14 @@
 {
   "allowlist": [
     "task-packets/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.json",
-    "docs/05-audit-reports/auditor-fleet/2026-07-13-auditor-fleet-campaign-acceptance.md",
-    "task-packets/INDEX.md",
-    "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/**",
     "task-packets/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.md",
-    "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/**",
-    "docs/06-research/auditor-fleet/2026-07-13-auditor-fleet-plan-auth-campaign.md"
+    "task-packets/INDEX.md",
+    "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/",
+    "docs/06-research/auditor-fleet/2026-07-13-auditor-fleet-plan-auth-campaign.md",
+    "docs/05-audit-reports/auditor-fleet/2026-07-13-auditor-fleet-campaign-acceptance.md",
+    "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/"
   ],
   "changed_files": [
-    ".claude/claude_config.json",
-    "task-packets/INDEX.md",
     "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/campaign/CAMPAIGN-LOCK.json",
     "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/campaign/KIT-MANIFEST.json",
     "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/campaign/MASTER-PROMPT.md",
@@ -112,6 +110,7 @@
     "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/SECRET_SCAN.json",
     "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/SOURCE_DISCOVERY.json",
     "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/ZIP_VALIDATION.json",
+    "task-packets/INDEX.md",
     "task-packets/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.json",
     "task-packets/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.md"
   ],

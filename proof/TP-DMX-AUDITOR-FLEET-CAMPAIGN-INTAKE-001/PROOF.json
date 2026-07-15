@@ -14,5 +14,54 @@
     "symlinks_rejected": true,
     "path_allowlist_pass": true,
     "secrets_found": 0
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "agy -p \"<audit prompt>\" --model \"Claude Sonnet 4.6 (Thinking)\" --mode plan --add-dir \"/Users/hue/code/dopemux-mvp-wt-pr1048-repair\" --print-timeout 14m",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/AUDITOR_REPAIR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-001",
+        "severity": "HIGH",
+        "title": "Stale proof artifacts: GIT_DIFF.patch / GIT_DIFF_STAT.txt / PATH_ALLOWLIST_CHECK.json / SECRET_SCAN.json captured against a 2-file uncommitted diff, not the final 104-file commit",
+        "status": "RESOLVED",
+        "body": "The auditor confirmed these four proof files were generated against a stale intermediate working-tree diff rather than the final 104-file/35314-insertion commit. Underlying outcomes (allowlist compliance, no secrets) independently re-verified as correct, but the proof files themselves misrepresented scope. Fixed by this repair: all four files regenerated against the true final diff (see fixes_applied)."
+      },
+      {
+        "id": "F-002",
+        "severity": "MEDIUM",
+        "title": "05-independent-audit stage structurally absent: 4 required artifacts formally MISSING per MISSING-OR-MISMATCHED.json",
+        "status": "ACCEPTED_RISK",
+        "body": "AUDITOR-FLEET-SYNTHESIS-AUDIT.md, AUDITOR-FLEET-SYNTHESIS-FINDINGS.json, REQUIRED_SYNTHESIS_REPAIRS.md, and AUDIT_HANDOFF_TO_SUPERVISOR.json were never physically supplied to the intake session. The packet instructions forbid creating meaningless empty placeholder directories, so the directory was correctly omitted rather than faked. Not a defect in this evidence-intake packet's scope; carried forward as a remaining risk."
+      },
+      {
+        "id": "F-003",
+        "severity": "LOW",
+        "title": "Repair session's own evidence-bundle lookup script produced a spurious empty-match warning",
+        "status": "RESOLVED",
+        "body": "A bug in the pre-audit evidence-preparation script (not the committed artifact) caused a false-positive warning during HASH_VALIDATION.json inspection. Direct field-level verification by the auditor confirmed the underlying committed data is correct."
+      },
+      {
+        "id": "F-004",
+        "severity": "INFO",
+        "title": "HASH_VALIDATION.json carries 21 PRESENT_UNACCEPTED entries alongside the 51 ACCEPTED entries",
+        "status": "ACCEPTED_RISK",
+        "body": "72 total entries (51 ACCEPTED + 21 PRESENT_UNACCEPTED). The 21 are correctly excluded from the committed accepted tree and are not mislabeled as ACCEPTED. No leakage detected."
+      }
+    ],
+    "fixes_applied": [
+      "Fixed markdownlint MD038 (space inside code span) in task-packets/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.md",
+      "Regenerated GIT_DIFF.patch, GIT_DIFF_STAT.txt, GIT_STATUS_AFTER.txt, PATH_ALLOWLIST_CHECK.json, and SECRET_SCAN.json against the true final committed diff (resolves F-001)",
+      "Added this embedded_audit object and AUDITOR_REPAIR_REPORT.md to close the missing-embedded-audit CI gate"
+    ],
+    "remaining_risks": [
+      "05-independent-audit deliverables remain formally absent; closing that gap requires re-supplying the source files, not further evidence-intake work on this packet.",
+      "Content fidelity of 04-synthesis/deliverables/* against the underlying Deep Research track findings was not cross-checked by this audit and remains unverified."
+    ],
+    "skip_reason": null
   }
 }

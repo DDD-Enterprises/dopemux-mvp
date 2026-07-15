@@ -1,3 +1,15 @@
+---
+id: TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001
+title: Tp Dmx Auditor Fleet Campaign Intake 001
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-15'
+last_review: '2026-07-15'
+next_review: '2026-10-13'
+prelude: Tp Dmx Auditor Fleet Campaign Intake 001 (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Task Packet: TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001
 
 ## 🎯 Objective
@@ -95,7 +107,7 @@ proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/**
 
 ## 🛠️ Exact Commands
 - Create task packet validation check:
-  `python3 -c "import json, jsonschema; schema=json.load(open('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json')); packet=json.load(open('task-packets/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.json')); jsonschema.validate(packet, schema); print('TP VALID')" `
+  `python3 -c "import json, jsonschema; schema=json.load(open('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json')); packet=json.load(open('task-packets/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.json')); jsonschema.validate(packet, schema); print('TP VALID')"`
 - Local execution of validation rules:
   `python3 scratch/verify_and_copy_evidence.py`
 - Verify copy completion and SHA hashes:

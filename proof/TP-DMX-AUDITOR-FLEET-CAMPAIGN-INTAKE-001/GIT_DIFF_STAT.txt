@@ -1,3 +1,105 @@
- .claude/claude_config.json | 6 +++---
- task-packets/INDEX.md      | 1 +
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ .../00-control/campaign/CAMPAIGN-LOCK.json         |   61 
+ .../00-control/campaign/KIT-MANIFEST.json          |   88 
+ .../00-control/campaign/MASTER-PROMPT.md           |   72 
+ .../campaign/RESEARCH-QUESTION-MATRIX.json         |   31 
+ .../00-control/campaign/RUN-CONTROL.md             |   73 
+ .../00-control/campaign/SHA256SUMS.txt             |   17 
+ .../00-control/campaign/SOURCE-POLICY.md           |   75 
+ .../00-control/campaign/START_HERE.md              |   74 
+ .../prompts/DR-01-VENDOR-PLAN-AUTH-AND-TERMS.md    |   87 
+ ...LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY.md |   64 
+ .../DR-03-TOOL-AUTOMATION-AND-CONTAINMENT.md       |   75 
+ ...04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE.md |   77 
+ .../prompts/DR-05-API-FALLBACK-PRIVACY-AND-COST.md |   68 
+ .../prompts/DR-INDEPENDENT-ACCEPTANCE-PROMPT.md    |   63 
+ .../prompts/GPT56PRO-SYNTHESIS-HANDOFF-PROMPT.md   |  114 
+ .../schemas/CAMPAIGN-ACCEPTANCE.schema.json        |   88 
+ .../00-control/schemas/TRACK-FINDINGS.schema.json  |  329 +
+ .../accepted/AUDITOR_CAPABILITY_MATRIX.json        |  310 +
+ .../accepted/AUTHENTICATION_AND_TERMS_MATRIX.md    |   16 
+ .../accepted/BLOCKERS_AND_UNKNOWNS.json            |   43 
+ .../accepted/HANDOFF_TO_GPT56PRO.json              |   87 
+ .../accepted/MECHANICAL_VALIDATION_INVENTORY.json  |   86 
+ .../accepted/MODEL_IDENTITY_OBSERVATIONS.json      |   13 
+ .../NETWORK_AND_CONTAINMENT_OBSERVATIONS.md        |   29 
+ .../accepted/PROBE_SUMMARY.md                      |   26 
+ .../accepted/PROOF_MANIFEST.json                   |  148 
+ .../accepted/ROUTING_CONSTRAINTS.md                |   14 
+ .../accepted/TOOL_SELECTION_CANDIDATES.json        |   14 
+ .../DR-01-VENDOR-PLAN-AUTH-AND-TERMS-FINDINGS.json | 1002 ++
+ .../DR-01-VENDOR-PLAN-AUTH-AND-TERMS-REPORT.md     |  199 
+ ...R-AND-SELF-HOSTED-RUNNER-SECURITY-FINDINGS.json | 1031 ++
+ ...ROKER-AND-SELF-HOSTED-RUNNER-SECURITY-REPORT.md |  607 +
+ .../track-03-tool-containment/DR-03-FINDINGS.json  |  803 ++
+ .../track-03-tool-containment/DR-03-REPORT.md      |  231 +
+ .../DR-04-FINDINGS.json                            |  951 ++
+ .../track-04-routing-evaluation/DR-04-REPORT.md    |  493 +
+ .../track-05-api-fallback/DR-05-FINDINGS.json      |  859 ++
+ .../track-05-api-fallback/DR-05-REPORT.md          |  342 +
+ .../03-acceptance/DR-CAMPAIGN-ACCEPTANCE.json      |   96 
+ .../03-acceptance/DR-CAMPAIGN-ACCEPTANCE.md        |  214 +
+ .../deliverables/01_EXECUTIVE_VERDICT.md           |   97 
+ .../02_CURRENT_STATE_AND_EVIDENCE_MAP.md           |  103 
+ .../deliverables/03_ADR_AUDIT_BROKER_AUTHORITY.md  |  113 
+ .../deliverables/04_TRUST_AND_THREAT_MODEL.md      |  111 
+ .../deliverables/05_TARGET_ARCHITECTURE.md         |  167 
+ .../deliverables/06_AUTH_AND_CREDENTIAL_MODEL.md   |  114 
+ .../07_AUDIT_REQUEST_AND_RESULT_CONTRACTS.md       |  208 
+ .../08_RISK_COMPLEXITY_ROUTING_POLICY.md           |  143 
+ .../deliverables/09_TOOL_ADAPTER_ARCHITECTURE.md   |  116 
+ .../deliverables/10_LOCAL_BROKER_OPERATIONS.md     |  136 
+ .../deliverables/11_SELF_HOSTED_RUNNER_OPTION.md   |   85 
+ .../12_GITHUB_EXACT_HEAD_INTEGRATION.md            |  107 
+ .../deliverables/13_MECHANICAL_ONLY_LANE.md        |  110 
+ .../14_API_FALLBACK_AND_OPENROUTER_POLICY.md       |  125 
+ .../15_EVALUATION_AND_CERTIFICATION.md             |  157 
+ .../16_FAILURE_ESCALATION_AND_DEMOTION.md          |  130 
+ .../17_SECURITY_PRIVACY_AND_TERMS_MODEL.md         |  109 
+ .../deliverables/18_MIGRATION_AND_ROLLBACK.md      |   93 
+ .../deliverables/19_IMPLEMENTATION_ROADMAP.md      |  216 +
+ .../deliverables/20_MACRO_PACKET_SERIES.md         |  143 
+ .../deliverables/21_OPEN_QUESTIONS.json            |  765 ++
+ ...UDITOR-FLEET-PLAN-AUTH-2026-07-13-SYNTHESIS.zip |  Bin
+ .../DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13.zip      |  Bin
+ ...-DMX-AUDITOR-FLEET-CAPABILITY-PROBE-001_KIT.zip |  Bin
+ .../99-intake/DUPLICATE-CANDIDATES.json            |   50 
+ .../99-intake/EXCLUDED-ARTIFACTS.json              |  161 
+ .../99-intake/INTAKE-STATUS.json                   |   13 
+ .../99-intake/MISSING-OR-MISMATCHED.json           |   22 
+ .../99-intake/SOURCE-LOCATIONS.json                | 8468 ++++++++++++++++++++
+ .../AGENTS.md                                      |  264 +
+ .../ARCHITECTURE.md                                |  196 
+ .../CAMPAIGN-CONTENT-MANIFEST.json                 | 1451 +++
+ .../CAMPAIGN-CONTENT-MANIFEST.md                   |  144 
+ .../Multi-Model Routing Policy.txt                 |  241 +
+ .../PAL_EXECUTION_RULES.md                         |  159 
+ .../PROJECT.md                                     |  173 
+ .../README.md                                      |   55 
+ .../DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/RULES.md |  338 +
+ .../SHA256SUMS.txt                                 |   79 
+ .../handoff-contract.md                            |  319 +
+ .../model-routing.policy.yaml                      |  297 +
+ .../proof-bundle-schema.md                         |  275 +
+ .../proof-contract.md                              |  262 +
+ .../system-boundaries.md                           |  123 
+ ...2026-07-13-auditor-fleet-campaign-acceptance.md |   12 
+ .../2026-07-13-auditor-fleet-plan-auth-campaign.md |   18 
+ .../BASELINE.json                                  |    8 
+ .../COMMAND_LOG.md                                 |   13 
+ .../DOCS_HYGIENE.json                              |   10 
+ .../GIT_DIFF.patch                                 |    0 
+ .../GIT_DIFF_STAT.txt                              |    0 
+ .../GIT_STATUS_AFTER.txt                           |    6 
+ .../GIT_STATUS_BEFORE.txt                          |    1 
+ .../HASH_VALIDATION.json                           |  722 ++
+ .../INTAKE_SUMMARY.md                              |   11 
+ .../PATH_ALLOWLIST_CHECK.json                      |  120 
+ .../PROOF.json                                     |   67 
+ .../PROOF_MANIFEST.json                            |   86 
+ .../SECRET_SCAN.json                               |   12 
+ .../SOURCE_DISCOVERY.json                          | 8468 ++++++++++++++++++++
+ .../ZIP_VALIDATION.json                            |   26 
+ task-packets/INDEX.md                              |    1 
+ .../TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.json  |   68 
+ .../TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.md    |  165 
+ 104 files changed, 35322 insertions(+)

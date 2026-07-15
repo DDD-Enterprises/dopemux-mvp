@@ -1,5 +1,11 @@
 [
   {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/AUDITOR_REPAIR_REPORT.md",
+    "filename": "AUDITOR_REPAIR_REPORT.md",
+    "sha256": "4b7516be61f0a0aa19058d374a657a996b164f2c8c147b961b0066d05d6d6590",
+    "bytes": 5034
+  },
+  {
     "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/BASELINE.json",
     "filename": "BASELINE.json",
     "sha256": "bb4670c0061e6d50ea654bf4cac4b222606ee5732a1126d5c90cfb8b4ae38545",
@@ -20,20 +26,20 @@
   {
     "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/GIT_DIFF.patch",
     "filename": "GIT_DIFF.patch",
-    "sha256": "3ac3c0340776a03196d77dc244c69387a968b6e68023f81a084e292d440a47a2",
-    "bytes": 2118
+    "sha256": "c02c17f48569bf95a14537155905df28dd7fde82d3968e61c8f21f640397c841",
+    "bytes": 1639738
   },
   {
     "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/GIT_DIFF_STAT.txt",
     "filename": "GIT_DIFF_STAT.txt",
-    "sha256": "3d7f31acdf71fb32e5a416fc6841a062980b76a827919aec2db805525bc74cc9",
-    "bytes": 123
+    "sha256": "197adff69bd653d364d38569dd7e78f4171ba3f894bed05ab836a358f3eb7842",
+    "bytes": 6349
   },
   {
     "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/GIT_STATUS_AFTER.txt",
     "filename": "GIT_STATUS_AFTER.txt",
-    "sha256": "9da84f8815508346c47b72e201b079a7a4658d9c93dd884320538953050c25bf",
-    "bytes": 391
+    "sha256": "49102a0f4eba2280b599ea3857866c4f813a7c9498c4d44f9a8b9a3212be7cbf",
+    "bytes": 364
   },
   {
     "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/GIT_STATUS_BEFORE.txt",
@@ -56,20 +62,20 @@
   {
     "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/PATH_ALLOWLIST_CHECK.json",
     "filename": "PATH_ALLOWLIST_CHECK.json",
-    "sha256": "2b2eeae474777f444078b93633433adad4bd2352b36ea4571386497e2330142f",
-    "bytes": 12307
+    "sha256": "816a51c21b189a4bf9bf0abf92e08600e7ac74b1563ecb7b781fb6c3b13ed80c",
+    "bytes": 12270
   },
   {
     "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/PROOF.json",
     "filename": "PROOF.json",
-    "sha256": "2de346e3aa189e03520e7026725b23eb1bbcbe30ae22b811a581be681cf57356",
-    "bytes": 448
+    "sha256": "94ffff406c0068175c8048da1545a7d14d7f7d4a04e22b3262a6afa93272a3d3",
+    "bytes": 4052
   },
   {
     "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/SECRET_SCAN.json",
     "filename": "SECRET_SCAN.json",
-    "sha256": "085fba60583796a6fc250ea2e190306bf08dd7dc06f2a69f90597aedaff8e955",
-    "bytes": 256
+    "sha256": "b4fe3718799481c63638805e2086ec9a4cb670382f20318fd0d57b0daf3e4693",
+    "bytes": 507
   },
   {
     "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/SOURCE_DISCOVERY.json",

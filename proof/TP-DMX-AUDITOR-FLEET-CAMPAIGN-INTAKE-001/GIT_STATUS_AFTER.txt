@@ -1,9 +1,6 @@
-## codex/auditor-fleet-campaign-intake-001...origin/main
+## codex/auditor-fleet-campaign-intake-001...origin/main [ahead 1]
  M .claude/claude_config.json
- M task-packets/INDEX.md
-?? audit_inputs/auditor-fleet/
-?? docs/05-audit-reports/auditor-fleet/
-?? docs/06-research/auditor-fleet/
-?? proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/
-?? task-packets/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.json
-?? task-packets/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.md
+ M proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/GIT_STATUS_AFTER.txt
+ M proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/PROOF.json
+ M task-packets/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001.md
+?? proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/AUDITOR_REPAIR_REPORT.md
