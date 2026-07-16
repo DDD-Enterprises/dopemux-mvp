@@ -94,9 +94,25 @@
         "command": "agy --prompt=<read-only audit prompt> --mode=plan --sandbox --model=Gemini 3.1 Pro (High)",
         "exit_code": 0,
         "result": "PASS_WITH_RISKS at c159c646a6f05078fabfb425339c7252806bdaba; no runtime-join blocking finding"
+      },
+      {
+        "command": "GitHub Complete CI Pipeline run 29536115769 for PR #1055 head 7946c77b006e171660650f409e10abb08a526134",
+        "exit_code": 0,
+        "result": "SUCCESS"
       }
     ],
-    "FAIL": [],
+    "FAIL": [
+      {
+        "command": "GitHub embedded-audit workflow run 29536115246 for PR #1055 head 7946c77b006e171660650f409e10abb08a526134",
+        "exit_code": 1,
+        "result": "FAIL; hard enforcement reported NEEDS_SUPERVISOR. Local AGY evidence is not a workflow-issued embedded-audit proof."
+      },
+      {
+        "command": "GitHub PR Steward final-readiness workflow run 29536140470 for PR #1055 head 7946c77b006e171660650f409e10abb08a526134",
+        "exit_code": 2,
+        "result": "FAIL; audit conclusion was failure, so the workflow refused READY and published steward=skipped."
+      }
+    ],
     "NOT_RUN": [
       {
         "command": "Independent automated Codex differential review",
@@ -109,9 +125,9 @@
         "mitigation": "No live behavior, transport, backend, provider, credential, or exposure change is in scope."
       },
       {
-        "command": "GitHub checks for the remediation commits",
-        "reason": "The implementation commit has not yet been pushed when this proof was written.",
-        "mitigation": "Refresh PR #1055 checks after the proof commit is pushed."
+        "command": "Credentialed or managed-runner AGY embedded audit",
+        "reason": "User direction is local-only AGY runs; no CI runner or credentials are available or authorized.",
+        "mitigation": "Local AGY evidence is retained separately and the canonical CI gate remains fail-closed."
       }
     ]
   },
@@ -153,15 +169,16 @@
       "The separate Grok PASS_WITH_RISKS review is not accepted by embedded-audit.yml as a trusted workflow proof.",
       "The separate AGY PASS_WITH_RISKS review is not accepted by embedded-audit.yml as a trusted workflow proof.",
       "The intentionally opt-in live facade test was not run.",
-      "GitHub checks must be refreshed after pushing the remediation commits."
+      "The observed embedded-audit run 29536115246 failed NEEDS_SUPERVISOR and its dependent PR Steward run 29536140470 failed closed."
     ],
     "skip_reason": "The available Codex reviewer could not complete a final differential verdict. Separate Grok and AGY reviews returned PASS_WITH_RISKS, but neither can satisfy the distinct trusted embedded-audit workflow contract; see AUDITOR_REPORT.md, GROK_AUDIT.md, and AGY_AUDIT.md."
   },
   "residual_risks": [
     "No live runtime, ownership, transport, freshness, provider, or backend evidence is claimed.",
+    "User direction is local-only AGY audits; no runner, credential, or CI auditor-route change is authorized.",
     "The generated .claude/claude_config.json worktree delta is intentionally unstaged and unrelated.",
     "Resolved GitHub review-thread state was not treated as proof that the original identity mismatch was fixed."
   ],
   "rollback": "Revert implementation commit 6c5fc5ed6bdde8733d126864680e8c6ec2d1415c and this proof commit in reverse order from PR #1055. The change is confined to the facade join, its regressions, and records.",
-  "cleanup": "Dedicated worktree retained until the existing PR branch is pushed and its checks are refreshed."
+  "cleanup": "Dedicated worktree retained while PR #1055 remains open and blocked on the canonical audit gate; no CI route change is authorized."
 }

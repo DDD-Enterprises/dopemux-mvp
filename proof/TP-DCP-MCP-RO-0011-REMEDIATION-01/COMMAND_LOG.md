@@ -20,6 +20,9 @@ All commands below ran in the dedicated worktree on branch
 | Read-only Codex differential review | NOT_RUN; see `AUDITOR_REPORT.md` |
 | `grok -p` read-only differential audit | PASS_WITH_RISKS; see `GROK_AUDIT.md` |
 | `agy --prompt=<read-only audit prompt> --mode=plan --sandbox --model=Gemini 3.1 Pro (High)` | PASS_WITH_RISKS at `c159c646a`; see `AGY_AUDIT.md` |
+| GitHub Complete CI Pipeline run `29536115769` at `7946c77b` | PASS |
+| GitHub embedded-audit run `29536115246` at `7946c77b` | FAIL, `NEEDS_SUPERVISOR`; local AGY evidence is not workflow proof |
+| GitHub PR Steward final-readiness run `29536140470` at `7946c77b` | FAIL, audit failure caused `steward=skipped` |
 
 No live DCP facade, provider, transport, container, backend, or credential
 operation was run.
