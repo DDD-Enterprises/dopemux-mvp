@@ -130,6 +130,16 @@ jobs:
           JSON
           fi
 
+      - name: Setup trusted Claude audit runner
+        if: always() && steps.head_integrity.outputs.verified == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install trusted Claude audit runner
+        if: always() && steps.head_integrity.outputs.verified == 'true'
+        run: npm install --global @anthropic-ai/claude-code@2.1.204
+
       - name: Run PAL clink audit
         # Soft exit is intentional: the runner may emit a machine-readable error
         # payload with exit 0 so later steps always emit a diagnostic proof and
@@ -138,6 +148,8 @@ jobs:
         if: always() && steps.head_integrity.outputs.verified == 'true'
         id: runner
         working-directory: trusted-source
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || secrets.CLAUDE_API_KEY }}
         run: |
           base_sha="$(git rev-parse HEAD)"
           head_sha='${{ steps.pr.outputs.head_sha }}'
@@ -158,7 +170,11 @@ jobs:
             printf 'Return JSON with status, verdict, findings, and risks.\n'
           } > ../embedded-audit-artifacts/PAL_CLINK_AUDIT_INPUT.md
           set +e
-          if [ -f scripts/audit/pal_clink_runner.py ]; then
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            printf '%s\n' '{"status":"error","risks":["Trusted Claude provider credential is unavailable."]}' \
+              > ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json
+            status=78
+          elif [ -f scripts/audit/pal_clink_runner.py ]; then
             python -m scripts.audit.pal_clink_runner \
               --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
               --prompt ../embedded-audit-artifacts/PAL_CLINK_AUDIT_INPUT.md \

@@ -45,9 +45,22 @@ def fixture_config_dir(name: str) -> Path:
 
 
 def safe_claude_config() -> dict:
-    return load_json(
+    config = load_json(
         fixture_config_dir("pal_clink_audit_safe_claude_available") / "claude-audit.json"
     )
+    config["additional_args"] = [
+        "--print",
+        "--safe-mode",
+        "--no-session-persistence",
+        "--permission-mode",
+        "plan",
+        "--tools",
+        "",
+        "--strict-mcp-config",
+        "--model",
+        "sonnet",
+    ]
+    return config
 
 
 def test_discover_repo_local_audit_configs() -> None:
@@ -120,6 +133,59 @@ def test_reject_missing_name_or_runner(tmp_path: Path) -> None:
 
     assert inspection.status == "TOOLING_UNSAFE"
     assert inspection.reason == "Audit config must explicitly define name and runner."
+
+
+def test_reject_claude_audit_without_print_mode(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["additional_args"].remove("--print")
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert inspection.audit_safe_config_proven is False
+    assert "--print" in inspection.reason
+
+
+def test_reject_claude_audit_with_builtin_tools_enabled(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    tools_index = config["additional_args"].index("--tools")
+    config["additional_args"][tools_index + 1] = "Read"
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert inspection.audit_safe_config_proven is False
+    assert "--tools" in inspection.reason
+
+
+def test_reject_claude_audit_without_strict_mcp_config(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["additional_args"].remove("--strict-mcp-config")
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert inspection.audit_safe_config_proven is False
+    assert "--strict-mcp-config" in inspection.reason
+
+
+def test_reject_claude_audit_with_explicit_mcp_config(tmp_path: Path) -> None:
+    config = safe_claude_config()
+    config["additional_args"].extend(["--mcp-config", "audit-mcp.json"])
+    path = tmp_path / "claude-audit.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+
+    inspection = inspect_clink_client_config(path)
+
+    assert inspection.status == "TOOLING_UNSAFE"
+    assert inspection.audit_safe_config_proven is False
+    assert "--mcp-config" in inspection.reason
 
 
 def test_reject_non_object_roles_without_crashing(tmp_path: Path) -> None:
@@ -734,6 +800,7 @@ def test_filename_stem_mismatch_correct_client_field(tmp_path: Path) -> None:
         "client": "claude-audit",
         "runner": "claude",
         "command": "claude",
+        "additional_args": safe_claude_config()["additional_args"],
         "roles": {
             "default": {
                 "prompt_path": "systemprompts/clink/default_codereviewer.txt",
@@ -756,6 +823,7 @@ def test_falsey_role_args_invalid(tmp_path: Path) -> None:
         "name": "claude-audit",
         "runner": "claude",
         "command": "claude",
+        "additional_args": safe_claude_config()["additional_args"],
         "roles": {
             "default": {
                 "prompt_path": "systemprompts/clink/default_codereviewer.txt",

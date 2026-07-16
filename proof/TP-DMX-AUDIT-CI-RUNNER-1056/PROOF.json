@@ -1,0 +1,157 @@
+{
+  "packet_id": "TP-DMX-AUDIT-CI-RUNNER-1056",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "task_orchestrator_item": "b8237a05-9ff1-4b4c-9621-bad46cb49d3a",
+  "worktree": "/private/tmp/dopemux-audit-ci-runner-1056",
+  "branch": "codex/audit-ci-runner-1056",
+  "base_sha": "3f59ec29c9175e3b7ebdc68392365bb05296247d",
+  "head_binding": {
+    "status": "REQUIRES_POST_COMMIT_FINAL_SUMMARY",
+    "reason": "A proof file cannot truthfully contain the SHA of the commit that contains it."
+  },
+  "executed": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-AUDIT-CI-RUNNER-1056/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Grok and external Codex review attempts did not return final verdicts and therefore do not count as independent clearance.",
+      "The credentialed GitHub-hosted audit cannot exercise this candidate workflow until the repair is trusted on the default branch.",
+      "The existing legacy CLAUDE_API_KEY secret's provider validity is unknown until a post-merge trusted run."
+    ],
+    "skip_reason": "No independent auditor returned a final verdict for this repair branch; local tests and manual codereview do not substitute for a trusted exact-head audit receipt."
+  },
+  "root_cause": {
+    "observed_artifact": "PR #1056 run 29538266635 selected claude-audit and emitted command 'claude' not found on PATH.",
+    "workflow_gap": "The trusted embedded-audit job selected a repository Claude route but did not install Claude Code or map a provider credential into the subprocess.",
+    "route_gap": "The selected Claude config omitted --print, so provisioning the executable alone would still not establish a deterministic noninteractive invocation.",
+    "external_state": "Repository secret-name metadata exposed CLAUDE_API_KEY and EMBEDDED_AUDIT_TOKEN but not ANTHROPIC_API_KEY; no secret value was read or recorded."
+  },
+  "slices": [
+    {
+      "id": "trusted-runner-provisioning",
+      "files": [
+        ".github/workflows/embedded-audit.yml"
+      ],
+      "change": "Set up Node 22, install exact stable Claude Code 2.1.204, map canonical-or-legacy provider auth only into the trusted runner step, and emit a structured error when auth is absent."
+    },
+    {
+      "id": "route-contract",
+      "files": [
+        "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/claude-audit.json",
+        "tools/auditor_router/pal_clink.py"
+      ],
+      "change": "Require print mode, disable built-in tools, prohibit MCP configuration, enable safe mode, and disable session persistence."
+    },
+    {
+      "id": "regression-and-operations",
+      "files": [
+        "tests/audit/test_run_embedded_audit.py",
+        "tests/audit/test_pal_clink_runner.py",
+        "tests/auditor_router/test_pal_clink.py",
+        "tests/fixtures/auditor_router/*/clink_configs/claude-audit.json",
+        "docs/ops/embedded-audit.md"
+      ],
+      "change": "Cover workflow provisioning and fail-closed route inspection, update canonical fixtures, and document the separation between proof provenance and provider authentication."
+    }
+  ],
+  "validations": [
+    {
+      "status": "PASS",
+      "command": "UV_CACHE_DIR=/tmp/dopemux-audit-ci-runner-1056-uv-cache uv run --frozen pytest -q tests/audit/test_run_embedded_audit.py tests/audit/test_pal_clink_runner.py tests/auditor_router/test_pal_clink.py",
+      "exit_code": 0,
+      "result": "120 focused tests passed after six expected red-phase failures were observed before implementation."
+    },
+    {
+      "status": "PASS",
+      "command": "UV_CACHE_DIR=/tmp/dopemux-audit-ci-runner-1056-uv-cache uv run --frozen pytest -q tests/audit tests/auditor_router",
+      "exit_code": 0,
+      "result": "Full audit and auditor-router suite passed."
+    },
+    {
+      "status": "PASS",
+      "command": "uv run --frozen python -m jsonschema -i task-packets/TP-DMX-AUDIT-CI-RUNNER-1056.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "result": "Canonical Task Packet schema validation passed; jsonschema emitted only its CLI deprecation warning."
+    },
+    {
+      "status": "PASS",
+      "command": "python -m tools.auditor_router.preflight --packet-id TP-DMX-AUDIT-CI-RUNNER-1056 --out /tmp/tp-dmx-audit-ci-runner-1056-preflight --format json",
+      "exit_code": 0,
+      "result": "Selected claude-audit with AVAILABLE, audit_safe_config_proven=true, noninteractive_mode_proven=true, and tools_disabled=true."
+    },
+    {
+      "status": "PASS",
+      "command": "python -c <yaml.safe_load embedded-audit.yml>",
+      "exit_code": 0,
+      "result": "embedded-audit.yml parsed successfully."
+    },
+    {
+      "status": "PASS",
+      "command": "npx --yes @anthropic-ai/claude-code@2.1.204 --version",
+      "exit_code": 0,
+      "result": "2.1.204 (Claude Code); no provider request was made."
+    },
+    {
+      "status": "PASS",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "No whitespace errors."
+    },
+    {
+      "status": "PASS",
+      "command": "python scripts/audit/validate_audit_proof.py proof/TP-DMX-AUDIT-CI-RUNNER-1056/PROOF.json",
+      "exit_code": 0,
+      "result": "Proof validation passed."
+    },
+    {
+      "status": "PASS",
+      "command": "pre-commit run --files <15 packet-allowlisted files>",
+      "exit_code": 0,
+      "result": "All applicable documentation, proof, markdown, whitespace, and hygiene hooks passed."
+    },
+    {
+      "status": "PASS",
+      "command": "Manual codereview against current scoped diff",
+      "exit_code": 0,
+      "result": "No actionable correctness or security findings; candidate remains data-only and every missing-capability path remains fail closed."
+    },
+    {
+      "status": "NOT_RUN",
+      "command": "Grok independent codereview",
+      "exit_code": null,
+      "result": "Two read-only attempts returned process narration without a final verdict; neither counts as clearance."
+    },
+    {
+      "status": "NOT_RUN",
+      "command": "External Codex read-only codereview",
+      "exit_code": null,
+      "result": "The review process inspected the diff but returned no final findings or verdict; it does not count as clearance."
+    }
+  ],
+  "scope": {
+    "allowlist_source": "task-packets/TP-DMX-AUDIT-CI-RUNNER-1056.json commit.allowlist",
+    "unrelated_preserved": [
+      ".claude/claude_config.json (worktree-specific generated configuration; not staged)"
+    ]
+  },
+  "residual_risks": [
+    "The repair PR's own pull_request_target audit will execute the pre-repair trusted workflow and is expected to remain red until controlled merge.",
+    "Exact npm version pinning improves repeatability but still depends on npm registry availability and package retention.",
+    "A post-merge workflow_dispatch against PR #1056 is required to verify the hosted CLI, provider credential, model response, exact-head proof, and PR Steward readiness."
+  ],
+  "unknowns": [
+    "Whether CLAUDE_API_KEY contains a currently valid Anthropic API credential.",
+    "Whether the provider account has quota for the post-merge audit."
+  ],
+  "cleanup": {
+    "status": "PENDING_PR_PUBLICATION",
+    "note": "Retain the dedicated worktree until commit, push, PR creation, and Task Orchestrator proof update are complete."
+  }
+}

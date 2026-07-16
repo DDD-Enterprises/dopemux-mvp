@@ -111,6 +111,16 @@ class TestBuildInvocation:
         assert argv[0] == "claude"
         assert "--model" in argv
 
+    def test_claude_audit_real_config_is_noninteractive_and_tool_free(self) -> None:
+        route = load_route_from_clink_config(_CLINK_CONF_DIR / "claude-audit.json", priority=0)
+        argv = build_invocation(route)
+
+        assert "--print" in argv
+        assert argv[argv.index("--tools") + 1] == ""
+        assert "--strict-mcp-config" in argv
+        assert "--safe-mode" in argv
+        assert "--no-session-persistence" in argv
+
     def test_gemini_audit_real_config(self) -> None:
         route = load_route_from_clink_config(_CLINK_CONF_DIR / "gemini-audit.json", priority=1)
         argv = build_invocation(route)
