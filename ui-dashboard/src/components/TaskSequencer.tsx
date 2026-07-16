@@ -96,6 +96,17 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isSkipConfirming, setIsSkipConfirming] = useState(false);
   const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear skip confirmation when the current task changes so a second click
+  // cannot skip a different task after arming confirm on another task.
+  useEffect(() => {
+    setIsSkipConfirming(false);
+    if (skipConfirmTimeoutRef.current) {
+      clearTimeout(skipConfirmTimeoutRef.current);
+      skipConfirmTimeoutRef.current = null;
+    }
+  }, [currentTaskId]);
+
   const [isTaskTitleCopied, setIsTaskTitleCopied] = useState(false);
   const copyTaskTitleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
