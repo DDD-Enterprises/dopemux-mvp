@@ -1,0 +1,116 @@
+{
+  "id": "TP-DCP-MCP-RO-0014",
+  "project": "dopemux-mvp",
+  "target": "Add hardened loopback Streamable HTTP ingress with auth-before-discovery, per-connector rate/concurrency limits, structured redacted audit, and deterministic start/stop/health without public binds or tunnels.",
+  "invariants": [
+    "Ingress binds only to loopback hosts; 0.0.0.0 and non-loopback hosts are rejected.",
+    "MCP discovery and dispatch paths require connector authentication before any tool listing.",
+    "Unauthenticated or forged connector headers never disclose tools or backend topology.",
+    "Per-connector rate and concurrency limits fail closed with generic errors.",
+    "Audit events never retain raw bearer tokens or secrets.",
+    "No tunnel, public compose bind default, provider credential, or backend adapter is introduced."
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0013"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0013",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dcp-mcp-ro-0014-loopback-ingress",
+    "base_branch": "main",
+    "stacked_because": "TP-DCP-MCP-RO-0013 connector policy/auth context is merged on main (PR #1059)."
+  },
+  "commit": {
+    "message": "feat(dcp): add loopback authenticated streamable HTTP ingress",
+    "allowlist": [
+      "services/dcp-readonly-facade/src/dcp_facade/ingress.py",
+      "services/dcp-readonly-facade/src/dcp_facade/loopback_server.py",
+      "services/dcp-readonly-facade/src/dcp_facade/rate_limit.py",
+      "services/dcp-readonly-facade/src/dcp_facade/ingress_audit.py",
+      "services/dcp-readonly-facade/src/mcp/server.py",
+      "services/dcp-readonly-facade/tests/test_ingress.py",
+      "services/dcp-readonly-facade/tests/test_loopback_server.py",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/INGRESS_LOOPBACK_CONTRACT.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/FACADE_LOCAL_RUN.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0014.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0014.md",
+      "task-packets/INDEX.md",
+      "proof/TP-DCP-MCP-RO-0014/**"
+    ],
+    "verify": [
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests/test_ingress.py services/dcp-readonly-facade/tests/test_loopback_server.py",
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests",
+      "uv run --frozen python -m compileall -q services/dcp-readonly-facade/src",
+      "python -m jsonschema -i task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0014.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "pre-commit run --files <changed-files>"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): add loopback authenticated streamable HTTP ingress",
+    "body": "Implements TP-DCP-MCP-RO-0014: loopback-only Streamable HTTP ingress with auth-before-discovery, rate/concurrency limits, redacted audit, and start/stop/health. Stdio remains default. No public bind, tunnel, or real credentials.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "secaudit",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "loopback-bind",
+      "task": "Implement pinned loopback host validation and deterministic start/stop/health for the Streamable HTTP ingress.",
+      "validation": [
+        "Non-loopback hosts are rejected.",
+        "Server binds 127.0.0.1 and reports health with host/port."
+      ]
+    },
+    {
+      "id": "auth-before-discovery",
+      "task": "Require connector authentication before MCP paths; deny unauthenticated initialize/list/call without tool disclosure.",
+      "validation": [
+        "Unauthenticated /mcp returns 401 without tools.",
+        "Authenticated /mcp returns allowed tools only.",
+        "Forgeable connector headers cannot authenticate."
+      ]
+    },
+    {
+      "id": "rate-audit",
+      "task": "Apply per-connector rate/concurrency limits and structured redacted audit events.",
+      "validation": [
+        "Burst exhaustion returns 429.",
+        "Audit dumps contain no raw bearer tokens."
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Run focused/full tests, compileall, packet schema validation, pre-commit, advisory AGY, open PR without merge.",
+      "validation": [
+        "Local validation captured in proof or marked NOT_RUN.",
+        "Trusted embedded audit is not claimed from AGY."
+      ]
+    }
+  ]
+}

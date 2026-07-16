@@ -136,6 +136,7 @@ A packet is superseded by another packet
 | TP-DCP-MCP-RO-0008 | DCP / MCP | Hardening Cross Project Isolation And PR Readiness | Active | N/A |
 | TP-DCP-MCP-RO-0012 | DCP / MCP | Public Facade Target Contract Migration | Active | TP-DCP-MCP-RO-0011-REMEDIATION-01 |
 | TP-DCP-MCP-RO-0013 | DCP / MCP | Connector Policy Schema And Auth Context | Active | TP-DCP-MCP-RO-0012 |
+| TP-DCP-MCP-RO-0014 | DCP / MCP | Loopback Streamable HTTP Ingress | Active | TP-DCP-MCP-RO-0013 |
 | DMX-DCP-PROMPT5-EXTRACT-RECON-001 | DCP / Prompt 5 | Extract Prompt 5 chat-history docs and reconcile PR/Task Orchestrator runway state | Active | N/A |
 
 ────────────────────────────────────────────────────────────
