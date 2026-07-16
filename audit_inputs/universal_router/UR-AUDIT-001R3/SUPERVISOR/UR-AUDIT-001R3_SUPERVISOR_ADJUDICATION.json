@@ -1,0 +1,49 @@
+{
+  "adjudication_id": "UR-ADJ-001",
+  "source_audit_id": "UR-AUDIT-001R3",
+  "source_audit_archive": "UR-ARCH-001-OPUS-AUDIT-R3.zip",
+  "source_audit_sha256": "b44e892f4ef6fbf0b0235f28f6245143ae04caa1b9a562fad2b64995a923d372",
+  "architecture_sha256": "9b78e2bd3a6311615e80194398cf07e996f59c952ba9d0280c140d5d39d5e090",
+  "decision": "ACCEPT_AUDIT_WITH_CONDITIONS",
+  "architecture_baseline_status": "ACCEPTED_FOR_IMPLEMENTATION_DESIGN",
+  "implementation_design_authorized": true,
+  "repo_changes_authorized_now": false,
+  "first_packet": "UR-TP-001",
+  "first_packet_status": "AUTHORIZED_FOR_PREPARATION_CONDITIONAL_ON_FRESH_WORKTREE_AND_VALID_PACKET",
+  "architecture_revision_required": false,
+  "architecture_errata_required": true,
+  "audit_findings": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 4,
+    "P3": 2
+  },
+  "conditions_before_repo_changes": [
+    "Issue a corrected schema-valid UR-TP-001 packet",
+    "Create a fresh dedicated worktree and branch",
+    "Verify repo identity, marker, worktree, and branch",
+    "Use current tracked authority and contract paths",
+    "Declare exact file allowlist and commands",
+    "Do not implement from the dirty primary checkout"
+  ],
+  "conditions_before_pr": [
+    "Pin canonical PR Steward invocation and MERGE_READINESS.json contract",
+    "Run embedded independent audit",
+    "Capture proof current to latest head SHA",
+    "Obtain PR Steward readiness"
+  ],
+  "later_phase_blocks": [
+    "Provider-attested model identity",
+    "Runner/OS-enforced containment",
+    "Freeflow and governance read-interface compatibility",
+    "External HumanApprovalRef issuer",
+    "Plan-credit observation",
+    "Certification tuple repair",
+    "Policy integrity decision",
+    "Sufficient labeled corpus"
+  ],
+  "auditor_model_claim": "CLAUDE_OPUS_CONFIGURED_IN_CLAUDE_CODE",
+  "auditor_model_identity_confidence": "RUNNER_CONFIGURED_NOT_PROVIDER_ATTESTED",
+  "full_independent_containment_proven": false,
+  "next_artifact": "UR-IMPL-DESIGN-001"
+}

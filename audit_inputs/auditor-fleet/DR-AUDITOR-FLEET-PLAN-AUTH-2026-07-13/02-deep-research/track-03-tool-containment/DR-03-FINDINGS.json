@@ -1,0 +1,803 @@
+{
+  "schema_version": "1.0.0",
+  "campaign_id": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "track_id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+  "status": "COMPLETE_WITH_UNKNOWNS",
+  "research_date": "2026-07-13",
+  "questions": [
+    {
+      "question_id": "DR03-Q01",
+      "question": "Which targets expose an officially documented non-interactive, headless, or programmatic invocation surface?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR03-Q02",
+      "question": "Which targets expose machine-readable output, and what output forms are documented?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR03-Q03",
+      "question": "Which targets support strict JSON or caller-supplied schema validation for the final response?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR03-Q04",
+      "question": "Which targets expose model-selection and reasoning or effort controls?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR03-Q05",
+      "question": "Which targets document timeout, exit-code, session persistence, ephemeral-session, and resume behavior?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR03-Q06",
+      "question": "Which targets support configuration-directory relocation, clean-room or bare execution, and control over repository instruction loading?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR03-Q07",
+      "question": "Which targets can disable MCP, hooks, plugins or extensions, skills or memory, and subagents?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR03-Q08",
+      "question": "Which targets can disable shell execution, file writes, and network access?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR03-Q09",
+      "question": "What telemetry, credential-isolation, model-identity, usage, quota, and cost evidence can each target expose?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR03-Q10",
+      "question": "What official CI guidance, support status, deprecations, and version risks apply?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR03-Q11",
+      "question": "For OpenCode, which plan-authenticated providers are officially supportable and can the actual upstream provider and model be observed?",
+      "answer_status": "UNKNOWN"
+    },
+    {
+      "question_id": "DR03-Q12",
+      "question": "For OpenCode, can tools and provider fallback be disabled deterministically, and are structured outputs stable enough for a proof normalizer?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR03-Q13",
+      "question": "For Grok Build, is an official unattended interface and machine-readable export available?",
+      "answer_status": "CONFLICTING"
+    },
+    {
+      "question_id": "DR03-Q14",
+      "question": "For AGY or Google Antigravity, is an official unattended machine-readable audit interface available, or is it limited to manual receipts?",
+      "answer_status": "CONFLICTING"
+    },
+    {
+      "question_id": "DR03-Q15",
+      "question": "Which deterministic mechanical tools can form a first-class offline validation lane and what are their authority limits?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR03-Q16",
+      "question": "What adapter posture should be assigned to each target: automated, operator-triggered, manual app, unsupported, or research-only?",
+      "answer_status": "ANSWERED"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "DR03-F001",
+      "claim_label": "OBSERVED",
+      "topic": "Local probe posture",
+      "claim": "The accepted host investigation was static-only: the model-capable CLIs were installed, but no live model, provider, or OpenRouter call occurred; authentication route, plan billing provenance, actual model identity, and complete live containment were not established.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "L-CAP-MATRIX",
+        "L-NETWORK",
+        "L-ROUTING"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "No model-capable tool may be promoted to unattended execution from documentation or static help alone."
+    },
+    {
+      "finding_id": "DR03-F002",
+      "claim_label": "OBSERVED",
+      "topic": "Mechanical validation",
+      "claim": "The accepted local inventory defines an offline mechanical lane using repository identity checks, JSON or schema validation, proof-bundle validation, diff hygiene, and static contract inspection, each with a bounded authority surface.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "L-MECHANICAL",
+        "L-CAP-MATRIX"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Mechanical validation is the only currently observed automatic lane and must remain first-class rather than merely supporting an LLM verdict."
+    },
+    {
+      "finding_id": "DR03-F003",
+      "claim_label": "CLAIMED",
+      "topic": "Claude Code automation",
+      "claim": "Anthropic documentation describes programmatic or headless Claude Code use, JSON-oriented output, model selection, configuration relocation, permissions, sandboxed shell execution, and controls for MCP, hooks, plugins, skills, subagents, and tools.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-CLAUDE-HEADLESS",
+        "S-CLAUDE-CONFIG"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Claude Code is an automation candidate, but only after the installed version and intended authentication mode pass local conformance checks."
+    },
+    {
+      "finding_id": "DR03-F004",
+      "claim_label": "OBSERVED",
+      "topic": "Claude Code local controls",
+      "claim": "Installed Claude Code 2.1.207 exposed print, JSON or schema, model, safe-mode, settings-source, MCP, plugin or skill or subagent, and no-tools controls in captured static help.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "L-CAP-MATRIX"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "The installed binary has a promising static control surface, but static flags are not proof of live isolation."
+    },
+    {
+      "finding_id": "DR03-F005",
+      "claim_label": "UNKNOWN",
+      "topic": "Claude Code identity and clean-room isolation",
+      "claim": "Claude Code subscription or OAuth versus API billing, provider-attested actual model identity, live network posture, and complete isolation from managed settings or OS credential stores remain unproven for the intended worker deployment.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "L-NETWORK",
+        "L-ROUTING",
+        "S-CLAUDE-CONFIG"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Unattended Claude Code execution remains blocked; config-directory relocation alone must not be treated as clean-room proof."
+    },
+    {
+      "finding_id": "DR03-F006",
+      "claim_label": "CLAIMED",
+      "topic": "Codex CLI automation",
+      "claim": "OpenAI documentation describes codex exec, JSONL event output, output-to-file, caller-supplied final output schema validation, model and reasoning configuration, sandbox and approval policies, config-home relocation, ephemeral sessions, resume behavior, CI guidance, and analytics surfaces.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-CODEX-NONINTERACTIVE",
+        "S-CODEX-CLI-CONFIG"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Codex CLI is the strongest first-party adapter candidate once authentication provenance and local containment are established."
+    },
+    {
+      "finding_id": "DR03-F007",
+      "claim_label": "OBSERVED",
+      "topic": "Codex CLI local controls",
+      "claim": "Installed codex-cli 0.144.1 exposed exec, model, sandbox, config, and profile controls in captured static help.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "L-CAP-MATRIX"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "The adapter can be designed around explicit read-only sandbox and profile controls, while rejecting unsafe bypass modes."
+    },
+    {
+      "finding_id": "DR03-F008",
+      "claim_label": "UNKNOWN",
+      "topic": "Codex CLI auth and full disablement",
+      "claim": "The installed Codex authentication route, plan versus API billing, actual model identity, and complete MCP, hooks, plugins, skills, and inherited-configuration disablement were not proven.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "L-CAP-MATRIX",
+        "L-ROUTING"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Codex CLI remains blocked for unattended use despite its strong output and sandbox surfaces."
+    },
+    {
+      "finding_id": "DR03-F009",
+      "claim_label": "CLAIMED",
+      "topic": "Gemini CLI automation",
+      "claim": "Google documentation describes headless prompting, text, JSON and streaming JSON output, model selection, sandboxing, approval modes, tool and MCP restrictions, session controls, extension or skill administration, and telemetry configuration.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-GEMINI-HEADLESS",
+        "S-GEMINI-CONFIG"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Gemini CLI is an automation candidate if its native output envelope is normalized and containment is explicitly configured."
+    },
+    {
+      "finding_id": "DR03-F010",
+      "claim_label": "UNKNOWN",
+      "topic": "Gemini CLI strict schema and containment",
+      "claim": "User-supplied strict final-response schema validation, the live authentication and billing route, and complete containment for installed Gemini CLI 0.46.0 remain unproven.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "L-CAP-MATRIX",
+        "S-GEMINI-HEADLESS",
+        "S-GEMINI-CONFIG"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "A future adapter should normalize the documented native envelope rather than claim an unproven custom-schema contract."
+    },
+    {
+      "finding_id": "DR03-F011",
+      "claim_label": "CLAIMED",
+      "topic": "OpenCode programmatic surface",
+      "claim": "OpenCode documentation describes a headless HTTP server with OpenAPI and event surfaces, plus agent permissions capable of denying tools.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OPENCODE-SERVER",
+        "S-OPENCODE-PERMS"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "The documented server surface is the preferred integration point for research, not terminal scraping."
+    },
+    {
+      "finding_id": "DR03-F012",
+      "claim_label": "UNKNOWN",
+      "topic": "OpenCode provider provenance",
+      "claim": "OpenCode plan authentication support, configured and actual upstream provider, provider fallback behavior, serving model identity, config-root isolation, and a stable strict final-output proof contract remain unproven.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "L-CAP-MATRIX",
+        "L-ROUTING",
+        "S-OPENCODE-SERVER",
+        "S-OPENCODE-PERMS"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "OpenCode cannot yet satisfy independence-critical routing or unattended proof requirements."
+    },
+    {
+      "finding_id": "DR03-F013",
+      "claim_label": "OBSERVED",
+      "topic": "Grok Build local surface",
+      "claim": "Installed grok 0.2.99 exposed a single-run headless mode, JSON or schema output, model selection, no-subagents, plan permission mode, and web-search disablement in captured static help.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "L-CAP-MATRIX"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Grok Build has a credible adapter surface, but the installed-version controls must be treated as host-specific evidence."
+    },
+    {
+      "finding_id": "DR03-F014",
+      "claim_label": "CONFLICTING",
+      "topic": "Grok Build version alignment",
+      "claim": "Current xAI documentation describes headless machine-readable execution and usage or cost telemetry, but it may describe a newer surface than installed grok 0.2.99; current public documentation cannot overwrite captured local help.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-XAI-BUILD",
+        "L-CAP-MATRIX"
+      ],
+      "local_evidence_relationship": "NOT_COMPARABLE",
+      "decision_impact": "Grok Build remains blocked until a version-matched official reference and local adapter conformance check resolve the mismatch."
+    },
+    {
+      "finding_id": "DR03-F015",
+      "claim_label": "OBSERVED",
+      "topic": "AGY local surface",
+      "claim": "Installed AGY 1.1.1 exposed print, model, plan mode, sandbox, and print-timeout flags in captured static help.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "L-CAP-MATRIX"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "The local binary has a headless-looking surface, but that alone is not an official unattended proof contract."
+    },
+    {
+      "finding_id": "DR03-F016",
+      "claim_label": "CONFLICTING",
+      "topic": "AGY unattended automation",
+      "claim": "The locally observed AGY print flag coexists with reviewed official material that was primarily interactive and codelab-oriented and did not establish stable machine-readable export, deterministic exit behavior, or complete containment.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-AGY-CODELABS",
+        "L-CAP-MATRIX"
+      ],
+      "local_evidence_relationship": "NOT_COMPARABLE",
+      "decision_impact": "AGY should remain research-only or an operator-supervised manual receipt path; terminal or UI scraping is rejected."
+    },
+    {
+      "finding_id": "DR03-F017",
+      "claim_label": "CLAIMED",
+      "topic": "OpenRouter API controls",
+      "claim": "OpenRouter documentation describes structured outputs for compatible routes, explicit model and provider routing, fallback controls, data-policy selection, normalized usage, request metadata, and observability integrations.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OPENROUTER-API"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "OpenRouter can support a tightly governed API fallback profile after privacy and cost approval."
+    },
+    {
+      "finding_id": "DR03-F018",
+      "claim_label": "INFERRED",
+      "topic": "OpenRouter authority boundary",
+      "claim": "OpenRouter routing metadata can support fallback provenance but cannot enforce local shell, filesystem, process, or host containment and cannot convert router-reported metadata into provider-attested model identity.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OPENROUTER-API",
+        "L-ROUTING"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "OpenRouter must remain API fallback infrastructure, never a local sandbox, plan-auth authority, or identity oracle."
+    },
+    {
+      "finding_id": "DR03-F019",
+      "claim_label": "OBSERVED",
+      "topic": "Mechanical mutation risk",
+      "claim": "Some common validation commands can mutate the worktree or install dependencies; the accepted offline lane excludes such commands and requires an allowlisted read-only command set with explicit authority limits.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "L-MECHANICAL",
+        "L-NETWORK"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Mechanical automation must be version-pinned, offline, hash-recorded, and validator-specific rather than treated as universally harmless."
+    },
+    {
+      "finding_id": "DR03-F020",
+      "claim_label": "INFERRED",
+      "topic": "Adapter priority",
+      "claim": "Codex CLI and Claude Code have the strongest combined first-party structured-output and containment surfaces; Gemini CLI is a secondary native-envelope candidate; OpenCode, Grok Build, and AGY require materially more provenance or containment evidence.",
+      "confidence": "MEDIUM",
+      "source_refs": [
+        "S-CODEX-NONINTERACTIVE",
+        "S-CODEX-CLI-CONFIG",
+        "S-CLAUDE-HEADLESS",
+        "S-CLAUDE-CONFIG",
+        "S-GEMINI-HEADLESS",
+        "S-GEMINI-CONFIG",
+        "S-OPENCODE-SERVER",
+        "S-XAI-BUILD",
+        "S-AGY-CODELABS",
+        "L-CAP-MATRIX"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Conformance research should prioritize Codex CLI and Claude Code without authorizing either for unattended use."
+    },
+    {
+      "finding_id": "DR03-F021",
+      "claim_label": "PROPOSED",
+      "topic": "Fail-closed promotion gate",
+      "claim": "A model-capable adapter should become executable only after authentication authorization, version pinning, effective-config capture, prohibited-surface conformance, network-policy proof, model or provider evidence, structured receipt validation, and failure-path testing for the intended deployment.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "L-ROUTING",
+        "L-NETWORK",
+        "DR-03-REPORT.md"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "UNKNOWN, CLAIMED, or CONFLICTING containment states remain non-executable by construction."
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "DR03-C001",
+      "sources": [
+        "S-XAI-BUILD",
+        "L-CAP-MATRIX"
+      ],
+      "conflict": "Current Grok Build public documentation may describe a newer product surface than installed grok 0.2.99, whose captured help exposes a specific set of schema and containment flags.",
+      "resolution_status": "CARRIED",
+      "next_evidence": "Obtain a version-matched official CLI reference and run a static, non-authenticated adapter conformance check against the installed binary."
+    },
+    {
+      "id": "DR03-C002",
+      "sources": [
+        "S-AGY-CODELABS",
+        "L-CAP-MATRIX"
+      ],
+      "conflict": "AGY 1.1.1 exposes a local print flag, while reviewed official material did not establish a stable unattended machine-readable proof contract.",
+      "resolution_status": "CARRIED",
+      "next_evidence": "Obtain an official versioned AGY CLI contract covering invocation, output schema, exit behavior, containment controls, authentication renewal, and support status."
+    },
+    {
+      "id": "DR03-C003",
+      "sources": [
+        "S-OPENCODE-SERVER",
+        "S-OPENCODE-PERMS",
+        "L-CAP-MATRIX"
+      ],
+      "conflict": "OpenCode can expose a configured provider/model string while actual serving provider, fallback behavior, and model identity remain unverified.",
+      "resolution_status": "CARRIED",
+      "next_evidence": "Document and locally verify provider-fallback disablement plus a receipt that captures actual upstream provider and model for a permitted test route."
+    },
+    {
+      "id": "DR03-C004",
+      "sources": [
+        "S-CLAUDE-CONFIG",
+        "S-CODEX-CLI-CONFIG",
+        "S-GEMINI-CONFIG",
+        "L-NETWORK",
+        "L-ROUTING"
+      ],
+      "conflict": "Vendor documentation describes sandbox and configuration controls, while the accepted local packet requires installed-version proof that every prohibited inherited and agentic surface is disabled.",
+      "resolution_status": "CARRIED",
+      "next_evidence": "Run version-pinned, static-first conformance probes under the exact worker OS account or disposable worker design without invoking a model until authentication and terms authorize it."
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "DR03-U001",
+      "question": "What exact authentication and billing route does each installed model-capable CLI use?",
+      "why_unknown": "No account login, credential inspection, or live invocation was permitted or performed.",
+      "blocking_scope": "Unattended execution for every model-capable local adapter.",
+      "next_evidence": "Carry DR-01 authorization findings into a vendor-approved, deployment-specific authentication design and later bounded conformance receipt."
+    },
+    {
+      "id": "DR03-U002",
+      "question": "What provider-attested actual model identity is returned for each permitted live route?",
+      "why_unknown": "All live model probes were NOT_RUN and configured or displayed model names are not provider attestation.",
+      "blocking_scope": "Model identity proof and independence claims.",
+      "next_evidence": "Define an approved live receipt format and capture provider or API metadata only after authentication and privacy gates authorize a bounded invocation."
+    },
+    {
+      "id": "DR03-U003",
+      "question": "Can inherited configuration be completely isolated for Claude Code, Codex, Gemini CLI, OpenCode, Grok Build, and AGY?",
+      "why_unknown": "Static help and public documentation do not prove the absence of managed settings, OS credential stores, global config, repository instructions, plugins, hooks, skills, memory, or extensions on the intended worker.",
+      "blocking_scope": "Clean-room and unattended adapter promotion.",
+      "next_evidence": "Run installed-version conformance under a dedicated OS account or disposable worker and record effective settings plus negative checks for every prohibited surface."
+    },
+    {
+      "id": "DR03-U004",
+      "question": "What stable, versioned exit-code contracts apply across the model tools?",
+      "why_unknown": "The reviewed report established some invocation surfaces but did not establish comprehensive versioned success, schema-failure, timeout, auth-failure, and sandbox-failure exit semantics.",
+      "blocking_scope": "Reliable orchestration, retry classification, and proof normalization.",
+      "next_evidence": "Collect official exit-code references or execute non-model static conformance cases where possible, followed by bounded authorized failure-path tests."
+    },
+    {
+      "id": "DR03-U005",
+      "question": "Do Gemini CLI, OpenCode, and AGY support caller-supplied strict final-output schemas?",
+      "why_unknown": "The reviewed sources established native envelopes or programmatic surfaces but not a Codex-style final-response schema guarantee for these targets.",
+      "blocking_scope": "Direct proof-object emission without a normalizer.",
+      "next_evidence": "Obtain current official schema-output documentation and verify against the installed version without inferring from generic JSON output."
+    },
+    {
+      "id": "DR03-U006",
+      "question": "Can OpenCode deterministically disable provider fallback and expose actual upstream provider and model identity?",
+      "why_unknown": "Configured provider/model selection and tool permissions do not establish actual serving provenance or fallback behavior.",
+      "blocking_scope": "OpenCode use in independence-critical or deterministic routes.",
+      "next_evidence": "Obtain official provider-routing documentation and a permitted route receipt proving fallback disablement and actual upstream identity."
+    },
+    {
+      "id": "DR03-U007",
+      "question": "What containment contract applies specifically to installed Grok Build 0.2.99?",
+      "why_unknown": "Current public documentation may target a different release and local help alone does not prove complete containment or auth isolation.",
+      "blocking_scope": "Grok Build operator-triggered or automated promotion.",
+      "next_evidence": "Acquire version-matched official documentation and run static adapter conformance for every prohibited surface."
+    },
+    {
+      "id": "DR03-U008",
+      "question": "Does AGY have an officially supported unattended receipt or export contract?",
+      "why_unknown": "A local print flag exists, but reviewed official public material was interactive or codelab-oriented and did not define stable machine output, exit behavior, or containment.",
+      "blocking_scope": "Any unattended AGY adapter.",
+      "next_evidence": "Vendor documentation or clarification explicitly covering unattended CLI use, output schema, exit codes, authentication, and containment."
+    },
+    {
+      "id": "DR03-U009",
+      "question": "Which OpenRouter routes enforce the required retention and zero-data-retention posture?",
+      "why_unknown": "Retention, ZDR, cost, and serving identity are route and provider specific and no API call or route-profile approval occurred in this track.",
+      "blocking_scope": "OpenRouter fallback enablement for non-public or sensitive repository data.",
+      "next_evidence": "Resolve in DR-05 with a pinned provider and model, explicit data policy, fallback setting, price cap, and provenance receipt."
+    }
+  ],
+  "not_run": [
+    {
+      "activity": "Provider login or account inspection",
+      "reason": "Forbidden by campaign run control and unnecessary for bounded public research."
+    },
+    {
+      "activity": "Credential, token, cookie, keychain, session-file, or secret inspection",
+      "reason": "Forbidden by campaign boundaries and unsafe for a research track."
+    },
+    {
+      "activity": "Live model invocation through any local CLI",
+      "reason": "The accepted local posture was static-only and authentication, terms, containment, and privacy gates were unresolved."
+    },
+    {
+      "activity": "OpenRouter or direct provider API call",
+      "reason": "API calls and user credentials were forbidden; OpenRouter remained static-only fallback research."
+    },
+    {
+      "activity": "Live schema, timeout, exit-code, resume, or failure-path conformance tests",
+      "reason": "These would require model or authenticated execution and were outside the bounded research authorization."
+    },
+    {
+      "activity": "Repository or GitHub mutation",
+      "reason": "This track was external research only, not implementation or repository audit work."
+    },
+    {
+      "activity": "Final auditor-fleet architecture synthesis",
+      "reason": "Synthesis is gated on acceptance of all five research tracks."
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "DR03-R001",
+      "recommendation": "Keep deterministic mechanical validation enabled as the only current automatic lane.",
+      "status": "PROPOSED",
+      "rationale": "It is the only lane with accepted local execution evidence and can operate offline with bounded, explicit validator authority.",
+      "prerequisites": [
+        "Maintain an allowlisted non-mutating command set",
+        "Pin validator versions and record hashes, argv, stdout, stderr, and exit status",
+        "Document each validator's authority limit"
+      ]
+    },
+    {
+      "id": "DR03-R002",
+      "recommendation": "Do not promote any model-capable CLI to unattended execution until the intended authentication mode is authorized and a version-pinned local conformance probe proves all required disablements.",
+      "status": "BLOCKED",
+      "rationale": "Headless or JSON capability does not establish permission, plan billing provenance, actual model identity, or containment.",
+      "prerequisites": [
+        "Accepted DR-01 authentication and terms disposition for the deployment",
+        "Dedicated worker or disposable worker containment design",
+        "Effective-config and prohibited-surface conformance receipt",
+        "Fail-closed timeout, exit, auth, and sandbox failure handling"
+      ]
+    },
+    {
+      "id": "DR03-R003",
+      "recommendation": "Prioritize Codex CLI and Claude Code for the first adapter conformance work.",
+      "status": "PROPOSED",
+      "rationale": "They expose the clearest combined first-party structured-output and containment surfaces among the reviewed local agents.",
+      "prerequisites": [
+        "Version pinning",
+        "Authentication authorization",
+        "Local installed-version conformance",
+        "Proof normalizer and exact receipt contract"
+      ]
+    },
+    {
+      "id": "DR03-R004",
+      "recommendation": "Treat Gemini CLI as a native-envelope adapter rather than a caller-supplied custom-schema adapter unless current official documentation and the installed version prove otherwise.",
+      "status": "PROPOSED",
+      "rationale": "JSON and streaming JSON are documented, but a strict caller-supplied final-output schema contract was not established.",
+      "prerequisites": [
+        "Native envelope versioning",
+        "Normalizer schema tests",
+        "Explicit sandbox and tool policy",
+        "Authentication and containment authorization"
+      ]
+    },
+    {
+      "id": "DR03-R005",
+      "recommendation": "Keep OpenCode out of independence-critical routes until actual upstream provider, serving model, and fallback behavior can be captured deterministically.",
+      "status": "DEFERRED",
+      "rationale": "Configured provider/model strings and agent permissions are insufficient evidence of actual upstream identity or deterministic routing.",
+      "prerequisites": [
+        "Official provider-routing contract",
+        "Deterministic fallback disablement",
+        "Actual upstream provider and model receipt",
+        "Clean configuration-root proof"
+      ]
+    },
+    {
+      "id": "DR03-R006",
+      "recommendation": "Keep Grok Build operator-triggered or blocked until installed-version containment and authentication isolation are proven.",
+      "status": "DEFERRED",
+      "rationale": "The local CLI exposes useful controls, but current public documentation may not match installed 0.2.99 and the full deny matrix is unproven.",
+      "prerequisites": [
+        "Version-matched official documentation",
+        "External sandbox or dedicated worker isolation",
+        "Complete shell, file, network, extension, config, and subagent conformance",
+        "Authorized authentication route"
+      ]
+    },
+    {
+      "id": "DR03-R007",
+      "recommendation": "Do not build an unattended AGY adapter from terminal scraping or UI automation.",
+      "status": "REJECTED",
+      "rationale": "A local print flag does not establish a stable supported machine-readable contract, deterministic exit behavior, or complete containment.",
+      "prerequisites": []
+    },
+    {
+      "id": "DR03-R008",
+      "recommendation": "Require every OpenRouter fallback profile to pin model and provider, disable unapproved fallback, enforce data policy and price caps, and record router metadata.",
+      "status": "PROPOSED",
+      "rationale": "OpenRouter is a broker and fallback surface, not a local sandbox or identity authority; route-specific provenance and privacy controls are mandatory.",
+      "prerequisites": [
+        "Accepted DR-05 route profile",
+        "Pinned provider and model",
+        "Explicit retention or ZDR disposition",
+        "Hard cost cap and fallback policy",
+        "Request and usage metadata receipt"
+      ]
+    },
+    {
+      "id": "DR03-R009",
+      "recommendation": "Require every adapter receipt to capture version, requested model, observed or displayed model, provider evidence, effective configuration, prohibited-surface checks, network policy, stdout, stderr, exit code, usage metadata, and artifact hashes.",
+      "status": "PROPOSED",
+      "rationale": "A uniform receipt separates configured intent from observed execution and lets the broker fail closed on missing proof.",
+      "prerequisites": [
+        "Canonical adapter receipt schema",
+        "Redaction rules",
+        "Exact-head request binding",
+        "Normalizer validation",
+        "Artifact hashing and chain-of-custody fields"
+      ]
+    }
+  ],
+  "synthesis_implications": [
+    "Authentication authorization and automation capability are separate gates; structured output or a headless flag does not authorize the credential path.",
+    "Current vendor documentation must extend, not overwrite, the accepted static host record and installed-version help.",
+    "UNKNOWN, CLAIMED, and CONFLICTING authentication or containment states must remain non-executable.",
+    "Mechanical validation must remain a first-class no-LLM route with validator-specific authority limits.",
+    "OpenRouter may contribute fallback provenance but cannot prove local containment or transform routed metadata into provider attestation.",
+    "Environment failure must fail closed and must not silently promote to a stronger, more expensive, or less private model route."
+  ],
+  "source_ledger": [
+    {
+      "source_id": "S-CLAUDE-HEADLESS",
+      "title": "Claude Code programmatic and headless documentation",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR03-Q01",
+        "DR03-Q02",
+        "DR03-Q03",
+        "DR03-Q04",
+        "DR03-Q05"
+      ]
+    },
+    {
+      "source_id": "S-CLAUDE-CONFIG",
+      "title": "Claude Code settings, environment, sandbox, authentication, and security documentation",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR03-Q06",
+        "DR03-Q07",
+        "DR03-Q08",
+        "DR03-Q09",
+        "DR03-Q10"
+      ]
+    },
+    {
+      "source_id": "S-CODEX-NONINTERACTIVE",
+      "title": "Codex non-interactive mode documentation",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR03-Q01",
+        "DR03-Q02",
+        "DR03-Q03",
+        "DR03-Q05",
+        "DR03-Q10"
+      ]
+    },
+    {
+      "source_id": "S-CODEX-CLI-CONFIG",
+      "title": "Codex CLI configuration, authentication, and security references",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR03-Q04",
+        "DR03-Q06",
+        "DR03-Q07",
+        "DR03-Q08",
+        "DR03-Q09",
+        "DR03-Q10"
+      ]
+    },
+    {
+      "source_id": "S-GEMINI-HEADLESS",
+      "title": "Gemini CLI headless and automation documentation",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR03-Q01",
+        "DR03-Q02",
+        "DR03-Q03",
+        "DR03-Q04",
+        "DR03-Q05"
+      ]
+    },
+    {
+      "source_id": "S-GEMINI-CONFIG",
+      "title": "Gemini CLI configuration and command reference",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR03-Q06",
+        "DR03-Q07",
+        "DR03-Q08",
+        "DR03-Q09",
+        "DR03-Q10"
+      ]
+    },
+    {
+      "source_id": "S-OPENCODE-SERVER",
+      "title": "OpenCode server and OpenAPI documentation",
+      "publisher": "OpenCode",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR03-Q01",
+        "DR03-Q02",
+        "DR03-Q03",
+        "DR03-Q05",
+        "DR03-Q12"
+      ]
+    },
+    {
+      "source_id": "S-OPENCODE-PERMS",
+      "title": "OpenCode agents, permissions, providers, and tools documentation",
+      "publisher": "OpenCode",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR03-Q04",
+        "DR03-Q06",
+        "DR03-Q07",
+        "DR03-Q08",
+        "DR03-Q09",
+        "DR03-Q11",
+        "DR03-Q12"
+      ]
+    },
+    {
+      "source_id": "S-XAI-BUILD",
+      "title": "Grok Build overview, CLI reference, enterprise documentation, and changelog",
+      "publisher": "xAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR03-Q01",
+        "DR03-Q02",
+        "DR03-Q03",
+        "DR03-Q04",
+        "DR03-Q05",
+        "DR03-Q09",
+        "DR03-Q10",
+        "DR03-Q13"
+      ]
+    },
+    {
+      "source_id": "S-AGY-CODELABS",
+      "title": "Google Antigravity and AGY official codelabs",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR03-Q01",
+        "DR03-Q02",
+        "DR03-Q07",
+        "DR03-Q10",
+        "DR03-Q14"
+      ]
+    },
+    {
+      "source_id": "S-OPENROUTER-API",
+      "title": "OpenRouter API, structured output, routing, metadata, and privacy documentation",
+      "publisher": "OpenRouter",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR03-Q01",
+        "DR03-Q02",
+        "DR03-Q03",
+        "DR03-Q04",
+        "DR03-Q08",
+        "DR03-Q09",
+        "DR03-Q10"
+      ]
+    }
+  ]
+}

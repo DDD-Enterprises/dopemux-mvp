@@ -1,0 +1,329 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dopemux://schemas/deep-research/auditor-fleet-track-findings-v1",
+  "title": "Auditor Fleet Deep Research Track Findings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "campaign_id",
+    "track_id",
+    "status",
+    "research_date",
+    "questions",
+    "findings",
+    "contradictions",
+    "unknowns",
+    "not_run",
+    "recommendations",
+    "synthesis_implications",
+    "source_ledger"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "campaign_id": {
+      "const": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13"
+    },
+    "track_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "COMPLETE",
+        "COMPLETE_WITH_UNKNOWNS",
+        "BLOCKED_INSUFFICIENT_INPUTS",
+        "BLOCKED_SOURCE_FAILURE"
+      ]
+    },
+    "research_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "question_id",
+          "question",
+          "answer_status"
+        ],
+        "properties": {
+          "question_id": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "answer_status": {
+            "enum": [
+              "ANSWERED",
+              "PARTIAL",
+              "UNKNOWN",
+              "CONFLICTING"
+            ]
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding_id",
+          "claim_label",
+          "topic",
+          "claim",
+          "confidence",
+          "source_refs",
+          "local_evidence_relationship",
+          "decision_impact"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string"
+          },
+          "claim_label": {
+            "enum": [
+              "OBSERVED",
+              "INFERRED",
+              "PROPOSED",
+              "UNKNOWN",
+              "CONFLICTING",
+              "CLAIMED",
+              "STALE"
+            ]
+          },
+          "topic": {
+            "type": "string"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "confidence": {
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "VERIFIED"
+            ]
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "local_evidence_relationship": {
+            "enum": [
+              "SUPPORTS",
+              "CONTRADICTS",
+              "EXTENDS",
+              "NOT_COMPARABLE",
+              "LOCAL_EVIDENCE_ABSENT"
+            ]
+          },
+          "decision_impact": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "sources",
+          "conflict",
+          "resolution_status",
+          "next_evidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "conflict": {
+            "type": "string"
+          },
+          "resolution_status": {
+            "enum": [
+              "RESOLVED",
+              "CARRIED",
+              "BLOCKING"
+            ]
+          },
+          "next_evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "question",
+          "why_unknown",
+          "blocking_scope",
+          "next_evidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "why_unknown": {
+            "type": "string"
+          },
+          "blocking_scope": {
+            "type": "string"
+          },
+          "next_evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "not_run": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "activity",
+          "reason"
+        ],
+        "properties": {
+          "activity": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "recommendation",
+          "status",
+          "rationale",
+          "prerequisites"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "recommendation": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PROPOSED",
+              "BLOCKED",
+              "REJECTED",
+              "DEFERRED"
+            ]
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "prerequisites": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "synthesis_implications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_ledger": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_id",
+          "title",
+          "publisher",
+          "source_class",
+          "publication_or_update_date",
+          "access_date",
+          "questions_supported"
+        ],
+        "properties": {
+          "source_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "source_class": {
+            "enum": [
+              "OFFICIAL_DOCUMENTATION",
+              "OFFICIAL_TERMS",
+              "OFFICIAL_PRICING",
+              "OFFICIAL_SECURITY",
+              "OFFICIAL_REPOSITORY",
+              "STANDARD",
+              "PEER_REVIEWED_RESEARCH",
+              "INDEPENDENT_SECURITY_RESEARCH",
+              "SECONDARY_REPORTING"
+            ]
+          },
+          "publication_or_update_date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "access_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "questions_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

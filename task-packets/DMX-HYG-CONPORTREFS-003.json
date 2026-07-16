@@ -1,7 +1,7 @@
 {
   "id": "DMX-HYG-CONPORTREFS-003",
   "project": "dopemux-mvp",
-  "target": "Repoint the 6 broken ConPort command tool references to ConPort's real 17-tool surface, then make the fleet drift gate tool-granular so tool-name drift is caught in CI.",
+  "target": "Repoint broken ConPort command tool references to the runtime-backed JSON-RPC dispatch surface, then make the fleet drift gate tool-granular so tool-name drift is caught in CI.",
   "invariants": [
     "Every event stream must have >=1 publisher and >=1 consumer.",
     "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
@@ -48,7 +48,7 @@
   },
   "pr": {
     "title": "fix(mcp): fix 6 broken ConPort command refs + tighten drift gate",
-    "body": "Repoints .claude/commands tool refs to ConPort's real 17-tool surface and upgrades the drift gate from server-granularity to tool-granularity so this regression cannot recur (E4).",
+    "body": "Repoints .claude/commands tool refs to the runtime-backed ConPort JSON-RPC dispatch surface and upgrades the drift gate from server-granularity to tool-granularity so this regression cannot recur (E4).",
     "base": "main"
   },
   "steps": [
@@ -64,7 +64,7 @@
       "id": "step-2",
       "task": "Extend find_unknown_command_tool_surfaces to validate TOOL names, not just server names.",
       "validation": [
-        "fleet_catalog.py regex captures the tool name (group 2), validated against each server's snapshotted tools/list.",
+        "fleet_catalog.py regex captures the tool name (group 2), validated against the committed ConPort JSON-RPC dispatch snapshot.",
         "A synthetic bad tool ref fails the gate (negative test added); all real refs pass."
       ]
     },
