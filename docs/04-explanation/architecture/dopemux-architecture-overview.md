@@ -997,45 +997,6 @@ Level 4: ☕!!! (screen dim + mandatory break)
 
 ---
 
-### 🧠 Session Intelligence (services/session_intelligence/)
-
-**What It Does:**
-Learns from your work sessions to improve future suggestions.
-
-**What It Tracks:**
-```
-Session Data:
-• What you worked on
-• How long you focused
-• When you took breaks
-• Energy patterns throughout day
-• Productive vs. struggling times
-• Context switches
-• Interruption sources
-```
-
-**Machine Learning:**
-```
-Training Data: Past 30 days of sessions
-    ↓
-Models Trained:
-• Optimal work duration predictor
-• Best time-of-day for complex tasks
-• Break timing optimizer
-• Energy pattern forecaster
-    ↓
-Predictions:
-• "You're most productive 10am-12pm"
-• "Take breaks every 45 minutes"
-• "Avoid complex tasks after 3pm"
-```
-
-**Files:**
-- `services/session_intelligence/learner.py` - ML models
-- `services/session_intelligence/analyzer.py` - Pattern analysis
-
----
-
 ### ⚡ Energy Trends (services/energy-trends/)
 
 **What It Does:**

@@ -46,6 +46,11 @@ Accepted in ADR-DCP-MCP-RO-0009. New ChatGPT exposure contracts use an opaque `t
 - *Rejected alternative:* keep public `project_id` / static backend binding as the remote exposure identity. Rejected: it blurs consent with backend/runtime identity and cannot safely distinguish primary checkouts, sibling worktrees, reserved singletons, and stale or wrong-project listeners.
 - *Implementation note:* Existing facade docs and code may still contain earlier `project_id` terminology. `TP-DCP-MCP-RO-0009` records the accepted contract; runtime/API migration remains a separate implementation slice.
 
+### D8 — Runtime registry and catalog are operational evidence, never consent
+TP-DCP-MCP-RO-0011 joins an already-resolved exposure target to the canonical MCP catalog and operational runtime registry through explicit service-family mappings and exact project/worktree scope checks. A matching record can produce internal candidate state only; it cannot make a family live, owned, or callable.
+- *Rejected alternative:* treat a catalog declaration, listening port, runtime instance, or lease as exposure authorization. Rejected: those surfaces are operational state and can be stale, ambiguous, or bound to another project.
+- *Implementation note:* `to_mcp_wrapper` and `to_compose_rest` remain blocked. Live protocol fingerprints, ownership evidence, mount/data scope, and adapter calls are later gates.
+
 ## Open Items Carried Forward
 
 - `UNKNOWN` (inventory `unresolved_questions`): *"Should dope-memory be queried directly, or should all chronicle reads be multiplexed through a facade wrapper to normalize output for ChatGPT?"* — to be resolved in 0005.

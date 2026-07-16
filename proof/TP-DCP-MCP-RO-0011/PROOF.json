@@ -1,0 +1,81 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0011",
+  "title": "Read-Only Runtime Registry And Catalog Join",
+  "branch": "codex/dcp-mcp-ro-0011-runtime-catalog-join",
+  "base_branch": "main",
+  "base_sha": "b176747b339685e781de04268c46b7ae123abfbf",
+  "implementation_commit": "485c87444f90235853f5e1b52c64c1ed852bdd1a",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1041",
+  "scope": "Pure facade-local join of TP-0010 resolved targets with canonical catalog and operational runtime evidence. No live I/O, backend calls, ownership proof, adapter rewiring, or Task Orchestrator exposure.",
+  "runtime_code_changed": true,
+  "backend_code_changed": false,
+  "network_or_socket_code_introduced": false,
+  "executor_provenance": {
+    "implementation": "Codex",
+    "codereview": "Gemini external inspection checkpoint, GitHub review reconciliation, and local review",
+    "note": "The external Gemini final review call was unavailable because the configured provider quota returned 429 RESOURCE_EXHAUSTED; no clean external verdict is claimed."
+  },
+  "files_changed": [
+    "services/dcp-readonly-facade/src/dcp_facade/runtime_catalog_join.py",
+    "services/dcp-readonly-facade/tests/test_runtime_catalog_join.py",
+    "schemas/mcp/fleet-catalog.schema.json",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/RUNTIME_CATALOG_JOIN_CONTRACT.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/DECISIONS.md",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011.json",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011.md",
+    "proof/TP-DCP-MCP-RO-0011/PROOF.json",
+    "proof/TP-DCP-MCP-RO-0011/AUDIT.md",
+    "proof/TP-DCP-MCP-RO-0011/AUDITOR_REPORT.md",
+    "proof/TP-DCP-MCP-RO-0011/COMMAND_LOG.md"
+  ],
+  "validation": {
+    "PASS": [
+      {"command": "pytest -q services/dcp-readonly-facade/tests/test_runtime_catalog_join.py", "exit_code": 0, "result": "11 passed"},
+      {"command": "pytest -q services/dcp-readonly-facade/tests", "exit_code": 0, "result": "PASS; 1 live optional test skipped"},
+      {"command": "pytest -q tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py", "exit_code": 0, "result": "32 passed"},
+      {"command": "python -m compileall -q services/dcp-readonly-facade", "exit_code": 0},
+      {"command": "TP packet validation against dopetask-canonical-spec.json", "exit_code": 0},
+      {"command": "fleet-catalog.schema.json Draft7Validator.check_schema", "exit_code": 0},
+      {"command": "AST purity scan for forbidden I/O imports/calls", "exit_code": 0},
+      {"command": "secret scan over changed files", "exit_code": 0},
+      {"command": "git diff --check", "exit_code": 0},
+      {"command": "pre-commit run --files scoped packet files", "exit_code": 0}
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      {"command": "External Gemini codereview final step", "reason": "provider returned 429 RESOURCE_EXHAUSTED; configured quota is zero", "mitigation": "external inspection checkpoint reported zero issues; complete local review and deterministic validation performed"},
+      {"command": "Live protocol, ownership, mount/data scope, freshness, Docker, socket, backend, tunnel, and authentication checks", "reason": "explicitly out of scope for TP-0011"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "gemini-cli",
+    "auditor_model": "gemini",
+    "invocation": "Gemini codereview step 1 inspected the changed files and returned issues_found=0; step 2 was attempted and returned provider quota error 429 RESOURCE_EXHAUSTED. Local review and deterministic validation completed as mitigation.",
+    "exit_code": 0,
+    "report_path": "proof/TP-DCP-MCP-RO-0011/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Added the two catalog schema fields already present in the restored task-orchestrator catalog entry.",
+      "Removed the repository-rejected auxiliary superpowers plan artifact from the packet allowlist.",
+      "Made RuntimeCatalogEntry.callable computed and non-overridable so internal and public non-callable state cannot diverge.",
+      "Aligned the packet public-serialization invariant with the redacted public capability shape.",
+      "Treat any non-mapping runtime registry member as malformed input so mixed valid and invalid records fail closed."
+    ],
+    "remaining_risks": [
+      "External Gemini final review verdict unavailable due to provider quota.",
+      "Live liveness, protocol, ownership, mount/data scope, freshness, and backend authorization remain later gates.",
+      "Existing v1 facade tools remain project_id-based and are intentionally not rewired."
+    ],
+    "skip_reason": null
+  },
+  "residual_risks": [
+    "External Gemini final review verdict unavailable due to provider quota.",
+    "No live runtime or ownership evidence is claimed.",
+    "to_mcp_wrapper and to_compose_rest remain blocked."
+  ],
+  "rollback": "Revert the merge or squash commit for PR #1041. Before merge, revert the branch commits in reverse order so implementation, proof, and PR metadata roll back together.",
+  "cleanup": "PR #1041 published; branch-owner worktree used only for scoped review fixes."
+}

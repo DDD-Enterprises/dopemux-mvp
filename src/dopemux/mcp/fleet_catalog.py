@@ -27,8 +27,34 @@ class DuplicateKeyError(MCPFleetCatalogError):
 
 _ENV_DEFAULT_RE = re.compile(r"\$\{[^:}]+:-([0-9]+)\}")
 _ENV_RE = re.compile(r"\$\{[^}]+\}")
-_MCP_TOOL_SURFACE_RE = re.compile(r"\bmcp__([A-Za-z0-9_-]+)__(?:[A-Za-z0-9_-]+|\*)")
+_MCP_TOOL_SURFACE_RE = re.compile(r"\bmcp__([A-Za-z0-9_-]+)__([A-Za-z0-9_-]+|\*)")
 _CODEX_SERVER_HEADING_RE = re.compile(r'^\[mcp_servers\."([^"]+)"\]$', re.MULTILINE)
+
+# Snapshot of the ConPort JSON-RPC dispatch map in
+# docker/mcp-servers-source/conport/enhanced_server.py. Keep this static gate
+# offline and deterministic; updating the runtime surface requires updating the
+# snapshot deliberately in the same change.
+_CONPORT_TOOL_SNAPSHOT = frozenset(
+    {
+        "conport_get_context",
+        "conport_update_context",
+        "conport_log_decision",
+        "conport_get_decisions",
+        "conport_log_progress",
+        "conport_get_progress",
+        "conport_update_progress",
+        "conport_get_recent_activity",
+        "conport_get_active_work",
+        "conport_get_custom_data",
+        "conport_save_custom_data",
+        "conport_delete_custom_data",
+        "conport_search_content",
+        "conport_fork_instance",
+        "conport_promote",
+        "conport_promote_all",
+    }
+)
+_MCP_TOOL_SNAPSHOTS = {"conport": _CONPORT_TOOL_SNAPSHOT}
 
 
 REQUIRED_SERVER_PERSONALITIES: dict[str, dict[str, str]] = {
@@ -360,6 +386,10 @@ def extract_mcp_tool_surfaces(text: str) -> list[str]:
     return [match.group(1) for match in _MCP_TOOL_SURFACE_RE.finditer(text)]
 
 
+def extract_mcp_tool_references(text: str) -> list[tuple[str, str]]:
+    return [match.groups() for match in _MCP_TOOL_SURFACE_RE.finditer(text)]
+
+
 def find_unknown_command_tool_surfaces(
     command_dir: Path,
     catalog: dict[str, Any],
@@ -368,9 +398,13 @@ def find_unknown_command_tool_surfaces(
     unknown: list[str] = []
     for path in sorted(command_dir.rglob("*.md")):
         for index, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-            for surface in extract_mcp_tool_surfaces(line):
+            for surface, tool_name in extract_mcp_tool_references(line):
                 if surface not in known:
                     unknown.append(f"{path}:{index}:{surface}")
+                    continue
+                known_tools = _MCP_TOOL_SNAPSHOTS.get(surface)
+                if known_tools is not None and tool_name != "*" and tool_name not in known_tools:
+                    unknown.append(f"{path}:{index}:{surface}:{tool_name}")
     return unknown
 
 
