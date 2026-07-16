@@ -221,6 +221,14 @@ class TestWriteProofArtifact:
         proof = json.loads(path.read_text())
         assert proof["dry_run"] is True
 
+    def test_dry_run_proof_is_not_a_passing_embedded_audit(self, tmp_path: Path) -> None:
+        plan = _make_plan(dry_run=True)
+        path = write_proof_artifact(plan, out=tmp_path, packet_id="TP-003")
+        proof = json.loads(path.read_text())
+
+        assert proof["executed"] is False
+        assert proof["embedded_audit"]["status"] == "NEEDS_SUPERVISOR"
+
     def test_proof_resolutions_include_blocking_flag(self, tmp_path: Path) -> None:
         resolutions = (
             RouteResolution(cli_name="claude-audit", available=False, blocking=True),

@@ -1,0 +1,50 @@
+{
+  "pr": 1042,
+  "items": [
+    {
+      "path": ".github/workflows/embedded-audit.yml",
+      "classification": "FIXED",
+      "summary": "Enforce required executed+provenance+PR+head; pull_request_target metadata; structured failure proofs",
+      "tests": ["test_embedded_audit_workflow_handles_pull_request_target_metadata", "test_enforce_rejects_spoof_and_mismatch_shapes", "test_collector_and_enforce_parity_matrix"]
+    },
+    {
+      "path": ".github/workflows/pr-steward.yml",
+      "classification": "FIXED",
+      "summary": "Validate workflow-run identity; exact artifact name; proof-bound PR number for upload name",
+      "tests": ["test_pr_steward_workflow_uses_completed_independent_audit_artifact"]
+    },
+    {
+      "path": ".github/workflows/embedded-audit.yml",
+      "line_hint": 158,
+      "classification": "FIXED",
+      "summary": "Documented intentional soft runner exit; hard enforce is authoritative; synthetic error cannot pass",
+      "tests": ["test_synthetic_runner_error_payload_cannot_pass_enforcement"]
+    },
+    {
+      "path": ".github/workflows/embedded-audit.yml",
+      "line_hint": 167,
+      "classification": "FIXED",
+      "summary": "Missing emitter writes NEEDS_SUPERVISOR diagnostic proof without forged provenance",
+      "tests": ["test_diagnostic_failure_proof_has_no_trusted_provenance"]
+    },
+    {
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "classification": "FIXED",
+      "summary": "Added metadata, enforce, parity, and Steward workflow assertions",
+      "tests": ["test_embedded_audit_workflow_handles_pull_request_target_metadata"]
+    },
+    {
+      "path": "tools/pr_steward/collector.py",
+      "classification": "FIXED",
+      "summary": "Collector delegates to shared independent_audit_errors; negatives for provenance spoof and malformed dry_run",
+      "tests": ["test_live_collection_rejects_pass_with_executed_true_missing_provenance", "test_independent_audit_errors_rejects_malformed_dry_run_string"]
+    },
+    {
+      "path": ".github/workflows/pr-steward.yml",
+      "line_hint": 24,
+      "classification": "FIXED",
+      "summary": "Check-name migration recorded in workflow comments, packet invariants, and PR body; branch protection out of scope",
+      "tests": ["test_pr_steward_workflow_uses_completed_independent_audit_artifact"]
+    }
+  ]
+}
