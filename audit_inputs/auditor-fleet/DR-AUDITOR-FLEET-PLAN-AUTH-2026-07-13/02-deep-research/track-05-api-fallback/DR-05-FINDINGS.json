@@ -1,0 +1,859 @@
+{
+  "schema_version": "1.0.0",
+  "campaign_id": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "track_id": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+  "status": "COMPLETE_WITH_UNKNOWNS",
+  "research_date": "2026-07-13",
+  "questions": [
+    {
+      "question_id": "Q1",
+      "question": "What published subscription usage limits, rolling windows, fair-use rules, and concurrency restrictions apply?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "Q2",
+      "question": "Are plan credits exposed per request, and what can and cannot be measured?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "Q3",
+      "question": "How should plan exhaustion, throttling, and unattended high-frequency risk be represented?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q4",
+      "question": "How can OpenRouter pin model/provider, disable fallbacks, and report actual routing provenance?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q5",
+      "question": "What OpenRouter data-policy, ZDR, structured-output, parameter, and price controls exist?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q6",
+      "question": "Which direct APIs expose structured output, usage accounting, IDs, and model metadata?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q7",
+      "question": "Which routes are appropriate for each repository privacy and authority class?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q8",
+      "question": "How should API approval, hard cost caps, unknown measurements, and total cost be modeled?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q9",
+      "question": "Which routes should be allowed only for public, low-risk work?",
+      "answer_status": "ANSWERED"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "F-01",
+      "claim_label": "OBSERVED",
+      "topic": "Local evidence boundary",
+      "claim": "The inspected host evidence is static-only: no model, OpenRouter, provider API, account, or credential call was run; OpenRouter is recorded only as a future API fallback.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "PROBE_SUMMARY.md",
+        "ROUTING_CONSTRAINTS.md",
+        "MODEL_IDENTITY_OBSERVATIONS.json"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "No external documentation can upgrade OpenRouter or any API route to an observed local capability."
+    },
+    {
+      "finding_id": "F-02",
+      "claim_label": "CLAIMED",
+      "topic": "Subscription economics",
+      "claim": "Reviewed subscription products describe usage through plan-dependent rolling windows, dynamic task consumption, shared pools, progress bars, reset notifications, and fair-use qualifications rather than a stable cross-vendor per-request unit.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OAI-CODEX",
+        "S-OAI-BUSINESS",
+        "S-ANTH-USAGE",
+        "S-GOOG-APP"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Subscription capacity cannot be treated as deterministic request budgeting."
+    },
+    {
+      "finding_id": "F-03",
+      "claim_label": "UNKNOWN",
+      "topic": "Subscription measurement",
+      "claim": "A comparable per-request subscription-credit debit is not established by the reviewed official documentation.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OAI-CODEX",
+        "S-ANTH-USAGE",
+        "S-GOOG-APP"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "The system must store UNKNOWN rather than converting tokens into plan credits."
+    },
+    {
+      "finding_id": "F-04",
+      "claim_label": "UNKNOWN",
+      "topic": "Subscription concurrency",
+      "claim": "Exact concurrency ceilings for the reviewed consumer or seat-based subscription products were not established by the reviewed official sources.",
+      "confidence": "MEDIUM",
+      "source_refs": [
+        "S-OAI-CODEX",
+        "S-ANTH-USAGE",
+        "S-GOOG-APP"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Automatic worker concurrency must remain blocked or conservatively operator-limited."
+    },
+    {
+      "finding_id": "F-05",
+      "claim_label": "INFERRED",
+      "topic": "Subscription automation risk",
+      "claim": "Dynamic limits and fair-use restrictions make subscription plans unsuitable as the sole substrate for unattended high-frequency audit queues.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OAI-CODEX",
+        "S-OAI-BUSINESS",
+        "S-ANTH-USAGE",
+        "S-GOOG-APP"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Plan-backed routes should remain operator-triggered unless another track proves a sanctioned unattended mode."
+    },
+    {
+      "finding_id": "F-06",
+      "claim_label": "CLAIMED",
+      "topic": "OpenRouter routing",
+      "claim": "OpenRouter exposes model and provider selection controls including provider order/only, allow_fallbacks, require_parameters, data_collection, zdr, sorting, and max_price.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OR-ROUTING"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "A bounded OpenRouter route is technically configurable, but must be explicitly policy-pinned."
+    },
+    {
+      "finding_id": "F-07",
+      "claim_label": "CLAIMED",
+      "topic": "OpenRouter provenance",
+      "claim": "OpenRouter can return completion ID, model, usage and cost, routing metadata showing the selected provider, and generation metadata including provider_name, request_id, upstream_id, and total_cost.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OR-CHAT",
+        "S-OR-GEN"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "The proof contract can require actual-route telemetry and reject missing or mismatched provenance."
+    },
+    {
+      "finding_id": "F-08",
+      "claim_label": "CLAIMED",
+      "topic": "OpenRouter privacy labels",
+      "claim": "OpenRouter documents its provider data-policy labels as best knowledge rather than a definitive source of third-party policy.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OR-ROUTING"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "OpenRouter cannot serve as privacy, compliance, or identity authority."
+    },
+    {
+      "finding_id": "F-09",
+      "claim_label": "INFERRED",
+      "topic": "OpenRouter identity",
+      "claim": "Broker-reported selected model/provider metadata is useful provenance but is not equivalent to provider-attested model identity.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OR-CHAT",
+        "S-OR-GEN",
+        "MODEL_IDENTITY_OBSERVATIONS.json"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Independence and identity claims must remain bounded to the evidence actually returned."
+    },
+    {
+      "finding_id": "F-10",
+      "claim_label": "CLAIMED",
+      "topic": "OpenRouter cost control",
+      "claim": "OpenRouter max_price constrains acceptable provider unit pricing, not total request spend.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OR-ROUTING"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Dopemux must also cap input, output, retries, and total estimated spend."
+    },
+    {
+      "finding_id": "F-11",
+      "claim_label": "CLAIMED",
+      "topic": "Direct API structured output",
+      "claim": "OpenAI, Anthropic, and Gemini APIs document schema-constrained structured output mechanisms, each with provider-specific limitations and failure cases.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OAI-STRUCT",
+        "S-ANTH-STRUCT",
+        "S-GOOG-STRUCT"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Direct APIs are better suited than subscription UI routes for machine-normalized audit results."
+    },
+    {
+      "finding_id": "F-12",
+      "claim_label": "CLAIMED",
+      "topic": "Direct API observability",
+      "claim": "OpenAI exposes x-request-id and rate-limit headers; Anthropic exposes request-id and organization usage/cost APIs; Gemini responses expose usageMetadata, modelVersion, and responseId.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OAI-API",
+        "S-ANTH-COST",
+        "S-ANTH-ERROR",
+        "S-GOOG-GEN"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Direct APIs can provide auditable cost and trace evidence required for fallback proof."
+    },
+    {
+      "finding_id": "F-13",
+      "claim_label": "CLAIMED",
+      "topic": "OpenAI governance",
+      "claim": "OpenAI Admin APIs expose project model permissions, spend threshold alerts, data-retention controls, and audit logs; the reviewed spend-alert documentation describes notification, not a synchronous hard stop.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OAI-ADMIN"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "OpenAI native controls improve governance but do not replace caller-side hard admission."
+    },
+    {
+      "finding_id": "F-14",
+      "claim_label": "CLAIMED",
+      "topic": "Anthropic cost governance",
+      "claim": "Anthropic documents monthly organization spend caps that pause API usage at the cap and allows customers to configure a lower limit; rate limits expose request/token headers and retry-after.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-ANTH-RATE"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Anthropic supplies a stronger native stop, while local per-run reservation is still required."
+    },
+    {
+      "finding_id": "F-15",
+      "claim_label": "CLAIMED",
+      "topic": "Gemini cost governance",
+      "claim": "Gemini documents project and billing-account spend caps, but project enforcement can lag by around ten minutes and long-running tasks may exceed the project cap.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-GOOG-BILL",
+        "S-GOOG-RATE"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Gemini native project caps cannot be treated as a strict per-request hard stop."
+    },
+    {
+      "finding_id": "F-16",
+      "claim_label": "CLAIMED",
+      "topic": "ZDR limitations",
+      "claim": "OpenAI, Anthropic, and Gemini document feature- and route-specific retention exceptions; ZDR does not universally cover stateful features, tools, caches, files, grounding, or third-party services.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OAI-DATA",
+        "S-ANTH-DATA",
+        "S-GOOG-ZDR"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Sensitive routes require feature-level retention review, not a single ZDR boolean."
+    },
+    {
+      "finding_id": "F-17",
+      "claim_label": "PROPOSED",
+      "topic": "Privacy routing",
+      "claim": "OpenRouter should default to public, low-risk work; private work requires an explicit exception, while possible secrets, client data, security-sensitive diffs, and release authority should default to direct approved APIs or no egress.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OR-ROUTING",
+        "S-OAI-DATA",
+        "S-ANTH-DATA",
+        "S-GOOG-ZDR",
+        "ROUTING_CONSTRAINTS.md"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "This defines the safe default for API fallback synthesis."
+    },
+    {
+      "finding_id": "F-18",
+      "claim_label": "PROPOSED",
+      "topic": "Release authority",
+      "claim": "No subscription, OpenRouter, or direct API route should receive release or merge authority; model output remains evidence under human and existing governance approval.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "system-boundaries.md",
+        "proof-contract.md",
+        "ROUTING_CONSTRAINTS.md"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Prevents fallback infrastructure from becoming a canonical approver."
+    },
+    {
+      "finding_id": "F-19",
+      "claim_label": "PROPOSED",
+      "topic": "Hard cap model",
+      "claim": "Dopemux should atomically reserve a worst-case request estimate before dispatch, bound tokens/tools/retries, and reconcile provider-reported actual cost after completion.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OR-ROUTING",
+        "S-OAI-ADMIN",
+        "S-ANTH-RATE",
+        "S-GOOG-BILL"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Creates a cross-provider cost boundary despite inconsistent native controls."
+    },
+    {
+      "finding_id": "F-20",
+      "claim_label": "UNKNOWN",
+      "topic": "Low-cost model fitness",
+      "claim": "The suitability of any current low-cost model for Dopemux audit roles is not established by pricing or vendor capability documentation alone.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S-OAI-PRICE",
+        "S-ANTH-PRICE",
+        "S-GOOG-PRICE"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Cheap models may be challenger candidates only until a route-specific evaluation certifies them."
+    },
+    {
+      "finding_id": "F-21",
+      "claim_label": "UNKNOWN",
+      "topic": "Total cost",
+      "claim": "Local runner hardware amortization, electricity, maintenance, failed-run burden, and operator time cannot be quantified from vendor documentation.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "PROBE_SUMMARY.md"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Synthesis must carry formulas and require measured local inputs rather than invented totals."
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "C-01",
+      "sources": [
+        "S-OR-ROUTING"
+      ],
+      "conflict": "OpenRouter can filter to endpoints tagged data-deny/ZDR, while its documentation says third-party data-policy tags are not definitive policy sources.",
+      "resolution_status": "CARRIED",
+      "next_evidence": "Approve the exact upstream provider endpoint using current provider terms, DPA/ZDR evidence, and route metadata."
+    },
+    {
+      "id": "C-02",
+      "sources": [
+        "S-OAI-BUSINESS",
+        "S-OAI-CODEX",
+        "S-ANTH-USAGE",
+        "S-GOOG-APP"
+      ],
+      "conflict": "Plan access is described as virtually unlimited, expanded, or credit-backed while dynamic limits, fair-use restrictions, shared pools, and reset windows still apply.",
+      "resolution_status": "RESOLVED",
+      "next_evidence": "Treat subscription capacity as non-deterministic and terms-scoped; never infer unlimited automation."
+    },
+    {
+      "id": "C-03",
+      "sources": [
+        "S-GOOG-BILL"
+      ],
+      "conflict": "Gemini project controls are called spend caps but official documentation permits enforcement latency and long-running-task overage.",
+      "resolution_status": "CARRIED",
+      "next_evidence": "Use caller-side reservation and account-level controls; measure observed overage behavior only in a separately approved test."
+    },
+    {
+      "id": "C-04",
+      "sources": [
+        "S-OAI-ADMIN"
+      ],
+      "conflict": "OpenAI names project spend-limit alerts, but the reviewed documentation describes threshold notification rather than request blocking.",
+      "resolution_status": "CARRIED",
+      "next_evidence": "Treat alerts as observability and implement local hard admission; seek vendor clarification if native blocking is required."
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "U-01",
+      "question": "What exact subscription credit or allowance does each audit request consume?",
+      "why_unknown": "Reviewed official plan documentation describes dynamic factors, pools, windows, and progress but no stable comparable per-request mapping.",
+      "blocking_scope": "Subscription budget accounting and automatic admission.",
+      "next_evidence": "A vendor per-request ledger or an official mapping for the exact product and plan."
+    },
+    {
+      "id": "U-02",
+      "question": "What concurrency ceiling applies to each consumer or seat plan?",
+      "why_unknown": "No exact plan-specific concurrency contract was established in reviewed official sources.",
+      "blocking_scope": "Unattended worker count and queue sizing.",
+      "next_evidence": "Current official plan documentation or vendor clarification."
+    },
+    {
+      "id": "U-03",
+      "question": "What is the local runner hardware, electricity, maintenance, and failure cost?",
+      "why_unknown": "These are host- and operator-specific measurements absent from vendor documentation and the static probe.",
+      "blocking_scope": "Numerical total-cost comparison.",
+      "next_evidence": "Hardware invoice, depreciation policy, power measurements, local tariff, and operator time logs."
+    },
+    {
+      "id": "U-04",
+      "question": "What contractual retention and compliance terms apply to the exact future OpenRouter upstream endpoint?",
+      "why_unknown": "No live route or provider endpoint was selected, and OpenRouter states its policy tags are not definitive third-party policy sources.",
+      "blocking_scope": "Any private or sensitive OpenRouter route.",
+      "next_evidence": "Approved endpoint inventory, current provider terms, DPA/ZDR evidence, and legal/security approval."
+    },
+    {
+      "id": "U-05",
+      "question": "Which low-cost models meet Dopemux audit-quality thresholds?",
+      "why_unknown": "Pricing and vendor capability claims do not establish route-specific defect recall, false-positive rate, grounding, or independence.",
+      "blocking_scope": "Automatic challenger or reviewer certification.",
+      "next_evidence": "Bounded benchmark and shadow evaluation under DR-04 certification criteria."
+    },
+    {
+      "id": "U-06",
+      "question": "Do the repository and client contracts permit each direct provider API for private or client data?",
+      "why_unknown": "No client contract, DPA approval, or legal review was supplied or tested.",
+      "blocking_scope": "Private/client-data egress.",
+      "next_evidence": "Legal, privacy, client, and security approval for the exact provider project and features."
+    },
+    {
+      "id": "U-07",
+      "question": "Does Gemini expose a generic request-ID response header equivalent to OpenAI and Anthropic?",
+      "why_unknown": "The reviewed response reference exposes responseId, but a generic request-ID-header contract was not established.",
+      "blocking_scope": "Uniform cross-provider request trace normalization.",
+      "next_evidence": "Current official Gemini API reference or a later approved observed test."
+    }
+  ],
+  "not_run": [
+    {
+      "activity": "Provider API or OpenRouter calls",
+      "reason": "Forbidden by RUN-CONTROL and the static-only local investigation posture."
+    },
+    {
+      "activity": "Account login, credential inspection, or billing-console inspection",
+      "reason": "Forbidden by campaign boundaries."
+    },
+    {
+      "activity": "Subscription usage sampling or plan-credit measurement",
+      "reason": "Would require account use and still would not prove a vendor mapping."
+    },
+    {
+      "activity": "Low-cost model benchmark execution",
+      "reason": "Benchmark execution is excluded from this track and belongs to the evaluation process."
+    },
+    {
+      "activity": "Local hardware power and operator-time study",
+      "reason": "No metering inputs were supplied and this track is external research only."
+    },
+    {
+      "activity": "Final architecture synthesis or route promotion",
+      "reason": "Synthesis is forbidden until campaign acceptance authorizes it."
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "R-01",
+      "recommendation": "Treat subscription routes as operator-triggered capacity with non-deterministic limits, not as a metered automation budget.",
+      "status": "PROPOSED",
+      "rationale": "Official plan documentation exposes dynamic and rolling constraints without a stable per-request cross-vendor debit.",
+      "prerequisites": [
+        "DR-01 vendor-permission conclusion",
+        "Plan-state receipt format"
+      ]
+    },
+    {
+      "id": "R-02",
+      "recommendation": "Use direct provider APIs as the default exceptional fallback for private or governed work.",
+      "status": "PROPOSED",
+      "rationale": "Direct APIs provide stronger structured output, trace, usage, cost, model, and retention controls.",
+      "prerequisites": [
+        "Approved provider project",
+        "Credential isolation",
+        "Privacy approval",
+        "Route evaluation certificate"
+      ]
+    },
+    {
+      "id": "R-03",
+      "recommendation": "Restrict OpenRouter to public, low-risk routes by default and require a formal exception for private work.",
+      "status": "PROPOSED",
+      "rationale": "Router policy tags are advisory and the chain of trust includes both broker and upstream provider.",
+      "prerequisites": [
+        "OpenRouter route policy",
+        "Exact endpoint inventory",
+        "Proof metadata validation"
+      ]
+    },
+    {
+      "id": "R-04",
+      "recommendation": "For every OpenRouter route, pin exact model and provider endpoint, disable fallbacks, require parameters, apply data/ZDR/price controls, and validate returned metadata.",
+      "status": "PROPOSED",
+      "rationale": "Default load balancing and fallback weaken provenance, privacy, and reproducibility.",
+      "prerequisites": [
+        "Route profile schema",
+        "Metadata normalizer",
+        "Fail-closed mismatch handling"
+      ]
+    },
+    {
+      "id": "R-05",
+      "recommendation": "Implement caller-side atomic budget reservation, token/tool/retry bounds, and postflight reconciliation.",
+      "status": "PROPOSED",
+      "rationale": "Native provider budget controls differ and are not uniformly synchronous hard stops.",
+      "prerequisites": [
+        "Current price catalog",
+        "Budget ledger",
+        "Usage normalizer",
+        "Operator caps"
+      ]
+    },
+    {
+      "id": "R-06",
+      "recommendation": "Fail closed when price, retention, actual provider/model, request IDs, or route certification is missing, stale, or mismatched.",
+      "status": "PROPOSED",
+      "rationale": "Unknown provenance, privacy, or cost defeats governed fallback proof.",
+      "prerequisites": [
+        "Evidence freshness policy",
+        "Route-proof contract"
+      ]
+    },
+    {
+      "id": "R-07",
+      "recommendation": "Require secret triage/redaction and explicit human approval before sensitive or client data egress.",
+      "status": "PROPOSED",
+      "rationale": "ZDR has feature exceptions and cannot repair accidental disclosure to an unapproved route.",
+      "prerequisites": [
+        "Data classification",
+        "Secret scanning",
+        "Approval receipt"
+      ]
+    },
+    {
+      "id": "R-08",
+      "recommendation": "Keep release and merge authority with the human operator and existing governance contracts; API routes produce evidence only.",
+      "status": "PROPOSED",
+      "rationale": "Fallback infrastructure is transport and analysis, not governance authority.",
+      "prerequisites": [
+        "Proof/handoff contract integration"
+      ]
+    },
+    {
+      "id": "R-09",
+      "recommendation": "Evaluate low-cost models only as challengers or public low-risk reviewers until route-specific certification is earned.",
+      "status": "PROPOSED",
+      "rationale": "Low unit price does not prove audit recall, grounding, or independence.",
+      "prerequisites": [
+        "DR-04 benchmark corpus",
+        "Shadow evaluation",
+        "Certification and revocation policy"
+      ]
+    }
+  ],
+  "synthesis_implications": [
+    "Keep API fallback separate from plan-authenticated CLI routes in policy, credentials, proof, and cost accounting.",
+    "OpenRouter must remain controlled transport and cannot be promoted to model identity, privacy, independence, or release authority.",
+    "The audit proof must record requested and actual provider/model, endpoint, request/response IDs, route profile, cost, data policy, and fallback reason.",
+    "Sensitive routes should default to direct approved APIs or no egress, with feature-level retention review and human approval.",
+    "Environment failure must not automatically promote model tier or spend.",
+    "Mechanical validation remains a first-class route and should precede semantic API fallback.",
+    "Cross-provider hard caps require local atomic reservation and reconciliation because native controls differ.",
+    "Low-cost challenger routes require evaluation certification and expiry/revocation rules."
+  ],
+  "source_ledger": [
+    {
+      "source_id": "S-OR-ROUTING",
+      "title": "Provider Routing",
+      "publisher": "OpenRouter",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q4",
+        "Q5",
+        "Q8",
+        "Q9"
+      ]
+    },
+    {
+      "source_id": "S-OR-CHAT",
+      "title": "Create a chat completion",
+      "publisher": "OpenRouter",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q4",
+        "Q5"
+      ]
+    },
+    {
+      "source_id": "S-OR-GEN",
+      "title": "Get request and usage metadata for a generation",
+      "publisher": "OpenRouter",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q4",
+        "Q5",
+        "Q8"
+      ]
+    },
+    {
+      "source_id": "S-OAI-CODEX",
+      "title": "Using Codex with your ChatGPT plan",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q1",
+        "Q2",
+        "Q3"
+      ]
+    },
+    {
+      "source_id": "S-OAI-BUSINESS",
+      "title": "ChatGPT Business - Models & Limits",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q1",
+        "Q3"
+      ]
+    },
+    {
+      "source_id": "S-OAI-DATA",
+      "title": "Data controls in the OpenAI platform",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q5",
+        "Q7"
+      ]
+    },
+    {
+      "source_id": "S-OAI-STRUCT",
+      "title": "Structured model outputs",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q6"
+      ]
+    },
+    {
+      "source_id": "S-OAI-API",
+      "title": "API Overview",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q6"
+      ]
+    },
+    {
+      "source_id": "S-OAI-ADMIN",
+      "title": "Admin APIs",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q6",
+        "Q8"
+      ]
+    },
+    {
+      "source_id": "S-OAI-PRICE",
+      "title": "API Pricing",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_PRICING",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q8",
+        "Q9"
+      ]
+    },
+    {
+      "source_id": "S-ANTH-USAGE",
+      "title": "Usage limit best practices",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": "2026-06-02",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q1",
+        "Q2",
+        "Q3"
+      ]
+    },
+    {
+      "source_id": "S-ANTH-RATE",
+      "title": "Rate limits",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q6",
+        "Q8"
+      ]
+    },
+    {
+      "source_id": "S-ANTH-COST",
+      "title": "Usage and Cost API",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q6",
+        "Q8"
+      ]
+    },
+    {
+      "source_id": "S-ANTH-STRUCT",
+      "title": "Structured outputs",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q6"
+      ]
+    },
+    {
+      "source_id": "S-ANTH-DATA",
+      "title": "API and data retention",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q5",
+        "Q7"
+      ]
+    },
+    {
+      "source_id": "S-ANTH-ERROR",
+      "title": "Errors",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q6"
+      ]
+    },
+    {
+      "source_id": "S-ANTH-PRICE",
+      "title": "Pricing",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_PRICING",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q8",
+        "Q9"
+      ]
+    },
+    {
+      "source_id": "S-GOOG-APP",
+      "title": "Gemini Apps limits & upgrades for Google AI subscribers",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q1",
+        "Q2",
+        "Q3"
+      ]
+    },
+    {
+      "source_id": "S-GOOG-RATE",
+      "title": "Gemini API rate limits",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q6",
+        "Q8"
+      ]
+    },
+    {
+      "source_id": "S-GOOG-STRUCT",
+      "title": "Gemini API structured outputs",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q6"
+      ]
+    },
+    {
+      "source_id": "S-GOOG-GEN",
+      "title": "Generating content API reference",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q6"
+      ]
+    },
+    {
+      "source_id": "S-GOOG-ZDR",
+      "title": "Zero data retention in the Gemini Developer API",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": "2026-05-28",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q5",
+        "Q7"
+      ]
+    },
+    {
+      "source_id": "S-GOOG-BILL",
+      "title": "Gemini API billing",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_PRICING",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q6",
+        "Q8"
+      ]
+    },
+    {
+      "source_id": "S-GOOG-PRICE",
+      "title": "Gemini Developer API pricing",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_PRICING",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q8",
+        "Q9"
+      ]
+    }
+  ]
+}

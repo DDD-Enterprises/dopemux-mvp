@@ -1,0 +1,1002 @@
+{
+  "schema_version": "1.0.0",
+  "campaign_id": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "track_id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+  "status": "COMPLETE_WITH_UNKNOWNS",
+  "research_date": "2026-07-13",
+  "questions": [
+    {
+      "question_id": "DR01-Q01",
+      "question": "Which Claude subscriptions include Claude Code, and what first-party local authentication modes exist?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR01-Q02",
+      "question": "Which Claude Code mechanisms are documented for scripts or CI, and what deployment limits apply?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR01-Q03",
+      "question": "What Claude credential-sharing, lifecycle, revocation, API-billing, and third-party-wrapper constraints apply?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR01-Q04",
+      "question": "Which ChatGPT plans include Codex and what local, device, API-key, and access-token sign-in modes exist?",
+      "answer_status": "CONFLICTING"
+    },
+    {
+      "question_id": "DR01-Q05",
+      "question": "Which Codex plan-backed credentials are documented for trusted non-interactive workflows or runners?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR01-Q06",
+      "question": "What Codex restrictions apply to copied login state, shared runners, concurrency, rate limits, and continuous audits?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR01-Q07",
+      "question": "Which account classes and authentication modes currently apply to Gemini CLI?",
+      "answer_status": "CONFLICTING"
+    },
+    {
+      "question_id": "DR01-Q08",
+      "question": "Can Gemini CLI plan-backed credentials be used headlessly on persistent brokers or custom runners?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR01-Q09",
+      "question": "Is Google Antigravity automatable through official CLI or SDK surfaces, and how does its authentication differ from Gemini CLI?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR01-Q10",
+      "question": "Which OpenCode subscription providers and plan-backed routes are documented, and which are workarounds or terms-hostile?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR01-Q11",
+      "question": "Can OpenCode run unattended while isolating credentials and preserving upstream provider identity?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR01-Q12",
+      "question": "What is supportable for GitHub Copilot when used through OpenCode?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR01-Q13",
+      "question": "Does Grok Build have official CLI, headless, SDK, or API automation surfaces?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR01-Q14",
+      "question": "Is plan-backed Grok Build use officially supportable outside first-party interactive use, and what lifecycle, fair-use, and model evidence is exposed?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "DR01-Q15",
+      "question": "What authentication posture applies to OpenRouter as an API fallback?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR01-Q16",
+      "question": "Which workstation, OS-user, VM, self-hosted-runner, GitHub-hosted-runner, and manual-app deployments are supportable per tool?",
+      "answer_status": "PARTIAL"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "DR01-F001",
+      "claim_label": "OBSERVED",
+      "topic": "local_evidence",
+      "claim": "The supplied host probe was static-only: all model-capable live invocations were NOT_RUN, plan-auth provenance remained UNKNOWN, and no observed model identity was established. External vendor research extends deployment policy but does not change those local observations.",
+      "confidence": "VERIFIED",
+      "source_refs": [],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "No local CLI may be treated as plan-backed or unattended-ready merely because it is installed or logged in."
+    },
+    {
+      "finding_id": "DR01-F002",
+      "claim_label": "CLAIMED",
+      "topic": "claude_code_plan_auth",
+      "claim": "Anthropic documents Claude Code subscription OAuth for Pro, Max, Team, and Enterprise accounts, alongside API-key and cloud-provider authentication modes.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S01",
+        "S04"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Claude Code can be considered for plan-backed local use, but the inspected host's current auth mode remains UNKNOWN."
+    },
+    {
+      "finding_id": "DR01-F003",
+      "claim_label": "CLAIMED",
+      "topic": "claude_code_automation",
+      "claim": "Anthropic documents claude setup-token as a long-lived OAuth credential intended for CI pipelines, scripts, and non-browser environments; the documented token lifetime is one year.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S01"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "First-party Claude Code plan-backed automation is supportable with limits when this explicit mechanism is used and isolated."
+    },
+    {
+      "finding_id": "DR01-F004",
+      "claim_label": "CLAIMED",
+      "topic": "claude_api_identity",
+      "claim": "Anthropic Workload Identity Federation and service-account mechanisms are API-side workload credentials using short-lived tokens; they are not evidence of subscription-plan billing.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S02"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "API workload identity must remain a separate route from plan-authenticated Claude Code."
+    },
+    {
+      "finding_id": "DR01-F005",
+      "claim_label": "CLAIMED",
+      "topic": "claude_third_party",
+      "claim": "OpenCode's provider documentation states that Anthropic prohibits using Claude Pro or Max subscription authentication through OpenCode and removed bundled support for that route.",
+      "confidence": "MEDIUM",
+      "source_refs": [
+        "S22"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Treat Claude subscription authentication through third-party wrappers as blocked unless Anthropic provides direct written authorization."
+    },
+    {
+      "finding_id": "DR01-F006",
+      "claim_label": "CONFLICTING",
+      "topic": "codex_plan_inclusion",
+      "claim": "OpenAI sources disagree on the complete plan list: the Help Center states Codex is included across ChatGPT plans including Free and Go, while developer-facing pages foreground Plus, Pro, Business, Edu, and Enterprise.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S05",
+        "S11"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Entitlement must be checked against the current workspace plan; the discrepancy does not affect the distinction between ChatGPT sign-in and API billing."
+    },
+    {
+      "finding_id": "DR01-F007",
+      "claim_label": "CLAIMED",
+      "topic": "codex_auth_modes",
+      "claim": "Codex CLI documents ChatGPT browser sign-in, device-code authentication, API-key authentication, cached auth reuse, and access-token authentication.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S05",
+        "S07"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Plan-backed and API-billed Codex routes can be separated explicitly in adapter configuration."
+    },
+    {
+      "finding_id": "DR01-F008",
+      "claim_label": "CLAIMED",
+      "topic": "codex_access_tokens",
+      "claim": "OpenAI documents Codex access tokens for ChatGPT Business and Enterprise trusted non-interactive local workflows, scheduled jobs, CI runners, and app-server clients, with configurable expiry and administrator revocation.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S06"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Business or Enterprise access tokens are the strongest official plan-backed Codex credential for a trusted private runner."
+    },
+    {
+      "finding_id": "DR01-F009",
+      "claim_label": "CLAIMED",
+      "topic": "codex_ci_limits",
+      "claim": "OpenAI documents copied auth.json reuse only as an advanced trusted-runner flow and recommends API-key authentication for programmatic workflows; plan usage is subject to rolling usage windows and possible additional limits.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S05",
+        "S07",
+        "S08"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Personal-plan cached auth should remain operator-triggered and serialized, not a shared generic runner credential."
+    },
+    {
+      "finding_id": "DR01-F010",
+      "claim_label": "CLAIMED",
+      "topic": "gemini_consumer_deprecation",
+      "claim": "Google states that from June 18, 2026 Gemini CLI stopped serving consumer-tier requests for Gemini Code Assist for individuals and Google AI Pro or Ultra through Login with Google.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S13"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Consumer Google AI Pro or Ultra plan authentication must not be selected for Gemini CLI automation."
+    },
+    {
+      "finding_id": "DR01-F011",
+      "claim_label": "CONFLICTING",
+      "topic": "gemini_headless_auth",
+      "claim": "Gemini CLI authentication documentation still describes cached Google-login credentials for supported account classes, but says fresh headless authentication without cached credentials must use a Gemini API key or Vertex AI credentials.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S12",
+        "S13",
+        "S14"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Workspace or Code Assist cached-login use may remain viable on a named workstation, but unattended broker and runner support is not established by these sources."
+    },
+    {
+      "finding_id": "DR01-F012",
+      "claim_label": "CLAIMED",
+      "topic": "antigravity_automation",
+      "claim": "Google Antigravity has official first-party CLI and SDK surfaces, including documented silent authentication and enterprise Google Cloud integration.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S15",
+        "S16",
+        "S17"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Antigravity is not manual-app-only, but deployment classification still depends on credential lifecycle and runner guidance."
+    },
+    {
+      "finding_id": "DR01-F013",
+      "claim_label": "UNKNOWN",
+      "topic": "antigravity_lifecycle",
+      "claim": "Public Antigravity documentation reviewed did not establish precise subscription-token storage, lifetime, revocation, or supported persistent and ephemeral runner classes.",
+      "confidence": "MEDIUM",
+      "source_refs": [
+        "S15",
+        "S17",
+        "S18"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Keep Antigravity plan-backed execution operator-triggered until lifecycle and deployment permission are documented."
+    },
+    {
+      "finding_id": "DR01-F014",
+      "claim_label": "CLAIMED",
+      "topic": "opencode_automation",
+      "claim": "OpenCode documents headless run and server modes and stores provider credentials in a per-user local data directory, allowing OS-user or VM isolation at the wrapper layer.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S21",
+        "S22"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "OpenCode can be isolated technically, but this does not authorize any particular upstream subscription route."
+    },
+    {
+      "finding_id": "DR01-F015",
+      "claim_label": "INFERRED",
+      "topic": "opencode_terms",
+      "claim": "Because OpenCode is a third-party adapter, upstream provider terms and credential rules remain controlling; OpenCode's technical support cannot convert a prohibited or undocumented provider route into a supported one.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S22",
+        "S03",
+        "S09",
+        "S10",
+        "S24"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Every OpenCode plan-auth route requires provider-specific authorization before unattended deployment."
+    },
+    {
+      "finding_id": "DR01-F016",
+      "claim_label": "CLAIMED",
+      "topic": "copilot_opencode",
+      "claim": "OpenCode documents GitHub Copilot device login, while GitHub requires a licensed GitHub account and prohibits sharing a single user login among multiple people.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S22",
+        "S23",
+        "S24"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Named-user workstation use is supportable with limits; copied shared-runner session state remains UNKNOWN and should be blocked."
+    },
+    {
+      "finding_id": "DR01-F017",
+      "claim_label": "CLAIMED",
+      "topic": "grok_build_headless",
+      "claim": "xAI documents Grok Build for interactive TUI use, headless scripts or bots, and ACP integration. In non-browser environments, the explicit documented authentication route is XAI_API_KEY.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S25",
+        "S26"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Grok Build headless execution is official, but the clearest unattended credential is API-billed rather than plan-backed."
+    },
+    {
+      "finding_id": "DR01-F018",
+      "claim_label": "UNKNOWN",
+      "topic": "grok_plan_runner",
+      "claim": "The reviewed xAI sources did not establish subscription-session token lifetime, revocation, credential portability, or permission for persistent or ephemeral self-hosted runners.",
+      "confidence": "MEDIUM",
+      "source_refs": [
+        "S25",
+        "S26",
+        "S27"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Plan-backed Grok Build should remain first-party and operator-triggered; use API keys for unattended automation."
+    },
+    {
+      "finding_id": "DR01-F019",
+      "claim_label": "CLAIMED",
+      "topic": "openrouter_auth",
+      "claim": "OpenRouter is an API-billed fallback using bearer API keys, per-key credit limits, management API keys, and OAuth flows that ultimately issue or store API keys.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "S29",
+        "S30",
+        "S31",
+        "S32"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "OpenRouter is supportable as API fallback only and must not be represented as plan-backed authentication or identity authority."
+    },
+    {
+      "finding_id": "DR01-F020",
+      "claim_label": "UNKNOWN",
+      "topic": "model_identity",
+      "claim": "No vendor documentation in this track proves the actual model used by any local invocation, and the local probe ran no model calls.",
+      "confidence": "VERIFIED",
+      "source_refs": [],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Requested or displayed model names cannot satisfy provider-attested identity or independence requirements."
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "DR01-C001",
+      "sources": [
+        "S05",
+        "S11"
+      ],
+      "conflict": "OpenAI sources present different complete lists of ChatGPT plans that include Codex.",
+      "resolution_status": "CARRIED",
+      "next_evidence": "Current plan-specific entitlement page or workspace admin documentation that reconciles Free, Go, Plus, Pro, Business, Edu, and Enterprise."
+    },
+    {
+      "id": "DR01-C002",
+      "sources": [
+        "S12",
+        "S13"
+      ],
+      "conflict": "Gemini CLI authentication documentation still describes Google-account login while a newer deprecation removes consumer Google AI Pro, Ultra, and individual Code Assist service from Gemini CLI.",
+      "resolution_status": "RESOLVED",
+      "next_evidence": "Treat the deprecation as controlling for consumer tiers and the authentication guide as applicable only to remaining supported account classes."
+    },
+    {
+      "id": "DR01-C003",
+      "sources": [
+        "S22"
+      ],
+      "conflict": "The strongest explicit statement that Anthropic plan auth is prohibited in OpenCode comes from OpenCode documentation rather than an Anthropic terms page reviewed in this track.",
+      "resolution_status": "CARRIED",
+      "next_evidence": "Direct Anthropic legal or product documentation, or written vendor clarification, covering third-party Claude Code clients and subscription OAuth."
+    },
+    {
+      "id": "DR01-C004",
+      "sources": [
+        "S15",
+        "S16",
+        "S18"
+      ],
+      "conflict": "Antigravity has first-party CLI and SDK surfaces, but Google's FAQ recommends Vertex AI or AI Studio API keys for third-party coding agents using Gemini.",
+      "resolution_status": "RESOLVED",
+      "next_evidence": "Preserve the scope distinction: first-party Antigravity plan use is separate from third-party Gemini-agent authentication."
+    },
+    {
+      "id": "DR01-C005",
+      "sources": [
+        "S25",
+        "S26",
+        "S27"
+      ],
+      "conflict": "xAI officially advertises headless Grok Build, but the explicit non-browser authentication path is API-key based and subscription-session runner permission is not documented.",
+      "resolution_status": "CARRIED",
+      "next_evidence": "xAI documentation or written policy covering unattended plan-authenticated Grok Build and self-hosted runner deployments."
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "DR01-U001",
+      "question": "How is a Claude Code setup-token explicitly revoked before expiry, and is there an admin inventory for all such tokens?",
+      "why_unknown": "The reviewed public authentication page established lifetime and purpose but not a complete revocation-management workflow.",
+      "blocking_scope": "Automated Claude Code deployment requiring immediate centralized revocation.",
+      "next_evidence": "Current Anthropic admin documentation or vendor clarification for setup-token inventory and revocation."
+    },
+    {
+      "id": "DR01-U002",
+      "question": "What exact concurrency and machine-copy limits apply to personal-plan Codex cached authentication?",
+      "why_unknown": "Official docs describe trusted-runner reuse and serialization guidance but do not establish a general personal-plan service-account model.",
+      "blocking_scope": "Parallel or shared personal-plan Codex runner pools.",
+      "next_evidence": "OpenAI plan terms or product documentation explicitly covering machine count, concurrency, and unattended personal-plan automation."
+    },
+    {
+      "id": "DR01-U003",
+      "question": "Which Workspace or Gemini Code Assist licenses permit persistent plan-backed Gemini CLI brokers or custom runners?",
+      "why_unknown": "Consumer tiers were deprecated, while remaining organization account classes and cached-login behavior are not mapped to runner permissions.",
+      "blocking_scope": "Plan-backed Gemini CLI automation outside a named workstation.",
+      "next_evidence": "Google Workspace or Gemini Code Assist administrator documentation explicitly covering non-interactive runners."
+    },
+    {
+      "id": "DR01-U004",
+      "question": "What are Antigravity subscription credential storage, lifetime, refresh, revocation, and runner-class rules?",
+      "why_unknown": "Public documentation reviewed exposes CLI, SDK, silent auth, and enterprise integration but not a complete lifecycle contract.",
+      "blocking_scope": "Persistent or ephemeral Antigravity plan-backed workers.",
+      "next_evidence": "Antigravity authentication and administrator lifecycle documentation."
+    },
+    {
+      "id": "DR01-U005",
+      "question": "Do OpenAI and GitHub explicitly authorize their subscription credentials inside OpenCode for unattended automation?",
+      "why_unknown": "OpenCode documents technical provider integration, but matching first-party vendor permission for unattended OpenCode use was not located.",
+      "blocking_scope": "OpenCode plan-backed Codex or Copilot runner deployment.",
+      "next_evidence": "First-party OpenAI and GitHub documentation naming OpenCode or a general third-party-client automation policy."
+    },
+    {
+      "id": "DR01-U006",
+      "question": "What lifecycle, revocation, sharing, and fair-use rules apply to plan-authenticated Grok Build sessions?",
+      "why_unknown": "xAI public pages reviewed emphasize headless capability and API-key deployment but not subscription credential governance.",
+      "blocking_scope": "Unattended plan-backed Grok Build on any runner.",
+      "next_evidence": "xAI authentication, account, and automation terms specific to Grok Build subscriptions."
+    },
+    {
+      "id": "DR01-U007",
+      "question": "How can each tool produce provider-attested actual model identity and billing-route evidence per run?",
+      "why_unknown": "No live invocation was allowed and product login state does not itself attest the model or billing route used.",
+      "blocking_scope": "Independence claims, proof normalization, and plan-backed billing assertions.",
+      "next_evidence": "Bounded later receipt collection under an approved live-probe protocol, plus vendor-documented identity fields."
+    },
+    {
+      "id": "DR01-U008",
+      "question": "What unpublished fair-use or abuse thresholds could affect continuous high-frequency subscription audits?",
+      "why_unknown": "Public limits and terms do not expose all anti-abuse heuristics or suspension thresholds.",
+      "blocking_scope": "High-volume unattended subscription automation.",
+      "next_evidence": "Vendor enterprise agreement, support confirmation, or published automation policy."
+    },
+    {
+      "id": "DR01-U009",
+      "question": "Can plan credentials be provisioned directly into a dedicated local OS account or VM without copying workstation session state?",
+      "why_unknown": "Some vendors document device or browser login and some document automation tokens, but a uniform dedicated-account portability contract does not exist.",
+      "blocking_scope": "Credential-isolated local broker workers.",
+      "next_evidence": "Per-vendor provisioning and administrator documentation for dedicated machine identities."
+    }
+  ],
+  "not_run": [
+    {
+      "activity": "Provider account login or entitlement checks",
+      "reason": "Forbidden by the track exclusions and run-control policy."
+    },
+    {
+      "activity": "Credential, cookie, keychain, auth.json, or token inspection",
+      "reason": "Forbidden; local plan-auth provenance must remain UNKNOWN."
+    },
+    {
+      "activity": "Token creation, setup-token generation, refresh, copying, or revocation",
+      "reason": "Forbidden account mutation."
+    },
+    {
+      "activity": "Provider API calls or model invocations",
+      "reason": "The project is external research only; live model probes were NOT_RUN."
+    },
+    {
+      "activity": "Runner registration or CI execution",
+      "reason": "Implementation and account testing are outside this research track."
+    },
+    {
+      "activity": "Benchmark or concurrency testing",
+      "reason": "Model invocation and account stress testing are excluded."
+    },
+    {
+      "activity": "Browser automation into authenticated product pages",
+      "reason": "Forbidden by run control."
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "DR01-R001",
+      "recommendation": "Permit plan-backed Claude Code automation only through first-party Claude Code authentication, preferring setup-token for scripts or CI; block Claude subscription auth through OpenCode or other wrappers.",
+      "status": "PROPOSED",
+      "rationale": "Anthropic documents a dedicated first-party automation token, while third-party subscription use carries explicit terms risk.",
+      "prerequisites": [
+        "Dedicated OS user or worker secret boundary",
+        "Revocation procedure",
+        "Per-run auth-mode receipt"
+      ]
+    },
+    {
+      "id": "DR01-R002",
+      "recommendation": "Use Codex Business or Enterprise access tokens for trusted non-interactive plan-backed workers; keep personal-plan cached auth operator-triggered, private, and serialized.",
+      "status": "PROPOSED",
+      "rationale": "Access tokens are the clearest official plan-backed automation credential; copied personal auth is an advanced and fragile path.",
+      "prerequisites": [
+        "Trusted private runner",
+        "Finite token expiry",
+        "Workspace admin revocation",
+        "No forked or public PR execution"
+      ]
+    },
+    {
+      "id": "DR01-R003",
+      "recommendation": "Reject consumer Google AI Pro or Ultra authentication for Gemini CLI; use API key or Vertex AI for unattended Gemini CLI, and treat Workspace or Code Assist plan-backed runners as blocked pending documentation.",
+      "status": "PROPOSED",
+      "rationale": "Google ended consumer Google-login service for Gemini CLI on June 18, 2026 and documents API or Vertex authentication for fresh headless environments.",
+      "prerequisites": [
+        "Account-class check",
+        "Separate API billing route",
+        "Data-policy review"
+      ]
+    },
+    {
+      "id": "DR01-R004",
+      "recommendation": "Keep Antigravity plan-backed use operator-triggered on a named workstation or isolated local user until token lifecycle and runner-class support are documented.",
+      "status": "BLOCKED",
+      "rationale": "Official CLI and SDK surfaces exist, but lifecycle and unattended deployment permission remain incomplete.",
+      "prerequisites": [
+        "Credential lifecycle documentation",
+        "Revocation method",
+        "Persistent and ephemeral runner guidance"
+      ]
+    },
+    {
+      "id": "DR01-R005",
+      "recommendation": "Treat OpenCode as an adapter, not an auth authority: enable only API routes or subscription routes explicitly permitted by the upstream provider.",
+      "status": "PROPOSED",
+      "rationale": "Technical integration cannot override provider account or credential terms.",
+      "prerequisites": [
+        "Upstream provider identified",
+        "Auth mode recorded",
+        "Provider permission documented",
+        "Per-user credential directory"
+      ]
+    },
+    {
+      "id": "DR01-R006",
+      "recommendation": "Limit GitHub Copilot through OpenCode to a named licensed user on a workstation until GitHub documents unattended third-party runner use; do not copy one user's session into a shared pool.",
+      "status": "BLOCKED",
+      "rationale": "Device login is documented, but account sharing is prohibited and OpenCode-specific unattended authorization is not established.",
+      "prerequisites": [
+        "GitHub first-party authorization",
+        "Dedicated machine identity policy",
+        "Revocation workflow"
+      ]
+    },
+    {
+      "id": "DR01-R007",
+      "recommendation": "Use Grok Build plan authentication only for first-party operator-triggered local sessions; use XAI_API_KEY for unattended headless workers.",
+      "status": "PROPOSED",
+      "rationale": "Headless use is official, but API keys are the explicit non-browser auth path and subscription runner governance is unknown.",
+      "prerequisites": [
+        "Separate API cost controls",
+        "Per-worker key",
+        "xAI data and retention review"
+      ]
+    },
+    {
+      "id": "DR01-R008",
+      "recommendation": "Use OpenRouter only as API fallback with separate per-environment keys, hard credit limits, and management-key isolation.",
+      "status": "PROPOSED",
+      "rationale": "OpenRouter is an API routing surface, not a plan-authentication or model-identity authority.",
+      "prerequisites": [
+        "Provider and model pinning",
+        "Privacy profile",
+        "Price cap",
+        "Fallback provenance"
+      ]
+    },
+    {
+      "id": "DR01-R009",
+      "recommendation": "Map UNKNOWN, CONFLICTING, or merely cached interactive credentials to non-executable states; allow manual or operator-triggered receipts instead of unattended execution.",
+      "status": "PROPOSED",
+      "rationale": "The campaign explicitly rejects converting technical possibility into permission.",
+      "prerequisites": [
+        "Fail-closed route policy",
+        "Manual receipt contract",
+        "Operator approval"
+      ]
+    },
+    {
+      "id": "DR01-R010",
+      "recommendation": "Require every future run receipt to record tool, auth class, plan-versus-API billing route, credential owner, deployment class, requested model, observed model evidence, and revocation handle.",
+      "status": "PROPOSED",
+      "rationale": "Local installation, cached login, and displayed model labels are insufficient proof.",
+      "prerequisites": [
+        "Proof schema extension",
+        "Redaction rules",
+        "Vendor-specific receipt normalizers"
+      ]
+    }
+  ],
+  "synthesis_implications": [
+    "The external research does not alter the local OBSERVED state: all current model-capable CLI auth modes and actual models remain UNKNOWN until a separately approved live receipt exists.",
+    "Claude Code and Codex have the strongest documented plan-backed non-interactive credential surfaces, but only inside explicit first-party and trusted-runner constraints.",
+    "Gemini CLI consumer plan authentication is not a viable automation route after June 18, 2026; Workspace or Code Assist runner permission remains a carried unknown.",
+    "Antigravity and Grok Build have official headless or programmatic surfaces, but their plan-auth credential lifecycle and runner permission are not documented sufficiently for unattended deployment.",
+    "OpenCode must remain an adapter whose eligibility is the intersection of its technical capability and the upstream provider's terms.",
+    "OpenRouter remains API fallback only and cannot attest subscription use, provider identity beyond returned metadata, or audit independence by itself.",
+    "Dedicated OS-user or VM isolation is necessary but not sufficient; vendor authorization and credential lifecycle evidence are separate gates.",
+    "A cached browser or device login is not automatically a sanctioned CI credential.",
+    "Unknown revocation, sharing, concurrency, fair-use, or actual-model identity must fail closed rather than silently promote to a runner route.",
+    "No token-to-plan-credit conversion is established in this track."
+  ],
+  "source_ledger": [
+    {
+      "source_id": "S01",
+      "title": "Authentication - Claude Code Docs",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q01",
+        "DR01-Q02",
+        "DR01-Q03"
+      ]
+    },
+    {
+      "source_id": "S02",
+      "title": "Workload Identity Federation - Claude Platform Docs",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q02",
+        "DR01-Q03"
+      ]
+    },
+    {
+      "source_id": "S03",
+      "title": "Commercial Terms of Service",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_TERMS",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q03",
+        "DR01-Q10"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "title": "Plans and Pricing",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_PRICING",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q01"
+      ]
+    },
+    {
+      "source_id": "S05",
+      "title": "Authentication - Codex",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q04",
+        "DR01-Q05",
+        "DR01-Q06"
+      ]
+    },
+    {
+      "source_id": "S06",
+      "title": "Access Tokens - Codex",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q05",
+        "DR01-Q06"
+      ]
+    },
+    {
+      "source_id": "S07",
+      "title": "Maintain Codex Account Auth in CI/CD (Advanced)",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q04",
+        "DR01-Q05",
+        "DR01-Q06"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "title": "Codex Pricing",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_PRICING",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q06"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "title": "Terms of Use",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_TERMS",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q06",
+        "DR01-Q10"
+      ]
+    },
+    {
+      "source_id": "S10",
+      "title": "OpenAI Services Agreement",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_TERMS",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q06",
+        "DR01-Q10"
+      ]
+    },
+    {
+      "source_id": "S11",
+      "title": "Using Codex with Your ChatGPT Plan",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q04"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "title": "Gemini CLI Authentication Setup",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_REPOSITORY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q07",
+        "DR01-Q08"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "title": "Gemini Code Assist Consumer Accounts Deprecation",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": "2026-05-18",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q07",
+        "DR01-Q08"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "title": "Gemini CLI Quotas and Pricing",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_REPOSITORY",
+      "publication_or_update_date": "2026-06-18",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q07",
+        "DR01-Q08"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "title": "Antigravity CLI Overview",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q09"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "title": "Antigravity SDK Overview",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q09"
+      ]
+    },
+    {
+      "source_id": "S17",
+      "title": "Antigravity and Gemini Enterprise Agent Platform",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q09"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "title": "Google Antigravity FAQ",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q09",
+        "DR01-Q10"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "title": "Use Google AI Pro Benefits",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_PRICING",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q09"
+      ]
+    },
+    {
+      "source_id": "S20",
+      "title": "Use Google AI Ultra Benefits",
+      "publisher": "Google",
+      "source_class": "OFFICIAL_PRICING",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q09"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "title": "OpenCode CLI",
+      "publisher": "OpenCode",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q10",
+        "DR01-Q11"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "title": "OpenCode Providers",
+      "publisher": "OpenCode",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q03",
+        "DR01-Q10",
+        "DR01-Q11",
+        "DR01-Q12"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "title": "Authenticating GitHub Copilot CLI",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q12"
+      ]
+    },
+    {
+      "source_id": "S24",
+      "title": "GitHub Terms of Service",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_TERMS",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q12"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "title": "Grok Build Overview",
+      "publisher": "xAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q13",
+        "DR01-Q14"
+      ]
+    },
+    {
+      "source_id": "S26",
+      "title": "Grok Build Enterprise Deployments",
+      "publisher": "xAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": "2026-06-16",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q13",
+        "DR01-Q14"
+      ]
+    },
+    {
+      "source_id": "S27",
+      "title": "Introducing Grok Build",
+      "publisher": "xAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": "2026-05-25",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q13",
+        "DR01-Q14"
+      ]
+    },
+    {
+      "source_id": "S28",
+      "title": "xAI API Pricing",
+      "publisher": "xAI",
+      "source_class": "OFFICIAL_PRICING",
+      "publication_or_update_date": "2026-07-03",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q14"
+      ]
+    },
+    {
+      "source_id": "S29",
+      "title": "OpenRouter API Authentication",
+      "publisher": "OpenRouter",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q15"
+      ]
+    },
+    {
+      "source_id": "S30",
+      "title": "OpenRouter Management API Keys",
+      "publisher": "OpenRouter",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q15"
+      ]
+    },
+    {
+      "source_id": "S31",
+      "title": "OpenRouter OAuth PKCE",
+      "publisher": "OpenRouter",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q15"
+      ]
+    },
+    {
+      "source_id": "S32",
+      "title": "OpenRouter Pricing",
+      "publisher": "OpenRouter",
+      "source_class": "OFFICIAL_PRICING",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR01-Q15"
+      ]
+    }
+  ]
+}

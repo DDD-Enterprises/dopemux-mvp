@@ -1,0 +1,722 @@
+[
+  {
+    "logical_path": "CAMPAIGN-LOCK.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/campaign/CAMPAIGN-LOCK.json",
+    "expected_sha256": "51992c25579abc6f630c954ba99f72cb7db9a5e7a6bcec3cfd332ccd7f305224",
+    "actual_sha256": "51992c25579abc6f630c954ba99f72cb7db9a5e7a6bcec3cfd332ccd7f305224",
+    "expected_bytes": 1925,
+    "actual_bytes": 1925,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "KIT-MANIFEST.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/campaign/KIT-MANIFEST.json",
+    "expected_sha256": "6fb93f05811a81d7b2c2e5848a0174a286d6c7a8996928a9a20f9d20e90f85f0",
+    "actual_sha256": "6fb93f05811a81d7b2c2e5848a0174a286d6c7a8996928a9a20f9d20e90f85f0",
+    "expected_bytes": 2878,
+    "actual_bytes": 2878,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "SHA256SUMS.txt",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/campaign/SHA256SUMS.txt",
+    "expected_sha256": "3da3fda0ff3de754c1dc2865f2346a45ded0087f5e470dde805e84c96b6af636",
+    "actual_sha256": "3da3fda0ff3de754c1dc2865f2346a45ded0087f5e470dde805e84c96b6af636",
+    "expected_bytes": 1718,
+    "actual_bytes": 1718,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "MASTER-PROMPT.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/campaign/MASTER-PROMPT.md",
+    "expected_sha256": "fdc1b1ad9fe4df40181205a32dad46d47f64230f35d739f6a41eda6ba9d2b54d",
+    "actual_sha256": "fdc1b1ad9fe4df40181205a32dad46d47f64230f35d739f6a41eda6ba9d2b54d",
+    "expected_bytes": 2007,
+    "actual_bytes": 2007,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "RESEARCH-QUESTION-MATRIX.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/campaign/RESEARCH-QUESTION-MATRIX.json",
+    "expected_sha256": "a070c8ad4fa6f16cd1990943e18af0cb02df6f62be50f9b371089c7baeef7590",
+    "actual_sha256": "a070c8ad4fa6f16cd1990943e18af0cb02df6f62be50f9b371089c7baeef7590",
+    "expected_bytes": 1413,
+    "actual_bytes": 1413,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "RUN-CONTROL.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/campaign/RUN-CONTROL.md",
+    "expected_sha256": "9643bcb35c0fd466b90a7ec429fc58efa64698871161a40ca442d3f512f495bb",
+    "actual_sha256": "9643bcb35c0fd466b90a7ec429fc58efa64698871161a40ca442d3f512f495bb",
+    "expected_bytes": 2022,
+    "actual_bytes": 2022,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "SOURCE-POLICY.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/campaign/SOURCE-POLICY.md",
+    "expected_sha256": "af778301e919d652683f6616409153802fea4b2574782ab5971ec0a05293e422",
+    "actual_sha256": "af778301e919d652683f6616409153802fea4b2574782ab5971ec0a05293e422",
+    "expected_bytes": 2651,
+    "actual_bytes": 2651,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "START_HERE.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/campaign/START_HERE.md",
+    "expected_sha256": "ffc35f46a091509802b97458397297af5102f9f88d1f361d1b33bb1acf470f90",
+    "actual_sha256": "ffc35f46a091509802b97458397297af5102f9f88d1f361d1b33bb1acf470f90",
+    "expected_bytes": 2434,
+    "actual_bytes": 2434,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "acceptance/DR-INDEPENDENT-ACCEPTANCE-PROMPT.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/prompts/DR-INDEPENDENT-ACCEPTANCE-PROMPT.md",
+    "expected_sha256": "a3d41fc98742a2dbf80b03f87c5a7d846e4d0031f48c0c796dd24dbbcb4810e0",
+    "actual_sha256": "a3d41fc98742a2dbf80b03f87c5a7d846e4d0031f48c0c796dd24dbbcb4810e0",
+    "expected_bytes": 1922,
+    "actual_bytes": 1922,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/GPT56PRO-SYNTHESIS-HANDOFF-PROMPT.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/prompts/GPT56PRO-SYNTHESIS-HANDOFF-PROMPT.md",
+    "expected_sha256": "9fa1b9712e24a0d2f68bc16461622ed72e9c36c106a9e35a0f5e06c66930ab69",
+    "actual_sha256": "9fa1b9712e24a0d2f68bc16461622ed72e9c36c106a9e35a0f5e06c66930ab69",
+    "expected_bytes": 3214,
+    "actual_bytes": 3214,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "tracks/DR-01-VENDOR-PLAN-AUTH-AND-TERMS.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/prompts/DR-01-VENDOR-PLAN-AUTH-AND-TERMS.md",
+    "expected_sha256": "eae22d6bc2c306ddf427bd47f4cb5d475b8a985054c8492be28a7ef7d197a210",
+    "actual_sha256": "eae22d6bc2c306ddf427bd47f4cb5d475b8a985054c8492be28a7ef7d197a210",
+    "expected_bytes": 3466,
+    "actual_bytes": 3466,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "tracks/DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/prompts/DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY.md",
+    "expected_sha256": "a6683619bc4c99bb5e99472f758c5e72363ad1a2894518a1765d65e8471a3ae5",
+    "actual_sha256": "a6683619bc4c99bb5e99472f758c5e72363ad1a2894518a1765d65e8471a3ae5",
+    "expected_bytes": 2654,
+    "actual_bytes": 2654,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "tracks/DR-03-TOOL-AUTOMATION-AND-CONTAINMENT.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/prompts/DR-03-TOOL-AUTOMATION-AND-CONTAINMENT.md",
+    "expected_sha256": "dc484d7c5bc43972b08c575e4370850d95c94dcebd3497c5f4ae8ca6088f6b03",
+    "actual_sha256": "dc484d7c5bc43972b08c575e4370850d95c94dcebd3497c5f4ae8ca6088f6b03",
+    "expected_bytes": 2048,
+    "actual_bytes": 2048,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "tracks/DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/prompts/DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE.md",
+    "expected_sha256": "3af8f024348eaea25d7b867c72ec4b17c71116120509f87a06d13d65ad302fd4",
+    "actual_sha256": "3af8f024348eaea25d7b867c72ec4b17c71116120509f87a06d13d65ad302fd4",
+    "expected_bytes": 2661,
+    "actual_bytes": 2661,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "tracks/DR-05-API-FALLBACK-PRIVACY-AND-COST.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/prompts/DR-05-API-FALLBACK-PRIVACY-AND-COST.md",
+    "expected_sha256": "c3d1040956568d6d4aefdb544193f99e18ecc2072f47c69acd7f514b2ef99edd",
+    "actual_sha256": "c3d1040956568d6d4aefdb544193f99e18ecc2072f47c69acd7f514b2ef99edd",
+    "expected_bytes": 2229,
+    "actual_bytes": 2229,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "schemas/TRACK-FINDINGS.schema.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/schemas/TRACK-FINDINGS.schema.json",
+    "expected_sha256": "7e05ee044d1b7746545180ab537cdf7f1ccd12902939bfba46b68c7e677065e2",
+    "actual_sha256": "7e05ee044d1b7746545180ab537cdf7f1ccd12902939bfba46b68c7e677065e2",
+    "expected_bytes": 7266,
+    "actual_bytes": 7266,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "schemas/CAMPAIGN-ACCEPTANCE.schema.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/00-control/schemas/CAMPAIGN-ACCEPTANCE.schema.json",
+    "expected_sha256": "cbcf75c6e7dd7fba7096bf3d7098bb1adc9a37c54ecbc54ce76b30fd801ce2ad",
+    "actual_sha256": "cbcf75c6e7dd7fba7096bf3d7098bb1adc9a37c54ecbc54ce76b30fd801ce2ad",
+    "expected_bytes": 1831,
+    "actual_bytes": 1831,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "AUDITOR_CAPABILITY_MATRIX.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/01-local-capability-probe/accepted/AUDITOR_CAPABILITY_MATRIX.json",
+    "expected_sha256": "97576ae65303263d7bce91d69778f11e74b7881656c61eb726496b2c1f2f81a8",
+    "actual_sha256": "97576ae65303263d7bce91d69778f11e74b7881656c61eb726496b2c1f2f81a8",
+    "expected_bytes": 13971,
+    "actual_bytes": 13971,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "AUTHENTICATION_AND_TERMS_MATRIX.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/01-local-capability-probe/accepted/AUTHENTICATION_AND_TERMS_MATRIX.md",
+    "expected_sha256": "8183a24b0bbb22427ead1dd0b8dfe48fedf2988c8145b63151e5b3d0f160d0b6",
+    "actual_sha256": "8183a24b0bbb22427ead1dd0b8dfe48fedf2988c8145b63151e5b3d0f160d0b6",
+    "expected_bytes": 1781,
+    "actual_bytes": 1781,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "MECHANICAL_VALIDATION_INVENTORY.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/01-local-capability-probe/accepted/MECHANICAL_VALIDATION_INVENTORY.json",
+    "expected_sha256": "2dc63264942a05ff1d9e02711f8a89162cfd257a4c2286c71b6dadc7ad58e180",
+    "actual_sha256": "2dc63264942a05ff1d9e02711f8a89162cfd257a4c2286c71b6dadc7ad58e180",
+    "expected_bytes": 3634,
+    "actual_bytes": 3634,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "ROUTING_CONSTRAINTS.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/01-local-capability-probe/accepted/ROUTING_CONSTRAINTS.md",
+    "expected_sha256": "4b0f03fcdc6877cfe2b72baabc27aee71ca810219e9b448577310997b6e8920c",
+    "actual_sha256": "4b0f03fcdc6877cfe2b72baabc27aee71ca810219e9b448577310997b6e8920c",
+    "expected_bytes": 869,
+    "actual_bytes": 869,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "TOOL_SELECTION_CANDIDATES.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/01-local-capability-probe/accepted/TOOL_SELECTION_CANDIDATES.json",
+    "expected_sha256": "ad59845c74738a2b0611aabea1e6e742d455207454a5909456b3b9f4d9bb9a7c",
+    "actual_sha256": "ad59845c74738a2b0611aabea1e6e742d455207454a5909456b3b9f4d9bb9a7c",
+    "expected_bytes": 1095,
+    "actual_bytes": 1095,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "BLOCKERS_AND_UNKNOWNS.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/01-local-capability-probe/accepted/BLOCKERS_AND_UNKNOWNS.json",
+    "expected_sha256": "d8560493c7f250936a3eee5f85b5f7dec46571c6eadee5454d96a697f4cf52fb",
+    "actual_sha256": "d8560493c7f250936a3eee5f85b5f7dec46571c6eadee5454d96a697f4cf52fb",
+    "expected_bytes": 1584,
+    "actual_bytes": 1584,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "MODEL_IDENTITY_OBSERVATIONS.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/01-local-capability-probe/accepted/MODEL_IDENTITY_OBSERVATIONS.json",
+    "expected_sha256": "1a684c5dc26050f2390b2e3e266a34073e9868d7ae8b0ced14d725d2d4a7df5a",
+    "actual_sha256": "1a684c5dc26050f2390b2e3e266a34073e9868d7ae8b0ced14d725d2d4a7df5a",
+    "expected_bytes": 1051,
+    "actual_bytes": 1051,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "NETWORK_AND_CONTAINMENT_OBSERVATIONS.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/01-local-capability-probe/accepted/NETWORK_AND_CONTAINMENT_OBSERVATIONS.md",
+    "expected_sha256": "8d231f9ed15b4a5a59845de217b5d7bf3bc3ebf0df6b7b992ff6bbaf0c3d450d",
+    "actual_sha256": "8d231f9ed15b4a5a59845de217b5d7bf3bc3ebf0df6b7b992ff6bbaf0c3d450d",
+    "expected_bytes": 1280,
+    "actual_bytes": 1280,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "PROBE_SUMMARY.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/01-local-capability-probe/accepted/PROBE_SUMMARY.md",
+    "expected_sha256": "e37e90f0de0361474e0adb033a2ed6192fe8ba7d4d6378db3eb1fb42a1d150fe",
+    "actual_sha256": "e37e90f0de0361474e0adb033a2ed6192fe8ba7d4d6378db3eb1fb42a1d150fe",
+    "expected_bytes": 1076,
+    "actual_bytes": 1076,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "HANDOFF_TO_GPT56PRO.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/01-local-capability-probe/accepted/HANDOFF_TO_GPT56PRO.json",
+    "expected_sha256": "623f948c00561c8768b6d2c3094f931084e64c02c80e6f822a4fc452fecee9d6",
+    "actual_sha256": "623f948c00561c8768b6d2c3094f931084e64c02c80e6f822a4fc452fecee9d6",
+    "expected_bytes": 6434,
+    "actual_bytes": 6434,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "PROOF_MANIFEST.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/01-local-capability-probe/accepted/PROOF_MANIFEST.json",
+    "expected_sha256": "6dd9e5abf1ed53e96b833603ade467f1f4c8d4bd4515f210fca9b2be9423ac5a",
+    "actual_sha256": "6dd9e5abf1ed53e96b833603ade467f1f4c8d4bd4515f210fca9b2be9423ac5a",
+    "expected_bytes": 5383,
+    "actual_bytes": 5383,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS-REPORT.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/02-deep-research/track-01-vendor-plan-auth/DR-01-VENDOR-PLAN-AUTH-AND-TERMS-REPORT.md",
+    "expected_sha256": "cd3c0d399a9b9f9a4a74fed26b6a17bfeb9e72d9bf8c5421d14138cd3bb967bf",
+    "actual_sha256": "cd3c0d399a9b9f9a4a74fed26b6a17bfeb9e72d9bf8c5421d14138cd3bb967bf",
+    "expected_bytes": 20811,
+    "actual_bytes": 20811,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS-FINDINGS.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/02-deep-research/track-01-vendor-plan-auth/DR-01-VENDOR-PLAN-AUTH-AND-TERMS-FINDINGS.json",
+    "expected_sha256": "4efb958919edd8ea0f88d27a8bd9bac060acde63e1130407973d3eb4560b4ed3",
+    "actual_sha256": "4efb958919edd8ea0f88d27a8bd9bac060acde63e1130407973d3eb4560b4ed3",
+    "expected_bytes": 40902,
+    "actual_bytes": 40902,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY-REPORT.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/02-deep-research/track-02-runner-security/DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY-REPORT.md",
+    "expected_sha256": "276243f2cf59e1d46a75787dde2b790cb91befa3506b072315062307fd2a5cb7",
+    "actual_sha256": "276243f2cf59e1d46a75787dde2b790cb91befa3506b072315062307fd2a5cb7",
+    "expected_bytes": 41427,
+    "actual_bytes": 41427,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY-FINDINGS.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/02-deep-research/track-02-runner-security/DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY-FINDINGS.json",
+    "expected_sha256": "bded77b6c63707cc6b4c5fb5391ba7f2390dafc4ce025b1e0de12b1a9504a9cc",
+    "actual_sha256": "bded77b6c63707cc6b4c5fb5391ba7f2390dafc4ce025b1e0de12b1a9504a9cc",
+    "expected_bytes": 41473,
+    "actual_bytes": 41473,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-03-REPORT.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/02-deep-research/track-03-tool-containment/DR-03-REPORT.md",
+    "expected_sha256": "ffecc35623bdc8bdfe0f29ff1ca02b29a70349f08472e9399717590b4c95ccdc",
+    "actual_sha256": "ffecc35623bdc8bdfe0f29ff1ca02b29a70349f08472e9399717590b4c95ccdc",
+    "expected_bytes": 22925,
+    "actual_bytes": 22925,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-03-FINDINGS.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/02-deep-research/track-03-tool-containment/DR-03-FINDINGS.json",
+    "expected_sha256": "215379b88608c65f05dbadfd6563e9c1d18fcd56610ea299993d2cadb532527d",
+    "actual_sha256": "215379b88608c65f05dbadfd6563e9c1d18fcd56610ea299993d2cadb532527d",
+    "expected_bytes": 37471,
+    "actual_bytes": 37471,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-04-REPORT.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/02-deep-research/track-04-routing-evaluation/DR-04-REPORT.md",
+    "expected_sha256": "714a1dee27ebf65bee2641865452c88f13fd390cd8f16ea319f951f26d995c3d",
+    "actual_sha256": "714a1dee27ebf65bee2641865452c88f13fd390cd8f16ea319f951f26d995c3d",
+    "expected_bytes": 18513,
+    "actual_bytes": 18513,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-04-FINDINGS.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/02-deep-research/track-04-routing-evaluation/DR-04-FINDINGS.json",
+    "expected_sha256": "95382ff25bccd039f92e56d4d6e3630fd7edc183bb4dc8f6258b111aeca4f39a",
+    "actual_sha256": "95382ff25bccd039f92e56d4d6e3630fd7edc183bb4dc8f6258b111aeca4f39a",
+    "expected_bytes": 36193,
+    "actual_bytes": 36193,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-05-REPORT.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/02-deep-research/track-05-api-fallback/DR-05-REPORT.md",
+    "expected_sha256": "0f934c2ee462f54be1382e4324c5fe0a5c3b849495697bf7015a524d6a9bca2d",
+    "actual_sha256": "0f934c2ee462f54be1382e4324c5fe0a5c3b849495697bf7015a524d6a9bca2d",
+    "expected_bytes": 31933,
+    "actual_bytes": 31933,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-05-FINDINGS.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/02-deep-research/track-05-api-fallback/DR-05-FINDINGS.json",
+    "expected_sha256": "59988b8e8b1ba6bfc4f79c6ac1ca0c6d605f75c8f25dac39ba69ee293e45a212",
+    "actual_sha256": "59988b8e8b1ba6bfc4f79c6ac1ca0c6d605f75c8f25dac39ba69ee293e45a212",
+    "expected_bytes": 32714,
+    "actual_bytes": 32714,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "AGENTS.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/AGENTS.md",
+    "expected_sha256": "576069f92e845ce0960cbc303361290404043760db83edb71373244e6703602a",
+    "actual_sha256": "576069f92e845ce0960cbc303361290404043760db83edb71373244e6703602a",
+    "expected_bytes": 14767,
+    "actual_bytes": 14767,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "RULES.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/RULES.md",
+    "expected_sha256": "b9382cff07d86d2ee6f45949a5cdfabb987be87e294309332e53e1fe4b0529d8",
+    "actual_sha256": "b9382cff07d86d2ee6f45949a5cdfabb987be87e294309332e53e1fe4b0529d8",
+    "expected_bytes": 9968,
+    "actual_bytes": 9968,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "PROJECT.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/PROJECT.md",
+    "expected_sha256": "a3bfabc28ad461c85be3b97c939e99c4288a641fa412ccaeebf12d935d839942",
+    "actual_sha256": "a3bfabc28ad461c85be3b97c939e99c4288a641fa412ccaeebf12d935d839942",
+    "expected_bytes": 12763,
+    "actual_bytes": 12763,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "ARCHITECTURE.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/ARCHITECTURE.md",
+    "expected_sha256": "f6d1dfdaddb6afc719cf7bab299bb71552bbc1849fc2b2378a34d309d98e89e5",
+    "actual_sha256": "f6d1dfdaddb6afc719cf7bab299bb71552bbc1849fc2b2378a34d309d98e89e5",
+    "expected_bytes": 8742,
+    "actual_bytes": 8742,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "system-boundaries.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/system-boundaries.md",
+    "expected_sha256": "eb155df96b2f6bd3a24196c004bc0fca54cd9974e720afad701149b33273bedb",
+    "actual_sha256": "eb155df96b2f6bd3a24196c004bc0fca54cd9974e720afad701149b33273bedb",
+    "expected_bytes": 8436,
+    "actual_bytes": 8436,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "proof-contract.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/proof-contract.md",
+    "expected_sha256": "37a2535b6b93082d86c834da41bf862ac1fbcfd6de9baa1e36a7f4dd7f4c9b7e",
+    "actual_sha256": "37a2535b6b93082d86c834da41bf862ac1fbcfd6de9baa1e36a7f4dd7f4c9b7e",
+    "expected_bytes": 6581,
+    "actual_bytes": 6581,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "proof-bundle-schema.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/proof-bundle-schema.md",
+    "expected_sha256": "49692d5ddd370987593d9a0a7c1dfa1d8721a18b95fc6b27a7f99d370601297f",
+    "actual_sha256": "49692d5ddd370987593d9a0a7c1dfa1d8721a18b95fc6b27a7f99d370601297f",
+    "expected_bytes": 5773,
+    "actual_bytes": 5773,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "handoff-contract.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/handoff-contract.md",
+    "expected_sha256": "a1364337fa9df08757faeab3d1c3d3c34a08350e2ec26142defb2159707ac81f",
+    "actual_sha256": "a1364337fa9df08757faeab3d1c3d3c34a08350e2ec26142defb2159707ac81f",
+    "expected_bytes": 6802,
+    "actual_bytes": 6802,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "PAL_EXECUTION_RULES.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/PAL_EXECUTION_RULES.md",
+    "expected_sha256": "bb654339ab1cf200e114cb2fddc03099b5345874894a2cc2883369256bf30c57",
+    "actual_sha256": "bb654339ab1cf200e114cb2fddc03099b5345874894a2cc2883369256bf30c57",
+    "expected_bytes": 4166,
+    "actual_bytes": 4166,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "Multi-Model Routing Policy.txt",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/Multi-Model Routing Policy.txt",
+    "expected_sha256": "88e55663624b4c998fedb672eb5d9dffd59b73b5e288d097fa0d5ed29b6b4212",
+    "actual_sha256": "88e55663624b4c998fedb672eb5d9dffd59b73b5e288d097fa0d5ed29b6b4212",
+    "expected_bytes": 12920,
+    "actual_bytes": 12920,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "model-routing.policy.yaml",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/model-routing.policy.yaml",
+    "expected_sha256": "184509b1a92529c73dec7add73bd3eff405c0982d74ba06c80b7d5256d362e26",
+    "actual_sha256": "184509b1a92529c73dec7add73bd3eff405c0982d74ba06c80b7d5256d362e26",
+    "expected_bytes": 14781,
+    "actual_bytes": 14781,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-CAMPAIGN-ACCEPTANCE.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/03-acceptance/DR-CAMPAIGN-ACCEPTANCE.md",
+    "expected_sha256": "4e1b496b7168ffe03fc1607a9ab048a21ddaafbb20d70477b6c1a9de081bcda2",
+    "actual_sha256": "4e1b496b7168ffe03fc1607a9ab048a21ddaafbb20d70477b6c1a9de081bcda2",
+    "expected_bytes": 27340,
+    "actual_bytes": 27340,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "DR-CAMPAIGN-ACCEPTANCE.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/03-acceptance/DR-CAMPAIGN-ACCEPTANCE.json",
+    "expected_sha256": "ec2c964e404aa1d26351039a8bbc7c1d2c0ab5a2c519aed91a7d3794c876c148",
+    "actual_sha256": "ec2c964e404aa1d26351039a8bbc7c1d2c0ab5a2c519aed91a7d3794c876c148",
+    "expected_bytes": 13823,
+    "actual_bytes": 13823,
+    "verification_state": "HASH_AND_SIZE_VERIFIED",
+    "acceptance_state": "ACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/01_EXECUTIVE_VERDICT.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/01_EXECUTIVE_VERDICT.md",
+    "expected_sha256": "1761e670f685d73b5db98a67d8a3185091b9e73a0f985aa4024616f4ee036f30",
+    "actual_sha256": "1761e670f685d73b5db98a67d8a3185091b9e73a0f985aa4024616f4ee036f30",
+    "expected_bytes": 6987,
+    "actual_bytes": 6987,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/02_CURRENT_STATE_AND_EVIDENCE_MAP.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/02_CURRENT_STATE_AND_EVIDENCE_MAP.md",
+    "expected_sha256": "fa38252fcd816116ea9c0aad69e151f37c7b31d6c878cbcd1b592c5c27086761",
+    "actual_sha256": "fa38252fcd816116ea9c0aad69e151f37c7b31d6c878cbcd1b592c5c27086761",
+    "expected_bytes": 8146,
+    "actual_bytes": 8146,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/03_ADR_AUDIT_BROKER_AUTHORITY.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/03_ADR_AUDIT_BROKER_AUTHORITY.md",
+    "expected_sha256": "6e5d4039270843003fda378df51f17ddd83524ca5ea493798597e727cbc56b9d",
+    "actual_sha256": "6e5d4039270843003fda378df51f17ddd83524ca5ea493798597e727cbc56b9d",
+    "expected_bytes": 6107,
+    "actual_bytes": 6107,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/04_TRUST_AND_THREAT_MODEL.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/04_TRUST_AND_THREAT_MODEL.md",
+    "expected_sha256": "fbc9425a363504a7285b79586a9382f080e7cc5f2988cf5f6b30aca45a30aabe",
+    "actual_sha256": "fbc9425a363504a7285b79586a9382f080e7cc5f2988cf5f6b30aca45a30aabe",
+    "expected_bytes": 6522,
+    "actual_bytes": 6522,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/05_TARGET_ARCHITECTURE.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/05_TARGET_ARCHITECTURE.md",
+    "expected_sha256": "6b0a20a2d33e3b96def67a91f21bedd4cb9f4093e31094142683e8a6dd4a09e7",
+    "actual_sha256": "6b0a20a2d33e3b96def67a91f21bedd4cb9f4093e31094142683e8a6dd4a09e7",
+    "expected_bytes": 5904,
+    "actual_bytes": 5904,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/06_AUTH_AND_CREDENTIAL_MODEL.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/06_AUTH_AND_CREDENTIAL_MODEL.md",
+    "expected_sha256": "f4c79d377d90100f9c7eab1b2816e60ac241a156f560351cd3f37be61a866840",
+    "actual_sha256": "f4c79d377d90100f9c7eab1b2816e60ac241a156f560351cd3f37be61a866840",
+    "expected_bytes": 6323,
+    "actual_bytes": 6323,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/07_AUDIT_REQUEST_AND_RESULT_CONTRACTS.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/07_AUDIT_REQUEST_AND_RESULT_CONTRACTS.md",
+    "expected_sha256": "47f2c3d93f515ff8bbac5b5e4ad228b5228d862efb2d4acb7e50a64d5fd42d10",
+    "actual_sha256": "47f2c3d93f515ff8bbac5b5e4ad228b5228d862efb2d4acb7e50a64d5fd42d10",
+    "expected_bytes": 6524,
+    "actual_bytes": 6524,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/08_RISK_COMPLEXITY_ROUTING_POLICY.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/08_RISK_COMPLEXITY_ROUTING_POLICY.md",
+    "expected_sha256": "257867ab086d74ee79c62c8f73b4e9429afc37cd4d545ce7b93c1f296f9a5158",
+    "actual_sha256": "257867ab086d74ee79c62c8f73b4e9429afc37cd4d545ce7b93c1f296f9a5158",
+    "expected_bytes": 6589,
+    "actual_bytes": 6589,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/09_TOOL_ADAPTER_ARCHITECTURE.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/09_TOOL_ADAPTER_ARCHITECTURE.md",
+    "expected_sha256": "d7e3fb773bd44751c248f1f3fdacb32c159560837c8e8d2ad470ac78793d9edf",
+    "actual_sha256": "d7e3fb773bd44751c248f1f3fdacb32c159560837c8e8d2ad470ac78793d9edf",
+    "expected_bytes": 6171,
+    "actual_bytes": 6171,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/10_LOCAL_BROKER_OPERATIONS.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/10_LOCAL_BROKER_OPERATIONS.md",
+    "expected_sha256": "c6cb899da5f5d605e8c1b793822bc86618c4b1507681f2500f49dd264966dd39",
+    "actual_sha256": "c6cb899da5f5d605e8c1b793822bc86618c4b1507681f2500f49dd264966dd39",
+    "expected_bytes": 5639,
+    "actual_bytes": 5639,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/11_SELF_HOSTED_RUNNER_OPTION.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/11_SELF_HOSTED_RUNNER_OPTION.md",
+    "expected_sha256": "49b44e0b898f99239017141e1d41f0a102c79600e3c18fba4f1034db55fcfd7c",
+    "actual_sha256": "49b44e0b898f99239017141e1d41f0a102c79600e3c18fba4f1034db55fcfd7c",
+    "expected_bytes": 4462,
+    "actual_bytes": 4462,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/12_GITHUB_EXACT_HEAD_INTEGRATION.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/12_GITHUB_EXACT_HEAD_INTEGRATION.md",
+    "expected_sha256": "47ca92a544e96804a163c3564bfde600a594eed3212126d08be60edb4918ceb3",
+    "actual_sha256": "47ca92a544e96804a163c3564bfde600a594eed3212126d08be60edb4918ceb3",
+    "expected_bytes": 5051,
+    "actual_bytes": 5051,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/13_MECHANICAL_ONLY_LANE.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/13_MECHANICAL_ONLY_LANE.md",
+    "expected_sha256": "8fda9c286bf00af8c8a8d918998c5a02ad510b046e4db39cd22dc57b0780a809",
+    "actual_sha256": "8fda9c286bf00af8c8a8d918998c5a02ad510b046e4db39cd22dc57b0780a809",
+    "expected_bytes": 4990,
+    "actual_bytes": 4990,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/14_API_FALLBACK_AND_OPENROUTER_POLICY.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/14_API_FALLBACK_AND_OPENROUTER_POLICY.md",
+    "expected_sha256": "241cd80bbbba005175c56099b2a5a7d7774f8f954ed3095daf4c956d3b031750",
+    "actual_sha256": "241cd80bbbba005175c56099b2a5a7d7774f8f954ed3095daf4c956d3b031750",
+    "expected_bytes": 5877,
+    "actual_bytes": 5877,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/15_EVALUATION_AND_CERTIFICATION.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/15_EVALUATION_AND_CERTIFICATION.md",
+    "expected_sha256": "94d9386ec34ada32e5702f04d68ae683d647b8eee62c6d0b4c342a6947677953",
+    "actual_sha256": "94d9386ec34ada32e5702f04d68ae683d647b8eee62c6d0b4c342a6947677953",
+    "expected_bytes": 5770,
+    "actual_bytes": 5770,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/16_FAILURE_ESCALATION_AND_DEMOTION.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/16_FAILURE_ESCALATION_AND_DEMOTION.md",
+    "expected_sha256": "6d76f7dc657bf2c3de7572d201d5e4489aa92c6e364072a5499c94351782f1ac",
+    "actual_sha256": "6d76f7dc657bf2c3de7572d201d5e4489aa92c6e364072a5499c94351782f1ac",
+    "expected_bytes": 4626,
+    "actual_bytes": 4626,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/17_SECURITY_PRIVACY_AND_TERMS_MODEL.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/17_SECURITY_PRIVACY_AND_TERMS_MODEL.md",
+    "expected_sha256": "182c97dca62d84ae44182060459ff3033d5196677057d5b4dbabce275b310411",
+    "actual_sha256": "182c97dca62d84ae44182060459ff3033d5196677057d5b4dbabce275b310411",
+    "expected_bytes": 5684,
+    "actual_bytes": 5684,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/18_MIGRATION_AND_ROLLBACK.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/18_MIGRATION_AND_ROLLBACK.md",
+    "expected_sha256": "de9c8a418b47210292f2ba629f912951022b8d1fcd309da43762cdd812f8289d",
+    "actual_sha256": "de9c8a418b47210292f2ba629f912951022b8d1fcd309da43762cdd812f8289d",
+    "expected_bytes": 5055,
+    "actual_bytes": 5055,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/19_IMPLEMENTATION_ROADMAP.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/19_IMPLEMENTATION_ROADMAP.md",
+    "expected_sha256": "ed132d17f8d775b21371b1c5de0d4261b44c034d563a7c28d3705f5d2724128b",
+    "actual_sha256": "ed132d17f8d775b21371b1c5de0d4261b44c034d563a7c28d3705f5d2724128b",
+    "expected_bytes": 5959,
+    "actual_bytes": 5959,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/20_MACRO_PACKET_SERIES.md",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/20_MACRO_PACKET_SERIES.md",
+    "expected_sha256": "eb315e695fd6d1438fd7499313fb11a238223bbb76fe94d1dbe52503c38604d1",
+    "actual_sha256": "eb315e695fd6d1438fd7499313fb11a238223bbb76fe94d1dbe52503c38604d1",
+    "expected_bytes": 7156,
+    "actual_bytes": 7156,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  },
+  {
+    "logical_path": "synthesis/21_OPEN_QUESTIONS.json",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/04-synthesis/deliverables/21_OPEN_QUESTIONS.json",
+    "expected_sha256": "e6b3326e2665c1bbb1879291e7e1c00e608131d20c876ffd7042b173f0e04c84",
+    "actual_sha256": "e6b3326e2665c1bbb1879291e7e1c00e608131d20c876ffd7042b173f0e04c84",
+    "expected_bytes": 51173,
+    "actual_bytes": 51173,
+    "verification_state": "HASH_VERIFIED_LOCAL",
+    "acceptance_state": "PRESENT_UNACCEPTED"
+  }
+]

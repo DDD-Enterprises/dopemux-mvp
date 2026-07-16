@@ -1,0 +1,951 @@
+{
+  "schema_version": "1.0.0",
+  "campaign_id": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "track_id": "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE",
+  "status": "COMPLETE_WITH_UNKNOWNS",
+  "research_date": "2026-07-13",
+  "questions": [
+    {
+      "question_id": "DR04-Q01",
+      "question": "Which diff features predict audit difficulty or security risk?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR04-Q02",
+      "question": "How should docs-only, test-only, schema, dependency, CI, auth, secrets, persistence, destructive, and release changes be classified?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR04-Q03",
+      "question": "Which conditions must bypass model selection and fail closed?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR04-Q04",
+      "question": "Which classification and routing decisions can be deterministic?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR04-Q05",
+      "question": "How should size, file count, code ownership, language, dependency graph, and historical defect data affect complexity?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR04-Q06",
+      "question": "When is mechanical validation alone sufficient?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR04-Q07",
+      "question": "When are lightweight, stronger, dual-auditor, or premium-model routes justified?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR04-Q08",
+      "question": "How should plan exhaustion, runner unavailability, malformed output, and conflicting findings be handled?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR04-Q09",
+      "question": "Which dimensions establish audit independence, and when is same-provider review acceptable?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR04-Q10",
+      "question": "How should unknown actual model identity constrain independence claims?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR04-Q11",
+      "question": "Can human review plus mechanical validation satisfy independence for evidence-only changes?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "DR04-Q12",
+      "question": "What benchmark corpus, adjudication method, metrics, blocking thresholds, certification expiry, and revocation criteria are required?",
+      "answer_status": "PARTIAL"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "DR04-F01",
+      "claim_label": "OBSERVED",
+      "topic": "local_execution_posture",
+      "claim": "The supplied local capability probe was static-only; mechanical validation is the only observed usable lane, all model-capable live probes were NOT_RUN, and actual model identity remains UNKNOWN.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "PROBE_SUMMARY.md",
+        "MODEL_IDENTITY_OBSERVATIONS.json",
+        "ROUTING_CONSTRAINTS.md"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Automatic model routing remains blocked until other tracks establish authorized authentication, containment, and identity evidence."
+    },
+    {
+      "finding_id": "DR04-F02",
+      "claim_label": "INFERRED",
+      "topic": "complexity_features",
+      "claim": "Relative churn, change dispersion, multi-file modification, ownership mismatch, weak reviewer participation, dependency centrality, and historical defect concentration are more defensible complexity indicators than raw line count alone.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-11",
+        "SRC-12",
+        "SRC-13",
+        "SRC-14",
+        "SRC-15"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "The classifier should use size and file count as modifiers rather than sole route selectors."
+    },
+    {
+      "finding_id": "DR04-F03",
+      "claim_label": "PROPOSED",
+      "topic": "classification_taxonomy",
+      "claim": "Use five classes: evidence-only; test-evidence; routine bounded change; boundary or supply-chain change; and security-critical or irreversible change.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-02",
+        "SRC-03",
+        "SRC-04",
+        "SRC-05",
+        "SRC-07",
+        "SRC-08",
+        "SRC-09",
+        "SRC-10"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "This creates a deterministic risk floor before model cost, availability, or preference are considered."
+    },
+    {
+      "finding_id": "DR04-F04",
+      "claim_label": "PROPOSED",
+      "topic": "mechanical_only_eligibility",
+      "claim": "Mechanical-only closure should require a wholly non-executable allowlisted diff, no protected dependency, workflow, build, infrastructure, schema, auth, secrets, persistence, or release path, no executable-bit change, complete proof, and passing deterministic policy checks.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "MECHANICAL_VALIDATION_INVENTORY.json",
+        "SRC-02",
+        "SRC-03",
+        "SRC-07",
+        "SRC-08",
+        "SRC-09"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Mechanical validation becomes a first-class but narrowly bounded route rather than a semantic audit substitute."
+    },
+    {
+      "finding_id": "DR04-F05",
+      "claim_label": "PROPOSED",
+      "topic": "test_only_changes",
+      "claim": "Additive tests may qualify for a low-risk lane, but test deletion, assertion weakening, fixture semantic changes, snapshot acceptance changes, and test-selection changes should not receive automatic mechanical-only closure.",
+      "confidence": "MEDIUM",
+      "source_refs": [
+        "SRC-02",
+        "SRC-03",
+        "SRC-15"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "The classifier must distinguish evidence-increasing tests from changes that can hide defects."
+    },
+    {
+      "finding_id": "DR04-F06",
+      "claim_label": "PROPOSED",
+      "topic": "fail_closed_conditions",
+      "claim": "Unknown protected file types, auth and secrets changes, vulnerable dependencies, CI and release changes, destructive persistence operations, generated or binary outputs without authoritative source, malformed diffs, missing ownership coverage, missing status evidence, and unpinned model identity should fail closed.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-02",
+        "SRC-03",
+        "SRC-04",
+        "SRC-05",
+        "SRC-06",
+        "SRC-07",
+        "SRC-08",
+        "SRC-09",
+        "SRC-10",
+        "SRC-25",
+        "SRC-26",
+        "SRC-27"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "These conditions bypass discretionary model selection and require blocking or human escalation."
+    },
+    {
+      "finding_id": "DR04-F07",
+      "claim_label": "PROPOSED",
+      "topic": "routing_ladder",
+      "claim": "Use a five-step ladder: mechanical validation; one lightweight certified model; one stronger model; two independent auditors; and premium adjudication for high-impact ambiguity or unresolved severe disagreement.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-01",
+        "SRC-02",
+        "SRC-16",
+        "SRC-17",
+        "SRC-18",
+        "SRC-19",
+        "SRC-20"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Premium models are reserved for high-risk or unstable decisions rather than trivial evidence-only changes."
+    },
+    {
+      "finding_id": "DR04-F08",
+      "claim_label": "PROPOSED",
+      "topic": "premium_escalation",
+      "claim": "Premium escalation should be driven by risk, cross-boundary ambiguity, irreversible semantics, or unresolved auditor conflict, not merely by plan exhaustion, rate limiting, or runner failure.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-01",
+        "SRC-19",
+        "SRC-20"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Costly fallback cannot silently masquerade as a quality escalation."
+    },
+    {
+      "finding_id": "DR04-F09",
+      "claim_label": "PROPOSED",
+      "topic": "failure_taxonomy",
+      "claim": "Execution failure, model-output failure, model-quality failure, policy block, auditor conflict, and human escalation should be recorded as separate outcomes.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-01",
+        "SRC-19",
+        "SRC-20"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Route metrics will not falsely penalize or reward a model for runner, transport, quota, or parser failures."
+    },
+    {
+      "finding_id": "DR04-F10",
+      "claim_label": "PROPOSED",
+      "topic": "malformed_output",
+      "claim": "Schema-invalid model output is a failed audit execution; parser salvage may be retained as diagnostics but must not be promoted to a certified pass.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-01",
+        "SRC-19",
+        "SRC-20"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Structured output validity becomes a hard operational gate."
+    },
+    {
+      "finding_id": "DR04-F11",
+      "claim_label": "INFERRED",
+      "topic": "independence_dimensions",
+      "claim": "Pinned actual model identity, provider or family separation, separate session, separate runner or harness, separate host when common-mode risk matters, separate credential profile, and separate prompt authorship are distinct independence dimensions.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-16",
+        "SRC-17",
+        "SRC-18"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Independence must be claimed dimension-by-dimension rather than by counting model calls."
+    },
+    {
+      "finding_id": "DR04-F12",
+      "claim_label": "PROPOSED",
+      "topic": "strong_independence",
+      "claim": "Strong independence should require pinned and recorded actual model identities, provider or model-family separation, separate sessions, no shared hidden state, separated mutable runner state, and independently attributable proof records.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-16",
+        "SRC-17",
+        "SRC-18"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Critical automatic decisions cannot rely on cosmetic multi-agent diversity."
+    },
+    {
+      "finding_id": "DR04-F13",
+      "claim_label": "PROPOSED",
+      "topic": "same_provider_review",
+      "claim": "Same-provider review may count as partial independence for medium-risk work when versions are pinned and sessions, prompts, runners, and mutable state are separated, but it should not count as strong independence for critical automatic decisions.",
+      "confidence": "MEDIUM",
+      "source_refs": [
+        "SRC-16",
+        "SRC-17",
+        "SRC-18"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "The policy can use same-provider redundancy proportionally without overstating common-mode resistance."
+    },
+    {
+      "finding_id": "DR04-F14",
+      "claim_label": "PROPOSED",
+      "topic": "unknown_model_identity",
+      "claim": "When actual model identity is unknown, independence claims should be capped at session-independent or runner-independent; provider- or model-family independence must not be claimed.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "MODEL_IDENTITY_OBSERVATIONS.json",
+        "SRC-16",
+        "SRC-18"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Current local model candidates cannot satisfy model-family independence claims."
+    },
+    {
+      "finding_id": "DR04-F15",
+      "claim_label": "PROPOSED",
+      "topic": "human_mechanical_independence",
+      "claim": "For genuinely evidence-only changes, human review plus deterministic validation can satisfy the practical independence requirement as a proportional-risk policy choice.",
+      "confidence": "MEDIUM",
+      "source_refs": [
+        "SRC-02",
+        "SRC-03",
+        "SRC-04",
+        "SRC-15"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Trivial evidence changes need not consume a premium independent model solely to satisfy a formalistic reviewer count."
+    },
+    {
+      "finding_id": "DR04-F16",
+      "claim_label": "PROPOSED",
+      "topic": "benchmark_corpus",
+      "claim": "Route evaluation should use a mixed corpus of internal historical PRs, clean controls, protected-category changes, adversarial unsupported-claim cases, and diverse public review and security benchmarks; no single vendor benchmark should determine certification.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-19",
+        "SRC-20",
+        "SRC-21",
+        "SRC-22",
+        "SRC-23",
+        "SRC-24"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Certification will reflect repository-specific risk while retaining external coverage and neutral controls."
+    },
+    {
+      "finding_id": "DR04-F17",
+      "claim_label": "PROPOSED",
+      "topic": "gold_adjudication",
+      "claim": "Expected findings should record exact location, severity, reproducible failure or authoritative rationale, adjudicator identity, disagreement, and tie-break outcome; hard cases should receive double review plus tie-break.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-01",
+        "SRC-19",
+        "SRC-20",
+        "SRC-24"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Benchmark labels become auditable evidence rather than unexplained ground truth."
+    },
+    {
+      "finding_id": "DR04-F18",
+      "claim_label": "PROPOSED",
+      "topic": "shadow_evaluation",
+      "claim": "Candidate routes should first run in shadow mode beside the incumbent, preserving exact prompts, identity, settings, checks, output, evidence, harness version, human outcome, and operator correction.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-01",
+        "SRC-19",
+        "SRC-20"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Automatic routing is blocked until route behavior is measured without affecting merge decisions."
+    },
+    {
+      "finding_id": "DR04-F19",
+      "claim_label": "PROPOSED",
+      "topic": "evaluation_metrics",
+      "claim": "Core metrics should include severe-defect recall, false-positive rate, unsupported claims, schema validity, evidence grounding, contradiction detection, unnecessary escalation, latency, measurable usage or cost, operator correction, environment failure, and adjudicator disagreement.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-01",
+        "SRC-19",
+        "SRC-20",
+        "SRC-24"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Severe misses, hallucinated severity, and execution unreliability remain visible as separate failure modes."
+    },
+    {
+      "finding_id": "DR04-F20",
+      "claim_label": "PROPOSED",
+      "topic": "certification_scope",
+      "claim": "Certification should bind to repository class, diff class, language and tooling class, model snapshot, provider, reasoning settings, prompt hash, deterministic-check bundle, runner and harness version, and output schema version.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-01",
+        "SRC-19",
+        "SRC-20"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "A vague certification of a vendor brand or model family is rejected."
+    },
+    {
+      "finding_id": "DR04-F21",
+      "claim_label": "PROPOSED",
+      "topic": "initial_thresholds",
+      "claim": "Candidate starting gates are severe-defect recall of at least 0.90 for the certified cohort and 0.95 for security-critical or irreversible cohorts, structured-output validity of at least 99.5 percent, unsupported severe claims below 2 percent, no unresolved systematic human-disagreement pattern, and an operator-defined escalation budget.",
+      "confidence": "LOW",
+      "source_refs": [
+        "SRC-01",
+        "SRC-19",
+        "SRC-20"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "These are provisional policy values requiring local calibration, not research-established universal thresholds."
+    },
+    {
+      "finding_id": "DR04-F22",
+      "claim_label": "PROPOSED",
+      "topic": "certification_expiry",
+      "claim": "Route certification should expire after 90 days or immediately after material changes to model, provider, prompt, predicate, runner, tool set, schema, or validation bundle.",
+      "confidence": "MEDIUM",
+      "source_refs": [
+        "SRC-01",
+        "SRC-19",
+        "SRC-20"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Certification cannot survive opaque model drift or harness changes."
+    },
+    {
+      "finding_id": "DR04-F23",
+      "claim_label": "PROPOSED",
+      "topic": "certification_revocation",
+      "claim": "Immediate revocation should follow a severe production miss, failure to detect a protected fail-closed condition, systematic unsupported severe claims, schema-validity control-limit breach, identity or provider drift, benchmark drift, or a security incident.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "SRC-01",
+        "SRC-02",
+        "SRC-19",
+        "SRC-20"
+      ],
+      "local_evidence_relationship": "LOCAL_EVIDENCE_ABSENT",
+      "decision_impact": "Previously certified routes fail closed when their evidence basis changes or breaks."
+    },
+    {
+      "finding_id": "DR04-F24",
+      "claim_label": "UNKNOWN",
+      "topic": "tool_lane_assignment",
+      "claim": "Which locally installed plan-authenticated model tool can legally, safely, and reliably fill each routing lane remains unresolved by this track.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "AUTHENTICATION_AND_TERMS_MATRIX.md",
+        "ROUTING_CONSTRAINTS.md",
+        "BLOCKERS_AND_UNKNOWNS.json"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Automatic binding of a named tool to a route remains blocked pending DR-01 and DR-03 evidence."
+    },
+    {
+      "finding_id": "DR04-F25",
+      "claim_label": "UNKNOWN",
+      "topic": "local_route_performance",
+      "claim": "Route performance on Dopemux repositories is unknown because no benchmark or model invocation occurred in this research track.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "RUN-CONTROL.md",
+        "PROBE_SUMMARY.md"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "No route may be certified or automatically promoted from this research report alone."
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "DR04-C01",
+      "sources": [
+        "SRC-11",
+        "SRC-12",
+        "SRC-15",
+        "SRC-04"
+      ],
+      "conflict": "Small changes are generally easier to review, but raw size is not a sufficient safety classifier because tiny security-sensitive diffs can be critical while large documentation or generated diffs can have low runtime risk.",
+      "resolution_status": "RESOLVED",
+      "next_evidence": "Treat size and file count as complexity modifiers while protected categories set the deterministic risk floor."
+    },
+    {
+      "id": "DR04-C02",
+      "sources": [
+        "SRC-16",
+        "SRC-17",
+        "SRC-18"
+      ],
+      "conflict": "A second model can add review diversity, but same-provider, same-family, shared-session, or shared-harness execution can preserve common-mode error and self-bias.",
+      "resolution_status": "RESOLVED",
+      "next_evidence": "Record and certify independence dimensions explicitly rather than counting model invocations."
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "DR04-U01",
+      "question": "What numeric routing thresholds are optimal for Dopemux?",
+      "why_unknown": "The literature does not establish repository-specific cost-sensitive thresholds, and this track ran no benchmark.",
+      "blocking_scope": "Automatic route certification and promotion.",
+      "next_evidence": "Run shadow evaluation on an adjudicated Dopemux corpus and calibrate thresholds against severe-miss and false-positive costs."
+    },
+    {
+      "id": "DR04-U02",
+      "question": "Which plan-backed model tool should fill each lane?",
+      "why_unknown": "Static installation evidence does not prove authorized unattended plan authentication, containment, or actual model identity.",
+      "blocking_scope": "Automatic model-lane binding.",
+      "next_evidence": "Carry accepted DR-01 and DR-03 findings into synthesis; require fail-closed treatment for UNKNOWN auth, containment, or identity."
+    },
+    {
+      "id": "DR04-U03",
+      "question": "How do candidate routes perform on Dopemux repositories?",
+      "why_unknown": "No model invocation, benchmark execution, or historical route evaluation was permitted in this track.",
+      "blocking_scope": "Claims of route quality, independence effectiveness, and certification.",
+      "next_evidence": "Execute a bounded benchmark and shadow-evaluation program with exact route provenance and human adjudication."
+    }
+  ],
+  "not_run": [
+    {
+      "activity": "Repository implementation or policy wiring",
+      "reason": "Forbidden by the bounded external research scope."
+    },
+    {
+      "activity": "GitHub mutation or workflow execution",
+      "reason": "Forbidden by run control and track isolation."
+    },
+    {
+      "activity": "Provider login, credential inspection, or token use",
+      "reason": "Forbidden by campaign security boundaries."
+    },
+    {
+      "activity": "Model invocation or benchmark execution",
+      "reason": "Live provider calls and broad benchmarks were outside this research track."
+    },
+    {
+      "activity": "Plan-credit or subscription-usage measurement",
+      "reason": "No live request was made, and plan-credit mappings must not be inferred."
+    },
+    {
+      "activity": "Final Dopemux architecture synthesis",
+      "reason": "Synthesis is gated on independent acceptance of all five tracks."
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "DR04-R01",
+      "recommendation": "Carry the five-class PR taxonomy and deterministic risk-floor concept into synthesis.",
+      "status": "PROPOSED",
+      "rationale": "It separates protected-category risk from empirical complexity and prevents cheap routes from deciding high-impact changes.",
+      "prerequisites": [
+        "Independent campaign acceptance",
+        "Preserve taxonomy as proposed policy rather than observed runtime"
+      ]
+    },
+    {
+      "id": "DR04-R02",
+      "recommendation": "Keep mechanical validation as a first-class route with explicit validator authority limits.",
+      "status": "PROPOSED",
+      "rationale": "The local probe supports deterministic validation, but not semantic correctness beyond each validator's scope.",
+      "prerequisites": [
+        "Certified non-executable allowlist",
+        "Complete deterministic check bundle",
+        "Exact proof envelope"
+      ]
+    },
+    {
+      "id": "DR04-R03",
+      "recommendation": "Set elevated route floors for auth, secrets, CI/CD, release, provenance, dependency, public-contract, and destructive persistence changes.",
+      "status": "PROPOSED",
+      "rationale": "These categories have disproportionate blast radius and require fail-closed handling.",
+      "prerequisites": [
+        "Path and semantic trigger definitions",
+        "CODEOWNERS and protected-path coverage"
+      ]
+    },
+    {
+      "id": "DR04-R04",
+      "recommendation": "Separate execution failure from model-quality failure in proof, metrics, retry, and fallback logic.",
+      "status": "PROPOSED",
+      "rationale": "Runner, quota, parser, and transport failures do not demonstrate poor or superior model judgment.",
+      "prerequisites": [
+        "Outcome taxonomy in request/result contracts",
+        "Bounded retry policy"
+      ]
+    },
+    {
+      "id": "DR04-R05",
+      "recommendation": "Require pinned identity and explicit independence dimensions before claiming independent review.",
+      "status": "PROPOSED",
+      "rationale": "Multiple calls can share common-mode error; unknown model identity blocks provider- or family-level independence claims.",
+      "prerequisites": [
+        "Actual route provenance",
+        "Separate session records",
+        "Runner and provider metadata"
+      ]
+    },
+    {
+      "id": "DR04-R06",
+      "recommendation": "Establish shadow evaluation before any automatic route recommendation or execution.",
+      "status": "PROPOSED",
+      "rationale": "No Dopemux-specific route performance was measured in this track.",
+      "prerequisites": [
+        "Adjudicated corpus",
+        "Frozen route configurations",
+        "Human outcome capture",
+        "Metric control limits"
+      ]
+    },
+    {
+      "id": "DR04-R07",
+      "recommendation": "Do not bind locally installed model tools to routing lanes yet.",
+      "status": "BLOCKED",
+      "rationale": "Authorized plan authentication, containment, and model identity remain unresolved in local evidence and depend on other tracks.",
+      "prerequisites": [
+        "Accepted DR-01 findings",
+        "Accepted DR-03 findings",
+        "Fail-closed identity and containment rules"
+      ]
+    }
+  ],
+  "synthesis_implications": [
+    "Routing should compute a deterministic risk floor before considering model cost, availability, or operator preference.",
+    "Mechanical validation is a first-class route but cannot certify semantic correctness beyond each validator's authority.",
+    "UNKNOWN authentication, containment, privacy, or model identity must remain non-executable.",
+    "Environment failure must not automatically trigger a more expensive model or weaken privacy and trust constraints.",
+    "Exact route, provider, model, runner, prompt, schema, and validation provenance belong in audit proof.",
+    "Human approval remains outside the broker and auditor execution roles.",
+    "This track supplies research-backed options and proposed thresholds; it does not establish final Dopemux policy."
+  ],
+  "source_ledger": [
+    {
+      "source_id": "SRC-01",
+      "title": "Artificial Intelligence Risk Management Framework (AI RMF 1.0)",
+      "publisher": "NIST",
+      "source_class": "STANDARD",
+      "publication_or_update_date": "2023-01-26",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q07",
+        "DR04-Q08",
+        "DR04-Q12"
+      ]
+    },
+    {
+      "source_id": "SRC-02",
+      "title": "Secure Software Development Framework (SSDF) Version 1.1",
+      "publisher": "NIST",
+      "source_class": "STANDARD",
+      "publication_or_update_date": "2022-02-03",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q02",
+        "DR04-Q03",
+        "DR04-Q04",
+        "DR04-Q06",
+        "DR04-Q12"
+      ]
+    },
+    {
+      "source_id": "SRC-03",
+      "title": "Guidelines on Minimum Standards for Developer Verification of Software",
+      "publisher": "NIST",
+      "source_class": "STANDARD",
+      "publication_or_update_date": "2021-07-09",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q03",
+        "DR04-Q04",
+        "DR04-Q06"
+      ]
+    },
+    {
+      "source_id": "SRC-04",
+      "title": "Secure Code Review Cheat Sheet",
+      "publisher": "OWASP",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q01",
+        "DR04-Q02",
+        "DR04-Q03",
+        "DR04-Q06"
+      ]
+    },
+    {
+      "source_id": "SRC-05",
+      "title": "CI/CD Security Cheat Sheet",
+      "publisher": "OWASP",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q02",
+        "DR04-Q03"
+      ]
+    },
+    {
+      "source_id": "SRC-06",
+      "title": "Secrets Management Cheat Sheet",
+      "publisher": "OWASP",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q02",
+        "DR04-Q03"
+      ]
+    },
+    {
+      "source_id": "SRC-07",
+      "title": "Reviewing dependency changes in a pull request",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q02",
+        "DR04-Q03",
+        "DR04-Q04",
+        "DR04-Q06"
+      ]
+    },
+    {
+      "source_id": "SRC-08",
+      "title": "About code owners",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q01",
+        "DR04-Q03",
+        "DR04-Q04",
+        "DR04-Q05",
+        "DR04-Q06"
+      ]
+    },
+    {
+      "source_id": "SRC-09",
+      "title": "Managing a branch protection rule",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q03",
+        "DR04-Q04",
+        "DR04-Q06"
+      ]
+    },
+    {
+      "source_id": "SRC-10",
+      "title": "SLSA specification and build provenance",
+      "publisher": "OpenSSF SLSA",
+      "source_class": "STANDARD",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q02",
+        "DR04-Q03",
+        "DR04-Q07"
+      ]
+    },
+    {
+      "source_id": "SRC-11",
+      "title": "Use of Relative Code Churn Measures to Predict System Defect Density",
+      "publisher": "Microsoft Research",
+      "source_class": "PEER_REVIEWED_RESEARCH",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q01",
+        "DR04-Q05"
+      ]
+    },
+    {
+      "source_id": "SRC-12",
+      "title": "Predicting Faults Using the Complexity of Code Changes",
+      "publisher": "Academic authors",
+      "source_class": "PEER_REVIEWED_RESEARCH",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q01",
+        "DR04-Q05"
+      ]
+    },
+    {
+      "source_id": "SRC-13",
+      "title": "The Impact of Code Review Coverage and Code Review Participation on Software Quality",
+      "publisher": "Academic authors",
+      "source_class": "PEER_REVIEWED_RESEARCH",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q01",
+        "DR04-Q05"
+      ]
+    },
+    {
+      "source_id": "SRC-14",
+      "title": "Don't Touch My Code! Examining the Effects of Ownership on Software Quality",
+      "publisher": "Academic authors",
+      "source_class": "PEER_REVIEWED_RESEARCH",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q01",
+        "DR04-Q05"
+      ]
+    },
+    {
+      "source_id": "SRC-15",
+      "title": "Small CLs and code review developer guidance",
+      "publisher": "Google Engineering Practices",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q01",
+        "DR04-Q05",
+        "DR04-Q06"
+      ]
+    },
+    {
+      "source_id": "SRC-16",
+      "title": "Correlated Errors in Large Language Models",
+      "publisher": "Research authors",
+      "source_class": "PEER_REVIEWED_RESEARCH",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q07",
+        "DR04-Q09",
+        "DR04-Q10"
+      ]
+    },
+    {
+      "source_id": "SRC-17",
+      "title": "Position Bias in LLM-as-a-Judge",
+      "publisher": "Research authors",
+      "source_class": "PEER_REVIEWED_RESEARCH",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q09",
+        "DR04-Q10",
+        "DR04-Q12"
+      ]
+    },
+    {
+      "source_id": "SRC-18",
+      "title": "Self-Bias and Family-Bias in LLM-as-a-Judge",
+      "publisher": "Research authors",
+      "source_class": "PEER_REVIEWED_RESEARCH",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q09",
+        "DR04-Q10"
+      ]
+    },
+    {
+      "source_id": "SRC-19",
+      "title": "Evaluation best practices",
+      "publisher": "OpenAI",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q07",
+        "DR04-Q08",
+        "DR04-Q12"
+      ]
+    },
+    {
+      "source_id": "SRC-20",
+      "title": "Demystifying evals for AI agents",
+      "publisher": "Anthropic",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q07",
+        "DR04-Q08",
+        "DR04-Q12"
+      ]
+    },
+    {
+      "source_id": "SRC-21",
+      "title": "CVE Benchmark",
+      "publisher": "OpenSSF",
+      "source_class": "OFFICIAL_REPOSITORY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q12"
+      ]
+    },
+    {
+      "source_id": "SRC-22",
+      "title": "PR-Review-Bench",
+      "publisher": "Qodo",
+      "source_class": "OFFICIAL_REPOSITORY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q12"
+      ]
+    },
+    {
+      "source_id": "SRC-23",
+      "title": "SWE-bench and SWE-bench Verified",
+      "publisher": "SWE-bench maintainers",
+      "source_class": "OFFICIAL_REPOSITORY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q12"
+      ]
+    },
+    {
+      "source_id": "SRC-24",
+      "title": "FACTS Grounding",
+      "publisher": "Google DeepMind",
+      "source_class": "PEER_REVIEWED_RESEARCH",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q12"
+      ]
+    },
+    {
+      "source_id": "SRC-25",
+      "title": "Linting and destructive change policies",
+      "publisher": "Atlas",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q02",
+        "DR04-Q03"
+      ]
+    },
+    {
+      "source_id": "SRC-26",
+      "title": "Database change rollback and change-type documentation",
+      "publisher": "Liquibase",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q02",
+        "DR04-Q03"
+      ]
+    },
+    {
+      "source_id": "SRC-27",
+      "title": "SQL command documentation for destructive data and schema operations",
+      "publisher": "PostgreSQL Global Development Group",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "DR04-Q02",
+        "DR04-Q03"
+      ]
+    }
+  ]
+}

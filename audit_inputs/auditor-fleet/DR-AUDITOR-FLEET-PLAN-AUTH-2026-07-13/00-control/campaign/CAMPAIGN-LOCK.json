@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "campaign_id": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "campaign_type": "bounded_external_deep_research",
+  "research_date": "2026-07-13",
+  "model_surface": {
+    "tool": "ChatGPT Deep Research",
+    "displayed_model_label": "GPT-5.6 Pro",
+    "identity_confidence": "UI_OR_CONFIGURATION_CLAIM_ONLY"
+  },
+  "mission": "Resolve external vendor, security, terms, and economic questions required before GPT-5.6 Pro synthesis of the Dopemux plan-authenticated auditor fleet.",
+  "local_evidence_posture": {
+    "capability_probe_status": "STATIC_ONLY_WITH_CARRIED_LIMITATIONS",
+    "live_model_probes": "NOT_RUN",
+    "provider_attested_identity": "UNKNOWN",
+    "plan_usage_measurement": "UNKNOWN",
+    "local_evidence_may_be_overridden_by_web_research": false
+  },
+  "tracks": [
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+    "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+    "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST"
+  ],
+  "forbidden_scope": [
+    "repository implementation",
+    "runner registration",
+    "secret creation or rotation",
+    "provider login",
+    "provider API calls",
+    "broad model benchmark execution",
+    "final architecture synthesis",
+    "automatic policy promotion",
+    "rewriting local investigation findings from inference"
+  ],
+  "claim_labels": [
+    "OBSERVED",
+    "INFERRED",
+    "PROPOSED",
+    "UNKNOWN",
+    "CONFLICTING",
+    "CLAIMED",
+    "STALE"
+  ],
+  "final_required_artifacts": [
+    "DR-01-REPORT.md",
+    "DR-01-FINDINGS.json",
+    "DR-02-REPORT.md",
+    "DR-02-FINDINGS.json",
+    "DR-03-REPORT.md",
+    "DR-03-FINDINGS.json",
+    "DR-04-REPORT.md",
+    "DR-04-FINDINGS.json",
+    "DR-05-REPORT.md",
+    "DR-05-FINDINGS.json",
+    "DR-CAMPAIGN-ACCEPTANCE.json",
+    "DR-CAMPAIGN-ACCEPTANCE.md",
+    "SYNTHESIS-INPUT-MANIFEST.json"
+  ]
+}
