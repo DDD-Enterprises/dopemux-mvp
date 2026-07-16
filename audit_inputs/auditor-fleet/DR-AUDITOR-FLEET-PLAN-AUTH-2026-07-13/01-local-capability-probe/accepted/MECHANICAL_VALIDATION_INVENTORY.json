@@ -1,0 +1,86 @@
+{
+  "label": "OBSERVED",
+  "lane": "mechanical_validation",
+  "validators": [
+    {
+      "id": "repo_identity",
+      "canonical_path": "AGENTS.md",
+      "command": "git remote -v; git rev-parse origin/main; git status --short --branch",
+      "input_class": "repository metadata",
+      "output_shape": "text",
+      "exit_codes": {"0": "observed"},
+      "mutation_behavior": "READ_ONLY",
+      "authority_limit": "Establishes local checkout identity and state only."
+    },
+    {
+      "id": "task_packet_schema",
+      "canonical_path": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "command": "python3 Draft7Validator over packet JSON",
+      "input_class": "JSON packet",
+      "output_shape": "PASS or schema errors",
+      "exit_codes": {"0": "valid", "1": "invalid"},
+      "mutation_behavior": "READ_ONLY",
+      "authority_limit": "Validates packet structure; does not establish runtime behavior."
+    },
+    {
+      "id": "embedded_audit_proof_schema",
+      "canonical_path": "scripts/audit/validate_audit_proof.py",
+      "command": "python scripts/audit/validate_audit_proof.py --all proof/",
+      "input_class": "embedded audit proof JSON",
+      "output_shape": "text",
+      "exit_codes": {"0": "all valid", "1": "schema failure", "2": "usage error"},
+      "mutation_behavior": "READ_ONLY",
+      "authority_limit": "Validates embedded-audit objects only; not used for this static-only packet."
+    },
+    {
+      "id": "probe_bundle",
+      "canonical_path": "proof/TP-DMX-AUDITOR-FLEET-CAPABILITY-PROBE-001/tools/validate_probe_bundle.py",
+      "command": "python3 tools/validate_probe_bundle.py proof/TP-DMX-AUDITOR-FLEET-CAPABILITY-PROBE-001",
+      "input_class": "capability proof bundle",
+      "output_shape": "PASS or enumerated errors",
+      "exit_codes": {"0": "valid", "1": "invalid"},
+      "mutation_behavior": "READ_ONLY",
+      "authority_limit": "Checks required evidence shape, manifest hashes, and secret-pattern absence."
+    },
+    {
+      "id": "json_parse",
+      "canonical_path": "python3 standard library",
+      "command": "python3 -m json.tool <file> >/dev/null",
+      "input_class": "JSON",
+      "output_shape": "exit status",
+      "exit_codes": {"0": "parseable", "1": "invalid JSON"},
+      "mutation_behavior": "READ_ONLY",
+      "authority_limit": "Syntax only."
+    },
+    {
+      "id": "diff_hygiene",
+      "canonical_path": "Git",
+      "command": "git diff --check",
+      "input_class": "tracked diff",
+      "output_shape": "text",
+      "exit_codes": {"0": "no whitespace errors", "nonzero": "whitespace errors"},
+      "mutation_behavior": "READ_ONLY",
+      "authority_limit": "Does not include untracked files until staged or compared explicitly."
+    },
+    {
+      "id": "pr_steward_static_contract",
+      "canonical_path": "docs/ops/pr-steward-cli.md",
+      "command": "sed and rg over tracked documentation and source",
+      "input_class": "tracked documentation/source",
+      "output_shape": "text",
+      "exit_codes": {"0": "matches found"},
+      "mutation_behavior": "READ_ONLY",
+      "authority_limit": "Inventories documented CLI behavior; does not execute a PR intake."
+    },
+    {
+      "id": "pre_commit",
+      "canonical_path": ".pre-commit-config.yaml",
+      "command": "pre-commit run",
+      "input_class": "repository working tree",
+      "output_shape": "hook output",
+      "exit_codes": {"0": "all hooks pass", "nonzero": "hook failure"},
+      "mutation_behavior": "POTENTIALLY_MUTATING",
+      "authority_limit": "Excluded by supervisor amendment because environments may install dependencies."
+    }
+  ]
+}

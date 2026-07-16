@@ -1,0 +1,22 @@
+[
+  {
+    "logical_path": "independent-audit/AUDITOR-FLEET-SYNTHESIS-AUDIT.md",
+    "filename": "AUDITOR-FLEET-SYNTHESIS-AUDIT.md",
+    "status": "MISSING"
+  },
+  {
+    "logical_path": "independent-audit/AUDITOR-FLEET-SYNTHESIS-FINDINGS.json",
+    "filename": "AUDITOR-FLEET-SYNTHESIS-FINDINGS.json",
+    "status": "MISSING"
+  },
+  {
+    "logical_path": "independent-audit/REQUIRED_SYNTHESIS_REPAIRS.md",
+    "filename": "REQUIRED_SYNTHESIS_REPAIRS.md",
+    "status": "MISSING"
+  },
+  {
+    "logical_path": "independent-audit/AUDIT_HANDOFF_TO_SUPERVISOR.json",
+    "filename": "AUDIT_HANDOFF_TO_SUPERVISOR.json",
+    "status": "MISSING"
+  }
+]

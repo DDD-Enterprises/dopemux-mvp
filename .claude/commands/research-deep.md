@@ -11,7 +11,7 @@ Run a comprehensive multi-source research job via the gpt-researcher MCP server.
 2) Call `mcp__gpt-researcher__deep_research` with `query=<the quoted argument>` and wait for the tool response. Capture the `research_id` from the completed response.
 3) Save the `research_id` and query to ConPort active context so I can resume later:
    ```
-   mcp__conport__update_active_context(
+   mcp__conport__conport_update_context(
      workspace_id="$(git rev-parse --show-toplevel)",
      patch_content={
        "last_research": {

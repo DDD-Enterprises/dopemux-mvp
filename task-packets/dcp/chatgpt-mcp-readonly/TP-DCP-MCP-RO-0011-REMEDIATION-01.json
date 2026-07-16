@@ -1,0 +1,134 @@
+{
+  "id": "TP-DCP-MCP-RO-0011-REMEDIATION-01",
+  "project": "dopemux-mvp",
+  "target": "Repair the post-merge TP-DCP-MCP-RO-0011 pure runtime/catalog identity mismatch in PR #1055, while preserving DCP target authorization, non-callable output, and fail-closed evidence handling.",
+  "invariants": [
+    "PR #1041 is historical and merged; this packet publishes the post-merge correction in PR #1055 without modifying that executed packet or proof.",
+    "The DCP registry .repo_id identity remains target-authorization evidence and is not replaced by runtime identity.",
+    "Runtime project_id matching uses the shared ProjectIdentity generated-ID semantics from the resolved project and worktree roots; no second hash or slug algorithm is introduced.",
+    "The join remains pure and dependency-injected: it performs no network, socket, subprocess, Docker, registry write, or backend operation.",
+    "A matching runtime record remains advisory, redacted, and callable=false; it does not establish liveness, ownership, consent, or exposure.",
+    "Malformed, missing, mismatched, or ambiguous runtime evidence remains fail-closed.",
+    "No credentials, private paths, hostnames, public listeners, tunnels, adapters, or provider setup enter this change.",
+    "The executed TP-DCP-MCP-RO-0011 packet and its historical proof remain unchanged; this remediation has its own packet and proof directory."
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0011"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0011",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dcp-mcp-ro-0011-identity-remediation",
+    "base_branch": "main",
+    "stacked_because": "PR #1041 was squash-merged during execution, so this narrow post-merge correction is rebased on current main."
+  },
+  "commit": {
+    "message": "fix(dcp): align runtime join with lifecycle project identity",
+    "allowlist": [
+      "services/dcp-readonly-facade/src/dcp_facade/runtime_catalog_join.py",
+      "services/dcp-readonly-facade/tests/test_runtime_catalog_join.py",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/RUNTIME_CATALOG_JOIN_CONTRACT.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.md",
+      "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/**"
+    ],
+    "verify": [
+      "git diff --check",
+      "uv run --frozen python -m compileall -q services/dcp-readonly-facade/src",
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests/test_runtime_catalog_join.py",
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests",
+      "uv run --frozen python -m jsonschema -i task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+    ]
+  },
+  "pr": {
+    "title": "fix(dcp): align runtime join with lifecycle project identity",
+    "body": "Post-merge correction to TP-DCP-MCP-RO-0011: use the generated lifecycle project identity while preserving DCP target authorization, pure non-callable behavior, and fail-closed evidence handling.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify the PR head, dedicated worktree, existing packet boundary, and exact identity flow before editing source.",
+      "context_files": [
+        "AGENTS.md",
+        "src/dopemux/mcp/project_identity.py",
+        "src/dopemux/mcp/runtime_state.py",
+        "src/dopemux/mcp/lifecycle.py",
+        "services/dcp-readonly-facade/src/dcp_facade/runtime_catalog_join.py"
+      ],
+      "validation": [
+        "The runtime record writer and facade comparison are traced to their exact project_id semantics.",
+        "The worktree branch matches PR #1055 and current main after the historical #1041 merge."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add lifecycle-shaped regression coverage before production code changes.",
+      "expected_files": [
+        "services/dcp-readonly-facade/tests/test_runtime_catalog_join.py"
+      ],
+      "validation": [
+        "A runtime record using the shared generated project_id fails to join before the repair.",
+        "A simple DCP repository identity is not accepted as a lifecycle runtime project_id."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Make the smallest pure runtime_catalog_join change that derives the expected runtime project_id from the resolved roots through ProjectIdentity.",
+      "expected_files": [
+        "services/dcp-readonly-facade/src/dcp_facade/runtime_catalog_join.py"
+      ],
+      "validation": [
+        "The focused regression tests pass after the code change.",
+        "Wrong roots, malformed members, missing data, and ambiguous candidates retain their existing fail-closed outcomes.",
+        "No callable output, endpoint, or I/O primitive is introduced."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Record the corrected contract and remediation lineage without modifying the executed TP-DCP-MCP-RO-0011 packet or proof.",
+      "expected_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/RUNTIME_CATALOG_JOIN_CONTRACT.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+        "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.json",
+        "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.md",
+        "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/**"
+      ],
+      "validation": [
+        "The remediation packet validates against the canonical task-packet schema.",
+        "The contract distinguishes DCP target authorization from generated runtime identity.",
+        "Proof only records validations actually run."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run scoped validation, inspect the allowlisted diff, and perform codereview and precommit before any PR update.",
+      "validation": [
+        "Focused and full facade tests, compileall, packet schema validation, and git diff --check pass.",
+        "The final diff is limited to this packet allowlist and excludes the generated .claude configuration delta.",
+        "Any unavailable independent audit or stale GitHub state is recorded as NOT_RUN or UNKNOWN rather than passed."
+      ]
+    }
+  ]
+}

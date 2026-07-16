@@ -1,0 +1,161 @@
+[
+  {
+    "logical_path": "operator/DEEP-RESEARCH-OPERATOR-PASTE.md",
+    "filename": "DEEP-RESEARCH-OPERATOR-PASTE.md",
+    "sha256": "05b8d3cad3345272065576ed49579e16b262f202e8a137f54d3641879e111dce",
+    "bytes": 597,
+    "source_path": "/Users/hue/Downloads/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/operator/DEEP-RESEARCH-OPERATOR-PASTE.md",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Listed by the campaign kit but not uploaded. It is an operator convenience paste, not a governing acceptance or synthesis input."
+  },
+  {
+    "logical_path": "BASELINE.json",
+    "filename": "BASELINE.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "COMMAND_LOG.md",
+    "filename": "COMMAND_LOG.md",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "LIVE_PROBE_APPROVAL_LEDGER.json",
+    "filename": "LIVE_PROBE_APPROVAL_LEDGER.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/STATIC_TOOL_DISCOVERY.json",
+    "filename": "STATIC_TOOL_DISCOVERY.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/WORKTREE_LIST.txt",
+    "filename": "WORKTREE_LIST.txt",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/agy/help-1.json",
+    "filename": "help-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/agy/version-1.json",
+    "filename": "version-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/claude_code/help-1.json",
+    "filename": "help-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/claude_code/version-1.json",
+    "filename": "version-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/codex/help-1.json",
+    "filename": "help-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/codex/version-1.json",
+    "filename": "version-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/gemini_cli/help-1.json",
+    "filename": "help-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/gemini_cli/version-1.json",
+    "filename": "version-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/grok_build/help-1.json",
+    "filename": "help-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/grok_build/version-1.json",
+    "filename": "version-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/mechanical/help-1.json",
+    "filename": "help-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/mechanical/version-1.json",
+    "filename": "version-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/opencode/help-1.json",
+    "filename": "help-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "RAW_RECEIPTS/static/opencode/version-1.json",
+    "filename": "version-1.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "SUPERVISOR_VALIDATION_AMENDMENT.md",
+    "filename": "SUPERVISOR_VALIDATION_AMENDMENT.md",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "fixtures/SYNTHETIC_AUDIT_INPUT.md",
+    "filename": "SYNTHETIC_AUDIT_INPUT.md",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "templates/LIVE_PROBE_RECEIPT.template.json",
+    "filename": "LIVE_PROBE_RECEIPT.template.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "templates/MANUAL_APP_RECEIPT.template.json",
+    "filename": "MANUAL_APP_RECEIPT.template.json",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "tools/static_probe.py",
+    "filename": "static_probe.py",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  },
+  {
+    "logical_path": "tools/validate_probe_bundle.py",
+    "filename": "validate_probe_bundle.py",
+    "status": "EXCLUDED_NOT_SUPPLIED",
+    "reason": "Referenced by the accepted local proof manifest but the physical artifact was not uploaded. Content was not inspected and is not claimed as an accepted synthesis input."
+  }
+]

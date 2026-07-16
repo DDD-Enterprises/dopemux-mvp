@@ -87,7 +87,7 @@ fi
 
 # 5. activity-capture removed (dead service, 2026-07-09 graveyard).
 
-# 6-10. Future services
+# 6-9. Future services
 echo -n "6. task-orchestrator:    "
 if [ -d "services/task-orchestrator/tests" ] && [ -f "services/task-orchestrator/tests/test_workspace.py" ]; then
     echo -e "${GREEN}✅ COMPLETE${NC}"
@@ -95,28 +95,21 @@ else
     echo -e "${RED}⚪ 0% - Not started${NC}"
 fi
 
-echo -n "7. session_intelligence: "
-if [ -d "services/session_intelligence/tests" ] && [ -f "services/session_intelligence/tests/test_workspace.py" ]; then
-    echo -e "${GREEN}✅ COMPLETE${NC}"
-else
-    echo -e "${RED}⚪ 0% - Not started${NC}"
-fi
-
-echo -n "8. mcp-client:           "
+echo -n "7. mcp-client:           "
 if [ -d "services/mcp-client/tests" ] && [ -f "services/mcp-client/tests/test_workspace.py" ]; then
     echo -e "${GREEN}✅ COMPLETE${NC}"
 else
     echo -e "${RED}⚪ 0% - Not started${NC}"
 fi
 
-echo -n "9. adhd_engine:          "
+echo -n "8. adhd_engine:          "
 if [ -f "services/adhd_engine/tests/test_workspace.py" ]; then
     echo -e "${GREEN}✅ COMPLETE${NC}"
 else
     echo -e "${RED}⚪ 0% - Not started${NC}"
 fi
 
-echo -n "10. intelligence:        "
+echo -n "9. intelligence:         "
 if [ -d "services/intelligence/tests" ] && [ -f "services/intelligence/tests/test_workspace.py" ]; then
     echo -e "${GREEN}✅ COMPLETE${NC}"
 else

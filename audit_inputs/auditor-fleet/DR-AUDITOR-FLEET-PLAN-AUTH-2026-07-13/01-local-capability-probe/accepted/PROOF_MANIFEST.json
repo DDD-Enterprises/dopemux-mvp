@@ -1,0 +1,148 @@
+{
+  "artifacts": [
+    {
+      "path": "AUDITOR_CAPABILITY_MATRIX.json",
+      "sha256": "97576ae65303263d7bce91d69778f11e74b7881656c61eb726496b2c1f2f81a8"
+    },
+    {
+      "path": "AUTHENTICATION_AND_TERMS_MATRIX.md",
+      "sha256": "8183a24b0bbb22427ead1dd0b8dfe48fedf2988c8145b63151e5b3d0f160d0b6"
+    },
+    {
+      "path": "BASELINE.json",
+      "sha256": "92f325dc9e826486a2903149a2e6857ebb1a43da7ae2a92edc9261b1c54ef959"
+    },
+    {
+      "path": "BLOCKERS_AND_UNKNOWNS.json",
+      "sha256": "d8560493c7f250936a3eee5f85b5f7dec46571c6eadee5454d96a697f4cf52fb"
+    },
+    {
+      "path": "COMMAND_LOG.md",
+      "sha256": "4899c5819643b3cb2fa7a66cf08b583088b8627423f6b9cf07024fff51b585de"
+    },
+    {
+      "path": "HANDOFF_TO_GPT56PRO.json",
+      "sha256": "623f948c00561c8768b6d2c3094f931084e64c02c80e6f822a4fc452fecee9d6"
+    },
+    {
+      "path": "LIVE_PROBE_APPROVAL_LEDGER.json",
+      "sha256": "eda1138662cdbd3a4783fd45b51163631aadaa0a8e52740eae2d2e42c6a14bd6"
+    },
+    {
+      "path": "MECHANICAL_VALIDATION_INVENTORY.json",
+      "sha256": "2dc63264942a05ff1d9e02711f8a89162cfd257a4c2286c71b6dadc7ad58e180"
+    },
+    {
+      "path": "MODEL_IDENTITY_OBSERVATIONS.json",
+      "sha256": "1a684c5dc26050f2390b2e3e266a34073e9868d7ae8b0ced14d725d2d4a7df5a"
+    },
+    {
+      "path": "NETWORK_AND_CONTAINMENT_OBSERVATIONS.md",
+      "sha256": "8d231f9ed15b4a5a59845de217b5d7bf3bc3ebf0df6b7b992ff6bbaf0c3d450d"
+    },
+    {
+      "path": "PROBE_SUMMARY.md",
+      "sha256": "e37e90f0de0361474e0adb033a2ed6192fe8ba7d4d6378db3eb1fb42a1d150fe"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/STATIC_TOOL_DISCOVERY.json",
+      "sha256": "80522b941ce64fbfeded9bd3fb88d5e5f18498942e97e236d17ca26f880fcec2"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/WORKTREE_LIST.txt",
+      "sha256": "fdbeb1793a9a36b629971eb31d7ef6460e6296419e6040c6ba9eb65b7252c0ae"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/agy/help-1.json",
+      "sha256": "0cd233db9a647a67ffff45a35b7a7e83ddb61791deb14bbc87632c3121233f38"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/agy/version-1.json",
+      "sha256": "ceaef4056058eff004ee517d721c181bd73159ca8066069c8c922a47fb8fdde3"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/claude_code/help-1.json",
+      "sha256": "c6e7e9a0da5317f12968e2e95840b2c5156ef6bf550172f83c8153d112e2caff"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/claude_code/version-1.json",
+      "sha256": "cc84a53a79bffd91df4b4925162ac87f7f68a4ee1d4165ec60a93e040f8b7a50"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/codex/help-1.json",
+      "sha256": "fe312c1140626413cf5f9e54ccc0c9395b2882642cc787efb6ff37f80614fa6f"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/codex/version-1.json",
+      "sha256": "705976e49f1030a2cf5991de32811c8db33b614c15c2b5e12014d5818d45a785"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/gemini_cli/help-1.json",
+      "sha256": "bca59b5f4cf5cf43c7cf9404b856331cbf5ba80ae9ae20306df03b1666a91315"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/gemini_cli/version-1.json",
+      "sha256": "2a2e3ee54832f45d024be781231012699e566adfd34df1bb2fb42d1a7559b45f"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/grok_build/help-1.json",
+      "sha256": "094a2645cad2a22fef1163a4a8b4a7df107e3cf4fd92e5afe9521f8eeb2751b6"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/grok_build/version-1.json",
+      "sha256": "9c73d18fde3171d47878801a5abcb97bc6d9a4163e39f6c458292ea78eb2d02d"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/mechanical/help-1.json",
+      "sha256": "64e5bd6bcc423a40bad57e04349f28acaad22e53ad1b396dbba79dc5659f8b1a"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/mechanical/version-1.json",
+      "sha256": "a860cb7732c6d3dc8cb2d34afab8a0ff3c1417aa8f4f86d54e406a7c2a1889c8"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/opencode/help-1.json",
+      "sha256": "1409009e8cf8a513232133de8c27b6b407c7948b90fa086042356472856f08f8"
+    },
+    {
+      "path": "RAW_RECEIPTS/static/opencode/version-1.json",
+      "sha256": "57d2ad28f7d04f879ab413ec30151e8e8dd12e32758de39bbd64e7aa7bdddc30"
+    },
+    {
+      "path": "ROUTING_CONSTRAINTS.md",
+      "sha256": "4b0f03fcdc6877cfe2b72baabc27aee71ca810219e9b448577310997b6e8920c"
+    },
+    {
+      "path": "SUPERVISOR_VALIDATION_AMENDMENT.md",
+      "sha256": "3aaa5e017d4910c1029a3caf24201137f7ebbe11b4faecd3322c5fdc697e843c"
+    },
+    {
+      "path": "TOOL_SELECTION_CANDIDATES.json",
+      "sha256": "ad59845c74738a2b0611aabea1e6e742d455207454a5909456b3b9f4d9bb9a7c"
+    },
+    {
+      "path": "fixtures/SYNTHETIC_AUDIT_INPUT.md",
+      "sha256": "b40e60713ae90cecb5f4ecb48d38897750b5644ee4dd9c2a55657be327615cf3"
+    },
+    {
+      "path": "templates/LIVE_PROBE_RECEIPT.template.json",
+      "sha256": "65a339d46f6029c790af981c2833fef6f5be767fcaeb7fa749e25a68358bb245"
+    },
+    {
+      "path": "templates/MANUAL_APP_RECEIPT.template.json",
+      "sha256": "8971e8410e4c35ef140ccab49fef745383a4ad6a8288f00ccd4331a5683c2d65"
+    },
+    {
+      "path": "tools/static_probe.py",
+      "sha256": "fffb4f84422a77504cedd4d029ba7dbfb806b8b2423b0200925547dbc78161c2"
+    },
+    {
+      "path": "tools/validate_probe_bundle.py",
+      "sha256": "97601b77d88610102896e3d95b6c72f5b35918e500bc94e9bd9a1fcd6a05a4a5"
+    }
+  ],
+  "label": "OBSERVED",
+  "manifest_self_hash": "NOT_APPLICABLE",
+  "packet_id": "TP-DMX-AUDITOR-FLEET-CAPABILITY-PROBE-001",
+  "schema_version": "1.0.0"
+}

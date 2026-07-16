@@ -1,0 +1,765 @@
+{
+  "schema_version": "1.0.0",
+  "campaign_id": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "generated_at": "2026-07-13T11:59:03Z",
+  "synthesis_gate": "ACCEPT_WITH_CARRIED_UNKNOWNS",
+  "final_verdict": "READY_WITH_BLOCKING_QUESTIONS",
+  "execution_authorization": "NONE",
+  "input_integrity": {
+    "accepted_records": 51,
+    "present_and_hash_verified": 49,
+    "hash_mismatches": 0,
+    "missing_accepted_records": [
+      {
+        "logical_path": "START_HERE.md",
+        "source_filename": "START_HERE.md",
+        "expected_sha256": "ffc35f46a091509802b97458397297af5102f9f88d1f361d1b33bb1acf470f90",
+        "disposition": "NOT_INSPECTED_MISSING"
+      },
+      {
+        "logical_path": "PAL_EXECUTION_RULES.md",
+        "source_filename": "PAL_EXECUTION_RULES.md",
+        "expected_sha256": "bb654339ab1cf200e114cb2fddc03099b5345874894a2cc2883369256bf30c57",
+        "disposition": "NOT_INSPECTED_MISSING"
+      }
+    ],
+    "rule": "Missing or hash-unverified artifacts were not treated as inspected evidence."
+  },
+  "carried_unknowns": [
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-U001",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_unknown_id": "DR01-U001",
+      "question": "How is a Claude Code setup-token explicitly revoked before expiry, and is there an admin inventory for all such tokens?",
+      "why_unknown": "The reviewed public authentication page established lifetime and purpose but not a complete revocation-management workflow.",
+      "blocking_scope": "Automated Claude Code deployment requiring immediate centralized revocation.",
+      "next_evidence": "Current Anthropic admin documentation or vendor clarification for setup-token inventory and revocation.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-U002",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_unknown_id": "DR01-U002",
+      "question": "What exact concurrency and machine-copy limits apply to personal-plan Codex cached authentication?",
+      "why_unknown": "Official docs describe trusted-runner reuse and serialization guidance but do not establish a general personal-plan service-account model.",
+      "blocking_scope": "Parallel or shared personal-plan Codex runner pools.",
+      "next_evidence": "OpenAI plan terms or product documentation explicitly covering machine count, concurrency, and unattended personal-plan automation.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-U003",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_unknown_id": "DR01-U003",
+      "question": "Which Workspace or Gemini Code Assist licenses permit persistent plan-backed Gemini CLI brokers or custom runners?",
+      "why_unknown": "Consumer tiers were deprecated, while remaining organization account classes and cached-login behavior are not mapped to runner permissions.",
+      "blocking_scope": "Plan-backed Gemini CLI automation outside a named workstation.",
+      "next_evidence": "Google Workspace or Gemini Code Assist administrator documentation explicitly covering non-interactive runners.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-U004",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_unknown_id": "DR01-U004",
+      "question": "What are Antigravity subscription credential storage, lifetime, refresh, revocation, and runner-class rules?",
+      "why_unknown": "Public documentation reviewed exposes CLI, SDK, silent auth, and enterprise integration but not a complete lifecycle contract.",
+      "blocking_scope": "Persistent or ephemeral Antigravity plan-backed workers.",
+      "next_evidence": "Antigravity authentication and administrator lifecycle documentation.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-U005",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_unknown_id": "DR01-U005",
+      "question": "Do OpenAI and GitHub explicitly authorize their subscription credentials inside OpenCode for unattended automation?",
+      "why_unknown": "OpenCode documents technical provider integration, but matching first-party vendor permission for unattended OpenCode use was not located.",
+      "blocking_scope": "OpenCode plan-backed Codex or Copilot runner deployment.",
+      "next_evidence": "First-party OpenAI and GitHub documentation naming OpenCode or a general third-party-client automation policy.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-U006",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_unknown_id": "DR01-U006",
+      "question": "What lifecycle, revocation, sharing, and fair-use rules apply to plan-authenticated Grok Build sessions?",
+      "why_unknown": "xAI public pages reviewed emphasize headless capability and API-key deployment but not subscription credential governance.",
+      "blocking_scope": "Unattended plan-backed Grok Build on any runner.",
+      "next_evidence": "xAI authentication, account, and automation terms specific to Grok Build subscriptions.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-U007",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_unknown_id": "DR01-U007",
+      "question": "How can each tool produce provider-attested actual model identity and billing-route evidence per run?",
+      "why_unknown": "No live invocation was allowed and product login state does not itself attest the model or billing route used.",
+      "blocking_scope": "Independence claims, proof normalization, and plan-backed billing assertions.",
+      "next_evidence": "Bounded later receipt collection under an approved live-probe protocol, plus vendor-documented identity fields.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-U008",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_unknown_id": "DR01-U008",
+      "question": "What unpublished fair-use or abuse thresholds could affect continuous high-frequency subscription audits?",
+      "why_unknown": "Public limits and terms do not expose all anti-abuse heuristics or suspension thresholds.",
+      "blocking_scope": "High-volume unattended subscription automation.",
+      "next_evidence": "Vendor enterprise agreement, support confirmation, or published automation policy.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-U009",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_unknown_id": "DR01-U009",
+      "question": "Can plan credentials be provisioned directly into a dedicated local OS account or VM without copying workstation session state?",
+      "why_unknown": "Some vendors document device or browser login and some document automation tokens, but a uniform dedicated-account portability contract does not exist.",
+      "blocking_scope": "Credential-isolated local broker workers.",
+      "next_evidence": "Per-vendor provisioning and administrator documentation for dedicated machine identities.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY::U-001",
+      "originating_track": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY",
+      "track_unknown_id": "U-001",
+      "question": "Which plan-authenticated tools officially permit dedicated-user, VM, or disposable-worker deployment without copying unsupported login state?",
+      "why_unknown": "This is vendor-auth and terms evidence owned by DR-01, not resolved by runner-security documentation.",
+      "blocking_scope": "Automatic plan-authenticated model execution for each affected tool.",
+      "next_evidence": "Accepted DR-01 vendor deployment matrix and official credential lifecycle documentation.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY::U-002",
+      "originating_track": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY",
+      "track_unknown_id": "U-002",
+      "question": "Which tools can be proven to run with all shell, file-write, MCP, plugin, hook, memory, subagent, repository-instruction, and web surfaces disabled?",
+      "why_unknown": "The local probe was static-only and recorded incomplete containment evidence.",
+      "blocking_scope": "Data-only model invocation on a credential-bearing host or account.",
+      "next_evidence": "Accepted DR-03 per-tool containment matrix and authorized clean-room validation.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY::U-003",
+      "originating_track": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY",
+      "track_unknown_id": "U-003",
+      "question": "What exact outbound endpoint allowlists are stable for each provider CLI, including login refresh, model calls, telemetry, and update checks?",
+      "why_unknown": "Official per-tool network endpoint contracts were not established in this track.",
+      "blocking_scope": "Strict per-tool egress allowlisting.",
+      "next_evidence": "Official provider network documentation plus authorized network observation in isolated test accounts.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY::U-004",
+      "originating_track": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY",
+      "track_unknown_id": "U-004",
+      "question": "Can GitHub artifact attestations be used as a durable, intended provenance layer for frequent request manifests on the repository plan in use?",
+      "why_unknown": "GitHub positions attestations around build provenance and plan availability varies; this research did not validate the account plan.",
+      "blocking_scope": "Attestation-enhanced pull-mode pickup only; OIDC/API verification is not blocked.",
+      "next_evidence": "Current GitHub plan entitlement and documented attestation use-case confirmation.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY::U-005",
+      "originating_track": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY",
+      "track_unknown_id": "U-005",
+      "question": "Which disposable-worker technology is acceptable on the actual macOS host: Linux VM, macOS VM, container, or remote worker?",
+      "why_unknown": "No host implementation or benchmark was allowed, and container-vs-VM tradeoffs depend on required tools and licensing.",
+      "blocking_scope": "Final implementation choice, not the trust-boundary recommendation.",
+      "next_evidence": "Synthesis-stage requirements plus a later authorized implementation spike.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-U001",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_unknown_id": "DR03-U001",
+      "question": "What exact authentication and billing route does each installed model-capable CLI use?",
+      "why_unknown": "No account login, credential inspection, or live invocation was permitted or performed.",
+      "blocking_scope": "Unattended execution for every model-capable local adapter.",
+      "next_evidence": "Carry DR-01 authorization findings into a vendor-approved, deployment-specific authentication design and later bounded conformance receipt.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-U002",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_unknown_id": "DR03-U002",
+      "question": "What provider-attested actual model identity is returned for each permitted live route?",
+      "why_unknown": "All live model probes were NOT_RUN and configured or displayed model names are not provider attestation.",
+      "blocking_scope": "Model identity proof and independence claims.",
+      "next_evidence": "Define an approved live receipt format and capture provider or API metadata only after authentication and privacy gates authorize a bounded invocation.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-U003",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_unknown_id": "DR03-U003",
+      "question": "Can inherited configuration be completely isolated for Claude Code, Codex, Gemini CLI, OpenCode, Grok Build, and AGY?",
+      "why_unknown": "Static help and public documentation do not prove the absence of managed settings, OS credential stores, global config, repository instructions, plugins, hooks, skills, memory, or extensions on the intended worker.",
+      "blocking_scope": "Clean-room and unattended adapter promotion.",
+      "next_evidence": "Run installed-version conformance under a dedicated OS account or disposable worker and record effective settings plus negative checks for every prohibited surface.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-U004",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_unknown_id": "DR03-U004",
+      "question": "What stable, versioned exit-code contracts apply across the model tools?",
+      "why_unknown": "The reviewed report established some invocation surfaces but did not establish comprehensive versioned success, schema-failure, timeout, auth-failure, and sandbox-failure exit semantics.",
+      "blocking_scope": "Reliable orchestration, retry classification, and proof normalization.",
+      "next_evidence": "Collect official exit-code references or execute non-model static conformance cases where possible, followed by bounded authorized failure-path tests.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-U005",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_unknown_id": "DR03-U005",
+      "question": "Do Gemini CLI, OpenCode, and AGY support caller-supplied strict final-output schemas?",
+      "why_unknown": "The reviewed sources established native envelopes or programmatic surfaces but not a Codex-style final-response schema guarantee for these targets.",
+      "blocking_scope": "Direct proof-object emission without a normalizer.",
+      "next_evidence": "Obtain current official schema-output documentation and verify against the installed version without inferring from generic JSON output.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-U006",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_unknown_id": "DR03-U006",
+      "question": "Can OpenCode deterministically disable provider fallback and expose actual upstream provider and model identity?",
+      "why_unknown": "Configured provider/model selection and tool permissions do not establish actual serving provenance or fallback behavior.",
+      "blocking_scope": "OpenCode use in independence-critical or deterministic routes.",
+      "next_evidence": "Obtain official provider-routing documentation and a permitted route receipt proving fallback disablement and actual upstream identity.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-U007",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_unknown_id": "DR03-U007",
+      "question": "What containment contract applies specifically to installed Grok Build 0.2.99?",
+      "why_unknown": "Current public documentation may target a different release and local help alone does not prove complete containment or auth isolation.",
+      "blocking_scope": "Grok Build operator-triggered or automated promotion.",
+      "next_evidence": "Acquire version-matched official documentation and run static adapter conformance for every prohibited surface.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-U008",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_unknown_id": "DR03-U008",
+      "question": "Does AGY have an officially supported unattended receipt or export contract?",
+      "why_unknown": "A local print flag exists, but reviewed official public material was interactive or codelab-oriented and did not define stable machine output, exit behavior, or containment.",
+      "blocking_scope": "Any unattended AGY adapter.",
+      "next_evidence": "Vendor documentation or clarification explicitly covering unattended CLI use, output schema, exit codes, authentication, and containment.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-U009",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_unknown_id": "DR03-U009",
+      "question": "Which OpenRouter routes enforce the required retention and zero-data-retention posture?",
+      "why_unknown": "Retention, ZDR, cost, and serving identity are route and provider specific and no API call or route-profile approval occurred in this track.",
+      "blocking_scope": "OpenRouter fallback enablement for non-public or sensitive repository data.",
+      "next_evidence": "Resolve in DR-05 with a pinned provider and model, explicit data policy, fallback setting, price cap, and provenance receipt.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE::DR04-U01",
+      "originating_track": "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE",
+      "track_unknown_id": "DR04-U01",
+      "question": "What numeric routing thresholds are optimal for Dopemux?",
+      "why_unknown": "The literature does not establish repository-specific cost-sensitive thresholds, and this track ran no benchmark.",
+      "blocking_scope": "Automatic route certification and promotion.",
+      "next_evidence": "Run shadow evaluation on an adjudicated Dopemux corpus and calibrate thresholds against severe-miss and false-positive costs.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE::DR04-U02",
+      "originating_track": "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE",
+      "track_unknown_id": "DR04-U02",
+      "question": "Which plan-backed model tool should fill each lane?",
+      "why_unknown": "Static installation evidence does not prove authorized unattended plan authentication, containment, or actual model identity.",
+      "blocking_scope": "Automatic model-lane binding.",
+      "next_evidence": "Carry accepted DR-01 and DR-03 findings into synthesis; require fail-closed treatment for UNKNOWN auth, containment, or identity.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE::DR04-U03",
+      "originating_track": "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE",
+      "track_unknown_id": "DR04-U03",
+      "question": "How do candidate routes perform on Dopemux repositories?",
+      "why_unknown": "No model invocation, benchmark execution, or historical route evaluation was permitted in this track.",
+      "blocking_scope": "Claims of route quality, independence effectiveness, and certification.",
+      "next_evidence": "Execute a bounded benchmark and shadow-evaluation program with exact route provenance and human adjudication.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-05-API-FALLBACK-PRIVACY-AND-COST::U-01",
+      "originating_track": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "track_unknown_id": "U-01",
+      "question": "What exact subscription credit or allowance does each audit request consume?",
+      "why_unknown": "Reviewed official plan documentation describes dynamic factors, pools, windows, and progress but no stable comparable per-request mapping.",
+      "blocking_scope": "Subscription budget accounting and automatic admission.",
+      "next_evidence": "A vendor per-request ledger or an official mapping for the exact product and plan.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-05-API-FALLBACK-PRIVACY-AND-COST::U-02",
+      "originating_track": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "track_unknown_id": "U-02",
+      "question": "What concurrency ceiling applies to each consumer or seat plan?",
+      "why_unknown": "No exact plan-specific concurrency contract was established in reviewed official sources.",
+      "blocking_scope": "Unattended worker count and queue sizing.",
+      "next_evidence": "Current official plan documentation or vendor clarification.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-05-API-FALLBACK-PRIVACY-AND-COST::U-03",
+      "originating_track": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "track_unknown_id": "U-03",
+      "question": "What is the local runner hardware, electricity, maintenance, and failure cost?",
+      "why_unknown": "These are host- and operator-specific measurements absent from vendor documentation and the static probe.",
+      "blocking_scope": "Numerical total-cost comparison.",
+      "next_evidence": "Hardware invoice, depreciation policy, power measurements, local tariff, and operator time logs.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-05-API-FALLBACK-PRIVACY-AND-COST::U-04",
+      "originating_track": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "track_unknown_id": "U-04",
+      "question": "What contractual retention and compliance terms apply to the exact future OpenRouter upstream endpoint?",
+      "why_unknown": "No live route or provider endpoint was selected, and OpenRouter states its policy tags are not definitive third-party policy sources.",
+      "blocking_scope": "Any private or sensitive OpenRouter route.",
+      "next_evidence": "Approved endpoint inventory, current provider terms, DPA/ZDR evidence, and legal/security approval.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-05-API-FALLBACK-PRIVACY-AND-COST::U-05",
+      "originating_track": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "track_unknown_id": "U-05",
+      "question": "Which low-cost models meet Dopemux audit-quality thresholds?",
+      "why_unknown": "Pricing and vendor capability claims do not establish route-specific defect recall, false-positive rate, grounding, or independence.",
+      "blocking_scope": "Automatic challenger or reviewer certification.",
+      "next_evidence": "Bounded benchmark and shadow evaluation under DR-04 certification criteria.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-05-API-FALLBACK-PRIVACY-AND-COST::U-06",
+      "originating_track": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "track_unknown_id": "U-06",
+      "question": "Do the repository and client contracts permit each direct provider API for private or client data?",
+      "why_unknown": "No client contract, DPA approval, or legal review was supplied or tested.",
+      "blocking_scope": "Private/client-data egress.",
+      "next_evidence": "Legal, privacy, client, and security approval for the exact provider project and features.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    },
+    {
+      "id": "DR-05-API-FALLBACK-PRIVACY-AND-COST::U-07",
+      "originating_track": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "track_unknown_id": "U-07",
+      "question": "Does Gemini expose a generic request-ID response header equivalent to OpenAI and Anthropic?",
+      "why_unknown": "The reviewed response reference exposes responseId, but a generic request-ID-header contract was not established.",
+      "blocking_scope": "Uniform cross-provider request trace normalization.",
+      "next_evidence": "Current official Gemini API reference or a later approved observed test.",
+      "fail_closed_disposition": "Block only the affected execution, identity, privacy, cost, or certification claim; do not infer the missing fact during synthesis."
+    }
+  ],
+  "carried_contradictions": [
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-C001",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_contradiction_id": "DR01-C001",
+      "resolution_status": "CARRIED",
+      "sources": [
+        "S05",
+        "S11"
+      ],
+      "summary": "OpenAI sources present different complete lists of ChatGPT plans that include Codex.",
+      "next_evidence": "Current plan-specific entitlement page or workspace admin documentation that reconciles Free, Go, Plus, Pro, Business, Edu, and Enterprise.",
+      "synthesis_rule": "Preserve both positions, use the narrower fail-closed interpretation, and do not silently resolve the conflict."
+    },
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-C003",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_contradiction_id": "DR01-C003",
+      "resolution_status": "CARRIED",
+      "sources": [
+        "S22"
+      ],
+      "summary": "The strongest explicit statement that Anthropic plan auth is prohibited in OpenCode comes from OpenCode documentation rather than an Anthropic terms page reviewed in this track.",
+      "next_evidence": "Direct Anthropic legal or product documentation, or written vendor clarification, covering third-party Claude Code clients and subscription OAuth.",
+      "synthesis_rule": "Preserve both positions, use the narrower fail-closed interpretation, and do not silently resolve the conflict."
+    },
+    {
+      "id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS::DR01-C005",
+      "originating_track": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "track_contradiction_id": "DR01-C005",
+      "resolution_status": "CARRIED",
+      "sources": [
+        "S25",
+        "S26",
+        "S27"
+      ],
+      "summary": "xAI officially advertises headless Grok Build, but the explicit non-browser authentication path is API-key based and subscription-session runner permission is not documented.",
+      "next_evidence": "xAI documentation or written policy covering unattended plan-authenticated Grok Build and self-hosted runner deployments.",
+      "synthesis_rule": "Preserve both positions, use the narrower fail-closed interpretation, and do not silently resolve the conflict."
+    },
+    {
+      "id": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY::C-002",
+      "originating_track": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY",
+      "track_contradiction_id": "C-002",
+      "resolution_status": "CARRIED",
+      "sources": [
+        "GH-13",
+        "F-013"
+      ],
+      "summary": "Artifact attestations provide provenance evidence, but their suitability as the primary authorization mechanism for frequent audit-request manifests is not established.",
+      "next_evidence": "Confirm intended use with current GitHub documentation or vendor guidance; retain API/OIDC verification as mandatory regardless.",
+      "synthesis_rule": "Preserve both positions, use the narrower fail-closed interpretation, and do not silently resolve the conflict."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-C001",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_contradiction_id": "DR03-C001",
+      "resolution_status": "CARRIED",
+      "sources": [
+        "S-XAI-BUILD",
+        "L-CAP-MATRIX"
+      ],
+      "summary": "Current Grok Build public documentation may describe a newer product surface than installed grok 0.2.99, whose captured help exposes a specific set of schema and containment flags.",
+      "next_evidence": "Obtain a version-matched official CLI reference and run a static, non-authenticated adapter conformance check against the installed binary.",
+      "synthesis_rule": "Preserve both positions, use the narrower fail-closed interpretation, and do not silently resolve the conflict."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-C002",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_contradiction_id": "DR03-C002",
+      "resolution_status": "CARRIED",
+      "sources": [
+        "S-AGY-CODELABS",
+        "L-CAP-MATRIX"
+      ],
+      "summary": "AGY 1.1.1 exposes a local print flag, while reviewed official material did not establish a stable unattended machine-readable proof contract.",
+      "next_evidence": "Obtain an official versioned AGY CLI contract covering invocation, output schema, exit behavior, containment controls, authentication renewal, and support status.",
+      "synthesis_rule": "Preserve both positions, use the narrower fail-closed interpretation, and do not silently resolve the conflict."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-C003",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_contradiction_id": "DR03-C003",
+      "resolution_status": "CARRIED",
+      "sources": [
+        "S-OPENCODE-SERVER",
+        "S-OPENCODE-PERMS",
+        "L-CAP-MATRIX"
+      ],
+      "summary": "OpenCode can expose a configured provider/model string while actual serving provider, fallback behavior, and model identity remain unverified.",
+      "next_evidence": "Document and locally verify provider-fallback disablement plus a receipt that captures actual upstream provider and model for a permitted test route.",
+      "synthesis_rule": "Preserve both positions, use the narrower fail-closed interpretation, and do not silently resolve the conflict."
+    },
+    {
+      "id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT::DR03-C004",
+      "originating_track": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "track_contradiction_id": "DR03-C004",
+      "resolution_status": "CARRIED",
+      "sources": [
+        "S-CLAUDE-CONFIG",
+        "S-CODEX-CLI-CONFIG",
+        "S-GEMINI-CONFIG",
+        "L-NETWORK",
+        "L-ROUTING"
+      ],
+      "summary": "Vendor documentation describes sandbox and configuration controls, while the accepted local packet requires installed-version proof that every prohibited inherited and agentic surface is disabled.",
+      "next_evidence": "Run version-pinned, static-first conformance probes under the exact worker OS account or disposable worker design without invoking a model until authentication and terms authorize it.",
+      "synthesis_rule": "Preserve both positions, use the narrower fail-closed interpretation, and do not silently resolve the conflict."
+    },
+    {
+      "id": "DR-05-API-FALLBACK-PRIVACY-AND-COST::C-01",
+      "originating_track": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "track_contradiction_id": "C-01",
+      "resolution_status": "CARRIED",
+      "sources": [
+        "S-OR-ROUTING"
+      ],
+      "summary": "OpenRouter can filter to endpoints tagged data-deny/ZDR, while its documentation says third-party data-policy tags are not definitive policy sources.",
+      "next_evidence": "Approve the exact upstream provider endpoint using current provider terms, DPA/ZDR evidence, and route metadata.",
+      "synthesis_rule": "Preserve both positions, use the narrower fail-closed interpretation, and do not silently resolve the conflict."
+    },
+    {
+      "id": "DR-05-API-FALLBACK-PRIVACY-AND-COST::C-03",
+      "originating_track": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "track_contradiction_id": "C-03",
+      "resolution_status": "CARRIED",
+      "sources": [
+        "S-GOOG-BILL"
+      ],
+      "summary": "Gemini project controls are called spend caps but official documentation permits enforcement latency and long-running-task overage.",
+      "next_evidence": "Use caller-side reservation and account-level controls; measure observed overage behavior only in a separately approved test.",
+      "synthesis_rule": "Preserve both positions, use the narrower fail-closed interpretation, and do not silently resolve the conflict."
+    },
+    {
+      "id": "DR-05-API-FALLBACK-PRIVACY-AND-COST::C-04",
+      "originating_track": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "track_contradiction_id": "C-04",
+      "resolution_status": "CARRIED",
+      "sources": [
+        "S-OAI-ADMIN"
+      ],
+      "summary": "OpenAI names project spend-limit alerts, but the reviewed documentation describes threshold notification rather than request blocking.",
+      "next_evidence": "Treat alerts as observability and implement local hard admission; seek vendor clarification if native blocking is required.",
+      "synthesis_rule": "Preserve both positions, use the narrower fail-closed interpretation, and do not silently resolve the conflict."
+    },
+    {
+      "id": "XTRACK-C001",
+      "summary": "DR-01 establishes official Antigravity CLI and SDK surfaces, while DR-03 does not establish a stable machine-readable unattended audit receipt or complete containment contract.",
+      "classification": "CONFLICTING_SCOPE",
+      "synthesis_rule": "Treat first-party programmatic capability as distinct from unattended audit-adapter eligibility. Keep AGY operator-supervised or disabled until the receipt, lifecycle, and containment contract is proven."
+    },
+    {
+      "id": "XTRACK-C002",
+      "summary": "DR-01 establishes official Grok Build headless execution and an API-key route, while DR-03 records a version mismatch between current documentation and installed grok 0.2.99 plus incomplete containment.",
+      "classification": "CONFLICTING_VERSION_AND_DEPLOYMENT",
+      "synthesis_rule": "Do not promote installed Grok Build to automation. Separate current vendor capability from installed-version conformance and plan-session permission."
+    },
+    {
+      "id": "XTRACK-C003",
+      "summary": "DR-01 identifies first-party Claude Code and Codex non-interactive plan credentials, while DR-02 and DR-03 block local unattended use until worker trust, exact auth provenance, and installed-version containment are proven.",
+      "classification": "SEPARATE_GATES_NOT_TRUE_CONFLICT",
+      "synthesis_rule": "Vendor permission is necessary but not sufficient. Model adapters remain disabled until both deployment authorization and local security conformance pass."
+    },
+    {
+      "id": "XTRACK-C004",
+      "summary": "DR-03 ranks Codex CLI and Claude Code as the strongest adapter candidates, while DR-04 prohibits binding any tool to a route before local evaluation and identity evidence exist.",
+      "classification": "RESEARCH_PRIORITY_VERSUS_ROUTE_CERTIFICATION",
+      "synthesis_rule": "Candidate priority may guide future conformance work, but it must not become route selection or certification."
+    },
+    {
+      "id": "XTRACK-C005",
+      "summary": "DR-05 documents OpenRouter routing and ZDR filters, while DR-03 and DR-05 both state that router metadata and policy tags are not provider attestation or a definitive privacy authority.",
+      "classification": "CONTROL_SURFACE_VERSUS_AUTHORITY",
+      "synthesis_rule": "Use OpenRouter only as pinned fallback transport. Missing upstream contract, exact route metadata, or provider identity invalidates governed proof."
+    }
+  ],
+  "synthesis_specific_open_questions": [
+    {
+      "id": "SYN-U001",
+      "claim_label": "UNKNOWN",
+      "topic": "embedded_audit_contract_resolution",
+      "question": "What exact accepted machine schema path and version must the future request/result mapper target for embedded-audit objects?",
+      "why_open": "The accepted proof contracts reference the embedded-audit schema, but that physical schema was not an accepted supplied artifact in this synthesis workspace.",
+      "blocking_scope": "Implementation of proof-object mapping, not the authority decision.",
+      "required_evidence": "Current repository schema, validator, representative valid fixtures, and PR Steward intake expectations.",
+      "default_disposition": "Reference existing authority and block any schema fork."
+    },
+    {
+      "id": "SYN-U002",
+      "claim_label": "UNKNOWN",
+      "topic": "pr_steward_integration_contract",
+      "question": "What exact PR Steward request and merge-readiness intake fields are current runtime authority?",
+      "why_open": "Accepted evidence establishes PR Steward as governance intake but does not supply a complete current machine contract.",
+      "blocking_scope": "Automated handoff and publication mapping.",
+      "required_evidence": "Runtime/source contract, schema, validator, and exact-head fixtures.",
+      "default_disposition": "Manual handoff with explicit proof references."
+    },
+    {
+      "id": "SYN-U003",
+      "claim_label": "UNKNOWN",
+      "topic": "macos_worker_technology",
+      "question": "Which disposable worker technology is acceptable on the actual macOS host?",
+      "why_open": "The security research preserves the separation requirement but did not test Linux VM, macOS VM, container, or remote worker tradeoffs.",
+      "blocking_scope": "Worker implementation selection.",
+      "required_evidence": "Authorized implementation spike covering tool compatibility, licensing, isolation, cleanup, networking, and performance.",
+      "default_disposition": "Prefer disposable VM for hostile execution; allow container only after explicit shared-kernel risk acceptance."
+    },
+    {
+      "id": "SYN-U004",
+      "claim_label": "UNKNOWN",
+      "topic": "broker_runtime_location",
+      "question": "Where should the broker runtime and its durable lease/replay store live without importing the observed network-touching aggregate CLI path?",
+      "why_open": "The architecture excludes the aggregate CLI import path, but no accepted runtime module is selected.",
+      "blocking_scope": "Broker implementation location and packaging.",
+      "required_evidence": "Repository runtime inspection under a future authorized implementation packet.",
+      "default_disposition": "Create a minimal isolated dependency path; do not reuse unverified aggregate imports."
+    },
+    {
+      "id": "SYN-U005",
+      "claim_label": "UNKNOWN",
+      "topic": "github_app_permissions",
+      "question": "What exact read-only verifier and publisher GitHub App permission sets are sufficient on the repository plan in use?",
+      "why_open": "No GitHub App was created and plan/account entitlements were not tested.",
+      "blocking_scope": "Later pull-based pickup and automated publication.",
+      "required_evidence": "Least-privilege permission review, plan entitlement, and exact API operation list.",
+      "default_disposition": "Manual requests and publication."
+    },
+    {
+      "id": "SYN-U006",
+      "claim_label": "UNKNOWN",
+      "topic": "data_classification_and_redaction",
+      "question": "What repository and client data-classification rules determine PUBLIC, PRIVATE, SENSITIVE, CLIENT, and RELEASE categories?",
+      "why_open": "No client contracts, DPA approvals, secret policy, or repository-specific classification schema were supplied.",
+      "blocking_scope": "Any private or sensitive API egress.",
+      "required_evidence": "Security, privacy, legal, and client-approved policy with secret scanning and redaction rules.",
+      "default_disposition": "No external egress for sensitive or client content."
+    },
+    {
+      "id": "SYN-U007",
+      "claim_label": "UNKNOWN",
+      "topic": "route_threshold_calibration",
+      "question": "What numeric risk, complexity, and evaluation thresholds are appropriate for Dopemux repositories?",
+      "why_open": "The accepted thresholds are provisional and no local benchmark was run.",
+      "blocking_scope": "Automatic route recommendation and execution.",
+      "required_evidence": "Adjudicated corpus, shadow metrics, failure-cost model, and governance approval.",
+      "default_disposition": "Recommendation-only with deterministic protected-category floors."
+    },
+    {
+      "id": "SYN-U008",
+      "claim_label": "UNKNOWN",
+      "topic": "manual_receipt_evidence",
+      "question": "Which screenshots, transcripts, and displayed identity fields are sufficient for each manual tool receipt without overstating provider attestation?",
+      "why_open": "Manual receipt templates were referenced in excluded local artifacts but were not supplied or inspected.",
+      "blocking_scope": "Standardized manual intake for Grok, AGY, and other interactive tools.",
+      "required_evidence": "Approved manual receipt schema, redaction rules, and representative fixtures.",
+      "default_disposition": "Treat displayed identity as low-confidence supporting evidence only."
+    },
+    {
+      "id": "SYN-U009",
+      "claim_label": "UNKNOWN",
+      "topic": "local_total_cost",
+      "question": "What are the measured hardware, electricity, maintenance, failure, and operator-time costs of the local architecture?",
+      "why_open": "No host metering or operator time study was supplied.",
+      "blocking_scope": "Numerical total-cost comparison, not security architecture.",
+      "required_evidence": "Invoices, depreciation policy, power measurements, tariff, utilization, and time logs.",
+      "default_disposition": "Use formulas and null measurements rather than invented totals."
+    },
+    {
+      "id": "SYN-U010",
+      "claim_label": "UNKNOWN",
+      "topic": "certification_governance_owner",
+      "question": "Which human or governance body owns route certification, revocation, and exception approval?",
+      "why_open": "The synthesis preserves human and existing governance authority but no specific certification owner is named in accepted evidence.",
+      "blocking_scope": "Route promotion and exceptions.",
+      "required_evidence": "Repository governance decision and RACI.",
+      "default_disposition": "No automatic promotion; operator plus independent reviewer approval."
+    }
+  ],
+  "adapter_gate_register": {
+    "mechanical": {
+      "current_disposition": "CURRENTLY_IMPLEMENTABLE_AFTER_AUTHORIZATION",
+      "required_before_execution": [
+        "versioned read-only command allowlist",
+        "no-network disposable worker",
+        "validator authority registry",
+        "proof contract mapping",
+        "negative mutation/install/network tests"
+      ]
+    },
+    "codex_cli": {
+      "current_disposition": "BLOCKED_PENDING_EVIDENCE",
+      "required_before_execution": [
+        "approved auth class and deployment",
+        "credential owner/expiry/revocation",
+        "dedicated worker boundary",
+        "effective config and prohibited-surface conformance",
+        "strict result schema and exit mapping",
+        "actual identity and billing-route receipt",
+        "shadow evaluation certificate"
+      ]
+    },
+    "claude_code": {
+      "current_disposition": "BLOCKED_PENDING_EVIDENCE",
+      "required_before_execution": [
+        "first-party auth only",
+        "setup-token inventory/revocation procedure",
+        "dedicated worker boundary",
+        "effective settings and no-tool conformance",
+        "network policy proof",
+        "actual identity and billing-route receipt",
+        "shadow evaluation certificate"
+      ]
+    },
+    "gemini_cli": {
+      "current_disposition": "BLOCKED_PENDING_EVIDENCE",
+      "required_before_execution": [
+        "supported organization account class or separate API/Vertex route",
+        "consumer plan route excluded",
+        "sandbox/tool/MCP/extension conformance",
+        "native envelope normalizer",
+        "identity/usage receipt",
+        "shadow evaluation certificate"
+      ]
+    },
+    "grok_build": {
+      "current_disposition": "OPERATOR_TRIGGERED_OR_BLOCKED",
+      "required_before_execution": [
+        "version-matched contract for installed 0.2.99",
+        "plan-session runner permission or explicit API route",
+        "credential lifecycle and revocation",
+        "complete containment profile",
+        "versioned output/exit contract",
+        "identity/usage receipt",
+        "shadow evaluation certificate"
+      ]
+    },
+    "agy": {
+      "current_disposition": "MANUAL_OR_RESEARCH_ONLY",
+      "required_before_execution": [
+        "official unattended receipt/export contract",
+        "credential lifecycle and runner-class permission",
+        "complete containment profile",
+        "versioned output and exit behavior",
+        "identity receipt",
+        "shadow evaluation certificate"
+      ]
+    },
+    "opencode": {
+      "current_disposition": "RESEARCH_ONLY",
+      "required_before_execution": [
+        "upstream vendor permission for exact auth route",
+        "provider fallback deterministically disabled",
+        "actual upstream provider/model evidence",
+        "clean config root and tool denial",
+        "stable strict receipt contract",
+        "shadow evaluation certificate"
+      ],
+      "additional_constraint": "Not eligible for independence-critical routes until provider and model provenance is proven."
+    },
+    "openrouter": {
+      "current_disposition": "DESIGNABLE_DISABLED",
+      "required_before_execution": [
+        "per-environment key and hard credit cap",
+        "exact model and provider endpoint",
+        "fallback disabled where provenance matters",
+        "parameter/data/ZDR/price profile",
+        "upstream contract approval",
+        "returned metadata validation",
+        "caller-side budget reservation",
+        "route certificate"
+      ],
+      "additional_constraint": "Public low-risk only by default."
+    },
+    "direct_provider_api": {
+      "current_disposition": "DESIGNABLE_DISABLED",
+      "required_before_execution": [
+        "approved provider project and commercial/privacy terms",
+        "per-route key or workload identity",
+        "retention and feature review",
+        "structured output and trace receipt",
+        "caller-side hard cost admission",
+        "route certificate"
+      ]
+    },
+    "manual_receipt": {
+      "current_disposition": "DESIGNABLE",
+      "required_before_execution": [
+        "manual receipt schema",
+        "exact-head display",
+        "operator attestation",
+        "artifact/transcript digest",
+        "identity confidence labeling",
+        "redaction rules"
+      ]
+    }
+  },
+  "global_fail_closed_rules": [
+    "UNKNOWN, CLAIMED, or CONFLICTING authentication, containment, identity, privacy, cost, or certification does not map to unattended execution.",
+    "Mechanical validation remains the only currently observed automatic lane.",
+    "Candidate content remains hostile data.",
+    "No credential-bearing generic self-hosted runner is permitted.",
+    "No environment failure automatically selects a stronger, more expensive, or less private route.",
+    "No model, broker, runner, adapter, or publisher receives merge, release, or governance authority.",
+    "Automatic routing waits for shadow evaluation and route certification."
+  ]
+}

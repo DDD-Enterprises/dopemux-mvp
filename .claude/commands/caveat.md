@@ -1,6 +1,6 @@
 Log a caveat/constraint to **ConPort** as durable custom data (Memory Trinity plane 1).
 
-Call: `mcp__conport__log_custom_data`
+Call: `mcp__conport__conport_save_custom_data`
 
 ```json
 {
@@ -11,6 +11,6 @@ Call: `mcp__conport__log_custom_data`
 }
 ```
 
-Search later: `mcp__conport__search_custom_data_value_fts` with query `caveat: <term>`.
+Search later: `mcp__conport__conport_search_content` with query `caveat: <term>`.
 
 > OpenMemory/Mem0 is **deprecated** — do not use.

@@ -132,6 +132,15 @@ Proof for repo-changing work must include:
 
 No proof means incomplete.
 
+### 9.1 Embedded Audit
+
+Governance, process, schema, prompt, proof, and authority-boundary packets require an embedded audit before final readiness — see `docs/ops/embedded-audit.md`. `SKIPPED`, `FAIL`, `NEEDS_SUPERVISOR`, malformed/stale proof, or head mismatch blocks readiness.
+
+- Claude Code CLI (Sonnet, then Opus) is a valid Tier-1 auditor route; Codex is forbidden as a formal auditor.
+- A Claude Code session may run the audit locally against the diff and author the proof — see the runbook's "Local Claude Code / CLI route (pre-PR)". Precedent: `proof/TP-DCP-MCP-RO-0008`.
+- Proof: `proof/<PACKET_ID>/PROOF.json` (`embedded_audit` per `schemas/proof/embedded_audit.schema.json`) + `AUDITOR_REPORT.md` + `review_bundle/`; validate with `scripts/audit/validate_audit_proof.py`.
+- A pre-PR local audit leaves the PR-scoped `pr-steward gate --audit-proof` `NOT_RUN` (1-hour TTL + PR-head match); regenerate and re-pin the proof to the PR head before the FINALIZATION gate.
+
 ## 10. Known Dangers
 
 - `dopecon-bridge` exposes broad surfaces that can look authoritative, but it is only bridge/proxy/event transport.

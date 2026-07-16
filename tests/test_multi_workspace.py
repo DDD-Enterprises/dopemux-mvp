@@ -81,64 +81,6 @@ class TestWorkspaceIsolation:
         assert identifier.replace("_", "").replace("-", "").isalnum()
         assert "/" not in identifier
     
-    @pytest.mark.asyncio
-    async def test_cognitive_state_isolation(self, workspace_env):
-        """Test ADHD Engine cognitive state is isolated per workspace"""
-        # This test requires ADHD Engine running
-        # For now, test the data model
-        from services.session_intelligence.coordinator import CognitiveState
-        
-        state1 = CognitiveState(
-            user_id="test",
-            energy_level="high",
-            attention_state="focused",
-            last_break_timestamp=None,
-            minutes_since_break=None,
-            workspace_path=str(workspace_env["project1"])
-        )
-        
-        state2 = CognitiveState(
-            user_id="test",
-            energy_level="low",
-            attention_state="scattered",
-            last_break_timestamp=None,
-            minutes_since_break=None,
-            workspace_path=str(workspace_env["project2"])
-        )
-        
-        # Should have different workspace paths
-        assert state1.workspace_path != state2.workspace_path
-    
-    @pytest.mark.asyncio
-    async def test_session_isolation(self, workspace_env):
-        """Test sessions are isolated per workspace"""
-        from services.session_intelligence.coordinator import SessionState
-        
-        session1 = SessionState(
-            session_id="s1",
-            workspace="project1",
-            worktree="main",
-            branch="main",
-            current_focus="feature A",
-            session_duration_minutes=30,
-            workspace_path=str(workspace_env["project1"])
-        )
-        
-        session2 = SessionState(
-            session_id="s2",
-            workspace="project2",
-            worktree="main",
-            branch="develop",
-            current_focus="feature B",
-            session_duration_minutes=45,
-            workspace_path=str(workspace_env["project2"])
-        )
-        
-        # Verify isolation
-        assert session1.workspace_path != session2.workspace_path
-        assert session1.current_focus != session2.current_focus
-
-
 class TestCrossWorkspaceQueries:
     """Test cross-workspace query functionality"""
     
