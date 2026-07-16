@@ -19,11 +19,16 @@ test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Toolti
   const content = fs.readFileSync(filePath, 'utf8');
   expect(content).toContain('aria-label="Cognitive Load Percentage"');
   expect(content).toContain('aria-valuetext');
-  expect(content).toContain('<Tooltip title={`AI Recommendation: ${recommendation}. ${roast}`} arrow>');
+  expect(content).toMatch(/<Tooltip title=\{\s*copied\s*\?\s*'Copied!'\s*:\s*`AI Recommendation: \$\{recommendation\}\. Click to copy\.`\s*\}\s*arrow\s*>/);
   expect(content).toContain('getDynamicRoast');
   expect(content).toContain('load-pulse');
   expect(content).toContain('prefers-reduced-motion');
   expect(content).toContain('tabIndex={0}');
+  expect(content).toContain('role="button"');
+  expect(content).toMatch(/aria-label=\{\s*copied\s*\?\s*'Copied'\s*:\s*`Load \$\{val\}%, \$\{statusMeta\.label\}\. AI Recommendation: \$\{recommendation\}\. Click to copy\.`\s*\}/);
+  expect(content).toContain('onClick={onCopy}');
+  expect(content).toContain("cursor: 'copy'");
+  expect(content).toContain('copy-glow');
 });
 
 test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
