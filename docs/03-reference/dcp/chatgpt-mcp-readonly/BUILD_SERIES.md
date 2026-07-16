@@ -27,6 +27,7 @@ prelude: Packet roadmap and dependency chain for the read-only MCP evidence faca
 | TP-DCP-MCP-RO-0009 | ChatGPT MCP Exposure Target Contract ADR | HIGH | Record accepted `target_id`, runtime-resolution, ownership-evidence, and response-redaction contract. **Done** — runtime follow-on work is now enabled by the landed MCP runtime stack. | 0008 |
 | TP-DCP-MCP-RO-0010 | Exposure Target Registry V2 And Pure Resolver Core | HIGH | Parse opaque target consent and resolve filesystem/repository identity without live I/O. **Done** — pure registry v2, resolver core, and capability separation landed. | 0009 |
 | TP-DCP-MCP-RO-0011 | Read-Only Runtime Registry And Catalog Join | HIGH | Join resolved targets with operational catalog/runtime evidence using exact scope checks; remain non-callable and fail closed. | 0010 |
+| TP-DCP-MCP-RO-0011-REMEDIATION-01 | Runtime Catalog Join Generated Identity Remediation | HIGH | Correct the open 0011 PR so lifecycle-generated runtime IDs match without changing target authorization or live behavior. | 0011 |
 
 ## Sequencing rationale
 
