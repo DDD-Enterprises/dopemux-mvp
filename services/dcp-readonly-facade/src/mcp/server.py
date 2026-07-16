@@ -2,7 +2,11 @@
 
 The external server loads only registry v2 from ``DCP_FACADE_REGISTRY_V2``.
 It exposes local, read-only target evidence only; backend adapters, public
-ingress, credentials, and runtime lifecycle operations are deliberately absent.
+ingress defaults, tunnels, and runtime lifecycle mutations remain out of scope.
+
+Stdio remains the default transport. Optional loopback Streamable HTTP ingress
+(``DCP_FACADE_TRANSPORT=streamable-http``) is pinned to 127.0.0.1 and requires
+connector authentication before MCP discovery/dispatch (TP-DCP-MCP-RO-0014).
 """
 
 from __future__ import annotations
@@ -72,7 +76,12 @@ async def get_target_runtime_receipt(target_id: str) -> dict:
 
 
 def main() -> None:
-    transport = os.getenv("DCP_FACADE_TRANSPORT", "stdio")
+    transport = os.getenv("DCP_FACADE_TRANSPORT", "stdio").strip().lower()
+    if transport in {"streamable-http", "http", "loopback-http"}:
+        from dcp_facade.loopback_server import run_loopback_ingress_forever
+
+        run_loopback_ingress_forever()
+        return
     mcp.run(transport=transport)
 
 

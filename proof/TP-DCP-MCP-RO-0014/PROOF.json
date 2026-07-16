@@ -1,0 +1,117 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0014",
+  "title": "Loopback Streamable HTTP Ingress",
+  "status": "VALIDATED_WITH_AUDIT_GAP",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "codex/dcp-mcp-ro-0014-loopback-ingress",
+  "base_branch": "main",
+  "base_sha": "4079da8387bae0cf8b2971de547f092a3f6b8408",
+  "depends_on_verified": {
+    "TP-DCP-MCP-RO-0013": {
+      "pr": 1059,
+      "merge_commit": "4079da8387bae0cf8b2971de547f092a3f6b8408",
+      "status": "MERGED"
+    }
+  },
+  "scope": "Loopback-only Streamable HTTP ingress with auth-before-discovery, rate/concurrency limits, redacted audit, start/stop/health. Stdio remains default. No public bind, tunnel, real credentials, or backend adapters.",
+  "input_package": {
+    "sha256": "c0cb9d34f6ece116811c52cce0d1b517153dba0f8434c9abda9da6ff6d6a2447",
+    "authority": "advisory_only"
+  },
+  "files_changed": [
+    "services/dcp-readonly-facade/src/dcp_facade/ingress.py",
+    "services/dcp-readonly-facade/src/dcp_facade/loopback_server.py",
+    "services/dcp-readonly-facade/src/dcp_facade/rate_limit.py",
+    "services/dcp-readonly-facade/src/dcp_facade/ingress_audit.py",
+    "services/dcp-readonly-facade/src/mcp/server.py",
+    "services/dcp-readonly-facade/tests/test_ingress.py",
+    "services/dcp-readonly-facade/tests/test_loopback_server.py",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/INGRESS_LOOPBACK_CONTRACT.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/FACADE_LOCAL_RUN.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0014.json",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0014.md",
+    "task-packets/INDEX.md",
+    "proof/TP-DCP-MCP-RO-0014/PROOF.json",
+    "proof/TP-DCP-MCP-RO-0014/AUDITOR_REPORT.md",
+    "proof/TP-DCP-MCP-RO-0014/AGY_AUDIT.md",
+    "proof/TP-DCP-MCP-RO-0014/COMMAND_LOG.md"
+  ],
+  "validation": {
+    "PASS": [
+      {
+        "command": "focused ingress/loopback tests",
+        "exit_code": 0,
+        "result": "11 passed"
+      },
+      {
+        "command": "full facade suite",
+        "exit_code": 0,
+        "result": "passed; 1 live skipped"
+      },
+      {
+        "command": "compileall",
+        "exit_code": 0,
+        "result": "ok"
+      },
+      {
+        "command": "packet schema",
+        "exit_code": 0,
+        "result": "valid"
+      },
+      {
+        "command": "pre-commit allowlist",
+        "exit_code": 0,
+        "result": "ok"
+      },
+      {
+        "command": "agy advisory",
+        "exit_code": 0,
+        "result": "PASS_WITH_RISKS"
+      }
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "command": "Trusted embedded audit / PR Steward",
+        "reason": "local-only; AGY advisory only",
+        "mitigation": "readiness not claimed"
+      },
+      {
+        "command": "Tunnel / public provider live tests",
+        "reason": "out of scope and unauthorized",
+        "mitigation": "loopback-only packet"
+      }
+    ]
+  },
+  "local_agy_review": {
+    "status": "PASS_WITH_RISKS",
+    "ci_trust_status": "NOT_ACCEPTED"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "report_path": "proof/TP-DCP-MCP-RO-0014/AUDITOR_REPORT.md",
+    "skip_reason": "No trusted runner/Claude audit route; AGY is advisory only and does not satisfy embedded-audit.yml.",
+    "fixes_applied": [
+      "Loopback-only bind enforcement",
+      "Auth-before-discovery ASGI middleware",
+      "Per-connector rate/concurrency limits",
+      "Redacted structured audit log",
+      "Start/stop/health lifecycle"
+    ],
+    "remaining_risks": [
+      "Trusted embedded audit unavailable",
+      "Optional FastMCP HTTP app wrapping not always present in constrained envs"
+    ]
+  },
+  "residual_risks": [
+    "Operator must keep ingress on loopback and not publish tunnels without later authorization",
+    "Generated .claude/claude_config.json left unstaged"
+  ],
+  "rollback": "Revert TP-0014 commits; keep DCP_FACADE_TRANSPORT=stdio",
+  "pr": {
+    "status": "PENDING_CREATE",
+    "blocker": "Trusted embedded audit SKIPPED; merge readiness not claimed"
+  }
+}
