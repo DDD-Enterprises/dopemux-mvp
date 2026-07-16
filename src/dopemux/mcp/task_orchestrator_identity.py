@@ -210,6 +210,70 @@ def probe_wrapper_metadata(
     return None
 
 
+def probe_mcp_server_name(
+    port: int = DEFAULT_TO_PORT,
+    *,
+    host: str = "127.0.0.1",
+    path: str = "/mcp",
+    timeout_s: float = 1.0,
+    opener: Optional[Callable[[str, bytes, Dict[str, str]], Any]] = None,
+) -> Optional[str]:
+    """MCP ``initialize`` handshake → ``result.serverInfo.name`` (fail-closed).
+
+    Positively identifies a live reserved-singleton occupant (e.g. the Task
+    Orchestrator on :7890) via the MCP protocol handshake, without relying on a
+    port lease — reserved singletons never write leases, so lease identity can
+    never prove ownership of a healthy live singleton.
+
+    Any error, timeout, or non-JSON/malformed response returns ``None`` so
+    callers fail closed (treat the occupant as unknown). The upstream Task
+    Orchestrator answers this handshake with a plain ``application/json`` body.
+    """
+    url = f"http://{host}:{int(port)}{path}"
+    payload = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-06-18",
+                "capabilities": {},
+                "clientInfo": {"name": "dopemux-allocator-probe", "version": "1"},
+            },
+        }
+    ).encode("utf-8")
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json, text/event-stream",
+    }
+
+    def _default_post(u: str, body: bytes, hdrs: Dict[str, str]) -> Any:
+        req = urllib.request.Request(u, data=body, headers=hdrs, method="POST")
+        with urllib.request.urlopen(req, timeout=timeout_s) as resp:  # noqa: S310 — localhost probe
+            return resp.read()
+
+    post = opener or _default_post
+    try:
+        raw = post(url, payload, headers)
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError, ValueError):
+        return None
+    try:
+        text = raw.decode("utf-8") if isinstance(raw, (bytes, bytearray)) else str(raw)
+        body = json.loads(text)
+    except (json.JSONDecodeError, ValueError, AttributeError, UnicodeDecodeError):
+        return None
+    if not isinstance(body, dict):
+        return None
+    result = body.get("result")
+    if not isinstance(result, dict):
+        return None
+    info = result.get("serverInfo")
+    if not isinstance(info, dict):
+        return None
+    name = info.get("name")
+    return str(name) if name else None
+
+
 def probe_http_info(
     port: int = DEFAULT_TO_PORT,
     *,
