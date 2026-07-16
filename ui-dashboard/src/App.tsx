@@ -34,6 +34,7 @@ import {
   Info,
   PauseCircle,
   Trash2,
+  TrendingDown,
   TrendingUp,
   X,
   Zap,
@@ -366,17 +367,24 @@ function App() {
     {
       label: '15-min Prediction' as const,
       value: cognitiveState.prediction ?? null,
-      icon: (
-        <TrendingUp
-          color={
-            cognitiveState.prediction !== undefined
-              ? statusStyles[deriveStatus(cognitiveState.prediction)].color
-              : brandTokens.colors.giltEdge
-          }
-          size={24}
-          aria-hidden="true"
-        />
-      ),
+      icon:
+        cognitiveState.prediction !== undefined && cognitiveState.prediction < cognitiveState.load ? (
+          <TrendingDown
+            color={statusStyles[deriveStatus(cognitiveState.prediction)].color}
+            size={24}
+            aria-hidden="true"
+          />
+        ) : (
+          <TrendingUp
+            color={
+              cognitiveState.prediction !== undefined
+                ? statusStyles[deriveStatus(cognitiveState.prediction)].color
+                : brandTokens.colors.giltEdge
+            }
+            size={24}
+            aria-hidden="true"
+          />
+        ),
       accentColor:
         cognitiveState.prediction !== undefined
           ? statusStyles[deriveStatus(cognitiveState.prediction)].color
@@ -809,7 +817,11 @@ function App() {
           </Grid>
           {layout.showPredictions && (
             <Grid item xs={12} lg={4}>
-              <PredictionPanel prediction={cognitiveState.prediction} onError={setErrorMessage} />
+              <PredictionPanel
+                prediction={cognitiveState.prediction}
+                currentLoad={cognitiveState.load}
+                onError={setErrorMessage}
+              />
             </Grid>
           )}
           {layout.showTeamDashboard && !isMobile && (
