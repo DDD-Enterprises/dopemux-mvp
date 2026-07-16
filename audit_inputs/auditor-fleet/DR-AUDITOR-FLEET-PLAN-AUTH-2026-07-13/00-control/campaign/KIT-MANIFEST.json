@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0.0",
+  "campaign_id": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "created_at": "2026-07-13",
+  "file_count": 16,
+  "files": [
+    {
+      "path": "CAMPAIGN-LOCK.json",
+      "bytes": 1925,
+      "sha256": "51992c25579abc6f630c954ba99f72cb7db9a5e7a6bcec3cfd332ccd7f305224"
+    },
+    {
+      "path": "MASTER-PROMPT.md",
+      "bytes": 2007,
+      "sha256": "fdc1b1ad9fe4df40181205a32dad46d47f64230f35d739f6a41eda6ba9d2b54d"
+    },
+    {
+      "path": "RESEARCH-QUESTION-MATRIX.json",
+      "bytes": 1413,
+      "sha256": "a070c8ad4fa6f16cd1990943e18af0cb02df6f62be50f9b371089c7baeef7590"
+    },
+    {
+      "path": "RUN-CONTROL.md",
+      "bytes": 2022,
+      "sha256": "9643bcb35c0fd466b90a7ec429fc58efa64698871161a40ca442d3f512f495bb"
+    },
+    {
+      "path": "SOURCE-POLICY.md",
+      "bytes": 2651,
+      "sha256": "af778301e919d652683f6616409153802fea4b2574782ab5971ec0a05293e422"
+    },
+    {
+      "path": "START_HERE.md",
+      "bytes": 2434,
+      "sha256": "ffc35f46a091509802b97458397297af5102f9f88d1f361d1b33bb1acf470f90"
+    },
+    {
+      "path": "acceptance/DR-INDEPENDENT-ACCEPTANCE-PROMPT.md",
+      "bytes": 1922,
+      "sha256": "a3d41fc98742a2dbf80b03f87c5a7d846e4d0031f48c0c796dd24dbbcb4810e0"
+    },
+    {
+      "path": "operator/DEEP-RESEARCH-OPERATOR-PASTE.md",
+      "bytes": 597,
+      "sha256": "05b8d3cad3345272065576ed49579e16b262f202e8a137f54d3641879e111dce"
+    },
+    {
+      "path": "schemas/CAMPAIGN-ACCEPTANCE.schema.json",
+      "bytes": 1831,
+      "sha256": "cbcf75c6e7dd7fba7096bf3d7098bb1adc9a37c54ecbc54ce76b30fd801ce2ad"
+    },
+    {
+      "path": "schemas/TRACK-FINDINGS.schema.json",
+      "bytes": 7266,
+      "sha256": "7e05ee044d1b7746545180ab537cdf7f1ccd12902939bfba46b68c7e677065e2"
+    },
+    {
+      "path": "synthesis/GPT56PRO-SYNTHESIS-HANDOFF-PROMPT.md",
+      "bytes": 3214,
+      "sha256": "9fa1b9712e24a0d2f68bc16461622ed72e9c36c106a9e35a0f5e06c66930ab69"
+    },
+    {
+      "path": "tracks/DR-01-VENDOR-PLAN-AUTH-AND-TERMS.md",
+      "bytes": 3466,
+      "sha256": "eae22d6bc2c306ddf427bd47f4cb5d475b8a985054c8492be28a7ef7d197a210"
+    },
+    {
+      "path": "tracks/DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY.md",
+      "bytes": 2654,
+      "sha256": "a6683619bc4c99bb5e99472f758c5e72363ad1a2894518a1765d65e8471a3ae5"
+    },
+    {
+      "path": "tracks/DR-03-TOOL-AUTOMATION-AND-CONTAINMENT.md",
+      "bytes": 2048,
+      "sha256": "dc484d7c5bc43972b08c575e4370850d95c94dcebd3497c5f4ae8ca6088f6b03"
+    },
+    {
+      "path": "tracks/DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE.md",
+      "bytes": 2661,
+      "sha256": "3af8f024348eaea25d7b867c72ec4b17c71116120509f87a06d13d65ad302fd4"
+    },
+    {
+      "path": "tracks/DR-05-API-FALLBACK-PRIVACY-AND-COST.md",
+      "bytes": 2229,
+      "sha256": "c3d1040956568d6d4aefdb544193f99e18ecc2072f47c69acd7f514b2ef99edd"
+    }
+  ]
+}

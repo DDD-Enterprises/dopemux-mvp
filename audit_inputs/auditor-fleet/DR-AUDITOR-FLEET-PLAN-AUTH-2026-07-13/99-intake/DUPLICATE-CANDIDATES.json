@@ -1,0 +1,50 @@
+{
+  "SHA256SUMS.txt": [
+    {
+      "path": "/Users/hue/Downloads/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/SHA256SUMS.txt",
+      "size": 1718,
+      "sha256": "3da3fda0ff3de754c1dc2865f2346a45ded0087f5e470dde805e84c96b6af636"
+    },
+    {
+      "path": "/Users/hue/Downloads/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13-SYNTHESIS/SHA256SUMS.txt",
+      "size": 2159,
+      "sha256": "3ed7ccd93bf5e4624473b97e4b81026ce2c39f7055d46ad592862bec22767f04"
+    }
+  ],
+  "AGENTS.md": [
+    {
+      "path": "/Users/hue/Downloads/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/up2/AGENTS.md",
+      "size": 14767,
+      "sha256": "576069f92e845ce0960cbc303361290404043760db83edb71373244e6703602a"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp-wt-auditor-fleet-campaign-intake-001/AGENTS.md",
+      "size": 14767,
+      "sha256": "576069f92e845ce0960cbc303361290404043760db83edb71373244e6703602a"
+    }
+  ],
+  "PROJECT.md": [
+    {
+      "path": "/Users/hue/Downloads/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/up2/PROJECT.md",
+      "size": 12763,
+      "sha256": "a3bfabc28ad461c85be3b97c939e99c4288a641fa412ccaeebf12d935d839942"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp-wt-auditor-fleet-campaign-intake-001/PROJECT.md",
+      "size": 12763,
+      "sha256": "a3bfabc28ad461c85be3b97c939e99c4288a641fa412ccaeebf12d935d839942"
+    }
+  ],
+  "ARCHITECTURE.md": [
+    {
+      "path": "/Users/hue/Downloads/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/up2/ARCHITECTURE.md",
+      "size": 8742,
+      "sha256": "f6d1dfdaddb6afc719cf7bab299bb71552bbc1849fc2b2378a34d309d98e89e5"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp-wt-auditor-fleet-campaign-intake-001/ARCHITECTURE.md",
+      "size": 8742,
+      "sha256": "f6d1dfdaddb6afc719cf7bab299bb71552bbc1849fc2b2378a34d309d98e89e5"
+    }
+  ]
+}

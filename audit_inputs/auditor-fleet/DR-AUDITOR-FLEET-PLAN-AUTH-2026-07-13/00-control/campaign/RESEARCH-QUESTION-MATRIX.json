@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "campaign_id": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "tracks": [
+    {
+      "track_id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "decision_gate": "Which plan-backed credentials are officially supportable on local broker, VM, or self-hosted runner deployments?",
+      "blocking_if_unknown": "Automated deployment for that tool"
+    },
+    {
+      "track_id": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY",
+      "decision_gate": "Which architecture isolates persistent credentials from hostile PR content while preserving exact-head proof?",
+      "blocking_if_unknown": "Automatic GitHub-triggered audit execution"
+    },
+    {
+      "track_id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "decision_gate": "Which tools expose supported headless, structured, clean-room, non-mutating audit surfaces?",
+      "blocking_if_unknown": "Tool adapter automation"
+    },
+    {
+      "track_id": "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE",
+      "decision_gate": "How should PRs be classified and routes certified without premium-model overuse?",
+      "blocking_if_unknown": "Automatic route recommendation or execution"
+    },
+    {
+      "track_id": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "decision_gate": "Which API fallbacks preserve privacy, identity, cost, and proof requirements?",
+      "blocking_if_unknown": "API fallback enablement"
+    }
+  ]
+}

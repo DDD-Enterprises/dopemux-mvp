@@ -1,0 +1,13 @@
+{
+  "label": "OBSERVED",
+  "method": "static-only",
+  "observations": [
+    {"tool_id": "grok_build", "requested_model": null, "observed_model": null, "confidence": "UNKNOWN", "reason": "No live probe."},
+    {"tool_id": "agy", "requested_model": null, "observed_model": null, "confidence": "UNKNOWN", "reason": "No live probe."},
+    {"tool_id": "gemini_cli", "requested_model": null, "observed_model": null, "confidence": "UNKNOWN", "reason": "No live probe."},
+    {"tool_id": "codex", "requested_model": null, "observed_model": null, "confidence": "UNKNOWN", "reason": "No live probe."},
+    {"tool_id": "claude_code", "requested_model": null, "observed_model": null, "confidence": "UNKNOWN", "reason": "No live probe."},
+    {"tool_id": "opencode", "requested_model": null, "observed_model": null, "confidence": "UNKNOWN", "reason": "Configured upstream provider not inspected."},
+    {"tool_id": "openrouter", "requested_model": null, "observed_model": null, "confidence": "UNKNOWN", "reason": "Static-only API fallback; call forbidden."}
+  ]
+}
