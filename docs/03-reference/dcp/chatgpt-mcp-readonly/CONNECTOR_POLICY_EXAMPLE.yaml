@@ -1,0 +1,144 @@
+schema_version: "1.0.0"
+examples_only: true
+records:
+  - schema_version: "1.0.0"
+    connector_id: "chatgpt-dopemux-main"
+    provider: "chatgpt"
+    transport_class: "openai_secure_mcp_tunnel"
+    credential_ref:
+      kind: "secret_manager"
+      reference: "<SECRET_MANAGER_REFERENCE_CHATGPT_DCP>"
+      verification_fingerprint: "fp:chatgpt:redacteddigest"
+      rotation_group: "dcp-chatgpt"
+    default_target_id: "dopemux-main"
+    allowed_target_ids: ["dopemux-main"]
+    multi_target_authorized: false
+    allowed_tools: ["read-decisions", "memory-search"]
+    denied_tools: ["mutation-tool-denied"]
+    enabled: false
+    rate_limit:
+      requests_per_minute: 30
+      burst: 5
+      max_concurrent: 2
+      deny_on_backend_unavailable: true
+    audit_label: "provider.chatgpt.dopemux-main"
+    created_by: "operator-placeholder"
+    created_at: "2099-01-01T00:00:00Z"
+    expires_at: "2099-02-01T00:00:00Z"
+    last_verified_at: null
+    source_documentation_date: "2026-07-15"
+    provider_account_class: "business"
+    provider_metadata:
+      public_hostname_label: null
+      server_name: "dopemux"
+      account_or_workspace_ref: "<OPAQUE_CHATGPT_WORKSPACE_REF>"
+    fail_closed: &fail_closed
+      unknown_target: "BLOCK"
+      disabled_target: "BLOCK"
+      unauthorized_target: "BLOCK"
+      denied_tool: "BLOCK"
+      expired_credential: "BLOCK"
+      ambiguous_owner: "BLOCK"
+      stale_runtime: "BLOCK"
+      auth_failure: "BLOCK"
+      missing_rate_policy: "BLOCK"
+      provider_drift: "BLOCK"
+
+  - schema_version: "1.0.0"
+    connector_id: "grok-feature-review-a7"
+    provider: "grok"
+    transport_class: "public_streamable_http"
+    credential_ref:
+      kind: "environment"
+      reference: "env:DOPEMUX_GROK_CONNECTOR_TOKEN"
+      verification_fingerprint: "fp:grok:redacteddigest"
+      rotation_group: "dcp-grok"
+    default_target_id: "feature-review-a7"
+    allowed_target_ids: ["feature-review-a7"]
+    multi_target_authorized: false
+    allowed_tools: ["read-decisions"]
+    denied_tools: ["mutation-tool-denied"]
+    enabled: false
+    rate_limit:
+      requests_per_minute: 20
+      burst: 4
+      max_concurrent: 1
+      deny_on_backend_unavailable: true
+    audit_label: "provider.grok.feature-review-a7"
+    created_by: "operator-placeholder"
+    created_at: "2099-01-01T00:00:00Z"
+    expires_at: "2099-02-01T00:00:00Z"
+    last_verified_at: null
+    source_documentation_date: "2026-06-14"
+    provider_account_class: "individual"
+    provider_metadata:
+      public_hostname_label: "grok-mcp.example.invalid"
+      server_name: "dopemux"
+      account_or_workspace_ref: "<OPAQUE_GROK_ACCOUNT_REF>"
+    fail_closed: *fail_closed
+
+  - schema_version: "1.0.0"
+    connector_id: "gemini-api-bounded"
+    provider: "gemini_api"
+    transport_class: "public_streamable_http"
+    credential_ref:
+      kind: "secret_manager"
+      reference: "<SECRET_MANAGER_REFERENCE_GEMINI_DCP>"
+      verification_fingerprint: "fp:gemini:redacteddigest"
+      rotation_group: "dcp-gemini-api"
+    default_target_id: "dopemux-main"
+    allowed_target_ids: ["dopemux-main"]
+    multi_target_authorized: false
+    allowed_tools: ["read-decisions"]
+    denied_tools: ["mutation-tool-denied"]
+    enabled: false
+    rate_limit:
+      requests_per_minute: 10
+      burst: 2
+      max_concurrent: 1
+      deny_on_backend_unavailable: true
+    audit_label: "provider.gemini-api.dopemux-main"
+    created_by: "operator-placeholder"
+    created_at: "2099-01-01T00:00:00Z"
+    expires_at: "2099-02-01T00:00:00Z"
+    last_verified_at: null
+    source_documentation_date: "2026-07-09"
+    provider_account_class: "api_project"
+    provider_metadata:
+      public_hostname_label: "gemini-mcp.example.invalid"
+      server_name: "dopemux"
+      account_or_workspace_ref: "<OPAQUE_GEMINI_PROJECT_REF>"
+    fail_closed: *fail_closed
+
+  - schema_version: "1.0.0"
+    connector_id: "antigravity-local-feature-a7"
+    provider: "gemini_cli"
+    transport_class: "local_streamable_http"
+    credential_ref:
+      kind: "os_keychain"
+      reference: "<OS_KEYCHAIN_REFERENCE_LOCAL_DCP>"
+      verification_fingerprint: "fp:local-antigravity:redacteddigest"
+      rotation_group: "dcp-local-gemini"
+    default_target_id: "feature-review-a7"
+    allowed_target_ids: ["feature-review-a7"]
+    multi_target_authorized: false
+    allowed_tools: ["read-decisions", "memory-search"]
+    denied_tools: ["mutation-tool-denied"]
+    enabled: false
+    rate_limit:
+      requests_per_minute: 60
+      burst: 10
+      max_concurrent: 2
+      deny_on_backend_unavailable: true
+    audit_label: "local.gemini-cli.feature-review-a7"
+    created_by: "operator-placeholder"
+    created_at: "2099-01-01T00:00:00Z"
+    expires_at: null
+    last_verified_at: null
+    source_documentation_date: "2026-07-16"
+    provider_account_class: "local_operator"
+    provider_metadata:
+      public_hostname_label: null
+      server_name: "dopemuxlocal"
+      account_or_workspace_ref: "<OPAQUE_LOCAL_PROFILE_REF>"
+    fail_closed: *fail_closed

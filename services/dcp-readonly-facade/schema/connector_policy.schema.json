@@ -1,0 +1,381 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/dcp-connector-policy-1.0.0.json",
+  "title": "Dopemux DCP Connector Policy Record",
+  "description": "Strict non-secret policy for one authenticated provider or local MCP connector. Populated records live outside the repository.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "connector_id",
+    "provider",
+    "transport_class",
+    "credential_ref",
+    "default_target_id",
+    "allowed_target_ids",
+    "allowed_tools",
+    "denied_tools",
+    "enabled",
+    "rate_limit",
+    "audit_label",
+    "created_by",
+    "created_at",
+    "expires_at",
+    "last_verified_at",
+    "source_documentation_date",
+    "provider_account_class",
+    "fail_closed"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "connector_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{2,63}$"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "chatgpt",
+        "openai_api",
+        "grok",
+        "xai_api",
+        "gemini_api",
+        "gemini_deep_research",
+        "gemini_cli",
+        "antigravity_managed"
+      ]
+    },
+    "transport_class": {
+      "type": "string",
+      "enum": [
+        "openai_secure_mcp_tunnel",
+        "public_streamable_http",
+        "public_sse",
+        "local_streamable_http",
+        "local_sse",
+        "local_stdio"
+      ]
+    },
+    "credential_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "reference",
+        "verification_fingerprint",
+        "rotation_group"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "environment",
+            "os_keychain",
+            "secret_manager",
+            "oauth_client",
+            "mtls_identity"
+          ]
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Non-secret locator only. Must not contain the credential value."
+        },
+        "verification_fingerprint": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9:_-]{8,128}$",
+          "description": "Non-reversible identifier used for audit correlation."
+        },
+        "rotation_group": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{2,63}$"
+        }
+      }
+    },
+    "default_target_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-z][a-z0-9-]{2,63}$",
+      "description": "When non-null, must also appear in allowed_target_ids. Enforce this semantic constraint in the loader."
+    },
+    "allowed_target_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]{2,63}$"
+      }
+    },
+    "multi_target_authorized": {
+      "type": "boolean",
+      "default": false
+    },
+    "allowed_tools": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_.:-]{1,128}$"
+      }
+    },
+    "denied_tools": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_.:-]{1,128}$"
+      }
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "rate_limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requests_per_minute",
+        "burst",
+        "max_concurrent",
+        "deny_on_backend_unavailable"
+      ],
+      "properties": {
+        "requests_per_minute": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "burst": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "max_concurrent": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "deny_on_backend_unavailable": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
+    "audit_label": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{2,127}$"
+    },
+    "created_by": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "source_documentation_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "provider_account_class": {
+      "type": "string",
+      "enum": [
+        "individual",
+        "pro",
+        "business",
+        "enterprise",
+        "education",
+        "api_project",
+        "local_operator",
+        "unknown"
+      ]
+    },
+    "provider_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "public_hostname_label": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[A-Za-z0-9.-]{1,253}$",
+          "description": "Redacted or template hostname label only in repository examples."
+        },
+        "server_name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z0-9_-]{1,63}$"
+        },
+        "account_or_workspace_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128,
+          "description": "Opaque non-secret reference."
+        }
+      }
+    },
+    "fail_closed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unknown_target",
+        "disabled_target",
+        "unauthorized_target",
+        "denied_tool",
+        "expired_credential",
+        "ambiguous_owner",
+        "stale_runtime",
+        "auth_failure",
+        "missing_rate_policy",
+        "provider_drift"
+      ],
+      "properties": {
+        "unknown_target": {
+          "type": "string",
+          "const": "BLOCK"
+        },
+        "disabled_target": {
+          "type": "string",
+          "const": "BLOCK"
+        },
+        "unauthorized_target": {
+          "type": "string",
+          "const": "BLOCK"
+        },
+        "denied_tool": {
+          "type": "string",
+          "const": "BLOCK"
+        },
+        "expired_credential": {
+          "type": "string",
+          "const": "BLOCK"
+        },
+        "ambiguous_owner": {
+          "type": "string",
+          "const": "BLOCK"
+        },
+        "stale_runtime": {
+          "type": "string",
+          "const": "BLOCK"
+        },
+        "auth_failure": {
+          "type": "string",
+          "const": "BLOCK"
+        },
+        "missing_rate_policy": {
+          "type": "string",
+          "const": "BLOCK"
+        },
+        "provider_drift": {
+          "type": "string",
+          "const": "BLOCK"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "transport_class": {
+            "enum": [
+              "public_streamable_http",
+              "public_sse",
+              "openai_secure_mcp_tunnel"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "multi_target_authorized": {
+            "const": false
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "allowed_target_ids": {
+            "maxItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": {
+            "const": "antigravity_managed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "transport_class": {
+            "const": "public_streamable_http"
+          },
+          "provider_metadata": {
+            "required": [
+              "server_name"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": {
+            "const": "gemini_cli"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "transport_class": {
+            "enum": [
+              "local_streamable_http",
+              "local_sse",
+              "local_stdio"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
