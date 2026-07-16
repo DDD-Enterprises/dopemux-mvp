@@ -28,6 +28,8 @@ prelude: Packet roadmap and dependency chain for the read-only MCP evidence faca
 | TP-DCP-MCP-RO-0010 | Exposure Target Registry V2 And Pure Resolver Core | HIGH | Parse opaque target consent and resolve filesystem/repository identity without live I/O. **Done** — pure registry v2, resolver core, and capability separation landed. | 0009 |
 | TP-DCP-MCP-RO-0011 | Read-Only Runtime Registry And Catalog Join | HIGH | Join resolved targets with operational catalog/runtime evidence using exact scope checks; remain non-callable and fail closed. | 0010 |
 | TP-DCP-MCP-RO-0011-REMEDIATION-01 | Runtime Catalog Join Generated Identity Remediation | HIGH | Correct the open 0011 PR so lifecycle-generated runtime IDs match without changing target authorization or live behavior. | 0011 |
+| TP-DCP-MCP-RO-0012 | Public Facade Target Contract Migration | HIGH | Migrate public FastMCP to registry-v2 opaque target_id local evidence tools. **Done** — merged PR #1057. | 0011-REMEDIATION-01 |
+| TP-DCP-MCP-RO-0013 | Connector Policy Schema And Auth Context | HIGH | Strict connector policy schema/loader and provider-neutral sealed auth context with target/tool authorization. **No public ingress.** | 0012 |
 
 ## Sequencing rationale
 
