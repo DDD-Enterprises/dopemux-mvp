@@ -41,7 +41,7 @@ backend call.
 | # | Action | Expected |
 | --- | --- | --- |
 | 7 | Call a target-scoped tool with an unknown opaque ID | `BLOCKED`, no evidence data. |
-| 8 | Call with a path- or URL-shaped `target_id` | `BLOCKED`, `target_id: null`, and no reflected input. |
+| 8 | Call with a path-, URL-, port-, or IPv4-shaped `target_id` | `BLOCKED`, `target_id: null`, and no reflected input. |
 | 9 | Use `../` or a symlink escape as `bundle_id` | `BLOCKED`; no file outside the proof root is read. |
 | 10 | Remove or corrupt the local catalog/runtime registry evidence | `PARTIAL`; receipt stays non-callable. |
 | 11 | Inspect tool manifest | Only the six v2 tools are registered; no adapter, mutation, generic fetch, endpoint, or lifecycle tool exists. |
