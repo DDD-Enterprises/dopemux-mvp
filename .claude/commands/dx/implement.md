@@ -30,7 +30,7 @@ Start an ADHD-optimized 25-minute focused implementation session with intelligen
 - Query ConPort for specific task:
 
   ```bash
-  Use mcp__conport__get_progress with workspace_id "/Users/hue/code/dopemux-mvp" and limit 100
+  Use mcp__conport__conport_get_progress with workspace_id "/Users/hue/code/dopemux-mvp" and limit 100
   ```
 
 - Find task matching provided ID or description substring
@@ -40,7 +40,7 @@ Start an ADHD-optimized 25-minute focused implementation session with intelligen
 - Query ConPort for TODO tasks:
 
   ```bash
-  Use mcp__conport__get_progress with:
+  Use mcp__conport__conport_get_progress with:
     workspace_id: "/Users/hue/code/dopemux-mvp"
     status_filter: "TODO"
     limit: 10
@@ -115,7 +115,7 @@ For the selected task:
 ### Step 2.1: Update ConPort Task Status
 
 ```bash
-Use mcp__conport__update_progress with:
+Use mcp__conport__conport_update_progress with:
   workspace_id: "/Users/hue/code/dopemux-mvp"
   progress_id: TASK_ID
   status: "IN_PROGRESS"
@@ -125,7 +125,7 @@ Use mcp__conport__update_progress with:
 ### Step 2.2: Update Active Context
 
 ```bash
-Use mcp__conport__update_active_context with:
+Use mcp__conport__conport_update_context with:
   workspace_id: "/Users/hue/code/dopemux-mvp"
   patch_content: {
     "current_task": "TASK_ID",
@@ -224,7 +224,7 @@ What's the status?
 ### Step 4.2: Update ConPort
 
 ```bash
-Use mcp__conport__update_progress with:
+Use mcp__conport__conport_update_progress with:
   workspace_id: "/Users/hue/code/dopemux-mvp"
   progress_id: TASK_ID
   status: USER_SELECTED_STATUS
@@ -276,7 +276,7 @@ Keep up the great work!
 ### Step 4.5: Update Active Context
 
 ```bash
-Use mcp__conport__update_active_context with:
+Use mcp__conport__conport_update_context with:
   workspace_id: "/Users/hue/code/dopemux-mvp"
   patch_content: {
     "last_session_end": "CURRENT_TIMESTAMP",

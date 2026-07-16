@@ -3,7 +3,7 @@
 Performance Validation Suite for Serena Enhancements
 
 Benchmarks real API calls against ADHD performance targets (<200ms).
-Tests F-NEW-3, F-NEW-4, F-NEW-5, F-NEW-6 with actual data.
+Tests F-NEW-3, F-NEW-4, and F-NEW-5 with actual data.
 """
 
 import asyncio
@@ -15,74 +15,10 @@ logger = logging.getLogger(__name__)
 import sys
 import time
 from pathlib import Path
-from statistics import mean, stdev
+from statistics import mean
 
 # Add service paths
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "services" / "session_intelligence"))
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "services" / "complexity_coordinator"))
-
-
-async def benchmark_fnew6_dashboard(iterations: int = 10):
-    """Benchmark F-NEW-6 session dashboard generation"""
-    logger.info("\n" + "="*80)
-    logger.info("BENCHMARK: F-NEW-6 Session Intelligence Dashboard")
-    logger.info("="*80)
-
-    try:
-        from coordinator import get_session_intelligence
-
-        coordinator = await get_session_intelligence()
-
-        logger.info(f"Running {iterations} iterations...")
-        times = []
-
-        for i in range(iterations):
-            start = time.time()
-            dashboard = await coordinator.get_unified_dashboard(user_id="default")
-            elapsed_ms = (time.time() - start) * 1000
-            times.append(elapsed_ms)
-
-            if i == 0:
-                # Show sample output on first iteration
-                logger.info(f"\nSample Dashboard Output:")
-                logger.info(dashboard)
-                logger.info()
-
-        # Statistics
-        avg_ms = mean(times)
-        std_ms = stdev(times) if len(times) > 1 else 0
-        min_ms = min(times)
-        max_ms = max(times)
-        p95_ms = sorted(times)[int(len(times) * 0.95)] if len(times) > 1 else max_ms
-
-        logger.info(f"Performance Statistics:")
-        logger.info(f"   Average: {avg_ms:.1f}ms")
-        logger.info(f"   Std Dev: {std_ms:.1f}ms")
-        logger.info(f"   Min: {min_ms:.1f}ms")
-        logger.info(f"   Max: {max_ms:.1f}ms")
-        logger.info(f"   P95: {p95_ms:.1f}ms")
-
-        # Target validation
-        target_ms = 200
-        design_ms = 65
-
-        if p95_ms < target_ms:
-            margin = ((target_ms - p95_ms) / target_ms) * 100
-            logger.info(f"\n✅ PASS: {margin:.0f}% under 200ms ADHD target")
-        else:
-            logger.error(f"\n❌ FAIL: {p95_ms:.1f}ms exceeds 200ms target")
-
-        if p95_ms < design_ms:
-            improvement = design_ms / p95_ms
-            logger.info(f"✅ EXCEEDS DESIGN: {improvement:.1f}x better than {design_ms}ms target!")
-
-        return avg_ms < target_ms
-
-    except Exception as e:
-        logger.error(f"❌ FAIL: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
 
 
 async def benchmark_fnew3_complexity(iterations: int = 5):
@@ -97,7 +33,6 @@ async def benchmark_fnew3_complexity(iterations: int = 5):
         test_files = [
             ("services/serena/v2/mcp_server.py", "SerenaV2MCPServer"),
             ("services/dope-context/src/mcp/server.py", "search_code"),
-            ("services/session_intelligence/coordinator.py", "SessionIntelligenceCoordinator"),
         ]
 
         logger.info(f"Testing {len(test_files)} files × {iterations} iterations...")
@@ -147,7 +82,7 @@ async def benchmark_fnew3_complexity(iterations: int = 5):
 async def benchmark_adhd_integration():
     """Benchmark ADHD Engine integration overhead"""
     logger.info("\n" + "="*80)
-    logger.info("BENCHMARK: ADHD Engine Integration (F-NEW-4, F-NEW-6)")
+    logger.info("BENCHMARK: ADHD Engine Integration (F-NEW-4)")
     logger.info("="*80)
 
     try:
@@ -211,7 +146,6 @@ async def main():
     results = []
 
     # Run benchmarks
-    results.append(("F-NEW-6 Dashboard", await benchmark_fnew6_dashboard(iterations=10)))
     results.append(("F-NEW-3 Complexity", await benchmark_fnew3_complexity(iterations=5)))
     results.append(("ADHD Integration", await benchmark_adhd_integration()))
 
@@ -232,7 +166,6 @@ async def main():
     logger.info("="*80)
 
     logger.info("\nKEY FINDINGS:")
-    logger.info("   F-NEW-6: 12.6ms actual (5x better than 65ms target!)")
     logger.info("   F-NEW-4: ADHD Engine operational")
     logger.info("   All features: Under 200ms ADHD threshold")
 
