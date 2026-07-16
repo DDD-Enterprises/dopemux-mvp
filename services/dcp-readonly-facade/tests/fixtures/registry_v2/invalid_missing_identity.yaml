@@ -1,0 +1,5 @@
+# Invalid: target missing the required identity block entirely.
+targets:
+  - target_id: "bad"
+    workspace_path: "/abs/ws"
+    enabled: true

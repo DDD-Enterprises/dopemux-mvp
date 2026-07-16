@@ -22,6 +22,16 @@ prelude: Multi-Instance Workflow Guide (how-to) for dopemux documentation and de
 
 Zero context destruction through parallel ADHD-optimized development instances.
 
+> **MCP sidecars (2026-07):** Safe multi-worktree config:
+> `dopemux mcp fleet init --repo <project> --worktrees <paths...> --apply` then
+> `dopemux mcp start --repo <worktree>` / `dopemux mcp fleet doctor --repo <project> --worktrees ...`.
+> Also: `init` → `repair-config` → `start` → `doctor` per worktree.
+> Port leases live in `~/.dopemux/mcp/runtime/port-leases.json` (cross-worktree collision
+> rebind). Task Orchestrator is fixed on `7890` with **project identity proof** (Packet 005):
+> wrong-project or unknown owner blocks start. Do **not** env-inject foreign
+> `.envrc.dopemux-mcp` into dopemux-mvp compose.
+> Runtime registry: `~/.dopemux/mcp/runtime/instances.json`.
+
 ## Overview
 
 Dopemux supports running up to 5 concurrent instances with isolated worktrees, enabling you to:

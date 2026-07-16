@@ -1,0 +1,137 @@
+{
+  "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "worktree": "/Users/hue/.codex/worktrees/dmx-audit-ci-provenance-104r",
+  "branch": "codex/audit-ci-provenance-104-import-path-repair",
+  "base_sha": "db9b844fc7b1731af953b7c996581082fb3f096f",
+  "head_binding": {
+    "status": "REQUIRES_POST_COMMIT_FINAL_SUMMARY",
+    "reason": "A proof file cannot truthfully contain the SHA of the commit that contains it."
+  },
+  "executed": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "The credentialed GitHub Actions PAL clink route was not run locally.",
+      "The external GPT-5.5 expert review was blocked by provider quota HTTP 429.",
+      "No independent exact-head audit receipt exists for this local repair branch."
+    ],
+    "skip_reason": "No supported independent embedded-auditor invocation was available in this session; local validation and internal code review do not substitute for an external audit receipt."
+  },
+  "root_cause": {
+    "observed": "The trusted workflow runs from trusted-source but invoked scripts/audit/pal_clink_runner.py directly. Its imports of scripts.audit.* then fail because direct script execution does not put the trusted checkout root on sys.path.",
+    "reproduction": {
+      "command": "python scripts/audit/pal_clink_runner.py --help",
+      "exit_code": 1,
+      "result": "ModuleNotFoundError: No module named 'scripts'"
+    },
+    "control": {
+      "command": "uv run --frozen python -m scripts.audit.pal_clink_runner --help",
+      "exit_code": 0,
+      "result": "The runner argparse help was emitted."
+    }
+  },
+  "slices": [
+    {
+      "id": "workflow-invocation",
+      "files": [
+        ".github/workflows/embedded-audit.yml"
+      ],
+      "change": "Run the PAL clink runner as scripts.audit.pal_clink_runner in Python module mode while retaining the trusted-source working directory and every existing argument."
+    },
+    {
+      "id": "regression-test",
+      "files": [
+        "tests/audit/test_run_embedded_audit.py"
+      ],
+      "change": "Require the exact PAL runner step to retain trusted-source and package-module invocation."
+    }
+  ],
+  "validations": [
+    {
+      "status": "PASS",
+      "command": "uv run --frozen pytest -q tests/audit/test_run_embedded_audit.py",
+      "exit_code": 0,
+      "result": "27 passed"
+    },
+    {
+      "status": "PASS",
+      "command": "uv run --frozen pytest -q tests/audit/test_pal_clink_runner.py",
+      "exit_code": 0,
+      "result": "39 passed"
+    },
+    {
+      "status": "PASS",
+      "command": "uv run --frozen python -m scripts.audit.pal_clink_runner --help",
+      "exit_code": 0,
+      "result": "Module invocation resolves package imports."
+    },
+    {
+      "status": "PASS",
+      "command": "uv run --frozen python -c <yaml-safe-load embedded-audit.yml>",
+      "exit_code": 0,
+      "result": "embedded-audit.yml: YAML PASS"
+    },
+    {
+      "status": "PASS",
+      "command": "uv run --frozen dopemux orchestrator packet validate task-packets/TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR.json",
+      "exit_code": 0,
+      "result": "dopetask-canonical-spec validation passed"
+    },
+    {
+      "status": "PASS",
+      "command": "uv run --frozen pre-commit run --files .github/workflows/embedded-audit.yml tests/audit/test_run_embedded_audit.py task-packets/TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR.json proof/TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR/PROOF.json proof/TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR/AUDITOR_REPORT.md",
+      "exit_code": 0,
+      "result": "All applicable hooks passed; remaining hooks skipped because no matching files were supplied."
+    },
+    {
+      "status": "PASS",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "No whitespace errors."
+    },
+    {
+      "status": "PASS",
+      "command": "PAL codereview internal review",
+      "exit_code": 0,
+      "result": "No code-level findings; reviewed workflow, runner, proof emitter, regression test, and task packet."
+    },
+    {
+      "status": "NOT_RUN",
+      "command": "PAL codereview external expert review (gpt-5.5)",
+      "exit_code": null,
+      "result": "Blocked by provider quota HTTP 429 after repository inspection; no expert verdict was returned."
+    }
+  ],
+  "scope": {
+    "allowlist": [
+      ".github/workflows/embedded-audit.yml",
+      "tests/audit/test_run_embedded_audit.py",
+      "task-packets/TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR.json",
+      "proof/TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR/**"
+    ],
+    "unrelated_preserved": [
+      ".claude/claude_config.json (worktree-specific configuration mutation; not staged)"
+    ]
+  },
+  "residual_risks": [
+    "The credentialed GitHub Actions route and external PAL CLI were not run locally.",
+    "A passing local module invocation does not itself produce an independent audit verdict or a final PR Steward READY receipt.",
+    "PR #1040 remains draft and blocked on an exact-head independent audit receipt and supervisor ADR decision."
+  ],
+  "unknowns": [
+    "Whether the configured GitHub Actions PAL clink client and least-privilege token are currently available to the hosted runner."
+  ],
+  "cleanup": {
+    "status": "PENDING_PR_PUBLICATION",
+    "note": "The dedicated worktree is retained until the repair branch is pushed and its pull request is created."
+  }
+}

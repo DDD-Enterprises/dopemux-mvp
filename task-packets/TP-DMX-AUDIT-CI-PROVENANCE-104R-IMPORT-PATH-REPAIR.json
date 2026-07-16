@@ -1,0 +1,95 @@
+{
+  "id": "TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR",
+  "project": "dopemux-mvp",
+  "target": "Repair the trusted embedded-audit PAL clink runner invocation so package imports resolve from the trusted checkout, while preserving fail-closed proof enforcement.",
+  "invariants": [
+    "The workflow continues to execute audit code only from trusted default-branch source.",
+    "Missing, malformed, skipped, or unexecuted audit evidence remains non-READY and fails closed.",
+    "The repair does not add credentials, mutate pull requests, alter branch protection, or change PR Steward behavior.",
+    "The repair is limited to the PAL runner import invocation and its regression proof."
+  ],
+  "depends_on": [
+    "TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MERGE-INTEGRITY",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/audit-ci-provenance-104-import-path-repair",
+    "base_branch": "main",
+    "stacked_because": "PR #1042 fail-closed enforcement is correct but its PAL runner invocation is not import-safe when executed as a script."
+  },
+  "commit": {
+    "message": "fix(audit): run PAL audit runner as a package module",
+    "allowlist": [
+      ".github/workflows/embedded-audit.yml",
+      "tests/audit/test_run_embedded_audit.py",
+      "task-packets/TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR.json",
+      "proof/TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR/**"
+    ],
+    "verify": [
+      "uv run --frozen pytest -q tests/audit/test_run_embedded_audit.py",
+      "uv run --frozen python -m scripts.audit.pal_clink_runner --help",
+      "uv run --frozen dopemux orchestrator packet validate task-packets/TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(audit): run PAL audit runner as a package module",
+    "body": "## Summary\n- Runs the trusted PAL clink audit runner in package mode so `scripts.*` imports resolve in the workflow checkout.\n- Adds a focused regression assertion for the workflow invocation.\n\n## Scope\nNo credentials, branch protection, PR mutation, or PR Steward behavior changes. Existing fail-closed enforcement remains unchanged.\n\n## Validation\nFocused audit workflow test, module help invocation, task-packet validation, and diff hygiene.\n\n## NOT_RUN\nCredentialed external-auditor execution remains outside this repair and requires a separate live receipt.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Reproduce the workflow runner import failure and compare it with package-module invocation from the trusted checkout.",
+      "validation": [
+        "Direct script execution fails with ModuleNotFoundError for scripts.",
+        "python -m scripts.audit.pal_clink_runner --help succeeds from the repository root."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add a focused regression test requiring the embedded-audit PAL runner step to use package-module invocation.",
+      "validation": [
+        "The new test fails before the workflow change because the script-path invocation is present."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Change only the PAL clink runner workflow command from script execution to package-module execution.",
+      "validation": [
+        "The focused audit workflow test passes.",
+        "The module help invocation succeeds.",
+        "Fail-closed proof enforcement remains unchanged in the diff."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Validate packet schema, focused tests, diff hygiene, precommit, and capture a proof bundle without claiming a credentialed external audit ran.",
+      "validation": [
+        "All packet commit.verify commands pass or are reported as NOT_RUN with an exact blocker.",
+        "Only commit.allowlist paths are staged."
+      ]
+    }
+  ]
+}

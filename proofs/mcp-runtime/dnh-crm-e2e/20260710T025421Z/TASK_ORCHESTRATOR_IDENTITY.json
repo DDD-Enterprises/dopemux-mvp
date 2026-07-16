@@ -1,0 +1,93 @@
+{
+  "findings": [
+    {
+      "code": "TRANSPORT_MATCH",
+      "evidence": [
+        "catalog=http",
+        "mcp_json=http"
+      ],
+      "message": "`task-orchestrator` transport matches catalog (http)",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "PORT_EXPECTED",
+      "evidence": [
+        "var=TASK_ORCHESTRATOR_HTTP_PORT",
+        "port=7890"
+      ],
+      "message": "TASK_ORCHESTRATOR_HTTP_PORT expected/configured as 7890",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "DOCKER_CONTAINER_NOT_FOUND",
+      "evidence": [],
+      "message": "No docker match for `task-orchestrator` (docker unavailable or not running)",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "LOCAL_SERVICE_OK",
+      "evidence": [],
+      "message": "Local service `task-orchestrator` not duplicated in global config",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "TASK_ORCHESTRATOR_WRAPPER_SINGLETON_COMPAT",
+      "evidence": [],
+      "message": "task-orchestrator is wrapper-singleton (fixed port, per-repo state)",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "TASK_ORCHESTRATOR_FIXED_PORT",
+      "evidence": [
+        "port=7890"
+      ],
+      "message": "task-orchestrator uses fixed port 7890",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "TASK_ORCHESTRATOR_FIXED_PORT_OCCUPIED",
+      "evidence": [],
+      "message": "task-orchestrator fixed port :7890 is occupied",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "INFO"
+    },
+    {
+      "code": "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN",
+      "evidence": [],
+      "message": "task-orchestrator on :7890 is listening but project ownership is unproven",
+      "recommendation": "Do not treat port-alive as workflow authority; start is blocked until identity is proven.",
+      "service": "task-orchestrator",
+      "severity": "UNKNOWN"
+    },
+    {
+      "code": "TASK_ORCHESTRATOR_FIXED_PORT_OCCUPIED_UNKNOWN",
+      "evidence": [],
+      "message": "Occupied :7890 with unknown owner",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "WARN"
+    },
+    {
+      "code": "TASK_ORCHESTRATOR_RUNTIME_METADATA_MISSING",
+      "evidence": [],
+      "message": "No TO identity metadata/labels/info with project fields",
+      "recommendation": "",
+      "service": "task-orchestrator",
+      "severity": "WARN"
+    }
+  ],
+  "status": "FAIL"
+}

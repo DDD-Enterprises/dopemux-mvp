@@ -1,0 +1,15 @@
+# Schema-valid registry v2 fixture with an administratively-disabled target.
+# Not a parse-time rejection — enabled:false is normal fail-closed default;
+# used by resolver tests to exercise the "target disabled" block path.
+approved_roots:
+  - /abs/approved/root
+
+targets:
+  - target_id: "dopemux-disabled"
+    workspace_path: "/abs/approved/root/dopemux-disabled"
+    enabled: false
+    identity:
+      project: "dopemux-disabled"
+    service_policies:
+      conport:
+        enabled: true

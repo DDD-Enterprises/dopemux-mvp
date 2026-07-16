@@ -1,0 +1,3 @@
+PAL codereview: internal complete; external gemini-2.5-pro 429 RESOURCE_EXHAUSTED
+PAL secaudit: internal complete; external gemini-2.5-pro 429 RESOURCE_EXHAUSTED
+Issues: medium live-unproven-until-merge; low soft-runner/enforce coupling; low check-name drift; low workflow_dispatch run-id footgun

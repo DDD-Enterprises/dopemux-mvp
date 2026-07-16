@@ -1,0 +1,6 @@
+pre-commit run --files <branch allowlist files>
+result: PASS (exit 0) on 2026-07-12
+git diff --check: PASS (exit 0)
+python compileall scripts/audit tools/pr_steward: PASS
+workflow YAML parse: PASS
+task packet jsonschema (dopetask-canonical-spec): PASS
