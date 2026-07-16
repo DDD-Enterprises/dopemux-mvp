@@ -10,7 +10,7 @@ Generate a formatted report from a completed `/research-deep` run. Writes the re
    - If an argument was passed, use it.
    - Otherwise read `last_research.id` from ConPort active context:
      ```
-     ctx = mcp__conport__get_active_context(workspace_id="$(git rev-parse --show-toplevel)")
+     ctx = mcp__conport__conport_get_context(workspace_id="$(git rev-parse --show-toplevel)")
      research_id = ctx.last_research.id
      ```
    - If neither is available, tell me to run `/research-deep "..."` first and stop.

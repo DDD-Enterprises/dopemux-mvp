@@ -1,6 +1,6 @@
 Log an architectural or implementation **decision** to **ConPort** (Memory Trinity plane 1 — canonical writer).
 
-Call: `mcp__conport__log_decision`
+Call: `mcp__conport__conport_log_decision`
 
 ```json
 {

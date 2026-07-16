@@ -318,6 +318,17 @@ def test_unknown_command_tool_surfaces_are_reported(tmp_path):
     assert unknown == [f"{command_dir / 'bad.md'}:1:missing-server"]
 
 
+def test_unknown_conport_command_tool_is_reported(tmp_path):
+    command_dir = tmp_path / "commands"
+    command_dir.mkdir()
+    (command_dir / "bad.md").write_text("Call `mcp__conport__missing_tool`.\n")
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+
+    unknown = fleet_catalog.find_unknown_command_tool_surfaces(command_dir, catalog)
+
+    assert unknown == [f"{command_dir / 'bad.md'}:1:conport:missing_tool"]
+
+
 def test_mcp_tool_surface_regex_rejects_partial_mentions():
     matches = fleet_catalog.extract_mcp_tool_surfaces(
         "mcp__conport__ok mcp__dope-memory__* mcp__bad mcp____x"
