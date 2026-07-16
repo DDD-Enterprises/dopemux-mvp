@@ -24,6 +24,8 @@ from tools.auditor_router.pal_clink import normalize_pal_clink_audit_output
 
 TOKEN_ENV_VAR = "EMBEDDED_AUDIT_TOKEN"
 PROOF_AUTHOR = "independent-embedded-audit"
+WORKFLOW_NAME = "embedded-audit.yml"
+PASSING_AUDIT_STATUSES = frozenset({"PASS", "PASS_WITH_RISKS"})
 
 
 def _utc_now_seconds() -> str:
@@ -33,6 +35,139 @@ def _utc_now_seconds() -> str:
         .isoformat()
         .replace("+00:00", "Z")
     )
+
+
+def independent_audit_errors(
+    payload: Mapping[str, Any],
+    *,
+    expected_pr: int | None = None,
+    expected_head_sha: str | None = None,
+    expected_repo: str | None = None,
+) -> list[str]:
+    """Return fail-closed errors for an independent-audit proof payload.
+
+    Shared by the embedded-audit workflow hard gate and PR Steward collector so
+    both surfaces accept and reject the same proof shapes.
+    """
+    if not isinstance(payload, Mapping):
+        return ["audit_proof_malformed: root is not an object"]
+
+    errors: list[str] = []
+
+    if "dry_run" in payload:
+        dry_run = payload.get("dry_run")
+        if dry_run is True:
+            errors.append(
+                "audit_proof_dry_run: final readiness requires an executed audit"
+            )
+        elif dry_run is not False:
+            errors.append(
+                "audit_proof_malformed_dry_run: dry_run must be a boolean when present"
+            )
+
+    if payload.get("executed") is not True:
+        errors.append("audit_not_executed: final readiness requires executed=true")
+
+    if expected_pr is not None:
+        try:
+            proof_pr = int(payload.get("pr_number"))  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            proof_pr = None
+        if proof_pr != int(expected_pr):
+            errors.append(
+                f"audit_pr_mismatch: proof pr_number={payload.get('pr_number')!r} "
+                f"expected={expected_pr}"
+            )
+
+    if expected_head_sha is not None:
+        proof_head = str(payload.get("head_sha") or "")
+        if proof_head != expected_head_sha:
+            errors.append(
+                f"audit_head_mismatch: proof head_sha={proof_head!r} "
+                f"expected={expected_head_sha}"
+            )
+
+    if expected_repo is not None:
+        proof_repo = str(payload.get("repo") or "").strip()
+        if not proof_repo:
+            errors.append(
+                "audit_repo_missing: final readiness requires proof.repo when "
+                "expected_repo is provided"
+            )
+        elif proof_repo != expected_repo:
+            errors.append(
+                f"audit_repo_mismatch: proof repo={proof_repo!r} "
+                f"expected={expected_repo}"
+            )
+
+    provenance = payload.get("provenance")
+    if not isinstance(provenance, Mapping):
+        errors.append(
+            "audit_provenance_missing: final readiness requires trusted provenance"
+        )
+        return errors
+    if provenance.get("proof_author") != PROOF_AUTHOR:
+        errors.append("audit_provenance_untrusted: unexpected proof author")
+    if provenance.get("workflow") != WORKFLOW_NAME:
+        errors.append("audit_provenance_untrusted: unexpected workflow")
+    return errors
+
+
+def enforce_independent_audit_proof(
+    payload: Mapping[str, Any],
+    *,
+    expected_pr: int | None = None,
+    expected_head_sha: str | None = None,
+    expected_repo: str | None = None,
+) -> None:
+    """Raise SystemExit unless the proof is a passing independent audit."""
+    errors = independent_audit_errors(
+        payload,
+        expected_pr=expected_pr,
+        expected_head_sha=expected_head_sha,
+        expected_repo=expected_repo,
+    )
+    if errors:
+        raise SystemExit("; ".join(errors))
+
+    embedded = payload.get("embedded_audit")
+    if not isinstance(embedded, Mapping):
+        raise SystemExit("audit_status_missing: embedded_audit object required")
+    status = str(embedded.get("status") or "").upper()
+    if status not in PASSING_AUDIT_STATUSES:
+        raise SystemExit(f"Independent audit did not pass: {status or 'UNKNOWN'}")
+
+
+def build_diagnostic_failure_proof(
+    *,
+    packet_id: str,
+    repo: str,
+    pr_number: int,
+    head_sha: str,
+    reason: str,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    """Emit a fail-closed diagnostic proof without trusted provenance.
+
+    Used for workflow failure paths (missing emitter, head mismatch, etc.).
+    Must not forge independent-embedded-audit provenance.
+
+    Schema rule: auditor_tool=none / auditor_model=unknown are only valid with
+    status=SKIPPED. Hard enforcement still rejects executed!=true, so SKIPPED
+    remains red while the artifact stays schema-valid.
+    """
+    report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
+    return {
+        "packet_id": packet_id,
+        "repo": repo,
+        "pr_number": int(pr_number),
+        "head_sha": head_sha,
+        "generated_at": generated_at or _utc_now_seconds(),
+        "executed": False,
+        "mutation_performed": False,
+        "github_mutation_route_added": False,
+        "embedded_audit": _skipped_audit(report_path=report_path, reason=reason),
+    }
 
 
 def build_embedded_audit_proof(
@@ -101,6 +236,12 @@ def build_embedded_audit_proof(
         "pr_number": int(pr_number),
         "head_sha": head_sha,
         "generated_at": generated_at or _utc_now_seconds(),
+        "executed": bool(
+            token_present
+            and not route_error
+            and not pal_output_error
+            and pal_output is not None
+        ),
         "mutation_performed": False,
         "github_mutation_route_added": False,
         "embedded_audit": embedded_audit,

@@ -1,0 +1,18 @@
+ .github/workflows/embedded-audit.yml               | 115 +++++++++------------
+ .github/workflows/pr-steward.yml                   |  60 ++++++-----
+ scripts/audit/pr_audit_router.py                   |   2 +-
+ scripts/audit/run_embedded_audit.py                |   6 ++
+ ...GE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION.json |  77 ++++++++++++++
+ tests/audit/test_pr_audit_router.py                |   8 ++
+ tests/audit/test_run_embedded_audit.py             |  34 ++++--
+ tests/pr_steward/test_intake.py                    |  60 +++++++++++
+ tools/pr_steward/collector.py                      |  27 ++++-
+ 9 files changed, 282 insertions(+), 107 deletions(-)
+ .github/workflows/embedded-audit.yml               | 136 ++++++++++--
+ .github/workflows/pr-steward.yml                   | 195 ++++++++++++++++-
+ scripts/audit/run_embedded_audit.py                | 138 ++++++++++++
+ ...GE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION.json |  53 ++++-
+ tests/audit/test_run_embedded_audit.py             | 231 ++++++++++++++++++++-
+ tests/pr_steward/test_intake.py                    | 158 ++++++++++++++
+ tools/pr_steward/collector.py                      |  24 +--
+ 7 files changed, 885 insertions(+), 50 deletions(-)
