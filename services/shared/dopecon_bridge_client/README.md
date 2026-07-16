@@ -243,18 +243,6 @@ link = client.create_link(
 
 For common use cases, use service-specific bridge adapters:
 
-### Voice Commands
-```python
-from services.voice_commands.bridge_adapter import VoiceCommandsBridgeAdapter
-
-async with VoiceCommandsBridgeAdapter(workspace_id="/workspace") as adapter:
-    result = await adapter.store_voice_decomposition(
-        user_id="user_123",
-        original_task="Implement authentication",
-        decomposition={...},
-    )
-```
-
 ### Task Orchestrator
 ```python
 from services.task_orchestrator.adapters.bridge_adapter import TaskOrchestratorBridgeAdapter
