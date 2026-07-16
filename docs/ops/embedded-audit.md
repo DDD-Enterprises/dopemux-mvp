@@ -5,8 +5,8 @@ type: reference
 owner: '@hu3mann'
 author: '@codex'
 date: '2026-05-25'
-last_review: '2026-05-31'
-next_review: '2026-08-29'
+last_review: '2026-07-13'
+next_review: '2026-10-11'
 prelude: Embedded audit policy and proof contract for governance/process/schema packets.
 ---
 # Embedded Audit
@@ -89,6 +89,57 @@ non-empty `skip_reason`. This is not a PASS verdict.
 The workflow is proof-authoring authority only for the embedded-audit artifact.
 PR Steward and merge/remediation engines may request audit proof but must not
 author it.
+
+## Local Claude Code / CLI route (pre-PR)
+
+A Claude Code (or other Tier-1 CLI) session may run the embedded audit locally
+against the working diff before a PR exists, instead of waiting for the CI lane.
+This is a first-class route (route #2 Sonnet, route #3 Opus), independent of the
+implementer as long as the auditing session is not the one that wrote the diff.
+Precedent: `proof/TP-DCP-MCP-RO-0008` (Opus self/independent audit).
+
+Procedure:
+
+1. **Perform the audit** against the staged diff. For code packets this is a
+   correctness / security / scope review; for governance / evidence / docs
+   packets it is provenance integrity, allowlist and scope discipline, authority
+   hygiene, and diff hygiene — recompute artifact hashes, verify inventories,
+   `git diff --check`, check every staged path against the packet allowlist, and
+   scan for secrets. Optionally corroborate with an independent clink run via
+   `scripts/audit/pal_clink_runner.run_audit` (route resolved by
+   `scripts/audit/auditor_router.select_route`); if you do, capture it in the
+   review bundle and label it a leading-prompt second look, not the hard
+   evidence.
+2. **Author `proof/<PACKET_ID>/PROOF.json`.** The `embedded_audit` sub-object
+   must conform to `schemas/proof/embedded_audit.schema.json` (see "Required
+   Proof Object"). For a Claude Code route use `auditor_tool: "claude-code-cli"`
+   with `auditor_model: "opus"` or `"sonnet"`, a non-empty `invocation`, and a
+   `report_path` matching `^proof/<PACKET_ID>/AUDITOR_REPORT.md$`.
+3. **Include the top-level fields the PR Steward gate reads**
+   (`src/dopemux_pr_merge_specialist/steward_gate.py`): `head_sha` and
+   `generated_at`, alongside the `embedded_audit` object:
+
+   ```json
+   {
+     "head_sha": "<sha>",
+     "generated_at": "<ISO-8601 UTC, e.g. 2026-07-13T07:27:09Z>",
+     "embedded_audit": { "...": "schema object" }
+   }
+   ```
+
+4. **Write `proof/<PACKET_ID>/AUDITOR_REPORT.md`** and populate
+   `proof/<PACKET_ID>/review_bundle/` (see "Review Bundle").
+5. **Validate:**
+   `python scripts/audit/validate_audit_proof.py proof/<PACKET_ID>/PROOF.json`
+   and the `Validate proof bundle embedded_audit schema` pre-commit hook.
+
+Scope and staleness honesty: `pr-steward gate --audit-proof` re-checks the proof
+at the PR head with a 1-hour TTL (`steward_gate` `ttl_seconds=3600`) and
+cross-checks `head_sha` against a `MERGE_READINESS.json` produced by
+`pr-steward intake` against a real PR. A pre-PR local audit therefore leaves the
+PR-scoped gate `NOT_RUN`; regenerate the proof and re-pin it to the PR head SHA
+before the FINALIZATION gate, and record that explicitly rather than implying
+gate readiness.
 
 ## Required Proof Object
 

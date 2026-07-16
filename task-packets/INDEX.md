@@ -33,6 +33,8 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Status | Related ADR |
 | --- | --- | --- | --- | --- |
+| TP-DMX-UR-ARTIFACT-INTAKE-001 | Universal Router | Import accepted architecture and audit evidence | Ready | UR-ARCH-001 |
+| UR-TP-001 | Universal Router | Strict Universal Router contracts and typed governance refs | Ready after dependency | UR-ARCH-001 |
 | TP-SIA-EXEC-0001 | Workflow Plane | Packet Execution Domain Models + Lease Store | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0002 | Workflow Plane | Packet Manifest V2 + Sidecar Contract | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0003 | Workflow Plane | Explicit Routing Slots + Cost Policy | Ready | SIA Packet Execution ADR |
@@ -97,6 +99,7 @@ A packet is superseded by another packet
 | TP-DMX-ADHD-SECRET-DEFAULTS-001 | ADHD Engine / Security | Remove remaining ADHD/WMA weak default secrets and fail closed outside dev/test/local | Active | N/A |
 | TP-DMX-ADHD-PRIVACY-PAYLOADS-001 | ADHD Engine / Activity Capture | Enforce content-free ADHD activity payloads | Active | N/A |
 | TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001 | Docs | Refresh active Start Here onboarding and product naming | Active | N/A |
+| TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001 | Auditor Fleet / Governance | Deterministic evidence intake for auditor fleet campaign DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13 | Active | N/A |
 | DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Merged (PR #528) | N/A |
 | TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001 | UI Cockpit | Audit and prepare Cockpit PR stack 568-571 plus PR 573 evidence for safe consolidation | Active | N/A |
 | TP-DMX-COCKPIT-COMMAND-PALETTE-001 | UI Cockpit | Reconcile Command Palette broker primitive onto current main | Active | N/A |

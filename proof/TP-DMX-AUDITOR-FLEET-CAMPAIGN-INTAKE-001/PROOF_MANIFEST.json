@@ -1,0 +1,92 @@
+[
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/AUDITOR_REPAIR_REPORT.md",
+    "filename": "AUDITOR_REPAIR_REPORT.md",
+    "sha256": "4b7516be61f0a0aa19058d374a657a996b164f2c8c147b961b0066d05d6d6590",
+    "bytes": 5034
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/BASELINE.json",
+    "filename": "BASELINE.json",
+    "sha256": "bb4670c0061e6d50ea654bf4cac4b222606ee5732a1126d5c90cfb8b4ae38545",
+    "bytes": 398
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/COMMAND_LOG.md",
+    "filename": "COMMAND_LOG.md",
+    "sha256": "68ae3047d32e9a986c7cd0bc6eb1911c3cb105037e63a1cc60280f8f8191eba3",
+    "bytes": 933
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/DOCS_HYGIENE.json",
+    "filename": "DOCS_HYGIENE.json",
+    "sha256": "5e52b7fd57239d4f99542468efe924ff154229e973af73db0aa42725241d06f9",
+    "bytes": 344
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/GIT_DIFF.patch",
+    "filename": "GIT_DIFF.patch",
+    "sha256": "c02c17f48569bf95a14537155905df28dd7fde82d3968e61c8f21f640397c841",
+    "bytes": 1639738
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/GIT_DIFF_STAT.txt",
+    "filename": "GIT_DIFF_STAT.txt",
+    "sha256": "197adff69bd653d364d38569dd7e78f4171ba3f894bed05ab836a358f3eb7842",
+    "bytes": 6349
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/GIT_STATUS_AFTER.txt",
+    "filename": "GIT_STATUS_AFTER.txt",
+    "sha256": "49102a0f4eba2280b599ea3857866c4f813a7c9498c4d44f9a8b9a3212be7cbf",
+    "bytes": 364
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/GIT_STATUS_BEFORE.txt",
+    "filename": "GIT_STATUS_BEFORE.txt",
+    "sha256": "25761f5bcd9437842d056e7826392924a2234bd93b4e9580aad0133717bcb051",
+    "bytes": 57
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/HASH_VALIDATION.json",
+    "filename": "HASH_VALIDATION.json",
+    "sha256": "6c313e4f85d1446ec105ab3d34fc11c0e7eac121cca0b145476416c6c389951d",
+    "bytes": 37873
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/INTAKE_SUMMARY.md",
+    "filename": "INTAKE_SUMMARY.md",
+    "sha256": "c9e93bf325593c12ddfdc4efcda03f7a09097e2300546efaa5e311b79e9a22c0",
+    "bytes": 658
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/PATH_ALLOWLIST_CHECK.json",
+    "filename": "PATH_ALLOWLIST_CHECK.json",
+    "sha256": "816a51c21b189a4bf9bf0abf92e08600e7ac74b1563ecb7b781fb6c3b13ed80c",
+    "bytes": 12270
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/PROOF.json",
+    "filename": "PROOF.json",
+    "sha256": "94ffff406c0068175c8048da1545a7d14d7f7d4a04e22b3262a6afa93272a3d3",
+    "bytes": 4052
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/SECRET_SCAN.json",
+    "filename": "SECRET_SCAN.json",
+    "sha256": "b4fe3718799481c63638805e2086ec9a4cb670382f20318fd0d57b0daf3e4693",
+    "bytes": 507
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/SOURCE_DISCOVERY.json",
+    "filename": "SOURCE_DISCOVERY.json",
+    "sha256": "d9215b702e9a3fa6fa550e0478656177e9908368a4fb33bb575f24dcdffcd9d1",
+    "bytes": 316764
+  },
+  {
+    "logical_path": "proof/TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001/ZIP_VALIDATION.json",
+    "filename": "ZIP_VALIDATION.json",
+    "sha256": "4941630b5ff0047f8fd1699a3f79087a3a200ffe70c7450eb4ee9e567964c1a6",
+    "bytes": 1193
+  }
+]
