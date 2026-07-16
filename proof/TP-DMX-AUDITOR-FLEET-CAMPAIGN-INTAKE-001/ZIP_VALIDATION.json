@@ -1,0 +1,26 @@
+[
+  {
+    "filename": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13.zip",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/06-source-bundles/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13.zip",
+    "sha256": "2268f3b2d1caee77f7cd53f18ef537e02c4bb991bed4b79170c288761ef897c9",
+    "bytes": 23703,
+    "integrity_ok": true,
+    "classification": "SOURCE_PROVENANCE"
+  },
+  {
+    "filename": "TP-DMX-AUDITOR-FLEET-CAPABILITY-PROBE-001_KIT.zip",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/06-source-bundles/TP-DMX-AUDITOR-FLEET-CAPABILITY-PROBE-001_KIT.zip",
+    "sha256": "9ca10708e84382bc39440daf1fbc7a9588db44e09d2982ba9eb6c3170cf7d105",
+    "bytes": 33123,
+    "integrity_ok": true,
+    "classification": "SOURCE_PROVENANCE"
+  },
+  {
+    "filename": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13-SYNTHESIS.zip",
+    "repo_path": "audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13/06-source-bundles/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13-SYNTHESIS.zip",
+    "sha256": "e5f50d2201e48123c69013c6da353467709f9e65ce9c133abb0e116a23aa1486",
+    "bytes": 73502,
+    "integrity_ok": true,
+    "classification": "SOURCE_PROVENANCE"
+  }
+]

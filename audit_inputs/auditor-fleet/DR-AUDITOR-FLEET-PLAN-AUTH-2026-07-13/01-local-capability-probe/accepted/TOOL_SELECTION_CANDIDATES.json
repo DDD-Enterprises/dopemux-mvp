@@ -1,0 +1,14 @@
+{
+  "label": "PROPOSED",
+  "selection_status": "NO_AUTOMATIC_SELECTION",
+  "candidates": [
+    {"tool_id": "mechanical", "candidate_role": "deterministic_preflight", "eligibility": "OBSERVED"},
+    {"tool_id": "grok_build", "candidate_role": "future_plan_backed_adapter", "eligibility": "BLOCKED_UNKNOWN_AUTH_AND_CONTAINMENT"},
+    {"tool_id": "agy", "candidate_role": "future_plan_backed_adapter", "eligibility": "BLOCKED_UNKNOWN_AUTH_AND_CONTAINMENT"},
+    {"tool_id": "gemini_cli", "candidate_role": "future_plan_backed_adapter", "eligibility": "BLOCKED_UNKNOWN_AUTH_AND_CONTAINMENT"},
+    {"tool_id": "codex", "candidate_role": "future_plan_backed_adapter", "eligibility": "BLOCKED_UNKNOWN_AUTH_AND_CONTAINMENT"},
+    {"tool_id": "claude_code", "candidate_role": "future_plan_backed_adapter", "eligibility": "BLOCKED_UNKNOWN_AUTH_AND_CONTAINMENT"},
+    {"tool_id": "opencode", "candidate_role": "future_provider_adapter", "eligibility": "BLOCKED_UNKNOWN_UPSTREAM_PROVIDER_AND_AUTH"},
+    {"tool_id": "openrouter", "candidate_role": "future_api_fallback", "eligibility": "STATIC_ONLY"}
+  ]
+}

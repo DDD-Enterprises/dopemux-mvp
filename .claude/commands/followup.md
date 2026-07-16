@@ -1,6 +1,6 @@
 Add a follow-up/todo to **ConPort** progress (Memory Trinity plane 1).
 
-Call: `mcp__conport__log_progress`
+Call: `mcp__conport__conport_log_progress`
 
 ```json
 {

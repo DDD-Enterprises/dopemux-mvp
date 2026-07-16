@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dopemux://schemas/deep-research/auditor-fleet-acceptance-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "campaign_id",
+    "verdict",
+    "track_status",
+    "blocking_findings",
+    "carried_unknowns",
+    "contradictions",
+    "synthesis_authorized",
+    "required_repairs",
+    "input_manifest_ref"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "campaign_id": {
+      "const": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13"
+    },
+    "verdict": {
+      "enum": [
+        "ACCEPT_FOR_SYNTHESIS",
+        "ACCEPT_WITH_CARRIED_UNKNOWNS",
+        "REJECT_TRACKS_REQUIRE_RESEARCH_REPAIR",
+        "BLOCKED_INSUFFICIENT_INPUTS"
+      ]
+    },
+    "track_status": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "track_id",
+          "status",
+          "accepted"
+        ],
+        "properties": {
+          "track_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "accepted": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "blocking_findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "carried_unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "synthesis_authorized": {
+      "type": "boolean"
+    },
+    "required_repairs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "input_manifest_ref": {
+      "type": "string"
+    }
+  }
+}

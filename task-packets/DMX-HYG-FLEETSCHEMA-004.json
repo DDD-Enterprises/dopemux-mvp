@@ -1,0 +1,85 @@
+{
+  "id": "DMX-HYG-FLEETSCHEMA-004",
+  "project": "dopemux-mvp",
+  "target": "Align the strict MCP fleet catalog schema with the accepted Task Orchestrator reserved-singleton metadata so HYG-003's full contract gate can pass without changing runtime or catalog behavior.",
+  "invariants": [
+    "Runtime code, accepted ADR semantics, and current catalog values remain authoritative over the stale schema enum.",
+    "The schema remains fail-closed through explicit enums and additionalProperties false.",
+    "No catalog, runtime, allocator, generated output, or unrelated command file changes are allowed."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfin-hyg",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfin-hyg",
+    "base_branch": "main",
+    "stacked_because": "HYG-004 is a separate commit-sized repair on the existing Hygiene & Security series branch and unblocks the already-pushed HYG-003 verification."
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "fix(mcp): align fleet schema with reserved singleton metadata",
+    "allowlist": [
+      "schemas/mcp/fleet-catalog.schema.json",
+      "tests/arch/test_mcp_fleet_catalog_contract.py",
+      "task-packets/DMX-HYG-FLEETSCHEMA-004.json"
+    ],
+    "verify": [
+      "python -m json.tool schemas/mcp/fleet-catalog.schema.json",
+      "pytest -q tests/arch/test_mcp_fleet_catalog_contract.py",
+      "pytest -q tests/unit/test_mcp_port_allocator.py::test_to_reserved_singleton_not_leased tests/unit/test_mcp_commands_catalog.py::test_load_catalog_falls_back_to_bundled_default",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): align fleet schema with reserved singleton metadata",
+    "body": "Adds the accepted single_active_project state scope and reserved_singleton port policy to the strict MCP fleet catalog schema, with focused positive and negative enum coverage. Runtime and catalog behavior are unchanged.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Add focused schema regression coverage for accepted and rejected reserved-singleton metadata.",
+      "validation": [
+        "A synthetic catalog with state_scope=single_active_project and port_policy=reserved_singleton validates.",
+        "Unknown state_scope and port_policy values remain rejected."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Apply the minimal strict-schema parity repair.",
+      "validation": [
+        "state_scope enum includes single_active_project.",
+        "port_policy is declared with the sole accepted value reserved_singleton.",
+        "Neither field is made required and no cross-field conditions are added."
+      ]
+    },
+    {
+      "id": "step-3",
+      "task": "Verify schema parity and reserved-singleton runtime behavior.",
+      "validation": [
+        "The full MCP fleet catalog architecture contract test file passes.",
+        "The targeted allocator and bundled-default runtime tests pass.",
+        "Packet validation, JSON parsing, diff checks, and pre-commit pass."
+      ]
+    }
+  ]
+}

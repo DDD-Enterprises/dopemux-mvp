@@ -1,0 +1,135 @@
+{
+  "audit_id": "UR-AUDIT-001R3",
+  "generated_at": "2026-07-13T01:46:00Z",
+  "repo_head": "b176747b339685e781de04268c46b7ae123abfbf",
+  "census_commit": "b176747b339685e781de04268c46b7ae123abfbf",
+  "counts": { "P0": 0, "P1": 0, "P2": 4, "P3": 2 },
+  "findings": [
+    {
+      "finding_id": "UR-AUDIT-R3-001",
+      "severity": "P2",
+      "claim_label": "OBSERVED",
+      "category": "provenance",
+      "title": "Bundle-01 authority filenames do not prove tracked root authority; UR-TP-001 must cite tracked canonical paths",
+      "affected_artifacts": ["01_EXECUTIVE_VERDICT.md", "03_CONTRADICTION_LEDGER.md", "20_OPEN_QUESTIONS.json", "18_IMPLEMENTATION_ROADMAP.md", "19_MACRO_PACKET_SERIES.md"],
+      "affected_decisions": [1, 5, 25, 33, 34],
+      "affected_packets": ["UR-TP-001"],
+      "repo_evidence": [
+        "git ls-tree -r b176747 (16058 blobs) blob-id match: 23/32 bundle-01 files byte-identical to a tracked path",
+        "git cat-file -e b176747:RULES.md -> ABSENT; :SYSTEM_BOUNDARIES.md -> ABSENT; :TRUTH_SCOPE.md/:TRUTH_SYSTEMS.md/:SYSTEM_Dopemux.md -> ABSENT",
+        "byte-identical TRUTH_*/SYSTEM_Dopemux only under docs/research/mcp-customization/dopemux-constraints/ (research tier)",
+        "bundle PM_PLANE.md blob 3fd5fa11 != tracked root PM_PLANE.md blob 7725d672; bundle AGENTS.md 020793c3 != tracked root AGENTS.md b7bbdac1",
+        "governance contracts byte-identical to docs/governance/*, docs/03-reference/governance/*, docs/02-how-to/integrations/dopetask/*"
+      ],
+      "architecture_evidence": ["03_CONTRADICTION_LEDGER.md:C-001", "20_OPEN_QUESTIONS.json:UR-OQ-001"],
+      "defect": "The evidence bundle names files RULES.md, TRUTH_*, SYSTEM_*, system-boundaries.md as authority inputs, but several exact root paths are absent at census and the matching tracked blobs are research-tier or stale-root copies. UR-OQ-001 self-declares this blocks UR-TP-001.",
+      "impact": "If UR-TP-001 references bundle archive names or research-tier TRUTH_* as canonical authority, it would treat a promoted upload copy as stronger than its traceable source, contradicting the AUTHORITY ORDER.",
+      "required_repair": "In UR-TP-001, cite the tracked canonical paths (proof-contract.md, handoff-contract.md, adapter-contract.md, adapter-schema.md, proof-bundle-schema.md, dopetask-canonical-spec.json, docs/03-reference/governance/rules.md, docs/03-reference/systems/system-boundaries.md) and the current tracked PROJECT.md/ARCHITECTURE.md/SERVICE_CATALOG.md/PM_PLANE.md/AGENTS.md. Treat TRUTH_* as research-tier context only. This audit supplies the Git evidence UR-OQ-001 requested.",
+      "blocking_stage": "UR-TP-001",
+      "confidence": "VERIFIED"
+    },
+    {
+      "finding_id": "UR-AUDIT-R3-002",
+      "severity": "P2",
+      "claim_label": "OBSERVED",
+      "category": "evaluation",
+      "title": "Certification scope tuple omits identity_confidence and task_class required by the audit prompt",
+      "affected_artifacts": ["15_EVALUATION_AND_CERTIFICATION_PLAN.md", "10_RUNNER_ADAPTER_ARCHITECTURE.md", "07_CONTRACT_CATALOG.md"],
+      "affected_decisions": [26],
+      "affected_packets": ["UR-TP-008", "UR-TP-010", "UR-TP-012"],
+      "repo_evidence": ["n/a — architecture-internal completeness check against prompt EVALUATION AND CERTIFICATION AUDIT scope tuple"],
+      "architecture_evidence": [
+        "15_EVALUATION_AND_CERTIFICATION_PLAN.md: tuple = policy_hash+engine_version+adapter_version_set+capability_registry_hash+runner+provider_path+configured_model+reasoning_level+containment_profile+network_posture",
+        "10_RUNNER_ADAPTER_ARCHITECTURE.md: adapter certification tuple includes benchmark_corpus_version but not identity_confidence or task_class",
+        "07_CONTRACT_CATALOG.md:BenchmarkCertification route tuple = runner+provider path+model+reasoning+adapter+policy (omits identity_confidence, task_class, containment, network)"
+      ],
+      "defect": "The prompt requires certification scoped to at least 12 members including identity_confidence and task_class. The architecture's certification/adapter/benchmark tuples omit identity_confidence and task_class as explicit tuple members; BenchmarkCertification additionally omits containment and network posture.",
+      "impact": "A certification could be treated as valid across differing identity-confidence levels or task classes, weakening exactly the identity-sensitive and class-scoped guarantees the architecture otherwise enforces. Affects future benchmark/execution/automatic-routing phases, not first-release advisory output.",
+      "required_repair": "Add identity_confidence and task_class as explicit certification-tuple members and include containment_profile and network_posture in BenchmarkCertification's route tuple; make any change to these invalidate certification.",
+      "blocking_stage": "AUTOMATIC_ROUTING",
+      "confidence": "HIGH"
+    },
+    {
+      "finding_id": "UR-AUDIT-R3-003",
+      "severity": "P2",
+      "claim_label": "INFERRED",
+      "category": "contract",
+      "title": "Contracts are prose 'minimal-field' lists; strict types/required-optional/JSON schemas are deferred to UR-TP-001 and must be produced before the packet is complete",
+      "affected_artifacts": ["07_CONTRACT_CATALOG.md", "05_TARGET_ARCHITECTURE.md", "18_IMPLEMENTATION_ROADMAP.md"],
+      "affected_decisions": [5, 13, 14, 15, 16, 17],
+      "affected_packets": ["UR-TP-001"],
+      "repo_evidence": ["git ls-tree b176747 -- schemas/universal-router -> 0 entries (schemas do not yet exist; they are UR-TP-001 deliverables)"],
+      "architecture_evidence": [
+        "07_CONTRACT_CATALOG.md: fields given as 'Minimal fields' without explicit types, required-vs-optional, or full enum sets for several fields (effective_route_risk, containment_class, score_components, ranking_weights, next_action, cost_ceiling shape)",
+        "18_IMPLEMENTATION_ROADMAP.md:Step 1 Gate: 'Strict schema validation, semantic invariants'"
+      ],
+      "defect": "Per the prompt, a prose-only contract with unresolved semantics is INCOMPLETE. Ownership, authority, refs, invariants and relationship constraints are complete, but exact field typing/cardinality/enum closure is not yet specified.",
+      "impact": "Non-authority residual choices (e.g., cost_ceiling scalar vs {amount,currency}) remain to the implementer. These are ordinary schema decisions, not authority guesses, but the packet cannot be marked complete until strict schemas + valid/invalid/unknown/conflicting fixtures exist.",
+      "required_repair": "UR-TP-001 must deliver strict versioned schemas (additionalProperties:false for authority-bearing sections) with explicit types, required/optional flags, closed enums, and fixtures — which is already the packet's stated gate. Complete before UR-TP-001 sign-off.",
+      "blocking_stage": "UR-TP-001",
+      "confidence": "MEDIUM"
+    },
+    {
+      "finding_id": "UR-AUDIT-R3-004",
+      "severity": "P2",
+      "claim_label": "OBSERVED",
+      "category": "task_packet",
+      "title": "Canonical PR Steward invocation is UNKNOWN (UR-OQ-006) and gates the merge step of every repo-changing packet incl. UR-TP-001",
+      "affected_artifacts": ["19_MACRO_PACKET_SERIES.md", "20_OPEN_QUESTIONS.json"],
+      "affected_decisions": [24, 29],
+      "affected_packets": ["UR-TP-001", "UR-TP-002", "UR-TP-003", "UR-TP-004", "UR-TP-005", "UR-TP-006", "UR-TP-007", "UR-TP-008", "UR-TP-009"],
+      "repo_evidence": ["grep universal_router|dopemux route across repo -> only 6 doc mentions, no runtime router or PR Steward canonical command bound in the router package"],
+      "architecture_evidence": [
+        "19_MACRO_PACKET_SERIES.md: 'Every executable child packet must pin the current canonical PR Steward invocation before opening the PR. Failure to locate it is a stop condition.'",
+        "20_OPEN_QUESTIONS.json:UR-OQ-006 blocks_phases=['all_repo_changing_packets','policy_promotion']"
+      ],
+      "defect": "The PR Steward canonical runtime command is unresolved. Local implementation and validation of UR-TP-001 can proceed, but PR Steward READY (required for merge) cannot be produced until the invocation is pinned.",
+      "impact": "UR-TP-001 is EXECUTABLE_AFTER_PATH_RESOLUTION rather than executable-as-written: the merge gate is blocked until the canonical PR Steward command is located. This is a resolution step, not a design defect; the architecture correctly forbids building a replacement.",
+      "required_repair": "Before opening the UR-TP-001 PR, locate and pin the current canonical PR Steward invocation and MERGE_READINESS.json schema at the implementation commit; do not build a substitute inside the router.",
+      "blocking_stage": "UR-TP-001",
+      "confidence": "HIGH"
+    },
+    {
+      "finding_id": "UR-AUDIT-R3-005",
+      "severity": "P3",
+      "claim_label": "INFERRED",
+      "category": "storage",
+      "title": "Trigger-based append-only journal is process-local integrity, not tamper-evidence against an actor with DB write access",
+      "affected_artifacts": ["05_TARGET_ARCHITECTURE.md", "17_SECURITY_AND_FAILURE_MODEL.md", "04_ADR_UNIVERSAL_ROUTER_AUTHORITY.md"],
+      "affected_decisions": [4],
+      "affected_packets": ["UR-TP-003"],
+      "repo_evidence": ["n/a — design-level integrity analysis"],
+      "architecture_evidence": [
+        "04_ADR:'append-only through application rules plus BEFORE UPDATE and BEFORE DELETE triggers that abort mutation'",
+        "05_TARGET_ARCHITECTURE.md: event includes 'parent event, policy hash, and redacted payload hash'",
+        "17_SECURITY_AND_FAILURE_MODEL.md:T13 controls"
+      ],
+      "defect": "BEFORE UPDATE/DELETE triggers can be bypassed by any process that can DROP TRIGGER or open the SQLite file directly. The event record includes parent_event + payload hash but no explicit hash-chain (each event committing the prior event's hash), so silent history rewrite is not made cryptographically detectable.",
+      "impact": "Adequate for first-release advisory evidence (journal is evidence, not executable state) but not a strong tamper-evidence guarantee. Non-blocking.",
+      "required_repair": "Consider hash-chaining journal events (event_hash = H(payload_hash || prev_event_hash)) so tampering is detectable on replay; document that triggers provide integrity, not tamper-proofing.",
+      "blocking_stage": "NONE",
+      "confidence": "MEDIUM"
+    },
+    {
+      "finding_id": "UR-AUDIT-R3-006",
+      "severity": "P3",
+      "claim_label": "OBSERVED",
+      "category": "storage",
+      "title": "Per-worktree journal path fragments decision history across the repository's many worktrees",
+      "affected_artifacts": ["05_TARGET_ARCHITECTURE.md", "16_MIGRATION_AND_COEXISTENCE_PLAN.md"],
+      "affected_decisions": [4],
+      "affected_packets": ["UR-TP-003"],
+      "repo_evidence": [
+        "journal path <repo_root>/.dopemux/universal-router/router.sqlite3; git rev-parse --show-toplevel resolves per-worktree",
+        ".worktrees/ contains ~31 linked worktrees in the live repo",
+        ".gitignore:299 '.dopemux/' -> journal path is gitignored (workspace write, not tracked repo write) [OBSERVED, supports READ_ONLY posture]"
+      ],
+      "architecture_evidence": ["04_ADR:'Router state is workspace-bound to avoid cross-repository privacy and authority leakage'"],
+      "defect": "Because the journal lives under the resolved worktree root and the repo uses many linked worktrees, decision history is per-worktree and not shared. This is intentional workspace-scoping but not documented as an operator-visible consequence.",
+      "impact": "Operators inspecting decisions from a different worktree will see an empty/partial journal. No safety impact; the gitignored path confirms journal writes do not touch tracked repo state (a positive for the READ_ONLY posture).",
+      "required_repair": "Document per-worktree journal semantics for operators; optionally allow an explicit shared journal location under governance; confirm the journal path remains gitignored in UR-TP-003.",
+      "blocking_stage": "NONE",
+      "confidence": "HIGH"
+    }
+  ]
+}

@@ -25,7 +25,6 @@ class ADHDPerformanceBenchmark:
         self.results = {}
         self.targets = {
             'f_new_4_search': 100,  # ms
-            'f_new_6_session': 65,   # ms
             'f_new_3_complexity': 200,  # ms
             'f_new_7_unified': 200,  # ms
             'eventbus_publish': 50,   # ms
@@ -41,7 +40,6 @@ class ADHDPerformanceBenchmark:
 
         # Run benchmarks
         await self.benchmark_f_new_4_search(iterations)
-        await self.benchmark_f_new_6_session(iterations)
         await self.benchmark_eventbus(iterations)
 
         # Summary
@@ -74,7 +72,7 @@ class ADHDPerformanceBenchmark:
                 timeout = aiohttp.ClientTimeout(total=5.0)
                 async with aiohttp.ClientSession(timeout=timeout) as session:
                     # Simulated search (replace with actual when service running)
-                    await asyncio.sleep(0.012)  # Simulated 12ms (known from F-NEW-6)
+                    await asyncio.sleep(0.012)  # Simulated 12ms
 
                 elapsed_ms = (time.time() - start) * 1000
                 timings.append(elapsed_ms)
@@ -85,29 +83,6 @@ class ADHDPerformanceBenchmark:
         self.results['f_new_4_search'] = timings
         avg = statistics.mean(timings) if timings else 0
         logger.info(f"   Average: {avg:.1f}ms (target: <{self.targets['f_new_4_search']}ms)\n")
-
-    async def benchmark_f_new_6_session(self, iterations: int):
-        """Benchmark session intelligence queries."""
-        logger.info("Benchmarking F-NEW-6: Session Intelligence...")
-
-        timings = []
-
-        for i in range(iterations):
-            start = time.time()
-
-            try:
-                # Simulated query (replace with actual MCP call)
-                await asyncio.sleep(0.0126)  # Simulated 12.6ms (known performance)
-
-                elapsed_ms = (time.time() - start) * 1000
-                timings.append(elapsed_ms)
-
-            except Exception as e:
-                logger.error(f"   Iteration {i+1}: Error - {e}")
-
-        self.results['f_new_6_session'] = timings
-        avg = statistics.mean(timings) if timings else 0
-        logger.info(f"   Average: {avg:.1f}ms (target: <{self.targets['f_new_6_session']}ms)\n")
 
     async def benchmark_eventbus(self, iterations: int):
         """Benchmark EventBus publish latency."""

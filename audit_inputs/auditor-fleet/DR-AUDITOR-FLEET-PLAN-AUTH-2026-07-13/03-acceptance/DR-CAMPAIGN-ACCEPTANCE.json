@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0.0",
+  "campaign_id": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "verdict": "ACCEPT_WITH_CARRIED_UNKNOWNS",
+  "track_status": [
+    {
+      "track_id": "DR-01-VENDOR-PLAN-AUTH-AND-TERMS",
+      "status": "COMPLETE_WITH_UNKNOWNS",
+      "accepted": true
+    },
+    {
+      "track_id": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY",
+      "status": "COMPLETE_WITH_UNKNOWNS",
+      "accepted": true
+    },
+    {
+      "track_id": "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT",
+      "status": "COMPLETE_WITH_UNKNOWNS",
+      "accepted": true
+    },
+    {
+      "track_id": "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE",
+      "status": "COMPLETE_WITH_UNKNOWNS",
+      "accepted": true
+    },
+    {
+      "track_id": "DR-05-API-FALLBACK-PRIVACY-AND-COST",
+      "status": "COMPLETE_WITH_UNKNOWNS",
+      "accepted": true
+    }
+  ],
+  "blocking_findings": [],
+  "carried_unknowns": [
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-U001: How is a Claude Code setup-token explicitly revoked before expiry, and is there an admin inventory for all such tokens? Blocking scope: Automated Claude Code deployment requiring immediate centralized revocation.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-U002: What exact concurrency and machine-copy limits apply to personal-plan Codex cached authentication? Blocking scope: Parallel or shared personal-plan Codex runner pools.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-U003: Which Workspace or Gemini Code Assist licenses permit persistent plan-backed Gemini CLI brokers or custom runners? Blocking scope: Plan-backed Gemini CLI automation outside a named workstation.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-U004: What are Antigravity subscription credential storage, lifetime, refresh, revocation, and runner-class rules? Blocking scope: Persistent or ephemeral Antigravity plan-backed workers.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-U005: Do OpenAI and GitHub explicitly authorize their subscription credentials inside OpenCode for unattended automation? Blocking scope: OpenCode plan-backed Codex or Copilot runner deployment.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-U006: What lifecycle, revocation, sharing, and fair-use rules apply to plan-authenticated Grok Build sessions? Blocking scope: Unattended plan-backed Grok Build on any runner.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-U007: How can each tool produce provider-attested actual model identity and billing-route evidence per run? Blocking scope: Independence claims, proof normalization, and plan-backed billing assertions.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-U008: What unpublished fair-use or abuse thresholds could affect continuous high-frequency subscription audits? Blocking scope: High-volume unattended subscription automation.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-U009: Can plan credentials be provisioned directly into a dedicated local OS account or VM without copying workstation session state? Blocking scope: Credential-isolated local broker workers.",
+    "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY U-001: Which plan-authenticated tools officially permit dedicated-user, VM, or disposable-worker deployment without copying unsupported login state? Blocking scope: Automatic plan-authenticated model execution for each affected tool.",
+    "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY U-002: Which tools can be proven to run with all shell, file-write, MCP, plugin, hook, memory, subagent, repository-instruction, and web surfaces disabled? Blocking scope: Data-only model invocation on a credential-bearing host or account.",
+    "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY U-003: What exact outbound endpoint allowlists are stable for each provider CLI, including login refresh, model calls, telemetry, and update checks? Blocking scope: Strict per-tool egress allowlisting.",
+    "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY U-004: Can GitHub artifact attestations be used as a durable, intended provenance layer for frequent request manifests on the repository plan in use? Blocking scope: Attestation-enhanced pull-mode pickup only; OIDC/API verification is not blocked.",
+    "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY U-005: Which disposable-worker technology is acceptable on the actual macOS host: Linux VM, macOS VM, container, or remote worker? Blocking scope: Final implementation choice, not the trust-boundary recommendation.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-U001: What exact authentication and billing route does each installed model-capable CLI use? Blocking scope: Unattended execution for every model-capable local adapter.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-U002: What provider-attested actual model identity is returned for each permitted live route? Blocking scope: Model identity proof and independence claims.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-U003: Can inherited configuration be completely isolated for Claude Code, Codex, Gemini CLI, OpenCode, Grok Build, and AGY? Blocking scope: Clean-room and unattended adapter promotion.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-U004: What stable, versioned exit-code contracts apply across the model tools? Blocking scope: Reliable orchestration, retry classification, and proof normalization.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-U005: Do Gemini CLI, OpenCode, and AGY support caller-supplied strict final-output schemas? Blocking scope: Direct proof-object emission without a normalizer.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-U006: Can OpenCode deterministically disable provider fallback and expose actual upstream provider and model identity? Blocking scope: OpenCode use in independence-critical or deterministic routes.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-U007: What containment contract applies specifically to installed Grok Build 0.2.99? Blocking scope: Grok Build operator-triggered or automated promotion.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-U008: Does AGY have an officially supported unattended receipt or export contract? Blocking scope: Any unattended AGY adapter.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-U009: Which OpenRouter routes enforce the required retention and zero-data-retention posture? Blocking scope: OpenRouter fallback enablement for non-public or sensitive repository data.",
+    "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE DR04-U01: What numeric routing thresholds are optimal for Dopemux? Blocking scope: Automatic route certification and promotion.",
+    "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE DR04-U02: Which plan-backed model tool should fill each lane? Blocking scope: Automatic model-lane binding.",
+    "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE DR04-U03: How do candidate routes perform on Dopemux repositories? Blocking scope: Claims of route quality, independence effectiveness, and certification.",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST U-01: What exact subscription credit or allowance does each audit request consume? Blocking scope: Subscription budget accounting and automatic admission.",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST U-02: What concurrency ceiling applies to each consumer or seat plan? Blocking scope: Unattended worker count and queue sizing.",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST U-03: What is the local runner hardware, electricity, maintenance, and failure cost? Blocking scope: Numerical total-cost comparison.",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST U-04: What contractual retention and compliance terms apply to the exact future OpenRouter upstream endpoint? Blocking scope: Any private or sensitive OpenRouter route.",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST U-05: Which low-cost models meet Dopemux audit-quality thresholds? Blocking scope: Automatic challenger or reviewer certification.",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST U-06: Do the repository and client contracts permit each direct provider API for private or client data? Blocking scope: Private/client-data egress.",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST U-07: Does Gemini expose a generic request-ID response header equivalent to OpenAI and Anthropic? Blocking scope: Uniform cross-provider request trace normalization."
+  ],
+  "contradictions": [
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-C001 [CARRIED]: OpenAI sources present different complete lists of ChatGPT plans that include Codex.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-C002 [RESOLVED]: Gemini CLI authentication documentation still describes Google-account login while a newer deprecation removes consumer Google AI Pro, Ultra, and individual Code Assist service from Gemini CLI.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-C003 [CARRIED]: The strongest explicit statement that Anthropic plan auth is prohibited in OpenCode comes from OpenCode documentation rather than an Anthropic terms page reviewed in this track.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-C004 [RESOLVED]: Antigravity has first-party CLI and SDK surfaces, but Google's FAQ recommends Vertex AI or AI Studio API keys for third-party coding agents using Gemini.",
+    "DR-01-VENDOR-PLAN-AUTH-AND-TERMS DR01-C005 [CARRIED]: xAI officially advertises headless Grok Build, but the explicit non-browser authentication path is API-key based and subscription-session runner permission is not documented.",
+    "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY C-001 [RESOLVED]: GitHub recommends ephemeral runners for autoscaling and clean-up, but ephemeral lifecycle alone does not make a credential-bearing job safe against exfiltration during execution.",
+    "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY C-002 [CARRIED]: Artifact attestations provide provenance evidence, but their suitability as the primary authorization mechanism for frequent audit-request manifests is not established.",
+    "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY C-003 [RESOLVED]: macOS user/keychain separation is meaningful credential isolation, but same-host hostile code remains within the same kernel and cannot be treated as VM-equivalent containment.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-C001 [CARRIED]: Current Grok Build public documentation may describe a newer product surface than installed grok 0.2.99, whose captured help exposes a specific set of schema and containment flags.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-C002 [CARRIED]: AGY 1.1.1 exposes a local print flag, while reviewed official material did not establish a stable unattended machine-readable proof contract.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-C003 [CARRIED]: OpenCode can expose a configured provider/model string while actual serving provider, fallback behavior, and model identity remain unverified.",
+    "DR-03-TOOL-AUTOMATION-AND-CONTAINMENT DR03-C004 [CARRIED]: Vendor documentation describes sandbox and configuration controls, while the accepted local packet requires installed-version proof that every prohibited inherited and agentic surface is disabled.",
+    "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE DR04-C01 [RESOLVED]: Small changes are generally easier to review, but raw size is not a sufficient safety classifier because tiny security-sensitive diffs can be critical while large documentation or generated diffs can have low runtime risk.",
+    "DR-04-AUDIT-ROUTING-EVALUATION-AND-INDEPENDENCE DR04-C02 [RESOLVED]: A second model can add review diversity, but same-provider, same-family, shared-session, or shared-harness execution can preserve common-mode error and self-bias.",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST C-01 [CARRIED]: OpenRouter can filter to endpoints tagged data-deny/ZDR, while its documentation says third-party data-policy tags are not definitive policy sources.",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST C-02 [RESOLVED]: Plan access is described as virtually unlimited, expanded, or credit-backed while dynamic limits, fair-use restrictions, shared pools, and reset windows still apply.",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST C-03 [CARRIED]: Gemini project controls are called spend caps but official documentation permits enforcement latency and long-running-task overage.",
+    "DR-05-API-FALLBACK-PRIVACY-AND-COST C-04 [CARRIED]: OpenAI names project spend-limit alerts, but the reviewed documentation describes threshold notification rather than request blocking.",
+    "XTRACK-C001 [CONFLICTING_SCOPE]: DR-01 establishes official Antigravity CLI and SDK surfaces, while DR-03 does not establish a stable machine-readable unattended audit receipt or complete containment contract.",
+    "XTRACK-C002 [CONFLICTING_VERSION_AND_DEPLOYMENT]: DR-01 establishes official Grok Build headless execution and an API-key route, while DR-03 records a version mismatch between current documentation and installed grok 0.2.99 plus incomplete containment.",
+    "XTRACK-C003 [SEPARATE_GATES_NOT_TRUE_CONFLICT]: DR-01 identifies first-party Claude Code and Codex non-interactive plan credentials, while DR-02 and DR-03 block local unattended use until worker trust, exact auth provenance, and installed-version containment are proven.",
+    "XTRACK-C004 [RESEARCH_PRIORITY_VERSUS_ROUTE_CERTIFICATION]: DR-03 ranks Codex CLI and Claude Code as the strongest adapter candidates, while DR-04 prohibits binding any tool to a route before local evaluation and identity evidence exist.",
+    "XTRACK-C005 [CONTROL_SURFACE_VERSUS_AUTHORITY]: DR-05 documents OpenRouter routing and ZDR filters, while DR-03 and DR-05 both state that router metadata and policy tags are not provider attestation or a definitive privacy authority."
+  ],
+  "synthesis_authorized": true,
+  "required_repairs": [],
+  "input_manifest_ref": "SYNTHESIS-INPUT-MANIFEST.json"
+}

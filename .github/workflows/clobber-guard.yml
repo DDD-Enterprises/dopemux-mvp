@@ -1,0 +1,41 @@
+name: clobber-guard
+# Guards against stale-branch clobbers (cf. the #1025 incident, where a UI PR
+# deleted the entire MCP runtime stack + its tests off main with green CI).
+# Fails delete-heavy / code+test co-deletion / stale-clobber PRs unless the PR
+# carries the 'intentional-deletion' label (a human must confirm the removal).
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: clobber-guard-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  clobber-guard:
+    name: "🛡️ Clobber Guard"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run clobber guard
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          INTENTIONAL: ${{ contains(github.event.pull_request.labels.*.name, 'intentional-deletion') }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --prune origin "${GITHUB_BASE_REF}"
+          ARGS=""
+          if [ "${INTENTIONAL}" = "true" ]; then
+            echo "PR carries 'intentional-deletion' label — violations reported as warnings."
+            ARGS="--allow-intentional"
+          fi
+          python3 scripts/ci/clobber_guard.py ${ARGS}

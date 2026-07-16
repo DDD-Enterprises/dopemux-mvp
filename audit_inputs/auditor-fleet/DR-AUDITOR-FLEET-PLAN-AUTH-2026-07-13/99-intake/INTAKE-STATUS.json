@@ -1,0 +1,13 @@
+{
+  "status": "INTAKE_WITH_GAPS",
+  "accepted_expected_count": 51,
+  "accepted_collected_count": 51,
+  "accepted_hash_verified_count": 51,
+  "missing_count": 4,
+  "mismatch_count": 0,
+  "duplicate_conflict_count": 0,
+  "excluded_count": 26,
+  "post_acceptance_present_count": 21,
+  "carried_unknowns": 33,
+  "carried_contradictions": 0
+}

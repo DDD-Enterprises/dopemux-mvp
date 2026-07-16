@@ -1,0 +1,297 @@
+# Dopemux Development Model-Routing Policy
+# ----------------------------------------------------------------------------
+# Machine-readable, repo-governed stage-routing policy for AI development
+# workflows across Codex, OpenCode, GitHub Copilot custom agents,
+# Claude Code / CC, AGY / Google Antigravity, Gemini CLI, xAI / Grok,
+# Moonshot / Kimi, and OpenRouter-backed routes.
+#
+# STATUS: proposed governance policy. This file is ADVISORY GOVERNANCE, not a
+# runtime router. It records which *stage* (read / investigate / plan /
+# implement / judge / audit) a tool should operate in, and which model tier is
+# appropriate for that stage. It does NOT dispatch model calls.
+#
+# AUTHORITY: advisory_until_runtime_wiring_verified — this policy is
+# PROPOSED governance; no runtime system currently reads or enforces it.
+#
+# RELATIONSHIP TO EXISTING ROUTING SYSTEMS (preserve; do not collapse):
+#   * templates/routing.yaml + src/dopemux/routing_config.py + `dopemux routing`
+#       = LiteLLM provider-PROXY plumbing (which endpoint receives a request).
+#         Authority: OBSERVED runtime.
+#   * model_map_v2_tp008.yaml + RTE cost profiles + config/pricing.yaml
+#       = Repo-Truth-Extractor extraction LANE -> model assignment (runtime).
+#         Authority: OBSERVED runtime.
+#   * THIS FILE
+#       = development-workflow agent STAGE routing (advisory governance only).
+#         Authority: PROPOSED — this policy does not override the two above.
+# These are THREE SEPARATE CONCERNS. If a runtime path disagrees with this
+# policy, the runtime wins and the conflict is preserved, not laundered.
+#
+# Human-readable companion: docs/03-reference/governance/model-routing.md
+# How-to usage guide:       docs/02-how-to/model-routing-usage.md
+# Embedded-audit proof schema (do not fork):
+#   schemas/proof/embedded_audit.schema.json
+#
+# OBSERVED model ids in repo (from model_map_v2_tp008.yaml /
+#   tests/test_routing_config.py): gpt-5.4-mini, gpt-5.3-codex, gpt-5.2,
+#   grok-code-fast-1, grok-4-1-fast.
+# OBSERVED in config/pricing.yaml: gpt-5.5.
+# NOTE: These ids appear in the RTE/LiteLLM routing systems, NOT necessarily
+# as accepted model selector strings in Codex CLI, Copilot, Claude Code, etc.
+# Per-tool model binding requires VERIFY_WITH_VENDOR_DOCS.
+# ----------------------------------------------------------------------------
+
+version: 1
+status: proposed_governance_policy
+authority: advisory_until_runtime_wiring_verified
+owner: dopemux
+
+principles:
+  - cheap_reads_are_not_cheap_decisions
+  - direct_provider_wins_when_equivalent
+  - openrouter_is_broker_not_model_family
+  - strong_planning_before_non_trivial_implementation
+  - independent_audit_before_readiness
+  - actual_model_usage_must_be_proven
+  - repo_truth_beats_docs
+
+# ----------------------------------------------------------------------------
+# Stages: the abstract pipeline that every tool follows.
+# Six stages cover the full lifecycle from read-only investigation through
+# independent audit. Each stage has a clear role boundary and escalation rules.
+# ----------------------------------------------------------------------------
+stages:
+  cheap_read:
+    purpose:
+      - repo inventory
+      - grep/search
+      - file reading
+      - status checks
+      - non-decisive summaries
+      - housekeeping
+    may_edit: false
+    may_decide: false
+    allowed_actions:
+      - read
+      - search
+      # shell_readonly = non-mutating commands only (no writes, no network
+      # side-effects), e.g. `git status`, `ls`. Applies only to tools with
+      # a sandboxed read-only shell (Codex, Claude Code). Copilot reader
+      # agents (tools: read, search) have no shell tool — do not run shell
+      # commands from that lane.
+      - shell_readonly
+    escalation_triggers:
+      - authority boundary unclear
+      - security/auth/secrets/CI touched
+      - runtime contradicts docs
+      - workflow/PM/memory/retrieval boundary touched
+      - task scope changes
+      - confidence below MEDIUM
+      - destructive/write path involved
+
+  investigation:
+    purpose:
+      - subsystem understanding
+      - candidate file mapping
+      - evidence collection
+    starts_as: cheap_read
+    escalate_to: planner_strong
+    may_edit: false
+    may_decide: false
+    escalation_triggers:
+      - authority boundary unclear
+      - security/auth/secrets/CI touched
+      - runtime contradicts docs
+      - task scope changes
+      - confidence below MEDIUM
+      - destructive/write path involved
+
+  planner_strong:
+    purpose:
+      - architecture
+      - task packet design
+      - validation strategy
+      - rollback strategy
+    may_edit: false
+    required_for:
+      - non-trivial repo-changing work
+      - authority-boundary work
+      - security-sensitive work
+      - workflow/PM/memory/retrieval boundary work
+
+  implementer_standard:
+    purpose:
+      - bounded scoped implementation
+      - commit-sized slices
+      - tests and validation
+    may_edit: true
+    requires:
+      - approved task packet
+      - file allowlist
+      - validation gates
+      - proof capture
+
+  judge_strong:
+    purpose:
+      - synthesis
+      - readiness decision
+      - proof review
+      - merge-risk assessment
+    may_edit: false
+    must_be_independent: true
+
+  self_audit:
+    purpose:
+      - independent audit before final handoff
+      - diff/proof/scope review
+    may_edit: false
+    must_record:
+      - auditor_tool
+      - auditor_model
+      - invocation
+      - exit_code
+      - auditor_verdict
+      - auditor_findings
+      - fixes_applied_from_audit
+      - remaining_risks
+    # Verdict values align with schemas/proof/embedded_audit.schema.json
+    # `status` enum. PROOF.json uses field name `auditor_verdict` per TP spec;
+    # the canonical embedded_audit machine schema uses field name `status`.
+    # These are the same value space, not a fork.
+    verdict_values:
+      - PASS
+      - PASS_WITH_RISKS
+      - FAIL
+      - NEEDS_SUPERVISOR
+      - SKIPPED
+
+# ----------------------------------------------------------------------------
+# Escalation triggers: any cheap/standard lane must escalate to a strong lane
+# (or stop) when one of these is observed.
+# ----------------------------------------------------------------------------
+escalation_triggers:
+  - authority_boundary_unclear
+  - security_auth_secrets_ci_touched
+  - runtime_docs_conflict
+  - pm_workflow_chronicle_retrieval_boundary_touched
+  - task_scope_changes
+  - diff_exceeds_allowlist
+  - proof_stale_or_incomplete
+  - reviewer_or_auditor_unknown
+  - confidence_below_required_gate
+
+# ----------------------------------------------------------------------------
+# Provider routes: per-tool mapping of stage -> model tier or agent file.
+# Where exact model selector strings are not repo-verified, values are
+# VERIFY_WITH_VENDOR_DOCS or tier names (cheap_fast, strong_reasoning,
+# coding_balanced, audit_strong). Do not invent current model ids or pricing.
+# ----------------------------------------------------------------------------
+provider_routes:
+
+  codex:
+    cheap_read: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
+    investigation: VERIFY_WITH_VENDOR_DOCS  # tier intent: cheap_fast
+    planner_strong: VERIFY_WITH_VENDOR_DOCS  # tier intent: strong_reasoning
+    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced
+    judge_strong: VERIFY_WITH_VENDOR_DOCS    # tier intent: strong_reasoning
+    self_audit: VERIFY_WITH_VENDOR_DOCS      # tier intent: audit_strong
+    notes:
+      - "OBSERVED model ids in RTE routing (not confirmed as Codex CLI selectors): gpt-5.4-mini, gpt-5.3-codex, gpt-5.2 (model_map_v2_tp008.yaml / tests/test_routing_config.py)"
+      - "OBSERVED in config/pricing.yaml: gpt-5.5"
+      - "Codex CLI model selector format and available model names require VERIFY_WITH_VENDOR_DOCS"
+
+  opencode:
+    cheap_read: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
+    investigation: VERIFY_WITH_VENDOR_DOCS  # tier intent: cheap_fast
+    planner_strong: .opencode/agents/pal-planner.md
+    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced
+    judge_strong: .opencode/agents/pal-reviewer.md
+    self_audit: .opencode/agents/pal-reviewer.md
+    notes:
+      - "OpenCode loads instruction surfaces from opencode.jsonc (AGENTS.md + config/instructions/pal-opencode-guide.md) — OBSERVED in repo."
+      - "planner_strong and self_audit are delegated through PAL subagents (.opencode/agents/pal-planner.md, .opencode/agents/pal-reviewer.md)."
+      - "OpenCode model selector strings are operator-configurable; exact stage bindings remain VERIFY_WITH_VENDOR_DOCS."
+
+  copilot:
+    cheap_read: .github/agents/dopemux-reader.agent.md
+    investigation: .github/agents/dopemux-reader.agent.md
+    planner_strong: .github/agents/dopemux-planner.agent.md
+    implementer_standard: .github/agents/dopemux-implementer.agent.md
+    judge_strong: .github/agents/dopemux-auditor.agent.md
+    self_audit: .github/agents/dopemux-auditor.agent.md
+    notes:
+      - "Copilot routes to .github/agents/*.agent.md custom agents — OBSERVED in this repo"
+      - "All routed Copilot agents pin model: Claude Sonnet 4.5 (reader, planner, implementer, auditor)."
+      - "Cheap/strong intent is primarily enforced via tool scope: read+search only (reader/planner/auditor) vs read+edit (implementer)."
+      - "Per-agent cheap/strong model tier split in VS Code Copilot remains UNKNOWN without vendor-verified model availability."
+
+  claude_code:
+    cheap_read: VERIFY_WITH_VENDOR_DOCS      # tier intent: cheap_fast (Haiku / Sonnet-low)
+    investigation: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
+    planner_strong: VERIFY_WITH_VENDOR_DOCS   # tier intent: strong_reasoning; opusplan mode = Opus plans + Sonnet implements
+    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced (Sonnet)
+    judge_strong: VERIFY_WITH_VENDOR_DOCS     # tier intent: strong_reasoning (Opus)
+    self_audit: VERIFY_WITH_VENDOR_DOCS       # tier intent: audit_strong (Opus)
+    notes:
+      - "opusplan is a Claude Code MODE (Opus plans, Sonnet implements) — NOT a model id"
+      - "Anthropic model selector strings (Haiku/Sonnet/Opus variants) require VERIFY_WITH_VENDOR_DOCS"
+      - "Claude Code --model flag accepted values require VERIFY_WITH_VENDOR_DOCS"
+
+  agy:
+    cheap_read: VERIFY_WITH_VENDOR_DOCS      # tier intent: cheap_fast (Gemini Flash tier)
+    investigation: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
+    planner_strong: VERIFY_WITH_VENDOR_DOCS   # tier intent: strong_reasoning (Gemini Pro high tier)
+    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced (Claude Sonnet in-AGY where available)
+    judge_strong: VERIFY_WITH_VENDOR_DOCS     # tier intent: strong_reasoning (Gemini Pro high)
+    self_audit: VERIFY_WITH_VENDOR_DOCS       # tier intent: audit_strong
+    notes:
+      - "AGY/Antigravity model selector strings require VERIFY_WITH_VENDOR_DOCS"
+      - "Tier intent: Flash-equivalent for reads; Pro-high-equivalent for planning/judgment"
+      - "Claude Sonnet in-AGY for implementation where available — availability requires VERIFY_WITH_VENDOR_DOCS"
+
+  gemini_cli:
+    cheap_read: VERIFY_WITH_VENDOR_DOCS      # tier intent: cheap_fast (Flash tier)
+    investigation: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
+    planner_strong: VERIFY_WITH_VENDOR_DOCS   # tier intent: strong_reasoning (Pro high tier)
+    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced
+    judge_strong: VERIFY_WITH_VENDOR_DOCS     # tier intent: strong_reasoning (Pro high)
+    self_audit: VERIFY_WITH_VENDOR_DOCS       # tier intent: audit_strong
+    notes:
+      - "Gemini CLI model selector strings require VERIFY_WITH_VENDOR_DOCS against Google documentation"
+
+  xai:
+    cheap_read: VERIFY_WITH_VENDOR_DOCS      # tier intent: cheap_fast (low-reasoning Grok)
+    investigation: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
+    planner_strong: VERIFY_WITH_VENDOR_DOCS   # tier intent: strong_reasoning (high-reasoning Grok)
+    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced (medium-reasoning Grok)
+    judge_strong: VERIFY_WITH_VENDOR_DOCS     # tier intent: strong_reasoning (high-reasoning Grok)
+    self_audit: VERIFY_WITH_VENDOR_DOCS       # tier intent: audit_strong
+    notes:
+      - "OBSERVED in model_map_v2_tp008.yaml / tests/test_routing_config.py: grok-code-fast-1, grok-4-1-fast"
+      - "These are RTE extraction lane selectors — whether they work as xAI CLI/API model selectors requires VERIFY_WITH_VENDOR_DOCS"
+      - "xAI reasoning tier configuration syntax requires VERIFY_WITH_VENDOR_DOCS"
+
+  moonshot:
+    cheap_read: VERIFY_WITH_VENDOR_DOCS      # tier intent: cheap_fast (Kimi thinking=disabled equivalent)
+    investigation: VERIFY_WITH_VENDOR_DOCS    # tier intent: long-context investigation
+    planner_strong: VERIFY_WITH_VENDOR_DOCS   # tier intent: strong_reasoning (Kimi thinking=enabled equivalent)
+    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced
+    judge_strong: VERIFY_WITH_VENDOR_DOCS     # tier intent: strong_reasoning (Kimi thinking=enabled equivalent)
+    self_audit: VERIFY_WITH_VENDOR_DOCS       # tier intent: audit_strong
+    notes:
+      - "Moonshot/Kimi model selector strings require VERIFY_WITH_VENDOR_DOCS"
+      - "Preferred for: long-context investigation, broad contradiction hunting, large surface audit"
+      - "Thinking mode configuration (enabled/disabled) syntax requires VERIFY_WITH_VENDOR_DOCS"
+
+  openrouter:
+    cheap_read: VERIFY_WITH_VENDOR_DOCS      # broker: cheap or free non-sensitive lane; pin model
+    investigation: VERIFY_WITH_VENDOR_DOCS    # broker: pinned model with explicit data policy
+    planner_strong: VERIFY_WITH_VENDOR_DOCS   # broker: pinned strong model with ZDR/data policy
+    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # broker: pinned coding model
+    judge_strong: VERIFY_WITH_VENDOR_DOCS     # broker: pinned strong model; provider must be deterministic
+    self_audit: VERIFY_WITH_VENDOR_DOCS       # broker: pinned audit model; provider must be deterministic
+    notes:
+      - "OpenRouter is a BROKER, not a model family — plumbing for fallback, quota overflow, price caps, ZDR filtering, provider diversity"
+      - "Always pin model (avoid auto/unbounded fallback); set explicit provider/price/data policy; record fallback provenance"
+      - "Avoid for sensitive repo data without explicit ZDR/data-collection policy"
+      - "Avoid unbounded auto-fallback for audit/judge work: provider provenance must be deterministic"
+      - "OpenRouter model selector strings (format: provider/model-name) require VERIFY_WITH_VENDOR_DOCS"

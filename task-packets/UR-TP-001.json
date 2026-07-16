@@ -1,0 +1,272 @@
+{
+  "id": "UR-TP-001",
+  "project": "dopemux-mvp",
+  "target": "Define and package strict Pydantic v2 contracts and JSON Schemas for all 26 Universal Router records, using typed references to current proof, handoff, dopetask, audit, and PR Steward contracts without adding CLI, persistence, policy evaluation, provider, runner, or execution behavior.",
+  "invariants": [
+    "Exactly 26 required contract types are represented and remain distinct.",
+    "UniversalRouteDecision is not execution authorization; ExecutionRecommendation is not ExecutionRequest.",
+    "ProofBundleRef, DopetaskHandoffRef, AuditResultRef, HumanApprovalRef, DCPClassificationRef, and PRStewardReadinessRef remain thin immutable references and never embed or fork their owners' bodies or schemas.",
+    "Existing contracts/openclaw-dcp-routing remains the single canonical OpenClaw/DCP routing machine-contract source; Universal Router contracts may reference it but must not copy, fork, shadow, or supersede its schemas or policies.",
+    "Unknown and conflicting evidence remains explicit and cannot be normalized into success.",
+    "Requested, configured, self-claimed, proxy-reported, provider-attested, and attested-actual model identity remain separate fields.",
+    "Tokens, plan credits, actual API cost, estimated cost, and runner overhead remain separate observations.",
+    "Prompt-requested containment never satisfies runner, wrapper, OS, or operator enforcement.",
+    "No CLI, SQLite, filesystem writes, network access, subprocess execution, provider calls, runner calls, task transitions, or policy activation are introduced.",
+    "No new dependency is added; use existing pydantic>=2.7 and jsonschema>=4.20.",
+    "The new package is included in the built wheel through the repository's explicit setuptools package list."
+  ],
+  "depends_on": [
+    "TP-DMX-UR-ARTIFACT-INTAKE-001"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "UR-ROUTER-IMPL-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/ur-tp-001-contracts",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "feat(router): add universal router contracts",
+    "allowlist": [
+      "pyproject.toml",
+      "src/dopemux/universal_router/__init__.py",
+      "src/dopemux/universal_router/models.py",
+      "schemas/universal-router/contracts.schema.json",
+      "schemas/universal-router/route-policy.schema.json",
+      "schemas/universal-router/schema-manifest.json",
+      "tests/universal_router/test_models.py",
+      "tests/universal_router/fixtures/contracts/**",
+      "proof/UR-TP-001/**"
+    ],
+    "verify": [
+      "uv run --frozen dopemux orchestrator packet validate task-packets/UR-TP-001.json",
+      "uv run --frozen pytest -q tests/contracts/test_openclaw_dcp_routing_contracts.py",
+      "uv run --frozen python -m jsonschema -i task-packets/UR-TP-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run --frozen python -m json.tool schemas/universal-router/contracts.schema.json >/dev/null",
+      "uv run --frozen python -m json.tool schemas/universal-router/route-policy.schema.json >/dev/null",
+      "uv run --frozen python -m json.tool schemas/universal-router/schema-manifest.json >/dev/null",
+      "uv run --frozen pytest -q tests/universal_router/test_models.py",
+      "uv run --frozen pytest -q tests/universal_router -k 'contract or model'",
+      "uv run --frozen python -m compileall -q src/dopemux/universal_router",
+      "uv build --wheel --out-dir proof/UR-TP-001/dist",
+      "uv run --frozen python -c \"import glob,zipfile; p=glob.glob('proof/UR-TP-001/dist/*.whl'); assert len(p)==1, p; n=set(zipfile.ZipFile(p[0]).namelist()); assert {'dopemux/universal_router/__init__.py','dopemux/universal_router/models.py'} <= n\"",
+      "git diff --check",
+      "uv run --frozen pre-commit run --files pyproject.toml src/dopemux/universal_router/__init__.py src/dopemux/universal_router/models.py schemas/universal-router/contracts.schema.json schemas/universal-router/route-policy.schema.json schemas/universal-router/schema-manifest.json tests/universal_router/test_models.py"
+    ]
+  },
+  "pr": {
+    "title": "feat(router): add strict universal router contracts",
+    "body": "## Summary\n- add the greenfield dopemux.universal_router contract package\n- define all 26 required immutable Pydantic v2 records and closed enums\n- check in strict JSON Schemas and valid, invalid, UNKNOWN, and CONFLICTING fixtures\n- preserve proof, handoff, audit, approval, DCP, and PR Steward authority through thin refs only\n- include the package in the built wheel\n\n## Scope\nContracts, schemas, fixtures, tests, and package registration only. No CLI, policy engine, SQLite, adapters, provider calls, runner calls, or execution.\n\n## Validation\nPacket validation, JSON parsing, contract tests, fixture validation, compileall, wheel-content check, pre-commit, embedded audit, and PR Steward readiness.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Lock the packet to current main after the artifact-intake dependency merges, verify the dedicated worktree and current authority paths, and prove the greenfield package paths are absent or intentionally empty.",
+      "requirements": [
+        "Create a fresh dedicated worktree and branch codex/ur-tp-001-contracts from current origin/main after TP-DMX-UR-ARTIFACT-INTAKE-001 merges.",
+        "Record the exact base SHA in proof; stop if origin/main advances after implementation begins without an explicit packet refresh.",
+        "Use current tracked PROJECT.md, ARCHITECTURE.md, SERVICE_CATALOG.md, PM_PLANE.md, AGENTS.md, docs/03-reference/governance/rules.md, and docs/03-reference/systems/system-boundaries.md.",
+        "Treat TRUTH_* upload copies as research-tier context only.",
+        "Use current tracked governance contracts and PR Steward docs, not archive filenames.",
+        "Confirm pyproject.toml uses an explicit setuptools package list and therefore requires adding dopemux.universal_router.",
+        "Inspect contracts/openclaw-dcp-routing and docs/03-reference/dcp/openclaw-routing/README.md at the locked base SHA before editing.",
+        "Treat src/dopemux/dcp/routing_model.py and routing_classifier.py as the current DCP classification implementation; DCPClassificationRef must remain a thin immutable reference and must not import or reimplement DCP behavior.",
+        "Confirm Universal Router schema IDs and policy_domain are distinct from https://dcp.local/schemas/* and from OpenClaw/DCP policy ownership."
+      ],
+      "commands": [
+        "git fetch origin",
+        "git rev-parse --show-toplevel",
+        "git rev-parse HEAD",
+        "git rev-parse origin/main",
+        "git branch --show-current",
+        "git status --short --branch",
+        "git worktree list --porcelain",
+        "git remote get-url origin",
+        "test -f .dopetaskroot",
+        "test -f task-packets/UR-TP-001.json",
+        "uv run --frozen dopemux orchestrator packet validate task-packets/UR-TP-001.json",
+        "test ! -e src/dopemux/universal_router || test -z \"$(find src/dopemux/universal_router -mindepth 1 -maxdepth 1 -print -quit)\"",
+        "test ! -e schemas/universal-router || test -z \"$(find schemas/universal-router -mindepth 1 -maxdepth 1 -print -quit)\"",
+        "test ! -e tests/universal_router || test -z \"$(find tests/universal_router -mindepth 1 -maxdepth 1 -print -quit)\""
+      ],
+      "validation": [
+        "Repo identity, clean dedicated worktree, branch, base SHA, package absence, and current authority paths are captured before edits.",
+        "Any path collision, authority contradiction, or need for a file outside the allowlist stops the packet."
+      ],
+      "context_files": [
+        "audit_inputs/universal_router/UR-ARCH-001/DELIVERABLES/07_CONTRACT_CATALOG.md",
+        "audit_inputs/universal_router/UR-ARCH-001/DELIVERABLES/05_TARGET_ARCHITECTURE.md",
+        "audit_inputs/universal_router/UR-ARCH-001/DELIVERABLES/19_MACRO_PACKET_SERIES.md",
+        "audit_inputs/universal_router/UR-AUDIT-001R3/DELIVERABLES/02_FINDINGS.json",
+        "audit_inputs/universal_router/UR-AUDIT-001R3/DELIVERABLES/11_REQUIRED_REPAIRS.md",
+        "audit_inputs/universal_router/UR-AUDIT-001R3/DELIVERABLES/13_PROVENANCE_RESOLUTION.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "SERVICE_CATALOG.md",
+        "PM_PLANE.md",
+        "AGENTS.md",
+        "docs/03-reference/governance/rules.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "docs/governance/proof-contract.md",
+        "docs/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/02-how-to/integrations/dopetask/adapter-contract.md",
+        "docs/02-how-to/integrations/dopetask/adapter-schema.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/ops/embedded-audit.md",
+        "docs/ops/pr-steward-cli.md",
+        "tools/pr_steward/classifier.py",
+        "pyproject.toml",
+        "contracts/openclaw-dcp-routing/routing_classifier.schema.json",
+        "contracts/openclaw-dcp-routing/route_decision.schema.json",
+        "contracts/openclaw-dcp-routing/openclaw_dcp_routing_policy.yaml",
+        "docs/03-reference/dcp/openclaw-routing/README.md",
+        "src/dopemux/dcp/routing_model.py",
+        "src/dopemux/dcp/routing_classifier.py",
+        "tests/contracts/test_openclaw_dcp_routing_contracts.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement the 26 Universal Router contract models and closed enums in a side-effect-free Pydantic v2 package.",
+      "requirements": [
+        "Export exactly the 26 required contract model names: TaskEnvelope, DCPClassificationRef, RiskPrivacyClassification, RunnerCapabilitySnapshot, ProviderHealthSnapshot, ModelCapabilityRecord, RoutePolicy, RouteCandidate, UniversalRouteDecision, SubsystemDecisionRef, ExecutionRecommendation, ExecutionRequest, RunnerResult, ModelIdentityObservation, UsageObservation, ContainmentDeclaration, NetworkPosture, ValidationResult, EscalationDecision, AuditAssignment, AuditResultRef, HumanApprovalRef, BenchmarkCertification, ProofBundleRef, DopetaskHandoffRef, PRStewardReadinessRef.",
+        "Use immutable models with extra fields forbidden; authority-bearing IDs, enums, hashes, and status fields must not be silently coerced.",
+        "Use schema_version=1.0.0 for this packet's contract set.",
+        "External authority refs contain identifiers, versions, hashes, artifact refs, freshness, and ownership metadata only. They must reject embedded proof, handoff, approval, audit, DCP, or PR readiness bodies.",
+        "Preserve all required model-identity and usage fields exactly as separate fields.",
+        "No module import may touch the filesystem, environment, network, subprocesses, SQLite, providers, runners, Git, or current time.",
+        "Private helper models and enums are permitted, but the public export list contains exactly the 26 required contract names and no executable service object.",
+        "DCPClassificationRef stores the external schema ID/version, decision ID, artifact ref/hash, and verbatim observed summary fields; it does not duplicate the external route-decision body.",
+        "RoutePolicy requires policy_domain=UNIVERSAL_ORCHESTRATION and cannot masquerade as, embed, or activate an OpenClaw/DCP route policy."
+      ],
+      "expected_files": [
+        "src/dopemux/universal_router/__init__.py",
+        "src/dopemux/universal_router/models.py",
+        "pyproject.toml"
+      ],
+      "validation": [
+        "All 26 models import successfully and are present in a deterministic public export list.",
+        "Unknown and conflicting states validate only where explicitly supported.",
+        "Mutation and undeclared-field attempts fail.",
+        "The only pyproject change is package registration for dopemux.universal_router."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Check in strict JSON Schema 2020-12 artifacts and a manifest that maps every required contract to a stable schema pointer.",
+      "requirements": [
+        "contracts.schema.json contains all 26 contract definitions with closed enums, required versus optional fields, and additionalProperties=false for authority-bearing objects.",
+        "route-policy.schema.json is a standalone strict schema for RoutePolicy and cannot weaken compiled hard invariants.",
+        "schema-manifest.json lists schema version, content hashes, model names, and JSON pointers for all 26 contracts.",
+        "Tests compare checked-in schemas with normalized Pydantic-generated schemas and fail on drift.",
+        "No executable policy, active-policy pointer, or policy YAML is introduced in this packet."
+      ],
+      "expected_files": [
+        "schemas/universal-router/contracts.schema.json",
+        "schemas/universal-router/route-policy.schema.json",
+        "schemas/universal-router/schema-manifest.json"
+      ],
+      "validation": [
+        "All schema JSON parses and passes Draft 2020-12 metaschema validation.",
+        "The manifest lists exactly 26 unique contract names.",
+        "Checked-in and generated schema structures match after deterministic normalization."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Create valid, invalid, UNKNOWN, and CONFLICTING fixture corpora and contract tests that enforce authority boundaries and semantic invariants.",
+      "requirements": [
+        "Provide one minimal valid fixture for every contract.",
+        "Provide invalid fixtures for missing required fields, unknown extra fields, invalid enums, malformed hashes or timestamps, and attempted embedded external-authority bodies.",
+        "Provide explicit UNKNOWN fixtures for identity, usage, capability, health, privacy/risk, network, containment, and audit states where the contract permits UNKNOWN.",
+        "Provide explicit CONFLICTING fixtures for model identity, privacy/risk, containment, and universal route decisions.",
+        "Test that a provider request ID alone cannot populate provider_attested_model or attested_actual_model.",
+        "Test that plan_credits cannot be substituted by token counts and estimated_cost cannot populate api_cost.",
+        "Test that PROMPT_REQUESTED cannot satisfy an enforced containment requirement.",
+        "Add a fixture that attempts to embed an OpenClaw/DCP route-decision body inside DCPClassificationRef and prove it is rejected.",
+        "Add a fixture that attempts to use the OpenClaw/DCP policy domain or schema ID as a Universal Router RoutePolicy and prove it is rejected."
+      ],
+      "expected_files": [
+        "tests/universal_router/test_models.py",
+        "tests/universal_router/fixtures/contracts/valid/**",
+        "tests/universal_router/fixtures/contracts/invalid/**",
+        "tests/universal_router/fixtures/contracts/unknown/**",
+        "tests/universal_router/fixtures/contracts/conflicting/**"
+      ],
+      "validation": [
+        "All valid fixtures pass model and JSON Schema validation.",
+        "All invalid fixtures fail for the expected reason and path.",
+        "UNKNOWN and CONFLICTING fixtures preserve those states without upgrading confidence or authority.",
+        "No fixture or test implies execution, approval, validation pass, audit pass, or PR readiness."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run focused and packaging validation, capture a current proof bundle, and inspect the full diff before any PR operation.",
+      "requirements": [
+        "Create proof/UR-TP-001/review_bundle as the single review unit.",
+        "Capture git status before and after, base and head SHA, diff stat, full diff, command output, exit codes, schema inventory, fixture inventory, and wheel inventory.",
+        "No command may contact a model provider or runner during model/schema tests.",
+        "Only commit.allowlist paths may be staged."
+      ],
+      "commands": [
+        "uv run --frozen pytest -q tests/universal_router/test_models.py",
+        "uv run --frozen pytest -q tests/universal_router -k 'contract or model'",
+        "uv run --frozen python -m compileall -q src/dopemux/universal_router",
+        "uv build --wheel --out-dir proof/UR-TP-001/dist",
+        "git diff --check",
+        "git diff --stat",
+        "git diff --no-ext-diff"
+      ],
+      "validation": [
+        "All commit.verify commands pass with captured exit codes.",
+        "The wheel contains both universal_router module files.",
+        "The diff contains no CLI, state, policy activation, adapter, provider, runner, or execution code.",
+        "A failed or unavailable required validation blocks the packet."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Obtain independent embedded-audit proof and PR Steward readiness at the latest PR head before merge.",
+      "requirements": [
+        "Use the repository's .github/workflows/embedded-audit.yml and schemas/proof/embedded_audit.schema.json contract.",
+        "Embedded audit status must be PASS or non-blocking PASS_WITH_RISKS; SKIPPED, FAIL, NEEDS_SUPERVISOR, stale proof, or head mismatch blocks merge.",
+        "Use python -m dopemux.cli pr-steward as the canonical operator surface.",
+        "PR Steward must harvest and classify every review, comment, thread, bot, commit, changed file, and required check at the latest head."
+      ],
+      "commands": [
+        "python -m dopemux.cli pr-steward intake --repo DDD-Enterprises/dopemux-mvp --pr \"$PR_NUMBER\" --out \"proof/UR-TP-001/pr-steward\" --strict --proof-path \"proof/UR-TP-001/PROOF.json\" --format json",
+        "python -m dopemux.cli pr-steward gate --head-sha \"$(git rev-parse HEAD)\" --required-class FINALIZATION --merge-readiness \"proof/UR-TP-001/pr-steward/MERGE_READINESS.json\" --audit-proof \"proof/UR-TP-001/PROOF.json\" --format json"
+      ],
+      "validation": [
+        "Independent audit proof is executed, trusted-source authored, schema-valid, and current to the PR head.",
+        "MERGE_READINESS.json reports READY and both PR Steward commands exit 0.",
+        "No unresolved reviewer, bot, thread, check, proof, or allowlist blocker remains."
+      ]
+    }
+  ]
+}
