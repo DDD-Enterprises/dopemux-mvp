@@ -120,6 +120,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
   useEffect(() => {
     setTaskTimer(0);
     setIsTimerRunning(false);
+    setIsSkipConfirming(false);
   }, [currentTaskId]);
 
   useEffect(() => {
@@ -714,7 +715,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                   }}
                   aria-label={
                     isSkipConfirming
-                      ? 'Confirm skip task'
+                      ? nextTaskAfterSkip
+                        ? `Confirm skip ${currentTask.title}, proceed to ${nextTaskAfterSkip.title}`
+                        : `Confirm skip task: ${currentTask.title}`
                       : nextTaskAfterSkip
                         ? `Skip ${currentTask.title}, proceed to ${nextTaskAfterSkip.title}`
                         : `Skip task: ${currentTask.title}`
