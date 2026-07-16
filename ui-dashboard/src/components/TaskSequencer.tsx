@@ -53,6 +53,7 @@ interface CognitiveState {
 
 interface TaskSequencerProps {
   cognitiveState: CognitiveState;
+  onError?: (message: string) => void;
 }
 
 const INITIAL_TASKS: Task[] = [
@@ -119,6 +120,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   useEffect(() => {
     setTaskTimer(0);
     setIsTimerRunning(false);
+    setIsSkipConfirming(false);
+    if (skipConfirmTimeoutRef.current) {
+      clearTimeout(skipConfirmTimeoutRef.current);
+      skipConfirmTimeoutRef.current = null;
+    }
   }, [currentTaskId]);
 
   useEffect(() => {
