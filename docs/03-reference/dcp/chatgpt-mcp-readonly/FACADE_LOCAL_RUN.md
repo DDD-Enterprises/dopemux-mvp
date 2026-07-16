@@ -35,8 +35,11 @@ cd services/dcp-readonly-facade
 python -m src.mcp.server
 ```
 
-`DCP_FACADE_TRANSPORT` defaults to `stdio`. `fastmcp` is required for a live
-MCP endpoint; the import fallback exists only for constrained test environments.
+`DCP_FACADE_TRANSPORT` defaults to `stdio`. Set it to `streamable-http` for the
+loopback authenticated ingress (host pinned to `127.0.0.1`; see
+[`INGRESS_LOOPBACK_CONTRACT.md`](INGRESS_LOOPBACK_CONTRACT.md)). `fastmcp` is
+required for a full live MCP app; the import fallback exists for constrained
+test environments and still enforces auth on the placeholder `/mcp` surface.
 
 ## Tool Surface
 
