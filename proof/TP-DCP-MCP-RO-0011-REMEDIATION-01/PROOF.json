@@ -25,7 +25,8 @@
     "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/PROOF.json",
     "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/AUDITOR_REPORT.md",
     "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/COMMAND_LOG.md",
-    "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/GROK_AUDIT.md"
+    "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/GROK_AUDIT.md",
+    "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/AGY_AUDIT.md"
   ],
   "validation": {
     "PASS": [
@@ -88,6 +89,11 @@
         "command": "grok -p read-only differential audit of origin/main...2405a3a16c9ab57b875dd45fca19ffafe5cce7c4",
         "exit_code": 0,
         "result": "PASS_WITH_RISKS; no runtime-join blocking finding"
+      },
+      {
+        "command": "agy --prompt=<read-only audit prompt> --mode=plan --sandbox --model=Gemini 3.1 Pro (High)",
+        "exit_code": 0,
+        "result": "PASS_WITH_RISKS at c159c646a6f05078fabfb425339c7252806bdaba; no runtime-join blocking finding"
       }
     ],
     "FAIL": [],
@@ -118,6 +124,16 @@
     "report_path": "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/GROK_AUDIT.md",
     "ci_trust_status": "NOT_ACCEPTED: embedded-audit.yml only accepts its own trusted workflow proof."
   },
+  "external_agy_audit": {
+    "tool": "AGY / Google Antigravity CLI",
+    "version": "1.1.3",
+    "model": "Gemini 3.1 Pro (High)",
+    "mode": "single-turn, read-only prompt; plan mode with sandbox; external/network tool use prohibited by prompt",
+    "audited_head_sha": "c159c646a6f05078fabfb425339c7252806bdaba",
+    "status": "PASS_WITH_RISKS",
+    "report_path": "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/AGY_AUDIT.md",
+    "ci_trust_status": "NOT_ACCEPTED: embedded-audit.yml only accepts its own trusted workflow proof."
+  },
   "embedded_audit": {
     "required": true,
     "status": "SKIPPED",
@@ -135,10 +151,11 @@
     "remaining_risks": [
       "The canonical CI embedded audit cannot run because its configured claude CLI is absent on the GitHub runner.",
       "The separate Grok PASS_WITH_RISKS review is not accepted by embedded-audit.yml as a trusted workflow proof.",
+      "The separate AGY PASS_WITH_RISKS review is not accepted by embedded-audit.yml as a trusted workflow proof.",
       "The intentionally opt-in live facade test was not run.",
       "GitHub checks must be refreshed after pushing the remediation commits."
     ],
-    "skip_reason": "The available Codex reviewer could not complete a final differential verdict. A separate Grok review returned PASS_WITH_RISKS, but it cannot satisfy the distinct trusted embedded-audit workflow contract; see AUDITOR_REPORT.md and GROK_AUDIT.md."
+    "skip_reason": "The available Codex reviewer could not complete a final differential verdict. Separate Grok and AGY reviews returned PASS_WITH_RISKS, but neither can satisfy the distinct trusted embedded-audit workflow contract; see AUDITOR_REPORT.md, GROK_AUDIT.md, and AGY_AUDIT.md."
   },
   "residual_risks": [
     "No live runtime, ownership, transport, freshness, provider, or backend evidence is claimed.",

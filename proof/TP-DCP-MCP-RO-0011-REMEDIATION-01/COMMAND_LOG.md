@@ -19,6 +19,7 @@ All commands below ran in the dedicated worktree on branch
 | `pre-commit run --files <implementation allowlist>` | PASS after first-run packet front-matter normalization |
 | Read-only Codex differential review | NOT_RUN; see `AUDITOR_REPORT.md` |
 | `grok -p` read-only differential audit | PASS_WITH_RISKS; see `GROK_AUDIT.md` |
+| `agy --prompt=<read-only audit prompt> --mode=plan --sandbox --model=Gemini 3.1 Pro (High)` | PASS_WITH_RISKS at `c159c646a`; see `AGY_AUDIT.md` |
 
 No live DCP facade, provider, transport, container, backend, or credential
 operation was run.
