@@ -82,11 +82,13 @@ See `docs/TASKX_KERNEL_INTEGRATION.md` for contract details, update procedure, a
 
 ## 🧱 Service Bundles
 
-| Mode | Compose File | Services Included |
-|------|--------------|-------------------|
-| **Canonical (recommended)** | `compose.yml` | All services: PostgreSQL + AGE, Redis (2x), Qdrant, ConPort MCP, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Exa, Desktop Commander, Leantime Bridge, DopeconBridge, Task Orchestrator, ADHD Engine |
+| Mode | Compose File | Services Started |
+|------|--------------|------------------|
+| **core** (`--quick` / `--stack core`) | `compose.yml` | postgres, redis-events, redis-primary, mcp-qdrant, conport, task-orchestrator, adhd-engine (+ their `depends_on` dependencies) |
+| **research** (`--stack research`) | `compose.yml` | core services + gptr-mcp |
+| **full** (`--full` / `--stack full`) | `compose.yml` | All services: PostgreSQL + AGE, Redis (2x), Qdrant, ConPort MCP, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Desktop Commander, Leantime (+MySQL), Leantime Bridge, DopeconBridge, Task Orchestrator, ADHD Engine, Dope-Memory, Webhooks |
 
-The canonical `compose.yml` file at the repository root is now the single source of truth for running Dopemux services. Legacy compose files (docker-compose.master.yml, docker-compose.staging.yml, etc.) are deprecated.
+The canonical `compose.yml` file at the repository root is the single source of truth for running Dopemux services. It defines **no compose profiles** — the installer scopes core/research stacks by passing explicit service names to `docker compose up`. Legacy compose files (docker-compose.master.yml, docker-compose.staging.yml, etc.) are deprecated.
 
 ### Environment Variables & `.env`
 
@@ -100,6 +102,7 @@ Full installs prompt for the secrets listed below and store them in a git-ignore
 - `LEANTIME_URL` / `LEANTIME_TOKEN`
 - `TASK_ORCHESTRATOR_API_KEY` / `ADHD_ENGINE_API_KEY`
 - `LITELLM_DATABASE_URL` (defaults to the bundled Postgres DSN)
+- `HOST_CODE_PARENT_DIR` / `HOST_PROJECT_RELATIVE_PATH` (dope-context workspace mount — default to the parent dir and basename of the repo checkout; without them dope-context falls back to mounting `/tmp` and cannot index your code)
 
 Canonical key policy:
 - Set provider keys in repo-root `.env` only.
@@ -266,8 +269,9 @@ The `dopemux` CLI is installed into a dedicated virtual environment at `~/.dopem
 ## 🖥️ System Requirements
 
 ### Minimum Requirements
-- **macOS** 12+ or **Linux** (Ubuntu 20.04+, CentOS 8+)
-- **Docker** 20.10+ with Docker Compose
+- **macOS** 12+ or **Linux** (Ubuntu 24.04+, Debian 12+, Fedora, Arch; Ubuntu 22.04 works but needs Python 3.11+ from the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa) first — the default 22.04 archives only ship Python 3.10)
+- **Python** 3.11–3.13 (pyproject.toml requires `>=3.11,<3.14`; the installer probes `python3`, `python3.13`, `python3.12`, `python3.11`)
+- **Docker** 20.10+ with Docker Compose v2
 - **8GB RAM** (Core installation only)
 - **10GB disk space**
 - **Git** 2.30+
