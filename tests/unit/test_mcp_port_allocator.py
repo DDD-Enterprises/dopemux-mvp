@@ -299,3 +299,148 @@ def test_worktree_scoped_does_not_reuse_project_lease(tmp_path: Path, monkeypatc
     assert not any(
         w.get("code") == "LEASE_REUSED" and w.get("port") == 3099 for w in result.warnings
     )
+
+
+def _reserved_singleton_catalog() -> Dict[str, Any]:
+    """Catalog whose TO entry declares explicit reserved-singleton markers."""
+    cat = _catalog()
+    cat["servers"]["task-orchestrator"]["port_policy"] = "reserved_singleton"
+    cat["servers"]["task-orchestrator"]["reserved_port"] = 7890
+    return cat
+
+
+def test_reserved_singleton_assigned_when_live_singleton_identified(tmp_path: Path, monkeypatch):
+    """RUNTIME regression: a healthy live singleton on the reserved port is
+    identified via the MCP handshake and ASSIGNED (never leased), not BLOCKED.
+
+    Reproduces the ``dopemux mcp init --force`` fail-closed bug where a healthy
+    task-orchestrator on :7890 was permanently unrecognized (it never writes a
+    lease, so the lease-only legitimacy check could never succeed).
+    """
+    reg_path = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
+
+    result = allocate_ports(
+        ["task-orchestrator"],
+        _reserved_singleton_catalog(),
+        worktree=str(tmp_path),
+        project_root=str(tmp_path),
+        registry_path=reg_path,
+        persist=True,
+        is_free_fn=lambda p: False,  # :7890 occupied by the live singleton
+        singleton_probe_fn=lambda port, path: "mcp-task-orchestrator-current",
+    )
+
+    assert result.status != "BLOCKED"
+    assert result.ports["TASK_ORCHESTRATOR_HTTP_PORT"] == 7890
+    assert any(
+        w.get("code") == "ALLOCATOR_RESERVED_SINGLETON_IDENTIFIED" for w in result.warnings
+    )
+    # A reserved singleton is never written as a lease.
+    assert not any(int(L.get("port") or 0) == 7890 for L in result.leases)
+    reg = PortLeaseRegistry.load(reg_path)
+    assert reg.find_active_by_port(7890) is None
+
+
+def test_reserved_singleton_blocked_when_identity_mismatch(tmp_path: Path, monkeypatch):
+    """Occupied reserved port whose serverInfo.name does NOT match stays fail-closed."""
+    reg_path = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
+
+    result = allocate_ports(
+        ["task-orchestrator"],
+        _reserved_singleton_catalog(),
+        worktree=str(tmp_path),
+        project_root=str(tmp_path),
+        registry_path=reg_path,
+        persist=True,
+        is_free_fn=lambda p: False,
+        singleton_probe_fn=lambda port, path: "some-other-mcp-server",
+    )
+
+    assert result.status == "BLOCKED"
+    assert any(b.get("code") == "LEASE_PORT_OCCUPIED" for b in result.blocking_findings)
+    reg = PortLeaseRegistry.load(reg_path)
+    assert reg.find_active_by_port(7890) is None
+
+
+def test_reserved_singleton_blocked_when_probe_unreachable(tmp_path: Path, monkeypatch):
+    """Occupied reserved port where the identity probe fails (None) stays fail-closed."""
+    reg_path = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
+
+    result = allocate_ports(
+        ["task-orchestrator"],
+        _reserved_singleton_catalog(),
+        worktree=str(tmp_path),
+        project_root=str(tmp_path),
+        registry_path=reg_path,
+        persist=True,
+        is_free_fn=lambda p: False,
+        singleton_probe_fn=lambda port, path: None,  # unreachable / non-MCP occupant
+    )
+
+    assert result.status == "BLOCKED"
+    assert any(b.get("code") == "LEASE_PORT_OCCUPIED" for b in result.blocking_findings)
+
+
+def test_reserved_singleton_free_port_never_probes(tmp_path: Path, monkeypatch):
+    """When the reserved port is free, assign without probing (singleton not up yet)."""
+    reg_path = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
+    calls: list[int] = []
+
+    def _boom(port: int, path: str):
+        calls.append(port)
+        raise AssertionError("probe must not run when the reserved port is free")
+
+    result = allocate_ports(
+        ["task-orchestrator"],
+        _reserved_singleton_catalog(),
+        worktree=str(tmp_path),
+        project_root=str(tmp_path),
+        registry_path=reg_path,
+        persist=True,
+        is_free_fn=lambda p: True,  # nothing listening on :7890 yet
+        singleton_probe_fn=_boom,
+    )
+
+    assert calls == []
+    assert result.status != "BLOCKED"
+    assert result.ports["TASK_ORCHESTRATOR_HTTP_PORT"] == 7890
+
+
+def test_probe_mcp_server_name_parses_serverinfo():
+    """The MCP-handshake probe extracts result.serverInfo.name from a JSON body."""
+    from dopemux.mcp.task_orchestrator_identity import probe_mcp_server_name
+
+    captured: Dict[str, Any] = {}
+
+    def _fake_post(url: str, body: bytes, headers: Dict[str, str]) -> bytes:
+        captured["url"] = url
+        return (
+            b'{"jsonrpc":"2.0","id":1,"result":{"serverInfo":'
+            b'{"name":"mcp-task-orchestrator-current","version":"3.8.0"}}}'
+        )
+
+    name = probe_mcp_server_name(7890, opener=_fake_post)
+    assert name == "mcp-task-orchestrator-current"
+    assert captured["url"] == "http://127.0.0.1:7890/mcp"
+
+
+def test_probe_mcp_server_name_fails_closed_on_bad_response():
+    """Non-JSON / malformed / error responses return None (fail closed)."""
+    from dopemux.mcp.task_orchestrator_identity import probe_mcp_server_name
+
+    def _garbage(url: str, body: bytes, headers: Dict[str, str]) -> bytes:
+        return b"not json at all"
+
+    def _raises(url: str, body: bytes, headers: Dict[str, str]) -> bytes:
+        raise OSError("connection refused")
+
+    def _no_serverinfo(url: str, body: bytes, headers: Dict[str, str]) -> bytes:
+        return b'{"jsonrpc":"2.0","id":1,"result":{}}'
+
+    assert probe_mcp_server_name(7890, opener=_garbage) is None
+    assert probe_mcp_server_name(7890, opener=_raises) is None
+    assert probe_mcp_server_name(7890, opener=_no_serverinfo) is None
