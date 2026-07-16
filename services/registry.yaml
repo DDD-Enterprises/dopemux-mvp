@@ -15,7 +15,7 @@
 #   description: string - brief service description
 
 version: "1.0"
-last_updated: "2026-03-11"
+last_updated: "2026-07-16"
 
 services:
   # Infrastructure Services
@@ -197,6 +197,15 @@ services:
         reason: "Health route hardcoded at /health in FastAPI app"
       - variable: DATABASE_URL
         reason: "No direct DB; persistence via ConPort/DopeconBridge HTTP (CONPORT_URL)"
+
+  - name: adhd-dashboard
+    port: 8097
+    container_port: 8097
+    health_path: /health
+    compose_service_name: adhd-dashboard
+    enabled_in_smoke: false
+    category: cognitive
+    description: "ADHD Dashboard backend for the React operator UI"
 
   # Shared Legacy/Static Services
   - name: leantime

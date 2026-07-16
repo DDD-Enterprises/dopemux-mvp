@@ -1,70 +1,51 @@
-# ADHD Dashboard Service
+# ADHD Dashboard
 
-**Category**: Cognitive Plane  
-**Status**: Production  
-**Port**: 8097  
-**Purpose**: ADHD-optimized metrics and accommodations dashboard
+The dashboard consists of a FastAPI backend in this directory and the React
+operator UI in `ui-dashboard/`.
 
-## Overview
+## Run
 
-ADHD Dashboard provides specialized visualization of ADHD accommodation metrics, energy levels, attention state, and cognitive load tracking.
-
-## Quick Start
+Start the backend and its dependencies:
 
 ```bash
-# Start via Docker Compose
-docker-compose -f docker-compose.master.yml up -d adhd-dashboard
-
-# Access dashboard
-open http://localhost:8097
+docker compose -p dopemux -f compose.yml up -d --build adhd-dashboard
 ```
 
-## Health Check
+Start the React development server:
 
 ```bash
-curl http://localhost:8097/health
+npm --prefix ui-dashboard ci
+npm --prefix ui-dashboard run dev
 ```
 
-## API Endpoints
+The React UI is available at `http://localhost:5173`. The backend is
+loopback-bound at `http://127.0.0.1:8097`.
 
-- `GET /health` - Service health status
-- `GET /api/metrics` - Current ADHD metrics
-- `GET /api/adhd-state` - Real-time ADHD state
-- `GET /api/sessions/today` - Today's session data
-- `GET /api/analytics/trends` - Energy/attention trends
-- `GET /api/breaks/recommendations` - Break suggestions
+## Backend Endpoints
+
+- `GET /health` - backend health and dependency configuration
+- `GET /api/metrics` - local dashboard metrics
+- `GET /api/task-recommendations` - task recommendations
+- `GET /api/cognitive-load` - current cognitive load
+- `GET /api/adhd-state` - aggregate state consumed by the React UI
+- `GET /api/sessions/today` - current session summary
+- `GET /metrics` - Prometheus metrics
+- `WS /ws/state` - live state updates consumed by the React UI
+
+The removed `activity-capture` service is not a runtime dependency. Local
+dashboard metrics remain bounded stubs, while state data is read from ADHD
+Engine and Redis.
 
 ## Configuration
 
-Environment variables:
-- `PORT` - Service port (default: 8097)
-- `ADHD_ENGINE_URL` - ADHD Engine URL (default: http://localhost:8080)
-- `DOPECON_BRIDGE_URL` - DopeconBridge URL (default: http://localhost:3016)
-- `LOG_LEVEL` - Logging verbosity (default: INFO)
+- `REDIS_URL` - Redis connection, set to `redis://redis-primary:6379` in compose
+- `ADHD_ENGINE_URL` - ADHD Engine base URL, set to `http://adhd-engine:8095`
+- `ADHD_ENGINE_REDIS_PREFIX` - shared engine/dashboard Redis namespace
+- `ADHD_ENGINE_API_KEY` - optional key forwarded to ADHD Engine
+- `DASHBOARD_API_KEY` - optional dashboard API key
+- `DASHBOARD_USER_ID` - operator state key, default `default`
+- `ALLOWED_ORIGINS` - comma-separated CORS origins
 
-## Features
-
-- **Energy Level Tracking** - Real-time energy state visualization
-- **Attention Monitoring** - Focus/distraction patterns
-- **Cognitive Load** - Current cognitive load measurement
-- **Break Recommendations** - Intelligent break suggestions (25-min cycles)
-- **Session Analytics** - Daily/weekly ADHD metrics
-
-## ADHD Engine Integration
-
-Queries ADHD Engine APIs:
-- `/api/v1/energy-level` - Current energy state
-- `/api/v1/attention-state` - Attention monitoring
-- `/api/v1/cognitive-load` - Cognitive load assessment
-- `/api/v1/break-recommendation` - Break suggestions
-
-## Development
-
-```bash
-cd services/adhd-dashboard
-python backend.py
-```
-
-## Documentation
-
-See [docs/03-reference/systems/adhd-intelligence/](../../docs/03-reference/systems/adhd-intelligence/) for ADHD Engine details.
+See
+[`docs/03-reference/systems/adhd-intelligence/`](../../docs/03-reference/systems/adhd-intelligence/)
+for ADHD Engine details.

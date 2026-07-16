@@ -1,6 +1,7 @@
 import asyncio
 import json
 import threading
+from datetime import datetime
 
 from fastapi.testclient import TestClient
 
@@ -42,6 +43,11 @@ class _FakeRedisClient:
         return None
 
 
+class _FailingSession:
+    def get(self, _url):
+        raise OSError("upstream offline")
+
+
 def test_synthetic_state_update_reaches_ws_state(monkeypatch):
     release_reader = threading.Event()
     monkeypatch.setattr(backend, "redis_stream_reader", _idle_reader)
@@ -66,3 +72,30 @@ def test_synthetic_state_update_reaches_ws_state(monkeypatch):
                 assert websocket.receive_json() == payload
     finally:
         backend.manager.active_connections.clear()
+
+
+def test_health_payload_matches_registry_runtime_shape():
+    payload = asyncio.run(backend.health_check())
+
+    assert payload["status"] == "healthy"
+    assert payload["service"] == "adhd-dashboard"
+    assert datetime.fromisoformat(payload["ts"])
+
+
+def test_upstream_failure_returns_error_payload():
+    payload = asyncio.run(
+        backend._get_json(_FailingSession(), "http://adhd-engine:8095/health")
+    )
+
+    assert payload == {"error": "upstream offline"}
+
+
+def test_state_change_pattern_matches_engine_prefix_contract():
+    assert (
+        backend._state_changes_pattern("worktree-a")
+        == "worktree-a:adhd:state_changes:*"
+    )
+    assert backend._state_changes_pattern("") == "adhd:state_changes:*"
+    assert backend._state_changes_pattern("worktree-a:") == (
+        "worktree-a:adhd:state_changes:*"
+    )

@@ -57,6 +57,7 @@ ADHD_ENGINE_API_KEY = os.getenv("ADHD_ENGINE_API_KEY") or None
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 # activity-capture was removed (graveyard 2026-07); metrics are local/stub only.
 ADHD_ENGINE_URL = os.getenv("ADHD_ENGINE_URL", "http://localhost:8095")
+ADHD_ENGINE_REDIS_PREFIX = os.getenv("ADHD_ENGINE_REDIS_PREFIX", "")
 DASHBOARD_USER_ID = os.getenv("DASHBOARD_USER_ID", "default")
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
@@ -65,6 +66,16 @@ ALLOWED_ORIGINS = os.getenv(
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+
+
+def _state_changes_pattern(prefix: str) -> str:
+    normalized_prefix = prefix.strip().strip(":")
+    if normalized_prefix:
+        return f"{normalized_prefix}:adhd:state_changes:*"
+    return "adhd:state_changes:*"
+
+
+STATE_CHANGES_PATTERN = _state_changes_pattern(ADHD_ENGINE_REDIS_PREFIX)
 
 REQUEST_COUNT = Counter(
     "adhd_dashboard_requests_total",
@@ -164,7 +175,12 @@ async def _get_json(
             text = await response.text()
             return {"error": f"upstream_status={response.status}", "detail": text[:200]}
     except Exception as exc:
-        logger.error(brand_log("Upstream GET failed for %s: %s", url, exc, chip=StatusChip.BLOCKER))
+        logger.error(
+            brand_log(
+                f"Upstream GET failed for {url}: {exc}",
+                chip=StatusChip.BLOCKER,
+            )
+        )
         return {"error": str(exc)}
 
 
@@ -257,7 +273,7 @@ async def redis_pubsub_reader():
     """Broadcast ADHD state changes produced by the engine."""
     logger.info(brand_log("Starting Redis Pub/Sub reader for ADHD state changes", chip=StatusChip.LIVE))
     pubsub = redis_client.pubsub()
-    await pubsub.psubscribe("adhd:state_changes:*")
+    await pubsub.psubscribe(STATE_CHANGES_PATTERN)
 
     try:
         async for message in pubsub.listen():
@@ -278,9 +294,11 @@ async def redis_pubsub_reader():
     except asyncio.CancelledError:
         raise
     except Exception as exc:
-        logger.error(brand_log("Redis Pub/Sub error: %s", exc, chip=StatusChip.BLOCKER))
+        logger.error(
+            brand_log(f"Redis Pub/Sub error: {exc}", chip=StatusChip.BLOCKER)
+        )
     finally:
-        await pubsub.unpsubscribe("adhd:state_changes:*")
+        await pubsub.unpsubscribe(STATE_CHANGES_PATTERN)
         await pubsub.close()
 
 
@@ -319,7 +337,12 @@ async def redis_stream_reader(stream: str, consumer_group: str, consumer_name: s
         except asyncio.CancelledError:
             raise
         except Exception as exc:
-            logger.error(brand_log("Redis stream reader failed for %s: %s", stream, exc, chip=StatusChip.BLOCKER))
+            logger.error(
+                brand_log(
+                    f"Redis stream reader failed for {stream}: {exc}",
+                    chip=StatusChip.BLOCKER,
+                )
+            )
             await asyncio.sleep(1)
 
 
@@ -507,6 +530,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": SERVICE_NAME,
+        "ts": datetime.utcnow().isoformat(),
         "redis_url": REDIS_URL,
         "activity_capture": "removed",
         "adhd_engine_url": ADHD_ENGINE_URL,

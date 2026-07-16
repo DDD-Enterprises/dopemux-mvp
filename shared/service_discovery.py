@@ -75,7 +75,6 @@ class ServiceDiscovery:
         # DNS service mappings (service name -> DNS name)
         self.dns_mappings = {
             "adhd-engine": "adhd-engine",
-            "activity-capture": "activity-capture",
             "break-suggester": "break-suggester",
             "workspace-watcher": "workspace-watcher",
             "adhd-dashboard": "adhd-dashboard",
@@ -89,7 +88,6 @@ class ServiceDiscovery:
         # Default ports for services
         self.default_ports = {
             "adhd-engine": 8095,
-            "activity-capture": 8096,
             "break-suggester": None,  # Background service
             "workspace-watcher": None,  # Background service
             "adhd-dashboard": 8097,
