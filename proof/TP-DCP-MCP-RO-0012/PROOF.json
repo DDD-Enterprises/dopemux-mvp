@@ -1,0 +1,142 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0012",
+  "title": "Public Facade Target Contract Migration",
+  "status": "VALIDATED_WITH_AUDIT_GAP",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "codex/dcp-mcp-ro-0012-target-contract",
+  "base_branch": "main",
+  "base_sha": "3f59ec29c9175e3b7ebdc68392365bb05296247d",
+  "implementation_commit": "f0d9452852dbc3883317cbae71f70d9a59f54d8e",
+  "pr": {
+    "number": 1057,
+    "status": "OPEN_NOT_READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1057",
+    "head_at_creation": "bc1d664321001dfc52da9b2927c8829d24c612b9",
+    "blocker": "Trusted embedded audit is required but remains a readiness blocker under the local-only, no-runner, no-credentials constraint. Independent embedded audit CI reported FAILURE on prior head; AGY does not satisfy embedded-audit.yml. PR Steward and merge readiness are not claimed."
+  },
+  "scope": "Migrate the public DCP FastMCP server from the v1 project_id/direct-service contract to registry-v2 target_id-only local evidence tools. No backend adapter, network probe, tunnel, credential, public ingress, container operation, or runtime lifecycle mutation is included. Includes Codex review remediation rejecting locator-shaped (all-digit / numeric-dotted) target_id values without reflection.",
+  "input_package": {
+    "path": "/Users/hue/Downloads/dopemux-multi-provider-mcp-supervisor-package.zip",
+    "sha256": "c0cb9d34f6ece116811c52cce0d1b517153dba0f8434c9abda9da6ff6d6a2447",
+    "archive_integrity": "PASS",
+    "manifest_hashes": "PASS"
+  },
+  "files_changed": [
+    "services/dcp-readonly-facade/src/dcp_facade/tools_v2.py",
+    "services/dcp-readonly-facade/src/mcp/server.py",
+    "services/dcp-readonly-facade/tests/test_tools_v2.py",
+    "services/dcp-readonly-facade/tests/test_mcp_server.py",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/RESPONSE_ENVELOPE_SCHEMA.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/FACADE_LOCAL_RUN.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/MANUAL_VALIDATION.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/README.md",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0012.json",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0012.md",
+    "task-packets/INDEX.md",
+    "proof/TP-DCP-MCP-RO-0012/PROOF.json",
+    "proof/TP-DCP-MCP-RO-0012/AUDITOR_REPORT.md",
+    "proof/TP-DCP-MCP-RO-0012/AGY_AUDIT.md",
+    "proof/TP-DCP-MCP-RO-0012/COMMAND_LOG.md"
+  ],
+  "review_remediation": {
+    "source": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1057#discussion_r3599375736",
+    "severity": "P2",
+    "summary": "Reject locator-shaped target_id values (all-digit ports and numeric-dotted IP-like forms) before they can be echoed on unknown-target block paths.",
+    "fix": "Extended _is_opaque_target_id with _ALL_DIGITS and _NUMERIC_DOTTED guards; added regression tests; updated MANUAL_VALIDATION.md."
+  },
+  "validation": {
+    "PASS": [
+      {
+        "command": "uv run --frozen pytest -q services/dcp-readonly-facade/tests/test_tools_v2.py services/dcp-readonly-facade/tests/test_mcp_server.py",
+        "exit_code": 0,
+        "result": "9 passed (includes locator-shaped target_id regression)"
+      },
+      {
+        "command": "uv run --frozen pytest -q services/dcp-readonly-facade/tests",
+        "exit_code": 0,
+        "result": "full suite passed; 1 intentionally opt-in live test skipped"
+      },
+      {
+        "command": "uv run --frozen python -m compileall -q services/dcp-readonly-facade/src",
+        "exit_code": 0,
+        "result": "completed without diagnostics"
+      },
+      {
+        "command": "uv run --frozen python -m jsonschema -i task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0012.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0,
+        "result": "valid; jsonschema emitted only its CLI deprecation warning"
+      },
+      {
+        "command": "pre-commit run --files <TP-0012 allowlist + remediation files>",
+        "exit_code": 0,
+        "result": "all applicable hooks passed"
+      },
+      {
+        "command": "manual source and cached-diff review",
+        "exit_code": 0,
+        "result": "v1 public imports and tool registrations absent; target-only signatures, non-callable runtime receipt, and locator-shaped no-reflection verified"
+      },
+      {
+        "command": "agy --prompt=<read-only TP-0012 locator remediation audit prompt>",
+        "exit_code": 0,
+        "result": "PASS for locator remediation; residual low design/edge notes recorded in AGY_AUDIT.md"
+      }
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "command": "Live DCP facade test",
+        "reason": "services/dcp-readonly-facade/tests/test_live_optional.py is intentionally opt-in and DCP_FACADE_LIVE_TESTS was not enabled.",
+        "mitigation": "No live behavior, transport, backend, provider, credential, or exposure change is in scope."
+      },
+      {
+        "command": "Trusted embedded audit and PR Steward",
+        "reason": "User direction is local-only; no runner or credentials are available, and the configured Claude audit route is unavailable. Prior CI independent embedded audit reported FAILURE on head 3c6fa3be; AGY is advisory only.",
+        "mitigation": "Local AGY evidence is retained separately. The canonical workflow gate remains fail-closed and is not represented as passed."
+      }
+    ]
+  },
+  "local_agy_review": {
+    "tool": "AGY / Google Antigravity CLI",
+    "version": "1.1.3",
+    "model": "default local model; AGY response did not identify a model",
+    "mode": "single-turn read-only prompt; no CI, credentials, tunnel, or live-call setup authorized",
+    "audited_commit": "f0d9452852dbc3883317cbae71f70d9a59f54d8e",
+    "remediation_review": "locator-shaped target_id no-reflection (PR #1057 Codex P2)",
+    "status": "PASS",
+    "report_path": "proof/TP-DCP-MCP-RO-0012/AGY_AUDIT.md",
+    "ci_trust_status": "NOT_ACCEPTED: local AGY evidence is not workflow-issued embedded-audit proof."
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DCP-MCP-RO-0012/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Replaced the public FastMCP v1 registry and tool imports with registry-v2 target-only wiring.",
+      "Added target-bound local repository/proof/capability/runtime-receipt tools and redaction regressions.",
+      "Removed public direct backend adapter exposure from server mode.",
+      "Rejected locator-shaped (all-digit and numeric-dotted) target_id values without reflection (Codex P2)."
+    ],
+    "remaining_risks": [
+      "No trusted embedded-audit proof is available under the local-only, no-runner, no-credentials constraint.",
+      "The opt-in live facade test was not run.",
+      "A local AGY PASS review does not satisfy embedded-audit.yml.",
+      "CI independent embedded audit previously FAILED on proof-refresh head; re-check after remediation push."
+    ],
+    "skip_reason": "The repository's trusted embedded audit requires a configured runner/auditor route. Claude is unavailable and the user authorized local AGY evidence only; AGY is recorded separately and does not satisfy the trusted workflow contract."
+  },
+  "residual_risks": [
+    "No live runtime ownership, transport, backend, provider, credential, or freshness evidence is claimed.",
+    "Local runtime receipt input defaults to the documented runtime registry path and returns PARTIAL when missing or malformed.",
+    "The generated .claude/claude_config.json worktree delta is intentionally unstaged and unrelated.",
+    "Pure numeric operator target IDs are intentionally rejected as port-like (design trade-off)."
+  ],
+  "rollback": "Revert implementation commit f0d9452852dbc3883317cbae71f70d9a59f54d8e and subsequent proof/remediation commits. Do not re-enable the v1 public server surface without a separately approved compatibility packet.",
+  "cleanup": "Dedicated worktree retained while PR #1057 remains open."
+}

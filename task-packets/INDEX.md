@@ -134,6 +134,7 @@ A packet is superseded by another packet
 | TP-DCP-MCP-RO-0006 | DCP / MCP | Dope Context And Task Orchestrator Read Adapters | Active | N/A |
 | TP-DCP-MCP-RO-0007 | DCP / MCP | Secure MCP Tunnel Integration Docs And Manual Validation | Active | N/A |
 | TP-DCP-MCP-RO-0008 | DCP / MCP | Hardening Cross Project Isolation And PR Readiness | Active | N/A |
+| TP-DCP-MCP-RO-0012 | DCP / MCP | Public Facade Target Contract Migration | Active | TP-DCP-MCP-RO-0011-REMEDIATION-01 |
 | DMX-DCP-PROMPT5-EXTRACT-RECON-001 | DCP / Prompt 5 | Extract Prompt 5 chat-history docs and reconcile PR/Task Orchestrator runway state | Active | N/A |
 
 ────────────────────────────────────────────────────────────
