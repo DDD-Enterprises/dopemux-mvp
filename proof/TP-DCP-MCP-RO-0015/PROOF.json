@@ -110,7 +110,11 @@
   ],
   "rollback": "Revert TP-0015 commits",
   "pr": {
-    "status": "PENDING_CREATE",
-    "blocker": "Trusted embedded audit SKIPPED; merge readiness not claimed"
-  }
+    "number": 1061,
+    "status": "OPEN_NOT_READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1061",
+    "head_at_creation": "1037730fc99937f2456fd5d0cbb0edfa6f21adc8",
+    "blocker": "Trusted embedded audit SKIPPED; AGY NOT_RUN (timeout); merge readiness not claimed."
+  },
+  "implementation_commit": "1037730fc99937f2456fd5d0cbb0edfa6f21adc8"
 }
