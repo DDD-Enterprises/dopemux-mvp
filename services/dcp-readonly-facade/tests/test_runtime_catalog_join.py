@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from dopemux.mcp.project_identity import ProjectIdentity
 from dcp_facade.registry_v2 import FAMILY_POLICY_TABLE, ExposureTarget, ServicePolicy
 from dcp_facade.resolver_core import ResolvedTarget
 from dcp_facade.runtime_catalog_join import RuntimeCatalogEntry, join_runtime_catalog
@@ -65,14 +66,21 @@ def _catalog() -> dict:
     }
 
 
-def _runtime(*, service: str, project_root: str = "/approved", worktree_root: str = "/approved/dopemux-mvp") -> dict:
+def _runtime(
+    *,
+    service: str,
+    project_id: str | None = None,
+    project_root: str = "/approved",
+    worktree_root: str = "/approved/dopemux-mvp",
+) -> dict:
     return {
         "parse_status": "OK",
         "present": True,
         "instances": [
             {
                 "instance_id": "runtime-secret-id",
-                "project_id": "dopemux-mvp",
+                "project_id": project_id
+                or _lifecycle_project_id(project_root, worktree_root),
                 "project_root": project_root,
                 "worktree_root": worktree_root,
                 "service": service,
@@ -82,6 +90,14 @@ def _runtime(*, service: str, project_root: str = "/approved", worktree_root: st
             }
         ],
     }
+
+
+def _lifecycle_project_id(project_root: str, worktree_root: str) -> str:
+    return ProjectIdentity(
+        project_root=Path(project_root),
+        worktree_root=Path(worktree_root),
+        git_common_dir=None,
+    ).project_id
 
 
 def test_exact_per_worktree_join_is_non_callable_and_maps_operational_name():
@@ -96,6 +112,39 @@ def test_exact_per_worktree_join_is_non_callable_and_maps_operational_name():
     assert entry.catalog_name == "dope-memory"
     assert entry.candidate_count == 1
     assert entry.state == "UNKNOWN"
+    assert entry.callable is False
+
+
+def test_lifecycle_generated_project_id_joins_when_dcp_identity_is_unhashed():
+    project_root = "/approved"
+    worktree_root = "/approved/dopemux-mvp"
+    result = join_runtime_catalog(
+        _resolved("conport"),
+        _catalog(),
+        _runtime(
+            service="conport",
+            project_id=_lifecycle_project_id(project_root, worktree_root),
+            project_root=project_root,
+            worktree_root=worktree_root,
+        ),
+    )
+
+    entry = result.entries[0]
+    assert entry.state == "UNKNOWN"
+    assert entry.candidate_count == 1
+    assert entry.callable is False
+
+
+def test_dcp_repository_identity_is_not_accepted_as_lifecycle_project_id():
+    result = join_runtime_catalog(
+        _resolved("conport"),
+        _catalog(),
+        _runtime(service="conport", project_id="dopemux-mvp"),
+    )
+
+    entry = result.entries[0]
+    assert entry.state == "UNAVAILABLE"
+    assert entry.candidate_count == 0
     assert entry.callable is False
 
 

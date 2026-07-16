@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
+from dopemux.mcp.project_identity import ProjectIdentity
+
 from .resolver_core import ResolvedTarget
 
 
@@ -131,7 +133,14 @@ def _runtime_matches_target(
     """Match evidence identity exactly; do not treat it as ownership proof."""
     if instance.get("service") != catalog_name:
         return False
-    if instance.get("project_id") != resolved.target.identity_project:
+    # The DCP identity has already authorized the target in resolver_core.
+    # Lifecycle records persist the shared generated runtime identity instead.
+    expected_project_id = ProjectIdentity(
+        worktree_root=resolved.worktree_root.resolve(),
+        project_root=resolved.project_root.resolve(),
+        git_common_dir=None,
+    ).project_id
+    if instance.get("project_id") != expected_project_id:
         return False
     project_root = _canonical_path(instance.get("project_root"))
     worktree_root = _canonical_path(instance.get("worktree_root"))
