@@ -138,7 +138,6 @@ echo
 echo "7. Checking key service adapters..."
 SERVICES=(
     "adhd_engine/bridge_integration.py"
-    "voice-commands/bridge_adapter.py"
     "task-orchestrator/bridge_adapter.py"
     "serena/v2/bridge_adapter.py"
     "dopemux-gpt-researcher/bridge_adapter.py"

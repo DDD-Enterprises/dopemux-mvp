@@ -11,11 +11,53 @@ from dopemux.mcp import fleet_catalog
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
+def _reserved_singleton_catalog() -> dict:
+    return {
+        "version": 1,
+        "defaults": {"per_worktree": ["task-orchestrator"]},
+        "servers": {
+            "task-orchestrator": {
+                "scope": "per-worktree",
+                "state_scope": "single_active_project",
+                "transport": "http",
+                "management_model": "wrapper-singleton",
+                "url_template": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
+                "port_var": "TASK_ORCHESTRATOR_HTTP_PORT",
+                "default_port_base": 7890,
+                "port_policy": "reserved_singleton",
+                "reserved_port": 7890,
+            }
+        },
+    }
+
+
 def test_root_catalog_conforms_to_schema():
     schema = fleet_catalog.load_json_schema(REPO_ROOT / "schemas/mcp/fleet-catalog.schema.json")
     catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
 
     jsonschema.validate(catalog, schema)
+
+
+def test_schema_accepts_reserved_singleton_runtime_metadata():
+    schema = fleet_catalog.load_json_schema(REPO_ROOT / "schemas/mcp/fleet-catalog.schema.json")
+
+    jsonschema.validate(_reserved_singleton_catalog(), schema)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("state_scope", "global-mutable"),
+        ("port_policy", "dynamic-rebind"),
+    ],
+)
+def test_schema_rejects_unknown_reserved_singleton_metadata(field, value):
+    schema = fleet_catalog.load_json_schema(REPO_ROOT / "schemas/mcp/fleet-catalog.schema.json")
+    catalog = _reserved_singleton_catalog()
+    catalog["servers"]["task-orchestrator"][field] = value
+
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(catalog, schema)
 
 
 def test_bundled_default_catalog_stays_in_sync_with_root_catalog():
@@ -316,6 +358,17 @@ def test_unknown_command_tool_surfaces_are_reported(tmp_path):
     unknown = fleet_catalog.find_unknown_command_tool_surfaces(command_dir, catalog)
 
     assert unknown == [f"{command_dir / 'bad.md'}:1:missing-server"]
+
+
+def test_unknown_conport_command_tool_is_reported(tmp_path):
+    command_dir = tmp_path / "commands"
+    command_dir.mkdir()
+    (command_dir / "bad.md").write_text("Call `mcp__conport__missing_tool`.\n")
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+
+    unknown = fleet_catalog.find_unknown_command_tool_surfaces(command_dir, catalog)
+
+    assert unknown == [f"{command_dir / 'bad.md'}:1:conport:missing_tool"]
 
 
 def test_mcp_tool_surface_regex_rejects_partial_mentions():

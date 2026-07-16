@@ -255,9 +255,9 @@ services:
       - DOPE_MEMORY_INPUT_STREAM=activity.events.v1
       - QDRANT_URL=http://mcp-qdrant:6333
     ports:
-      - "${CONPORT_HTTP_PORT:-3004}:3004"
-      - "${CONPORT_MCP_PORT:-3005}:3005"
-      - "${CONPORT_INFO_PORT:-4004}:4004"
+      - "127.0.0.1:${CONPORT_HTTP_PORT:-3004}:3004"
+      - "127.0.0.1:${CONPORT_MCP_PORT:-3005}:3005"
+      - "127.0.0.1:${CONPORT_INFO_PORT:-4004}:4004"
     depends_on:
       postgres:
         condition: service_healthy
@@ -506,7 +506,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${DOPE_MEMORY_PORT:-3020}:3020"
+      - "127.0.0.1:${DOPE_MEMORY_PORT:-3020}:3020"
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - WMA_SECRET_KEY=${WMA_SECRET_KEY:-}
@@ -549,8 +549,8 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${SERENA_PORT:-3006}:3006"
-      - "${SERENA_HTTP_PORT:-4006}:4006"
+      - "127.0.0.1:${SERENA_PORT:-3006}:3006"
+      - "127.0.0.1:${SERENA_HTTP_PORT:-4006}:4006"
     environment:
       - DOPEMUX_INSTANCE_ID=${DOPEMUX_INSTANCE_ID:-}
       - MCP_SERVER_PORT=${SERENA_PORT:-3006}
@@ -576,7 +576,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${GPT_RESEARCHER_PORT:-3009}:3009"
+      - "127.0.0.1:${GPT_RESEARCHER_PORT:-3009}:3009"
     environment:
       - MCP_SERVER_PORT=${GPT_RESEARCHER_PORT:-3009}
       - LLM_BACKEND=openai
