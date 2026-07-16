@@ -1,0 +1,180 @@
+{
+  "id": "TP-DMX-UR-ARTIFACT-INTAKE-001",
+  "project": "dopemux-mvp",
+  "target": "Import the accepted UR-ARCH-001 architecture, UR-AUDIT-001R3 independent audit, and supervisor adjudication into traceable repository evidence paths without changing runtime behavior or rewriting source claims.",
+  "invariants": [
+    "No runtime code, service code, schemas, executable policy, provider configuration, or production configuration changes.",
+    "Original ZIP archives and extracted artifacts remain byte-for-byte identical to the supplied sources.",
+    "Architecture and audit artifacts remain evidence and design inputs; they do not outrank current runtime code, configuration, tests, or tracked authority documents.",
+    "Source and destination SHA-256 hashes are recorded before commit.",
+    "Downloads sources are copied, verified, and preserved; this packet never deletes the user's source files.",
+    "Only the packet allowlist may change, and all additions must remain within canonical docs, audit_inputs, proof, and task-packet surfaces."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "UR-ROUTER-GOV-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/ur-artifact-intake-001",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "docs(router): archive architecture and audit evidence",
+    "allowlist": [
+      "audit_inputs/universal_router/UR-ARCH-001/**",
+      "audit_inputs/universal_router/UR-AUDIT-001R3/**",
+      "audit_inputs/universal_router/ARTIFACT_MANIFEST.json",
+      "docs/94-architecture/universal-router/ur-arch-001.md",
+      "docs/05-audit-reports/universal-router/ur-audit-001r3.md",
+      "task-packets/TP-DMX-UR-ARTIFACT-INTAKE-001.json",
+      "task-packets/TP-DMX-UR-ARTIFACT-INTAKE-001.md",
+      "task-packets/UR-TP-001.json",
+      "task-packets/UR-TP-001.md",
+      "task-packets/INDEX.md",
+      "proof/TP-DMX-UR-ARTIFACT-INTAKE-001/**"
+    ],
+    "verify": [
+      "uv run --frozen python -m json.tool task-packets/TP-DMX-UR-ARTIFACT-INTAKE-001.json >/dev/null",
+      "uv run --frozen python -m json.tool task-packets/UR-TP-001.json >/dev/null",
+      "uv run --frozen dopemux orchestrator packet validate task-packets/TP-DMX-UR-ARTIFACT-INTAKE-001.json",
+      "uv run --frozen dopemux orchestrator packet validate task-packets/UR-TP-001.json",
+      "shasum -a 256 audit_inputs/universal_router/UR-ARCH-001/ORIGINAL/UR-ARCH-001_DELIVERABLES.zip",
+      "shasum -a 256 audit_inputs/universal_router/UR-AUDIT-001R3/ORIGINAL/UR-ARCH-001-OPUS-AUDIT-R3.zip",
+      "uv run --frozen python -m json.tool audit_inputs/universal_router/ARTIFACT_MANIFEST.json >/dev/null",
+      "git diff --check",
+      "uv run --frozen pre-commit run --files task-packets/TP-DMX-UR-ARTIFACT-INTAKE-001.json task-packets/TP-DMX-UR-ARTIFACT-INTAKE-001.md task-packets/UR-TP-001.json task-packets/UR-TP-001.md task-packets/INDEX.md docs/94-architecture/universal-router/ur-arch-001.md docs/05-audit-reports/universal-router/ur-audit-001r3.md audit_inputs/universal_router/ARTIFACT_MANIFEST.json"
+    ]
+  },
+  "pr": {
+    "title": "docs(router): archive architecture and audit evidence",
+    "body": "## Summary\n- preserve the accepted UR-ARCH-001 archive and all 20 extracted deliverables under audit_inputs\n- preserve the UR-AUDIT-001R3 archive, extracted audit artifacts, and supervisor adjudication\n- add canonical architecture and audit index pages\n- register TP-DMX-UR-ARTIFACT-INTAKE-001 and UR-TP-001\n\n## Scope\nEvidence and documentation only. No runtime, schema, policy, provider, workflow, or execution behavior changes.\n\n## Validation\nArchive hashes, extracted file inventories, task-packet schema validation, pre-commit, diff hygiene, embedded audit, and PR Steward readiness.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Lock a clean dedicated worktree at the reviewed main commit and verify the source archives and supervisor adjudication by SHA-256 before any copy.",
+      "requirements": [
+        "The worktree HEAD and origin/main must equal 45b5ee3f320e777111a6f00227072efeb725996b; if main has advanced, stop and refresh this packet against current runtime truth.",
+        "The branch must be codex/ur-artifact-intake-001 in a dedicated worktree, not the primary checkout.",
+        "UR-ARCH-001_DELIVERABLES.zip must hash to 9b78e2bd3a6311615e80194398cf07e996f59c952ba9d0280c140d5d39d5e090.",
+        "UR-ARCH-001-OPUS-AUDIT-R3.zip must hash to b44e892f4ef6fbf0b0235f28f6245143ae04caa1b9a562fad2b64995a923d372.",
+        "No source file may be deleted or modified.",
+        "UR-AUDIT-001R3_SUPERVISOR_ADJUDICATION.md must hash to a0176778170edd800e40b7be56ca51100cb1a2ec93326d5fa17de6110cc03e2a.",
+        "UR-AUDIT-001R3_SUPERVISOR_ADJUDICATION.json must hash to 68236db5f904ab5b6942fbb8a55334e717a3e3d67e69fed2e8c682e849cdb4b3."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "git rev-parse HEAD",
+        "git rev-parse origin/main",
+        "git branch --show-current",
+        "git status --short --branch",
+        "git remote get-url origin",
+        "test -f .dopetaskroot",
+        "shasum -a 256 ~/Downloads/UR-ARCH-001_DELIVERABLES.zip ~/Downloads/UR-ARCH-001-OPUS-AUDIT-R3.zip"
+      ],
+      "validation": [
+        "Repo, branch, worktree, base SHA, source inventory, and source hashes are captured in proof before copy.",
+        "Any mismatch stops the packet without modifying the repo."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "config/docs_hygiene/docs_placement_policy.yaml",
+        "docs/03-reference/governance/rules.md",
+        "docs/03-reference/systems/system-boundaries.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Copy the original archives, extract their complete contents without normalization, add the supervisor adjudication, and generate a destination manifest with per-file hashes.",
+      "requirements": [
+        "Preserve exact archive bytes and extracted filenames under audit_inputs/universal_router.",
+        "The architecture extraction must contain exactly the 20 required deliverables.",
+        "The audit extraction must pass its bundled SHA256SUMS verification.",
+        "Reference pages summarize status and point to raw evidence; they must not restate unsupported claims as runtime truth."
+      ],
+      "expected_files": [
+        "audit_inputs/universal_router/UR-ARCH-001/ORIGINAL/UR-ARCH-001_DELIVERABLES.zip",
+        "audit_inputs/universal_router/UR-ARCH-001/DELIVERABLES/01_EXECUTIVE_VERDICT.md",
+        "audit_inputs/universal_router/UR-ARCH-001/DELIVERABLES/20_OPEN_QUESTIONS.json",
+        "audit_inputs/universal_router/UR-AUDIT-001R3/ORIGINAL/UR-ARCH-001-OPUS-AUDIT-R3.zip",
+        "audit_inputs/universal_router/UR-AUDIT-001R3/DELIVERABLES/12_FINAL_AUDIT_VERDICT.json",
+        "audit_inputs/universal_router/UR-AUDIT-001R3/SUPERVISOR/UR-AUDIT-001R3_SUPERVISOR_ADJUDICATION.md",
+        "audit_inputs/universal_router/ARTIFACT_MANIFEST.json",
+        "docs/94-architecture/universal-router/ur-arch-001.md",
+        "docs/05-audit-reports/universal-router/ur-audit-001r3.md"
+      ],
+      "validation": [
+        "Original archive hashes match the accepted hashes.",
+        "Every extracted file has a destination SHA-256 entry.",
+        "No source archive or Downloads file is deleted."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Register both packets in task-packets/INDEX.md and validate both packet JSON files against the current tracked dopetask schema.",
+      "requirements": [
+        "Insert exactly one Active Task Packets row for each packet ID.",
+        "Use docs/03-reference/spec/dopetask/dopetask-canonical-spec.json as the current schema authority.",
+        "Do not edit packet semantics during staging."
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-UR-ARTIFACT-INTAKE-001.json",
+        "task-packets/TP-DMX-UR-ARTIFACT-INTAKE-001.md",
+        "task-packets/UR-TP-001.json",
+        "task-packets/UR-TP-001.md",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Both JSON packets parse and pass the current tracked task-packet schema.",
+        "The index contains no duplicate packet IDs."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Capture proof, run diff and docs hygiene checks, run embedded audit, open the PR, and require PR Steward READY at the latest head.",
+      "requirements": [
+        "Create proof/TP-DMX-UR-ARTIFACT-INTAKE-001/review_bundle as the review unit.",
+        "Embedded audit must be PASS or non-blocking PASS_WITH_RISKS; SKIPPED is blocking.",
+        "Use the canonical PR Steward operator surface documented in docs/ops/pr-steward-cli.md.",
+        "Only allowlisted paths may be staged."
+      ],
+      "commands": [
+        "git diff --check",
+        "git diff --stat",
+        "git diff --no-ext-diff",
+        "python -m dopemux.cli pr-steward intake --repo DDD-Enterprises/dopemux-mvp --pr \"$PR_NUMBER\" --out \"proof/TP-DMX-UR-ARTIFACT-INTAKE-001/pr-steward\" --strict --proof-path \"proof/TP-DMX-UR-ARTIFACT-INTAKE-001/PROOF.json\" --format json",
+        "python -m dopemux.cli pr-steward gate --head-sha \"$(git rev-parse HEAD)\" --required-class FINALIZATION --merge-readiness \"proof/TP-DMX-UR-ARTIFACT-INTAKE-001/pr-steward/MERGE_READINESS.json\" --audit-proof \"proof/TP-DMX-UR-ARTIFACT-INTAKE-001/PROOF.json\" --format json"
+      ],
+      "validation": [
+        "Proof is current to the latest PR head SHA.",
+        "PR Steward emits readiness=READY and exits 0.",
+        "Repository source behavior is unchanged."
+      ]
+    }
+  ]
+}

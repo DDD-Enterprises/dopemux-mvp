@@ -1,0 +1,77 @@
+{
+  "audit_id": "UR-AUDIT-001R3",
+  "auditor_tool": "Claude Code (CLI)",
+  "auditor_model_claim": "CLAUDE_OPUS_CONFIGURED_IN_CLAUDE_CODE",
+  "auditor_model_identity_confidence": "RUNNER_CONFIGURED_NOT_PROVIDER_ATTESTED",
+  "auditor_role": "independent senior architecture auditor / authority-boundary reviewer / contract auditor / failure-model critic / provenance investigator / implementation-readiness judge",
+  "started_at": "2026-07-13T01:17:48Z",
+  "completed_at": "2026-07-13T04:20:41Z",
+  "audit_kit_root": "/Users/hue/Downloads/UR-AUDIT-001R3_CLAUDE_CODE_OPUS_KIT",
+  "repo_root": "/Users/hue/code/dopemux-mvp",
+  "repo_head": "b176747b339685e781de04268c46b7ae123abfbf",
+  "repo_branch": "main",
+  "repo_remotes": "origin, mvp -> https://github.com/DDD-Enterprises/dopemux-mvp.git (no userinfo present)",
+  "repo_status_before": "43 entries: 4 tracked modified (.claude/claude_config.json, mcp-proxy-config.yaml, mcp_catalog.yaml, tests/unit/test_mcp_commands_catalog.py) + 39 untracked; pre-existing, unrelated to router domain",
+  "repo_status_after": "43 entries, byte-identical to repo_status_before (GIT_STATUS_UNCHANGED=TRUE); HEAD unchanged b176747",
+  "census_commit": "b176747b339685e781de04268c46b7ae123abfbf",
+  "architecture_archive": "02_ARCHITECTURE/ORIGINAL/UR-ARCH-001_DELIVERABLES.zip",
+  "architecture_expected_sha256": "9b78e2bd3a6311615e80194398cf07e996f59c952ba9d0280c140d5d39d5e090",
+  "architecture_actual_sha256": "9b78e2bd3a6311615e80194398cf07e996f59c952ba9d0280c140d5d39d5e090",
+  "architecture_hash_match": true,
+  "input_bundle_inventory": {
+    "architecture_deliverables": 20,
+    "evidence_bundles": ["01_AUTHORITY_CONTRACTS (33 files)", "02_RUNTIME_LOCAL_EVIDENCE (10 files)", "03_RECONCILIATION_REVIEW (19 files)", "04_POLICY_SYNTHESIS_INPUT (4 files)"],
+    "nested_source_archives": 5
+  },
+  "input_bundle_hashes": {
+    "UR-ARCH-001_DELIVERABLES.zip": "9b78e2bd3a6311615e80194398cf07e996f59c952ba9d0280c140d5d39d5e090",
+    "UR-ARCH-UPLOAD-01-AUTHORITY-CONTRACTS(1).zip": "578e46811f93ea7b8ed0d355c9a7e9f24d015b7d372073f1646680ea722eaa29",
+    "UR-ARCH-UPLOAD-02-RUNTIME-AND-LOCAL-EVIDENCE(1).zip": "541f6b09fef7956c78702137f9026b3b99ed51bc8c2219cda4abeefbc0130de3",
+    "UR-ARCH-UPLOAD-03-RECONCILIATION-AND-REVIEW(1).zip": "2179f02d8a5b501521bf4ddef3e552925daabcf1b9c99b9a7df7d722ce3e386d",
+    "UR-ARCH-UPLOAD-04-POLICY-AND-SYNTHESIS-PROMPT(1).zip": "da2b472e265b00295391e58d3b5b780d008dbafd0ab08f55c8d4464b2a4adb82",
+    "kit_SHA256SUMS_verification": "106/106 files OK via independent `shasum -a 256 -c`"
+  },
+  "missing_inputs": "none — all 20 deliverables, 4 evidence bundles, 5 nested archives, prompts, runtime, and manifest present and verified",
+  "current_repo_drift_from_census": "NONE at commit level (HEAD == census b176747). Working tree pre-existingly dirty but unrelated to router/routing/Freeflow/LiteLLM/RTE/TaskOrchestrator/dopetask/proof/handoff/policy/agents domains; no STALE/CONFLICTING router claim results from the dirty tree.",
+  "provenance_resolution_summary": "Resolved bundle-01 against Git objects at census: 23/32 files byte-identical to a tracked path; root RULES/SYSTEM_BOUNDARIES/TRUTH_SCOPE/TRUTH_SYSTEMS/SYSTEM_Dopemux/SYSTEM_TaskOrchestrator/PAL_*/dopetask-cannonical ABSENT at root; TRUTH_*/SYSTEM_Dopemux match only docs/research (lower authority); bundle PM_PLANE.md & AGENTS.md stale vs tracked root; PROJECT/ARCHITECTURE/SERVICE_CATALOG byte-identical tracked-root; proof/handoff/adapter contracts byte-identical to tracked docs. Confirms C-001/UR-OQ-001; material authority claims rest on verified runtime code, so provenance weakness does not invalidate them. This audit supplies the Git evidence UR-OQ-001 requested. Disposition: SUFFICIENT_FOR_MATERIAL_AUTHORITY_CLAIMS_WITH_DOCUMENTATION_REPAIR.",
+  "artifacts_read": [
+    "01..20 architecture deliverables (all, in full)",
+    "03_EVIDENCE/01_AUTHORITY_CONTRACTS: MANIFEST.json, START_HERE.md, authority/contracts/execution-doctrine tree (inventory + hashing of all 32 payload files)",
+    "03_EVIDENCE/02_RUNTIME_LOCAL_EVIDENCE: UR-INV-003 INVESTIGATION_SUMMARY; census tree used",
+    "03_EVIDENCE/03_RECONCILIATION_REVIEW: UR-INV-004 BASELINE_DRIFT_CHECK, AUTHORITY_OWNERSHIP_MATRIX; UR-REV-004 acceptance review",
+    "04_RUNTIME: SESSION_CONTROLS.md, .claude-audit-session-settings.json, launch_claude_code_audit.sh, verify_kit.py, RUN_COMMANDS.md",
+    "05_MANIFEST: KIT_MANIFEST.json, SHA256SUMS.txt, VALIDATION_REPORT.md, FILE_INVENTORY.txt",
+    "live repo: src/dopemux/dcp/routing_classifier.py (head); CLI registration grep; Git object queries"
+  ],
+  "commands_run": 33,
+  "command_exit_codes": "All executed read-only commands exited 0 except: (a) `curl` blocked at the permission layer (network-egress control, intended); (b) python socket probes returned PermissionError (network denial, intended). No mutating command was run; no command wrote to the repository or kit inputs.",
+  "output_artifacts": [
+    "00_AUDIT_MANIFEST.json", "01_EXECUTIVE_AUDIT.md", "02_FINDINGS.json",
+    "03_DECISION_COVERAGE_MATRIX.md", "04_CONTRACT_COVERAGE_MATRIX.md",
+    "05_AUTHORITY_AND_COEXISTENCE_AUDIT.md", "06_STATE_MACHINE_AND_POLICY_AUDIT.md",
+    "07_IDENTITY_USAGE_CONTAINMENT_SECURITY_AUDIT.md", "08_STORE_EVALUATION_AND_CERTIFICATION_AUDIT.md",
+    "09_ROADMAP_AND_MACRO_PACKET_AUDIT.md", "10_CROSS_ARTIFACT_CONSISTENCY_MATRIX.md",
+    "11_REQUIRED_REPAIRS.md", "12_FINAL_AUDIT_VERDICT.json", "13_PROVENANCE_RESOLUTION.md",
+    "COMMAND_LOG.md", "EVIDENCE_LEDGER.md", "SHA256SUMS.txt", "UR-ARCH-001-OPUS-AUDIT-R3.zip"
+  ],
+  "output_hashes": "See SHA256SUMS.txt (covers all output artifacts except the final zip and SHA256SUMS.txt itself); the zip SHA-256 is reported in the operator summary and computed after packaging.",
+  "containment_evidence": {
+    "network": "OS-enforced egress denial OBSERVED (python socket -> PermissionError Errno 1; curl permission-denied at tool layer)",
+    "secrets": "13 listed secret env vars ABSENT in session",
+    "repo_write": "sandbox denyWrite includes repo path; verified end-state: git status unchanged, HEAD unchanged (no mutating probe performed by design)",
+    "kit_input_write": "sandbox denyWrite includes 00_START_HERE.md and 01..05 input directories; only OUTPUTS/ written",
+    "mcp_web_agent": "no MCP/WebFetch/WebSearch/Agent tool used",
+    "launcher": "NOT launched via 04_RUNTIME/launch_claude_code_audit.sh; session harness differs from the prescribed restricted tool set"
+  },
+  "independence_limitations": [
+    "Session was not started by the kit launcher; an `advisor` (stronger-reviewer) tool was PRESENT in the harness — an enforcement gap versus the prescribed tool set {Bash,Read,Grep,Glob,Write,Edit}. It was DELIBERATELY NOT invoked, honoring 00_START_HERE.md's clean-room prohibition on advisor use.",
+    "Full independent containment is NOT claimed: a complete runner/model/session/file/network/MCP/write boundary set was not end-to-end evidenced as the launcher would provide.",
+    "Auditor model identity is runner-configured, not provider-attested; no provider-controlled served-model metadata is available for this session, so no provider-attested self-identity claim is made.",
+    "A containment limitation does not prevent this read-only artifact-and-runtime audit; it limits claims of independent containment and model identity only."
+  ],
+  "other_limitations": [
+    "Live provider/host health, credentials, plan-credit conversion, and desktop entitlement were not probed (out of scope, read-only) — consistent with UR-INV-003 carried unknowns.",
+    "DopeconBridge boundary accepted on authority-doc grounds, not independently runtime-inspected (non-blocking; router only references it).",
+    "config/ai/model-routing.policy.yaml 'no runtime reader' is CLAIMED per C-003, not exhaustively reverse-traced in this audit."
+  ]
+}

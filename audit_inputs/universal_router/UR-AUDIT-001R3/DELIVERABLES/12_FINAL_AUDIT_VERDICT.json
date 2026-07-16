@@ -1,0 +1,45 @@
+{
+  "audit_id": "UR-AUDIT-001R3",
+  "audit_verdict": "PASS_WITH_RISKS",
+  "architecture_disposition": "ACCEPT_BEGIN_UR_TP_001",
+  "original_architecture_verdict": "READY_FOR_INDEPENDENT_AUDIT",
+  "original_verdict_supported": true,
+  "implementation_may_begin": true,
+  "first_packet_allowed": "UR-TP-001",
+  "first_packet_condition": "EXECUTABLE_AFTER_PATH_RESOLUTION: cite tracked canonical contract/authority paths (finding UR-AUDIT-R3-001) and pin the canonical PR Steward invocation before opening the PR (UR-AUDIT-R3-004); complete strict contract schemas within the packet (UR-AUDIT-R3-003).",
+  "p0_count": 0,
+  "p1_count": 0,
+  "p2_count": 4,
+  "p3_count": 2,
+  "blocking_finding_ids": [],
+  "tp001_conditional_finding_ids": ["UR-AUDIT-R3-001", "UR-AUDIT-R3-003", "UR-AUDIT-R3-004"],
+  "blocking_open_question_ids": [],
+  "tp001_conditional_open_question_ids": ["UR-OQ-001", "UR-OQ-006"],
+  "required_repairs_before_tp001": [
+    "UR-AUDIT-R3-001: reference tracked canonical paths, not bundle archive names; treat TRUTH_* as research-tier; use current tracked PM_PLANE.md/AGENTS.md not stale bundle copies.",
+    "UR-AUDIT-R3-003: produce strict versioned schemas + valid/invalid/unknown/conflicting fixtures (already the packet gate).",
+    "UR-AUDIT-R3-004: pin canonical PR Steward invocation before opening the PR; do not build a replacement."
+  ],
+  "required_repairs_before_execution": [
+    "UR-OQ-007/UR-OQ-009: prove provider-controlled served-model attestation and Codex wrapper/OS-enforced containment before any execution adapter (UR-TP-010).",
+    "UR-OQ-003/UR-OQ-020: resolve canonical read interfaces/version compatibility for Freeflow, proof, handoff, audit, dopetask, PR Steward refs.",
+    "UR-OQ-018: bind an external HumanApprovalRef issuer before approval-required transitions."
+  ],
+  "required_repairs_before_automatic_routing": [
+    "UR-AUDIT-R3-002: add identity_confidence and task_class (and containment/network posture to BenchmarkCertification) as explicit certification-tuple members.",
+    "UR-OQ-008/UR-OQ-016/UR-OQ-017: plan-credit observation, policy-integrity signing decision, and >=200-task labeled corpus before certification-driven automatic routing."
+  ],
+  "repo_head": "b176747b339685e781de04268c46b7ae123abfbf",
+  "census_commit": "b176747b339685e781de04268c46b7ae123abfbf",
+  "architecture_sha256": "9b78e2bd3a6311615e80194398cf07e996f59c952ba9d0280c140d5d39d5e090",
+  "audit_bundle_sha256": "SEE_SHA256SUMS_TXT_AND_OPERATOR_SUMMARY",
+  "remaining_unknowns": [
+    "Provider-attested actual model identity for all locally probed runners (UR-OQ-007) — including this Claude Code/Opus audit run itself.",
+    "Codex/Claude/Gemini/AGY enforced containment and session/identity/usage semantics in the target environment (UR-OQ-009/010/011/012).",
+    "Canonical read interfaces and version compatibility for Freeflow/DCP/RTE/LiteLLM/proof/handoff/audit/PR Steward at the implementation commit (UR-OQ-002/003/004/005/006/020).",
+    "Plan-credit observation/conversion (UR-OQ-008); retention/encryption/access policy (UR-OQ-015); policy-signing requirement (UR-OQ-016); legally labelable corpus size (UR-OQ-017); HumanApprovalRef issuer (UR-OQ-018).",
+    "TTL calibration (UR-OQ-014)."
+  ],
+  "containment_note": "This run was not launched by the kit's launch_claude_code_audit.sh; an 'advisor' review tool was present in the harness (deliberately not invoked). Network egress was OS-blocked and repo/kit writes were sandbox-denied. Full independent containment is therefore NOT claimed; a read-only artifact-and-runtime audit was still performed.",
+  "one_sentence_verdict": "UR-ARCH-001 is a coherent, minimal, evidence-grounded advisory-first architecture with no P0/P1 defects, correct authority boundaries verified against current runtime and Git objects, and a resolvable bundle-01 provenance conflict; it is accepted to begin UR-TP-001 after normal path resolution, carrying four P2 and two P3 repairs that gate later phases."
+}

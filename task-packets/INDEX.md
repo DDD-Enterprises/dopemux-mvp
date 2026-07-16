@@ -33,6 +33,8 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Status | Related ADR |
 | --- | --- | --- | --- | --- |
+| TP-DMX-UR-ARTIFACT-INTAKE-001 | Universal Router | Import accepted architecture and audit evidence | Ready | UR-ARCH-001 |
+| UR-TP-001 | Universal Router | Strict Universal Router contracts and typed governance refs | Ready after dependency | UR-ARCH-001 |
 | TP-SIA-EXEC-0001 | Workflow Plane | Packet Execution Domain Models + Lease Store | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0002 | Workflow Plane | Packet Manifest V2 + Sidecar Contract | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0003 | Workflow Plane | Explicit Routing Slots + Cost Policy | Ready | SIA Packet Execution ADR |

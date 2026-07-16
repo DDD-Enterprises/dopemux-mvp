@@ -1,6 +1,6 @@
 Short-lived scratch notes in **ConPort** (Memory Trinity plane 1).
 
-Call: `mcp__conport__log_custom_data`
+Call: `mcp__conport__conport_save_custom_data`
 ```json
 {
   "workspace_id": "<repo-root>",

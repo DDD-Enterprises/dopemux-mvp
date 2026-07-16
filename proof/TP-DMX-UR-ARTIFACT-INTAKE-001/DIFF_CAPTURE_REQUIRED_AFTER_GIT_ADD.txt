@@ -1,0 +1,2 @@
+The staging helper deliberately does not run git add. Untracked files are therefore not represented by git diff yet.
+After reviewing and staging only allowlisted paths, the implementer must capture git diff --cached --stat and git diff --cached into the final proof bundle.

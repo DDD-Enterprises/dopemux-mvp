@@ -1,0 +1,360 @@
+{
+  "schema_version": "dopemux.universal-router.open-questions.v1",
+  "artifact_id": "UR-ARCH-001-OPEN-QUESTIONS",
+  "generated_at": "2026-07-11T00:00:00Z",
+  "architecture_verdict": "READY_FOR_INDEPENDENT_AUDIT",
+  "source_limitations": [
+    {
+      "claim_label": "OBSERVED",
+      "source": "UR-INV-003",
+      "status": "PARTIALLY_VERIFIED",
+      "note": "Local capability evidence has carried auth, identity, telemetry, containment, and live-health limitations."
+    },
+    {
+      "claim_label": "OBSERVED",
+      "source": "UR-INV-004",
+      "status": "COMPLETE_WITH_LIMITATIONS",
+      "note": "Contract/authority reconciliation is accepted with carried unknowns, not VERIFIED."
+    },
+    {
+      "claim_label": "OBSERVED",
+      "source": "UR-REV-004",
+      "status": "ACCEPT_WITH_CARRIED_UNKNOWNS",
+      "note": "Synthesis may proceed; unknowns must remain explicit."
+    }
+  ],
+  "summary": {
+    "total_questions": 20,
+    "blocks_architecture_audit": 0,
+    "blocks_first_release_implementation": 11,
+    "blocks_future_execution_or_automatic_phases": 9,
+    "posture": "Open questions do not block independent audit of the proposed architecture. They block or constrain the named implementation, certification, execution, or promotion phases until evidence is supplied."
+  },
+  "questions": [
+    {
+      "id": "UR-OQ-001",
+      "claim_label": "CONFLICTING",
+      "status": "OPEN",
+      "question": "Which exact authority files and tracked paths exist at the implementation commit, given that the supplied archive contains exact-name copies while the reconciliation evidence reports absent or differently located root authorities?",
+      "current_architecture_default": "Use runtime code, config, tests, current Git state, and tracked-path provenance. Do not treat archive filenames as proof of tracked root authority.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-001",
+        "policy_promotion"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Fresh git ls-files, git status, commit SHA, and content hashes for RULES, PROJECT, ARCHITECTURE, SYSTEM_BOUNDARIES, TRUTH files, and routing contracts.",
+      "evidence_owner": "repository maintainer / Repo Truth Extractor",
+      "resolution_rule": "Preserve both records until current Git evidence identifies the tracked authority and provenance."
+    },
+    {
+      "id": "UR-OQ-002",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "What is the stable, non-mutating DCP classification read interface and immutable identifier for DCPClassificationRef?",
+      "current_architecture_default": "Artifact-first adapter with strict schema and source hash; no DCP runtime write or authority expansion.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-005"
+      ],
+      "severity": "MEDIUM",
+      "next_evidence": "Current DCP runtime entrypoint, schema, tests, and a read-only sample classification artifact at the implementation commit.",
+      "evidence_owner": "DCP maintainer",
+      "resolution_rule": "If no stable read interface exists, keep DCP optional and accept an operator-supplied classification ref."
+    },
+    {
+      "id": "UR-OQ-003",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "Which Freeflow API or artifact is the canonical read-only source for admission decisions, cooldowns, paid caps, estimated cost, quota buckets, and decision identifiers?",
+      "current_architecture_default": "Reference a normalized Freeflow decision snapshot without opening or mutating its ledger directly unless the runtime proves a supported read API.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-005",
+        "UR-TP-010",
+        "UR-TP-011"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Freeflow runtime code, schema migrations, tests, public read methods, and sample decision records from the target commit.",
+      "evidence_owner": "Freeflow maintainer",
+      "resolution_rule": "No supported read path means Freeflow-dependent candidates remain not admitted rather than bypassed."
+    },
+    {
+      "id": "UR-OQ-004",
+      "claim_label": "CONFLICTING",
+      "status": "OPEN",
+      "question": "Which LiteLLM proxy manager, configuration path, and trace callback are canonical when parallel LiteLLM implementations or launch surfaces coexist?",
+      "current_architecture_default": "Treat each observed path as a separate provider-path candidate and do not normalize them into one canonical runtime without current wiring evidence.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-005",
+        "provider_health_certification"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Active process/compose/launch wiring, current config load path, callback registration, tests, and sample trace output.",
+      "evidence_owner": "Dopemux routing maintainer",
+      "resolution_rule": "Only the active entrypoint at the inspected commit may supply canonical proxy observations."
+    },
+    {
+      "id": "UR-OQ-005",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "What immutable RTE route-decision reference and schema can the Universal Router consume across the active v5 and compatibility v3/v4 surfaces?",
+      "current_architecture_default": "Keep RTE fully specialized and use artifact refs only; never reproduce its ladders or spend policy.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-005",
+        "RTE_coexistence_certification"
+      ],
+      "severity": "MEDIUM",
+      "next_evidence": "Current RTE run manifest, phase-routing artifact, proof-pack schema, run ID semantics, and compatibility tests.",
+      "evidence_owner": "RTE maintainer",
+      "resolution_rule": "If cross-version identity is ambiguous, qualify refs by RTE engine version and artifact hash."
+    },
+    {
+      "id": "UR-OQ-006",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "Where is the canonical executable PR Steward runtime or command that emits MERGE_READINESS.json?",
+      "current_architecture_default": "Keep PRStewardReadinessRef external and require each executable task packet to locate and pin the current canonical invocation before opening a PR.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "all_repo_changing_packets",
+        "policy_promotion"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Current runtime path, command help, schema, tests, sample output, and GitHub review-intake coverage.",
+      "evidence_owner": "PR Steward maintainer",
+      "resolution_rule": "Do not build a replacement inside the Universal Router. A missing canonical command blocks packet readiness."
+    },
+    {
+      "id": "UR-OQ-007",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "Which runner/provider paths can produce provider-controlled served-model metadata tied to a specific request and sufficient for provider_attested_model or attested_actual_model?",
+      "current_architecture_default": "Set attested_actual_model to UNKNOWN and cap identity confidence below ATTESTED unless explicit provider-controlled evidence is present.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "benchmark_certification",
+        "independent_audit_claims",
+        "UR-TP-010",
+        "release_sensitive_routes"
+      ],
+      "severity": "CRITICAL",
+      "next_evidence": "Per-provider request/response metadata, runner envelopes, proxy traces, request linkage, and adversarial identity tests.",
+      "evidence_owner": "runner and provider adapter owners",
+      "resolution_rule": "Request ID alone, proxy report alone, configured model, or model-generated text is insufficient."
+    },
+    {
+      "id": "UR-OQ-008",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "Which vendors or plans expose plan-credit consumption or a provider-published token-to-credit conversion?",
+      "current_architecture_default": "Record plan_credits as unavailable and never derive them from tokens, cost, or elapsed time.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "credit_aware_ranking",
+        "UR-TP-011"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Provider-published plan documentation or exact runner telemetry with measurement semantics and version.",
+      "evidence_owner": "provider adapter owners",
+      "resolution_rule": "Unknown credits may block a credit-hard-capped route but cannot be replaced with an estimate."
+    },
+    {
+      "id": "UR-OQ-009",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "Can the target Codex CLI version enforce all required file, command, network, MCP, environment, session, and output controls for a bounded execution adapter?",
+      "current_architecture_default": "Codex remains advisory only. Wrapper or OS enforcement must be independently proven before execution.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-010"
+      ],
+      "severity": "CRITICAL",
+      "next_evidence": "Fresh version/help capture, safe contained probes, wrapper design, OS enforcement evidence, auth mode, session behavior, and negative escape tests.",
+      "evidence_owner": "Codex adapter owner / security auditor",
+      "resolution_rule": "Prompt instructions or an incomplete sandbox do not satisfy enforcement requirements."
+    },
+    {
+      "id": "UR-OQ-010",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "What are the authenticated Claude Code runner's actual-model, usage, cost, tool-denial, containment, and session-persistence semantics in the target environment?",
+      "current_architecture_default": "Use Claude Code as implementation/audit fallback only through a current approved packet; do not claim successful provider capability from the failed bare smoke.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "Claude_execution_adapter",
+        "audit_certification"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Contained authenticated smoke, JSON envelope, modelUsage behavior, transcript controls, tool denial, budget enforcement, and provider identity evidence.",
+      "evidence_owner": "Claude Code adapter owner",
+      "resolution_rule": "An exit code of zero with an error envelope is a failed provider attempt, not success."
+    },
+    {
+      "id": "UR-OQ-011",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "Can Gemini CLI provide enforceable no-tool/no-write/no-network and no-session-persistence controls, plus reliable identity/usage telemetry?",
+      "current_architecture_default": "Gemini CLI is limited to broad-context advisory contradiction audits when separately approved; it is not a certified execution or independent-audit route.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "Gemini_adapter_certification",
+        "audit_certification"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Fresh help, safe contained smoke, session/output inspection, tool/network enforcement tests, and identity/usage observations.",
+      "evidence_owner": "Gemini adapter owner",
+      "resolution_rule": "No proven containment means the candidate is ineligible for tasks requiring those controls."
+    },
+    {
+      "id": "UR-OQ-012",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "Can AGY/Sonnet satisfy the preferred embedded-auditor contract for containment, structured output, session behavior, identity, usage, cost, and safe invocation?",
+      "current_architecture_default": "AGY is preferred only when a current certified capability snapshot exists; otherwise use the approved Claude Code fallback and record the route.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "embedded_audit_default",
+        "audit_certification"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Exact CLI invocation, safe sandbox behavior, tool controls, structured output, log schema, identity, usage/cost, and capacity failure behavior.",
+      "evidence_owner": "AGY adapter owner / audit owner",
+      "resolution_rule": "Availability alone is insufficient; skipped AGY audit is not a pass."
+    },
+    {
+      "id": "UR-OQ-013",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "Which provider-health acquisition paths distinguish host health, proxy health, provider health, authentication, policy blocks, and sandbox/environment blocks without broad new network authority?",
+      "current_architecture_default": "Use explicit ProviderHealthSnapshot statuses with environment scope; no live probe is required for release-one static recommendations unless policy requires freshness.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-004",
+        "provider_health_certification",
+        "UR-TP-011"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Approved health endpoints, probe wrappers, response classifications, rate/cost behavior, and sandbox-versus-host comparison.",
+      "evidence_owner": "routing infrastructure owner",
+      "resolution_rule": "Sandbox denial cannot mark provider or host unavailable."
+    },
+    {
+      "id": "UR-OQ-014",
+      "claim_label": "PROPOSED",
+      "status": "NEEDS_CALIBRATION",
+      "question": "Are the proposed TTLs for versions, containment, authentication, provider health, environment failures, vendor catalogs, and benchmark certifications appropriate for actual operations?",
+      "current_architecture_default": "Use visible policy defaults: version/help 7 days, containment 7 days, auth 15 minutes, positive health 5 minutes, transient environment failure 60 seconds, vendor catalog 24 hours, benchmark certification at most 30 days.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-004",
+        "policy_promotion"
+      ],
+      "severity": "MEDIUM",
+      "next_evidence": "Shadow-mode staleness defects, provider change frequency, auth expiry behavior, and operator refresh burden.",
+      "evidence_owner": "policy owner / operations reviewer",
+      "resolution_rule": "Policy may shorten TTLs freely; lengthening a hard-safety TTL requires recertification."
+    },
+    {
+      "id": "UR-OQ-015",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "What are the approved retention, encryption, backup, access, and redaction requirements for router journals, task text, snapshot artifacts, and evaluation corpora?",
+      "current_architecture_default": "Store hashes and external refs where possible, redact before storage, use workspace-local access, and apply conservative retention subject to repository governance.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-003",
+        "UR-TP-008",
+        "production_deployment"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Repository/org data policy, client obligations, threat model review, backup policy, and operator requirements.",
+      "evidence_owner": "security and governance owner",
+      "resolution_rule": "Sensitive raw content is not retained until an explicit policy authorizes it."
+    },
+    {
+      "id": "UR-OQ-016",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "Are Git history, reviewed active-pointer changes, and content hashes sufficient for executable-policy integrity, or are detached signatures required?",
+      "current_architecture_default": "Use tracked immutable policy files, content hashes, reviewed promotion, and append-only activation records. Treat signatures as an optional future control.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "policy_promotion",
+        "automatic_routing"
+      ],
+      "severity": "MEDIUM",
+      "next_evidence": "Threat/risk decision, deployment trust boundary, CI signing capability, and governance requirement.",
+      "evidence_owner": "security owner / policy owner",
+      "resolution_rule": "If signatures become required, unsigned policies remain readable history but cannot be activated."
+    },
+    {
+      "id": "UR-OQ-017",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "How many historical tasks can be legally and reliably labeled for the initial 200-task certification corpus?",
+      "current_architecture_default": "Do not lower safety thresholds to fit corpus scarcity; begin with schema/hard-negative tests and collect shadow data until class coverage is sufficient.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-008",
+        "policy_promotion"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Inventory of task packets, PRs, investigations, proof bundles, privacy constraints, duplicates, and reviewer availability.",
+      "evidence_owner": "evaluation owner / repository maintainer",
+      "resolution_rule": "Unresolved or duplicate tasks do not count toward certification minima."
+    },
+    {
+      "id": "UR-OQ-018",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "Which external system issues, stores, expires, and verifies HumanApprovalRef records?",
+      "current_architecture_default": "The router accepts only a validated external ref with scope, reason, approver, issue time, expiry, and evidence hash; it does not own approval state.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-009",
+        "UR-TP-010",
+        "policy_promotion",
+        "release_sensitive_routes"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Current operator/governance approval workflow, schema, identity source, revocation behavior, and sample records.",
+      "evidence_owner": "governance owner",
+      "resolution_rule": "No valid external ref means the approval-required transition remains blocked."
+    },
+    {
+      "id": "UR-OQ-019",
+      "claim_label": "INFERRED",
+      "status": "DEFERRED",
+      "question": "Should Codex be the first execution adapter after release-one certification?",
+      "current_architecture_default": "Codex is the leading candidate, not an accepted decision, because it has the strongest contained local probe among supplied runners.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-010"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Fresh comparative capability, containment, identity, telemetry, cost/credits, reliability, and operator-fit certification for all candidate runners.",
+      "evidence_owner": "architecture supervisor / execution owner",
+      "resolution_rule": "Select one adapter by current evidence and reversibility, not vendor preference."
+    },
+    {
+      "id": "UR-OQ-020",
+      "claim_label": "UNKNOWN",
+      "status": "OPEN",
+      "question": "What exact adapter/version identifiers and compatibility guarantees exist for proof, handoff, audit, dopetask, and PR Steward references?",
+      "current_architecture_default": "Require source schema version, adapter version, content hash, and explicit unsupported-version failure for every ref adapter.",
+      "blocks_architecture_audit": false,
+      "blocks_phases": [
+        "UR-TP-007",
+        "UR-TP-010",
+        "release_sensitive_routes"
+      ],
+      "severity": "HIGH",
+      "next_evidence": "Canonical schemas, migration rules, adapter contracts, sample bundles, and backward-compatibility tests at the implementation commit.",
+      "evidence_owner": "governance contract owners",
+      "resolution_rule": "Unknown versions are not coerced; dependent claims remain blocked or unavailable."
+    }
+  ]
+}

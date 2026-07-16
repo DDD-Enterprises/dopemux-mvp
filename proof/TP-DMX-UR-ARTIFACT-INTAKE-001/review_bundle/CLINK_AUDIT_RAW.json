@@ -1,0 +1,16 @@
+{
+  "cli_name": "claude-audit",
+  "command": "claude",
+  "additional_args": [
+    "--permission-mode",
+    "plan",
+    "--model",
+    "sonnet"
+  ],
+  "exit_code": 0,
+  "timed_out": false,
+  "error": null,
+  "duration_seconds": 118.54798062500777,
+  "stdout": "All invariants check out: allowlist compliance is total, hashes/sizes verified byte-for-byte against the manifest, both archives extract identically to their tracked copies, the audit bundle's own SHA256SUMS.txt passes, deliverable count is exactly 20, INDEX.md has exactly one row per new packet, and no secrets are present. Both pointer docs correctly subordinate the imported artifacts to current runtime/tracked authority and point to raw evidence rather than asserting unproven claims as fact.\n\n```json\n{\"verdict\": \"PASS\", \"findings\": [], \"risks\": [\"Pointer doc author fields are self-reported/unattested (\\\"GPT-5.6 Pro (claimed)\\\", \\\"Claude Opus via Claude Code (runner-configured, not provider-attested)\\\") \u2014 acceptable since both docs explicitly flag this as unverified, but any future consumer treating provenance as attested would be wrong.\", \"This intake stages 20 UR-ARCH-001 deliverables and a full independent-audit bundle whose content is inherently PROPOSED/aspirational (design/policy text for a not-yet-built router); the pointer docs correctly mark this ACCEPTED_FOR_UR_TP_001_WITH_AUDIT_CONDITIONS rather than implemented, so no action needed but future readers must not shortcut past the two pointer docs straight into the raw DELIVERABLES prose.\"]}\n```\n",
+  "stderr_note": "stderr intentionally excluded from review bundle to avoid local-path/env leakage"
+}
