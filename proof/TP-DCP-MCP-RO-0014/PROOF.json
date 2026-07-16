@@ -91,7 +91,12 @@
   "embedded_audit": {
     "required": true,
     "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
     "report_path": "proof/TP-DCP-MCP-RO-0014/AUDITOR_REPORT.md",
+    "findings": [],
     "skip_reason": "No trusted runner/Claude audit route; AGY is advisory only and does not satisfy embedded-audit.yml.",
     "fixes_applied": [
       "Loopback-only bind enforcement",
@@ -113,5 +118,6 @@
   "pr": {
     "status": "PENDING_CREATE",
     "blocker": "Trusted embedded audit SKIPPED; merge readiness not claimed"
-  }
+  },
+  "implementation_commit": "b0d82b10aa006b2e9f36f998845a3ea33e165bde"
 }
