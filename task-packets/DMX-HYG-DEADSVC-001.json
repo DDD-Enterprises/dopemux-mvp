@@ -46,7 +46,11 @@
       "tests/regression/test_fnew6_session_intelligence.py",
       "tests/test_multi_workspace.py",
       "tests/regression/test_production_integration.py",
+      "scripts/dev/benchmarks/adhd_performance_baseline.py",
+      "scripts/dev/benchmarks/performance_validation.py",
+      "scripts/monitoring/production_tracker.sh",
       "scripts/utilities/serena_enrichment.py",
+      "verify_dopecon_bridge.sh",
       "task-packets/DMX-HYG-DEADSVC-001.json"
     ],
     "verify": [
@@ -70,11 +74,12 @@
     },
     {
       "id": "step-2",
-      "task": "Remove session_intelligence test cases and demo refs.",
+      "task": "Remove session_intelligence test cases and stale tool references.",
       "validation": [
         "session_intelligence cases removed from tests/test_multi_workspace.py:89,115 and tests/regression/test_production_integration.py.",
         "tests/regression/test_fnew6_session_intelligence.py deleted.",
         "sys.path demo block removed from scripts/utilities/serena_enrichment.py:445,464-470.",
+        "The performance benchmarks, production tracker, and bridge verifier no longer reference removed services.",
         "pytest tests/ --co returns NO collection errors."
       ]
     },
