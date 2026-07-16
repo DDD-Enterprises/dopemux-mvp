@@ -15,10 +15,11 @@ next_review: '2026-10-14'
 
 ## Objective
 
-Repair the PR #1041 runtime/catalog join so lifecycle-generated runtime
-records with matching project and worktree roots become an internal
-non-callable candidate. The registry `.repo_id` identity remains the earlier
-DCP target-authorization check and is not used as the lifecycle record ID.
+Repair the post-merge TP-DCP-MCP-RO-0011 runtime/catalog join in PR #1055 so
+lifecycle-generated runtime records with matching project and worktree roots
+become an internal non-callable candidate. The registry `.repo_id` identity
+remains the earlier DCP target-authorization check and is not used as the
+lifecycle record ID.
 
 ## Scope
 
@@ -49,8 +50,9 @@ OUT:
 
 ## Plan
 
-1. Confirm the current PR head and trace `.repo_id`, `ProjectIdentity`,
-   lifecycle, runtime-registry, and join identities.
+1. Confirm the historical #1041 merge, replacement PR #1055 head, and trace
+   `.repo_id`, `ProjectIdentity`, lifecycle, runtime-registry, and join
+   identities.
 2. Add a test whose runtime `project_id` is derived from `ProjectIdentity` and
    verify it fails under the existing comparison.
 3. Change only the join to calculate the expected runtime identity from the

@@ -1,9 +1,9 @@
 {
   "id": "TP-DCP-MCP-RO-0011-REMEDIATION-01",
   "project": "dopemux-mvp",
-  "target": "Repair PR #1041 so its pure runtime/catalog join matches the generated project identity emitted by the repo-aware MCP lifecycle, while preserving DCP target authorization, non-callable output, and fail-closed evidence handling.",
+  "target": "Repair the post-merge TP-DCP-MCP-RO-0011 pure runtime/catalog identity mismatch in PR #1055, while preserving DCP target authorization, non-callable output, and fail-closed evidence handling.",
   "invariants": [
-    "This packet updates the existing codex/dcp-mcp-ro-0011-runtime-catalog-join branch and PR #1041; it does not create a duplicate implementation.",
+    "PR #1041 is historical and merged; this packet publishes the post-merge correction in PR #1055 without modifying that executed packet or proof.",
     "The DCP registry .repo_id identity remains target-authorization evidence and is not replaced by runtime identity.",
     "Runtime project_id matching uses the shared ProjectIdentity generated-ID semantics from the resolved project and worktree roots; no second hash or slug algorithm is introduced.",
     "The join remains pure and dependency-injected: it performs no network, socket, subprocess, Docker, registry write, or backend operation.",
@@ -29,9 +29,9 @@
   },
   "execution": {
     "agent": "codex",
-    "branch": "codex/dcp-mcp-ro-0011-runtime-catalog-join",
+    "branch": "codex/dcp-mcp-ro-0011-identity-remediation",
     "base_branch": "main",
-    "stacked_because": "The identity repair is a narrow correction to the open TP-DCP-MCP-RO-0011 PR."
+    "stacked_because": "PR #1041 was squash-merged during execution, so this narrow post-merge correction is rebased on current main."
   },
   "commit": {
     "message": "fix(dcp): align runtime join with lifecycle project identity",
@@ -53,8 +53,8 @@
     ]
   },
   "pr": {
-    "title": "feat(dcp): add read-only runtime catalog join",
-    "body": "Repair the existing TP-DCP-MCP-RO-0011 runtime/catalog join to use the generated lifecycle project identity while preserving DCP target authorization, pure non-callable behavior, and fail-closed evidence handling.",
+    "title": "fix(dcp): align runtime join with lifecycle project identity",
+    "body": "Post-merge correction to TP-DCP-MCP-RO-0011: use the generated lifecycle project identity while preserving DCP target authorization, pure non-callable behavior, and fail-closed evidence handling.",
     "base": "main"
   },
   "pal_chain": {
@@ -79,7 +79,7 @@
       ],
       "validation": [
         "The runtime record writer and facade comparison are traced to their exact project_id semantics.",
-        "The worktree branch matches PR #1041 before implementation."
+        "The worktree branch matches PR #1055 and current main after the historical #1041 merge."
       ]
     },
     {

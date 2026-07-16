@@ -8,7 +8,7 @@
   "base_sha": "287d47c737bcab5d8b46c44b20da0488e1dac4cc",
   "implementation_commit": "6c5fc5ed6bdde8733d126864680e8c6ec2d1415c",
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1055",
-  "scope": "Repair the pure facade runtime/catalog join so its runtime project_id comparison matches the generated ProjectIdentity value written by the MCP lifecycle. DCP .repo_id remains target-authorization evidence; no live operation or provider configuration is changed.",
+  "scope": "Post-merge correction to TP-DCP-MCP-RO-0011 in PR #1055: repair the pure facade runtime/catalog join so its runtime project_id comparison matches the generated ProjectIdentity value written by the MCP lifecycle. DCP .repo_id remains target-authorization evidence; no live operation or provider configuration is changed.",
   "input_package": {
     "path": "/Users/hue/Downloads/dopemux-multi-provider-mcp-supervisor-package.zip",
     "sha256": "c0cb9d34f6ece116811c52cce0d1b517153dba0f8434c9abda9da6ff6d6a2447",
@@ -74,6 +74,11 @@
         "command": "manual contract review of canonical writer, DCP resolver, facade bootstrap, diff, and regression coverage",
         "exit_code": 0,
         "result": "no finding"
+      },
+      {
+        "command": "task-packet branch and PR binding reconciliation after #1041 merged",
+        "exit_code": 0,
+        "result": "packet bound to current-main branch codex/dcp-mcp-ro-0011-identity-remediation and PR #1055"
       }
     ],
     "FAIL": [],
