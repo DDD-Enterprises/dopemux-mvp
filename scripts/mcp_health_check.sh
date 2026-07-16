@@ -5,6 +5,12 @@ echo "🔍 Dopemux MCP Server Health Check"
 echo "=================================="
 echo
 
+# Accumulate failures so we can report every check, then exit non-zero if any failed.
+FAILURES=0
+record_failure() {
+    FAILURES=$((FAILURES + 1))
+}
+
 # Health check function
 check_health() {
     local name=$1
@@ -82,27 +88,27 @@ check_stdio_mcp() {
     fi
 }
 
-# Main checks
+# Main checks — report everything, then fail closed if any check failed.
 echo "🏥 Health Checks:"
 echo "----------------"
 
-check_health "Dope-Context" 3010 || true
-check_health "PAL" 3003 || true
-check_health "ConPort" 3004 || true
+check_health "Dope-Context" 3010 || record_failure
+check_health "PAL" 3003 || record_failure
+check_health "ConPort" 3004 || record_failure
 
 echo
 echo "🔌 MCP Endpoint Checks:"
 echo "----------------------"
 
-check_mcp_endpoint "Dope-Context" 3010 || true
-check_mcp_endpoint "PAL" 3003 || true
-check_mcp_endpoint "ConPort" 3004 || true
+check_mcp_endpoint "Dope-Context" 3010 || record_failure
+check_mcp_endpoint "PAL" 3003 || record_failure
+check_mcp_endpoint "ConPort" 3004 || record_failure
 
 echo
 echo "🔌 Stdio MCP Checks:"
 echo "-------------------"
 
-check_stdio_mcp "PAL (stdio)" "mcp-pal-stdio" || true
+check_stdio_mcp "PAL (stdio)" "mcp-pal-stdio" || record_failure
 
 echo
 echo "📊 Summary:"
@@ -111,3 +117,9 @@ echo "Dope-Context and ConPort have MCP endpoints at /mcp (POST required)."
 echo "PAL runs two servers: HTTP :3003 (mcp-pal) and stdio (mcp-pal-stdio, exec-based)."
 echo "A healthy stdio probe means server+registry are OK; model calls still depend on"
 echo "provider credentials (OpenAI/Gemini/OpenRouter)."
+if [ "$FAILURES" -gt 0 ]; then
+    echo "❌ $FAILURES check(s) failed"
+    exit 1
+fi
+echo "✅ All checks passed"
+exit 0
