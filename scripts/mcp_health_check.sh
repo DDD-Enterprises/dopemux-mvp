@@ -49,27 +49,65 @@ check_mcp_endpoint() {
     fi
 }
 
+# Stdio MCP check function (exec-based servers have no port).
+# Probes the actual MCP protocol via an `initialize` handshake over `docker exec`.
+check_stdio_mcp() {
+    local name=$1
+    local container=$2
+
+    echo "🔌 Checking $name stdio ($container)..."
+
+    if [ "$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null || echo false)" != "true" ]; then
+        echo "❌ $name container '$container' not running"
+        return 1
+    fi
+
+    local init='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"healthcheck","version":"0"}}}'
+    local tbin=""
+    for c in timeout gtimeout; do command -v "$c" >/dev/null 2>&1 && { tbin="$c"; break; }; done
+
+    local out
+    if [ -n "$tbin" ]; then
+        out="$(printf '%s\n' "$init" | "$tbin" 30 docker exec -i "$container" /app/.venv/bin/python server.py 2>/dev/null | head -c 4000 || true)"
+    else
+        out="$(printf '%s\n' "$init" | docker exec -i "$container" /app/.venv/bin/python server.py 2>/dev/null | head -c 4000 || true)"
+    fi
+
+    if printf '%s' "$out" | grep -q '"serverInfo"'; then
+        echo "✅ $name stdio server responding (initialize OK)"
+        return 0
+    else
+        echo "❌ $name stdio server not responding — try: scripts/ensure_pal_stdio.sh"
+        return 1
+    fi
+}
+
 # Main checks
 echo "🏥 Health Checks:"
 echo "----------------"
 
-check_health "Dope-Context" 3010
-check_health "PAL" 3003
-check_health "ConPort" 3004
+check_health "Dope-Context" 3010 || true
+check_health "PAL" 3003 || true
+check_health "ConPort" 3004 || true
 
 echo
 echo "🔌 MCP Endpoint Checks:"
 echo "----------------------"
 
-check_mcp_endpoint "Dope-Context" 3010
-check_mcp_endpoint "PAL" 3003
-check_mcp_endpoint "ConPort" 3004
+check_mcp_endpoint "Dope-Context" 3010 || true
+check_mcp_endpoint "PAL" 3003 || true
+check_mcp_endpoint "ConPort" 3004 || true
+
+echo
+echo "🔌 Stdio MCP Checks:"
+echo "-------------------"
+
+check_stdio_mcp "PAL (stdio)" "mcp-pal-stdio" || true
 
 echo
 echo "📊 Summary:"
 echo "-----------"
-echo "All MCP servers are running and healthy."
 echo "Dope-Context and ConPort have MCP endpoints at /mcp (POST required)."
-echo "PAL appears to be using a different transport (likely stdio)."
-echo
-echo "✅ MCP infrastructure ready for Vibe integration"
+echo "PAL runs two servers: HTTP :3003 (mcp-pal) and stdio (mcp-pal-stdio, exec-based)."
+echo "A healthy stdio probe means server+registry are OK; model calls still depend on"
+echo "provider credentials (OpenAI/Gemini/OpenRouter)."
