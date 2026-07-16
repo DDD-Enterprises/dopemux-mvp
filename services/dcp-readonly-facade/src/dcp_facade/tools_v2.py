@@ -27,6 +27,12 @@ from .runtime_catalog_join import join_runtime_catalog
 
 _MAX_FILTER_LEN = 128
 _TARGET_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+# Locator-shaped values can match the opaque charset (e.g. "3020", "127.0.0.1")
+# but must not be accepted or echoed at the public boundary.
+_ALL_DIGITS = re.compile(r"^\d+$")
+# Full IPv4 and shortened numeric-dotted forms (e.g. "127.1") that some
+# resolvers expand to addresses.
+_NUMERIC_DOTTED = re.compile(r"^\d+(?:\.\d+)+$")
 _RUNTIME_REGISTRY_ENV = "DOPEMUX_MCP_RUNTIME_REGISTRY"
 _CATALOG_ENV = "DCP_FACADE_MCP_CATALOG"
 
@@ -49,8 +55,15 @@ _TARGET_ENVELOPE_FIELDS = (
 
 
 def _is_opaque_target_id(value: object) -> bool:
-    """Accept only bounded opaque identifiers at the public boundary."""
+    """Accept only bounded opaque identifiers at the public boundary.
+
+    Port-like all-digit values and numeric-dotted locator values are rejected
+    even though they match the opaque charset, so they cannot be echoed on
+    unknown-target block paths.
+    """
     if not isinstance(value, str) or not _TARGET_ID_PATTERN.fullmatch(value):
+        return False
+    if _ALL_DIGITS.fullmatch(value) or _NUMERIC_DOTTED.fullmatch(value):
         return False
     redacted, categories = redact_value(value, [])
     return not categories and redacted == value

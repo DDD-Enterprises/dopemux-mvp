@@ -119,6 +119,18 @@ def test_token_shaped_target_input_is_blocked_without_reflection():
     assert unsafe not in repr(envelope)
 
 
+def test_locator_shaped_target_ids_are_blocked_without_reflection():
+    """Port-like and numeric-dotted IDs must not be echoed as opaque target_id."""
+    registry = parse_registry_v2({"targets": []})
+    for unsafe in ("3020", "8080", "127.0.0.1", "1.2.3.4", "127.1"):
+        envelope = tools_v2.get_target_capabilities(registry, unsafe)
+
+        assert envelope["status"] == E.BLOCKED, unsafe
+        assert envelope["target_id"] is None, unsafe
+        assert unsafe not in repr(envelope), unsafe
+        assert tools_v2._is_opaque_target_id(unsafe) is False
+
+
 def test_repo_and_proof_tools_use_target_id(tmp_path: Path):
     workspace, head_sha = _workspace(
         tmp_path, bundles={"TP-TEST-0001": {"head_sha": "stale-head"}}
