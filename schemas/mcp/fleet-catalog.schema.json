@@ -46,7 +46,10 @@
           "enum": ["singleton", "per-worktree"]
         },
         "state_scope": {
-          "enum": ["per-repo", "per-worktree"]
+          "enum": ["per-repo", "per-worktree", "single_active_project"]
+        },
+        "port_policy": {
+          "enum": ["reserved_singleton"]
         },
         "transport": {
           "enum": ["http", "sse", "stdio"]
