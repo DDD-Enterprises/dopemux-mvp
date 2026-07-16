@@ -43,11 +43,16 @@ No hyphen/underscore normalization or caller-supplied operational name is accept
 For `conport` and `dope_memory`, a runtime record is a candidate only when all of these match exactly after local path canonicalization:
 
 1. Runtime `service` equals the explicit catalog name.
-2. Runtime `project_id` equals the resolved exposure identity project.
+2. Runtime `project_id` equals the generated `ProjectIdentity.project_id` derived from the resolved project and worktree roots, matching lifecycle-written runtime records.
 3. Runtime `project_root` equals the resolved project root.
 4. Runtime `worktree_root` equals the resolved worktree root.
 
 Project name, worktree hash, port, container name, compose name, URL, or lease alone never matches a candidate. One candidate produces internal state `UNKNOWN` because liveness and ownership are not proven. Zero candidates produce `UNAVAILABLE`. Multiple candidates produce `BLOCKED` and no candidate is selected.
+
+The registry `.repo_id` project identity is validated earlier when resolving the
+DCP target. It authorizes the target but is intentionally not reused as the
+runtime record `project_id`, which follows the shared generated lifecycle
+identity.
 
 Missing or malformed catalog/runtime input produces `UNKNOWN`. Catalog policy drift produces `BLOCKED`. Disabled or blocked exposure policy produces `BLOCKED`.
 
