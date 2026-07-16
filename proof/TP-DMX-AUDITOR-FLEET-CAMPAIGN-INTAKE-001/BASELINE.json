@@ -1,0 +1,8 @@
+{
+  "project": "dopemux-mvp",
+  "base_sha": "45b5ee3f320e777111a6f00227072efeb725996b",
+  "branch": "codex/auditor-fleet-campaign-intake-001",
+  "worktree": "/Users/hue/code/dopemux-mvp-wt-auditor-fleet-campaign-intake-001",
+  "evidence_root": "/Users/hue/code/dopemux-mvp-wt-auditor-fleet-campaign-intake-001/audit_inputs/auditor-fleet/DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "status": "clean"
+}

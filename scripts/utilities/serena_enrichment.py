@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Serena Enhancement Helper Utilities (F-NEW-3, F-NEW-5, F-NEW-6)
+Serena Enhancement Helper Utilities (F-NEW-3, F-NEW-5)
 
 Claude Code orchestration helpers for using Serena enhancements.
 Run these at Claude Code level where you have access to all MCP tools.
@@ -8,8 +8,7 @@ Run these at Claude Code level where you have access to all MCP tools.
 Usage:
     from scripts.helpers.serena_enrichment import (
         enrich_search_with_impact,
-        get_unified_complexity,
-        get_session_dashboard
+        get_unified_complexity
     )
 """
 
@@ -419,63 +418,6 @@ async def get_unified_complexity(
 
 
 # ============================================================================
-# F-NEW-6: Unified Session Intelligence
-# ============================================================================
-
-async def get_session_dashboard(user_id: str = "default") -> str:
-    """
-    Get unified session intelligence dashboard.
-
-    MUST be called from Claude Code context with access to:
-    - mcp__serena-v2__get_session_info
-    - ADHD Engine state (via integration)
-
-    Args:
-        user_id: User identifier
-
-    Returns:
-        Formatted dashboard string
-
-    Example:
-        # In Claude Code:
-        dashboard = await get_session_dashboard(user_id="alice")
-        logger.info(dashboard)
-    """
-    # This helper demonstrates the format
-    # Actual implementation is in services/session_intelligence/coordinator.py
-
-    return """
-╔============================================================╗
-║               SESSION INTELLIGENCE DASHBOARD               ║
-╚============================================================╝
-
-SESSION CONTEXT
-  Focus: (Call mcp__serena-v2__get_session_info)
-  Branch: main
-  Duration: XX minutes
-
-COGNITIVE STATE
-  Energy: ██░ Medium (from ADHD Engine)
-  Attention: Focused (from ADHD Engine)
-  Last Break: XX minutes ago
-
-RECOMMENDATIONS
-  - Use SessionIntelligenceCoordinator.get_unified_dashboard()
-  - See services/session_intelligence/coordinator.py
-  - F-NEW-6 is OPERATIONAL with real ADHD Engine!
-
-USAGE:
-  import sys
-  sys.path.insert(0, 'services/session_intelligence')
-  from coordinator import get_session_intelligence
-
-  coordinator = await get_session_intelligence()
-  dashboard = await coordinator.get_unified_dashboard(user_id)
-  logger.info(dashboard)
-"""
-
-
-# ============================================================================
 # USAGE EXAMPLES
 # ============================================================================
 
@@ -483,7 +425,7 @@ if __name__ == "__main__":
     print("""
 ╔════════════════════════════════════════════════════════════════╗
 ║         SERENA ENHANCEMENT HELPER UTILITIES                    ║
-║         F-NEW-3, F-NEW-5, F-NEW-6                              ║
+║         F-NEW-3, F-NEW-5                                      ║
 ╚════════════════════════════════════════════════════════════════╝
 
 QUICK START:
@@ -503,25 +445,13 @@ for r in results[:3]:
 complexity = await get_unified_complexity("auth.py", "login")
 logger.info(f"Complexity: {complexity['unified_score']} - {complexity['interpretation']}")
 
-# F-NEW-6: Session Dashboard (OPERATIONAL!)
-import sys
-sys.path.insert(0, 'services/session_intelligence')
-from coordinator import get_session_intelligence
-
-coordinator = await get_session_intelligence()
-dashboard = await coordinator.get_unified_dashboard()
-logger.info(dashboard)
-
 HELPER FUNCTIONS:
 - calculate_impact_score(callers) → 0.0-1.0
 - get_impact_level(callers) → none/low/medium/high/critical
 - get_impact_message(callers) → ADHD-friendly message
 - get_unified_complexity(file, symbol) → Complexity breakdown
-- get_session_dashboard(user_id) → Terminal dashboard
-
 STATUS:
 ✅ F-NEW-4: Operational (attention-aware search)
-✅ F-NEW-6: Operational (session dashboard, 12.6ms!)
 🔧 F-NEW-3: Framework ready (call from Claude Code)
 🔧 F-NEW-5: Architecture validated (Claude Code orchestration)
 📋 F-NEW-7: Roadmap complete (5 weeks, expert validated)

@@ -19,11 +19,16 @@ test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Toolti
   const content = fs.readFileSync(filePath, 'utf8');
   expect(content).toContain('aria-label="Cognitive Load Percentage"');
   expect(content).toContain('aria-valuetext');
-  expect(content).toContain('<Tooltip title={`AI Recommendation: ${recommendation}. ${roast}`} arrow>');
+  expect(content).toMatch(/<Tooltip title=\{\s*copied\s*\?\s*'Copied!'\s*:\s*`AI Recommendation: \$\{recommendation\}\. Click to copy\.`\s*\}\s*arrow\s*>/);
   expect(content).toContain('getDynamicRoast');
   expect(content).toContain('load-pulse');
   expect(content).toContain('prefers-reduced-motion');
   expect(content).toContain('tabIndex={0}');
+  expect(content).toContain('role="button"');
+  expect(content).toMatch(/aria-label=\{\s*copied\s*\?\s*'Copied'\s*:\s*`Load \$\{val\}%, \$\{statusMeta\.label\}\. AI Recommendation: \$\{recommendation\}\. Click to copy\.`\s*\}/);
+  expect(content).toContain('onClick={onCopy}');
+  expect(content).toContain("cursor: 'copy'");
+  expect(content).toContain('copy-glow');
 });
 
 test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
@@ -37,8 +42,8 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
   // Root paper no longer has role=button (dedicated copy control pattern)
   expect(paper).not.toHaveAttribute('role', 'button');
 
-  const roastBox = screen.getByRole('button');
-  expect(roastBox).toHaveAttribute('aria-label', 'No forecast available');
+  const roastBox = screen.getByLabelText('No forecast available');
+  expect(roastBox).not.toHaveAttribute('role', 'button');
   expect(roastBox).toHaveAttribute('tabIndex', '-1');
 
   // Test 2: With critical prediction
@@ -116,8 +121,8 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}');
   expect(content).toContain('getCompletionTransitionTask(currentTaskId, tasks, optimizedTasks)');
   expect(content).toContain('getSkipTransitionTask(currentTaskId, optimizedTasks)');
-  expect(content).toMatch(/aria-label=\{\s*nextTaskAfterCompletion\s*\?\s*`Complete \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterCompletion\.title\}`\s*:\s*`Complete \$\{currentTask\.title\}, finish ritual`\s*\}/);
-  expect(content).toMatch(/aria-label=\{\s*nextTaskAfterSkip\s*\?\s*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
+  expect(content).toMatch(/aria-label=\{\s*nextTaskAfterCompletion\s*[\s\S]*\?\s*`Complete \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterCompletion\.title\}`\s*[\s\S]*:\s*`Complete \$\{currentTask\.title\}, finish ritual`\s*\}/);
+  expect(content).toMatch(/aria-label=\{\s*isSkipConfirming\s*[\s\S]*nextTaskAfterSkip\s*[\s\S]*`Confirm skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Confirm skip task: \$\{currentTask\.title\}`\s*[\s\S]*:\s*nextTaskAfterSkip\s*[\s\S]*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
   // New LinearProgress for task progress
   expect(content).toContain('aria-label={`Progress for task: ${currentTask.title}`}');
@@ -155,6 +160,14 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toMatch(/animation:\s*'copy-success 0.4s ease-out'/);
   expect(content).toContain('<IconButton');
   expect(content).toContain('onClick={() => handleCopyTaskTitle(currentTask.title)}');
+
+  // Verify Predictive Skip and Soft Confirmation
+  expect(content).toContain('const [isSkipConfirming, setIsSkipConfirming] = useState(false);');
+  expect(content).toContain('const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);');
+  expect(content).toContain("animation: 'skip-pulse 1.5s infinite'");
+  expect(content).toMatch(/aria-label=\{\s*isSkipConfirming\s*[\s\S]*nextTaskAfterSkip\s*[\s\S]*`Confirm skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Confirm skip task: \$\{currentTask\.title\}`\s*[\s\S]*:\s*nextTaskAfterSkip\s*[\s\S]*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
+  expect(content).toContain('{isSkipConfirming ? \'Confirm Skip?\' : \'Skip\'}');
+  expect(content).toContain('<AlertTriangle aria-hidden="true" size={16} />');
 });
 
 test('TaskSequencer.tsx implements overtime visual cues', () => {

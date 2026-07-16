@@ -1,0 +1,43 @@
+{
+  "label": "OBSERVED",
+  "blockers": [
+    {
+      "id": "PLAN_AUTH_UNPROVEN",
+      "severity": "BLOCKING",
+      "scope": "all model-capable CLIs",
+      "reason": "Boolean absence of known API-key environment variables does not establish plan-backed billing or cached-session provenance."
+    },
+    {
+      "id": "CONTAINMENT_UNPROVEN",
+      "severity": "BLOCKING",
+      "scope": "all model-capable CLIs",
+      "reason": "Static help did not prove complete isolation from inherited configuration and all prohibited agentic surfaces."
+    },
+    {
+      "id": "AGGREGATE_CLI_NETWORK_IMPORT",
+      "severity": "HIGH",
+      "scope": "offline runner design",
+      "reason": "The documented aggregate pr-steward CLI attempted a remote LiteLLM metadata fetch during import."
+    },
+    {
+      "id": "OR_DEDICATED_CLI_NOT_OBSERVED",
+      "severity": "INFO",
+      "scope": "openrouter",
+      "reason": "OpenRouter is an API fallback surface; no dedicated CLI is required or inferred."
+    }
+  ],
+  "process_deviations": [
+    {
+      "id": "UV_CREATED_VENV",
+      "label": "OBSERVED_WITH_PROCESS_DEVIATION",
+      "resolution": "Generated .venv was removed under supervisor authorization; command is superseded."
+    }
+  ],
+  "unknowns": [
+    "Provider plan terms and automation rights.",
+    "Dedicated OS-user credential portability without copying workstation state.",
+    "Actual upstream provider and auth for OpenCode.",
+    "Observed model identities for every model-capable CLI.",
+    "OpenRouter retention/data controls for a future explicitly pinned route."
+  ]
+}

@@ -1,0 +1,1031 @@
+{
+  "schema_version": "1.0.0",
+  "campaign_id": "DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13",
+  "track_id": "DR-02-LOCAL-BROKER-AND-SELF-HOSTED-RUNNER-SECURITY",
+  "status": "COMPLETE_WITH_UNKNOWNS",
+  "research_date": "2026-07-13",
+  "questions": [
+    {
+      "question_id": "Q-GITHUB-WARNINGS",
+      "question": "What are GitHub's current security warnings for self-hosted runners?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q-GITHUB-CONTROLS",
+      "question": "How do runner groups, labels, repository restrictions, workflow approvals, and environment protections constrain access?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q-WORKFLOW-RISKS",
+      "question": "What are the risks of pull_request_target, workflow injection, reusable workflows, artifact poisoning, cache poisoning, and secret exposure?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q-INERT-DIFF",
+      "question": "Can trusted-main workflows safely fetch a PR diff as inert data without checking out or executing candidate code?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q-EPHEMERAL",
+      "question": "What official mechanisms exist for ephemeral or autoscaled self-hosted runners?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q-PROVENANCE",
+      "question": "How should a local broker verify repository, PR number, base SHA, head SHA, workflow identity, request freshness, and replay resistance?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q-SIGNING",
+      "question": "What signing or attestation mechanisms are practical using GitHub OIDC, artifact attestations, signed manifests, or GitHub API verification?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "Q-CREDENTIAL-ISOLATION",
+      "question": "How should per-tool credentials be isolated across OS users, home directories, VMs, containers, and keychains?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "Q-MACOS",
+      "question": "Can macOS account/keychain isolation support this safely?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "Q-NETWORK",
+      "question": "Which network controls are feasible per tool?",
+      "answer_status": "PARTIAL"
+    },
+    {
+      "question_id": "Q-OUTPUT",
+      "question": "What output channels safely return results to GitHub without giving the model GitHub write credentials?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q-OPERATIONS",
+      "question": "Which design best supports one audit at a time, cleanup, revocation, logging, and operator visibility?",
+      "answer_status": "ANSWERED"
+    },
+    {
+      "question_id": "Q-ARCH-SELECTION",
+      "question": "Which first-release and later automated architectures best satisfy the mandatory hostile-data principle?",
+      "answer_status": "ANSWERED"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "claim_label": "OBSERVED",
+      "topic": "local evidence posture",
+      "claim": "The inspected host evidence is static-only: no audit broker or custom runner was implemented, all model-capable live probes were NOT_RUN, and plan-backed authentication and complete containment remain unproven.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "LOCAL-01",
+        "LOCAL-02",
+        "LOCAL-03"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "No plan-authenticated model adapter may be automatically enabled merely because a CLI is installed or appears logged in."
+    },
+    {
+      "finding_id": "F-002",
+      "claim_label": "CLAIMED",
+      "topic": "self-hosted runner risk",
+      "claim": "GitHub warns that self-hosted runners lack the clean ephemeral guarantees of GitHub-hosted runners and can be persistently compromised by untrusted workflow code; GitHub strongly discourages public-repository use.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-01",
+        "GH-02",
+        "GH-03"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "A generic persistent self-hosted runner holding plan credentials is rejected."
+    },
+    {
+      "finding_id": "F-003",
+      "claim_label": "INFERRED",
+      "topic": "generic credential-bearing runner",
+      "claim": "A runner that can execute PR-controlled workflows and also holds persistent provider credentials creates a direct credential-exfiltration and persistence path, even when the repository is private.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-01",
+        "GH-04",
+        "GHSL-01",
+        "GHSL-02"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Persistent plan credentials must not be installed in a broadly routable Actions runner."
+    },
+    {
+      "finding_id": "F-004",
+      "claim_label": "CLAIMED",
+      "topic": "runner access controls",
+      "claim": "Runner groups can restrict repository and selected-workflow access, while labels primarily route jobs and are not identity or trust proofs.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-05",
+        "GH-06"
+      ],
+      "local_evidence_relationship": "NOT_COMPARABLE",
+      "decision_impact": "Use groups and exact workflow restrictions as defense in depth; never treat labels as authorization."
+    },
+    {
+      "finding_id": "F-005",
+      "claim_label": "CLAIMED",
+      "topic": "workflow and environment controls",
+      "claim": "Repository Actions policies, fork-workflow approvals, environment protection rules, and workflow execution protections can narrow which workflows and actors run or receive secrets, but they do not sandbox hostile code after execution begins.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-07",
+        "GH-08",
+        "GH-09"
+      ],
+      "local_evidence_relationship": "NOT_COMPARABLE",
+      "decision_impact": "GitHub controls reduce reachability but cannot substitute for worker isolation."
+    },
+    {
+      "finding_id": "F-006",
+      "claim_label": "CLAIMED",
+      "topic": "pull_request_target",
+      "claim": "The pull_request_target event is dangerous when privileged base-branch workflow code checks out, fetches, or executes untrusted pull-request content.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-04",
+        "GHSL-01"
+      ],
+      "local_evidence_relationship": "NOT_COMPARABLE",
+      "decision_impact": "Trusted-main request workflows must not check out the PR head or execute candidate scripts."
+    },
+    {
+      "finding_id": "F-007",
+      "claim_label": "INFERRED",
+      "topic": "agentic workflow injection",
+      "claim": "For agentic auditors, PR titles, bodies, comments, diffs, repository instructions, artifacts, and generated text are all hostile inputs capable of steering tool use, not merely passive documentation.",
+      "confidence": "MEDIUM",
+      "source_refs": [
+        "GH-01",
+        "GHSL-02",
+        "AWI-01"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Prompt-level read-only instructions are insufficient; tool, filesystem, process, and network restrictions must be enforced outside the model."
+    },
+    {
+      "finding_id": "F-008",
+      "claim_label": "CLAIMED",
+      "topic": "artifacts and caches",
+      "claim": "Artifact digests establish transfer integrity, not trustworthiness; artifacts and caches produced by low-trust workflows can poison later privileged consumers, and cache contents must not carry secrets.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-14",
+        "GH-15",
+        "CODEQL-01",
+        "GH-01"
+      ],
+      "local_evidence_relationship": "NOT_COMPARABLE",
+      "decision_impact": "The broker must never execute downloaded artifacts or restore untrusted caches into a credential-bearing environment."
+    },
+    {
+      "finding_id": "F-009",
+      "claim_label": "CLAIMED",
+      "topic": "inert diff retrieval",
+      "claim": "GitHub REST pull-request endpoints support retrieving pull-request metadata and diff/patch representations without checking out the candidate branch.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-16",
+        "GH-04"
+      ],
+      "local_evidence_relationship": "NOT_COMPARABLE",
+      "decision_impact": "A trusted-main ingress workflow or broker may fetch the exact diff as hostile data while prohibiting code execution."
+    },
+    {
+      "finding_id": "F-010",
+      "claim_label": "PROPOSED",
+      "topic": "provenance binding",
+      "claim": "Every audit request should bind repository_id, repository full name, PR number, event base SHA, head SHA, workflow identity, run_id, run_attempt, actor identity, creation time, nonce, and payload digest; the broker should cross-check these through GitHub APIs before dispatch and again before publication.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-10",
+        "GH-11",
+        "GH-12",
+        "GH-16",
+        "GH-17"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Requests that are stale, replayed, mismatched, or no longer point at the same head must fail closed."
+    },
+    {
+      "finding_id": "F-011",
+      "claim_label": "PROPOSED",
+      "topic": "OIDC push mode",
+      "claim": "For direct push delivery, a GitHub-hosted trusted-main job should obtain an OIDC token with a broker-specific audience and POST the request over authenticated TLS; the broker verifies issuer, audience, signature, repository, workflow, ref, actor, run, and freshness claims.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-10",
+        "GH-11",
+        "GH-12"
+      ],
+      "local_evidence_relationship": "NOT_COMPARABLE",
+      "decision_impact": "OIDC can establish workflow identity without storing a long-lived shared GitHub secret in the workflow."
+    },
+    {
+      "finding_id": "F-012",
+      "claim_label": "PROPOSED",
+      "topic": "OIDC handling",
+      "claim": "Raw OIDC bearer tokens should not be stored in workflow artifacts for later pickup; pull-mode brokers should instead verify the run and artifact through GitHub APIs and use artifact digests or attestations only as supporting provenance.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-10",
+        "GH-11",
+        "GH-13",
+        "GH-14"
+      ],
+      "local_evidence_relationship": "NOT_COMPARABLE",
+      "decision_impact": "The pickup design avoids turning an expiring bearer credential into a reusable artifact."
+    },
+    {
+      "finding_id": "F-013",
+      "claim_label": "UNKNOWN",
+      "topic": "artifact attestation scope",
+      "claim": "Whether GitHub artifact attestations are the best supported mechanism for frequent audit-request manifests is not established; GitHub positions attestations primarily as build-provenance evidence and not as a complete authorization decision.",
+      "confidence": "MEDIUM",
+      "source_refs": [
+        "GH-13"
+      ],
+      "local_evidence_relationship": "NOT_COMPARABLE",
+      "decision_impact": "Attestations may supplement but must not replace OIDC/API verification, freshness, and replay controls."
+    },
+    {
+      "finding_id": "F-014",
+      "claim_label": "CLAIMED",
+      "topic": "ephemeral runners",
+      "claim": "GitHub documents ephemeral self-hosted runners, Actions Runner Controller, runner scale sets, and runner registration APIs for autoscaling and just-in-time-style provisioning.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-02",
+        "GH-20",
+        "GH-21"
+      ],
+      "local_evidence_relationship": "NOT_COMPARABLE",
+      "decision_impact": "Ephemeral provisioning is available, but it solves persistence hygiene rather than the credential/hostile-code trust collision by itself."
+    },
+    {
+      "finding_id": "F-015",
+      "claim_label": "INFERRED",
+      "topic": "ephemeral runner limitation",
+      "claim": "An ephemeral runner is still unsuitable when the same job receives persistent plan credentials and executes candidate-controlled code or agentic instructions; deletion after compromise does not prevent exfiltration during the run.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-01",
+        "GH-02",
+        "GH-04"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Ephemeral runners may execute credential-free mechanical validation, but not credential-bearing hostile workloads by default."
+    },
+    {
+      "finding_id": "F-016",
+      "claim_label": "PROPOSED",
+      "topic": "credential isolation",
+      "claim": "Per-tool credentials should be separated by dedicated OS user, home directory, configuration root, keychain or secret store, and process boundary; any worker that executes candidate code should receive no persistent provider or GitHub credentials.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "APPLE-01",
+        "APPLE-02",
+        "GH-01",
+        "LOCAL-02"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Compromise of one tool or worker must not expose another tool profile or GitHub publication authority."
+    },
+    {
+      "finding_id": "F-017",
+      "claim_label": "UNKNOWN",
+      "topic": "plan credential portability",
+      "claim": "The current track does not establish that any provider permits or technically supports converting a personal plan login into a short-lived per-run credential for disposable workers.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "LOCAL-01",
+        "LOCAL-02"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Disposable plan-authenticated workers remain blocked per tool until DR-01 and DR-03 provide official permission and containment evidence."
+    },
+    {
+      "finding_id": "F-018",
+      "claim_label": "INFERRED",
+      "topic": "macOS isolation",
+      "claim": "Separate macOS users and keychains provide useful credential separation and reduce accidental cross-tool access, but they are defense in depth rather than a strong boundary against hostile code running on the same kernel and host.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "APPLE-01",
+        "APPLE-02",
+        "GH-01"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Use macOS accounts for broker and per-tool isolation, not as the sole sandbox for candidate execution."
+    },
+    {
+      "finding_id": "F-019",
+      "claim_label": "CLAIMED",
+      "topic": "network controls",
+      "claim": "Apple's built-in application firewall is primarily an inbound control, and Apple states that Packet Filter is not a supported product API; Docker provides explicit network modes and bridge isolation but containers share the host kernel.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "APPLE-03",
+        "APPLE-04",
+        "DOCKER-01",
+        "DOCKER-02"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Prefer VM or Linux network policy for enforceable egress controls; use no-network workers for mechanical validation."
+    },
+    {
+      "finding_id": "F-020",
+      "claim_label": "UNKNOWN",
+      "topic": "per-tool egress allowlists",
+      "claim": "Exact stable outbound endpoint allowlists for each plan-authenticated CLI are not established in this track and may be complicated by provider CDNs, telemetry, updates, and authentication refresh endpoints.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "LOCAL-03",
+        "APPLE-03",
+        "DOCKER-01"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "Tool-specific network enforcement remains blocked until official endpoint and telemetry behavior is researched and tested in an authorized environment."
+    },
+    {
+      "finding_id": "F-021",
+      "claim_label": "PROPOSED",
+      "topic": "result publication",
+      "claim": "The audit model should write only to a local result file or pipe; manual upload is preferred initially, and later publication should be performed by a separate narrowly permissioned GitHub App that binds the check or status to the exact head SHA.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-18",
+        "GH-19"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "The model and candidate-processing worker never receive GitHub write credentials."
+    },
+    {
+      "finding_id": "F-022",
+      "claim_label": "PROPOSED",
+      "topic": "first-release architecture",
+      "claim": "The first release should use an operator-triggered local broker, exact-head API verification, credential-free disposable workers for any candidate execution, per-tool isolated accounts for data-only model invocation where vendor and containment evidence permits, and manual result upload.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "LOCAL-01",
+        "LOCAL-02",
+        "GH-01",
+        "GH-04",
+        "GH-16"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "This is the smallest architecture that preserves operator visibility and avoids a credential-bearing generic runner; unsupported model adapters remain disabled."
+    },
+    {
+      "finding_id": "F-023",
+      "claim_label": "PROPOSED",
+      "topic": "later architecture",
+      "claim": "The later automated path should use a GitHub-hosted trusted-main request workflow, OIDC-authenticated direct submission or API-verified artifact pickup, a local broker, disposable workers, and a separate GitHub App publisher.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-10",
+        "GH-11",
+        "GH-12",
+        "GH-18",
+        "GH-20"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Ingress identity, hostile execution, provider credentials, and GitHub write authority remain separate trust domains."
+    },
+    {
+      "finding_id": "F-024",
+      "claim_label": "PROPOSED",
+      "topic": "operations and recovery",
+      "claim": "One-audit-at-a-time should be enforced by both GitHub concurrency and a durable broker lease; worker logs must stream to external storage, and any verification, stale-head, replay, timeout, or cleanup failure must fail closed without automatic model escalation.",
+      "confidence": "HIGH",
+      "source_refs": [
+        "GH-22",
+        "GH-23",
+        "LOCAL-02"
+      ],
+      "local_evidence_relationship": "EXTENDS",
+      "decision_impact": "Concurrency, recovery, and auditability do not depend on a single best-effort process lock."
+    },
+    {
+      "finding_id": "F-025",
+      "claim_label": "OBSERVED",
+      "topic": "local offline path",
+      "claim": "The local aggregate Dopemux CLI attempted a network-backed LiteLLM fetch during import, so it is unsuitable as the trusted offline broker preflight path in its observed form.",
+      "confidence": "VERIFIED",
+      "source_refs": [
+        "LOCAL-03"
+      ],
+      "local_evidence_relationship": "SUPPORTS",
+      "decision_impact": "The broker must use a minimal dependency path that is demonstrably offline and does not import the aggregate CLI."
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "C-001",
+      "sources": [
+        "GH-02",
+        "GH-20",
+        "F-015"
+      ],
+      "conflict": "GitHub recommends ephemeral runners for autoscaling and clean-up, but ephemeral lifecycle alone does not make a credential-bearing job safe against exfiltration during execution.",
+      "resolution_status": "RESOLVED",
+      "next_evidence": "Treat ephemerality as hygiene, not authorization or isolation; require credential-free hostile execution or stronger separation."
+    },
+    {
+      "id": "C-002",
+      "sources": [
+        "GH-13",
+        "F-013"
+      ],
+      "conflict": "Artifact attestations provide provenance evidence, but their suitability as the primary authorization mechanism for frequent audit-request manifests is not established.",
+      "resolution_status": "CARRIED",
+      "next_evidence": "Confirm intended use with current GitHub documentation or vendor guidance; retain API/OIDC verification as mandatory regardless."
+    },
+    {
+      "id": "C-003",
+      "sources": [
+        "APPLE-01",
+        "APPLE-02",
+        "F-018"
+      ],
+      "conflict": "macOS user/keychain separation is meaningful credential isolation, but same-host hostile code remains within the same kernel and cannot be treated as VM-equivalent containment.",
+      "resolution_status": "RESOLVED",
+      "next_evidence": "Use macOS accounts as defense in depth and prohibit candidate execution on credential-bearing accounts."
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "U-001",
+      "question": "Which plan-authenticated tools officially permit dedicated-user, VM, or disposable-worker deployment without copying unsupported login state?",
+      "why_unknown": "This is vendor-auth and terms evidence owned by DR-01, not resolved by runner-security documentation.",
+      "blocking_scope": "Automatic plan-authenticated model execution for each affected tool.",
+      "next_evidence": "Accepted DR-01 vendor deployment matrix and official credential lifecycle documentation."
+    },
+    {
+      "id": "U-002",
+      "question": "Which tools can be proven to run with all shell, file-write, MCP, plugin, hook, memory, subagent, repository-instruction, and web surfaces disabled?",
+      "why_unknown": "The local probe was static-only and recorded incomplete containment evidence.",
+      "blocking_scope": "Data-only model invocation on a credential-bearing host or account.",
+      "next_evidence": "Accepted DR-03 per-tool containment matrix and authorized clean-room validation."
+    },
+    {
+      "id": "U-003",
+      "question": "What exact outbound endpoint allowlists are stable for each provider CLI, including login refresh, model calls, telemetry, and update checks?",
+      "why_unknown": "Official per-tool network endpoint contracts were not established in this track.",
+      "blocking_scope": "Strict per-tool egress allowlisting.",
+      "next_evidence": "Official provider network documentation plus authorized network observation in isolated test accounts."
+    },
+    {
+      "id": "U-004",
+      "question": "Can GitHub artifact attestations be used as a durable, intended provenance layer for frequent request manifests on the repository plan in use?",
+      "why_unknown": "GitHub positions attestations around build provenance and plan availability varies; this research did not validate the account plan.",
+      "blocking_scope": "Attestation-enhanced pull-mode pickup only; OIDC/API verification is not blocked.",
+      "next_evidence": "Current GitHub plan entitlement and documented attestation use-case confirmation."
+    },
+    {
+      "id": "U-005",
+      "question": "Which disposable-worker technology is acceptable on the actual macOS host: Linux VM, macOS VM, container, or remote worker?",
+      "why_unknown": "No host implementation or benchmark was allowed, and container-vs-VM tradeoffs depend on required tools and licensing.",
+      "blocking_scope": "Final implementation choice, not the trust-boundary recommendation.",
+      "next_evidence": "Synthesis-stage requirements plus a later authorized implementation spike."
+    }
+  ],
+  "not_run": [
+    {
+      "activity": "Register or execute a self-hosted GitHub runner",
+      "reason": "Forbidden by campaign scope; no GitHub mutations or runner registration."
+    },
+    {
+      "activity": "Log into provider accounts or inspect/copy credential stores",
+      "reason": "Forbidden by campaign scope and unnecessary for external security research."
+    },
+    {
+      "activity": "Execute pull-request code, artifacts, caches, or reusable workflows",
+      "reason": "Candidate content is hostile and implementation/benchmark execution was out of scope."
+    },
+    {
+      "activity": "Test OIDC submission against a live local broker",
+      "reason": "No broker implementation or network service was allowed."
+    },
+    {
+      "activity": "Create or install a GitHub App",
+      "reason": "GitHub mutation and credential creation were forbidden."
+    },
+    {
+      "activity": "Validate per-tool network allowlists",
+      "reason": "Would require live provider invocations and credential-bearing network observation."
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "R-001",
+      "recommendation": "Reject a persistent generic self-hosted runner that can execute PR-controlled workflows while holding plan credentials.",
+      "status": "REJECTED",
+      "rationale": "This directly violates GitHub self-hosted-runner warnings and the campaign hostile-data principle.",
+      "prerequisites": []
+    },
+    {
+      "id": "R-002",
+      "recommendation": "Use an operator-triggered local broker with exact-head API verification, manual approval, manual result upload, and credential-free disposable workers for any code execution as the first-release security shape.",
+      "status": "PROPOSED",
+      "rationale": "It minimizes GitHub write authority and prevents candidate code from running on the credential-bearing host.",
+      "prerequisites": [
+        "Minimal offline broker path",
+        "Durable single-job lease",
+        "Request/result schemas",
+        "Per-tool adapter disabled by default"
+      ]
+    },
+    {
+      "id": "R-003",
+      "recommendation": "Permit plan-authenticated model adapters only after DR-01 proves deployment permission and DR-03 proves complete data-only containment for that tool.",
+      "status": "BLOCKED",
+      "rationale": "Technical CLI presence and cached login state are not proof of sanctioned unattended use or containment.",
+      "prerequisites": [
+        "Accepted DR-01 finding for tool",
+        "Accepted DR-03 finding for tool",
+        "Authorized local clean-room validation"
+      ]
+    },
+    {
+      "id": "R-004",
+      "recommendation": "For later automation, use a GitHub-hosted trusted-main workflow to create the request, OIDC-authenticated push or API-verified pull pickup, a local broker, disposable workers, and a separate GitHub App publisher.",
+      "status": "PROPOSED",
+      "rationale": "It separates request identity, provider credentials, hostile execution, and GitHub write authority.",
+      "prerequisites": [
+        "OIDC claim policy",
+        "Replay store",
+        "GitHub App with least privilege",
+        "Exact-head publication gate",
+        "External worker logging"
+      ]
+    },
+    {
+      "id": "R-005",
+      "recommendation": "Use macOS users and keychains for per-tool credential separation but never as the sole sandbox for hostile code execution.",
+      "status": "PROPOSED",
+      "rationale": "They reduce cross-profile exposure but do not provide a separate kernel or strong escape boundary.",
+      "prerequisites": [
+        "Dedicated non-admin users",
+        "Separate homes and config roots",
+        "No shared writable directories",
+        "No candidate execution"
+      ]
+    },
+    {
+      "id": "R-006",
+      "recommendation": "Do not store raw GitHub OIDC tokens in artifacts; verify them online in push mode or use GitHub API and artifact digest verification in pull mode.",
+      "status": "PROPOSED",
+      "rationale": "OIDC tokens are short-lived bearer credentials, not durable signed request files.",
+      "prerequisites": [
+        "TLS endpoint or API polling credential",
+        "Broker audience and claim policy",
+        "Freshness and replay checks"
+      ]
+    },
+    {
+      "id": "R-007",
+      "recommendation": "Make all verification, stale-head, replay, credential, network, timeout, and cleanup failures fail closed and remain distinct from model-quality escalation.",
+      "status": "PROPOSED",
+      "rationale": "Environment failure is not evidence that a stronger or more expensive model is needed.",
+      "prerequisites": [
+        "Typed failure states",
+        "No automatic fallback on environment failure",
+        "Operator-visible recovery queue"
+      ]
+    }
+  ],
+  "synthesis_implications": [
+    "The synthesis should preserve Dopemux as operator control and route recommendation, while the broker remains a transport/execution adapter with no approval authority.",
+    "The default first release should be manual or operator-triggered; no plan-authenticated tool becomes automatic while auth or containment is UNKNOWN, CLAIMED, or CONFLICTING.",
+    "A persistent generic self-hosted runner with provider credentials should be excluded from the target architecture.",
+    "Mechanical validation can run in credential-free disposable workers and remains a first-class route.",
+    "Exact-head provenance requires repository_id, PR number, base/head SHAs, request payload digest, freshness, replay prevention, and publication bound to the same head SHA.",
+    "OIDC is suitable for online workflow identity verification, not as a durable artifact-stored bearer token.",
+    "Result publication should be manual first and later delegated to a separate least-privilege GitHub App; the model receives no GitHub write credential.",
+    "macOS account/keychain isolation is defense in depth; VM separation is preferred for hostile execution.",
+    "The observed aggregate Dopemux CLI import path must not become the offline broker preflight path."
+  ],
+  "source_ledger": [
+    {
+      "source_id": "LOCAL-01",
+      "title": "Auditor Fleet Capability Probe Summary",
+      "publisher": "Dopemux local capability probe",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": "2026-07-13",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-LOCAL-POSTURE",
+        "Q-ARCH-SELECTION"
+      ]
+    },
+    {
+      "source_id": "LOCAL-02",
+      "title": "Routing Constraints",
+      "publisher": "Dopemux local capability probe",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": "2026-07-13",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-CREDENTIAL-ISOLATION",
+        "Q-ARCH-SELECTION"
+      ]
+    },
+    {
+      "source_id": "LOCAL-03",
+      "title": "Network And Containment Observations",
+      "publisher": "Dopemux local capability probe",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": "2026-07-13",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-NETWORK",
+        "Q-LOCAL-POSTURE"
+      ]
+    },
+    {
+      "source_id": "GH-01",
+      "title": "Secure use reference",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-GITHUB-WARNINGS",
+        "Q-WORKFLOW-RISKS",
+        "Q-SECRETS"
+      ]
+    },
+    {
+      "source_id": "GH-02",
+      "title": "Self-hosted runners reference",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-GITHUB-WARNINGS",
+        "Q-EPHEMERAL"
+      ]
+    },
+    {
+      "source_id": "GH-03",
+      "title": "Adding self-hosted runners",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-GITHUB-WARNINGS"
+      ]
+    },
+    {
+      "source_id": "GH-04",
+      "title": "Securely using pull_request_target",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-WORKFLOW-RISKS",
+        "Q-INERT-DIFF"
+      ]
+    },
+    {
+      "source_id": "GH-05",
+      "title": "Runner groups",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-GITHUB-CONTROLS"
+      ]
+    },
+    {
+      "source_id": "GH-06",
+      "title": "Managing access to self-hosted runners using groups",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-GITHUB-CONTROLS"
+      ]
+    },
+    {
+      "source_id": "GH-07",
+      "title": "Managing GitHub Actions settings for a repository",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-GITHUB-CONTROLS"
+      ]
+    },
+    {
+      "source_id": "GH-08",
+      "title": "Deployments and environments",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-GITHUB-CONTROLS",
+        "Q-SECRETS"
+      ]
+    },
+    {
+      "source_id": "GH-09",
+      "title": "Workflow execution protections",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": "2026-06-18",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-GITHUB-CONTROLS"
+      ]
+    },
+    {
+      "source_id": "GH-10",
+      "title": "OpenID Connect",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-PROVENANCE",
+        "Q-SIGNING"
+      ]
+    },
+    {
+      "source_id": "GH-11",
+      "title": "OpenID Connect reference",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-PROVENANCE",
+        "Q-SIGNING"
+      ]
+    },
+    {
+      "source_id": "GH-12",
+      "title": "actions-oidc-gateway-example",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_REPOSITORY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-PROVENANCE",
+        "Q-SIGNING"
+      ]
+    },
+    {
+      "source_id": "GH-13",
+      "title": "Artifact attestations",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-SIGNING"
+      ]
+    },
+    {
+      "source_id": "GH-14",
+      "title": "Store and share data with workflow artifacts",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-WORKFLOW-RISKS",
+        "Q-SIGNING"
+      ]
+    },
+    {
+      "source_id": "GH-15",
+      "title": "Dependency caching reference",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-WORKFLOW-RISKS"
+      ]
+    },
+    {
+      "source_id": "GH-16",
+      "title": "REST API endpoints for pull requests",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-INERT-DIFF",
+        "Q-PROVENANCE"
+      ]
+    },
+    {
+      "source_id": "GH-17",
+      "title": "REST API endpoints for workflow runs",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-PROVENANCE"
+      ]
+    },
+    {
+      "source_id": "GH-18",
+      "title": "REST API endpoints for check runs",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-OUTPUT"
+      ]
+    },
+    {
+      "source_id": "GH-19",
+      "title": "About protected branches",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-OUTPUT"
+      ]
+    },
+    {
+      "source_id": "GH-20",
+      "title": "Actions Runner Controller",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-EPHEMERAL"
+      ]
+    },
+    {
+      "source_id": "GH-21",
+      "title": "REST API endpoints for self-hosted runners",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-EPHEMERAL"
+      ]
+    },
+    {
+      "source_id": "GH-22",
+      "title": "Control the concurrency of workflows and jobs",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-OPERATIONS"
+      ]
+    },
+    {
+      "source_id": "GH-23",
+      "title": "Monitoring and troubleshooting self-hosted runners",
+      "publisher": "GitHub",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-OPERATIONS"
+      ]
+    },
+    {
+      "source_id": "GHSL-01",
+      "title": "Keeping your GitHub Actions and workflows secure Part 1: Preventing pwn requests",
+      "publisher": "GitHub Security Lab",
+      "source_class": "INDEPENDENT_SECURITY_RESEARCH",
+      "publication_or_update_date": "2021-08-03",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-WORKFLOW-RISKS"
+      ]
+    },
+    {
+      "source_id": "GHSL-02",
+      "title": "Keeping your GitHub Actions and workflows secure Part 2: Untrusted input",
+      "publisher": "GitHub Security Lab",
+      "source_class": "INDEPENDENT_SECURITY_RESEARCH",
+      "publication_or_update_date": "2021-08-04",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-WORKFLOW-RISKS"
+      ]
+    },
+    {
+      "source_id": "CODEQL-01",
+      "title": "Cache Poisoning via caching of untrusted files",
+      "publisher": "GitHub CodeQL",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-WORKFLOW-RISKS"
+      ]
+    },
+    {
+      "source_id": "AWI-01",
+      "title": "Demystifying and Detecting Agentic Workflow Injection Vulnerabilities in GitHub Actions",
+      "publisher": "arXiv preprint",
+      "source_class": "INDEPENDENT_SECURITY_RESEARCH",
+      "publication_or_update_date": "2026-05-08",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-WORKFLOW-RISKS",
+        "Q-THREAT-MODEL"
+      ]
+    },
+    {
+      "source_id": "APPLE-01",
+      "title": "Keychain data protection",
+      "publisher": "Apple",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": "2024-12-19",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-MACOS",
+        "Q-CREDENTIAL-ISOLATION"
+      ]
+    },
+    {
+      "source_id": "APPLE-02",
+      "title": "Add a user or group on Mac",
+      "publisher": "Apple",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-MACOS",
+        "Q-CREDENTIAL-ISOLATION"
+      ]
+    },
+    {
+      "source_id": "APPLE-03",
+      "title": "Firewall security in macOS",
+      "publisher": "Apple",
+      "source_class": "OFFICIAL_SECURITY",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-NETWORK"
+      ]
+    },
+    {
+      "source_id": "APPLE-04",
+      "title": "TN3165: Packet Filter is not API",
+      "publisher": "Apple",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": "2024-02-27",
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-NETWORK"
+      ]
+    },
+    {
+      "source_id": "DOCKER-01",
+      "title": "Networking overview",
+      "publisher": "Docker",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-NETWORK",
+        "Q-CREDENTIAL-ISOLATION"
+      ]
+    },
+    {
+      "source_id": "DOCKER-02",
+      "title": "Bridge network driver",
+      "publisher": "Docker",
+      "source_class": "OFFICIAL_DOCUMENTATION",
+      "publication_or_update_date": null,
+      "access_date": "2026-07-13",
+      "questions_supported": [
+        "Q-NETWORK",
+        "Q-CREDENTIAL-ISOLATION"
+      ]
+    }
+  ]
+}

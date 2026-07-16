@@ -5,7 +5,7 @@ allowed-tools: [
   "Read", "Bash(git rev-parse:*)",
   "mcp__task-orchestrator__get_context",
   "mcp__task-orchestrator__query_notes",
-  "mcp__conport__get_active_context"
+  "mcp__conport__conport_get_context"
 ]
 model: "claude-sonnet-4-5"
 ---
@@ -154,7 +154,7 @@ Default: only show note headers in Item mode. User can ask explicitly for bodies
 
 ## Phase 4: ConPort Cross-Check (Optional, Item Mode)
 
-If `mcp__conport__get_active_context` is available, fetch it and compare:
+If `mcp__conport__conport_get_context` is available, fetch it and compare:
 
 - If `current_focus` mentions this item ID or title → annotate as "(this is your current focus per ConPort)"
 - If `last_task_status` differs from the orchestrator's role → flag potential drift
