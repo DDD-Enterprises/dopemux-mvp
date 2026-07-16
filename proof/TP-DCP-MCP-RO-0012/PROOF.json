@@ -8,9 +8,11 @@
   "base_sha": "3f59ec29c9175e3b7ebdc68392365bb05296247d",
   "implementation_commit": "f0d9452852dbc3883317cbae71f70d9a59f54d8e",
   "pr": {
-    "status": "NOT_CREATED",
-    "url": null,
-    "blocker": "Proof publication is committed before the branch is pushed and a pull request is opened."
+    "number": 1057,
+    "status": "OPEN_NOT_READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1057",
+    "head_at_creation": "bc1d664321001dfc52da9b2927c8829d24c612b9",
+    "blocker": "Trusted embedded audit is required but SKIPPED under the local-only, no-runner, no-credentials constraint. PR Steward and merge readiness are not claimed."
   },
   "scope": "Migrate the public DCP FastMCP server from the v1 project_id/direct-service contract to registry-v2 target_id-only local evidence tools. No backend adapter, network probe, tunnel, credential, public ingress, container operation, or runtime lifecycle mutation is included.",
   "input_package": {
@@ -126,5 +128,5 @@
     "The generated .claude/claude_config.json worktree delta is intentionally unstaged and unrelated."
   ],
   "rollback": "Revert implementation commit f0d9452852dbc3883317cbae71f70d9a59f54d8e and the following proof commit. Do not re-enable the v1 public server surface without a separately approved compatibility packet.",
-  "cleanup": "Dedicated worktree retained until PR creation and local status refresh complete."
+  "cleanup": "Dedicated worktree retained while PR #1057 remains open."
 }

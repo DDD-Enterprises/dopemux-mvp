@@ -16,6 +16,7 @@ All commands below ran locally in the dedicated worktree on branch
 | `agy --prompt=<read-only TP-0012 audit prompt>` | PASS_WITH_RISKS; see `AGY_AUDIT.md` |
 | `python -m json.tool PROOF.json` and `python scripts/audit/validate_audit_proof.py PROOF.json` | PASS |
 | `pre-commit run --files proof/TP-DCP-MCP-RO-0012/*` | PASS |
+| `gh pr create` | PASS; opened PR #1057 with `OPEN_NOT_READY` audit boundary |
 | Trusted embedded audit / PR Steward | NOT_RUN; local-only direction, no runner or credentials, and no trusted Claude auditor route |
 
 No live facade, provider, connector, tunnel, backend, container, credential,
