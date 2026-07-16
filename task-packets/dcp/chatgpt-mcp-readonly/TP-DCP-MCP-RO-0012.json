@@ -1,0 +1,111 @@
+{
+  "id": "TP-DCP-MCP-RO-0012",
+  "project": "dopemux-mvp",
+  "target": "Migrate the public DCP read-only MCP facade from the v1 project_id registry and direct service bindings to registry-v2 opaque target_id resolution, local evidence receipts, and non-callable capability reporting.",
+  "invariants": [
+    "The public MCP server loads registry-v2 only and does not import or expose the v1 Registry/Resolver contract.",
+    "Every target-scoped tool accepts only an opaque target_id; callers cannot provide filesystem paths, URLs, ports, routes, workspace IDs, SQL, or shell input.",
+    "Runtime catalog and runtime-registry evidence is read locally only, remains advisory, and never makes a service callable.",
+    "No backend adapter invocation, network probe, tunnel, credential, container operation, or runtime lifecycle mutation is introduced.",
+    "All public responses redact absolute paths, URLs, ports, secrets, and raw unsafe target-shaped input."
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0011-REMEDIATION-01"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dcp-mcp-ro-0012-target-contract",
+    "base_branch": "main",
+    "stacked_because": "TP-DCP-MCP-RO-0011 runtime catalog identity remediation is merged on the verified base."
+  },
+  "commit": {
+    "message": "feat(dcp): migrate public facade to target registry v2",
+    "allowlist": [
+      "services/dcp-readonly-facade/src/dcp_facade/tools_v2.py",
+      "services/dcp-readonly-facade/src/mcp/server.py",
+      "services/dcp-readonly-facade/tests/test_tools_v2.py",
+      "services/dcp-readonly-facade/tests/test_mcp_server.py",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/RESPONSE_ENVELOPE_SCHEMA.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/FACADE_LOCAL_RUN.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/MANUAL_VALIDATION.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/README.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0012.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0012.md",
+      "task-packets/INDEX.md",
+      "proof/TP-DCP-MCP-RO-0012/**"
+    ],
+    "verify": [
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests",
+      "uv run --frozen python -m compileall -q services/dcp-readonly-facade/src",
+      "python -m json.tool task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0012.json",
+      "python -m jsonschema -i task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0012.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "pre-commit run --files <changed-files>"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): migrate public facade to target registry v2",
+    "body": "Migrates the public DCP read-only facade to the v2 opaque target contract. Backend adapters remain deferred: this change exposes only local target, repository, proof, static capability, and non-callable runtime-evidence receipts. No public ingress, runtime lifecycle, credentials, or live backend calls are added.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "v2-public-surface",
+      "task": "Replace the FastMCP public v1 project_id surface with target_id-only registry-v2 tool wiring and remove direct backend adapter exposure from external server mode.",
+      "validation": [
+        "Server registration tests prove v1 public tools and DCP_FACADE_REGISTRY are absent from external server mode.",
+        "Every target-scoped tool signature requires target_id."
+      ]
+    },
+    {
+      "id": "local-evidence-receipts",
+      "task": "Implement target resolution, repository/proof reads, static capability reporting, and redacted non-callable runtime catalog receipts with local file reads only.",
+      "validation": [
+        "Focused tests cover enabled target resolution, blocked unknown/unsafe target input, proof containment, and non-callable runtime evidence.",
+        "Focused tests prove public responses contain no path, URL, port, or runtime endpoint values."
+      ]
+    },
+    {
+      "id": "contract-docs",
+      "task": "Update the public tool, envelope, local-run, manual-validation, and overview documents to label the v1 surface historical and describe the v2-only contract.",
+      "validation": [
+        "Documentation names target_id as the sole caller-visible target handle and identifies live backend adapters as deferred."
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Run packet schema validation, focused and full facade tests, compileall, diff hygiene, local independent review, and configured pre-commit checks before publication.",
+      "validation": [
+        "All local validation outputs are captured in proof or marked NOT_RUN with the blocker.",
+        "The independent audit status is not represented as trusted CI evidence."
+      ]
+    }
+  ]
+}
