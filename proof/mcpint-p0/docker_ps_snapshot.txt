@@ -1,0 +1,25 @@
+dopemux-dnh-crm-8d6d-dope-memory	Up 11 minutes (healthy)	127.0.0.1:3020->3020/tcp
+task-orchestrator-dnh_crm-9a4e9aa8a329cdd5	Up 11 minutes	127.0.0.1:7890->7890/tcp
+mcp-conport_dnh_crm_8d6d	Up 11 minutes (unhealthy)	0.0.0.0:3040->3004/tcp, [::]:3040->3004/tcp, 0.0.0.0:3041->3005/tcp, [::]:3041->3005/tcp, 0.0.0.0:4040->4004/tcp, [::]:4040->4004/tcp
+mcp-conport	Up 11 minutes (unhealthy)	0.0.0.0:3004-3005->3004-3005/tcp, [::]:3004-3005->3004-3005/tcp, 0.0.0.0:4004->4004/tcp, [::]:4004->4004/tcp
+dope-decision-graph-bridge	Up 11 minutes (healthy)	0.0.0.0:3016->3016/tcp, [::]:3016->3016/tcp
+dopemux-dope-memory-1	Up 11 minutes (healthy)	0.0.0.0:3060->3020/tcp, [::]:3060->3020/tcp
+task-orchestrator	Up 11 minutes (healthy)	0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+mcp-litellm	Restarting (1) 9 seconds ago	
+mcp-pal-stdio	Up 11 minutes	
+litellm-db	Up 11 minutes (healthy)	0.0.0.0:2543->5432/tcp, [::]:2543->5432/tcp
+leantime	Up 11 minutes (healthy)	0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+redis_leantime	Up 11 minutes (healthy)	6379/tcp
+dopemux-postgres-age	Up 11 minutes (healthy)	0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+dopemux-mcp-gptr-mcp	Up 11 minutes (healthy)	0.0.0.0:3009->3009/tcp, [::]:3009->3009/tcp
+mcp-exa	Up 11 minutes (healthy)	0.0.0.0:3011->3011/tcp, [::]:3011->3011/tcp
+mcp-pal	Up 11 minutes (healthy)	0.0.0.0:3003->3003/tcp, [::]:3003->3003/tcp
+dopemux-mcp-desktop-commander	Up 11 minutes (healthy)	127.0.0.1:3012->3012/tcp
+dopemux-mcp-leantime-bridge	Up 11 minutes (healthy)	127.0.0.1:3015->3015/tcp
+mysql_leantime	Up 11 minutes (healthy)	3306/tcp, 33060/tcp
+dopemux-mcp-serena	Up 11 minutes (healthy)	0.0.0.0:3006->3006/tcp, [::]:3006->3006/tcp, 0.0.0.0:4006->4006/tcp, [::]:4006->4006/tcp
+mcp-dope-context	Up 11 minutes (healthy)	127.0.0.1:3010->3010/tcp
+mcp-qdrant	Up 11 minutes	0.0.0.0:6333-6334->6333-6334/tcp, [::]:6333-6334->6333-6334/tcp
+redis-primary	Up 11 minutes (healthy)	0.0.0.0:6380->6379/tcp, [::]:6380->6379/tcp
+redis-events	Up 11 minutes (healthy)	0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
+pal-mcp-server	Up 11 minutes (unhealthy)	

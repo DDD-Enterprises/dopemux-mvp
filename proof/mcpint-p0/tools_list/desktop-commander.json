@@ -1,0 +1,43 @@
+{
+  "server": "desktop-commander",
+  "url": "http://127.0.0.1:3012/sse",
+  "transport": "sse",
+  "ts": "2026-07-16T11:23:52-0700",
+  "post_endpoint": "http://127.0.0.1:3012/messages/?session_id=07465f15a98d4348aaf3cfae2b01b876",
+  "initialize": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "protocolVersion": "2024-11-05",
+      "capabilities": {
+        "experimental": {},
+        "logging": {},
+        "prompts": {
+          "listChanged": true
+        },
+        "resources": {
+          "subscribe": false,
+          "listChanged": true
+        },
+        "tools": {
+          "listChanged": true
+        },
+        "extensions": {
+          "io.modelcontextprotocol/ui": {}
+        }
+      },
+      "serverInfo": {
+        "name": "Desktop Commander",
+        "version": "3.4.2"
+      }
+    }
+  },
+  "tool_names": [
+    "focus_window",
+    "screenshot",
+    "type_text",
+    "window_list"
+  ],
+  "tool_count": 4,
+  "verdict": "OK"
+}

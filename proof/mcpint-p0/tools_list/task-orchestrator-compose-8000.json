@@ -1,0 +1,7 @@
+{
+  "server": "task-orchestrator-compose-8000",
+  "url": "http://127.0.0.1:8000/mcp",
+  "transport": "http",
+  "ts": "2026-07-16T11:23:52-0700",
+  "verdict": "UNREACHABLE: HTTPError: HTTP Error 404: Not Found"
+}
