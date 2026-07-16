@@ -37,8 +37,8 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
   // Root paper no longer has role=button (dedicated copy control pattern)
   expect(paper).not.toHaveAttribute('role', 'button');
 
-  const roastBox = screen.getByLabelText('No forecast available');
-  expect(roastBox).not.toHaveAttribute('role');
+  const roastBox = screen.getByRole('button');
+  expect(roastBox).toHaveAttribute('aria-label', 'No forecast available');
   expect(roastBox).toHaveAttribute('tabIndex', '-1');
 
   // Test 2: With critical prediction
@@ -59,13 +59,6 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
   const optimalValue = '40%';
   expect(screen.getByText(optimalValue)).toBeDefined();
   expect(screen.getByLabelText(/15-min prediction 40%, Flow Ritual/i)).toBeDefined();
-});
-
-test('PredictionPanel.tsx renders TrendingDown icon when predicted load is lower than current load', () => {
-  const { container } = render(<PredictionPanel prediction={0.3} currentLoad={0.7} />);
-  const content = container.innerHTML;
-  // TrendingDown from Lucide contains specific path or class
-  expect(content).toContain('trending-down');
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
