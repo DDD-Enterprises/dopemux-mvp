@@ -23,6 +23,17 @@ from .socket_probe import port_is_free
 # Default search window beyond base when rebinding
 DEFAULT_SEARCH_SPAN = 100
 
+# Expected MCP ``serverInfo.name`` prefix for each reserved-singleton service.
+# A reserved singleton (e.g. task-orchestrator on :7890) never writes a port
+# lease, so a healthy live singleton cannot be recognized by lease identity.
+# When such a port is occupied, the allocator probes the MCP ``initialize``
+# handshake and treats a matching ``serverInfo.name`` as the legitimate
+# singleton (assign the port, no lease). Services absent from this map fail
+# closed (an occupied reserved port with no matching lease stays BLOCKED).
+RESERVED_SINGLETON_IDENTITY_PREFIX: Dict[str, str] = {
+    "task-orchestrator": "mcp-task-orchestrator",
+}
+
 
 def preferred_port_for_path(worktree_path: str, base_port: int) -> int:
     """Legacy preferred formula: base + sha1(abspath)[:4] % 100."""
@@ -98,6 +109,10 @@ class PortRoleRequest:
     scope: str = "worktree"  # worktree | project | singleton | reserved_singleton
     preferred: Optional[int] = None
     lease: bool = True  # False => export port only, never write lease
+    # Expected MCP serverInfo.name prefix for a reserved singleton on this port.
+    # Set only for explicitly-declared reserved singletons; None => never probe.
+    identity_name: Optional[str] = None
+    identity_path: str = "/mcp"
 
 
 @dataclass
@@ -173,6 +188,17 @@ def build_role_requests(
                     pref = int(str(env[str(port_var)]).strip())
                 except ValueError:
                     pass
+            # Positive-identity probing only for *explicitly* declared reserved
+            # singletons (port_policy / reserved_port). The back-compat heuristic
+            # recognition (default_port_base 7890 + TASK_ORCHESTRATOR_HTTP_PORT)
+            # deliberately does not opt in, so it stays fail-closed on an
+            # occupied port with no matching lease.
+            identity_name: Optional[str] = None
+            if is_reserved and (
+                spec.get("port_policy") == "reserved_singleton"
+                or spec.get("reserved_port") is not None
+            ):
+                identity_name = RESERVED_SINGLETON_IDENTITY_PREFIX.get(str(name))
             reqs.append(
                 PortRoleRequest(
                     service=str(name),
@@ -183,6 +209,7 @@ def build_role_requests(
                     scope=scope,
                     preferred=pref,
                     lease=not is_reserved,
+                    identity_name=identity_name,
                 )
             )
         if not is_fixed and not is_reserved:
@@ -258,6 +285,7 @@ def allocate_ports(
     dry_run: bool = False,
     source: str = "dopemux mcp init",
     is_free_fn: Optional[Callable[[int], bool]] = None,
+    singleton_probe_fn: Optional[Callable[[int, str], Optional[str]]] = None,
     extra_blocked_ports: Optional[Mapping[int, str]] = None,
 ) -> AllocationResult:
     """Allocate ports for services with lease + live socket safety.
@@ -265,6 +293,13 @@ def allocate_ports(
     ``persist=False`` or ``dry_run=True`` skips registry writes.
     """
     is_free = is_free_fn or (lambda p: port_is_free(p))
+
+    def _default_singleton_probe(port: int, path: str) -> Optional[str]:
+        from .task_orchestrator_identity import probe_mcp_server_name
+
+        return probe_mcp_server_name(int(port), path=path)
+
+    singleton_probe = singleton_probe_fn or _default_singleton_probe
     wt = str(Path(worktree).expanduser().resolve())
     proj = str(Path(project_root or worktree).expanduser().resolve())
     wt_hash = instance_id_for_path(wt)
@@ -353,8 +388,11 @@ def allocate_ports(
         rebind_reason: Optional[str] = None
 
         # Reserved host singletons (e.g. TO:7890): never project-leased.
-        # Still fail-closed if the reserved port is occupied by an unknown process
-        # (no matching lease identity) — do not pretend the singleton is free.
+        # A reserved singleton never writes a lease, so a healthy live singleton
+        # can never be recognized by lease identity. When the port is occupied
+        # with no matching lease, positively identify the occupant via the MCP
+        # ``initialize`` handshake (serverInfo.name) before failing closed: a
+        # matching singleton is OK (assign, no lease); an unknown occupant BLOCKS.
         if not req.lease or req.scope == "reserved_singleton":
             free = is_free(preferred)
             other = registry.find_active_by_port(preferred)
@@ -368,19 +406,43 @@ def allocate_ports(
                 )
             )
             if not free and not ours:
-                result.status = "BLOCKED"
-                result.blocking_findings.append(
+                probed_name: Optional[str] = None
+                singleton_ok = False
+                if req.identity_name:
+                    probed_name = singleton_probe(preferred, req.identity_path)
+                    singleton_ok = bool(
+                        probed_name
+                        and str(probed_name).strip().lower().startswith(
+                            req.identity_name.strip().lower()
+                        )
+                    )
+                if not singleton_ok:
+                    result.status = "BLOCKED"
+                    result.blocking_findings.append(
+                        {
+                            "code": "LEASE_PORT_OCCUPIED",
+                            "service": req.service,
+                            "port": preferred,
+                            "message": (
+                                f"Reserved singleton port {preferred} for {req.service} "
+                                "is occupied by an unknown process."
+                            ),
+                        }
+                    )
+                    return result
+                result.warnings.append(
                     {
-                        "code": "LEASE_PORT_OCCUPIED",
+                        "code": "ALLOCATOR_RESERVED_SINGLETON_IDENTIFIED",
                         "service": req.service,
                         "port": preferred,
+                        "server_name": probed_name,
                         "message": (
-                            f"Reserved singleton port {preferred} for {req.service} "
-                            "is occupied by an unknown process."
+                            f"Reserved singleton port {preferred} occupied by live "
+                            f"{req.service} MCP server ({probed_name}); assigning "
+                            "without a lease."
                         ),
                     }
                 )
-                return result
             assigned = preferred
             result.ports[req.port_var] = assigned
             result.warnings.append(
