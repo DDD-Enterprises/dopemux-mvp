@@ -1,0 +1,126 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0011-REMEDIATION-01",
+  "title": "Runtime Catalog Join Generated Identity Remediation",
+  "status": "VALIDATED_WITH_AUDIT_GAP",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "codex/dcp-mcp-ro-0011-runtime-catalog-join",
+  "base_branch": "main",
+  "base_sha": "45b5ee3f320e777111a6f00227072efeb725996b",
+  "implementation_commit": "f7bc37108",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1041",
+  "scope": "Repair the pure facade runtime/catalog join so its runtime project_id comparison matches the generated ProjectIdentity value written by the MCP lifecycle. DCP .repo_id remains target-authorization evidence; no live operation or provider configuration is changed.",
+  "input_package": {
+    "path": "/Users/hue/Downloads/dopemux-multi-provider-mcp-supervisor-package.zip",
+    "sha256": "c0cb9d34f6ece116811c52cce0d1b517153dba0f8434c9abda9da6ff6d6a2447",
+    "archive_integrity": "PASS",
+    "manifest_hashes": "PASS"
+  },
+  "files_changed": [
+    "services/dcp-readonly-facade/src/dcp_facade/runtime_catalog_join.py",
+    "services/dcp-readonly-facade/tests/test_runtime_catalog_join.py",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/RUNTIME_CATALOG_JOIN_CONTRACT.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.json",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.md"
+  ],
+  "validation": {
+    "PASS": [
+      {
+        "command": "uv run --frozen pytest -q services/dcp-readonly-facade/tests/test_runtime_catalog_join.py",
+        "exit_code": 0,
+        "result": "13 passed"
+      },
+      {
+        "command": "uv run --frozen pytest -q services/dcp-readonly-facade/tests",
+        "exit_code": 0,
+        "result": "full suite passed; 1 intentionally opt-in live test skipped"
+      },
+      {
+        "command": "uv run --frozen pytest -q tests/unit/test_mcp_lifecycle.py::test_task_orchestrator_container_name_matches_wrapper_state_id",
+        "exit_code": 0,
+        "result": "1 passed"
+      },
+      {
+        "command": "uv run --frozen python -m compileall -q services/dcp-readonly-facade/src",
+        "exit_code": 0,
+        "result": "completed without diagnostics"
+      },
+      {
+        "command": ".venv/bin/python -m jsonschema -i task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "exit_code": 0,
+        "result": "valid; jsonschema emitted only its CLI deprecation warning"
+      },
+      {
+        "command": ".venv/bin/dopemux orchestrator packet validate task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.json",
+        "exit_code": 0,
+        "result": "status: PASS; errors: none"
+      },
+      {
+        "command": "AST purity scan for forbidden I/O imports and calls in runtime_catalog_join.py",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --cached --check",
+        "exit_code": 0,
+        "result": "passed; worktree emitted an unrelated fsmonitor IPC warning"
+      },
+      {
+        "command": "pre-commit run --files scoped implementation files",
+        "exit_code": 0,
+        "result": "passed after generated packet front-matter normalization"
+      },
+      {
+        "command": "manual contract review of canonical writer, DCP resolver, facade bootstrap, diff, and regression coverage",
+        "exit_code": 0,
+        "result": "no finding"
+      }
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "command": "Independent automated Codex differential review",
+        "reason": "The sandboxed reviewer could not initialize its app-server client. An escalated read-only retry traced source paths but did not emit a final verdict before termination.",
+        "mitigation": "Manual source/contract review plus focused, full-facade, lifecycle, compilation, packet-schema, and purity validation completed."
+      },
+      {
+        "command": "Live DCP facade test",
+        "reason": "services/dcp-readonly-facade/tests/test_live_optional.py is intentionally opt-in and DCP_FACADE_LIVE_TESTS was not enabled.",
+        "mitigation": "No live behavior, transport, backend, provider, credential, or exposure change is in scope."
+      },
+      {
+        "command": "GitHub checks for the remediation commits",
+        "reason": "The implementation commit has not yet been pushed when this proof was written.",
+        "mitigation": "Refresh PR #1041 checks after the proof commit is pushed."
+      }
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Replaced the DCP authorization project_id comparison with the shared ProjectIdentity generated runtime identity.",
+      "Added lifecycle-shaped positive and DCP-identity negative regressions.",
+      "Separated the remediation packet and proof from the executed TP-DCP-MCP-RO-0011 history."
+    ],
+    "remaining_risks": [
+      "No independent automated review verdict was produced.",
+      "The intentionally opt-in live facade test was not run.",
+      "GitHub checks must be refreshed after pushing the remediation commits."
+    ],
+    "skip_reason": "The available Codex reviewer could not complete a final differential verdict in this environment. Its failed initialization and non-verdict retry are documented in AUDITOR_REPORT.md; no passing external audit is claimed."
+  },
+  "residual_risks": [
+    "No live runtime, ownership, transport, freshness, provider, or backend evidence is claimed.",
+    "The generated .claude/claude_config.json worktree delta is intentionally unstaged and unrelated.",
+    "Resolved GitHub review-thread state was not treated as proof that the original identity mismatch was fixed."
+  ],
+  "rollback": "Revert implementation commit f7bc37108 and this proof commit in reverse order from PR #1041. The change is confined to the facade join, its regressions, and records.",
+  "cleanup": "Dedicated worktree retained until the existing PR branch is pushed and its checks are refreshed."
+}
