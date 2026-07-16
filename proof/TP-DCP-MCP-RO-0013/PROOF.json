@@ -125,7 +125,11 @@
   "rollback": "Revert the TP-0013 commit(s). Public FastMCP server is unchanged by this packet.",
   "cleanup": "Dedicated worktree retained while the PR remains open.",
   "pr": {
-    "status": "PENDING_CREATE",
-    "blocker": "Trusted embedded audit SKIPPED; PR Steward and merge readiness not claimed."
-  }
+    "number": 1059,
+    "status": "OPEN_NOT_READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1059",
+    "head_at_creation": "cd299a8d0796063d661e43f2f6a03486e74c5771",
+    "blocker": "Trusted embedded audit SKIPPED under local-only constraints; AGY advisory only; PR Steward and merge readiness not claimed."
+  },
+  "implementation_commit": "cd299a8d0796063d661e43f2f6a03486e74c5771"
 }
