@@ -1,14 +1,10 @@
-"""DCP read-only MCP server wiring tests.
-
-These tests replace the optional FastMCP dependency with a recording stub before
-importing ``mcp.server``. That keeps the assertions focused on stdio facade tool
-registration and delegation without opening network or MCP transports.
-"""
+"""FastMCP v2 public-surface registration tests."""
 
 from __future__ import annotations
 
 import asyncio
 import importlib
+import inspect
 import sys
 import types
 
@@ -37,7 +33,8 @@ class RecordingFastMCP:
 @pytest.fixture()
 def server_module(monkeypatch, tmp_path):
     RecordingFastMCP.instances = []
-    monkeypatch.setenv("DCP_FACADE_REGISTRY", str(tmp_path / "missing-registry.yaml"))
+    monkeypatch.setenv("DCP_FACADE_REGISTRY_V2", str(tmp_path / "missing-registry-v2.yaml"))
+    monkeypatch.delenv("DCP_FACADE_REGISTRY", raising=False)
     monkeypatch.setitem(sys.modules, "fastmcp", types.SimpleNamespace(FastMCP=RecordingFastMCP))
     sys.modules.pop("mcp.server", None)
     module = importlib.import_module("mcp.server")
@@ -46,95 +43,36 @@ def server_module(monkeypatch, tmp_path):
     sys.modules.pop("mcp.server", None)
 
 
-def test_mcp_server_registers_packet_0006_tools(server_module):
-    _, mcp = server_module
+def test_mcp_server_registers_v2_target_tools_only(server_module):
+    server, mcp = server_module
+
     assert mcp.name == "dcp-readonly-facade"
     assert set(mcp.tools) == {
-        "list_projects",
-        "get_project_capabilities",
-        "get_repo_state_snapshot",
-        "list_proof_bundles",
-        "fetch_proof_bundle",
-        "search_decisions",
-        "search_progress",
-        "search_chronicle",
-        "replay_chronicle_session",
-        "search_code_docs",
-        "get_index_status",
-        "get_workflow_status_snapshot",
+        "list_targets",
+        "get_target_capabilities",
+        "get_target_repo_state_snapshot",
+        "list_target_proof_bundles",
+        "fetch_target_proof_bundle",
+        "get_target_runtime_receipt",
     }
+    assert type(server._REGISTRY).__name__ == "RegistryV2"
+    for name, tool in mcp.tools.items():
+        if name != "list_targets":
+            assert "target_id" in inspect.signature(tool).parameters
 
 
-def test_search_code_docs_delegates_to_pure_facade_function(server_module, monkeypatch):
+def test_v2_server_delegates_target_id_to_pure_facade_function(server_module, monkeypatch):
     server, _ = server_module
     captured = {}
-    sentinel = {"status": "BLOCKED", "data": None}
+    sentinel = {"status": "OK", "target_id": "target-main"}
 
-    def fake_search_code_docs(
-        registry,
-        project_id,
-        query,
-        top_k,
-        *,
-        kind,
-        profile,
-        filter_doc_type,
-    ):
-        captured.update(
-            {
-                "registry": registry,
-                "project_id": project_id,
-                "query": query,
-                "top_k": top_k,
-                "kind": kind,
-                "profile": profile,
-                "filter_doc_type": filter_doc_type,
-            }
-        )
+    def fake_snapshot(registry, target_id):
+        captured.update({"registry": registry, "target_id": target_id})
         return sentinel
 
-    monkeypatch.setattr(server.tools, "search_code_docs", fake_search_code_docs)
-    result = asyncio.run(
-        server.search_code_docs(
-            "dopemux",
-            "catalog contract",
-            top_k=7,
-            kind="docs",
-            profile="implementation",
-            filter_doc_type="md",
-        )
-    )
+    monkeypatch.setattr(server.tools_v2, "get_target_repo_state_snapshot", fake_snapshot)
+
+    result = asyncio.run(server.get_target_repo_state_snapshot("target-main"))
 
     assert result is sentinel
-    assert captured == {
-        "registry": server._REGISTRY,
-        "project_id": "dopemux",
-        "query": "catalog contract",
-        "top_k": 7,
-        "kind": "docs",
-        "profile": "implementation",
-        "filter_doc_type": "md",
-    }
-
-
-def test_status_wrappers_delegate_to_pure_facade_functions(server_module, monkeypatch):
-    server, _ = server_module
-    captured = []
-
-    def fake_index_status(registry, project_id):
-        captured.append(("index", registry, project_id))
-        return {"status": "BLOCKED"}
-
-    def fake_workflow_snapshot(registry, project_id):
-        captured.append(("workflow", registry, project_id))
-        return {"status": "OK"}
-
-    monkeypatch.setattr(server.tools, "get_index_status", fake_index_status)
-    monkeypatch.setattr(server.tools, "get_workflow_status_snapshot", fake_workflow_snapshot)
-
-    assert asyncio.run(server.get_index_status("dopemux")) == {"status": "BLOCKED"}
-    assert asyncio.run(server.get_workflow_status_snapshot("dopemux")) == {"status": "OK"}
-    assert captured == [
-        ("index", server._REGISTRY, "dopemux"),
-        ("workflow", server._REGISTRY, "dopemux"),
-    ]
+    assert captured == {"registry": server._REGISTRY, "target_id": "target-main"}

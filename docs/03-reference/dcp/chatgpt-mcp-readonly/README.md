@@ -1,27 +1,32 @@
 ---
 id: README
-title: Readme
+title: DCP Read-Only MCP Evidence Facade
 type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-06-11'
-last_review: '2026-06-11'
-next_review: '2026-09-09'
-prelude: Readme (reference) for dopemux documentation and developer workflows.
+date: '2026-07-16'
+last_review: '2026-07-16'
+next_review: '2026-10-14'
+prelude: Authority and local-only documentation for the registry-v2 DCP read-only MCP evidence facade.
 ---
-# ChatGPT MCP Read-Only Evidence Facade Discovery
+# DCP Read-Only MCP Evidence Facade
 
-Status: EVIDENCE_READY_WITH_GAPS
+Status: `LOCAL_IMPLEMENTATION_WITH_GAPS`
 
-This directory contains discovery artifacts for a future ChatGPT-accessible read-only Dopemux evidence facade. It is documentation and proof only; no tunnel setup, MCP exposure, service start, or implementation was performed in this packet.
+The public FastMCP entrypoint now uses the registry-v2 opaque `target_id`
+contract. It exposes only local target, repository, proof, static capability,
+and non-callable runtime-evidence receipts. It does not expose a listener,
+tunnel, connector, credential, backend adapter, or runtime lifecycle action.
 
-Primary artifacts:
+Primary current references:
 
-- `RUNTIME_SURFACE_INVENTORY.md`
-- `READ_ONLY_SURFACE_INVENTORY.json`
-- `PROOF_BUNDLE_AND_EVIDENCE_SOURCES.md`
-- `AUTHORITY_AND_RISK_REGISTER.md`
-- `PROPOSED_FACADE_TOOLS.md`
-- `DCP_THREAD_HANDOFF.md`
+- [`REGISTRY_V2_CONTRACT.md`](REGISTRY_V2_CONTRACT.md)
+- [`RUNTIME_CATALOG_JOIN_CONTRACT.md`](RUNTIME_CATALOG_JOIN_CONTRACT.md)
+- [`TOOL_CONTRACT.md`](TOOL_CONTRACT.md)
+- [`RESPONSE_ENVELOPE_SCHEMA.md`](RESPONSE_ENVELOPE_SCHEMA.md)
+- [`FACADE_LOCAL_RUN.md`](FACADE_LOCAL_RUN.md)
+- [`MANUAL_VALIDATION.md`](MANUAL_VALIDATION.md)
 
-Generated from saved source: `audit_inputs/gpt55_recon_source/CODEX_RECON_PACKS_SOURCE.md`.
+The older v1 `project_id` and direct-backend documents preserve implementation
+history but do not define the current public MCP manifest. Runtime and source
+truth continue to outrank generated or historical architecture artifacts.
