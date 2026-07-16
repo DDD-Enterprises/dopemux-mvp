@@ -63,15 +63,8 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
 
 test('PredictionPanel.tsx renders TrendingDown icon when predicted load is lower than current load', () => {
   const { container } = render(<PredictionPanel prediction={0.3} currentLoad={0.7} />);
-  // TrendingDown and TrendingUp from Lucide are SVG elements.
-  // We check for the presence of the trending-down class or just that the SVG exists.
-  // Lucide icons often have a data-testid or we can check the component content if we can't easily query by icon name in JSDOM.
   const content = container.innerHTML;
-  // We can't easily check for TrendingDown vs TrendingUp by class name if they are not explicitly added.
-  // But we can check if the TrendingDown component's unique characteristics are present.
-  // Actually, since this is a unit test, we can just check if the logic holds by inspecting the rendered SVGs if possible,
-  // or simply rely on the fact that we've added the logic.
-  // To be more robust, we check if TrendingDown is used.
+  // TrendingDown from Lucide contains specific path or class
   expect(content).toContain('trending-down');
 });
 

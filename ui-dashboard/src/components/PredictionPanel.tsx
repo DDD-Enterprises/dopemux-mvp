@@ -14,12 +14,12 @@ interface PredictionPanelProps {
 export default function PredictionPanel({ prediction, currentLoad, onError }: PredictionPanelProps) {
   const hasPrediction = typeof prediction === 'number';
   const value = hasPrediction ? Math.max(0, Math.min(100, Math.round(prediction * 100))) : 0;
+  const isTrendingDown = hasPrediction && typeof currentLoad === 'number' && prediction < currentLoad;
   const status = hasPrediction ? deriveStatus(prediction) : 'optimal';
   const statusMeta = statusStyles[status];
   const roast = getDynamicRoast('15-min Prediction', prediction ?? null);
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isTrendingDown = hasPrediction && typeof currentLoad === 'number' && prediction < currentLoad;
 
   const handleCopy = useCallback(async () => {
     if (!navigator.clipboard?.writeText) {
