@@ -1,3 +1,15 @@
+---
+id: TP-RTE-TRUTH-LOAD-PLAN
+title: RTE-TRUTH Load Plan
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-15'
+last_review: '2026-07-15'
+next_review: '2026-10-13'
+prelude: Execution order, dependencies, and model routing for the 32 TP-RTE-TRUTH
+  remediation packets produced by the Repo Truth Extractor audit.
+---
 # TP-RTE-TRUTH Load Plan — RTE audit remediation (Grok build)
 
 **Program**: RTE-TRUTH (audit complete 2026-07-11; findings: `claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md`)
