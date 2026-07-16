@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { Brain, Check, Copy } from 'lucide-react';
-
 import { brandTokens, statusStyles, getDynamicRoast } from '../theme';
 
 interface CognitiveLoadGaugeProps {
@@ -18,63 +17,59 @@ export default function CognitiveLoadGauge({
   recommendation,
   onError,
 }: CognitiveLoadGaugeProps) {
-  const statusMeta = statusStyles[status];
-  const normalizedLoad = Math.max(0, Math.min(100, Math.round(load * 100)));
-  const roast = getDynamicRoast('Cognitive Load', load);
-
-  const [isCopied, setIsCopied] = useState(false);
+  const [copied, setCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleCopy = useCallback(async () => {
+  const statusMeta = statusStyles[status];
+  const val = Math.max(0, Math.min(100, Math.round(load * 100)));
+  const roast = getDynamicRoast('Cognitive Load', load);
+
+  // Clear copied state if underlying data changes
+  useEffect(() => {
+    setCopied(false);
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = null;
+    }
+  }, [val, status, recommendation]);
+
+  const onCopy = useCallback(async () => {
     if (!navigator.clipboard?.writeText) {
-      onError?.('Clipboard API is not supported in this browser or context.');
+      onError?.('Clipboard API not supported');
       return;
     }
     try {
-      await navigator.clipboard.writeText(`Cognitive Load: ${normalizedLoad}% (${statusMeta.label}) - AI Recommendation: ${recommendation}`);
-      setIsCopied(true);
+      await navigator.clipboard.writeText(`Load: ${val}% (${statusMeta.label}) - AI: ${recommendation}`);
+      setCopied(true);
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
       copyTimeoutRef.current = setTimeout(() => {
-        setIsCopied(false);
+        setCopied(false);
         copyTimeoutRef.current = null;
       }, 2000);
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      onError?.(`Failed to copy recommendation: ${errorMsg}`);
+    } catch (e) {
+      onError?.('Failed to copy load details and recommendation');
     }
-  }, [normalizedLoad, statusMeta.label, recommendation, onError]);
+  }, [val, statusMeta.label, recommendation, onError]);
 
   useEffect(() => {
     return () => {
-      if (copyTimeoutRef.current) {
-        clearTimeout(copyTimeoutRef.current);
-        copyTimeoutRef.current = null;
-      }
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
     };
   }, []);
 
   return (
-    <Tooltip title={isCopied ? 'Copied!' : `AI Recommendation: ${recommendation}. Click to copy details.`} arrow>
+    <Tooltip title={copied ? 'Copied!' : `AI Recommendation: ${recommendation}. Click to copy details.`} arrow>
       <Paper
         role="button"
         tabIndex={0}
-        onClick={handleCopy}
+        onClick={onCopy}
         onKeyDown={(e) => {
-          if (e.repeat) return;
-          if (e.key === ' ') e.preventDefault();
-          if (e.key === 'Enter') {
+          if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
-            void handleCopy();
+            onCopy();
           }
         }}
-        onKeyUp={(e) => {
-          if (e.repeat) return;
-          if (e.key === ' ') {
-            e.preventDefault();
-            void handleCopy();
-          }
-        }}
-        aria-label={isCopied ? `Recommendation copied: ${recommendation}` : `Cognitive load ${normalizedLoad} percent, ${statusMeta.label}. AI Recommendation: ${recommendation}. Click to copy details.`}
+        aria-label={copied ? 'Copied' : `Load ${val}%, ${statusMeta.label}. AI Recommendation: ${recommendation}. Click to copy details.`}
         sx={{
           p: 3,
           minHeight: 300,
@@ -89,13 +84,16 @@ export default function CognitiveLoadGauge({
             '70%': { boxShadow: `0 0 0 12px ${alpha(statusMeta.color, 0)}` },
             '100%': { boxShadow: `0 0 0 0px ${alpha(statusMeta.color, 0)}` },
           },
-          '@keyframes copy-success-glow': {
+          '@keyframes copy-glow': {
             '0%': { transform: 'scale(1)' },
-            '50%': { transform: 'scale(1.02)', boxShadow: `0 0 20px ${alpha(brandTokens.colors.serumMint, 0.4)}` },
+            '50%': {
+              transform: 'scale(1.02)',
+              boxShadow: `0 0 20px ${alpha(brandTokens.colors.serumMint, 0.4)}`,
+            },
             '100%': { transform: 'scale(1)' },
           },
-          animation: isCopied
-            ? 'copy-success-glow 0.4s ease-out'
+          animation: copied
+            ? 'copy-glow 0.4s ease-out'
             : (status === 'high' || status === 'critical' ? 'load-pulse 2s infinite' : 'none'),
           '@media (prefers-reduced-motion: reduce)': {
             animation: 'none',
@@ -114,14 +112,14 @@ export default function CognitiveLoadGauge({
           </Typography>
         </Box>
         <Typography variant="h2" sx={{ color: statusMeta.color, my: 1 }}>
-          {normalizedLoad}%
+          {val}%
         </Typography>
         <Box aria-hidden="true" sx={{ width: 28, height: 2, bgcolor: statusMeta.color, mb: 1 }} />
         <LinearProgress
           aria-label="Cognitive Load Percentage"
-          aria-valuetext={`${normalizedLoad}%`}
+          aria-valuetext={`${val}%`}
           variant="determinate"
-          value={normalizedLoad}
+          value={val}
           sx={{
             height: 10,
             borderRadius: 6,
@@ -140,7 +138,7 @@ export default function CognitiveLoadGauge({
             <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1.2 }}>
               AI Recommendation
             </Typography>
-            {isCopied ? (
+            {copied ? (
               <Check size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
             ) : (
               <Copy size={14} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
