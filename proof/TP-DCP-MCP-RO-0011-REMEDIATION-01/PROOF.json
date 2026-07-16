@@ -21,7 +21,11 @@
     "docs/03-reference/dcp/chatgpt-mcp-readonly/RUNTIME_CATALOG_JOIN_CONTRACT.md",
     "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
     "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.json",
-    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.md"
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011-REMEDIATION-01.md",
+    "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/PROOF.json",
+    "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/AUDITOR_REPORT.md",
+    "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/COMMAND_LOG.md",
+    "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/GROK_AUDIT.md"
   ],
   "validation": {
     "PASS": [
@@ -79,6 +83,11 @@
         "command": "task-packet branch and PR binding reconciliation after #1041 merged",
         "exit_code": 0,
         "result": "packet bound to current-main branch codex/dcp-mcp-ro-0011-identity-remediation and PR #1055"
+      },
+      {
+        "command": "grok -p read-only differential audit of origin/main...2405a3a16c9ab57b875dd45fca19ffafe5cce7c4",
+        "exit_code": 0,
+        "result": "PASS_WITH_RISKS; no runtime-join blocking finding"
       }
     ],
     "FAIL": [],
@@ -100,6 +109,15 @@
       }
     ]
   },
+  "external_grok_audit": {
+    "tool": "Grok Build",
+    "version": "0.2.101",
+    "mode": "read-only single-turn; web search and subagents disabled",
+    "audited_head_sha": "2405a3a16c9ab57b875dd45fca19ffafe5cce7c4",
+    "status": "PASS_WITH_RISKS",
+    "report_path": "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/GROK_AUDIT.md",
+    "ci_trust_status": "NOT_ACCEPTED: embedded-audit.yml only accepts its own trusted workflow proof."
+  },
   "embedded_audit": {
     "required": true,
     "status": "SKIPPED",
@@ -115,11 +133,12 @@
       "Separated the remediation packet and proof from the executed TP-DCP-MCP-RO-0011 history."
     ],
     "remaining_risks": [
-      "No independent automated review verdict was produced.",
+      "The canonical CI embedded audit cannot run because its configured claude CLI is absent on the GitHub runner.",
+      "The separate Grok PASS_WITH_RISKS review is not accepted by embedded-audit.yml as a trusted workflow proof.",
       "The intentionally opt-in live facade test was not run.",
       "GitHub checks must be refreshed after pushing the remediation commits."
     ],
-    "skip_reason": "The available Codex reviewer could not complete a final differential verdict in this environment. Its failed initialization and non-verdict retry are documented in AUDITOR_REPORT.md; no passing external audit is claimed."
+    "skip_reason": "The available Codex reviewer could not complete a final differential verdict. A separate Grok review returned PASS_WITH_RISKS, but it cannot satisfy the distinct trusted embedded-audit workflow contract; see AUDITOR_REPORT.md and GROK_AUDIT.md."
   },
   "residual_risks": [
     "No live runtime, ownership, transport, freshness, provider, or backend evidence is claimed.",

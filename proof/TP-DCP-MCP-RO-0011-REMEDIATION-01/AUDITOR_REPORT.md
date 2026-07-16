@@ -2,8 +2,9 @@
 
 ## Verdict
 
-`SKIPPED`. No independent automated reviewer verdict was produced, so this
-record does not claim external audit approval.
+`SKIPPED` for the canonical CI embedded-audit field. That field requires a
+trusted `embedded-audit.yml` proof and remains unavailable because the GitHub
+runner has no configured `claude` executable.
 
 ## Attempted Review
 
@@ -30,6 +31,9 @@ lifecycle-generated positive match and the simplified DCP identity rejection.
 
 ## Remaining Review Gap
 
-An independent differential-review verdict is still absent. Merge readiness
-therefore depends on a subsequent reviewer accepting the current PR head in
-addition to GitHub checks for the pushed commits.
+A separate read-only Grok Build audit returned `PASS_WITH_RISKS`; its findings
+are recorded in `GROK_AUDIT.md`. It found no runtime-join blocker, but is not a
+substitute for the trusted CI proof that the current Steward gate requires.
+
+Merge readiness therefore remains blocked on a credentialed, installed CI
+auditor route and a passing audit against the current PR head.

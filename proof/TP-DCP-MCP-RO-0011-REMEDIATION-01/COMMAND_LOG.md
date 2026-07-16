@@ -18,6 +18,7 @@ All commands below ran in the dedicated worktree on branch
 | `git diff --check` and `git diff --cached --check` | PASS; unrelated fsmonitor IPC warning emitted |
 | `pre-commit run --files <implementation allowlist>` | PASS after first-run packet front-matter normalization |
 | Read-only Codex differential review | NOT_RUN; see `AUDITOR_REPORT.md` |
+| `grok -p` read-only differential audit | PASS_WITH_RISKS; see `GROK_AUDIT.md` |
 
 No live DCP facade, provider, transport, container, backend, or credential
 operation was run.
