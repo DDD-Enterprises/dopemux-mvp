@@ -1,0 +1,1004 @@
+{
+  "server": "dope-context",
+  "url": "http://127.0.0.1:3010/mcp",
+  "transport": "http",
+  "ts": "2026-07-16T11:23:52-0700",
+  "initialize_status": 200,
+  "initialize": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "protocolVersion": "2024-11-05",
+      "capabilities": {
+        "experimental": {},
+        "logging": {},
+        "prompts": {
+          "listChanged": true
+        },
+        "resources": {
+          "subscribe": false,
+          "listChanged": true
+        },
+        "tools": {
+          "listChanged": true
+        },
+        "extensions": {
+          "io.modelcontextprotocol/ui": {}
+        }
+      },
+      "serverInfo": {
+        "name": "dope-context",
+        "version": "3.4.2"
+      }
+    }
+  },
+  "tools_list_status": 200,
+  "tools_list": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "tools": [
+        {
+          "name": "index_workspace",
+          "description": "Index a workspace directory for code search.\n\n\ud83c\udfaf **WHEN TO USE**:\n- **First time setup**: Enable semantic search for a new project\n- **Major updates**: Reindex after significant code changes\n- **Search failures**: Fix \"codebase not indexed\" errors\n\n\u2699\ufe0f **CONFIGURATION**:\n- Default patterns: [\"*.py\", \"*.js\", \"*.ts\", \"*.tsx\"]\n- Auto-excludes: tests, __pycache__, node_modules, .git\n- ADHD-friendly: Runs in background, search works during indexing",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Path to index (defaults to current repo)"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of paths to batch index"
+              },
+              "include_patterns": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "File patterns to include (e.g., [\"*.py\", \"*.ts\"])"
+              },
+              "exclude_patterns": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "File patterns to exclude (e.g., [\"*test*\"])"
+              },
+              "max_files": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Maximum files to index (optional, for large repos)"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "search_code",
+          "description": "Search indexed code with hybrid dense + sparse search.\n\n\ud83c\udfaf **WHEN TO USE** (Search BEFORE these tasks):\n- **Understanding code**: Find how features are implemented\n- **Making changes**: Gather context before modifying code\n- **Debugging issues**: Locate problematic code sections or bugs\n- **Code review**: Understand patterns and existing implementations\n- **Refactoring**: Find all related code pieces that need updates\n- **Feature development**: Learn from similar existing features\n- **Answering questions**: Get relevant code examples and context\n- **Impact analysis**: Find what depends on code you're changing\n\n\ud83e\udde0 **ADHD OPTIMIZATION**:\n- Max 10 results by default (prevents overwhelm)\n- Progressive disclosure (essential info first)\n- Reranking enabled (best results at top)\n\nAuto-detects workspace from current directory (or use workspace_path).",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Natural language search query"
+              },
+              "top_k": {
+                "default": 10,
+                "type": "integer",
+                "description": "Number of results to return (default 10, max 50 for ADHD)"
+              },
+              "profile": {
+                "default": "implementation",
+                "type": "string",
+                "description": "Search profile (implementation, debugging, exploration)"
+              },
+              "use_reranking": {
+                "default": true,
+                "type": "boolean",
+                "description": "Whether to rerank with Voyage (default: True)"
+              },
+              "filter_language": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Filter by language (python, javascript, typescript)"
+              },
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional workspace path (auto-detects if None)"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of workspaces to query sequentially"
+              },
+              "enrich_with_graph": {
+                "default": false,
+                "type": "boolean",
+                "description": "Add code graph relationships from Serena (F-NEW-5)"
+              }
+            },
+            "required": [
+              "query"
+            ],
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "get_index_status",
+          "description": "Get status of code/doc indexes for one or more workspaces.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional single workspace path"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of workspace paths to aggregate"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "clear_index",
+          "description": "Clear a workspace's index/indices.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Workspace root (defaults to auto-detected root)"
+              },
+              "target": {
+                "default": "code",
+                "type": "string",
+                "description": "Which index to clear - \"code\", \"docs\", or \"both\""
+              },
+              "proof_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Proof artifact or Task Packet id authorizing the deletion"
+              },
+              "approval_phrase": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Exact phrase returned by a refused dry call"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "index_docs",
+          "description": "Index documents (PDF, Markdown, HTML, text) in workspace.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Path to workspace root (defaults to current repo)"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of workspaces to batch index"
+              },
+              "include_patterns": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "File patterns (e.g., [\"*.md\", \"*.pdf\"])"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "docs_search",
+          "description": "Search indexed documents (PDF, Markdown, HTML, text).\n\n\ud83c\udfaf **WHEN TO USE**:\n- **Learning architecture**: Find design docs, ADRs, and system overviews\n- **API reference**: Locate endpoint documentation and API guides\n- **Setup guides**: Find installation, configuration, and deployment docs\n- **Troubleshooting**: Search error messages, FAQs, and solutions\n- **Requirements**: Find PRDs, feature specifications, and user stories\n\nAuto-detects workspace from current directory (or use workspace_path).",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Natural language search query"
+              },
+              "top_k": {
+                "default": 10,
+                "type": "integer",
+                "description": "Number of results to return (default 10)"
+              },
+              "filter_doc_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Filter by document type (md, pdf, html, txt)"
+              },
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional workspace path (auto-detects if None)"
+              },
+              "max_content_length": {
+                "default": 2000,
+                "type": "integer",
+                "description": "Max characters per doc (default 2000, prevents token overflow)"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of workspaces to query sequentially"
+              }
+            },
+            "required": [
+              "query"
+            ],
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "configure_decision_auto_indexing",
+          "description": "Configure decision retrieval for unified search.\n\nThis enables `search_all` to automatically include ConPort decision matches\nalongside code and docs results.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "enabled": {
+                "default": true,
+                "type": "boolean"
+              },
+              "bridge_url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "decision_limit": {
+                "default": 3,
+                "type": "integer"
+              },
+              "auto_include_in_search_all": {
+                "default": true,
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "search_all",
+          "description": "Unified search across code, docs, and optional ConPort decisions.\n\n\ud83c\udfaf **WHEN TO USE**:\n- **Complete context**: Need both implementation and documentation together\n- **Feature exploration**: Understand code alongside design docs\n- **Onboarding**: Learn codebase with docs as guide\n- **Cross-reference**: Verify code matches documented behavior\n\nAuto-detects workspace from current directory (or use workspace_path).",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Natural language search query"
+              },
+              "top_k": {
+                "default": 10,
+                "type": "integer",
+                "description": "Total results budget (default 10)"
+              },
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional workspace path (auto-detects if None)"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of workspaces to query sequentially"
+              },
+              "include_decisions": {
+                "default": true,
+                "type": "boolean",
+                "description": "Include decision matches when configured"
+              }
+            },
+            "required": [
+              "query"
+            ],
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "sync_workspace",
+          "description": "Sync workspace index with file changes (incremental).\n\nDetects added/modified/removed files using SHA256 snapshots.\nOptionally auto-reindexes changed files for true incremental updates.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Absolute workspace path"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of workspaces to process sequentially"
+              },
+              "include_patterns": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "File patterns to track (default: code files)"
+              },
+              "auto_reindex": {
+                "default": false,
+                "type": "boolean",
+                "description": "Automatically reindex changed files (default: False)"
+              }
+            },
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "sync_docs",
+          "description": "Sync docs index with file changes (incremental).\n\nDetects added/modified/removed documents using SHA256 snapshots.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Absolute workspace path"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of workspaces to process sequentially"
+              },
+              "include_patterns": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "File patterns to track (default: doc files)"
+              }
+            },
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "get_search_metrics",
+          "description": "Get search usage metrics for benchmarking.\n\n\ud83c\udfaf **USE CASE**: Measure how often LLM uses semantic search",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "since_timestamp": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional ISO timestamp (e.g., \"2025-10-04T12:00:00\")\n            Only include metrics after this time"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "clear_search_metrics",
+          "description": "Clear all search metrics (for fresh baseline).\n\n\ud83c\udfaf **USE CASE**: Reset metrics before/after enhancement testing\n\nReturns:\n    Success message",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {},
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "start_autonomous_indexing",
+          "description": "Enable autonomous indexing for one or many workspaces.\n\n\ud83c\udfaf **ADHD BENEFIT**: Zero mental overhead - index updates automatically\nas you code. No manual sync needed ever again!\n\nStarts three monitoring systems:\n1. File watcher (watchdog) - Immediate response to changes\n2. 5s debouncing - Batches rapid saves for efficiency\n3. 10min periodic fallback - Catches any missed events",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Workspace to monitor (defaults to cwd)"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of workspaces to monitor"
+              },
+              "debounce_seconds": {
+                "default": 5.0,
+                "type": "number",
+                "description": "Wait time after file changes (default: 5.0)"
+              },
+              "periodic_interval": {
+                "default": 600,
+                "type": "integer",
+                "description": "Fallback check interval (default: 600s/10min)"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "stop_autonomous_indexing",
+          "description": "Stop autonomous indexing for workspace.\n\n\ud83c\udfaf **USE CASE**: Disable auto-indexing when not needed (saves resources)",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Workspace to stop monitoring (defaults to cwd)"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of workspaces to stop"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "get_autonomous_status",
+          "description": "Get status of all autonomous indexers (code AND docs).\n\n\ud83c\udfaf **USE CASE**: Health monitoring and debugging\n\nReturns comprehensive status for all active autonomous indexers including:\n- Workspace paths\n- Type (code or docs)\n- Running state\n- Watchdog status (pending changes)\n- Worker stats (tasks processed, success rate, queue size)\n- Periodic sync stats (sync count, changes detected)\n\nReturns:\n    Dictionary with status of all active controllers",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {},
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "start_autonomous_docs_indexing",
+          "description": "Enable autonomous docs indexing for workspace.\n\n\ud83c\udfaf **ADHD BENEFIT**: Zero mental overhead - docs index updates automatically\nas you edit markdown/PDFs. No manual sync needed!\n\nStarts three monitoring systems:\n1. File watcher (watchdog) - Immediate response to doc changes\n2. 5s debouncing - Batches rapid saves for efficiency\n3. 10min periodic fallback - Catches any missed events",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Workspace to monitor (defaults to cwd)"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of workspaces to monitor"
+              },
+              "debounce_seconds": {
+                "default": 5.0,
+                "type": "number",
+                "description": "Wait time after file changes (default: 5.0)"
+              },
+              "periodic_interval": {
+                "default": 600,
+                "type": "integer",
+                "description": "Fallback check interval (default: 600s/10min)"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "stop_autonomous_docs_indexing",
+          "description": "Stop autonomous docs indexing for workspace.\n\n\ud83c\udfaf **USE CASE**: Disable auto-indexing when not needed (saves resources)",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Workspace to stop monitoring (defaults to cwd)"
+              },
+              "workspace_paths": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional list of workspaces to stop"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "get_chunk_complexity",
+          "description": "Get AST-based complexity for code chunk (Synergy A support).\n\nReturns complexity score 0.0-1.0 from Tree-sitter analysis.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "file_path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "file_path",
+              "symbol"
+            ],
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        }
+      ]
+    }
+  },
+  "tool_names": [
+    "clear_index",
+    "clear_search_metrics",
+    "configure_decision_auto_indexing",
+    "docs_search",
+    "get_autonomous_status",
+    "get_chunk_complexity",
+    "get_index_status",
+    "get_search_metrics",
+    "index_docs",
+    "index_workspace",
+    "search_all",
+    "search_code",
+    "start_autonomous_docs_indexing",
+    "start_autonomous_indexing",
+    "stop_autonomous_docs_indexing",
+    "stop_autonomous_indexing",
+    "sync_docs",
+    "sync_workspace"
+  ],
+  "tool_count": 18,
+  "verdict": "OK"
+}

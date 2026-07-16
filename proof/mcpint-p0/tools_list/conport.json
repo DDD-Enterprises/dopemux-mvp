@@ -1,0 +1,52 @@
+{
+  "server": "conport",
+  "url": "http://127.0.0.1:3005/sse",
+  "transport": "sse",
+  "ts": "2026-07-16T11:23:52-0700",
+  "post_endpoint": "http://127.0.0.1:3005/messages/?session_id=86beb7504d3244be9bcf1d6c78da2aed",
+  "initialize": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "protocolVersion": "2024-11-05",
+      "capabilities": {
+        "experimental": {},
+        "prompts": {
+          "listChanged": false
+        },
+        "resources": {
+          "subscribe": false,
+          "listChanged": false
+        },
+        "tools": {
+          "listChanged": false
+        }
+      },
+      "serverInfo": {
+        "name": "conport",
+        "version": "1.28.1"
+      }
+    }
+  },
+  "tool_names": [
+    "delete_custom_data",
+    "fork_instance",
+    "get_active_work",
+    "get_context",
+    "get_custom_data",
+    "get_decisions",
+    "get_progress",
+    "get_recent_activity",
+    "log_decision",
+    "log_progress",
+    "promote",
+    "promote_all",
+    "save_custom_data",
+    "search_content",
+    "update_context",
+    "update_progress",
+    "workspace_summary"
+  ],
+  "tool_count": 17,
+  "verdict": "OK"
+}
