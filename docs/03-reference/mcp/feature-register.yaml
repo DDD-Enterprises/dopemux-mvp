@@ -1811,15 +1811,15 @@ features:
     name: mcp-capture (capture/emit, lane-aware, SHA256 dedup, audit trail)
     plane: chronicle
     server: mcp-capture
-    status: built-unwired
+    status: retired
     code_path: services/mcp-capture
     tools: []
     source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
-    decision: packet:MCPINT-FND-HYG-007
+    decision: adr:adr-mcpint-004
     triage: {wiring_cost: S, value: M, boundary_fit: clean}
     packet_ref: MCPINT-FND-HYG-007
-    last_verified: "2026-07-16"
-    note: "Finished + tested, registered nowhere. FND-HYG-007 = register-or-shelve."
+    last_verified: "2026-07-17"
+    note: "RETIRED per ADR-mcpint-004 §4 (register-or-shelve resolved by FND-HYG-007): a second capture door recreates the two-contract drift that emptied the chronicle. Absorbed into capture_client + authenticated /events — its SHA256-dedup (DMEM-EVENT-DEDUP), lane-awareness, and capture-audit ideas fold into the capture_client backlog as library features, not a server. Source carries DEPRECATED headers (services/mcp-capture/server.py + README); was never in any catalog/config/compose and must not be added."
 
   - id: COPILOT-INGESTER
     name: Copilot transcript ingester
@@ -1832,8 +1832,8 @@ features:
     decision: packet:MCPINT-FND-HYG-007
     triage: {wiring_cost: S, value: M, boundary_fit: clean}
     packet_ref: MCPINT-FND-HYG-007
-    last_verified: "2026-07-16"
-    note: "Live library, nothing schedules it — scheduled-tasks MCP is a candidate scheduler."
+    last_verified: "2026-07-17"
+    note: "Live library, nothing schedules it. Scheduling decision (FND-HYG-007, per tool-placement-map §3): scheduled-tasks (host-level MCP, managed:false external entry) is the DESIGNATED scheduler for the copilot-ingester follow-up — not cron, not a new daemon. Wiring the schedule itself is follow-up work, not done here; status stays built-unwired until it lands."
 
   # ============================================================
   # 13. Hooks (H-series + orchestrator hooks)

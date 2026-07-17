@@ -82,6 +82,18 @@ from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_wo
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
 from dopemux.memory.capture_client import try_emit_promotable_capture_event  # noqa: E402
 
+try:
+    from dopemux.claude.activity_ratelimit import should_emit_heartbeat
+except Exception:  # pragma: no cover - fail-open: no limiter, keep emitting
+    def should_emit_heartbeat(  # noqa: ARG001
+        event_type,
+        *,
+        session_id=None,
+        project_root=None,
+        cooldown_seconds=None,
+    ) -> bool:
+        return True
+
 # Claude Code command hook exit codes
 EXIT_SUCCESS = 0
 EXIT_BLOCK = 2
@@ -118,9 +130,28 @@ def _emit_activity_event(
     hook_event_name: str,
     status: str,
     tool_name: Optional[str] = None,
+    session_id: Optional[str] = None,
+    project_root: Optional[Path] = None,
 ) -> bool:
-    """Emit a content-free native hook activity event to Redis Streams."""
+    """Emit a content-free native hook activity event to Redis Streams.
+
+    Low-signal heartbeat pings (this event class is content-free by design)
+    are coalesced per session via ``activity_ratelimit`` (MCPINT-FND-HYG-007 /
+    ADR-mcpint-004): identical (hook, status, tool) pings emit at most once
+    per cooldown window. ``session_id``/``project_root`` feed only the local
+    cooldown cache key — they are never written to the stream payload.
+    """
     if not _native_hook_activity_events_enabled():
+        return False
+
+    heartbeat_key = ":".join(
+        [NATIVE_HOOK_ACTIVITY_EVENT_TYPE, hook_event_name, status, tool_name or ""]
+    )
+    if not should_emit_heartbeat(
+        heartbeat_key,
+        session_id=session_id,
+        project_root=project_root,
+    ):
         return False
 
     client = None
@@ -369,7 +400,12 @@ class NativeHookAdapter:
         return self._allow(additional_context=protocol, hook_event_name="SubagentStart")
 
     def _on_user_prompt(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-        _emit_activity_event(hook_event_name="UserPromptSubmit", status="observed")
+        _emit_activity_event(
+            hook_event_name="UserPromptSubmit",
+            status="observed",
+            session_id=self.session_id,
+            project_root=self.project_root,
+        )
         state = self._active_state()
         if not state:
             return self._allow()
@@ -391,6 +427,8 @@ class NativeHookAdapter:
             hook_event_name="PreToolUse",
             status="attempt",
             tool_name=tool_name,
+            session_id=self.session_id,
+            project_root=self.project_root,
         )
         tool_input = data.get("tool_input") or {}
 
@@ -479,6 +517,8 @@ class NativeHookAdapter:
             hook_event_name="PostToolUse",
             status="success",
             tool_name=tool_name,
+            session_id=self.session_id,
+            project_root=self.project_root,
         )
         tool_input = data.get("tool_input") or {}
         tool_response = data.get("tool_response")
@@ -542,6 +582,8 @@ class NativeHookAdapter:
             hook_event_name="PostToolUseFailure",
             status="failure",
             tool_name=tool_name,
+            session_id=self.session_id,
+            project_root=self.project_root,
         )
         _emit_bounded_hook_error_capture(
             project_root=self.project_root,

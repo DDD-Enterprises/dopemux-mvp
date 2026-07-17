@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 """
-MCP Capture Server - Expose emit_capture_event() as MCP tool.
+RETIRED — MCP Capture Server (do not wire, do not deploy).
 
-Implements CLI-INT-002: Cross-adapter capture integration.
-Enables MCP-based adapters (Codex, future tools) to emit events
-to Chronicle with content-addressed deduplication.
+Status: RETIRED per ADR-MCPINT-004 (docs/90-adr/adr-mcpint-004-event-ingress-
+contract.md, "mcp-capture retired") — a second capture door recreates the
+two-contract drift that emptied the chronicle. The canonical event path is
+the `capture_client` producer library (src/dopemux/memory/capture_client.py)
+publishing through the authenticated dopecon-bridge POST /events ingress.
+This server's good ideas (SHA256 dedup, lane-awareness, capture audit) fold
+into the capture_client backlog as library features, not a server.
+Register: docs/03-reference/mcp/feature-register.yaml entry MCP-CAPTURE
+(status: retired). Placement: docs/03-reference/mcp/tool-placement-map.md §3.
+
+Historical purpose (CLI-INT-002): expose emit_capture_event() as an MCP tool
+so MCP-based adapters (Codex, future tools) could emit events to Chronicle
+with content-addressed deduplication. It was never registered in any
+catalog, config, or compose file — and must not be now.
 
 Tool: capture/emit
 - Wraps emit_capture_event() from dopemux.memory.capture_client
