@@ -232,3 +232,58 @@ def test_mcp_doctrine_doc_carries_decision_gated_servers():
     doc = fleet_catalog.render_mcp_doctrine_doc(catalog)
 
     assert "`desktop-commander` | automation | desktop-automation | decision-required" in doc
+
+
+def _non_startable_variants_catalog():
+    return {
+        "version": 1,
+        "defaults": {"per_worktree": []},
+        "servers": {
+            "startable-http": {
+                "scope": "singleton",
+                "transport": "http",
+                "lifecycle": "active",
+                "url": "http://localhost:1111/mcp",
+            },
+            "agents-none-sse": {
+                "scope": "singleton",
+                "transport": "sse",
+                "lifecycle": "active",
+                "agents": "none",
+                "url": "http://localhost:2222/sse",
+            },
+            "agents-none-http": {
+                "scope": "singleton",
+                "transport": "http",
+                "lifecycle": "active",
+                "agents": "none",
+                "url": "http://localhost:2223/mcp",
+            },
+            "planned-http": {
+                "scope": "singleton",
+                "transport": "http",
+                "lifecycle": "planned-active",
+            },
+            "external-unmanaged": {
+                "scope": "singleton",
+                "transport": "external",
+                "managed": False,
+                "lifecycle": "operator-managed",
+            },
+        },
+    }
+
+
+def test_global_renderer_excludes_agents_none_planned_active_and_unmanaged():
+    servers = mcp_commands._build_global_mcp_servers(_non_startable_variants_catalog())
+
+    assert set(servers) == {"startable-http"}
+
+
+def test_codex_fragment_excludes_agents_none_planned_active_and_unmanaged():
+    fragment = fleet_catalog.render_codex_config_fragment(_non_startable_variants_catalog())
+
+    assert '[mcp_servers."startable-http"]' in fragment
+    assert "agents-none-http" not in fragment
+    assert "planned-http" not in fragment
+    assert "external-unmanaged" not in fragment

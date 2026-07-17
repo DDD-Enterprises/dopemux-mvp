@@ -1,5 +1,26 @@
-# Canonical MCP registry for Dopemux.
-# This file is the source of truth for MCP server naming and transport metadata.
+# DEPRECATED — this file is NOT the source of truth (ADR-MCPINT-001, 2026-07-17).
+#
+# The canonical MCP fleet catalog is /mcp_catalog.yaml (schema:
+# schemas/mcp/fleet-catalog.schema.json). This legacy registry is retained only
+# because live consumers still read it and could not be migrated in
+# MCPINT-FND-CATALOG-001's minimal-change scope:
+#   - src/dopemux/config/manager.py (ConfigManager default mcp_servers,
+#     _repair_legacy_mcp_servers, _generate_server_config)
+#   - src/dopemux/mcp/__init__.py re-exports (MCPRegistry et al.)
+#   - name-mapping/profile/roles ecosystem keyed on dopemux-* names
+#     (claude_config.MCP_NAME_MAPPING, roles/catalog.py, profile_* modules)
+#   - tests/test_mcp_registry.py, tests/test_mcp_config_generation.py,
+#     tests/arch (validate_legacy_registry_contract)
+# Migration/retirement is a follow-up owned by the DMX-MCPINT program.
+#
+# KNOWN ROT (runtime-refuted claims — do not trust; kept only to avoid changing
+# consumer behavior in this packet):
+#   - dopemux-zen: ghost server (zen was renamed to PAL; nothing can start this)
+#   - dopemux-conport: docker.port 3004 is the HTTP/health port; the live MCP
+#     surface is SSE on :3005 (P0 claim 1). Bridge configs generated from this
+#     entry target the wrong endpoint.
+#
+# Do NOT add new servers here. Add them to /mcp_catalog.yaml.
 
 servers:
   dopemux-conport:

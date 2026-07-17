@@ -645,7 +645,23 @@ def _render_global_entry(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _is_startable_global_entry(spec: Dict[str, Any]) -> bool:
-    return spec.get("lifecycle") != "decision-required"
+    """True when a catalog entry may appear in generated startable configs.
+
+    Excluded (ADR-MCPINT-001): `decision-required` (quarantined pending a
+    follow-on decision), `planned-active` (built but not yet deployed — no
+    truthful endpoint exists), `managed: false` / `transport: external`
+    (host-level surfaces the repo does not manage), and `agents: none`
+    (infra/PM-sync entries with no agent matrix row).
+    """
+    if spec.get("lifecycle") in {"decision-required", "planned-active"}:
+        return False
+    if spec.get("managed") is False:
+        return False
+    if spec.get("transport") == "external":
+        return False
+    if spec.get("agents") == "none":
+        return False
+    return True
 
 
 def _build_global_mcp_servers(catalog: Dict[str, Any]) -> Dict[str, Any]:

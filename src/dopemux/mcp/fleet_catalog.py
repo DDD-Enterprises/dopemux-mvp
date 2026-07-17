@@ -91,12 +91,14 @@ REQUIRED_SERVER_PERSONALITIES: dict[str, dict[str, str]] = {
         "follow_on_decision": "none",
     },
     "pal": {
+        # Transport truth (P0 claim 11): pal-http is a health/lifecycle shim with
+        # no MCP endpoint; quarantined until PAL-HTTP-RETROFIT is decided.
         "plane": "reasoning",
         "authority_role": "reasoning-infrastructure",
-        "lifecycle": "active",
+        "lifecycle": "decision-required",
         "management_model": "compose-service",
         "identity_scope": "singleton",
-        "follow_on_decision": "none",
+        "follow_on_decision": "wire-or-retire",
     },
     "pal-stdio": {
         "plane": "reasoning",
@@ -113,6 +115,25 @@ REQUIRED_SERVER_PERSONALITIES: dict[str, dict[str, str]] = {
         "management_model": "compose-service",
         "identity_scope": "host-session",
         "follow_on_decision": "delete-or-host-run",
+    },
+    "leantime-bridge": {
+        # PM-sync plane (P0 claim 13): live compose service, no agent matrix row.
+        "plane": "pm",
+        "authority_role": "pm-adapter",
+        "lifecycle": "active",
+        "management_model": "compose-service",
+        "identity_scope": "singleton",
+        "follow_on_decision": "none",
+    },
+    "dcp-readonly-facade": {
+        # Universal read plane (ADR-MCPINT-002): built, deploy owned by
+        # MCPINT-IMP-FACADE-001 — planned-active until a listener exists.
+        "plane": "dcp-read",
+        "authority_role": "read-plane-projection",
+        "lifecycle": "planned-active",
+        "management_model": "compose-service",
+        "identity_scope": "per-repo",
+        "follow_on_decision": "none",
     },
 }
 
@@ -204,7 +225,7 @@ def render_codex_config_fragment(catalog: dict[str, Any]) -> str:
     for name, spec in sorted(catalog.get("servers", {}).items()):
         if spec.get("scope") != "singleton":
             continue
-        if _is_decision_required(spec):
+        if not mcp_commands._is_startable_global_entry(spec):
             continue
         transport = spec.get("transport", "http")
         if transport not in {"stdio", "http"}:
