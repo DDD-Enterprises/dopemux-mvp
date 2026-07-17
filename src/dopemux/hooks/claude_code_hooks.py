@@ -20,6 +20,18 @@ import time
 import asyncio
 import json
 
+try:
+    from dopemux.claude.activity_ratelimit import should_emit_heartbeat
+except Exception:  # pragma: no cover - fail-open: no limiter, keep emitting
+    def should_emit_heartbeat(  # noqa: ARG001
+        event_type,
+        *,
+        session_id=None,
+        project_root=None,
+        cooldown_seconds=None,
+    ) -> bool:
+        return True
+
 logger = logging.getLogger(__name__)
 
 
@@ -145,7 +157,15 @@ class ClaudeCodeHooks:
             raise
 
     async def _check_claude_session(self) -> None:
-        """Check for active Claude Code session."""
+        """Check for active Claude Code session.
+
+        The monitoring loop polls every 2 seconds; without producer-side
+        coalescing every tick emits a content-free ``session-active`` capture
+        event (the audited 24.5K-heartbeat-row spam class — ADR-mcpint-004 /
+        MCPINT-FND-HYG-007). ``should_emit_heartbeat`` limits identical
+        session-active pings to one per cooldown window (default 300s,
+        env-tunable via DOPEMUX_ACTIVITY_HEARTBEAT_COOLDOWN) and fails open.
+        """
         try:
             # Check for Claude Code processes
             result = await asyncio.create_subprocess_shell(
@@ -156,10 +176,16 @@ class ClaudeCodeHooks:
             stdout, _ = await result.communicate()
 
             if stdout.strip():
-                # Claude Code is running
-                await self._trigger_hook('session-active', {
-                    'processes': stdout.decode().strip().split('\n')
-                })
+                # Claude Code is running — heartbeat-limited at the producer.
+                project_root = self.watched_paths[0] if self.watched_paths else None
+                if should_emit_heartbeat(
+                    'session-active',
+                    session_id=os.getenv('CLAUDE_SESSION_ID'),
+                    project_root=project_root,
+                ):
+                    await self._trigger_hook('session-active', {
+                        'processes': stdout.decode().strip().split('\n')
+                    })
 
         except Exception as e:
             logger.debug(f"Session check failed: {e}")
