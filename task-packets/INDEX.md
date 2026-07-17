@@ -141,6 +141,7 @@ A packet is superseded by another packet
 | TP-DCP-MCP-RO-0016 | DCP / MCP | Multi-Provider Setup And Rollback Docs | Active | TP-DCP-MCP-RO-0015 |
 | TP-DCP-MCP-RO-0017 | DCP / MCP | Acceptance Matrix And Fail-Closed Harness | Active | TP-DCP-MCP-RO-0016 |
 | TP-DCP-MCP-RO-0018 | DCP / MCP | Exact-Head Proof Readiness Evaluator | Active | TP-DCP-MCP-RO-0017 |
+| TP-DCP-MCP-RO-0017-VENDOR | DCP / MCP | Vendor-Live Preflight And Two-Target Isolation | Active | TP-DCP-MCP-RO-0017 |
 | DMX-DCP-PROMPT5-EXTRACT-RECON-001 | DCP / Prompt 5 | Extract Prompt 5 chat-history docs and reconcile PR/Task Orchestrator runway state | Active | N/A |
 
 ────────────────────────────────────────────────────────────
