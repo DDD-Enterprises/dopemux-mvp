@@ -32,7 +32,7 @@ OPENROUTER_API_KEY=test_openrouter_key
 GEMINI_API_KEY=test_gemini_key
 XAI_API_KEY=test_xai_key
 VOYAGE_API_KEY=test_voyage_key
-LEANTIME_URL=http://localhost:8097
+LEANTIME_URL=http://localhost:8080
 LEANTIME_TOKEN=test_leantime_token
 TASK_ORCHESTRATOR_API_KEY=test_task_key
 ADHD_ENGINE_API_KEY=test_adhd_key
@@ -44,6 +44,9 @@ EOF
     fi
     
     local cmd=(./install.sh --stack "$stack" --env-file "$env_file")
+    if command -v mise &>/dev/null; then
+        HOME="$home_dir" mise trust --all &>/dev/null || true
+    fi
     if [ "$auto" = "yes" ]; then
         cmd+=(--yes)
         if INSTALLER_TEST_MODE=1 HOME="$home_dir" DOPEMUX_HOME="$home_dir/.dopemux" "${cmd[@]}" >"$log_file" 2>&1; then
