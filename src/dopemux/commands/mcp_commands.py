@@ -5,7 +5,8 @@ Commands for starting, stopping, and monitoring MCP Docker servers
 (``start``/``stop``/``up``/``down``/``status``/``logs``/``start-all``), plus MCP
 config scaffolding driven by repo-local or bundled ``mcp_catalog.yaml`` data
 (``init``/``repair-config``/``fleet``/``add``/``remove``/``list``/``doctor``/
-``sync-globals``).
+``sync-globals``), plus a docker-down tool-surface snapshot builder
+(``snapshot-tools`` — see ``dopemux.mcp.tool_snapshot``).
 
 The ``servers`` group is an alias for ``mcp`` for backward compatibility.
 """
@@ -1924,3 +1925,92 @@ def mcp_sync_globals_cmd(apply: bool, prune: bool):
     new_data["mcpServers"] = merged
     _atomic_write_json(global_path, new_data)
     console.logger.info(f"[success]Wrote {global_path}.[/success]")
+
+
+@mcp.command("snapshot-tools")
+@click.option(
+    "--seed-from",
+    "seed_from",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    default=None,
+    help="Ingest prior tools/list probe captures (verdict OK only) from this directory.",
+)
+@click.option(
+    "--output",
+    "output_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Snapshot file to read/write (default: <repo-root>/mcp_tool_surfaces.json).",
+)
+@click.option(
+    "--offline",
+    is_flag=True,
+    help="Skip live probing; only ingest --seed-from (or reuse the existing file untouched).",
+)
+@click.option(
+    "--timeout",
+    type=float,
+    default=6.0,
+    show_default=True,
+    help="Per-server network timeout (seconds) for live tools/list probes.",
+)
+def mcp_snapshot_tools_cmd(
+    seed_from: Optional[Path],
+    output_path: Optional[Path],
+    offline: bool,
+    timeout: float,
+):
+    """
+    📸 Freeze Tool Surfaces: Capture every catalog server's MCP tools/list into a committed snapshot
+
+    Builds/updates `mcp_tool_surfaces.json` — the docker-down cache the
+    (future) tool-granular drift gate and doc generators consume. Loads any
+    existing snapshot file as a base, optionally ingests seed capture files
+    (`--seed-from`), then optionally probes the live fleet's `tools/list`
+    surface for every catalog server (skip with `--offline`). Fresh data
+    always wins over stale data except when the fresh probe is itself
+    `unreachable` and the base already has better data for that server.
+    """
+    from dopemux.mcp import tool_snapshot
+
+    catalog = _load_catalog()
+
+    if output_path is None:
+        repo = get_repo_root(fallback_cwd=False)
+        if not repo:
+            raise click.ClickException(
+                "Not inside a git repository; pass --output explicitly."
+            )
+        output_path = Path(repo) / "mcp_tool_surfaces.json"
+
+    snapshot = tool_snapshot.load_snapshot(output_path)
+
+    if seed_from is not None:
+        seed_snapshot = tool_snapshot.snapshot_from_seed(seed_from)
+        snapshot = tool_snapshot.merge_snapshots(snapshot, seed_snapshot)
+
+    if not offline:
+        live_snapshot = tool_snapshot.snapshot_from_live(catalog, timeout=timeout)
+        snapshot = tool_snapshot.merge_snapshots(snapshot, live_snapshot)
+
+    servers = snapshot.get("servers") or {}
+    if not servers:
+        raise click.ClickException(
+            "Refusing to write an empty snapshot (0 servers). "
+            "Pass --seed-from with capture files, or run with the fleet up (drop --offline)."
+        )
+
+    try:
+        output_path.write_text(tool_snapshot.dump_snapshot(snapshot), encoding="utf-8")
+    except OSError as exc:
+        raise click.ClickException(f"Failed to write {output_path}: {exc}") from exc
+
+    console.logger.info(
+        f"[success]Wrote {output_path} ({len(servers)} server(s))[/success]"
+    )
+    console.logger.info("[info]== Tool Surfaces ==[/info]")
+    for name in sorted(servers):
+        entry = servers[name]
+        source = entry.get("source", "?")
+        tool_count = entry.get("tool_count", 0)
+        console.logger.info(f"  {name:<20} source={source:<11} tools={tool_count}")
