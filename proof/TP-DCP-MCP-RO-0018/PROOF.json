@@ -93,7 +93,10 @@
   ],
   "rollback": "Revert TP-0018 commits",
   "pr": {
-    "status": "PENDING_CREATE",
-    "blocker": "Trusted audit SKIPPED; series production READY not claimed"
-  }
+    "number": 1066,
+    "status": "OPEN_NOT_READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1066",
+    "blocker": "Trusted audit SKIPPED; series production READY not claimed (evaluator correctly BLOCKs incomplete proofs)"
+  },
+  "implementation_commit": "e843a3ebb"
 }
