@@ -1,0 +1,104 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0017",
+  "title": "Acceptance Matrix And Fail-Closed Harness",
+  "status": "VALIDATED_WITH_AUDIT_GAP",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "codex/dcp-mcp-ro-0017-live-acceptance",
+  "base_branch": "main",
+  "base_sha": "46e8e8e6915b3b46a7e2cb376983045c9f5a0f34",
+  "depends_on_verified": {
+    "TP-DCP-MCP-RO-0016": {
+      "pr": 1064,
+      "merge_commit": "46e8e8e6915b3b46a7e2cb376983045c9f5a0f34",
+      "status": "MERGED"
+    }
+  },
+  "scope": "Acceptance matrix + fail-closed harness. Deterministic gates hermetic PASS. Live/provider gates NOT_RUN without dual consent env. No tunnels/credentials used.",
+  "input_package": {
+    "sha256": "c0cb9d34f6ece116811c52cce0d1b517153dba0f8434c9abda9da6ff6d6a2447",
+    "authority": "advisory_only"
+  },
+  "live_acceptance": {
+    "release_ready": false,
+    "blocking_live_not_run": 17,
+    "blocking_failures": 0,
+    "report_path": "proof/TP-DCP-MCP-RO-0017/acceptance_report.json",
+    "blocker": "Live gates require DCP_ACCEPTANCE_LIVE=1, non-placeholder token, and providers; even then automated vendor runners are not implemented in this packet."
+  },
+  "files_changed": [
+    "services/dcp-readonly-facade/src/dcp_facade/acceptance.py",
+    "services/dcp-readonly-facade/tests/test_acceptance_harness.py",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/ACCEPTANCE_MATRIX.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0017.json",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0017.md",
+    "task-packets/INDEX.md",
+    "proof/TP-DCP-MCP-RO-0017/**"
+  ],
+  "validation": {
+    "PASS": [
+      {
+        "command": "focused acceptance tests",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "full facade suite",
+        "exit_code": 0,
+        "result": "passed; 1 live skip"
+      },
+      {
+        "command": "acceptance harness report",
+        "exit_code": 0,
+        "result": "release_ready=false; live NOT_RUN"
+      }
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "command": "Live provider/tunnel/credential acceptance",
+        "reason": "no dual consent credentials authorized",
+        "mitigation": "gates NOT_RUN; never PASS"
+      },
+      {
+        "command": "Trusted embedded audit",
+        "reason": "local-only",
+        "mitigation": "not claimed"
+      }
+    ]
+  },
+  "local_agy_review": {
+    "status": "NOT_RUN",
+    "ci_trust_status": "NOT_ACCEPTED"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DCP-MCP-RO-0017/AUDITOR_REPORT.md",
+    "findings": [],
+    "skip_reason": "No trusted runner/Claude audit route under local-only constraints.",
+    "fixes_applied": [
+      "Acceptance matrix document",
+      "Fail-closed dual-consent live gate",
+      "Deterministic hermetic acceptance checks",
+      "release_ready false while live NOT_RUN"
+    ],
+    "remaining_risks": [
+      "Live multi-provider acceptance incomplete",
+      "Trusted embedded audit unavailable"
+    ]
+  },
+  "residual_risks": [
+    "Operators must still run bounded live acceptance with synthetic data before production exposure",
+    "Generated .claude/claude_config.json left unstaged"
+  ],
+  "rollback": "Revert TP-0017 commits",
+  "pr": {
+    "status": "PENDING_CREATE",
+    "blocker": "Live release_ready false; trusted audit SKIPPED; merge of harness is not live acceptance complete"
+  }
+}

@@ -1,0 +1,378 @@
+{
+  "blocking_failures": 0,
+  "blocking_live_not_run": 17,
+  "deterministic_count": 12,
+  "generated_at": "2026-07-17T00:06:33.174663+00:00",
+  "live_authorized": false,
+  "live_count": 17,
+  "note": "release_ready is true only when every blocking gate PASSes. Live NOT_RUN keeps release_ready false.",
+  "release_ready": false,
+  "rollup": [
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "unknown target blocked with generic reason",
+          "evidence": {
+            "public_reason": "target not authorized"
+          },
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-001"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-001"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "port-only ownership rejected without labels/identity",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-006"
+        },
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-006"
+        }
+      ],
+      "status": "PASS_PARTIAL",
+      "test_id": "DCP-ACC-006"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-007"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-007"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "stale candidate blocked",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-008"
+        },
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-008"
+        }
+      ],
+      "status": "PASS_PARTIAL",
+      "test_id": "DCP-ACC-008"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "wrong project identity blocked",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-009"
+        },
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-009"
+        }
+      ],
+      "status": "PASS_PARTIAL",
+      "test_id": "DCP-ACC-009"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "ambiguous candidates blocked",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-010"
+        },
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-010"
+        }
+      ],
+      "status": "PASS_PARTIAL",
+      "test_id": "DCP-ACC-010"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "dope_context not in release-one operations",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-012"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-012"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "connector allows only authorized target/tool; others blocked",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-013"
+        },
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-013"
+        }
+      ],
+      "status": "PASS_PARTIAL",
+      "test_id": "DCP-ACC-013"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "get_progress not in release-one allowlist",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-014"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-014"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "release-one allowlist excludes mutation-shaped denied ops",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-015"
+        },
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-015"
+        }
+      ],
+      "status": "PASS_PARTIAL",
+      "test_id": "DCP-ACC-015"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "progress side-effect path denied without adapter call",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-016"
+        },
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-016"
+        }
+      ],
+      "status": "PASS_PARTIAL",
+      "test_id": "DCP-ACC-016"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "no policy mutation path; denied op stays denied under injection-style names",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-017"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-017"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-020"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-020"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-021"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-021"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "concurrency limit enforced",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-022"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-022"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-023"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-023"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-024"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-024"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-025"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-025"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-026"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-026"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-027"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-027"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-028"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-028"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-029"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-029"
+    }
+  ]
+}
