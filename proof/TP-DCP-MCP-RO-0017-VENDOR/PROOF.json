@@ -79,7 +79,10 @@
     ]
   },
   "pr": {
-    "status": "PENDING_CREATE",
-    "blocker": "Vendor credentials missing; release_ready false"
-  }
+    "number": 1067,
+    "status": "OPEN_NOT_READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1067",
+    "blocker": "Vendor credentials missing; release_ready false; trusted audit SKIPPED"
+  },
+  "implementation_commit": "20e9dae3e3b7471b289a0c81a1e7b75dfac0f980"
 }
