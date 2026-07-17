@@ -138,6 +138,7 @@ A packet is superseded by another packet
 | TP-DCP-MCP-RO-0013 | DCP / MCP | Connector Policy Schema And Auth Context | Active | TP-DCP-MCP-RO-0012 |
 | TP-DCP-MCP-RO-0014 | DCP / MCP | Loopback Streamable HTTP Ingress | Active | TP-DCP-MCP-RO-0013 |
 | TP-DCP-MCP-RO-0015 | DCP / MCP | Ownership Verification And Release-One Adapters | Active | TP-DCP-MCP-RO-0014 |
+| TP-DCP-MCP-RO-0016 | DCP / MCP | Multi-Provider Setup And Rollback Docs | Active | TP-DCP-MCP-RO-0015 |
 | DMX-DCP-PROMPT5-EXTRACT-RECON-001 | DCP / Prompt 5 | Extract Prompt 5 chat-history docs and reconcile PR/Task Orchestrator runway state | Active | N/A |
 
 ────────────────────────────────────────────────────────────
