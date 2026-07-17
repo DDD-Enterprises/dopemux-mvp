@@ -98,7 +98,10 @@
   ],
   "rollback": "Revert TP-0017 commits",
   "pr": {
-    "status": "PENDING_CREATE",
-    "blocker": "Live release_ready false; trusted audit SKIPPED; merge of harness is not live acceptance complete"
-  }
+    "number": 1065,
+    "status": "OPEN_NOT_READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1065",
+    "blocker": "release_ready=false (live gates NOT_RUN); trusted audit SKIPPED; harness merge != live acceptance complete"
+  },
+  "implementation_commit": "8618e7dcf"
 }
