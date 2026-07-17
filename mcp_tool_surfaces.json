@@ -1,0 +1,187 @@
+{
+  "generated_at": "2026-07-16T23:39:38Z",
+  "generator": "dopemux mcp snapshot-tools",
+  "schema_version": 1,
+  "servers": {
+    "MCP_DOCKER": {
+      "captured_at": "2026-07-16T23:34:22Z",
+      "endpoint": null,
+      "reason": "stdio transport; capture via seed or session",
+      "source": "unreachable",
+      "tool_count": 0,
+      "tools": {},
+      "transport": "stdio"
+    },
+    "conport": {
+      "captured_at": "2026-07-16T23:39:38Z",
+      "endpoint": "http://localhost:3005/sse",
+      "source": "live",
+      "tool_count": 17,
+      "tools": {
+        "delete_custom_data": "Delete custom data for a workspace.",
+        "fork_instance": "Fork PLANNED/IN_PROGRESS progress from shared/source into target instance.",
+        "get_active_work": "Get currently active work items to maintain focus.",
+        "get_context": "Get active context for a workspace, including instance-specific data.",
+        "get_custom_data": "Retrieve custom data for a workspace, optionally filtered by category and key.",
+        "get_decisions": "Get recent decisions (optionally filter by workspace).",
+        "get_progress": "Get progress entries for a workspace (optionally filter by status).",
+        "get_recent_activity": "Get recent activity to rebuild context.",
+        "log_decision": "Log an architectural or technical decision to the workspace graph.",
+        "log_progress": "Log a new progress item or task in the workspace.",
+        "promote": "Promote a progress entry to shared (clear instance_id).",
+        "promote_all": "Promote all instance-local PLANNED/IN_PROGRESS entries in current instance to shared.",
+        "save_custom_data": "Save or update custom data for a workspace.",
+        "search_content": "Search decisions and progress entries in a workspace.",
+        "update_context": "Update active context for a workspace.",
+        "update_progress": "Update an existing progress entry. Pass a dict with fields like status (e.g. COMPLETED), percentage, etc.",
+        "workspace_summary": "Get an aggregated summary across all workspaces for a user."
+      },
+      "transport": "sse"
+    },
+    "desktop-commander": {
+      "captured_at": "2026-07-16T23:39:38Z",
+      "endpoint": "http://localhost:3012/sse",
+      "source": "live",
+      "tool_count": 4,
+      "tools": {
+        "focus_window": "Focus a specific window by title.",
+        "screenshot": "Take a screenshot of the current desktop.",
+        "type_text": "Type text using desktop automation.",
+        "window_list": "List all open windows."
+      },
+      "transport": "sse"
+    },
+    "dope-context": {
+      "captured_at": "2026-07-16T23:39:38Z",
+      "endpoint": "http://localhost:3010/mcp",
+      "source": "live",
+      "tool_count": 18,
+      "tools": {
+        "clear_index": "Clear a workspace's index/indices.",
+        "clear_search_metrics": "Clear all search metrics (for fresh baseline).",
+        "configure_decision_auto_indexing": "Configure decision retrieval for unified search.",
+        "docs_search": "Search indexed documents (PDF, Markdown, HTML, text).",
+        "get_autonomous_status": "Get status of all autonomous indexers (code AND docs).",
+        "get_chunk_complexity": "Get AST-based complexity for code chunk (Synergy A support).",
+        "get_index_status": "Get status of code/doc indexes for one or more workspaces.",
+        "get_search_metrics": "Get search usage metrics for benchmarking.",
+        "index_docs": "Index documents (PDF, Markdown, HTML, text) in workspace.",
+        "index_workspace": "Index a workspace directory for code search.",
+        "search_all": "Unified search across code, docs, and optional ConPort decisions.",
+        "search_code": "Search indexed code with hybrid dense + sparse search.",
+        "start_autonomous_docs_indexing": "Enable autonomous docs indexing for workspace.",
+        "start_autonomous_indexing": "Enable autonomous indexing for one or many workspaces.",
+        "stop_autonomous_docs_indexing": "Stop autonomous docs indexing for workspace.",
+        "stop_autonomous_indexing": "Stop autonomous indexing for workspace.",
+        "sync_docs": "Sync docs index with file changes (incremental).",
+        "sync_workspace": "Sync workspace index with file changes (incremental)."
+      },
+      "transport": "http"
+    },
+    "dope-memory": {
+      "captured_at": "2026-07-16T23:39:38Z",
+      "endpoint": "http://localhost:3020/mcp",
+      "source": "live",
+      "tool_count": 10,
+      "tools": {
+        "memory_correct": "Supersede an entry with a corrected version (correction_type:",
+        "memory_generate_reflection": "Generate a deterministic reflection card from recent work.",
+        "memory_link_resolution": "Link an issue entry to the entry that resolved it.",
+        "memory_mark_issue": "Mark an existing work log entry as an issue source.",
+        "memory_recap": "Get a recap of recent work (scope: session | today | last_2_hours).",
+        "memory_reflections": "Fetch recent reflection cards.",
+        "memory_replay_session": "Replay session entries chronologically (mode: replay_current |",
+        "memory_search": "Search work log entries (Top-3 default, trajectory-boosted ranking,",
+        "memory_store": "Store a manual work log entry (secrets are redacted before write).",
+        "memory_trajectory": "Get the current trajectory state (stream, goal, recent steps,"
+      },
+      "transport": "http"
+    },
+    "gpt-researcher": {
+      "captured_at": "2026-07-16T23:34:22Z",
+      "endpoint": null,
+      "reason": "stdio transport; capture via seed or session",
+      "source": "unreachable",
+      "tool_count": 0,
+      "tools": {},
+      "transport": "stdio"
+    },
+    "pal": {
+      "captured_at": "2026-07-16T23:34:22Z",
+      "endpoint": "http://localhost:3003/mcp",
+      "reason": "initialize HTTP 404: ",
+      "source": "unreachable",
+      "tool_count": 0,
+      "tools": {},
+      "transport": "http"
+    },
+    "pal-stdio": {
+      "captured_at": "2026-07-16T23:34:22Z",
+      "endpoint": null,
+      "reason": "stdio transport; capture via seed or session",
+      "source": "unreachable",
+      "tool_count": 0,
+      "tools": {},
+      "transport": "stdio"
+    },
+    "serena": {
+      "captured_at": "2026-07-16T11:23:51-0700",
+      "endpoint": "http://127.0.0.1:3006/mcp",
+      "source": "seed",
+      "tool_count": 27,
+      "tools": {
+        "activate_project": "Activates the project with the given name or path.",
+        "check_onboarding_performed": "Checks whether project onboarding was already performed.",
+        "create_text_file": "Write a new file or overwrite an existing file. Returns a message indicating success or failure.",
+        "delete_memory": "Delete a memory, only call if instructed explicitly or permission was granted by the user.",
+        "edit_memory": "Replaces content matching a regular expression in a memory.",
+        "execute_shell_command": "Execute a shell command and return its output. If there is a memory about suggested commands, read that first.",
+        "find_file": "Finds non-gitignored files matching the given file mask within the given relative path. Returns a JSON object with the\u2026",
+        "find_referencing_symbols": "Finds references to the symbol at the given `name_path`. The result will contain metadata about the referencing symbols",
+        "find_symbol": "Retrieves information on all symbols/code entities (classes, methods, etc.) based on the given name path pattern.",
+        "get_current_config": "Print the current configuration of the agent, including the active and available projects, tools, contexts, and modes.",
+        "get_symbols_overview": "Use this tool to get a high-level understanding of the code symbols in a file.",
+        "initial_instructions": "Provides the 'Serena Instructions Manual', which contains essential information on how to use the Serena toolbox.",
+        "insert_after_symbol": "Inserts the given body/content after the end of the definition of the given symbol (via the symbol's location).",
+        "insert_before_symbol": "Inserts the given content before the beginning of the definition of the given symbol (via the symbol's location).",
+        "list_dir": "Lists files and directories in the given directory (optionally with recursion). Returns a JSON object with the names of\u2026",
+        "list_memories": "Lists available memories, optionally filtered by topic.",
+        "onboarding": "Call this tool if onboarding was not performed yet.",
+        "prepare_for_new_conversation": "Instructions for preparing for a new conversation. This tool should only be called on explicit user request.",
+        "read_file": "Reads the given file or a chunk of it. Generally, symbolic operations",
+        "read_memory": "Reads the contents of a memory. Should only be used if the information",
+        "rename_memory": "Rename or move a memory, use \"/\" in the name to organize into topics.",
+        "rename_symbol": "Renames the symbol with the given `name_path` to `new_name` throughout the entire codebase.",
+        "replace_content": "Replaces one or more occurrences of a given pattern in a file with new content.",
+        "replace_symbol_body": "Replaces the body of the symbol with the given `name_path`.",
+        "search_for_pattern": "Offers a flexible search for arbitrary patterns in the codebase, including the",
+        "switch_modes": "Activates the desired modes, like [\"editing\", \"interactive\"] or [\"planning\", \"one-shot\"].",
+        "write_memory": "Write information (utf-8-encoded) about this project that can be useful for future tasks to a memory in md format."
+      },
+      "transport": "http"
+    },
+    "task-orchestrator": {
+      "captured_at": "2026-07-16T23:39:38Z",
+      "endpoint": "http://127.0.0.1:7890/mcp",
+      "source": "live",
+      "tool_count": 14,
+      "tools": {
+        "advance_item": "Trigger-based role transitions for WorkItems with validation, cascade detection, and unblock reporting.",
+        "claim_item": "Atomically claim or release work items. One claim per agent: claiming a new item auto-releases",
+        "complete_tree": "Complete or cancel all descendants of a root item (or an explicit list of items) in topological dependency order.",
+        "create_work_tree": "Atomically create a hierarchical work tree: root item, child items, dependencies, and optional notes.",
+        "get_blocked_items": "Identifies WorkItems blocked by dependencies or explicitly in BLOCKED role.",
+        "get_context": "Read-only context snapshot. Three modes:",
+        "get_next_item": "Recommends next work item(s) based on role, dependencies, priority, and complexity.",
+        "get_next_status": "Read-only status progression recommendation for a WorkItem.",
+        "manage_dependencies": "Unified write operations for WorkItem dependencies (create, delete).",
+        "manage_items": "Unified write operations for WorkItems (create, update, delete).",
+        "manage_notes": "Unified write operations for Notes (upsert, delete).",
+        "query_dependencies": "Read-only dependency queries with filtering support.",
+        "query_items": "Unified read operations for work items.",
+        "query_notes": "Read-only query operations for Notes (get, list, search)."
+      },
+      "transport": "http"
+    }
+  }
+}
