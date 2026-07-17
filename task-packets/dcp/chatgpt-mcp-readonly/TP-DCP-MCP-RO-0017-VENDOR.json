@@ -1,0 +1,57 @@
+{
+  "id": "TP-DCP-MCP-RO-0017-VENDOR",
+  "project": "dopemux-mvp",
+  "target": "Vendor-live residual: preflight inventory for ChatGPT/Grok/Gemini gates, synthetic ACC-029 isolation, fail-closed NOT_RUN when credentials absent; never open unrestricted public tunnels.",
+  "invariants": [
+    "Never invent vendor credentials.",
+    "Never auto-open unrestricted public tunnels.",
+    "ACC-024/025/026 remain NOT_RUN until inventory complete.",
+    "ACC-029 may PASS via synthetic two-target isolation without vendor tunnels."
+  ],
+  "depends_on": ["TP-DCP-MCP-RO-0017"],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0017",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dcp-mcp-ro-0017-vendor-live",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): vendor-live preflight and two-target isolation",
+    "allowlist": [
+      "services/dcp-readonly-facade/src/dcp_facade/acceptance.py",
+      "services/dcp-readonly-facade/tests/test_acceptance_harness.py",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/VENDOR_LIVE_PREFLIGHT.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0017-VENDOR.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0017-VENDOR.md",
+      "task-packets/INDEX.md",
+      "proof/TP-DCP-MCP-RO-0017-VENDOR/**"
+    ],
+    "verify": [
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests/test_acceptance_harness.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): vendor-live preflight and two-target isolation",
+    "body": "Vendor-live residual for TP-0017: preflight inventory, ACC-029 PASS synthetic, 024-026 NOT_RUN without credentials. No public tunnels opened.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "preflight",
+      "task": "Add vendor_preflight and ACC-029 synthetic isolation; document inventory.",
+      "validation": ["Harness tests pass; 029 PASS; 024-026 NOT_RUN without secrets."]
+    }
+  ]
+}

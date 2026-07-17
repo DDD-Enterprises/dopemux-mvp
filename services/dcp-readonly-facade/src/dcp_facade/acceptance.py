@@ -587,15 +587,265 @@ def run_local_loopback_live_gates(token: str) -> list[GateResult]:
     return results
 
 
-def run_live_gates() -> list[GateResult]:
-    """Live gates: fail closed without dual consent; local loopback when authorized."""
-    ok, reason = live_mode_authorized()
-    vendor_ids = [
-        "DCP-ACC-024",  # ChatGPT tunnel
-        "DCP-ACC-025",  # Grok stable
-        "DCP-ACC-026",  # unsupported transport
-        "DCP-ACC-029",  # two-worktree live isolation (needs dual backends)
+def vendor_preflight() -> dict[str, Any]:
+    """Inventory required tools/env for vendor gates without printing secrets."""
+    import shutil
+
+    def _set(name: str) -> bool:
+        v = os.getenv(name, "").strip()
+        return bool(v) and not (v.startswith("<") and v.endswith(">"))
+
+    inventory = {
+        "tools": {
+            "tunnel-client": bool(shutil.which("tunnel-client")),
+            "cloudflared": bool(shutil.which("cloudflared")),
+            "ngrok": bool(shutil.which("ngrok")),
+            "curl": bool(shutil.which("curl")),
+        },
+        "env_present": {
+            "CONTROL_PLANE_API_KEY": _set("CONTROL_PLANE_API_KEY"),
+            "OPENAI_API_KEY": _set("OPENAI_API_KEY"),
+            "OPENAI_TUNNEL_ID": _set("OPENAI_TUNNEL_ID"),
+            "OPENAI_TUNNEL_PROFILE": _set("OPENAI_TUNNEL_PROFILE"),
+            "XAI_API_KEY": _set("XAI_API_KEY") or _set("GROK_API_KEY"),
+            "PUBLIC_GROK_HOSTNAME": _set("PUBLIC_GROK_HOSTNAME"),
+            "GEMINI_API_KEY": _set("GEMINI_API_KEY") or _set("GOOGLE_API_KEY"),
+            "PUBLIC_GEMINI_HOSTNAME": _set("PUBLIC_GEMINI_HOSTNAME"),
+            "DCP_ACCEPTANCE_LIVE_TOKEN": _set(LIVE_TOKEN_ENV),
+        },
+    }
+    chatgpt_ok = (
+        inventory["tools"]["tunnel-client"]
+        and inventory["env_present"]["CONTROL_PLANE_API_KEY"]
+        and inventory["env_present"]["OPENAI_TUNNEL_ID"]
+        and inventory["env_present"]["DCP_ACCEPTANCE_LIVE_TOKEN"]
+    )
+    grok_ok = inventory["env_present"]["PUBLIC_GROK_HOSTNAME"] and inventory["env_present"][
+        "DCP_ACCEPTANCE_LIVE_TOKEN"
     ]
+    gemini_ok = inventory["env_present"]["PUBLIC_GEMINI_HOSTNAME"] and inventory["env_present"][
+        "DCP_ACCEPTANCE_LIVE_TOKEN"
+    ]
+    inventory["gates_runnable"] = {
+        "DCP-ACC-024_chatgpt_tunnel": chatgpt_ok,
+        "DCP-ACC-025_grok_stable": grok_ok,
+        "DCP-ACC-026_gemini_transport": gemini_ok,
+    }
+    missing = []
+    if not inventory["tools"]["tunnel-client"]:
+        missing.append("install tunnel-client (OpenAI Secure MCP Tunnel)")
+    if not inventory["env_present"]["CONTROL_PLANE_API_KEY"]:
+        missing.append("set CONTROL_PLANE_API_KEY")
+    if not inventory["env_present"]["OPENAI_TUNNEL_ID"]:
+        missing.append("set OPENAI_TUNNEL_ID")
+    if not inventory["env_present"]["PUBLIC_GROK_HOSTNAME"]:
+        missing.append("set PUBLIC_GROK_HOSTNAME (stable named tunnel host)")
+    if not inventory["env_present"]["PUBLIC_GEMINI_HOSTNAME"]:
+        missing.append("set PUBLIC_GEMINI_HOSTNAME")
+    if not inventory["env_present"]["DCP_ACCEPTANCE_LIVE_TOKEN"]:
+        missing.append("set DCP_ACCEPTANCE_LIVE_TOKEN (connector bearer)")
+    inventory["missing_for_vendor_live"] = missing
+    return inventory
+
+
+def run_two_worktree_isolation_gates() -> list[GateResult]:
+    """ACC-029: synthetic two-target isolation without vendor tunnels.
+
+    Proves connector A cannot authorize target B and ownership for A/B is distinct.
+    Does not call real ConPort/dope-memory backends.
+    """
+    results: list[GateResult] = []
+    policy_doc = {
+        "records": [
+            _fixture_policy("conn-a", "DCP_TOKEN_A", ["target-a"]),
+            _fixture_policy("conn-b", "DCP_TOKEN_B", ["target-b"]),
+        ]
+    }
+    # multi_target false with one target each
+    store = parse_connector_policy_document(policy_doc)
+    resolver = MappingSecretResolver(
+        {
+            ("environment", "env:DCP_TOKEN_A"): "token-a-secret",
+            ("environment", "env:DCP_TOKEN_B"): "token-b-secret",
+        }
+    )
+    ctx_a, d_a = authenticate_bearer(store, presented_token="token-a-secret", secret_resolver=resolver)
+    ctx_b, d_b = authenticate_bearer(store, presented_token="token-b-secret", secret_resolver=resolver)
+    if not (d_a.allowed and d_b.allowed and ctx_a and ctx_b):
+        results.append(_fail("DCP-ACC-029", "live", "failed to authenticate dual connector fixtures"))
+        return results
+
+    a_ok = authorize_target(ctx_a, "target-a")
+    a_cross = authorize_target(ctx_a, "target-b")
+    b_ok = authorize_target(ctx_b, "target-b")
+    b_cross = authorize_target(ctx_b, "target-a")
+    invented = authorize_target(ctx_a, "invented-target")
+
+    own_a = verify_ownership(
+        OwnershipEvidence(
+            family="conport",
+            expected_project_id="proj-a",
+            expected_project_root="/tmp/wt-a",
+            expected_worktree_root="/tmp/wt-a",
+            runtime_project_id="proj-a",
+            runtime_project_root="/tmp/wt-a",
+            runtime_worktree_root="/tmp/wt-a",
+            labels={
+                "dopemux.project_id": "proj-a",
+                "dopemux.service": "conport",
+                "dopemux.worktree_root": "/tmp/wt-a",
+            },
+            mounts=("/tmp/wt-a",),
+            protocol_ok=True,
+            candidate_count=1,
+        )
+    )
+    own_b_wrong = verify_ownership(
+        OwnershipEvidence(
+            family="conport",
+            expected_project_id="proj-a",
+            expected_project_root="/tmp/wt-a",
+            expected_worktree_root="/tmp/wt-a",
+            runtime_project_id="proj-b",
+            runtime_project_root="/tmp/wt-b",
+            runtime_worktree_root="/tmp/wt-b",
+            labels={
+                "dopemux.project_id": "proj-b",
+                "dopemux.service": "conport",
+                "dopemux.worktree_root": "/tmp/wt-b",
+            },
+            mounts=("/tmp/wt-b",),
+            protocol_ok=True,
+            candidate_count=1,
+        )
+    )
+
+    if (
+        a_ok.allowed
+        and b_ok.allowed
+        and not a_cross.allowed
+        and not b_cross.allowed
+        and not invented.allowed
+        and own_a.verified
+        and not own_b_wrong.verified
+    ):
+        results.append(
+            _pass(
+                "DCP-ACC-029",
+                "live",
+                "two-target connector isolation + wrong-owner ownership block (synthetic, no vendor tunnel)",
+            )
+        )
+    else:
+        results.append(_fail("DCP-ACC-029", "live", "two-target isolation matrix unexpected"))
+    return results
+
+
+def run_vendor_live_gates(providers: set[str]) -> list[GateResult]:
+    """Vendor tunnel/provider gates: preflight only unless full tooling+env present.
+
+    Never opens public tunnels or invents credentials.
+    """
+    results: list[GateResult] = []
+    inv = vendor_preflight()
+    runnable = inv["gates_runnable"]
+
+    # Always attach preflight evidence (no secrets)
+    preflight_detail = "vendor preflight: missing=" + ",".join(inv["missing_for_vendor_live"] or ["none"])
+
+    # ACC-024 ChatGPT
+    if "chatgpt" in providers or not (providers & VENDOR_PROVIDERS):
+        # if vendors requested broadly, evaluate chatgpt when listed or when any vendor listed
+        want_chatgpt = "chatgpt" in providers or bool(providers & {"chatgpt"})
+    else:
+        want_chatgpt = "chatgpt" in providers
+    # simplify: if any vendor provider listed, check each
+    if providers & VENDOR_PROVIDERS or "vendor" in providers:
+        if runnable["DCP-ACC-024_chatgpt_tunnel"] and "chatgpt" in providers:
+            results.append(
+                _not_run(
+                    "DCP-ACC-024",
+                    "live",
+                    "ChatGPT preflight OK but automated tunnel-client exercise is not auto-run; "
+                    "operator must execute tunnel-client and attach redacted doctor/export receipts. "
+                    + preflight_detail,
+                )
+            )
+        else:
+            results.append(
+                _not_run(
+                    "DCP-ACC-024",
+                    "live",
+                    "ChatGPT tunnel not runnable: need tunnel-client + CONTROL_PLANE_API_KEY + "
+                    "OPENAI_TUNNEL_ID + connector token. " + preflight_detail,
+                    tools=inv["tools"],
+                    env_present=inv["env_present"],
+                )
+            )
+
+        if runnable["DCP-ACC-025_grok_stable"] and "grok" in providers:
+            results.append(
+                _not_run(
+                    "DCP-ACC-025",
+                    "live",
+                    "Grok hostname present but stable tunnel restart acceptance is manual; "
+                    "attach redacted DNS/HTTPS + discovery receipts. " + preflight_detail,
+                )
+            )
+        else:
+            results.append(
+                _not_run(
+                    "DCP-ACC-025",
+                    "live",
+                    "Grok stable route not runnable: need PUBLIC_GROK_HOSTNAME + connector token. "
+                    + preflight_detail,
+                    env_present=inv["env_present"],
+                )
+            )
+
+        if runnable["DCP-ACC-026_gemini_transport"] and (
+            "gemini" in providers or "gemini_api" in providers
+        ):
+            results.append(
+                _not_run(
+                    "DCP-ACC-026",
+                    "live",
+                    "Gemini host present but unsupported-transport fail-closed check is manual; "
+                    "attach provider error + DCP no-call proof. " + preflight_detail,
+                )
+            )
+        else:
+            results.append(
+                _not_run(
+                    "DCP-ACC-026",
+                    "live",
+                    "Gemini transport gate not runnable: need PUBLIC_GEMINI_HOSTNAME + connector token. "
+                    + preflight_detail,
+                    env_present=inv["env_present"],
+                )
+            )
+    else:
+        for tid, label in (
+            ("DCP-ACC-024", "chatgpt"),
+            ("DCP-ACC-025", "grok"),
+            ("DCP-ACC-026", "gemini"),
+        ):
+            results.append(
+                _not_run(
+                    tid,
+                    "live",
+                    f"vendor provider '{label}' not listed; set "
+                    f"DCP_ACCEPTANCE_LIVE_PROVIDERS=local,chatgpt,grok,gemini as applicable. "
+                    + preflight_detail,
+                )
+            )
+    return results
+
+
+def run_live_gates() -> list[GateResult]:
+    """Live gates: fail closed without dual consent; local/vendor as requested."""
+    ok, reason = live_mode_authorized()
+    vendor_ids = ["DCP-ACC-024", "DCP-ACC-025", "DCP-ACC-026"]
     local_capable_ids = {
         "DCP-ACC-006",
         "DCP-ACC-013",
@@ -607,23 +857,34 @@ def run_live_gates() -> list[GateResult]:
         "DCP-ACC-027",
         "DCP-ACC-028",
     }
-    all_live_ids = sorted(local_capable_ids | set(vendor_ids) | {"DCP-ACC-007", "DCP-ACC-008", "DCP-ACC-009", "DCP-ACC-010", "DCP-ACC-016"})
+    all_live_ids = sorted(
+        local_capable_ids
+        | set(vendor_ids)
+        | {"DCP-ACC-007", "DCP-ACC-008", "DCP-ACC-009", "DCP-ACC-010", "DCP-ACC-016", "DCP-ACC-029"}
+    )
 
     if not ok:
         return [_not_run(tid, "live", f"live gate blocked: {reason}") for tid in all_live_ids]
 
     providers = set(parse_live_providers())
+    if "vendor" in providers:
+        providers |= {"chatgpt", "grok", "gemini"}
+
     results: list[GateResult] = []
     token = os.getenv(LIVE_TOKEN_ENV, "").strip()
 
+    # Local loopback suite
     if providers & LOCAL_PROVIDERS:
         try:
             results.extend(run_local_loopback_live_gates(token))
-        except Exception as exc:  # pragma: no cover - defensive
+        except Exception as exc:  # pragma: no cover
             results.append(
-                _fail("DCP-ACC-028", "live", f"local loopback live suite crashed: {exc.__class__.__name__}")
+                _fail(
+                    "DCP-ACC-028",
+                    "live",
+                    f"local loopback live suite crashed: {exc.__class__.__name__}",
+                )
             )
-        # Mark remaining local-capable ids not produced as NOT_RUN only if missing
         produced = {r.test_id for r in results}
         for tid in sorted(local_capable_ids - produced):
             results.append(_not_run(tid, "live", "local live suite did not emit this gate"))
@@ -633,39 +894,25 @@ def run_live_gates() -> list[GateResult]:
                 _not_run(
                     tid,
                     "live",
-                    "local loopback not requested; set DCP_ACCEPTANCE_LIVE_PROVIDERS=local",
+                    "local loopback not requested; include 'local' in DCP_ACCEPTANCE_LIVE_PROVIDERS",
                 )
             )
 
-    # Vendor tunnels always require real vendor credentials/tooling — never invent.
-    for tid in vendor_ids:
-        if providers & VENDOR_PROVIDERS:
+    # Two-target synthetic isolation
+    results.extend(run_two_worktree_isolation_gates())
+
+    # Vendor preflight (never invents credentials or opens tunnels)
+    if providers & VENDOR_PROVIDERS:
+        results.extend(run_vendor_live_gates(providers))
+    else:
+        for tid in vendor_ids:
             results.append(
                 _not_run(
                     tid,
                     "live",
-                    "vendor provider authorized in env but automated tunnel/provider runner and vendor credentials "
-                    "are not available in this environment; attach redacted manual receipts",
+                    "vendor not listed; set DCP_ACCEPTANCE_LIVE_PROVIDERS=local,chatgpt,grok,gemini",
                 )
             )
-        else:
-            results.append(
-                _not_run(
-                    tid,
-                    "live",
-                    "vendor provider not listed in DCP_ACCEPTANCE_LIVE_PROVIDERS",
-                )
-            )
-
-    # Worktree isolation still needs dual backend fixtures beyond this packet's local loopback.
-    if "DCP-ACC-029" not in {r.test_id for r in results}:
-        results.append(
-            _not_run(
-                "DCP-ACC-029",
-                "live",
-                "two-worktree backend isolation requires dual synthetic backend fixtures; not auto-run here",
-            )
-        )
 
     return results
 
