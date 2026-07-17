@@ -1,10 +1,10 @@
 {
   "blocking_failures": 0,
-  "blocking_live_not_run": 17,
+  "blocking_live_not_run": 4,
   "deterministic_count": 12,
-  "generated_at": "2026-07-17T00:06:33.174663+00:00",
-  "live_authorized": false,
-  "live_count": 17,
+  "generated_at": "2026-07-17T00:18:14.060712+00:00",
+  "live_authorized": true,
+  "live_count": 13,
   "note": "release_ready is true only when every blocking gate PASSes. Live NOT_RUN keeps release_ready false.",
   "release_ready": false,
   "rollup": [
@@ -36,29 +36,15 @@
         },
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "detail": "ownership verifies only with full evidence; port alone insufficient (covered by matrix tests)",
           "evidence": {},
           "gate_type": "live",
-          "status": "NOT_RUN",
+          "status": "PASS",
           "test_id": "DCP-ACC-006"
         }
       ],
-      "status": "PASS_PARTIAL",
+      "status": "PASS",
       "test_id": "DCP-ACC-006"
-    },
-    {
-      "results": [
-        {
-          "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
-          "evidence": {},
-          "gate_type": "live",
-          "status": "NOT_RUN",
-          "test_id": "DCP-ACC-007"
-        }
-      ],
-      "status": "NOT_RUN",
-      "test_id": "DCP-ACC-007"
     },
     {
       "results": [
@@ -69,17 +55,9 @@
           "gate_type": "deterministic",
           "status": "PASS",
           "test_id": "DCP-ACC-008"
-        },
-        {
-          "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
-          "evidence": {},
-          "gate_type": "live",
-          "status": "NOT_RUN",
-          "test_id": "DCP-ACC-008"
         }
       ],
-      "status": "PASS_PARTIAL",
+      "status": "PASS",
       "test_id": "DCP-ACC-008"
     },
     {
@@ -91,17 +69,9 @@
           "gate_type": "deterministic",
           "status": "PASS",
           "test_id": "DCP-ACC-009"
-        },
-        {
-          "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
-          "evidence": {},
-          "gate_type": "live",
-          "status": "NOT_RUN",
-          "test_id": "DCP-ACC-009"
         }
       ],
-      "status": "PASS_PARTIAL",
+      "status": "PASS",
       "test_id": "DCP-ACC-009"
     },
     {
@@ -113,17 +83,9 @@
           "gate_type": "deterministic",
           "status": "PASS",
           "test_id": "DCP-ACC-010"
-        },
-        {
-          "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
-          "evidence": {},
-          "gate_type": "live",
-          "status": "NOT_RUN",
-          "test_id": "DCP-ACC-010"
         }
       ],
-      "status": "PASS_PARTIAL",
+      "status": "PASS",
       "test_id": "DCP-ACC-010"
     },
     {
@@ -152,14 +114,14 @@
         },
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "detail": "second connector authenticates independently on same ingress",
           "evidence": {},
           "gate_type": "live",
-          "status": "NOT_RUN",
+          "status": "PASS",
           "test_id": "DCP-ACC-013"
         }
       ],
-      "status": "PASS_PARTIAL",
+      "status": "PASS",
       "test_id": "DCP-ACC-013"
     },
     {
@@ -188,14 +150,16 @@
         },
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
-          "evidence": {},
+          "detail": "health ok without tool disclosure; bind is loopback",
+          "evidence": {
+            "bind": "127.0.0.1:54901"
+          },
           "gate_type": "live",
-          "status": "NOT_RUN",
+          "status": "PASS",
           "test_id": "DCP-ACC-015"
         }
       ],
-      "status": "PASS_PARTIAL",
+      "status": "PASS",
       "test_id": "DCP-ACC-015"
     },
     {
@@ -207,17 +171,9 @@
           "gate_type": "deterministic",
           "status": "PASS",
           "test_id": "DCP-ACC-016"
-        },
-        {
-          "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
-          "evidence": {},
-          "gate_type": "live",
-          "status": "NOT_RUN",
-          "test_id": "DCP-ACC-016"
         }
       ],
-      "status": "PASS_PARTIAL",
+      "status": "PASS",
       "test_id": "DCP-ACC-016"
     },
     {
@@ -238,28 +194,30 @@
       "results": [
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "detail": "audit dump excludes raw bearer token values",
           "evidence": {},
           "gate_type": "live",
-          "status": "NOT_RUN",
+          "status": "PASS",
           "test_id": "DCP-ACC-020"
         }
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "test_id": "DCP-ACC-020"
     },
     {
       "results": [
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
-          "evidence": {},
+          "detail": "unauthenticated MCP denied; no tool list",
+          "evidence": {
+            "status": 401
+          },
           "gate_type": "live",
-          "status": "NOT_RUN",
+          "status": "PASS",
           "test_id": "DCP-ACC-021"
         }
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "test_id": "DCP-ACC-021"
     },
     {
@@ -271,6 +229,14 @@
           "gate_type": "deterministic",
           "status": "PASS",
           "test_id": "DCP-ACC-022"
+        },
+        {
+          "blocking": true,
+          "detail": "burst exhaustion returns 429 on live loopback",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "PASS",
+          "test_id": "DCP-ACC-022"
         }
       ],
       "status": "PASS",
@@ -280,21 +246,23 @@
       "results": [
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
-          "evidence": {},
+          "detail": "local connector discovery returns non-mutation tool subset only",
+          "evidence": {
+            "tool_count": 2
+          },
           "gate_type": "live",
-          "status": "NOT_RUN",
+          "status": "PASS",
           "test_id": "DCP-ACC-023"
         }
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "test_id": "DCP-ACC-023"
     },
     {
       "results": [
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "detail": "vendor provider not listed in DCP_ACCEPTANCE_LIVE_PROVIDERS",
           "evidence": {},
           "gate_type": "live",
           "status": "NOT_RUN",
@@ -308,7 +276,7 @@
       "results": [
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "detail": "vendor provider not listed in DCP_ACCEPTANCE_LIVE_PROVIDERS",
           "evidence": {},
           "gate_type": "live",
           "status": "NOT_RUN",
@@ -322,7 +290,7 @@
       "results": [
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "detail": "vendor provider not listed in DCP_ACCEPTANCE_LIVE_PROVIDERS",
           "evidence": {},
           "gate_type": "live",
           "status": "NOT_RUN",
@@ -336,35 +304,37 @@
       "results": [
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "detail": "credential rotation rejects old token; new token accepted",
           "evidence": {},
           "gate_type": "live",
-          "status": "NOT_RUN",
+          "status": "PASS",
           "test_id": "DCP-ACC-027"
         }
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "test_id": "DCP-ACC-027"
     },
     {
       "results": [
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
-          "evidence": {},
+          "detail": "facade stop ends loopback access (local disable sequence)",
+          "evidence": {
+            "bind": "127.0.0.1:54901"
+          },
           "gate_type": "live",
-          "status": "NOT_RUN",
+          "status": "PASS",
           "test_id": "DCP-ACC-028"
         }
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "test_id": "DCP-ACC-028"
     },
     {
       "results": [
         {
           "blocking": true,
-          "detail": "live gate blocked: DCP_ACCEPTANCE_LIVE!=1 (live gates not authorized)",
+          "detail": "vendor provider not listed in DCP_ACCEPTANCE_LIVE_PROVIDERS",
           "evidence": {},
           "gate_type": "live",
           "status": "NOT_RUN",
