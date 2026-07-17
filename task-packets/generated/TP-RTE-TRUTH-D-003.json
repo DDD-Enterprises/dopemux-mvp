@@ -1,0 +1,78 @@
+{
+  "id": "TP-RTE-TRUTH-D-003",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / --max-cost-usd runtime hard-stop proof (REQUIRES LIVE SPEND)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md \u00a75 (Deferred) first \u2014 it is the authority for scope and the deferral reason.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "DEFERRED-TIER packet: these were explicitly held OUT of the main R0-R5 waves. Do not start one without confirming the program has capacity; none of these gate PR #1043.",
+    "OUT OF SCOPE for the dry-run program \u2014 this packet exists to record the residual, NOT to be run headlessly.",
+    "Triage 2a PROVED the cap wiring is present (v5:23136-23146 auto-apply; E3 SpendTracker active on every normal run). What remains unproven is DYNAMIC abort behavior.",
+    "Execution requires operator authorization for a bounded live run with an explicit small --max-cost-usd; reconcile against SPEND_LEDGER.json afterward.",
+    "Do NOT execute without explicit written operator approval naming the cap and phase.",
+    "Findings covered: Deferred #3, A6-F8."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-D",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "S"
+  },
+  "commit": {
+    "message": "test(rte): TP-RTE-TRUTH-D-003 \u2014 cost-cap runtime hard-stop proof",
+    "allowlist": [
+      "services/repo-truth-extractor/tests/",
+      "proof/",
+      "task-packets/generated/TP-RTE-TRUTH-D-003.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-D-003/PROOF.json"
+    ],
+    "verify": []
+  },
+  "pr": {
+    "title": "test(rte): prove cost-cap abort end-to-end",
+    "body": "Deferred #3. OPERATOR-GATED live spend. Never auto-run.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "OPERATOR-GATED: run one bounded live canary with a small explicit cap; prove the abort fires and reconcile the ledger.",
+      "requirements": [
+        "Requires --execute + DPMX_LIVE_OK=1 \u2014 the ONLY packet in this program permitted to do so, and only under explicit operator approval."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "Abort observed at cap; SPEND_LEDGER reconciles to the cap within one-call overshoot."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A2-cost-truthfulness.md",
+        "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md"
+      ]
+    }
+  ]
+}

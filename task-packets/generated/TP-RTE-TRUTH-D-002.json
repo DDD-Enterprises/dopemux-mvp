@@ -1,0 +1,77 @@
+{
+  "id": "TP-RTE-TRUTH-D-002",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / full v3 routing audit (cost-profile-unaware second path)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md \u00a75 (Deferred) first \u2014 it is the authority for scope and the deferral reason.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "DEFERRED-TIER packet: these were explicitly held OUT of the main R0-R5 waves. Do not start one without confirming the program has capacity; none of these gate PR #1043.",
+    "Audit-only packet: produce a report, do not remediate v3 routing without a follow-up scope decision.",
+    "A6 deferred this: v3 is a second routing path that does not honor --cost-profile.",
+    "Findings covered: Deferred #2."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-D",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "S"
+  },
+  "commit": {
+    "message": "docs(rte): TP-RTE-TRUTH-D-002 \u2014 v3 routing audit",
+    "allowlist": [
+      "claudedocs/rte-truth-program-2026-07/",
+      "task-packets/generated/TP-RTE-TRUTH-D-002.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-D-002/PROOF.json"
+    ],
+    "verify": []
+  },
+  "pr": {
+    "title": "docs(rte): v3 routing audit (deferred tier)",
+    "body": "Deferred #2.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Audit run_extraction_v3.py routing vs the v5 ${CELL}/cost-profile model; report divergences + spend exposure.",
+      "requirements": [
+        "Read-only; write findings to claudedocs/rte-truth-program-2026-07/D002-v3-routing-audit.md."
+      ],
+      "commands": [],
+      "expected_files": [
+        "claudedocs/rte-truth-program-2026-07/D002-v3-routing-audit.md"
+      ],
+      "validation": [
+        "Report enumerates every v3 route + whether it honors profiles/caps."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A6-fresh-eyes.md",
+        "claudedocs/rte-truth-program-2026-07/A2-cost-truthfulness.md"
+      ]
+    }
+  ]
+}

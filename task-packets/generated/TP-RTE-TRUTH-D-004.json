@@ -1,0 +1,84 @@
+{
+  "id": "TP-RTE-TRUTH-D-004",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / benchmarking secret-redaction gaps + duplicate _SECRET_PATTERNS",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md \u00a75 (Deferred) first \u2014 it is the authority for scope and the deferral reason.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "DEFERRED-TIER packet: these were explicitly held OUT of the main R0-R5 waves. Do not start one without confirming the program has capacity; none of these gate PR #1043.",
+    "A6 verified redaction commit 6ef9b9db1 is INCOMPLETE: raw xai-\u2026 / AIza\u2026 tokens and XAI_API_KEY= assignments still uncovered.",
+    "Two copies of _SECRET_PATTERNS exist \u2014 consolidate onto output_safety.sanitize_text_for_output (single canonical redactor).",
+    "Deferred rationale: benchmarking is internal-only (no src/dopemux import path), so operator exposure is low \u2014 but it IS a security finding.",
+    "Findings covered: Deferred #4, A6-F2, A6-F3."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-D",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-D-004 \u2014 complete benchmarking secret redaction",
+    "allowlist": [
+      "services/repo-truth-extractor/benchmarking/",
+      "services/repo-truth-extractor/output_safety.py",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-D-004.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-D-004/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'redact or secret'"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): complete secret redaction + consolidate patterns",
+    "body": "Deferred #4 (A6-F2/F3). Security, internal-surface.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Extend the redaction patterns to cover xai-/AIza/XAI_API_KEY= forms; consolidate the two _SECRET_PATTERNS copies onto output_safety.",
+      "requirements": [
+        "Add unit tests with fake tokens of each vendor shape."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'redact or safety or secret'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/benchmarking/",
+        "services/repo-truth-extractor/output_safety.py"
+      ],
+      "validation": [
+        "Each vendor token shape masked; single canonical redactor; tests green."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A6-fresh-eyes.md"
+      ]
+    }
+  ]
+}
