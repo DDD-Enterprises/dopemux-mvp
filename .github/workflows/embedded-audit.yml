@@ -176,6 +176,35 @@ jobs:
           # Soft exit: hard proof enforcement is authoritative (see step comments).
           exit 0
 
+      - name: Evaluate local signed audit attestation
+        if: always() && steps.head_integrity.outputs.verified == 'true'
+        working-directory: trusted-source
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          # Fail-closed fallback for runs where no auditor CLI/provider is
+          # provisioned: accept a locally-executed audit ONLY when the PR head
+          # carries proof/pr_merge/embedded-audit/pr-<N>/PROOF.json signed by a
+          # key in the TRUSTED allowed-signers file, bound to this repo+PR, and
+          # the audited commit differs from the head by proof-dir files alone.
+          # Candidate PR code is read as git blobs only — never executed.
+          # Soft exit: a rejected/absent attestation leaves today's
+          # SKIPPED/red path unchanged; the emit + enforce steps stay the sole
+          # green/red authority.
+          set +e
+          python -m scripts.audit.local_audit_acceptance \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "${PR_NUMBER}" \
+            --head-sha "${HEAD_SHA}" \
+            --allowed-signers config/audit/embedded-audit-allowed-signers \
+            --schema schemas/proof/embedded_audit.schema.json \
+            --out ../embedded-audit-artifacts/LOCAL_AUDIT_ATTESTATION.json
+          attestation_status=$?
+          set -e
+          echo "local attestation evaluation exit=${attestation_status}"
+          exit 0
+
       - name: Emit independent embedded audit proof
         if: always() && steps.head_integrity.outputs.verified == 'true'
         working-directory: trusted-source
@@ -239,6 +268,7 @@ jobs:
             --head-sha "${HEAD_SHA}" \
             --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
             --pal-output-json ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json \
+            --local-attestation-json ../embedded-audit-artifacts/LOCAL_AUDIT_ATTESTATION.json \
             --out ../embedded-audit-artifacts
 
       - name: Emit unavailable independent audit proof

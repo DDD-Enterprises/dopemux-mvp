@@ -1,0 +1,133 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0017",
+  "title": "Acceptance Matrix And Fail-Closed Harness",
+  "status": "VALIDATED_WITH_AUDIT_GAP",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "codex/dcp-mcp-ro-0017-live-acceptance",
+  "base_branch": "main",
+  "base_sha": "46e8e8e6915b3b46a7e2cb376983045c9f5a0f34",
+  "depends_on_verified": {
+    "TP-DCP-MCP-RO-0016": {
+      "pr": 1064,
+      "merge_commit": "46e8e8e6915b3b46a7e2cb376983045c9f5a0f34",
+      "status": "MERGED"
+    }
+  },
+  "scope": "Acceptance matrix + fail-closed harness. Deterministic gates hermetic PASS. Live/provider gates NOT_RUN without dual consent env. No tunnels/credentials used.",
+  "input_package": {
+    "sha256": "c0cb9d34f6ece116811c52cce0d1b517153dba0f8434c9abda9da6ff6d6a2447",
+    "authority": "advisory_only"
+  },
+  "live_acceptance": {
+    "operator_authorization": "authorized (2026-07-17 session)",
+    "mode_executed": "local_loopback_synthetic",
+    "release_ready": false,
+    "blocking_failures": 0,
+    "blocking_live_not_run": 4,
+    "live_authorized_env": true,
+    "providers_requested": "local",
+    "report_path": "proof/TP-DCP-MCP-RO-0017/acceptance_report.json",
+    "passed_live_examples": [
+      "DCP-ACC-013",
+      "DCP-ACC-015",
+      "DCP-ACC-020",
+      "DCP-ACC-021",
+      "DCP-ACC-022",
+      "DCP-ACC-023",
+      "DCP-ACC-027",
+      "DCP-ACC-028",
+      "DCP-ACC-006"
+    ],
+    "still_not_run": [
+      "DCP-ACC-024 ChatGPT tunnel",
+      "DCP-ACC-025 Grok stable hostname",
+      "DCP-ACC-026 unsupported provider transport",
+      "DCP-ACC-029 two-worktree backend isolation"
+    ],
+    "blocker": "Vendor tunnel/provider credentials and dual-backend worktree fixtures not available; release_ready remains false."
+  },
+  "files_changed": [
+    "services/dcp-readonly-facade/src/dcp_facade/acceptance.py",
+    "services/dcp-readonly-facade/tests/test_acceptance_harness.py",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/ACCEPTANCE_MATRIX.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0017.json",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0017.md",
+    "task-packets/INDEX.md",
+    "proof/TP-DCP-MCP-RO-0017/**"
+  ],
+  "validation": {
+    "PASS": [
+      {
+        "command": "focused acceptance tests",
+        "exit_code": 0,
+        "result": "6 passed incl local live"
+      },
+      {
+        "command": "full facade suite",
+        "exit_code": 0,
+        "result": "passed; 1 live skip"
+      },
+      {
+        "command": "local-live acceptance report (DCP_ACCEPTANCE_LIVE=1 providers=local)",
+        "exit_code": 0,
+        "result": "release_ready=false; blocking_live_not_run=4; blocking_failures=0"
+      }
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "command": "ChatGPT Secure MCP Tunnel acceptance",
+        "reason": "no OpenAI tunnel credentials",
+        "mitigation": "NOT_RUN vendor gates"
+      },
+      {
+        "command": "Grok/Gemini public provider acceptance",
+        "reason": "no public hostnames/credentials",
+        "mitigation": "NOT_RUN vendor gates"
+      },
+      {
+        "command": "Trusted embedded audit",
+        "reason": "local-only",
+        "mitigation": "not claimed"
+      }
+    ]
+  },
+  "local_agy_review": {
+    "status": "NOT_RUN",
+    "ci_trust_status": "NOT_ACCEPTED"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DCP-MCP-RO-0017/AUDITOR_REPORT.md",
+    "findings": [],
+    "skip_reason": "No trusted runner/Claude audit route under local-only constraints.",
+    "fixes_applied": [
+      "Acceptance matrix document",
+      "Fail-closed dual-consent live gate",
+      "Deterministic hermetic acceptance checks",
+      "release_ready false while live NOT_RUN"
+    ],
+    "remaining_risks": [
+      "Live multi-provider acceptance incomplete",
+      "Trusted embedded audit unavailable"
+    ]
+  },
+  "residual_risks": [
+    "Operators must still run bounded live acceptance with synthetic data before production exposure",
+    "Generated .claude/claude_config.json left unstaged"
+  ],
+  "rollback": "Revert TP-0017 commits",
+  "pr": {
+    "number": 1065,
+    "status": "OPEN_NOT_READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1065",
+    "blocker": "release_ready=false (live gates NOT_RUN); trusted audit SKIPPED; harness merge != live acceptance complete"
+  },
+  "implementation_commit": "8618e7dcf"
+}

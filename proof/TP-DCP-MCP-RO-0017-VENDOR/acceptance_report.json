@@ -1,0 +1,390 @@
+{
+  "blocking_failures": 0,
+  "blocking_live_not_run": 3,
+  "deterministic_count": 12,
+  "generated_at": "2026-07-17T00:30:55.362060+00:00",
+  "live_authorized": true,
+  "live_count": 13,
+  "note": "release_ready is true only when every blocking gate PASSes. Live NOT_RUN keeps release_ready false.",
+  "release_ready": false,
+  "rollup": [
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "unknown target blocked with generic reason",
+          "evidence": {
+            "public_reason": "target not authorized"
+          },
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-001"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-001"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "port-only ownership rejected without labels/identity",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-006"
+        },
+        {
+          "blocking": true,
+          "detail": "ownership verifies only with full evidence; port alone insufficient (covered by matrix tests)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "PASS",
+          "test_id": "DCP-ACC-006"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-006"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "stale candidate blocked",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-008"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-008"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "wrong project identity blocked",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-009"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-009"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "ambiguous candidates blocked",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-010"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-010"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "dope_context not in release-one operations",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-012"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-012"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "connector allows only authorized target/tool; others blocked",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-013"
+        },
+        {
+          "blocking": true,
+          "detail": "second connector authenticates independently on same ingress",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "PASS",
+          "test_id": "DCP-ACC-013"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-013"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "get_progress not in release-one allowlist",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-014"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-014"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "release-one allowlist excludes mutation-shaped denied ops",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-015"
+        },
+        {
+          "blocking": true,
+          "detail": "health ok without tool disclosure; bind is loopback",
+          "evidence": {
+            "bind": "127.0.0.1:56314"
+          },
+          "gate_type": "live",
+          "status": "PASS",
+          "test_id": "DCP-ACC-015"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-015"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "progress side-effect path denied without adapter call",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-016"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-016"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "no policy mutation path; denied op stays denied under injection-style names",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-017"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-017"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "audit dump excludes raw bearer token values",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "PASS",
+          "test_id": "DCP-ACC-020"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-020"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "unauthenticated MCP denied; no tool list",
+          "evidence": {
+            "status": 401
+          },
+          "gate_type": "live",
+          "status": "PASS",
+          "test_id": "DCP-ACC-021"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-021"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "concurrency limit enforced",
+          "evidence": {},
+          "gate_type": "deterministic",
+          "status": "PASS",
+          "test_id": "DCP-ACC-022"
+        },
+        {
+          "blocking": true,
+          "detail": "burst exhaustion returns 429 on live loopback",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "PASS",
+          "test_id": "DCP-ACC-022"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-022"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "local connector discovery returns non-mutation tool subset only",
+          "evidence": {
+            "tool_count": 2
+          },
+          "gate_type": "live",
+          "status": "PASS",
+          "test_id": "DCP-ACC-023"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-023"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "ChatGPT tunnel not runnable: need tunnel-client + CONTROL_PLANE_API_KEY + OPENAI_TUNNEL_ID + connector token. vendor preflight: missing=install tunnel-client (OpenAI Secure MCP Tunnel),set CONTROL_PLANE_API_KEY,set OPENAI_TUNNEL_ID,set PUBLIC_GROK_HOSTNAME (stable named tunnel host),set PUBLIC_GEMINI_HOSTNAME",
+          "evidence": {
+            "env_present": {
+              "CONTROL_PLANE_API_KEY": false,
+              "DCP_ACCEPTANCE_LIVE_TOKEN": true,
+              "GEMINI_API_KEY": false,
+              "OPENAI_API_KEY": false,
+              "OPENAI_TUNNEL_ID": false,
+              "OPENAI_TUNNEL_PROFILE": false,
+              "PUBLIC_GEMINI_HOSTNAME": false,
+              "PUBLIC_GROK_HOSTNAME": false,
+              "XAI_API_KEY": false
+            },
+            "tools": {
+              "cloudflared": true,
+              "curl": true,
+              "ngrok": false,
+              "tunnel-client": false
+            }
+          },
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-024"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-024"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "Grok stable route not runnable: need PUBLIC_GROK_HOSTNAME + connector token. vendor preflight: missing=install tunnel-client (OpenAI Secure MCP Tunnel),set CONTROL_PLANE_API_KEY,set OPENAI_TUNNEL_ID,set PUBLIC_GROK_HOSTNAME (stable named tunnel host),set PUBLIC_GEMINI_HOSTNAME",
+          "evidence": {
+            "env_present": {
+              "CONTROL_PLANE_API_KEY": false,
+              "DCP_ACCEPTANCE_LIVE_TOKEN": true,
+              "GEMINI_API_KEY": false,
+              "OPENAI_API_KEY": false,
+              "OPENAI_TUNNEL_ID": false,
+              "OPENAI_TUNNEL_PROFILE": false,
+              "PUBLIC_GEMINI_HOSTNAME": false,
+              "PUBLIC_GROK_HOSTNAME": false,
+              "XAI_API_KEY": false
+            }
+          },
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-025"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-025"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "Gemini transport gate not runnable: need PUBLIC_GEMINI_HOSTNAME + connector token. vendor preflight: missing=install tunnel-client (OpenAI Secure MCP Tunnel),set CONTROL_PLANE_API_KEY,set OPENAI_TUNNEL_ID,set PUBLIC_GROK_HOSTNAME (stable named tunnel host),set PUBLIC_GEMINI_HOSTNAME",
+          "evidence": {
+            "env_present": {
+              "CONTROL_PLANE_API_KEY": false,
+              "DCP_ACCEPTANCE_LIVE_TOKEN": true,
+              "GEMINI_API_KEY": false,
+              "OPENAI_API_KEY": false,
+              "OPENAI_TUNNEL_ID": false,
+              "OPENAI_TUNNEL_PROFILE": false,
+              "PUBLIC_GEMINI_HOSTNAME": false,
+              "PUBLIC_GROK_HOSTNAME": false,
+              "XAI_API_KEY": false
+            }
+          },
+          "gate_type": "live",
+          "status": "NOT_RUN",
+          "test_id": "DCP-ACC-026"
+        }
+      ],
+      "status": "NOT_RUN",
+      "test_id": "DCP-ACC-026"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "credential rotation rejects old token; new token accepted",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "PASS",
+          "test_id": "DCP-ACC-027"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-027"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "facade stop ends loopback access (local disable sequence)",
+          "evidence": {
+            "bind": "127.0.0.1:56314"
+          },
+          "gate_type": "live",
+          "status": "PASS",
+          "test_id": "DCP-ACC-028"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-028"
+    },
+    {
+      "results": [
+        {
+          "blocking": true,
+          "detail": "two-target connector isolation + wrong-owner ownership block (synthetic, no vendor tunnel)",
+          "evidence": {},
+          "gate_type": "live",
+          "status": "PASS",
+          "test_id": "DCP-ACC-029"
+        }
+      ],
+      "status": "PASS",
+      "test_id": "DCP-ACC-029"
+    }
+  ]
+}

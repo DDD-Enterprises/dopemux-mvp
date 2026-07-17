@@ -31,6 +31,10 @@ prelude: Packet roadmap and dependency chain for the read-only MCP evidence faca
 | TP-DCP-MCP-RO-0012 | Public Facade Target Contract Migration | HIGH | Migrate public FastMCP to registry-v2 opaque target_id local evidence tools. **Done** — merged PR #1057. | 0011-REMEDIATION-01 |
 | TP-DCP-MCP-RO-0013 | Connector Policy Schema And Auth Context | HIGH | Strict connector policy schema/loader and provider-neutral sealed auth context with target/tool authorization. **No public ingress.** | 0012 |
 | TP-DCP-MCP-RO-0014 | Loopback Streamable HTTP Ingress | HIGH | Auth-before-discovery loopback HTTP ingress, rate limits, redacted audit, start/stop/health. **No public bind/tunnel.** | 0013 |
+| TP-DCP-MCP-RO-0015 | Ownership Verification And Release-One Adapters | HIGH | Fail-closed ownership verifier + ConPort decision list/read and dope-memory search/replay gates. **No live default network.** | 0014 |
+| TP-DCP-MCP-RO-0016 | Multi-Provider Setup And Rollback Docs | MEDIUM | Provider setup, disable/rollback, command/source-date ledgers, example secret-scan tests. **Placeholders only.** | 0015 |
+| TP-DCP-MCP-RO-0017 | Acceptance Matrix And Fail-Closed Harness | CRITICAL | Matrix + harness: deterministic PASS, live NOT_RUN without dual consent; skipped live never PASS. | 0016 |
+| TP-DCP-MCP-RO-0018 | Exact-Head Proof Readiness Evaluator | HIGH | Fail-closed exact-head readiness; SKIPPED audit / stale proof / bad checks block READY. **No branch-protection mutation.** | 0017 |
 
 ## Sequencing rationale
 

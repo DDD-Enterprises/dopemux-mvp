@@ -31,6 +31,31 @@ def get_decisions(
     )
 
 
+def get_decision(
+    client: ReadOnlyHttpClient,
+    base_url: str,
+    workspace_id: str,
+    decision_id: str,
+) -> HttpResponse:
+    """Read one decision by explicit ID (release-one).
+
+    Rejects path-bearing or empty IDs fail-closed. Progress and broad query
+    modes are intentionally not provided here.
+    """
+    if not isinstance(decision_id, str) or not decision_id.strip():
+        raise ReadOnlyHttpError("decision_id is required")
+    if "/" in decision_id or ".." in decision_id or decision_id.strip() != decision_id:
+        raise ReadOnlyHttpError("invalid decision_id")
+    if "/" in workspace_id or ".." in workspace_id:
+        raise ReadOnlyHttpError("invalid workspace_id (must be a single segment)")
+    safe_id = quote(decision_id, safe="")
+    return client.get(
+        base_url,
+        f"/api/decisions/{safe_id}",
+        {"workspace_id": workspace_id},
+    )
+
+
 def get_progress(
     client: ReadOnlyHttpClient,
     base_url: str,

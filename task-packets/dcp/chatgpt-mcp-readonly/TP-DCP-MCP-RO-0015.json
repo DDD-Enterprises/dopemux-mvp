@@ -1,0 +1,103 @@
+{
+  "id": "TP-DCP-MCP-RO-0015",
+  "project": "dopemux-mvp",
+  "target": "Implement fail-closed ownership verification and release-one safe adapters for ConPort decision list/read and dope-memory search/replay without live backends, writes, or non-release families.",
+  "invariants": [
+    "Port presence alone never verifies ownership.",
+    "Ownership verification never sets callable true by itself.",
+    "Release-one allows only ConPort list/get decision and dope-memory search/replay.",
+    "Progress, broad query, writes, dope-context, task-orchestrator, and bridge remain blocked.",
+    "Tests inject HTTP transports; no live network, tunnel, or credential is required."
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0014"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0014",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dcp-mcp-ro-0015-ownership-adapters",
+    "base_branch": "main",
+    "stacked_because": "TP-DCP-MCP-RO-0014 loopback ingress is merged on main (PR #1060)."
+  },
+  "commit": {
+    "message": "feat(dcp): add ownership verification and release-one adapters",
+    "allowlist": [
+      "services/dcp-readonly-facade/src/dcp_facade/ownership.py",
+      "services/dcp-readonly-facade/src/dcp_facade/safe_adapters.py",
+      "services/dcp-readonly-facade/src/dcp_facade/conport.py",
+      "services/dcp-readonly-facade/src/dcp_facade/route_manifest.py",
+      "services/dcp-readonly-facade/tests/test_ownership.py",
+      "services/dcp-readonly-facade/tests/test_safe_adapters.py",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/OWNERSHIP_AND_SAFE_ADAPTERS.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0015.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0015.md",
+      "task-packets/INDEX.md",
+      "proof/TP-DCP-MCP-RO-0015/**"
+    ],
+    "verify": [
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests/test_ownership.py services/dcp-readonly-facade/tests/test_safe_adapters.py",
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests",
+      "uv run --frozen python -m compileall -q services/dcp-readonly-facade/src",
+      "python -m jsonschema -i task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0015.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "pre-commit run --files <changed-files>"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): add ownership verification and release-one adapters",
+    "body": "Implements TP-DCP-MCP-RO-0015: fail-closed ownership verification (no port-only trust) and release-one safe adapters for ConPort decisions and dope-memory search/replay. No live backends, tunnels, writes, or non-release families.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "ownership-verifier",
+      "task": "Implement pure ownership evidence adjudication with fail-closed matrix for wrong project, ambiguous, stale, unlabeled, protocol, mount, and port-only cases.",
+      "validation": [
+        "Port-only evidence is blocked.",
+        "Happy-path evidence with labels, roots, mounts, and protocol_ok verifies without callable true."
+      ]
+    },
+    {
+      "id": "release-one-adapters",
+      "task": "Gate ConPort decision list/read and dope-memory search/replay behind verified ownership; deny progress/writes.",
+      "validation": [
+        "Denied ops never issue HTTP.",
+        "Allowed ops require verified ownership and use injected transport only."
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Run focused/full tests, packet schema validation, pre-commit, advisory AGY, open PR without merge.",
+      "validation": [
+        "Local validation captured in proof.",
+        "Trusted embedded audit not claimed from AGY."
+      ]
+    }
+  ]
+}
