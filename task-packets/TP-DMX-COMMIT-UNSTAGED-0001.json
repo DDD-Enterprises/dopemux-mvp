@@ -1,0 +1,80 @@
+{
+  "id": "TP-DMX-COMMIT-UNSTAGED-0001",
+  "project": "dopemux-mvp",
+  "target": "Logically group and commit all uncommitted work (installer robustness improvements, test container updates, and MCP/health-check transport configurations).",
+  "invariants": [
+    "Commit only files directly relevant to the installer improvements and MCP health/transport cutover.",
+    "Do not stage or commit dynamic test runner logs or local caches.",
+    "Ensure all unit tests pass before committing."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-REPO-COMMIT-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "fix/reserved-singleton-identity-probe"
+  },
+  "commit": {
+    "message": "chore(repo): commit unstaged installer and MCP health work",
+    "allowlist": [
+      "task-packets/TP-DMX-COMMIT-UNSTAGED-0001.json",
+      "INSTALL.md",
+      "dopemux.rb",
+      "install.sh",
+      "test_installer_basic.sh",
+      "test_installer_ubuntu.sh",
+      "mcp_catalog.yaml",
+      "mcp-proxy-config.yaml",
+      ".claude/claude_config.json",
+      "scripts/mcp_health_check.sh",
+      "scripts/ensure_pal_stdio.sh",
+      "claudedocs/pal-stdio-model-context-diagnosis-2026-07-16.md",
+      "tests/unit/test_mcp_commands_catalog.py",
+      "ROUTING_RUNTIME_CENSUS.json"
+    ],
+    "verify": [
+      "pytest tests/unit/test_mcp_commands_catalog.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "chore(repo): commit unstaged installer and MCP health work",
+    "body": "Logically commit installer and MCP health/transport improvements from current workspace.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Group and commit the installer-related changes.",
+      "validation": [
+        "Uncommitted installer files are committed with clean messages."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Group and commit the MCP catalog, proxy, and health check changes.",
+      "validation": [
+        "Uncommitted MCP catalog, proxy, tests, and scripts are committed with clean messages."
+      ]
+    }
+  ]
+}

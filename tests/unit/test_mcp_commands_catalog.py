@@ -197,18 +197,19 @@ def test_allocate_ports_raises_on_singleton_port_collision(monkeypatch):
     This is the bug that caused CONPORT_HTTP_PORT=3009 to collide with gpt-researcher
     at port 3009 in the dNh_CRM workspace.
 
-    gpt-researcher is a stdio singleton (no url) whose Docker container still binds
-    port 3009; the catalog declares this via ``reserved_port: 3009``.  The test
-    monkeypatches _port_for to guarantee the collision deterministically.
+    gpt-researcher is a singleton whose Docker container binds port 3009; the
+    catalog declares this via ``reserved_port: 3009`` (real entry is SSE on
+    that port). This fixture only needs reserved_port for collision detection.
     """
     SINGLETON_PORT = 3009
     catalog = {
         "version": 1,
         "servers": {
-            # Matches the real gpt-researcher catalog entry: stdio, no url, reserved_port
+            # Minimal singleton with reserved_port only (collision detection)
             "gpt-researcher": {
                 "scope": "singleton",
-                "transport": "stdio",
+                "transport": "sse",
+                "url": f"http://localhost:{SINGLETON_PORT}/sse",
                 "reserved_port": SINGLETON_PORT,
             },
             # Per-worktree service whose hash-derived port happens to land on 3009

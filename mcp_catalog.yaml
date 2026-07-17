@@ -93,20 +93,22 @@ servers:
 
   gpt-researcher:
     scope: singleton
-    transport: stdio
+    # Container CMD already runs SSE on :3009 (see docker/mcp-servers-source/gptr-mcp/Dockerfile).
+    # Prefer SSE over docker-exec stdio: each Claude/Grok session was spawning
+    # `docker exec -i ... python /app/server.py`, which storms Docker and times out MCP.
+    transport: sse
     plane: research
     authority_role: deep-research
     lifecycle: active
-    management_model: docker-exec
+    management_model: compose-service
     identity_scope: external-provider
     follow_on_decision: none
-    command: docker
-    args: ["exec", "-i", "dopemux-mcp-gptr-mcp", "python", "/app/server.py"]
+    url: "http://localhost:3009/sse"
     docker_compose_service: gptr-mcp
     reserved_port: 3009  # gptr-mcp container binds ${GPT_RESEARCHER_PORT:-3009}
     requires_env: ["OPENAI_API_KEY"]
     optional_env: ["TAVILY_API_KEY", "EXA_API_KEY", "PERPLEXITY_API_KEY", "ANTHROPIC_API_KEY"]
-    description: "Deep multi-source research (PR #575: gpt-researcher==0.14.8 pinned)"
+    description: "Deep multi-source research (gpt-researcher==0.15.1 pinned; SSE on :3009)"
 
   pal-stdio:
     scope: singleton

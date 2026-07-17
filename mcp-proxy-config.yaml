@@ -44,7 +44,8 @@ mcp_servers:
     workspace_param: "workspace_path"
 
   gpt-researcher:
-    command: ["python", "__WORKSPACE_ROOT__/scripts/gpt-researcher/mcp_server.py"]
+    # Proxies the compose-managed gptr-mcp SSE server (not a host python script).
+    command: ["uvx", "mcp-proxy", "--transport", "sse", "http://127.0.0.1:3009/sse"]
     port: 3009
     supports_workspace: false
 

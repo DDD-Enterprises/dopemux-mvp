@@ -1,0 +1,500 @@
+{
+  "schema": "dopemux.routing_runtime_census.v1",
+  "census_metadata": {
+    "generated_at": "2026-07-10",
+    "repository": "/Users/hue/code/dopemux-mvp",
+    "branch": "main",
+    "head": "b176747b339685e781de04268c46b7ae123abfbf",
+    "origin_main": "b176747b339685e781de04268c46b7ae123abfbf",
+    "pull_status": "PASS: git pull --ff-only origin main fast-forwarded main from 542c17bb4 to b176747b3",
+    "scope": "Read-only runtime/source census. No provider calls, service starts, config installs, or source/config edits were performed.",
+    "confidence_rule": "Observed source/config/entrypoint evidence is separated from inference, advisory material, and unknowns."
+  },
+  "executive_answer": {
+    "active_runtime_planes": [
+      "Dopemux CLI -> RoutingConfig/Freeflow -> LiteLLM/CCR launch/configuration is active code, subject to operator invocation and local process state.",
+      "LiteLLMProxyManager and its optional structured trace callback are the reusable proxy lifecycle/observability path.",
+      "Repo Truth Extractor v3/v5 has a separate active provider/model routing ladder using services/repo-truth-extractor/promptsets/v4/model_map.yaml and config/pricing.yaml.",
+      "Task-orchestrator app.main is the compose entrypoint; its MCP surface imports task_orchestrator.agents.AgentCoordinator for agent assignment/status, but that coordinator chooses agent capabilities, not provider model IDs."
+    ],
+    "dead_or_advisory": [
+      "services/task-router source was removed in commit 6b705b2ce after a zero-live-reference revalidation; current main has only ignored stale __pycache__ bytecode.",
+      "config/ai/model-routing.policy.yaml is explicitly advisory governance and is not read/enforced by runtime code.",
+      "root model_map_v2_tp008.yaml is not the active RTE map and has no active runtime reader found in the current tree.",
+      "services/agents and src/dopemux/agent_orchestrator.py are not proven repo-wide agent runtime authority; the latter is test-imported and scaffold/mock-oriented."
+    ],
+    "key_negative": "No active caller of services/task-router was found in current source/config/compose/entrypoint globs."
+  },
+  "authority_used": [
+    {
+      "path": "AGENTS.md",
+      "status": "observed",
+      "use": "Truth order, runtime-over-docs rule, agent-authority UNKNOWN boundary, task-orchestrator entrypoint danger, and read-only/audit discipline."
+    },
+    {
+      "path": "task-packets/ACTIVE.md",
+      "status": "NOT_PRESENT",
+      "use": "No active packet file exists at the expected path."
+    },
+    {
+      "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001.md",
+      "status": "observed but historical/design-only for this census",
+      "use": "Confirms the routing policy is advisory, agents are UNKNOWN, and that packet forbids implementing runtime routing."
+    },
+    {
+      "path": "task-packets/generated/TP-DMX-ROUTING-CONTRACT-CANONICALIZATION-0001.json",
+      "status": "observed but contracts-only",
+      "use": "Confirms no runtime routing/provider execution authority."
+    },
+    {
+      "path": "TASK_ORCH_INTEGRATION_REPO_INVENTORY.md",
+      "status": "observed advisory inventory",
+      "use": "Cross-checked against current compose, Dockerfile, and app.main source; runtime source won where they differed."
+    },
+    {
+      "source": "Task Orchestrator MCP get_context/search",
+      "status": "observed",
+      "use": "Workspace has active work items, but no routing-specific active item; searches for model routing, LiteLLM, task-router, and girth did not identify a routing owner."
+    },
+    {
+      "source": "Other worktrees and git history",
+      "status": "observed",
+      "use": "Checked sibling worktrees and routing-related history, including the task-router graveyard deletion and runtime-stack branches."
+    }
+  ],
+  "component_census": [
+    {
+      "component": "src/dopemux/cli.py + src/dopemux/routing_cli.py",
+      "status": "ACTIVE_OPERATOR_ENTRYPOINT",
+      "import_chain": [
+        "src/dopemux/cli.py:6195-6200 imports routing_cli.routing and registers cli routing",
+        "src/dopemux/routing_cli.py:10-17 imports LaunchdServiceManager, RoutingConfig, FreeflowQuotaLedger, FreeflowRouter, build_doctor_report"
+      ],
+      "executed_behavior": [
+        "routing api/direct switch persisted mode and Claude base URL; api can regenerate/reload launchd services",
+        "routing install/start/stop/reload/status/health/config/docker/sync-keys/repair operate on launchd/user/service state",
+        "routing freeflow doctor/quota/routes inspect Freeflow policy; doctor can perform live probes unless --offline",
+        "routing repair-aliases is read-only by default and mutates only with --apply"
+      ],
+      "evidence": [
+        "src/dopemux/cli.py:6195-6200",
+        "src/dopemux/routing_cli.py:22-40",
+        "src/dopemux/routing_cli.py:108-238",
+        "src/dopemux/routing_cli.py:249-430",
+        "src/dopemux/routing_cli.py:453-588"
+      ]
+    },
+    {
+      "component": "src/dopemux/routing_config.py",
+      "status": "ACTIVE_CONFIGURATION_AND_GENERATOR",
+      "behavior": [
+        "RoutingConfig.load defaults to ~/.dopemux/routing.yaml and copies templates/routing.yaml there when absent; this is a write side effect if invoked on a missing user config.",
+        "validate requires version, mode, ports, providers, models, slots, fallbacks, default_fallbacks, and aliases and validates references.",
+        "generate_litellm_config builds model_list, provider auth/base_url/headers, slot and alias maps, fallbacks, retry/timeout, and master-key settings; strict-free delegates to Freeflow generation.",
+        "repair_alias_contract writes a timestamped backup and rewrites the aliases block.",
+        "generate_ccr_config currently references undefined all_model_names at lines 481 and 494; static source evidence indicates an untested runtime defect."
+      ],
+      "routing_decision_role": "Provider/model alias and fallback materialization for the LiteLLM/CCR plane; it is not the RTE step router.",
+      "evidence": [
+        "src/dopemux/routing_config.py:43-118",
+        "src/dopemux/routing_config.py:120-212",
+        "src/dopemux/routing_config.py:214-242",
+        "src/dopemux/routing_config.py:368-463",
+        "src/dopemux/routing_config.py:465-500"
+      ]
+    },
+    {
+      "component": "templates/routing.yaml",
+      "status": "ACTIVE_TEMPLATE_INPUT",
+      "behavior": "Defines version/mode/ports, providers, model rows, slots, aliases, fallbacks, and strict_free policy consumed by RoutingConfig; it is not itself executed until loaded/generated.",
+      "expressible": ["provider", "model_id", "max_tokens", "provider auth/base_url/extra_headers", "slot", "alias", "fallback", "strict-free/privacy/paid-cap policy"],
+      "not_expressible_as_named_fields": ["temperature", "reasoning_effort", "service_tier", "strict JSON response/schema settings"],
+      "evidence": ["templates/routing.yaml:1-361", "src/dopemux/routing_config.py:368-463"]
+    },
+    {
+      "component": "src/dopemux/litellm_proxy.py + src/dopemux/litellm_manager.py",
+      "status": "ACTIVE_PROXY_LIFECYCLE",
+      "behavior": [
+        "generate_single_target_config and generate_multi_target_config materialize LiteLLM model lists and aliases with max_tokens; programmatic targets may pass arbitrary extra_litellm_params.",
+        "Built-in Grok/Codex/ALTP targets define provider/model/max_tokens and OpenRouter headers/base URL; no built-in reasoning_effort or temperature setting is supplied.",
+        "start_simple_proxy writes per-instance config/key, probes ports, may kill stale litellm processes, and launches a proxy; it disables LiteLLM DB/spend logging.",
+        "LiteLLMProxyManager.ensure_started is the reusable managed lifecycle; litellm_manager injects structured trace callback configuration and environment when enabled."
+      ],
+      "evidence": [
+        "src/dopemux/litellm_proxy.py:186-215",
+        "src/dopemux/litellm_proxy.py:223-327",
+        "src/dopemux/litellm_proxy.py:327-447",
+        "src/dopemux/litellm_proxy.py:550-706",
+        "src/dopemux/litellm_manager.py:339-370",
+        "src/dopemux/litellm_manager.py:403-455"
+      ]
+    },
+    {
+      "component": "litellm.config.yaml",
+      "status": "ACTIVE_PROXY_CONFIG_INPUT",
+      "behavior": "Root model_list and litellm_settings are consumed as a proxy template by the manager when selected; the file alone does not establish a running process or usage ledger.",
+      "expressible": ["model_name", "provider model", "max_tokens", "api_key env", "api_base", "headers", "timeout", "retries", "drop_params", "aliases", "fallbacks"],
+      "not_expressible_as_named_fields": ["temperature", "reasoning_effort", "service_tier", "strict JSON response/schema", "structured callbacks in this file"],
+      "evidence": ["litellm.config.yaml:1-164", "src/dopemux/litellm_proxy.py:572-682", "src/dopemux/litellm_manager.py:180-220"]
+    },
+    {
+      "component": "src/dopemux/profile_models.py",
+      "status": "ACTIVE_PROFILE_SCHEMA_NOT_ROUTING_SCHEMA",
+      "behavior": "Pydantic Profile/ProfileCollection models are used by profile parsing, detection, wizard, config generation, and profile CLI flows.",
+      "fields": ["name", "display_name", "description", "mcps", "adhd_config", "auto_detection"],
+      "routing_finding": "No provider, model, slot, reasoning, token, or generation settings are expressible in Profile.",
+      "evidence": ["src/dopemux/profile_models.py:61-178", "src/dopemux/profile_models.py:237-275", "tests/test_profile_models.py", "tests/test_profile_parser.py", "tests/unit/test_config_generator.py"]
+    },
+    {
+      "component": "src/dopemux/agent_orchestrator.py",
+      "status": "TEST_IMPORTED_SCAFFOLD_NOT_PROVEN_RUNTIME_AUTHORITY",
+      "behavior": [
+        "Current code search found tests/test_agent_orchestrator.py as the only direct importer; no production caller was found.",
+        "AgentConfig contains model, tools, environment, memory_enabled, and LiteLLM instance fields, but _execute_agent_task dispatches hardcoded mock methods and does not pass model into a provider request.",
+        "_ensure_litellm_instance creates a hardcoded gpt-4 demo config; AgentWorkflow.execute sleeps and fabricates AgentResult output; get_task_result always returns None.",
+        "The model field is therefore structurally expressible but not runtime-effective in this class."
+      ],
+      "evidence": [
+        "src/dopemux/agent_orchestrator.py:47-71",
+        "src/dopemux/agent_orchestrator.py:88-110",
+        "src/dopemux/agent_orchestrator.py:178-207",
+        "src/dopemux/agent_orchestrator.py:251-330",
+        "src/dopemux/agent_orchestrator.py:458-510",
+        "src/dopemux/agent_orchestrator.py:656-690",
+        "tests/test_agent_orchestrator.py:1"
+      ]
+    },
+    {
+      "component": "config/ai/model-routing.policy.yaml",
+      "status": "ADVISORY_GOVERNANCE",
+      "behavior": "The file explicitly says it is proposed advisory governance, not a runtime router, and that no runtime system currently reads/enforces it. Its tests validate shape/consistency only.",
+      "evidence": ["config/ai/model-routing.policy.yaml:1-22", "config/ai/model-routing.policy.yaml:45-55", "tests/test_model_routing_policy.py", "tests/test_model_routing_consistency.py"]
+    },
+    {
+      "component": "model_map_v2_tp008.yaml",
+      "status": "NON_RUNTIME_ROOT_MAP_FOR_THIS_CENSUS",
+      "behavior": "Root TP008 lane map is referenced by packet/docs/audit/hygiene tooling, but no active runtime reader was found. Active RTE code uses the v4 promptset map.",
+      "evidence": ["model_map_v2_tp008.yaml:1-241", "services/repo-truth-extractor/promptsets/v4/model_map.yaml:1-20", "services/repo-truth-extractor/run_extraction_v5.py:614-632", "services/repo-truth-extractor/run_extraction_v5.py:5800-5880"]
+    },
+    {
+      "component": "config/pricing.yaml",
+      "status": "ACTIVE_RTE_PRICING_INPUT_NOT_LITELLM_ROUTING_INPUT",
+      "behavior": "RTE loads this catalog for provider/model pricing, context/output limits, strict JSON capability, and service-tier multipliers; the Dopemux RoutingConfig/LiteLLM path does not load it.",
+      "evidence": ["config/pricing.yaml:1-15", "config/pricing.yaml:35-45", "services/repo-truth-extractor/rte_config.py:43-45", "services/repo-truth-extractor/rte_config.py:128-136", "services/repo-truth-extractor/run_extraction_v5.py:4448-4640"]
+    },
+    {
+      "component": "services/repo-truth-extractor/run_extraction_v5.py + promptsets/v4/model_map.yaml",
+      "status": "ACTIVE_RTE_RUNTIME_ROUTER",
+      "behavior": [
+        "RTE resolves effective step tier, model overrides, and step ladders from structured primary/repair/sidefill routes.",
+        "Route identity is provider/model_id/api_key_env and is preserved in route metadata/fingerprints and run artifacts.",
+        "RTE normalizes route request options including service_tier and reasoning_effort, and supports strict JSON/schema route requirements.",
+        "Temperature is provider/model-specific: OpenAI GPT-5 omits temperature; other paths default to 0.1; Gemini config includes JSON MIME and thinking-budget behavior.",
+        "RTE writes RUN_MANIFEST/effective_model_routing and SPEND_LEDGER.json/run-scoped metadata, using config/pricing.yaml."
+      ],
+      "evidence": [
+        "services/repo-truth-extractor/run_extraction_v5.py:5800-5880",
+        "services/repo-truth-extractor/run_extraction_v5.py:6214-6353",
+        "services/repo-truth-extractor/run_extraction_v5.py:6788-6885",
+        "services/repo-truth-extractor/run_extraction_v5.py:10264-10503",
+        "services/repo-truth-extractor/run_extraction_v5.py:10612-10640",
+        "services/repo-truth-extractor/run_extraction_v5.py:4448-4815",
+        "services/repo-truth-extractor/rte_config.py:43-45",
+        "services/repo-truth-extractor/rte_config.py:128-136",
+        "services/repo-truth-extractor/tests/test_route_request_options.py"
+      ]
+    },
+    {
+      "component": "services/task-orchestrator/app/main.py + task_orchestrator.mcp + task_orchestrator.agents",
+      "status": "ACTIVE_SERVICE_AND_AGENT_ASSIGNMENT_COMPONENT",
+      "import_chain": [
+        "compose.yml:425-452 builds services/task-orchestrator/Dockerfile and maps port 8000",
+        "services/task-orchestrator/Dockerfile:20-30 copies app/task_orchestrator and related code",
+        "services/task-orchestrator/app/main.py:81-98 imports/registers MCP_TOOLS",
+        "services/task-orchestrator/task_orchestrator/mcp/__init__.py:16-18 imports agent_coordinator",
+        "services/task-orchestrator/task_orchestrator/agents/__init__.py:18-165 defines AgentCoordinator and singleton"
+      ],
+      "runtime_decisions": [
+        "AgentCoordinator.initialize_pool creates ConPort, Serena, and PAL capability entries with concurrency limits.",
+        "assign_optimal_agent considers ADHD readiness, complexity > 0.8, and keyword classes; it returns AgentType, not provider/model identity.",
+        "MCP get_agent_status exposes coordinator state; app.main is the canonical compose entrypoint using uvicorn app.main:app.",
+        "services/task-orchestrator/task_orchestrator/app.py is an unsupported hard-fail variant and is not the compose entrypoint."
+      ],
+      "evidence": [
+        "compose.yml:424-452",
+        "services/task-orchestrator/Dockerfile:20-35",
+        "services/task-orchestrator/app/main.py:78-98",
+        "services/task-orchestrator/app/main.py:194-209",
+        "services/task-orchestrator/app/main.py:910-915",
+        "services/task-orchestrator/task_orchestrator/mcp/__init__.py:1-125",
+        "services/task-orchestrator/task_orchestrator/agents/__init__.py:18-165",
+        "services/task-orchestrator/task_orchestrator/app.py:1-40"
+      ]
+    },
+    {
+      "component": "services/agents/**",
+      "status": "DORMANT_DEMO_OR_ADVISORY_UNPROVEN_RUNTIME",
+      "behavior": "Directory contains infrastructure-agent scripts, README claims, demos, and tests; current code/config/compose/entrypoint search found no production registry or compose caller. AGENTS.md keeps repo-wide agent runtime authority UNKNOWN.",
+      "evidence": ["services/agents/README.md:1-35", "services/agents/*.py", "AGENTS.md:Architecture Boundaries", "rg source/config/compose caller search"]
+    },
+    {
+      "component": "scripts/dopetask",
+      "status": "ACTIVE_EXTERNAL_EXECUTION_WRAPPER_NOT_MODEL_ROUTER",
+      "behavior": "Enforces .dopetaskroot/.dopetask-pin, creates or uses a pinned virtualenv, installs the pinned dopetask version when needed, and execs the external dopetask binary. It does not select provider/model routes.",
+      "evidence": ["scripts/dopetask:1-97", "AGENTS.md:Architecture Boundaries"]
+    },
+    {
+      "component": "DCP routing classifier/backend policy",
+      "status": "ACTIVE_READ_ONLY_CLASSIFICATION_NOT_PROVIDER_ROUTING",
+      "behavior": "DCP classifier chooses safe/blocked disposition and backend policy recommends agent backend families; neither dispatches a LiteLLM provider/model request or records model usage.",
+      "evidence": ["src/dopemux/dcp/routing_classifier.py", "src/dopemux/dcp/routing_backend_policy.py", "src/dopemux/commands/dcp_commands.py"]
+    }
+  ],
+  "runtime_routing_decisions": [
+    {
+      "plane": "Dopemux provider proxy",
+      "sequence": [
+        "CLI registration exposes routing commands.",
+        "RoutingConfig loads/validates user config, possibly initializing it from templates/routing.yaml.",
+        "Mode api/direct changes the selected routing mode and Claude base URL; service regeneration/reload is operator-controlled.",
+        "RoutingConfig or LiteLLMProxyManager materializes model_list, aliases/slots, fallback lists, provider endpoint/auth settings, retry/timeout settings.",
+        "FreeflowRouter may rank/admit routes under strict-free policy, quota/cooldown/paid-cap constraints, and records decisions when its ledger path is active.",
+        "LiteLLM makes the provider request; structured callback logging is available only when manager/callback configuration is enabled."
+      ],
+      "model_identity_source": "routing.yaml model.name/model_id/provider, generated LiteLLM model_list, proxy request metadata",
+      "decision_authority": "Runtime code/config, not config/ai/model-routing.policy.yaml or root model_map_v2_tp008.yaml"
+    },
+    {
+      "plane": "RTE extraction",
+      "sequence": [
+        "RTE selects effective cost profile/step tier and loads structured contract routes from services/repo-truth-extractor/promptsets/v4/model_map.yaml.",
+        "Overrides/provider locks/strict requirements resolve a route ladder containing provider/model_id/api_key_env.",
+        "Route request options normalize service_tier/reasoning_effort/strict JSON and provider-specific parameters.",
+        "Provider-specific payload builders set temperature/max output/JSON or thinking controls.",
+        "Ladder fallback/repair/sidefill choices and spend gates are applied before dispatch.",
+        "Run manifest, route metadata/fingerprint, and spend ledger record the selected identity and usage."
+      ],
+      "decision_authority": "RTE runner plus v4 model map plus config/pricing.yaml; root model_map_v2_tp008.yaml is not the active reader target"
+    },
+    {
+      "plane": "Task-orchestrator agent assignment",
+      "sequence": [
+        "Canonical app.main registers MCP tools and initializes coordinator lifecycle.",
+        "AgentCoordinator checks optional ADHD readiness.",
+        "Complexity and keywords choose ConPort, Serena, or PAL AgentType and enforce pool capacity.",
+        "No provider/model identity is selected by this coordinator; downstream model dispatch authority remains UNKNOWN in the repo-wide architecture."
+      ],
+      "decision_authority": "task_orchestrator.agents.AgentCoordinator for agent capability assignment only"
+    }
+  ],
+  "expressible_settings": {
+    "templates/routing.yaml_and_RoutingConfig": {
+      "yes": ["provider", "model name", "provider model_id/litellm_model", "max_tokens", "provider API base/headers/auth env", "slots", "aliases", "fallbacks", "strict-free quota/privacy/paid-cap policy"],
+      "no_named_runtime_field": ["temperature", "reasoning_effort", "service_tier", "strict JSON schema/response format"],
+      "caveat": "Python generator extension could pass additional LiteLLM parameters, but YAML validation/materialization currently does not define a typed contract for them."
+    },
+    "litellm.config.yaml": {
+      "yes": ["model_list", "model_name", "provider model", "max_tokens", "api key env", "api_base", "headers", "timeout", "max_retries", "drop_params", "aliases", "fallbacks"],
+      "no_named_runtime_field": ["temperature", "reasoning_effort", "service_tier", "strict JSON schema/response format", "callback configuration in the checked-in root file"],
+      "caveat": "LiteLLM itself may accept provider-specific request parameters, but this checked-in config does not express them."
+    },
+    "src/dopemux/litellm_proxy.py": {
+      "yes": ["max_tokens", "arbitrary extra_litellm_params in programmatic target definitions", "provider/base URL/header settings"],
+      "no_built_in_setting": ["reasoning_effort", "temperature", "service_tier"],
+      "caveat": "The arbitrary escape hatch is not a stable declarative contract and should not be treated as an existing schema."
+    },
+    "src/dopemux/agent_orchestrator.py": {
+      "structurally_present": ["model", "tools", "environment", "memory_enabled", "litellm_instance", "timeout", "max_retries"],
+      "runtime_effective": ["agent type dispatch, retry bookkeeping, mock/demo LiteLLM instance startup"],
+      "not_runtime_effective": ["model selection in the actual mock execution methods", "provider-specific reasoning/generation options"]
+    },
+    "src/dopemux/profile_models.py": {
+      "routing_settings": [],
+      "actual_scope": ["MCP membership", "ADHD preferences", "auto-detection rules"]
+    },
+    "RTE_v4_runner": {
+      "yes": ["provider", "model_id", "api_key_env", "route ladders", "primary/repair/sidefill", "strict_json_schema", "response_format", "service_tier", "reasoning_effort", "provider-specific temperature", "max_output_tokens", "thinking budget where supported", "pricing/context/output limits"],
+      "evidence": ["services/repo-truth-extractor/run_extraction_v5.py:10264-10640", "services/repo-truth-extractor/tests/test_route_request_options.py"]
+    },
+    "DCP_classifier": {
+      "yes": ["task source/type", "risk", "complexity", "authority", "runtime impact", "backend disposition"],
+      "provider_model_settings": []
+    }
+  },
+  "model_identity_usage_recording": {
+    "LiteLLM_proxy": [
+      "Identity is materialized in model_list entries and aliases in generated per-instance .dopemux/litellm/<instance>/litellm.config.yaml or selected root template.",
+      "When structured tracing is enabled, DopemuxLiteLLMTraceLogger emits JSONL request-start/completed/failed records with model/provider/route metadata and token usage.",
+      "Freeflow ledger default is ~/.dopemux/freeflow/quota.sqlite or DOPEMUX_FREEFLOW_LEDGER; tables include usage_events, spend_events, route_decisions, cooldowns, and bucket_state.",
+      "start_simple_proxy explicitly disables LiteLLM DB/spend logging, so the root config or simple proxy alone is not proof of usage recording."
+    ],
+    "RTE": [
+      "RUN_MANIFEST.json/effective_model_routing records requested/effective route identity.",
+      "Run-scoped route metadata includes provider, model_id, provider_signature/fingerprint, request options, and response identity policy.",
+      "SPEND_LEDGER.json records runtime cost/usage; config/pricing.yaml is the pricing authority used by RTE."
+    ],
+    "task_orchestrator_and_services_agents": [
+      "AgentCoordinator status records agent type/capacity/current load, not provider/model identity.",
+      "src/dopemux/agent_orchestrator.AgentResult does not carry model/provider identity and get_task_result returns None; no usage ledger is connected in this scaffold path.",
+      "services/agents has no proven production usage/identity recording path."
+    ],
+    "profiles_and_DCP": "Neither profile_models nor DCP classifier/backend policy records model usage."
+  },
+  "safe_extension_points": [
+    {
+      "target": "src/dopemux/routing_config.RoutingConfig",
+      "safe_use": "Extend declarative provider-proxy fields only with explicit validation, generator mapping, alias/fallback compatibility, and focused tests.",
+      "do_not_assume": "It is not the RTE route ladder authority and does not currently consume config/pricing.yaml."
+    },
+    {
+      "target": "src/dopemux/freeflow.FreeflowRouter + FreeflowQuotaLedger",
+      "safe_use": "Reuse for strict-free route admission, cooldowns, quotas, caps, route decisions, and usage records instead of creating another quota/router ledger.",
+      "evidence": ["src/dopemux/freeflow.py:402-431", "src/dopemux/freeflow.py:648-776", "src/dopemux/freeflow.py:892-1040"]
+    },
+    {
+      "target": "src/dopemux/litellm_proxy.LiteLLMProxyManager + litellm_manager callback wiring",
+      "safe_use": "Reuse for proxy lifecycle, per-instance config, environment construction, and optional structured trace integration; avoid a second proxy manager."
+    },
+    {
+      "target": "src/dopemux/litellm_trace_logger.DopemuxLiteLLMTraceLogger",
+      "safe_use": "Reuse for normalized proxy request/usage/failure records and Freeflow ledger handoff; do not duplicate token extraction or route event storage."
+    },
+    {
+      "target": "services/repo-truth-extractor/run_extraction_v5.py route resolvers + promptsets/v4/model_map.yaml",
+      "safe_use": "Reuse for RTE step/lane model identity, strict JSON, reasoning_effort, service_tier, repair/sidefill, pricing, and spend semantics.",
+      "do_not_assume": "Do not replace it with root model_map_v2_tp008.yaml without proving all RTE readers and replay artifacts."
+    },
+    {
+      "target": "services/task-orchestrator/task_orchestrator.agents.AgentCoordinator",
+      "safe_use": "Extend agent capability assignment/status if task-orchestrator needs that behavior; keep provider/model routing separate unless a new explicit contract is proven.",
+      "do_not_duplicate": "Do not revive src/dopemux/agent_orchestrator or services/agents as a second agent runtime without establishing authority and persistence contracts."
+    },
+    {
+      "target": "src/dopemux/dcp/routing_classifier.py + routing_backend_policy.py",
+      "safe_use": "Reuse for read-only disposition/backend recommendation; keep it separate from provider/model dispatch and usage accounting."
+    }
+  ],
+  "task_router_active_caller": {
+    "active": false,
+    "current_tree": "git ls-tree -r --name-only HEAD services/task-router returned no tracked files; find found only ignored __pycache__/*.pyc.",
+    "caller_search": "No task-router/task_router/task router references found in src, services, scripts, docker, compose.yml, or .github current code/config globs.",
+    "history": "Commit 6b705b2ce removed services/task-router/matching_engine.py, pattern_learning.py, router_api.py and orphaned regression tests after describing them as confirmed dead/zero-live-reference.",
+    "other_worktree_context": "A historical PR worktree retained deletion history; no current-main caller was found. Other sibling worktrees contain runtime-stack or advisory-policy variants, not an active task-router caller.",
+    "conclusion": "Do not extend or restore services/task-router based on current runtime evidence."
+  },
+  "tests_and_coverage": {
+    "existing_tests": [
+      "tests/test_routing_config.py: alias audit/repair and selected routing CLI behaviors",
+      "tests/test_freeflow_router.py: RoutingConfig-generated Freeflow/LiteLLM configuration and router behavior",
+      "tests/test_litellm_proxy.py: LiteLLMProxyManager config/key/env and health paths",
+      "tests/test_litellm_manager.py: managed proxy lifecycle",
+      "tests/test_agent_orchestrator.py: scaffold manager/agent/workflow lifecycle and mock behavior",
+      "tests/test_profile_models.py, tests/test_profile_parser.py, tests/unit/test_config_generator.py: profile schema/parsing/config integration",
+      "tests/test_model_routing_policy.py and tests/test_model_routing_consistency.py: advisory policy shape/consistency, not dispatch",
+      "services/repo-truth-extractor/tests/test_route_request_options.py and related RTE routing/spend tests: active RTE route options and artifacts"
+    ],
+    "coverage_gaps_found": [
+      "No focused test was found for RoutingConfig.generate_ccr_config; static undefined all_model_names defect remains.",
+      "Existing agent-orchestrator tests validate scaffold behavior but do not prove a production caller or real model dispatch.",
+      "Advisory model-routing tests do not prove runtime policy consumption.",
+      "No task-router runtime test or caller exists on current main."
+    ],
+    "tests_run_this_census": "NOT_RUN: imports and runtime tests were avoided to preserve read-only/no-side-effect scope; syntax/config parsing was run separately."
+  },
+  "other_worktrees_and_girth": {
+    "worktrees": "Checked git worktree list; many sibling worktrees exist. Relevant variants included MCP runtime-stack branches, DCP routing branches, and a policy-only worktree. None changed the current-main conclusion that task-router has no active caller.",
+    "girth": "NOT_FOUND: command -v girth returned no executable and filename search under /Users/hue/.codex, /Users/hue/.agents, and /Users/hue/code returned no girth path."
+  },
+  "risks_and_unknowns": [
+    "No active task-packets/ACTIVE.md exists; task-packets/STATUS.md/INDEX.md contain stale or broad status and were not treated as runtime truth.",
+    "No live provider, LiteLLM, launchd, Docker, or task-orchestrator health probe was run; operational availability remains UNKNOWN.",
+    "Agent runtime authority remains UNKNOWN across services/agents, src/dopemux/agent_orchestrator.py, and task-orchestrator beyond the observed MCP coordinator import/entrypoint path.",
+    "There are parallel LiteLLM-related implementations (routing_config generator, litellm_proxy manager, litellm_manager callback path); ownership should be clarified before adding fields or a new router.",
+    "RoutingConfig.generate_ccr_config has a direct static NameError risk at all_model_names.",
+    "Current worktree has unrelated pre-existing dirty files and untracked proof/probe artifacts; they were preserved and not included in this census artifact."
+  ],
+  "evidence_paths": [
+    "AGENTS.md",
+    "task-packets/STATUS.md",
+    "task-packets/INDEX.md",
+    "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001.md",
+    "task-packets/generated/TP-DMX-ROUTING-CONTRACT-CANONICALIZATION-0001.json",
+    "TASK_ORCH_INTEGRATION_REPO_INVENTORY.md",
+    "src/dopemux/cli.py",
+    "src/dopemux/routing_cli.py",
+    "src/dopemux/routing_config.py",
+    "src/dopemux/profile_models.py",
+    "src/dopemux/litellm_proxy.py",
+    "src/dopemux/litellm_manager.py",
+    "src/dopemux/litellm_trace_logger.py",
+    "src/dopemux/freeflow.py",
+    "src/dopemux/agent_orchestrator.py",
+    "src/dopemux/dcp/routing_classifier.py",
+    "src/dopemux/dcp/routing_backend_policy.py",
+    "templates/routing.yaml",
+    "litellm.config.yaml",
+    "model_map_v2_tp008.yaml",
+    "config/pricing.yaml",
+    "config/ai/model-routing.policy.yaml",
+    "scripts/dopetask",
+    "services/agents/README.md",
+    "services/agents/",
+    "services/task-orchestrator/app/main.py",
+    "services/task-orchestrator/task_orchestrator/mcp/__init__.py",
+    "services/task-orchestrator/task_orchestrator/agents/__init__.py",
+    "services/task-orchestrator/task_orchestrator/app.py",
+    "services/task-orchestrator/Dockerfile",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/rte_config.py",
+    "services/repo-truth-extractor/promptsets/v4/model_map.yaml",
+    "services/repo-truth-extractor/tests/test_route_request_options.py",
+    "tests/test_routing_config.py",
+    "tests/test_freeflow_router.py",
+    "tests/test_litellm_proxy.py",
+    "tests/test_litellm_manager.py",
+    "tests/test_agent_orchestrator.py",
+    "tests/test_profile_models.py",
+    "tests/test_model_routing_policy.py",
+    "tests/test_model_routing_consistency.py",
+    "compose.yml",
+    "git history commit 6b705b2ce"
+  ],
+  "evidence_commands": [
+    "git pull --ff-only origin main",
+    "git status --short --branch",
+    "git rev-parse HEAD && git rev-parse origin/main && git log -2 --oneline --decorate",
+    "git worktree list --porcelain",
+    "git ls-tree -r --name-only HEAD services/task-router",
+    "find services/task-router -maxdepth 2 -type f -print",
+    "rg -n -i 'task-router|task_router|task router' src services scripts docker compose.yml .github",
+    "git show --format=fuller --stat --oneline 6b705b2ce -- services/task-router services/router tests",
+    "rg -n 'routing_cli|add_command\\(routing|generate_litellm_config|generate_ccr_config|model_map|PRICING_CONFIG_PATH|reasoning_effort|service_tier|strict_json|record_usage|route_decisions|AgentCoordinator' ...",
+    "rg -n 'services\\.agents|from agents|import agents|MemoryAgent|CognitiveGuardian|TaskDecomposer|agent_coordinator' src services compose.yml scripts",
+    "command -v girth",
+    "find /Users/hue/.codex /Users/hue/.agents /Users/hue/code -iname '*girth*'",
+    "Task Orchestrator MCP get_context and read-only searches for model routing, LiteLLM, task-router, and girth"
+  ],
+  "validation": {
+    "PASS": [
+      "Post-pull HEAD equals origin/main at b176747b3.",
+      "Static source/config/compose/entrypoint evidence was traced for all user-requested paths and adjacent active RTE/task-orchestrator paths.",
+      "Current git tree contains no tracked services/task-router source and no active caller search hit.",
+      "ROUTING_RUNTIME_CENSUS.json was written and JSON-validated with python -m json.tool."
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      "Focused pytest/full test suite: intentionally not run in read-only census mode.",
+      "Live proxy/provider/task-orchestrator probes: intentionally not run; would change operational state or cross the provider-call boundary.",
+      "Launchd/Docker/service startup: intentionally not run."
+    ]
+  },
+  "git_state_at_census": {
+    "branch": "main",
+    "ahead_behind_origin_main": "0/0",
+    "unrelated_preexisting_changes_preserved": true,
+    "requested_artifact_added": "ROUTING_RUNTIME_CENSUS.json",
+    "source_config_changes": "none"
+  },
+  "rollback_plan": "Delete only ROUTING_RUNTIME_CENSUS.json if the artifact should not be retained; do not reset/clean the worktree because unrelated dirty and untracked user artifacts were present before this census.",
+  "requested_next_step": "Use this census as the authority map for a separately scoped implementation packet. Before changing routing contracts, first choose whether the target is the Dopemux/LiteLLM plane, the RTE plane, or task-orchestrator agent assignment; do not merge them by duplication."
+}
