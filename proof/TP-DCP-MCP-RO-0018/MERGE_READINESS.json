@@ -1,0 +1,52 @@
+{
+  "base_branch": "main",
+  "blocking_thread_unresolved": false,
+  "branch": "",
+  "changed_files": [],
+  "checks": [
+    {
+      "conclusion": "success",
+      "head_sha": "8eee4e029208cf006dc8116a573953445d2b0841",
+      "matches_head_sha": true,
+      "name": "Unit Tests",
+      "status": "completed"
+    }
+  ],
+  "checks_stale_to_head": false,
+  "created_at": "2026-07-17T00:25:18.619686+00:00",
+  "diff_escapes_packet_allowlist": false,
+  "embedded_audit_status": "SKIPPED",
+  "evaluator": "scripts/audit/exact_head_readiness.py",
+  "failed_checks": [],
+  "head_sha": "8eee4e029208cf006dc8116a573953445d2b0841",
+  "notes": [
+    "READY requires embedded audit PASS/PASS_WITH_RISKS; SKIPPED fails closed.",
+    "Does not change branch protection or embedded-audit.yml routing.",
+    "Skipped live acceptance keeps require_acceptance_ready blocked when enabled."
+  ],
+  "packet_series": "TP-DCP-MCP-RO-0018",
+  "pending_checks": [],
+  "pr_number": 0,
+  "proof_bundle_refs": [
+    "services/dcp-readonly-facade/src/dcp_facade/acceptance.py",
+    "services/dcp-readonly-facade/tests/test_acceptance_harness.py",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/ACCEPTANCE_MATRIX.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0017.json",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0017.md",
+    "task-packets/INDEX.md",
+    "proof/TP-DCP-MCP-RO-0017/**"
+  ],
+  "proof_stale": true,
+  "ready_for_merge": false,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "review_threads": [],
+  "schema_version": "1.0.0",
+  "status": "BLOCKED",
+  "unknown_reviewers_or_bots": [],
+  "unresolved_blockers": [
+    "proof_stale_to_head",
+    "embedded_audit_skipped",
+    "acceptance_release_not_ready"
+  ]
+}
