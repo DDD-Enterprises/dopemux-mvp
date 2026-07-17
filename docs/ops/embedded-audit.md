@@ -141,6 +141,65 @@ PR-scoped gate `NOT_RUN`; regenerate the proof and re-pin it to the PR head SHA
 before the FINALIZATION gate, and record that explicitly rather than implying
 gate readiness.
 
+## Local signed attestation (CI acceptance without provider credentials)
+
+When the trusted CI job cannot execute any auditor CLI (no provider
+credentials provisioned on the runner), the `independent embedded audit` check
+can accept a **locally executed** audit through a signed, exact-head-bound
+attestation. Implemented by `scripts/audit/local_audit_acceptance.py` and the
+`Evaluate local signed audit attestation` workflow step; consumed by the proof
+emitter via `--local-attestation-json`.
+
+Acceptance is fail-closed. ALL of the following must hold:
+
+1. The PR head carries `proof/pr_merge/embedded-audit/pr-<N>/PROOF.json` and a
+   detached OpenSSH signature `PROOF.json.sig` over those exact bytes,
+   namespace `dopemux-embedded-audit`.
+2. The signature verifies against
+   `config/audit/embedded-audit-allowed-signers` **taken from the trusted ref
+   (main)** — keys added on the PR branch have no effect.
+3. The signed proof names this `repo` and `pr_number`, and its `head_sha`
+   (the audited commit) is an ancestor of the PR head where the diff between
+   them touches **only** the proof directory itself (proof-only delta: the
+   commit adding the proof is the sole change on top of the audited code).
+4. The local `embedded_audit` object is a passing verdict
+   (`PASS`/`PASS_WITH_RISKS`) and valid against
+   `schemas/proof/embedded_audit.schema.json` — including the
+   `auditor_tool`/`auditor_model` enums. (`report_path` is overridden by the
+   trusted emitter.)
+5. The least-privilege `EMBEDDED_AUDIT_TOKEN` is still present in the trusted
+   run, and the CI auditor produced **no real verdict** — a CI-executed
+   `PASS`/`PASS_WITH_RISKS`/`FAIL` always outranks the attestation.
+
+The emitted proof records the substitution explicitly:
+`provenance.audit_source = "local-signed-attestation"` plus a
+`provenance.local_attestation` object (principal, audited SHA, proof path),
+and an appended `remaining_risks` entry naming the signer. Steward summaries
+and artifacts therefore always show when a run was locally attested.
+
+**Trust model (stated plainly):** a valid signature proves that a holder of an
+allow-listed private key attests this exact code was audited locally. It is an
+operator attestation with cryptographic code-binding — not an independently
+executed CI audit. Signer changes go through reviewed PRs to main.
+
+One-time signer setup:
+
+```bash
+ssh-keygen -t ed25519 -N '' -f ~/.ssh/dopemux_audit_signing \
+  -C "dopemux embedded-audit signing"
+# add the printed public key line to config/audit/embedded-audit-allowed-signers
+# via a reviewed PR to main (instructions in that file)
+```
+
+Per-PR flow (after the local pr-merge audit writes the proof):
+
+```bash
+scripts/audit/sign_local_audit_proof.sh <pr-number>   # validates + signs
+git add proof/pr_merge/embedded-audit/pr-<N>/
+git commit -m "proof(audit): signed local embedded-audit attestation for PR <N>"
+git push   # must be the only change on top of the audited head_sha
+```
+
 ## Required Proof Object
 
 The proof object must conform to `schemas/proof/embedded_audit.schema.json` and record:
