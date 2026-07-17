@@ -1,0 +1,25 @@
+{
+  "packet_id": "PR-MERGE-STEWARD-1070",
+  "pr_number": 1070,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "PLACEHOLDER_SHA_USER_REPLACE_ME_BEFORE_SIGNING",
+  "generated_at": "2026-07-17T23:30:00Z",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "npx vitest --run ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1070/PROOF.json",
+    "findings": [],
+    "fixes_applied": [
+      "Fixed accessibility test failure in Accessibility.test.tsx by aligning CognitiveLoadGauge Copy tooltip text.",
+      "Added Adaptive Prediction Trend Icons to PredictionPanel component based on current baseline."
+    ],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
