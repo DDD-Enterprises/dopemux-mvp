@@ -137,6 +137,11 @@ A packet is superseded by another packet
 | TP-DCP-MCP-RO-0012 | DCP / MCP | Public Facade Target Contract Migration | Active | TP-DCP-MCP-RO-0011-REMEDIATION-01 |
 | TP-DCP-MCP-RO-0013 | DCP / MCP | Connector Policy Schema And Auth Context | Active | TP-DCP-MCP-RO-0012 |
 | TP-DCP-MCP-RO-0014 | DCP / MCP | Loopback Streamable HTTP Ingress | Active | TP-DCP-MCP-RO-0013 |
+| TP-DCP-MCP-RO-0015 | DCP / MCP | Ownership Verification And Release-One Adapters | Active | TP-DCP-MCP-RO-0014 |
+| TP-DCP-MCP-RO-0016 | DCP / MCP | Multi-Provider Setup And Rollback Docs | Active | TP-DCP-MCP-RO-0015 |
+| TP-DCP-MCP-RO-0017 | DCP / MCP | Acceptance Matrix And Fail-Closed Harness | Active | TP-DCP-MCP-RO-0016 |
+| TP-DCP-MCP-RO-0018 | DCP / MCP | Exact-Head Proof Readiness Evaluator | Active | TP-DCP-MCP-RO-0017 |
+| TP-DCP-MCP-RO-0017-VENDOR | DCP / MCP | Vendor-Live Preflight And Two-Target Isolation | Active | TP-DCP-MCP-RO-0017 |
 | DMX-DCP-PROMPT5-EXTRACT-RECON-001 | DCP / Prompt 5 | Extract Prompt 5 chat-history docs and reconcile PR/Task Orchestrator runway state | Active | N/A |
 
 ────────────────────────────────────────────────────────────

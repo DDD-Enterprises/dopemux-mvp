@@ -1,0 +1,32 @@
+{
+  "tools": {
+    "tunnel-client": false,
+    "cloudflared": true,
+    "ngrok": false,
+    "curl": true
+  },
+  "env_present": {
+    "CONTROL_PLANE_API_KEY": false,
+    "OPENAI_API_KEY": false,
+    "OPENAI_TUNNEL_ID": false,
+    "OPENAI_TUNNEL_PROFILE": false,
+    "XAI_API_KEY": false,
+    "PUBLIC_GROK_HOSTNAME": false,
+    "GEMINI_API_KEY": false,
+    "PUBLIC_GEMINI_HOSTNAME": false,
+    "DCP_ACCEPTANCE_LIVE_TOKEN": false
+  },
+  "gates_runnable": {
+    "DCP-ACC-024_chatgpt_tunnel": false,
+    "DCP-ACC-025_grok_stable": false,
+    "DCP-ACC-026_gemini_transport": false
+  },
+  "missing_for_vendor_live": [
+    "install tunnel-client (OpenAI Secure MCP Tunnel)",
+    "set CONTROL_PLANE_API_KEY",
+    "set OPENAI_TUNNEL_ID",
+    "set PUBLIC_GROK_HOSTNAME (stable named tunnel host)",
+    "set PUBLIC_GEMINI_HOSTNAME",
+    "set DCP_ACCEPTANCE_LIVE_TOKEN (connector bearer)"
+  ]
+}

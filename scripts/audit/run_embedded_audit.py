@@ -170,6 +170,33 @@ def build_diagnostic_failure_proof(
     }
 
 
+def _accepted_local_attestation(
+    local_attestation: Mapping[str, Any] | None,
+) -> Mapping[str, Any] | None:
+    """Return the attestation when it is an accepted local-signed audit."""
+    if not isinstance(local_attestation, Mapping):
+        return None
+    if local_attestation.get("accepted") is not True:
+        return None
+    if not isinstance(local_attestation.get("embedded_audit"), Mapping):
+        return None
+    return local_attestation
+
+
+def _executed_ci_verdict(embedded_audit: Mapping[str, Any]) -> bool:
+    """True when the CI-run auditor produced a real verdict (incl. FAIL).
+
+    A real CI verdict — even a failing one — always outranks a local
+    attestation; the local path only fills the could-not-run gap
+    (SKIPPED / NEEDS_SUPERVISOR).
+    """
+    return str(embedded_audit.get("status") or "").upper() in {
+        "PASS",
+        "PASS_WITH_RISKS",
+        "FAIL",
+    }
+
+
 def build_embedded_audit_proof(
     *,
     packet_id: str,
@@ -182,6 +209,7 @@ def build_embedded_audit_proof(
     token_source: str,
     route_error: str | None = None,
     pal_output_error: str | None = None,
+    local_attestation: Mapping[str, Any] | None = None,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
     """Build a top-level proof bundle with canonical embedded_audit object."""
@@ -230,37 +258,78 @@ def build_embedded_audit_proof(
         )
         trusted_token_status = "AVAILABLE"
 
+    executed = bool(
+        token_present
+        and not route_error
+        and not pal_output_error
+        and pal_output is not None
+    )
+
+    # Local-signed attestation fills the could-not-run gap ONLY: a real
+    # CI-executed verdict (PASS/PASS_WITH_RISKS/FAIL) always takes precedence,
+    # and the least-privilege token must still be present so only trusted runs
+    # emit executed proofs. The attestation was verified upstream by
+    # scripts/audit/local_audit_acceptance.py (signature against the trusted
+    # allowed-signers file, exact-head proof-only delta, schema-valid verdict).
+    accepted_local = _accepted_local_attestation(local_attestation)
+    local_used = bool(
+        accepted_local
+        and token_present
+        and not _executed_ci_verdict(embedded_audit)
+    )
+    audit_source = "ci-executed" if executed else "ci-unavailable"
+    if local_used and accepted_local is not None:
+        embedded_audit = dict(accepted_local["embedded_audit"])
+        embedded_audit["report_path"] = report_path
+        remaining_risks = [str(risk) for risk in embedded_audit.get("remaining_risks") or []]
+        remaining_risks.append(
+            "Audit executed locally at "
+            f"{accepted_local.get('audited_sha')} and accepted via signed "
+            f"attestation by allow-listed principal "
+            f"{accepted_local.get('principal')!r} (proof-only delta verified); "
+            "not an independently executed CI audit."
+        )
+        embedded_audit["remaining_risks"] = remaining_risks
+        executed = True
+        audit_source = "local-signed-attestation"
+
+    provenance: dict[str, Any] = {
+        "proof_author": PROOF_AUTHOR,
+        "workflow": "embedded-audit.yml",
+        "trusted_token_status": trusted_token_status,
+        "token_source": token_source,
+        "token_value_recorded": False,
+        "audit_source": audit_source,
+        "permissions": {
+            "actions": "read",
+            "checks": "read",
+            "contents": "read",
+            "pull-requests": "read",
+            "statuses": "read",
+        },
+        "engine_authored_proof": False,
+        "engine_requested_only": True,
+    }
+    if local_used and accepted_local is not None:
+        provenance["local_attestation"] = {
+            "principal": accepted_local.get("principal"),
+            "audited_sha": accepted_local.get("audited_sha"),
+            "proof_path": accepted_local.get("proof_path"),
+            "signature_namespace": accepted_local.get("signature_namespace"),
+            "signature_verified": True,
+        }
+
     return {
         "packet_id": packet_id,
         "repo": repo,
         "pr_number": int(pr_number),
         "head_sha": head_sha,
         "generated_at": generated_at or _utc_now_seconds(),
-        "executed": bool(
-            token_present
-            and not route_error
-            and not pal_output_error
-            and pal_output is not None
-        ),
+        "executed": executed,
         "mutation_performed": False,
         "github_mutation_route_added": False,
         "embedded_audit": embedded_audit,
-        "provenance": {
-            "proof_author": PROOF_AUTHOR,
-            "workflow": "embedded-audit.yml",
-            "trusted_token_status": trusted_token_status,
-            "token_source": token_source,
-            "token_value_recorded": False,
-            "permissions": {
-                "actions": "read",
-                "checks": "read",
-                "contents": "read",
-                "pull-requests": "read",
-                "statuses": "read",
-            },
-            "engine_authored_proof": False,
-            "engine_requested_only": True,
-        },
+        "provenance": provenance,
     }
 
 
@@ -290,6 +359,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--head-sha", required=True)
     parser.add_argument("--route-json", required=True, type=Path)
     parser.add_argument("--pal-output-json", type=Path)
+    parser.add_argument(
+        "--local-attestation-json",
+        type=Path,
+        help=(
+            "Optional LOCAL_AUDIT_ATTESTATION.json produced by "
+            "scripts/audit/local_audit_acceptance.py; consumed only when the "
+            "CI auditor produced no real verdict."
+        ),
+    )
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--generated-at")
     return parser
@@ -308,6 +386,11 @@ def run_cli(
         if args.pal_output_json
         else (None, None)
     )
+    local_attestation: dict[str, Any] | None = None
+    if args.local_attestation_json:
+        # Malformed/missing attestation degrades to None — fail-closed to the
+        # existing SKIPPED path, never an error that masks the audit result.
+        local_attestation, _ = _read_optional_json_object(args.local_attestation_json)
     proof = build_embedded_audit_proof(
         packet_id=args.packet_id,
         repo=args.repo,
@@ -319,6 +402,7 @@ def run_cli(
         token_source=TOKEN_ENV_VAR,
         route_error=route_error,
         pal_output_error=pal_output_error,
+        local_attestation=local_attestation,
         generated_at=args.generated_at,
     )
     _write_outputs(args.out, proof)

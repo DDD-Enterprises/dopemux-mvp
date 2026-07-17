@@ -1,0 +1,102 @@
+{
+  "packet_id": "TP-DCP-MCP-RO-0018",
+  "title": "Exact-Head Proof Readiness Evaluator",
+  "status": "VALIDATED_WITH_AUDIT_GAP",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "codex/dcp-mcp-ro-0018-proof-readiness",
+  "base_branch": "main",
+  "base_sha": "8eee4e029208cf006dc8116a573953445d2b0841",
+  "depends_on_verified": {
+    "TP-DCP-MCP-RO-0017": {
+      "pr": 1065,
+      "merge_commit": "8eee4e029208cf006dc8116a573953445d2b0841",
+      "status": "MERGED"
+    }
+  },
+  "scope": "Fail-closed exact-head readiness evaluator + negative tests. No branch protection or embedded-audit routing changes.",
+  "input_package": {
+    "sha256": "c0cb9d34f6ece116811c52cce0d1b517153dba0f8434c9abda9da6ff6d6a2447",
+    "authority": "advisory_only"
+  },
+  "series_readiness_note": "Series code path 0012-0017 is on main for local/local-live slices. Production READY remains blocked until trusted embedded audit PASS and full live acceptance release_ready=true.",
+  "files_changed": [
+    "src/dopemux/audit/exact_head_readiness.py",
+    "src/dopemux/audit/__init__.py",
+    "scripts/audit/exact_head_readiness.py",
+    "tests/audit/test_exact_head_readiness.py",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/EXACT_HEAD_READINESS.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0018.json",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0018.md",
+    "task-packets/INDEX.md",
+    "proof/TP-DCP-MCP-RO-0018/**"
+  ],
+  "validation": {
+    "PASS": [
+      {
+        "command": "pytest tests/audit/test_exact_head_readiness.py",
+        "exit_code": 0,
+        "result": "9 passed"
+      },
+      {
+        "command": "packet schema",
+        "exit_code": 0,
+        "result": "valid"
+      },
+      {
+        "command": "exact_head_readiness demo on 0017 proof",
+        "exit_code": 1,
+        "result": "BLOCKED as expected (skipped audit + acceptance)"
+      }
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "command": "Trusted embedded audit",
+        "reason": "local-only",
+        "mitigation": "SKIPPED status correctly blocks READY"
+      },
+      {
+        "command": "Branch protection mutation",
+        "reason": "forbidden",
+        "mitigation": "not performed"
+      }
+    ]
+  },
+  "local_agy_review": {
+    "status": "NOT_RUN",
+    "ci_trust_status": "NOT_ACCEPTED"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DCP-MCP-RO-0018/AUDITOR_REPORT.md",
+    "findings": [],
+    "skip_reason": "No trusted runner/Claude audit route; evaluator itself treats SKIPPED as non-READY.",
+    "fixes_applied": [
+      "exact_head_readiness pure evaluator + CLI",
+      "Negative unit fixtures for all major blockers",
+      "Demo MERGE_READINESS.json BLOCKED against incomplete series proof"
+    ],
+    "remaining_risks": [
+      "Trusted embedded audit still unavailable for series READY",
+      "Vendor live acceptance still incomplete (0017)"
+    ]
+  },
+  "residual_risks": [
+    "Production multi-provider exposure still not READY",
+    "Generated .claude/claude_config.json left unstaged"
+  ],
+  "rollback": "Revert TP-0018 commits",
+  "pr": {
+    "number": 1066,
+    "status": "OPEN_NOT_READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1066",
+    "blocker": "Trusted audit SKIPPED; series production READY not claimed (evaluator correctly BLOCKs incomplete proofs)"
+  },
+  "implementation_commit": "e843a3ebb"
+}
