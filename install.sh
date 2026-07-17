@@ -5,8 +5,8 @@
 # One-command installation for dopemux across all supported platforms
 # Designed for ADHD developers - clear progress, helpful errors, easy rollback
 #
-# Usage:
-#   curl -fsSL https://get.dopemux.dev/install.sh | bash
+# Usage (requires a repo checkout — compose.yml and pyproject.toml must be present):
+#   git clone https://github.com/dopemux/dopemux-mvp.git && cd dopemux-mvp
 #   ./install.sh                    # Interactive mode
 #   ./install.sh --quick            # Quick setup (core only)
 #   ./install.sh --full             # Full setup (all features)
@@ -27,12 +27,18 @@ on_error() {
     if [ $exit_code -ne 0 ] && [ "$INSTALL_MODE" != "uninstall" ]; then
         echo
         error "Installation failed at step: $BASH_COMMAND"
-        warning "Would you like to cleanup partially installed files in $DOPEMUX_HOME?"
-        if ask_yes_no "Cleanup & Exit?" "n"; then
-            rm -rf "$DOPEMUX_HOME"
-            success "Cleanup complete. You can try again later."
+        # Only offer cleanup when this run created $DOPEMUX_HOME — never delete a
+        # pre-existing install (it may hold data from an earlier successful run).
+        if [ "$DOPEMUX_HOME_CREATED_THIS_RUN" = true ]; then
+            warning "Would you like to cleanup partially installed files in $DOPEMUX_HOME?"
+            if ask_yes_no "Cleanup & Exit?" "n"; then
+                rm -rf "$DOPEMUX_HOME"
+                success "Cleanup complete. You can try again later."
+            else
+                log "Leaving files for debugging. Check $DOPEMUX_HOME for logs."
+            fi
         else
-            log "Leaving files for debugging. Check $DOPEMUX_HOME for logs."
+            log "Pre-existing $DOPEMUX_HOME left untouched. Check it for logs."
         fi
     fi
     exit $exit_code
@@ -74,10 +80,23 @@ STARTED_CAPABILITIES=()
 DEFERRED_CAPABILITIES=()
 RESOLVED_SECRET_VALUE=""
 SECRET_SOURCE_CHOICE=""
+DOPEMUX_HOME_CREATED_THIS_RUN=false
+# Resolved Python interpreter (set by check_python; >=3.11,<3.14 per pyproject.toml)
+PYTHON_BIN="${PYTHON_BIN:-}"
 
-CORE_STACK_PORTS=(5432 6379 6333 6334 3004 8000 8095)
-RESEARCH_STACK_EXTRA_PORTS=(3009 3011)
-FULL_STACK_EXTRA_PORTS=(3003 3009 3011 3012 3015 3016 4000 8081 8090 8790)
+# Host ports published by compose.yml (defaults). Keep in sync with compose.yml.
+# Note: these are the compose defaults — user env overrides (e.g. POSTGRES_PORT)
+# are not reflected here, so the preflight check tests default ports only.
+CORE_STACK_PORTS=(5432 6379 6380 6333 6334 3004 3005 4004 8000 3025)
+RESEARCH_STACK_EXTRA_PORTS=(3009)
+FULL_STACK_EXTRA_PORTS=(3003 3006 3009 3010 3012 3015 3016 3020 4000 4006 8080 8081 8790)
+
+# Service subsets per stack. compose.yml has no profiles, so scoping is done by
+# passing explicit service names to `docker compose pull/up` (depends_on pulls
+# in required dependencies automatically). Names are validated against
+# `docker compose config --services` at install time. Full stack = all services.
+CORE_STACK_SERVICES=(postgres redis-events redis-primary mcp-qdrant conport task-orchestrator adhd-engine)
+RESEARCH_STACK_SERVICES=("${CORE_STACK_SERVICES[@]}" gptr-mcp)
 
 CORE_STACK_ENV_VARS=(
     AGE_PASSWORD
@@ -106,6 +125,8 @@ FULL_STACK_ENV_VARS=(
     TAVILY_API_KEY
     EXA_API_KEY
     OPENAI_WEBHOOK_SECRET
+    HOST_CODE_PARENT_DIR
+    HOST_PROJECT_RELATIVE_PATH
 )
 
 CORE_STACK_SUMMARY=(
@@ -209,6 +230,34 @@ stack_estimate() {
     esac
 }
 
+# Print the service names for a stack, one per line. Empty output = all services.
+# Names are intersected with `docker compose config --services` so a rename in
+# compose.yml degrades to a warning instead of a hard compose error.
+stack_services() {
+    local stack="${1:-core}"
+    local -a wanted=()
+    case "$stack" in
+        core) wanted=("${CORE_STACK_SERVICES[@]}") ;;
+        research) wanted=("${RESEARCH_STACK_SERVICES[@]}") ;;
+        *) return 0 ;;  # full: no scoping — start everything
+    esac
+
+    local available
+    if ! available=$(docker compose -f compose.yml config --services 2>/dev/null); then
+        warning "Could not enumerate compose services; starting all services" >&2
+        return 0
+    fi
+
+    local svc
+    for svc in "${wanted[@]}"; do
+        if printf '%s\n' "$available" | grep -q "^${svc}$"; then
+            echo "$svc"
+        else
+            warning "Service '$svc' not found in compose.yml — skipping (stack list may be stale)" >&2
+        fi
+    done
+}
+
 stack_summary_items() {
     case "$1" in
         full)
@@ -260,6 +309,8 @@ env_prompt() {
         LITELLM_MASTER_KEY) echo "LiteLLM master key (generate with: printf 'sk-%s\\n' \"$(openssl rand -hex 32)\")" ;;
         LITELLM_DATABASE_URL) echo "LiteLLM database URL (PostgreSQL DSN)" ;;
         OPENAI_WEBHOOK_SECRET) echo "OpenAI webhook secret (optional receiver verification)" ;;
+        HOST_CODE_PARENT_DIR) echo "Parent directory of your code checkouts (dope-context workspace mount)" ;;
+        HOST_PROJECT_RELATIVE_PATH) echo "This project's directory name under the code parent dir" ;;
         *) echo "$1" ;;
     esac
 }
@@ -267,20 +318,23 @@ env_prompt() {
 env_default() {
     case "$1" in
         AGE_PASSWORD) env_generated_secret ;;
-        LEANTIME_URL) echo "http://localhost:8097" ;;
+        # compose.yml publishes leantime on ${LEANTIME_PORT:-8080}
+        LEANTIME_URL) echo "http://localhost:${LEANTIME_PORT:-8080}" ;;
         TASK_ORCHESTRATOR_API_KEY) env_generated_secret ;;
         ADHD_ENGINE_API_KEY) env_generated_secret ;;
-        LITELLM_MASTER_KEY) python3 -c 'import secrets; print("sk-" + secrets.token_hex(32))' ;;
+        LITELLM_MASTER_KEY) "${PYTHON_BIN:-python3}" -c 'import secrets; print("sk-" + secrets.token_hex(32))' ;;
         LITELLM_DATABASE_URL)
             local age_password="${AGE_PASSWORD:-$(env_generated_secret)}"
             echo "postgresql://dopemux_age:${age_password}@dopemux-postgres-age:5432/litellm"
             ;;
+        HOST_CODE_PARENT_DIR) dirname "$PWD" ;;
+        HOST_PROJECT_RELATIVE_PATH) basename "$PWD" ;;
         *) echo "" ;;
     esac
 }
 
 env_generated_secret() {
-    python3 -c 'import secrets; print(secrets.token_hex(32))'
+    "${PYTHON_BIN:-python3}" -c 'import secrets; print(secrets.token_hex(32))'
 }
 
 env_is_placeholder_value() {
@@ -322,7 +376,7 @@ env_is_sensitive() {
 #   mode when a provider-optional value is missing.
 env_policy() {
     case "$1" in
-        AGE_PASSWORD|LEANTIME_URL|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_MASTER_KEY|LITELLM_DATABASE_URL)
+        AGE_PASSWORD|LEANTIME_URL|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_MASTER_KEY|LITELLM_DATABASE_URL|HOST_CODE_PARENT_DIR|HOST_PROJECT_RELATIVE_PATH)
             echo "local-defaultable"
             ;;
         ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|OPENAI_WEBHOOK_SECRET)
@@ -352,6 +406,8 @@ capability_label() {
         LITELLM_MASTER_KEY) echo "LiteLLM master key" ;;
         LITELLM_DATABASE_URL) echo "LiteLLM database URL" ;;
         OPENAI_WEBHOOK_SECRET) echo "OpenAI webhook verification" ;;
+        HOST_CODE_PARENT_DIR) echo "Dope-context workspace mount (code parent dir)" ;;
+        HOST_PROJECT_RELATIVE_PATH) echo "Dope-context workspace project path" ;;
         *) echo "$1" ;;
     esac
 }
@@ -865,9 +921,14 @@ wait_for_containers() {
     local ready=false
 
     while [ $(($(date +%s) - start_time)) -lt $timeout ]; do
-        local total_containers=$(docker compose "${compose_env_args[@]}" $compose_file ps -q | wc -l)
-        local healthy_containers=$(docker compose "${compose_env_args[@]}" $compose_file ps | grep -c "healthy")
-        local running_containers=$(docker compose "${compose_env_args[@]}" $compose_file ps | grep -c "Up")
+        # ${arr[@]+...} guard: bash 3.2 (macOS /bin/bash) treats empty-array
+        # expansion as an unbound variable under `set -u`.
+        # One `ps` per poll — feed both greps from the captured output.
+        local ps_output=$(docker compose ${compose_env_args[@]+"${compose_env_args[@]}"} $compose_file ps)
+        local total_containers=$(docker compose ${compose_env_args[@]+"${compose_env_args[@]}"} $compose_file ps -q | wc -l)
+        # "(healthy)" — a bare "healthy" pattern also counts "unhealthy" containers
+        local healthy_containers=$(printf '%s\n' "$ps_output" | grep -c "(healthy)")
+        local running_containers=$(printf '%s\n' "$ps_output" | grep -c "Up")
 
         if [ "$healthy_containers" -eq "$total_containers" ] && [ "$total_containers" -gt 0 ]; then
             ready=true
@@ -895,10 +956,12 @@ wait_for_containers() {
 }
 
 spinner() {
+    # ASCII glyphs: printf %c and BSD tr are byte-oriented and mangle multibyte
+    # UTF-8 characters on macOS.
     local pid=$1
-    local delay=0.1
-    local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+    local delay=0.5
+    local spinstr='|/-\'
+    while kill -0 "$pid" 2>/dev/null; do
         local temp=${spinstr#?}
         printf " [%c]  " "$spinstr"
         local spinstr=$temp${spinstr%"$temp"}
@@ -914,11 +977,12 @@ progress_bar() {
     local width=50
     local percent=$((current * 100 / total))
     local filled=$((width * current / total))
-    
-    printf "\r["
-    printf "%${filled}s" | tr ' ' '█'
-    printf "%$((width - filled))s" | tr ' ' '░'
-    printf "] %3d%%" "$percent"
+
+    local bar="" i
+    for ((i = 0; i < width; i++)); do
+        if [ "$i" -lt "$filled" ]; then bar+="#"; else bar+="-"; fi
+    done
+    printf "\r[%s] %3d%%" "$bar" "$percent"
 }
 
 ask_yes_no() {
@@ -926,10 +990,9 @@ ask_yes_no() {
     local default="${2:-n}"
     
     if [ "$AUTO_CONFIRM" = true ]; then
-        echo "y"
         return 0
     fi
-    
+
     local yn
     while true; do
         if [ "$default" = "y" ]; then
@@ -1033,24 +1096,42 @@ version_gte() {
     printf '%s\n%s\n' "$2" "$1" | sort -V -C
 }
 
+# Find an interpreter satisfying pyproject.toml (>=3.11,<3.14) and set PYTHON_BIN.
+# Bare `python3` is often too old (macOS CLT ships 3.9) or too new, while a
+# suitable versioned binary (brew python@3.11 → python3.11) is present but NOT
+# linked as `python3` — so we probe candidates explicitly.
+resolve_python_bin() {
+    PYTHON_BIN=""
+    local cand py_version
+    for cand in python3 python3.13 python3.12 python3.11; do
+        check_command "$cand" || continue
+        py_version=$("$cand" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null) || continue
+        if version_gte "$py_version" "$REQUIRED_PYTHON_VERSION" && ! version_gte "$py_version" "3.14"; then
+            PYTHON_BIN="$cand"
+            PYTHON_BIN_VERSION="$py_version"
+            export PYTHON_BIN
+            return 0
+        fi
+    done
+    return 1
+}
+
 check_python() {
     log "Checking Python..."
-    
-    if ! check_command python3; then
+
+    if resolve_python_bin; then
+        success "Python $PYTHON_BIN_VERSION ($PYTHON_BIN)"
+        return 0
+    fi
+
+    if check_command python3; then
+        local found
+        found=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || echo "unknown")
+        error "Python ${REQUIRED_PYTHON_VERSION}-3.13 required (found: $found; also probed python3.13/3.12/3.11)"
+    else
         error "Python 3 not found"
-        return 1
     fi
-    
-    local py_version
-    py_version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-    
-    if ! version_gte "$py_version" "$REQUIRED_PYTHON_VERSION"; then
-        error "Python $REQUIRED_PYTHON_VERSION+ required (found: $py_version)"
-        return 1
-    fi
-    
-    success "Python $py_version"
-    return 0
+    return 1
 }
 
 check_git() {
@@ -1163,14 +1244,24 @@ install_with_brew() {
     if ! check_command brew; then
         if ask_yes_no "Homebrew not found. Install it now?" "y"; then
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            # The Homebrew installer does not modify the current shell's PATH —
+            # without this eval, the `brew install` below fails on a fresh machine.
+            if [ -x /opt/homebrew/bin/brew ]; then
+                eval "$(/opt/homebrew/bin/brew shellenv)"
+            elif [ -x /usr/local/bin/brew ]; then
+                eval "$(/usr/local/bin/brew shellenv)"
+            fi
+            check_command brew || fatal "Homebrew installed but not on PATH; open a new terminal and re-run"
         else
             fatal "Homebrew required for automatic installation on macOS"
         fi
     fi
-    
+
     local packages=()
-    
-    check_python || packages+=("python@3.11")
+
+    # python@3.12 provides the `python3.12` binary (not `python3`);
+    # resolve_python_bin probes versioned names, so this is picked up on re-check.
+    check_python || packages+=("python@3.12")
     check_git || packages+=("git")
     check_command tmux || packages+=("tmux")
     check_command jq || packages+=("jq")
@@ -1194,14 +1285,40 @@ install_with_brew() {
     fi
 }
 
+# Pick the newest suitable pythonX.Y available in the apt archives.
+# Ubuntu 24.04 → 3.12, Debian 12 → 3.11, Debian 13 → 3.13; Ubuntu 22.04 has
+# none in the default archives (needs the deadsnakes PPA).
+apt_python_candidate() {
+    local v
+    for v in 3.13 3.12 3.11; do
+        if apt-cache show "python$v" >/dev/null 2>&1; then
+            echo "python$v"
+            return 0
+        fi
+    done
+    return 1
+}
+
 install_with_apt() {
     log "Using apt to install dependencies..."
-    
+
     sudo apt update
-    
+
     local packages=()
-    
-    check_python || packages+=("python3.11" "python3.11-venv" "python3-pip")
+
+    if ! check_python; then
+        local py_pkg
+        if py_pkg=$(apt_python_candidate); then
+            packages+=("$py_pkg" "${py_pkg}-venv" "python3-pip")
+        else
+            error "No Python 3.11–3.13 package found in the apt archives."
+            error "On Ubuntu 22.04 and older, add the deadsnakes PPA first:"
+            error "  sudo apt install -y software-properties-common"
+            error "  sudo add-apt-repository -y ppa:deadsnakes/ppa"
+            error "  sudo apt install -y python3.12 python3.12-venv"
+            fatal "Install Python 3.11–3.13 and re-run the installer"
+        fi
+    fi
     check_git || packages+=("git")
     check_command tmux || packages+=("tmux")
     check_command jq || packages+=("jq")
@@ -1228,10 +1345,23 @@ install_with_dnf() {
     log "Using dnf to install dependencies..."
     
     sudo dnf check-update || true
-    
+
     local packages=()
-    
-    check_python || packages+=("python3.11" "python3-pip")
+
+    if ! check_python; then
+        local v py_pkg=""
+        for v in 3.13 3.12 3.11; do
+            if dnf -q info "python$v" >/dev/null 2>&1; then
+                py_pkg="python$v"
+                break
+            fi
+        done
+        if [ -n "$py_pkg" ]; then
+            packages+=("$py_pkg" "python3-pip")
+        else
+            fatal "No Python 3.11–3.13 package found via dnf; install one manually and re-run"
+        fi
+    fi
     check_git || packages+=("git")
     check_command tmux || packages+=("tmux")
     check_command jq || packages+=("jq")
@@ -1355,10 +1485,13 @@ preflight_checks() {
 
 create_directory_structure() {
     log "Creating directory structure..."
-    
+
+    if [ ! -d "$DOPEMUX_HOME" ]; then
+        DOPEMUX_HOME_CREATED_THIS_RUN=true
+    fi
     mkdir -p "$DOPEMUX_HOME"/{config,data,cache,logs,backups,workspaces}
     mkdir -p "$DOPEMUX_HOME"/config/{profiles,mcp-servers}
-    
+
     success "Created $DOPEMUX_HOME"
 }
 
@@ -1370,8 +1503,11 @@ install_dopemux_core() {
     else
         # Install Python package
         if [ -f "pyproject.toml" ]; then
-            log "Creating virtual environment at $DOPEMUX_HOME/venv..."
-            python3 -m venv "$DOPEMUX_HOME/venv" || fatal "Failed to create virtual environment"
+            if [ -z "$PYTHON_BIN" ]; then
+                resolve_python_bin || fatal "No Python 3.11–3.13 interpreter found"
+            fi
+            log "Creating virtual environment at $DOPEMUX_HOME/venv (using $PYTHON_BIN)..."
+            "$PYTHON_BIN" -m venv "$DOPEMUX_HOME/venv" || fatal "Failed to create virtual environment"
 
             log "Installing package into virtual environment..."
             "$DOPEMUX_HOME/venv/bin/pip" install -e . || fatal "Failed to install Python package"
@@ -1414,20 +1550,38 @@ install_docker_services() {
         SELECTED_COMPOSE_FILE="$compose_file"
         return 0
     fi
-    
-    local profile_arg=""
-    if [ "$stack" = "full" ]; then
-        profile_arg="--profile full"
+
+    # Fail closed: if compose.yml doesn't parse, stop now with the real error
+    # instead of letting stack_services silently fall back to "all services".
+    docker compose ${compose_env_args[@]+"${compose_env_args[@]}"} $compose_file config --services >/dev/null \
+        || fatal "compose.yml failed to validate — run 'docker compose -f compose.yml config' to see the error"
+
+    # compose.yml defines no profiles, so stacks are scoped by explicit service
+    # names (empty list = all services; depends_on brings in dependencies).
+    local -a stack_service_args=()
+    local svc
+    while IFS= read -r svc; do
+        [ -n "$svc" ] && stack_service_args+=("$svc")
+    done <<EOF
+$(stack_services "$stack")
+EOF
+
+    # Best-effort image pre-fetch. 16 services in compose.yml build locally
+    # (`build:`), so pull is expected to skip/fail for those; `up -d` below is
+    # the authoritative step that pulls registry images and builds local ones.
+    log "Pulling Docker images from $compose_file (this may take a few minutes)..."
+    docker compose ${compose_env_args[@]+"${compose_env_args[@]}"} $compose_file pull --ignore-buildable ${stack_service_args[@]+"${stack_service_args[@]}"} &
+    local pull_pid=$!
+    spinner "$pull_pid"
+    if wait "$pull_pid"; then
+        success "Docker images pulled"
+    else
+        warning "Image pre-pull incomplete — continuing ('up' will pull/build what's missing)"
     fi
 
-    log "Pulling Docker images from $compose_file (this may take a few minutes)..."
-    docker compose "${compose_env_args[@]}" $profile_arg $compose_file pull &
-    spinner $!
-    success "Docker images pulled"
-    
-    log "Starting Docker services..."
-    docker compose "${compose_env_args[@]}" $profile_arg $compose_file up -d || fatal "Failed to start Docker services"
-    
+    log "Starting Docker services (pulling/building as needed)..."
+    docker compose ${compose_env_args[@]+"${compose_env_args[@]}"} $compose_file up -d ${stack_service_args[@]+"${stack_service_args[@]}"} || fatal "Failed to start Docker services"
+
     # Wait for services to be ready
     wait_for_containers "$stack"
 
@@ -1465,11 +1619,13 @@ configure_shell_integration() {
     # Use the virtual environment bin directory
     local python_user_bin="$DOPEMUX_HOME/venv/bin"
     
-    # Add dopemux to PATH if not already there
+    # Add dopemux to PATH if not already there.
+    # The >>>/<<< markers delimit the block so uninstall can remove it with a
+    # portable two-address sed range (BSD sed has no GNU 'addr,+N' syntax).
     if ! grep -q "dopemux" "$shell_rc" 2>/dev/null; then
         cat >> "$shell_rc" << EOF
 
-# Dopemux
+# >>> dopemux >>>
 export PATH="$python_user_bin:\$HOME/.local/bin:\$PATH"
 export DOPEMUX_HOME="\$HOME/.dopemux"
 alias dopemux="\"\$DOPEMUX_HOME/venv/bin/python\" -m dopemux.cli"
@@ -1479,6 +1635,7 @@ export DEFAULT_WORKSPACE_PATH="\$PWD"  # Set to your main project
 # export WORKSPACE_PATHS="~/code/project1,~/code/project2"  # Optional: additional workspaces
 export ENABLE_WORKSPACE_ISOLATION=true
 export ENABLE_CROSS_WORKSPACE_QUERIES=true
+# <<< dopemux <<<
 EOF
         success "Shell integration added to $shell_rc"
         success "Python bin directory added to PATH: $python_user_bin"
@@ -1522,21 +1679,20 @@ verify_installation() {
     # Check 1: Directory structure
     if [ -d "$DOPEMUX_HOME" ]; then
         success "Directory structure OK"
-        ((checks_passed++))
+        checks_passed=$((checks_passed + 1))  # not ((x++)): status 1 when x=0 kills bash>=4.1 under set -e
     else
         error "Directory structure missing"
     fi
     
-    # Check 2: Python package
-    if python3 -c "import dopemux" 2>/dev/null; then
+    # Check 2: Python package (installed into the dopemux venv, not system python)
+    if [ -x "$DOPEMUX_HOME/venv/bin/python" ] && "$DOPEMUX_HOME/venv/bin/python" -c "import dopemux" 2>/dev/null; then
         success "Python package OK"
-        ((checks_passed++))
+        checks_passed=$((checks_passed + 1))  # not ((x++)): status 1 when x=0 kills bash>=4.1 under set -e
     else
-        warning "Python package not importable"
+        warning "Python package not importable from $DOPEMUX_HOME/venv"
     fi
 
     # Check 3: Docker services
-    local docker_ok=false
     local compose_args
     compose_args=$(compose_file_for_stack "$stack")
     local -a compose_env_args=()
@@ -1544,25 +1700,17 @@ verify_installation() {
         compose_env_args=(--env-file "$ENV_FILE")
     fi
 
-    local profile_arg=""
-    [ "$stack" = "full" ] && profile_arg="--profile full"
-
-    if docker compose "${compose_env_args[@]}" $profile_arg $compose_args ps >/dev/null 2>&1 && docker compose "${compose_env_args[@]}" $profile_arg $compose_args ps | grep -q "Up"; then
+    if docker compose ${compose_env_args[@]+"${compose_env_args[@]}"} $compose_args ps 2>/dev/null | grep -q "Up"; then
         success "Docker services OK"
-        docker_ok=true
-        ((checks_passed++))
+        checks_passed=$((checks_passed + 1))  # not ((x++)): status 1 when x=0 kills bash>=4.1 under set -e
     else
-        warning "Docker services not running or unhealthy"
-    fi
-
-    if [ "$docker_ok" = false ]; then
         warning "Docker services not running"
     fi
-    
-    # Check 4: Configuration files
-    if [ -f "$DOPEMUX_HOME/config/profiles/default.yaml" ]; then
+
+    # Check 4: Configuration files (repo ships adhd-default.yaml, not default.yaml)
+    if [ -f "$DOPEMUX_HOME/config/profiles/adhd-default.yaml" ]; then
         success "Configuration files OK"
-        ((checks_passed++))
+        checks_passed=$((checks_passed + 1))  # not ((x++)): status 1 when x=0 kills bash>=4.1 under set -e
     else
         warning "Configuration files missing"
     fi
@@ -1570,7 +1718,7 @@ verify_installation() {
     # Check 5: Shell integration
     if grep -q "dopemux" "$HOME/.zshrc" 2>/dev/null || grep -q "dopemux" "$HOME/.bashrc" 2>/dev/null; then
         success "Shell integration OK"
-        ((checks_passed++))
+        checks_passed=$((checks_passed + 1))  # not ((x++)): status 1 when x=0 kills bash>=4.1 under set -e
     else
         warning "Shell integration not configured"
     fi
@@ -1641,6 +1789,13 @@ EOF
         if ask_yes_no "Install missing dependencies automatically?" "y"; then
             install_dependencies
             echo
+            # Re-verify — a package install that didn't produce a usable
+            # python3.x/git/docker must stop here, not fail later mid-install.
+            log "Re-checking dependencies after installation..."
+            check_python || fatal "Python 3.11–3.13 still not available after installation"
+            check_git || fatal "Git still not available after installation"
+            check_docker || fatal "Docker still not available after installation"
+            echo
         else
             fatal "Required dependencies missing. Please install manually and retry."
         fi
@@ -1676,6 +1831,7 @@ EOF
     echo
     echo -e "${CYAN}Where to go from here:${NC}"
     echo "  • Run 'dopemux --help' to see all commands"
+    echo "  • Wire MCP into another project: cd <repo> && dopemux mcp init"
     echo "  • Visit https://docs.dopemux.dev for guides"
     echo "  • Stay focused. You've got this. 🧠⚡"
     echo
@@ -1687,9 +1843,18 @@ quick_install() {
     SELECTED_STACK="core"
 
     detect_platform
-    check_python || fatal "Python 3.11+ required"
-    check_git || fatal "Git required"
-    check_docker || fatal "Docker required"
+
+    local deps_missing=false
+    check_python || deps_missing=true
+    check_git || deps_missing=true
+    check_docker || deps_missing=true
+    if [ "$deps_missing" = true ]; then
+        log "Attempting automatic dependency installation..."
+        install_dependencies
+        check_python || fatal "Python 3.11–3.13 required"
+        check_git || fatal "Git required"
+        check_docker || fatal "Docker required"
+    fi
     check_optional_tools
 
     preflight_checks "$SELECTED_STACK"
@@ -1747,18 +1912,25 @@ uninstall_dopemux() {
     # Stop Docker services
     if [ -f "compose.yml" ]; then
         log "Stopping current stack..."
-        docker compose --profile full -f compose.yml down -v 2>/dev/null || true
+        docker compose -f compose.yml down -v 2>/dev/null || true
     fi
-    
+
     # Remove directories
     log "Removing Dopemux files..."
     rm -rf "$DOPEMUX_HOME"
-    
+
     # Remove from PATH (best effort)
     for rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
         if [ -f "$rc" ]; then
-            # Remove dopemux lines
-            sed -i.bak '/# Dopemux/,+3d' "$rc" 2>/dev/null || true
+            # Marker-delimited block (two-address range works on BSD and GNU sed)
+            sed -i.bak '/^# >>> dopemux >>>$/,/^# <<< dopemux <<<$/d' "$rc" 2>/dev/null || true
+            # Legacy blocks from pre-marker installs ('# Dopemux' header). The
+            # block always ended with ENABLE_CROSS_WORKSPACE_QUERIES, so a
+            # two-address range is portable (BSD sed lacks GNU 'addr,+N').
+            if grep -q '^# Dopemux$' "$rc" 2>/dev/null; then
+                sed -i.bak '/^# Dopemux$/,/^export ENABLE_CROSS_WORKSPACE_QUERIES=true$/d' "$rc" 2>/dev/null \
+                    || warning "Could not auto-remove legacy dopemux block from $rc — remove it manually"
+            fi
         fi
     done
     

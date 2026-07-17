@@ -1,10 +1,12 @@
 # Homebrew Formula for Dopemux
-# 
-# To install (after release):
-#   brew install dopemux/tap/dopemux
-# 
-# To test locally:
-#   brew install --build-from-source ./dopemux.rb
+#
+# ⚠️  NOT FUNCTIONAL — placeholder for a future tap release. Known blockers:
+#   - `resource "requirements"` has a PLACEHOLDER sha256 and points at a
+#     requirements.txt that does not exist in this repo (deps live in pyproject.toml)
+#   - `virtualenv_create` requires `include Language::Python::Virtualenv`
+#   - `depends_on ... => :optional` is deprecated in modern Homebrew
+# Use the supported path instead:
+#   git clone https://github.com/dopemux/dopemux-mvp.git && cd dopemux-mvp && ./install.sh
 #
 
 class Dopemux < Formula
