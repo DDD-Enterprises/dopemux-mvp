@@ -1,0 +1,18 @@
+# Allowed signers for locally-attested embedded-audit proofs.
+#
+# OpenSSH allowed_signers format (see ssh-keygen(1), -Y verify):
+#   <principal> [options] <key-type> <base64-key> [comment]
+#
+# This file is read ONLY from the trusted ref (main) by the embedded-audit
+# workflow — entries added on a PR branch have no effect until merged.
+# While this file contains no keys, the local-attestation path is inert and
+# the audit gate behaves exactly as before (fail-closed).
+#
+# One-time setup on the machine that runs local audits:
+#   ssh-keygen -t ed25519 -N '' -f ~/.ssh/dopemux_audit_signing \
+#     -C "dopemux embedded-audit signing"
+#   printf '%s %s\n' 'you@your-machine' "$(cut -d' ' -f1-2 ~/.ssh/dopemux_audit_signing.pub)"
+# then add the printed line below (via a reviewed PR to main).
+#
+# Example (do not uncomment; replace with your own key):
+# hue@local ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...
