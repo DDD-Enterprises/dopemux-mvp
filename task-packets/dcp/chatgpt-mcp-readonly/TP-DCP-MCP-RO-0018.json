@@ -1,0 +1,86 @@
+{
+  "id": "TP-DCP-MCP-RO-0018",
+  "project": "dopemux-mvp",
+  "target": "Add a fail-closed exact-head proof/readiness evaluator that blocks READY on stale proof, skipped audit, failed/pending/stale checks, unknown reviewers, unresolved threads, allowlist escape, and incomplete acceptance without mutating branch protection or embedded-audit routing.",
+  "invariants": [
+    "READY requires proof head bind to the evaluated SHA.",
+    "SKIPPED embedded audit never yields READY.",
+    "Failed or pending checks block READY.",
+    "Stale checks relative to head block READY.",
+    "Unknown reviewers/bots and unresolved blocking threads block READY.",
+    "Allowlist escapes block READY.",
+    "No branch protection, auto-merge, or embedded-audit.yml routing changes."
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0017"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0017",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/dcp-mcp-ro-0018-proof-readiness",
+    "base_branch": "main",
+    "stacked_because": "TP-DCP-MCP-RO-0017 acceptance harness is merged on main (PR #1065)."
+  },
+  "commit": {
+    "message": "feat(audit): add exact-head proof readiness evaluator",
+    "allowlist": [
+      "src/dopemux/audit/exact_head_readiness.py",
+      "src/dopemux/audit/__init__.py",
+      "scripts/audit/exact_head_readiness.py",
+      "tests/audit/test_exact_head_readiness.py",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/EXACT_HEAD_READINESS.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0018.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0018.md",
+      "task-packets/INDEX.md",
+      "proof/TP-DCP-MCP-RO-0018/**"
+    ],
+    "verify": [
+      "uv run --frozen pytest -q tests/audit/test_exact_head_readiness.py",
+      "python -m jsonschema -i task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0018.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "pre-commit run --files <changed-files>"
+    ]
+  },
+  "pr": {
+    "title": "feat(audit): add exact-head proof readiness evaluator",
+    "body": "Implements TP-DCP-MCP-RO-0018: fail-closed exact-head readiness evaluator with negative fixtures. Does not change branch protection or embedded-audit routing. SKIPPED audit and incomplete acceptance keep status BLOCKED.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "evaluator",
+      "task": "Implement pure exact-head readiness evaluation and CLI wrapper.",
+      "validation": [
+        "Unit tests cover stale proof, skipped audit, failed/pending/stale checks, unknown reviewers, threads, allowlist escape, acceptance gate."
+      ]
+    },
+    {
+      "id": "docs-proof",
+      "task": "Document evaluator, register packet, emit proof including negative MERGE_READINESS fixture run.",
+      "validation": [
+        "Proof records that production series READY still requires trusted audit and full live acceptance."
+      ]
+    }
+  ]
+}
