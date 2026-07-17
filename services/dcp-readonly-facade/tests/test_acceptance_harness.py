@@ -66,6 +66,27 @@ def test_local_live_loopback_passes_with_synthetic_token(monkeypatch):
     # Vendor tunnel gates remain NOT_RUN without vendor secrets/runners.
     assert any(r.test_id == "DCP-ACC-024" and r.status == "NOT_RUN" for r in live)
     assert any(r.test_id == "DCP-ACC-027" and r.status == "PASS" for r in live)
+    assert any(r.test_id == "DCP-ACC-029" and r.status == "PASS" for r in live)
     # Never leak token into details
     blob = " ".join(r.detail for r in live)
     assert "synthetic-local-live-token-0017" not in blob
+
+
+def test_vendor_preflight_reports_missing_without_secrets(monkeypatch):
+    monkeypatch.delenv("CONTROL_PLANE_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_TUNNEL_ID", raising=False)
+    monkeypatch.delenv("PUBLIC_GROK_HOSTNAME", raising=False)
+    inv = ACC.vendor_preflight()
+    assert inv["gates_runnable"]["DCP-ACC-024_chatgpt_tunnel"] is False
+    assert any("tunnel-client" in m or "CONTROL_PLANE" in m for m in inv["missing_for_vendor_live"])
+
+
+def test_vendor_providers_emit_not_run_with_preflight(monkeypatch):
+    monkeypatch.setenv(ACC.LIVE_CONSENT_ENV, "1")
+    monkeypatch.setenv(ACC.LIVE_TOKEN_ENV, "synthetic-vendor-track-token")
+    monkeypatch.setenv(ACC.LIVE_PROVIDER_ENV, "local,chatgpt,grok,gemini")
+    live = ACC.run_live_gates()
+    assert any(r.test_id == "DCP-ACC-024" and r.status == "NOT_RUN" for r in live)
+    assert any(r.test_id == "DCP-ACC-025" and r.status == "NOT_RUN" for r in live)
+    assert any(r.test_id == "DCP-ACC-029" and r.status == "PASS" for r in live)
+    assert "token-a-secret" not in " ".join(r.detail for r in live)
