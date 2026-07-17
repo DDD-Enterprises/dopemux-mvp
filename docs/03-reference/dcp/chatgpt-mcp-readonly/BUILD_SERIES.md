@@ -34,6 +34,7 @@ prelude: Packet roadmap and dependency chain for the read-only MCP evidence faca
 | TP-DCP-MCP-RO-0015 | Ownership Verification And Release-One Adapters | HIGH | Fail-closed ownership verifier + ConPort decision list/read and dope-memory search/replay gates. **No live default network.** | 0014 |
 | TP-DCP-MCP-RO-0016 | Multi-Provider Setup And Rollback Docs | MEDIUM | Provider setup, disable/rollback, command/source-date ledgers, example secret-scan tests. **Placeholders only.** | 0015 |
 | TP-DCP-MCP-RO-0017 | Acceptance Matrix And Fail-Closed Harness | CRITICAL | Matrix + harness: deterministic PASS, live NOT_RUN without dual consent; skipped live never PASS. | 0016 |
+| TP-DCP-MCP-RO-0018 | Exact-Head Proof Readiness Evaluator | HIGH | Fail-closed exact-head readiness; SKIPPED audit / stale proof / bad checks block READY. **No branch-protection mutation.** | 0017 |
 
 ## Sequencing rationale
 
