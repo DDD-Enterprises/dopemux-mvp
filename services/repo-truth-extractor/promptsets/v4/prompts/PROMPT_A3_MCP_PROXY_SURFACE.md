@@ -110,7 +110,6 @@ Required JSON shape:
   "artifact": "REPO_MCP_PROXY_SURFACE.json",
   "phase": "A",
   "step": "A3",
-  "generated_at": "<iso8601>",
   "items": [
     {
       "id": "mcp-proxy:<name_or_path>",

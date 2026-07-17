@@ -75,7 +75,6 @@ Outputs:
 HOME_TMUX_WORKFLOW_SURFACE.json:
 {
   "surface_version": "H6.v1",
-  "generated_at": "<iso8601>",
   "workflows": [
     {
       "name": "<string>",

@@ -20194,6 +20194,13 @@ def run_phase_R_async_submit(
     for prompt_spec in prompts:
         step_id = prompt_spec.step_id
         prompt_text = safe_read(prompt_spec.prompt_path)
+        # F-31 (TP-RTE-TRUTH-R3-004): the async R dispatch path used to skip this call,
+        # so every prompt submitted through the async batch seam reached the model with
+        # its "## Shared Rules -> Refer to PROMPTSET_RULES.md" pointer unresolved: the
+        # Evidence/Determinism/Anti-Fabrication/Failure-Mode/Secret-Redaction regime was
+        # a reference to a file the model never received. The sync dispatch site
+        # (run_step) has always injected; this makes the two paths agree.
+        prompt_text = _inject_promptset_rules(prompt_text)
         if not prompt_text:
             logger.warning("Async R: empty prompt for step %s, skipping", step_id)
             continue

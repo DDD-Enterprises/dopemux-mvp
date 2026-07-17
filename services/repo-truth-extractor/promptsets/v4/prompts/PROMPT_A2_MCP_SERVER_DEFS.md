@@ -113,7 +113,6 @@ Required JSON shape:
   "artifact": "REPO_MCP_SERVER_DEFS.json",
   "phase": "A",
   "step": "A2",
-  "generated_at": "<iso8601>",
   "items": [
     {
       "id": "mcp:<name>",

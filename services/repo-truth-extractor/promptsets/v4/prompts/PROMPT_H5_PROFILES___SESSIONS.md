@@ -74,7 +74,6 @@ Outputs:
 HOME_PROFILES_SURFACE.json:
 {
   "surface_version": "H5.v1",
-  "generated_at": "<iso8601>",
   "profiles": [
     {
       "name": "<string>",

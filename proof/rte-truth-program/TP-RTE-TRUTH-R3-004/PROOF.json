@@ -1,0 +1,286 @@
+{
+  "tp_id": "TP-RTE-TRUTH-R3-004",
+  "tp_path": "task-packets/generated/TP-RTE-TRUTH-R3-004.json",
+  "title": "Anti-fab regime wiring: binding secrets redaction + section-validator wiring",
+  "program": "RTE-TRUTH",
+  "wave": "R3",
+  "findings_covered": [
+    "F-23",
+    "F-31",
+    "F-27 (H/M part)",
+    "F-33",
+    "F-08"
+  ],
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED_WITH_KNOWN_PREEXISTING_FAILURE",
+  "confidence": "VERIFIED (static/dry-run scope only; see not_live_verified_ledger)",
+  "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-audit-improvement-f4beb7",
+  "base_commit": "7939b9224",
+  "commit_sha": "d3f93e377",
+  "pushed": false,
+  "pr_url": null,
+  "pr_blocker": "Packet mandates no push / no PR. PR #1043 is the downstream consumer; F-23 was one of its two merge gates (the other, F-30, landed in 27b349dd3).",
+  "authority_used": [
+    "task-packets/generated/TP-RTE-TRUTH-R3-004.json (packet scope + invariants)",
+    "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md (F-23, F-27, F-31, F-33, F-08)",
+    "claudedocs/rte-truth-program-2026-07/A3a-prompts-ABC.md (F3 = C8 secrets exfiltration)",
+    "claudedocs/rte-truth-program-2026-07/A3b-prompts-DEGHM.md (F-5 section validator, F-6 H1 redaction, F-7 determinism keys)",
+    "runtime code (outranks docs): run_extraction_v5.py, run_extraction_v4.py, lib/promptgen/template_renderer.py",
+    "git show 27b349dd3 (sibling R3-002 conventions; not undone)"
+  ],
+  "change_summary": {
+    "F-23_CRIT_security": {
+      "problem": "C8 SECRETS_RISK_LOCATIONS requires an exact <=200-char excerpt, so hardcoded_secret / secret_in_url / weak_credential findings copy real credential values verbatim into norm artifacts AND into paid-LLM context, then feed R11 security synthesis. H1's redaction rule existed only inside the 'Legacy Context (for intent only; never as evidence)' block -- explicitly non-binding, and run_extraction_v4.py:104-110 confirms the runtime injects no block by that name, so it was inert.",
+      "fix": [
+        "PROMPTSET_RULES.md: new top-level '## Secret Redaction Rules' section, marked BINDING, that explicitly OVERRIDES the exact-excerpt Evidence Rule where they conflict; names the concrete <REDACTED> masking token; gives 5 worked transforms (AWS/OpenAI/Bearer-JWT/webhook-URL/PEM); defines the secret-span vocabulary; states 'when in doubt, redact'; and forbids over-redaction of key NAMES/paths.",
+        "Evidence Rules amended so the exact-excerpt clause points at the redaction carve-out rather than silently contradicting it.",
+        "PROMPT_C8: new '#### SECRETS_RISK_LOCATIONS -- Hard Requirement: redact every secret value (BINDING)' in the binding body + a redacted worked example + procedure step 5 now mandates masking on capture.",
+        "PROMPT_H1: redaction promoted OUT of Legacy Context into a binding '### Hard Requirement -- never emit a secret value (BINDING)'; Goal restated as names/paths/locations-not-values; procedure step 2 mandates masking on capture.",
+        "PROMPT_H7: new binding Hard Requirement (schema metadata only; no row contents/values).",
+        "PROMPT_M3/M4/M5 safe-exports: procedure step 4 upgraded from the vague 'redact if found' to a BINDING key-names-only + <REDACTED> masking rule."
+      ],
+      "why_it_reaches_the_model": "All six prompts carry '## Shared Rules' pointing at PROMPTSET_RULES.md, and run_extraction_v5._inject_promptset_rules() appends that file to any such prompt before dispatch. test_binding_rules_reach_the_model_via_runtime_injection asserts the rendered prompt for each of the six actually contains the redaction section and the worked example -- i.e. the rule is proven present in the payload, not merely present in a file."
+    },
+    "F-31_HIGH": {
+      "problem": "promptset.yaml declares required_prompt_sections but had ZERO runtime readers (maintainers' own comment at run_extraction_v4.py:104-110 documented this as a known gap left as-is). A section validator existed at lib/promptgen/template_renderer.py:20-37,208-251 wired to nothing. A prompt could lose its Anti-Fabrication Rules and still be dispatched to a paid model.",
+      "fix": [
+        "template_renderer.validate_rendered_prompt() now accepts required_sections (so the promptset manifest is the single source of truth) and honors the '## Shared Rules' pointer for the 4 shared boilerplate sections -- matching the offline linter's existing semantics (scripts/repo_truth_extractor_promptset_audit_v4.py) so runtime and lint agree instead of contradicting.",
+        "run_extraction_v4.py: new validate_promptset_sections() + PromptSectionContractError; load_promptset() now enforces the contract and FAILS CLOSED. The resigned 'known gap left as-is' comment is replaced by the enforcement it described as missing. An enforce_sections=False escape hatch is retained for tooling that must inspect a broken promptset.",
+        "run_extraction_v5.py async R dispatch (~line 20196): ADDED the missing _inject_promptset_rules() call. NEWLY DISCOVERED THIS PACKET, not in the audit text: only the sync dispatch site (run_step, ~13456) injected. Every prompt submitted through the async R batch seam reached the model with its Shared Rules pointer UNRESOLVED -- meaning the whole anti-fab regime, and now the F-23 redaction rule, never arrived on that path. Both sites are now pinned by test at exactly 2 calls."
+      ],
+      "empirical_result": "The shipped v4 promptset passes its own contract: 0 issues across all 136 declared prompts. Enforcement is therefore live, not aspirational, and does not block any real run."
+    },
+    "F-27_H_M_part_and_F-33_MED": {
+      "problem": "Gen-1 'Legacy Context' JSON container shapes in the A- and H-phase prompts mandated generated_at, directly contradicting the binding Determinism Rules ('Norm outputs MUST NOT contain: generated_at, timestamp, created_at, updated_at, run_id'). For several H steps the legacy shape was the ONLY field-level spec available, so the contradicting spec was the more concrete of the two.",
+      "fix": "Stripped 21 determinism-violating key lines across 17 prompts (A2-A9, H0-H7, H9). Every removal was verified to lie INSIDE a Legacy Context block before editing; the script refused to touch any binding-body occurrence and reported none. M-phase had zero occurrences (checked, not assumed).",
+      "scope_note": "The T-phase share of F-27 (TP_BACKLOG_TOPN) is owned by TP-RTE-TRUTH-R3-005c and was deliberately NOT touched; the new regression test excludes PROMPT_T* for exactly this reason so it cannot fail on another packet's unlanded work."
+    },
+    "F-08_LOW": {
+      "problem": "Three contract-map guards called pytest.skip() when their target artifact was absent from the compiled contract map -- reporting green while checking nothing if the target stopped being emitted.",
+      "fix": "test_tp_rtx_v5_phase_recovery_hardening.py:327,381,397 -> pytest.fail() with a message distinguishing 'regression this guard exists to catch' from 'test targets a stale artifact name'.",
+      "empirical_result": "23 passed / 0 skipped after the change -- the targets DO currently emit, so this closes a latent hole rather than papering over a live one."
+    }
+  },
+  "files_changed": {
+    "runtime": [
+      "services/repo-truth-extractor/run_extraction_v4.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/lib/promptgen/template_renderer.py"
+    ],
+    "binding_rules": [
+      "services/repo-truth-extractor/promptsets/v4/PROMPTSET_RULES.md"
+    ],
+    "prompts_redaction": [
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md",
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md",
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_SQLITE___STATE_DB_METADATA.md",
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md",
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md",
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md"
+    ],
+    "prompts_determinism_keys_stripped": [
+      "PROMPT_A2_MCP_SERVER_DEFS.md",
+      "PROMPT_A3_MCP_PROXY_SURFACE.md",
+      "PROMPT_A4_ROUTER_SURFACE.md",
+      "PROMPT_A5_HOOKS_SURFACE.md",
+      "PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+      "PROMPT_A7_LITELLM_SURFACE.md",
+      "PROMPT_A8_TASKX_SURFACE.md",
+      "PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
+      "PROMPT_H0_INVENTORY___PARTITION_PLAN.md",
+      "PROMPT_H1_KEYS___REFERENCES.md",
+      "PROMPT_H2_MCP_SURFACE.md",
+      "PROMPT_H3_ROUTER___PROVIDER_LADDERS.md",
+      "PROMPT_H4_LITELLM_SURFACES.md",
+      "PROMPT_H5_PROFILES___SESSIONS.md",
+      "PROMPT_H6_TMUX___WORKFLOW_HELPERS.md",
+      "PROMPT_H7_SQLITE___STATE_DB_METADATA.md",
+      "PROMPT_H9_MERGE___QA.md"
+    ],
+    "tests_added": [
+      "services/repo-truth-extractor/tests/test_secrets_redaction_binding.py",
+      "services/repo-truth-extractor/tests/test_promptset_section_enforcement.py",
+      "services/repo-truth-extractor/tests/test_prompt_determinism_keys.py"
+    ],
+    "tests_modified": [
+      "services/repo-truth-extractor/tests/test_tp_rtx_v5_phase_recovery_hardening.py"
+    ],
+    "proof": [
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-004/PROOF.json"
+    ],
+    "diffstat": "26 files changed, 242 insertions(+), 46 deletions(-) (excludes the 3 new test files, untracked at measure time)"
+  },
+  "validations": {
+    "PASS": [
+      {
+        "name": "F-23 redaction binding tests (new)",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_secrets_redaction_binding.py -q",
+        "result": "11 passed",
+        "exit_code": 0
+      },
+      {
+        "name": "F-31 section-enforcement tests (new)",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_promptset_section_enforcement.py -q",
+        "result": "6 passed",
+        "exit_code": 0
+      },
+      {
+        "name": "F-27/F-33 determinism-key regression tests (new)",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_prompt_determinism_keys.py -q",
+        "result": "130 passed (1 rule pin + 129 parametrized in-scope prompts)",
+        "exit_code": 0
+      },
+      {
+        "name": "F-08 contract-map guards",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_tp_rtx_v5_phase_recovery_hardening.py -q",
+        "result": "23 passed, 0 skipped (guards reach their asserts; fail-loudly does not break them)",
+        "exit_code": 0
+      },
+      {
+        "name": "packet-declared verify: promptset or redact or section",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'promptset or redact or section'",
+        "result": "105 passed",
+        "exit_code": 0
+      },
+      {
+        "name": "promptset v4 linter (offline audit script)",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_promptset_v4_lint.py -q",
+        "result": "10 passed (status PASS, 0 stub, 0 lint failures) -- runtime enforcement agrees with the linter",
+        "exit_code": 0
+      },
+      {
+        "name": "golden harness (default profile)",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+        "result": "27 passed, 1 skipped (the skip is the built-in slow-capture opt-out at goldens:60)",
+        "exit_code": 0
+      },
+      {
+        "name": "live promptset contract check against the shipped v4 promptset",
+        "command": "validate_promptset_sections(load_promptset())",
+        "result": "0 issues across all 136 declared prompts -- enforcement is live and blocks nothing real",
+        "exit_code": 0
+      },
+      {
+        "name": "full extractor suite",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -p no:randomly",
+        "result": "1432 passed, 6 xfailed, 2 skipped, 1 failed. The single failure is test_prescan_e2e_smoke (tree-sitter degraded) -- known pre-existing, named as such in the dispatch, unrelated to prompts/redaction/sections.",
+        "exit_code": 1
+      }
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "name": "golden harness slow capture (cost_preview_value_default) with RTE_TRUTH_SLOW_GOLDENS=1",
+        "command": "RTE_TRUTH_SLOW_GOLDENS=1 mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+        "result": "subprocess.TimeoutExpired at the test's own 420s cap on this machine.",
+        "preexisting_check": "PROVEN PRE-EXISTING. Re-ran the same single test at clean HEAD 7939b9224 with ALL changes stashed (git stash push --include-untracked -- services/repo-truth-extractor/): identical TimeoutExpired on the identical command. Not attributable to this packet.",
+        "note": "R3-002 reported this golden passing (28/0) on its machine; the golden's own docstring estimates ~259s against a 420s cap, so this is machine-speed/load sensitive, not a behavior change.",
+        "residual_risk": "LOW. This golden captures --print-cost-preview output for the value-default cost profile. This packet touches prompt bodies, PROMPTSET_RULES.md, the v4 section validator and the v5 async-R injection seam -- none of which feed cost-preview arithmetic. The 27 goldens that did run cover the harness surface and are unchanged.",
+        "exit_code": 1
+      },
+      {
+        "name": "PAL chain (analyze -> planner -> codereview -> precommit)",
+        "result": "NOT_RUN. The packet declares pal_chain.enabled=true; the PAL MCP was not loaded in this session (deferred-tool list only exposes mcp__pal-stdio__*, and prior program memory records provider-credential blockers).",
+        "residual_risk": "MEDIUM (process). No independent multi-model review of this diff. Same posture as sibling R3-002, which also recorded PAL as NOT_RUN.",
+        "exit_code": null
+      },
+      {
+        "name": "Any live provider execution",
+        "result": "NOT_RUN BY MANDATE. Packet invariant: DRY-RUN ONLY. No --execute, no DPMX_LIVE_OK, no live provider calls were made at any point.",
+        "exit_code": null
+      }
+    ]
+  },
+  "mutation_checks": [
+    {
+      "claim": "the F-23 redaction tests prove the binding rule exists and reaches the model",
+      "method": "git stash push -- services/repo-truth-extractor/promptsets/ (reverts PROMPTSET_RULES.md + all prompt edits to HEAD, keeps the new test file), re-run test_secrets_redaction_binding.py",
+      "result": "NOT VACUOUS. 8+ of 11 tests FAIL without the fix, including test_h1_redaction_is_no_longer_legacy_only, test_c8_secrets_worked_example_excerpt_is_redacted, test_binding_rules_reach_the_model_via_runtime_injection, and every parametrized secret-scanning prompt except C8 (which had a partial pre-existing mention). Restored via git stash pop; verified working tree returned to the fixed state."
+    },
+    {
+      "claim": "the F-31 tests prove the section validator is wired and the async R path injects",
+      "method": "git stash push -- run_extraction_v4.py run_extraction_v5.py lib/promptgen/template_renderer.py, re-run test_promptset_section_enforcement.py",
+      "result": "NOT VACUOUS. 6 of 6 tests FAIL without the fix. test_async_r_dispatch_injects_promptset_rules fails with 'assert 1 == 2' -- i.e. it directly reproduces the F-31 async-path gap (only 1 injection call site at HEAD)."
+    },
+    {
+      "claim": "the F-27/F-33 tests prove determinism keys are gone",
+      "method": "git stash push -- services/repo-truth-extractor/promptsets/v4/prompts/, re-run test_prompt_determinism_keys.py",
+      "result": "NOT VACUOUS. Multiple parametrized cases FAIL without the fix (H5, H6, H7, H9 shown; the A-phase and remaining H-phase cases fail identically)."
+    }
+  ],
+  "goldens_moved": {
+    "answer": "NO",
+    "detail": "The packet pre-authorized deliberate golden regeneration since templates/rules are in scope. Empirically none was needed: `git status --short -- services/repo-truth-extractor/tests/ | grep -i golden` returns nothing, and the 27 runnable goldens pass unchanged. Verified rather than assumed, per dispatch. Same empirical outcome as sibling R3-002.",
+    "before_after_itemization": "N/A -- zero golden files modified."
+  },
+  "not_live_verified_ledger": [
+    "REDACTION EFFECTIVENESS IS NOT PROVEN. This packet proves the redaction rule is (a) written, (b) BINDING rather than marooned in a non-binding Legacy Context block, (c) explicitly overriding the conflicting exact-excerpt Evidence Rule, and (d) empirically present in the assembled prompt payload for all six secret-touching steps. It does NOT prove any live model obeys it. That requires live evals with seeded fake secrets and is out of this packet's dry-run mandate.",
+    "No live extraction run was performed; no artifact produced by a real model was inspected for leaked secrets.",
+    "The section validator is proven to fail closed on a synthetic broken promptset and to pass the real one. It has not been observed rejecting a real regression in a live run.",
+    "The async-R injection fix is proven by source-level call-site pinning + the sync path's existing injection tests. The async batch seam itself was not exercised end-to-end (needs live provider batch submission).",
+    "F-27's T-phase share and F-33's wider Gen-1 container-shape reconciliation beyond generated_at/run_id are NOT addressed here (owned by R3-005c / R3-005d respectively)."
+  ],
+  "residual_risks": [
+    {
+      "risk": "Prompt-level redaction is an INSTRUCTION, not an ENFORCEMENT. A model that ignores the rule still emits the secret, and nothing downstream re-scans SECRETS_RISK_LOCATIONS.json for unredacted values before it is written or before it feeds R11.",
+      "severity": "MEDIUM-HIGH",
+      "recommendation": "Follow-up packet: apply output_safety.sanitize_payload_for_output() (or lib/truth_labels._safe_scalar, which already has _SECRET_SHAPED_RE + _HIGH_ENTROPY_RE) to C8/H1/H7/M3-M5 norm artifacts at write time. Defense in depth: the prompt rule reduces exposure in the paid-LLM response; a write-time scrub is what makes leakage structurally impossible. This packet's scope was the prompt regime; the runtime scrub is a distinct, larger change.",
+      "note": "Deliberately flagged rather than silently attempted -- this is the honest boundary of what a prompt-layer fix can deliver."
+    },
+    {
+      "risk": "The secret is still sent TO the provider inside <repo_content> regardless of redaction. Redaction governs what the model WRITES BACK into artifacts, not what it READS.",
+      "severity": "MEDIUM",
+      "recommendation": "Out of scope for F-23 as scoped (which is about excerpt exfiltration into artifacts + response context). Reducing inbound exposure means pre-scrubbing build_partition_context() input, which would corrupt the very scan C8 exists to perform. Worth an explicit program-level decision, not a silent fix."
+    },
+    {
+      "risk": "Over-redaction could hide real findings if a model masks aggressively (e.g. redacting env var NAMES, which are H1's intended product).",
+      "severity": "LOW",
+      "recommendation": "Mitigated in the rule text: an explicit 'Never redact non-secret context' clause plus 'mask the value span only', and H1/H7 each restate that NAMES/paths/columns must not be masked. Unverified against a live model."
+    },
+    {
+      "risk": "load_promptset() now raises PromptSectionContractError where it previously always returned. Any caller that added a non-conforming prompt would newly fail closed.",
+      "severity": "LOW",
+      "recommendation": "Intended (fail-closed is the point of F-31). Blast radius measured: the shipped promptset yields 0 issues, and the full 1432-test suite shows no new failure. enforce_sections=False is available for inspection tooling."
+    },
+    {
+      "risk": "Delimiter/redaction-token escape: a file body containing the literal '<REDACTED>' could make a genuine finding look pre-redacted.",
+      "severity": "LOW",
+      "recommendation": "Same class as the unhandled '</repo_content>' escape R3-002 recorded. Worth folding into one escaping packet."
+    }
+  ],
+  "unknowns": [
+    "Whether any live model actually complies with the redaction rule (needs live eval; see ledger).",
+    "Whether the async R batch seam has other divergences from the sync dispatch path beyond the missing rules injection found here -- the two paths were not diffed exhaustively; this fix was found incidentally while tracing F-31.",
+    "Whether the ~30 bare-scaffold templates A3b flagged need MORE than the rules pointer (the pointer is now proven to resolve at runtime on both paths, which was A3b's stated uncertainty: 'whether the rules ever reach the paid model's context is unverified'). This packet resolves that uncertainty to YES for both dispatch paths; whether the injected rules are SUFFICIENT for a bare scaffold remains a content question owned by R3-005*."
+  ],
+  "audit_claim_corrections": [
+    {
+      "claim": "F-31: 'PROMPTSET_RULES not among any template's runner-context inputs -> anti-fab regime is a pointer checked by nothing' (A3b F-5)",
+      "correction": "PARTIALLY STALE AT HEAD. run_extraction_v5._load_promptset_rules() / _inject_promptset_rules() (v5:13377-13398) already existed and already injected the rules file on the SYNC dispatch path (v5:13456), with tests at tests/test_promptset_rules_injection.py. A3b's 'unverified whether the rules ever reach the model' was therefore already answered YES for sync. What was genuinely broken -- and is fixed here -- is (a) the async R path never injected, and (b) required_prompt_sections still had zero readers. Reporting this rather than claiming credit for pre-existing work."
+    },
+    {
+      "claim": "F-27/F-33 scope: 'legacy schemas mandate run_id/generated_at'",
+      "correction": "In the A/H prompts only generated_at was actually present (21 occurrences); zero run_id occurrences, and zero of either in M-phase prompts. Verified by grep rather than assumed from the finding text."
+    }
+  ],
+  "git_state": {
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_commit": "7939b9224",
+    "commits_this_packet": 1,
+    "pushed": false,
+    "excluded_from_commit": [
+      ".claude/claude_config.json (pre-existing dirty, not ours)",
+      ".claude/.untracked-work-probe-cache.json (untracked tooling cache, not ours)"
+    ],
+    "commit_sha": "d3f93e377"
+  },
+  "rollback_plan": {
+    "full": "git revert <commit_sha>  # single self-contained commit",
+    "alternative": "git reset --hard 7939b9224  # discards the packet entirely; safe because nothing was pushed",
+    "partial_f23_only": "git checkout 7939b9224 -- services/repo-truth-extractor/promptsets/v4/PROMPTSET_RULES.md services/repo-truth-extractor/promptsets/v4/prompts/ && rm services/repo-truth-extractor/tests/test_secrets_redaction_binding.py",
+    "partial_f31_only": "git checkout 7939b9224 -- services/repo-truth-extractor/run_extraction_v4.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/lib/promptgen/template_renderer.py && rm services/repo-truth-extractor/tests/test_promptset_section_enforcement.py"
+  },
+  "cleanup_status": "CLEAN. No temp files or scratch artifacts left in the repo. All git stashes created for mutation/pre-existing checks were popped and verified (git status matches the intended change set). Working tree contains only the packet's files plus the two pre-existing .claude/ entries listed under excluded_from_commit.",
+  "requested_next_step": "Independent review of this diff (PAL codereview was NOT_RUN -- no PAL in session). Specifically request scrutiny of: (1) whether the F-23 rule text is strong enough to be worth its token cost on every injected prompt, (2) the load_promptset() fail-closed behavior change, and (3) a decision on the write-time redaction scrub recorded as the top residual risk -- that is what would make secret leakage structurally impossible rather than instruction-dependent. F-23 and F-30 (27b349dd3) were the two merge gates for PR #1043; both now have landed fixes."
+}

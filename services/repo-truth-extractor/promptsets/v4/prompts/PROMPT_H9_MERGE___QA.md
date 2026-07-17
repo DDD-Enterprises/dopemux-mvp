@@ -163,7 +163,6 @@ Outputs:
 HOMECTRL_NORM_MANIFEST.json:
 {
   "manifest_version": "H9.v1",
-  "generated_at": "<iso8601>",
   "inputs": ["<raw json file names>"],
   "outputs": [
     "HOME_KEYS_SURFACE.json",
@@ -182,7 +181,6 @@ HOMECTRL_NORM_MANIFEST.json:
 HOMECTRL_QA.json:
 {
   "qa_version": "H9.v1",
-  "generated_at": "<iso8601>",
   "missing_expected_raw_steps": ["<string>"],
   "empty_outputs": ["<string>"],
   "evidence_warnings": ["<string>"],

@@ -116,7 +116,6 @@ Required JSON shape:
   "artifact": "REPO_IMPLICIT_BEHAVIOR_HINTS.json",
   "phase": "A",
   "step": "A9",
-  "generated_at": "<iso8601>",
   "items": [
     {
       "id": "hint:<stable_id>",

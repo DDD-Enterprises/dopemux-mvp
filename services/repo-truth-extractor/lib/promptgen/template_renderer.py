@@ -29,6 +29,21 @@ REQUIRED_SECTIONS = [
     "Failure Modes",
 ]
 
+# The four shared/boilerplate sections a template may satisfy by pointing at
+# PROMPTSET_RULES.md under "## Shared Rules" instead of inlining them. The pointer is
+# resolved at runtime by run_extraction_v5._inject_promptset_rules(), which appends the
+# rules file to the prompt before dispatch -- so a template carrying the pointer really
+# does deliver these sections to the model.
+SHARED_RULES_SECTION = "Shared Rules"
+SHARED_RULES_SATISFIES = frozenset(
+    {
+        "Evidence Rules",
+        "Determinism Rules",
+        "Anti-Fabrication Rules",
+        "Failure Modes",
+    }
+)
+
 # Minimum section lengths (from promptset_audit_v4.py)
 MIN_LENGTHS = {
     "Goal": 40,
@@ -205,25 +220,51 @@ def _fallback_render(template_text: str, context: Dict[str, Any]) -> str:
     return result
 
 
-def validate_rendered_prompt(prompt_text: str) -> Dict[str, Any]:
+def _has_section(prompt_text: str, section: str) -> bool:
+    return bool(re.search(rf"^##\s+{re.escape(section)}", prompt_text, re.MULTILINE))
+
+
+def validate_rendered_prompt(
+    prompt_text: str,
+    required_sections: Optional[List[str]] = None,
+) -> Dict[str, Any]:
     """Validate that a rendered prompt meets the contract requirements.
+
+    Args:
+        prompt_text: The prompt body to check.
+        required_sections: Section names to require. Defaults to REQUIRED_SECTIONS.
+            Callers enforcing a promptset should pass its declared
+            `required_prompt_sections` so the manifest stays the single source of truth.
+
+    A template may satisfy the four shared boilerplate sections (SHARED_RULES_SATISFIES)
+    by carrying a "## Shared Rules" pointer to PROMPTSET_RULES.md; the runtime resolves
+    that pointer by injection before dispatch. This mirrors the semantics already used by
+    scripts/repo_truth_extractor_promptset_audit_v4.py, so the runtime check and the
+    offline linter agree rather than contradicting each other.
 
     Returns a dict with validation status and any issues found.
     """
     issues: List[str] = []
+    sections = list(REQUIRED_SECTIONS if required_sections is None else required_sections)
 
     # Check for all required sections
     present_sections: Set[str] = set()
-    for section in REQUIRED_SECTIONS:
-        pattern = re.compile(rf"^##\s+{re.escape(section)}", re.MULTILINE)
-        if pattern.search(prompt_text):
+    shared_rules_present = _has_section(prompt_text, SHARED_RULES_SECTION)
+    for section in sections:
+        if _has_section(prompt_text, section):
+            present_sections.add(section)
+        elif shared_rules_present and section in SHARED_RULES_SATISFIES:
+            # Delivered via the runtime PROMPTSET_RULES.md injection.
             present_sections.add(section)
         else:
             issues.append(f"Missing required section: ## {section}")
 
-    # Check minimum lengths for present sections
+    # Check minimum lengths for present sections. Sections satisfied by the Shared Rules
+    # pointer have no inline body to measure -- their length lives in PROMPTSET_RULES.md.
     for section, min_len in MIN_LENGTHS.items():
         if section not in present_sections:
+            continue
+        if section in SHARED_RULES_SATISFIES and not _has_section(prompt_text, section):
             continue
         # Extract section content (from header to next ## or end)
         pattern = re.compile(
@@ -246,7 +287,8 @@ def validate_rendered_prompt(prompt_text: str) -> Dict[str, Any]:
     return {
         "valid": len(issues) == 0,
         "sections_present": sorted(present_sections),
-        "sections_missing": sorted(set(REQUIRED_SECTIONS) - present_sections),
+        "sections_missing": sorted(set(sections) - present_sections),
+        "shared_rules_pointer": shared_rules_present,
         "issues": issues,
     }
 

@@ -115,7 +115,6 @@ Required JSON shape:
   "artifact": "REPO_TASKX_SURFACE.json",
   "phase": "A",
   "step": "A8",
-  "generated_at": "<iso8601>",
   "items": [
     {
       "id": "taskx:<stable_id>",

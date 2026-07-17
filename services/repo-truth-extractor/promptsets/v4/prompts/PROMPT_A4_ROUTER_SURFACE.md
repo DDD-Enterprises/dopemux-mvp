@@ -113,7 +113,6 @@ Required JSON shape:
   "artifact": "REPO_ROUTER_SURFACE.json",
   "phase": "A",
   "step": "A4",
-  "generated_at": "<iso8601>",
   "items": [
     {
       "id": "route:<stable_id>",

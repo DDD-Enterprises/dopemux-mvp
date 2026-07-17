@@ -74,7 +74,6 @@ Outputs:
 HOME_MCP_SURFACE.json:
 {
   "surface_version": "H2.v1",
-  "generated_at": "<iso8601>",
   "servers": [
     {
       "name": "<string>",

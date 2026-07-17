@@ -87,7 +87,6 @@ Outputs:
 HOME_INVENTORY.json format:
 {
   "inventory_version": "H0.v1",
-  "generated_at": "<iso8601>",
   "root_hint": "<string or empty>",
   "items": [
     {
@@ -107,7 +106,6 @@ HOME_INVENTORY.json format:
 HOME_PARTITIONS.json format:
 {
   "partition_version": "H0.v1",
-  "generated_at": "<iso8601>",
   "max_files_per_partition": <int>,
   "partitions": [
     {

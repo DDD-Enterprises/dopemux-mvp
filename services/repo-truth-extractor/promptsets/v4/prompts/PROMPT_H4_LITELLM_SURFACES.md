@@ -73,7 +73,6 @@ Outputs:
 HOME_LITELLM_SURFACE.json:
 {
   "surface_version": "H4.v1",
-  "generated_at": "<iso8601>",
   "configs": [
     {
       "path": "<path>",

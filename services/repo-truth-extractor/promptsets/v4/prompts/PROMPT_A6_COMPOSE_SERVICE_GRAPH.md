@@ -117,7 +117,6 @@ Required JSON shape:
   "artifact": "REPO_COMPOSE_SERVICE_GRAPH.json",
   "phase": "A",
   "step": "A6",
-  "generated_at": "<iso8601>",
   "items": [
     {
       "id": "service:<name>",

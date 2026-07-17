@@ -80,7 +80,6 @@ Outputs:
 HOME_ROUTER_SURFACE.json:
 {
   "surface_version": "H3.v1",
-  "generated_at": "<iso8601>",
   "router_configs": [
     {
       "path": "<path>",
@@ -95,7 +94,6 @@ HOME_ROUTER_SURFACE.json:
 HOME_PROVIDER_LADDER_HINTS.json:
 {
   "hints_version": "H3.v1",
-  "generated_at": "<iso8601>",
   "ladders": [
     {
       "name": "<string>",

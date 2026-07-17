@@ -163,7 +163,6 @@ Required JSON shape:
   "artifact": "REPO_HOOKS_SURFACE.json",
   "phase": "A",
   "step": "A5",
-  "generated_at": "<iso8601>",
   "items": [
     {
       "id": "hook:<type>:<name>",
