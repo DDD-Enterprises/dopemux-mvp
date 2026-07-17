@@ -4,10 +4,11 @@ Base: origin/main @ 46e8e8e69 (TP-0016 merged)
 
 | Command | Result |
 | --- | --- |
-| 0016 dependency | PASS |
-| 0017 collision | PASS (none) |
-| focused acceptance harness tests | PASS |
-| full facade suite | PASS; 1 live skip |
-| `python -m dcp_facade.acceptance` | PASS exit 0; release_ready=false; live NOT_RUN |
-| live tunnels/providers/credentials | NOT_RUN (no dual consent; forbidden without secrets) |
+| Operator live authorization | RECEIVED (session: authorized) |
+| Vendor credentials (OpenAI tunnel / Grok / Gemini) | ABSENT |
+| Local live: `DCP_ACCEPTANCE_LIVE=1` `PROVIDERS=local` synthetic token | PASS suite (no secret in report) |
+| `python -m dcp_facade.acceptance` | release_ready=false; live_not_run=4 (vendor + two-worktree) |
+| ChatGPT tunnel / Grok / Gemini live | NOT_RUN |
 | Trusted embedded audit | NOT_RUN |
+
+Synthetic local tokens were process-env only and never committed.

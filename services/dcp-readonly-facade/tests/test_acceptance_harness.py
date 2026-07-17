@@ -55,3 +55,17 @@ def test_skipped_live_is_never_pass(monkeypatch):
     assert live
     assert all(r.status == "NOT_RUN" for r in live)
     assert all(r.blocking for r in live)
+
+
+def test_local_live_loopback_passes_with_synthetic_token(monkeypatch):
+    monkeypatch.setenv(ACC.LIVE_CONSENT_ENV, "1")
+    monkeypatch.setenv(ACC.LIVE_TOKEN_ENV, "synthetic-local-live-token-0017")
+    monkeypatch.setenv(ACC.LIVE_PROVIDER_ENV, "local")
+    live = ACC.run_live_gates()
+    assert any(r.status == "PASS" and r.gate_type == "live" for r in live)
+    # Vendor tunnel gates remain NOT_RUN without vendor secrets/runners.
+    assert any(r.test_id == "DCP-ACC-024" and r.status == "NOT_RUN" for r in live)
+    assert any(r.test_id == "DCP-ACC-027" and r.status == "PASS" for r in live)
+    # Never leak token into details
+    blob = " ".join(r.detail for r in live)
+    assert "synthetic-local-live-token-0017" not in blob
