@@ -44,6 +44,9 @@ EOF
     fi
     
     local cmd=(./install.sh --stack "$stack" --env-file "$env_file")
+    if command -v mise &>/dev/null; then
+        HOME="$home_dir" mise trust --all &>/dev/null || true
+    fi
     if [ "$auto" = "yes" ]; then
         cmd+=(--yes)
         if INSTALLER_TEST_MODE=1 HOME="$home_dir" DOPEMUX_HOME="$home_dir/.dopemux" "${cmd[@]}" >"$log_file" 2>&1; then

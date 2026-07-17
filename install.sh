@@ -1127,7 +1127,7 @@ check_python() {
     if check_command python3; then
         local found
         found=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || echo "unknown")
-        error "Python $REQUIRED_PYTHON_VERSION–3.13 required (found: $found; also probed python3.13/3.12/3.11)"
+        error "Python ${REQUIRED_PYTHON_VERSION}-3.13 required (found: $found; also probed python3.13/3.12/3.11)"
     else
         error "Python 3 not found"
     fi
