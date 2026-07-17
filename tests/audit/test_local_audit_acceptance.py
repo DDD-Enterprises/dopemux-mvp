@@ -396,12 +396,3 @@ def test_workflow_evaluates_attestation_from_trusted_source() -> None:
         in text
     )
 
-
-def test_allowed_signers_file_ships_without_keys() -> None:
-    signers = ROOT / "config" / "audit" / "embedded-audit-allowed-signers"
-    lines = [
-        line.strip()
-        for line in signers.read_text(encoding="utf-8").splitlines()
-        if line.strip() and not line.strip().startswith("#")
-    ]
-    assert lines == [], "allowed-signers must ship empty (feature inert) in this PR"

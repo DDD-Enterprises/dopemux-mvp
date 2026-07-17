@@ -10,14 +10,14 @@
         "DOPEMUX_INSTANCE_ID",
         "-e",
         "DOPEMUX_WORKSPACE_ID",
-        "mcp-conport_feat/register-audit-signing-key",
+        "mcp-conport_fix/installer-mac-linux-audit",
         "uvx",
         "--from",
         "context-portal-mcp",
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "feat/register-audit-signing-key",
+        "DOPEMUX_INSTANCE_ID": "fix/installer-mac-linux-audit",
         "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
       }
     },
