@@ -1,0 +1,28 @@
+{
+  "packet_id": "PR-MERGE-STEWARD-1062",
+  "pr_number": 1062,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "16f5fc0e7673541312e2e360bda94911ceea8df7",
+  "generated_at": "2026-07-17T16:06:00Z",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "bash -n install.sh && ./test_installer_basic.sh && ./test_installer_ubuntu.sh && pytest tests/audit",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1062/PROOF.json",
+    "findings": [],
+    "fixes_applied": [
+      "Fix unbound variable REQUIRED_PYTHON_VERSION in install.sh due to Unicode en-dash character by using braced variable syntax ${REQUIRED_PYTHON_VERSION}.",
+      "Resolve merge conflict in .claude/claude_config.json on main merge.",
+      "Remove obsolete test test_allowed_signers_file_ships_without_keys from test_local_audit_acceptance.py as public keys have been successfully registered."
+    ],
+    "remaining_risks": [
+      "The installer is tested in test mode which mocks docker/pip actions. Real installer execution on raw host systems is simulated but not fully run in test suites."
+    ],
+    "skip_reason": null
+  }
+}
