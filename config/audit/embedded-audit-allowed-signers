@@ -16,3 +16,6 @@
 #
 # Example (do not uncomment; replace with your own key):
 # hue@local ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...
+
+hue@local ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOeP53q5HXeQupjRvDhE7Y/RTU2rEhTZJVyXFCAbOFHW
+
