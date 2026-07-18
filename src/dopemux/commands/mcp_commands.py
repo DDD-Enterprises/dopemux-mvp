@@ -878,13 +878,26 @@ def _build_local_mcp_json(server_names: List[str], catalog: Dict[str, Any]) -> D
     type=click.Path(path_type=Path, file_okay=False, dir_okay=True),
     help="Directory for generated output files when --apply is set.",
 )
-def mcp_generate_cmd(apply: bool, output_dir: Optional[Path]):
+@click.option(
+    "--allow-sequenced",
+    "allow_sequenced",
+    is_flag=True,
+    help=(
+        "Also write the full-sequenced .codex/config.toml mcp_servers block in-repo. "
+        "Refused by default until the ADR-MCPINT-002 G1 prerequisites land."
+    ),
+)
+def mcp_generate_cmd(apply: bool, output_dir: Optional[Path], allow_sequenced: bool):
     """
     🧾 Project Fleet: Render catalog-backed MCP config fragments
 
     Generates reviewable projections for local .mcp.json, Claude globals,
-    Codex config, health probes, and MCP doctrine docs. Dry-run is the default;
-    writes require both --apply and --output-dir.
+    Codex config, OpenCode + Copilot agent configs, health probes, and MCP
+    doctrine docs. Dry-run is the default; writes require both --apply and
+    --output-dir. --apply also updates the in-repo agent config targets
+    (opencode.jsonc managed mcp section, mcp-proxy-config.copilot.yaml);
+    .codex/config.toml is additionally gated behind --allow-sequenced
+    (ADR-MCPINT-002 G1 sequencing).
     """
     from dopemux.mcp import fleet_catalog
 
@@ -896,6 +909,11 @@ def mcp_generate_cmd(apply: bool, output_dir: Optional[Path]):
         for relative_path, content in outputs.items():
             line_count = len(content.splitlines())
             console.logger.info(f"[info]Would write {relative_path} ({line_count} lines)[/info]")
+        console.logger.info(
+            "[info]--apply also updates in-repo agent configs: opencode.jsonc (managed "
+            "mcp section), mcp-proxy-config.copilot.yaml, and — only with "
+            "--allow-sequenced — .codex/config.toml.[/info]"
+        )
         return
 
     if output_dir is None:
@@ -906,6 +924,81 @@ def mcp_generate_cmd(apply: bool, output_dir: Optional[Path]):
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
         console.logger.info(f"[success]Wrote {target}[/success]")
+
+    _apply_in_repo_agent_configs(catalog, output_dir, allow_sequenced)
+
+
+def _apply_in_repo_agent_configs(
+    catalog: Dict[str, Any],
+    output_dir: Path,
+    allow_sequenced: bool,
+) -> None:
+    """Write the in-repo agent config targets owned by the generate pipeline.
+
+    ADR-MCPINT-001 §2: the generate pipeline is the sole producer of agent
+    configs. opencode.jsonc is a managed-merge — only the marker-delimited `mcp`
+    section is replaced; user keys (`permission`, `instructions`, …) are
+    preserved. mcp-proxy-config.copilot.yaml is fully generated.
+    .codex/config.toml is `full-sequenced` (ADR-MCPINT-002 G1): the in-repo
+    write is refused without --allow-sequenced while a preview always lands
+    under the output dir.
+    """
+    from dopemux.mcp import fleet_catalog
+
+    repo = get_repo_root(fallback_cwd=False)
+    if not repo:
+        raise click.ClickException(
+            "--apply writes in-repo agent configs and must run inside a git repository."
+        )
+    repo_path = Path(repo)
+
+    opencode_path = repo_path / "opencode.jsonc"
+    existing_opencode = (
+        opencode_path.read_text(encoding="utf-8") if opencode_path.exists() else None
+    )
+    try:
+        merged_opencode = fleet_catalog.render_opencode_jsonc(existing_opencode, catalog)
+    except fleet_catalog.MCPFleetCatalogError as exc:
+        raise click.ClickException(str(exc)) from exc
+    opencode_path.write_text(merged_opencode, encoding="utf-8")
+    console.logger.info(
+        f"[success]Wrote {opencode_path} (managed mcp section; non-managed keys preserved)[/success]"
+    )
+
+    copilot_path = repo_path / "mcp-proxy-config.copilot.yaml"
+    copilot_path.write_text(
+        fleet_catalog.render_copilot_proxy_config(catalog), encoding="utf-8"
+    )
+    console.logger.info(f"[success]Wrote {copilot_path}[/success]")
+
+    codex_path = repo_path / ".codex" / "config.toml"
+    if allow_sequenced:
+        existing_codex = codex_path.read_text(encoding="utf-8") if codex_path.exists() else None
+        try:
+            merged_codex = fleet_catalog.merge_codex_config_toml(existing_codex, catalog)
+        except fleet_catalog.MCPFleetCatalogError as exc:
+            raise click.ClickException(str(exc)) from exc
+        codex_path.parent.mkdir(parents=True, exist_ok=True)
+        codex_path.write_text(merged_codex, encoding="utf-8")
+        console.logger.info(
+            f"[success]Wrote {codex_path} (managed mcp_servers section; existing keys preserved)[/success]"
+        )
+    else:
+        console.logger.info(
+            "[warning]Refused to write .codex/config.toml: codex exposure is "
+            "`full-sequenced` (ADR-MCPINT-002 G1) and the sequencing prerequisites "
+            "are unmet:[/warning]"
+        )
+        console.logger.info(
+            "  1. DMX-MEMSPINE-IDENTITY-005 — per-request memory-spine identity with fail-closed writes"
+        )
+        console.logger.info(
+            "  2. task-orchestrator `actor_authentication.enabled` — authenticated actor attribution"
+        )
+        console.logger.info(
+            f"[info]Preview written to {output_dir / 'codex' / 'config.toml'}; re-run with "
+            "--allow-sequenced once both prerequisites have landed.[/info]"
+        )
 
 
 def _ensure_context() -> tuple[Path, Any]:
