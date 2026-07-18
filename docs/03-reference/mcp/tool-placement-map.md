@@ -75,7 +75,20 @@ Net: **31 tools ship** on `dope-adhd`, **9 drop** (1 delegated, 8 redundant), 2 
 
 ## 5. Open items
 
-1. Standalone-vs-on-engine fallback trigger for dope-adhd: revisit only if engine image/startup cost becomes real (decision recorded in IMP-ADHDINTEL-007).
+1. Standalone-vs-on-engine fallback trigger for dope-adhd: revisit only if engine image/startup cost becomes real (decision recorded in IMP-ADHDINTEL-007). *(Superseded by §6 if the SVCFEAT harmonization is confirmed.)*
 2. Phase-2 consolidation of the 6 structural-graph tools into dope-context — open until IMP-COMPLEX-008 proves shared parsing.
-3. claude_brain assess-or-shelve.
+3. claude_brain assess-or-shelve. *(Note: DMX-SVCFEAT DOPEBRAIN-FASTAPI-001+WIRE-002 now claim this — "held" resolves to packet:DMX-DOPEBRAIN-* if that program executes.)*
 4. desktop-commander wire-or-retire (pre-existing user decision, unchanged).
+
+## 6. Addendum 2026-07-17 — SVCFEAT/DopeCode reconciliation (PROPOSED)
+
+DMX-SVCFEAT's keystone packet DOPECODE-DEPLOY-001 (tree `f64aa1a9`) deploys the whole
+46-tool `services/serena` engine as a product ("DopeCode") — its literal spec ("repoint
+compose off upstream wrapper") collides with G3's two-surfaces decision. Proposed
+harmonization (see `claudedocs/mcpint-svcfeat-reconciliation-2026-07-17.md`, awaiting
+user confirmation): **DopeCode deploys as its OWN service alongside upstream serena;
+the §2 ship-list goes live in place on DopeCode; `dope-adhd` on adhd-engine is
+cancelled as a surface; the 9 drop-list tools are disabled/non-contractual on DopeCode;
+upstream keeps its 22 unique tools and its write-lane gating ADR.** If confirmed, §2's
+"Home" column reads `dopecode` instead of `dope-adhd`, and §4's target-surfaces table
+replaces the dope-adhd row with `dopecode (31 contractual of 46 defined)`.
