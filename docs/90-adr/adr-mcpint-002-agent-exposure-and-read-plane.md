@@ -5,10 +5,10 @@ type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-07-16'
-last_review: '2026-07-16'
+last_review: '2026-07-17'
 next_review: '2026-10-14'
 prelude: Encodes gate G1 — generated Codex config reaches full fleet parity only after per-request identity and actor authentication land; the DCP read-only facade becomes the universal read plane for all agents without attribution.
-status: proposed
+status: accepted
 graph_metadata:
   node_type: ADR
   impact: high
@@ -23,8 +23,9 @@ graph_metadata:
 
 # ADR-MCPINT-002: Agent Exposure Model — Codex Full Parity (Sequenced) and the DCP Facade as Universal Read Plane
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-07-16
+**Accepted**: 2026-07-17 — accepted by operator with PR #1073; gate answers G1-G5 2026-07-16/17; SVCFEAT reconciliation confirmed 2026-07-17.
 **Owners**: @hu3mann (program DMX-MCPINT, root `af10eefd`)
 
 ## Context
@@ -167,6 +168,11 @@ from every non-Claude row (placement map §3).
 
 ## Consequences
 
+- **Amendment (2026-07-17, at acceptance)**: per the confirmed SVCFEAT reconciliation
+  (`claudedocs/mcpint-svcfeat-reconciliation-2026-07-17.md`; placement map §6), the
+  planned ADHD/intel surface arrives as the sibling **`dopecode`** service (deployed
+  `services/serena` engine, agents-matrix row per this ADR) rather than `dope-adhd` on
+  adhd-engine — MCPINT-IMP-ADHDINTEL-007 superseded by DMX-DOPECODE-DEPLOY-001.
 - **Packets**: MCPINT-IMP-FACADE-001 (deploy: compose loopback-bound, catalog active,
   registry-v2 target file, PRIMARY_CHECKOUT_ONLY, 12-tool smoke),
   MCPINT-IMP-CODEX-002 (generated configs + dry-run proof: Codex lists tools, executes a

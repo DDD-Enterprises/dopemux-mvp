@@ -28,7 +28,7 @@ meta:
       pal-stdio, gpt-researcher, context7, mcp-registry, scheduled-tasks, leantime-bridge had
       NO P0 tools/list capture (NOT_RUN — deferred to MCPINT-FND-SNAPSHOT-002); their tools are
       session-observed and flagged per-entry.
-    - `adr:adr-mcpint-001..005` are Phase-2 PLANNED artifacts (not yet written).
+    - `adr:adr-mcpint-001..005` were written 2026-07-16 and ACCEPTED 2026-07-17 (PR #1073; consensus pass complete).
     - Where the raw register's doc-asserted label diverged from P0 runtime truth, runtime wins
       and the doc label is preserved in `note:`.
 
@@ -131,8 +131,8 @@ features:
     decision: held
     triage: {wiring_cost: S, value: H, boundary_fit: clean}
     packet_ref: COPT-107
-    last_verified: "2026-07-16"
-    note: "LIVE HAZARD: GET currently mutates. Also blocks DCP facade search_progress (fail-closed against this exact hazard)."
+    last_verified: "2026-07-17"
+    note: "LIVE HAZARD: GET currently mutates. Also blocks DCP facade search_progress (fail-closed against this exact hazard). Fail-closed facade posture recorded in adr-mcpint-002 §2 (search_progress stays behind progress_readonly_safe until this lands); ConPort surface owner DMX-ARCH-CONPORT-SURFACE-002."
 
   - id: COPT-203
     name: Relationship / knowledge-graph read traversal
@@ -565,8 +565,8 @@ features:
     decision: held
     triage: {wiring_cost: S, value: M, boundary_fit: clean}
     packet_ref: null
-    last_verified: "2026-07-16"
-    note: "Duplicate entries possible on retry today."
+    last_verified: "2026-07-17"
+    note: "Duplicate entries possible on retry today. Dedup ideas absorbed into the capture_client backlog per adr-mcpint-004 §4 (mcp-capture retirement) — library feature, not a server."
 
   - id: DMEM-JSONRPC-PARITY
     name: Full JSON-RPC /mcp surface (beyond /tools/*)
@@ -706,11 +706,11 @@ features:
     code_path: services/task-orchestrator/intelligence
     tools: []
     source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
-    decision: gate:G5
+    decision: packet:MCPINT-IMP-COMPLEX-008
     triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
-    packet_ref: null
-    last_verified: "2026-07-16"
-    note: "3rd of 3-4 competing complexity scorers; /dx:prd-parse returns unscored flat lists today. G5 = complexity authority."
+    packet_ref: MCPINT-IMP-COMPLEX-008
+    last_verified: "2026-07-17"
+    note: "3rd of 3-4 competing complexity scorers; /dx:prd-parse returns unscored flat lists today. G5 answered → adr-mcpint-001 §5: complexity_coordinator wired as shared library per placement map; this scorer becomes an input to unified_score or is deleted under MCPINT-IMP-COMPLEX-008."
 
   - id: TO-PREDRISK
     name: Predictive risk assessment hook (8 categories incl. hyperfocus burnout)
@@ -720,11 +720,11 @@ features:
     code_path: services/task-orchestrator/predictive_risk_assessment.py
     tools: []
     source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
-    decision: gate:G4
+    decision: packet:MCPINT-IMP-RISK-005
     triage: {wiring_cost: S, value: H, boundary_fit: clean}
     packet_ref: MCPINT-IMP-RISK-005
-    last_verified: "2026-07-16"
-    note: "Highest-ROI stranded item per source ('~3 lines to hook'). File verified at 527 lines (raw register said 562; duplicate copy at services/task-orchestrator/app/services/predictive_risk_assessment.py). IMP-RISK-005 = flag-gated pilot, only if G4=yes."
+    last_verified: "2026-07-17"
+    note: "Highest-ROI stranded item per source ('~3 lines to hook'). File verified at 527 lines (raw register said 562; duplicate copy at services/task-orchestrator/app/services/predictive_risk_assessment.py). G4 answered yes (2026-07-16): IMP-RISK-005 = flag-gated 2-week keep/kill pilot, adr-mcpint-003's sanctioned PostToolUse exception."
 
   - id: TO-ENERGY-ROUTING
     name: Energy-aware task routing (get_task_recommendations)
@@ -824,8 +824,8 @@ features:
     decision: shipped
     triage: {wiring_cost: S, value: H, boundary_fit: clean}
     packet_ref: null
-    last_verified: "2026-07-16"
-    note: "UNVERIFIED-SNAPSHOT: no P0 tools/list capture for pal-stdio (NOT_RUN, deferred to MCPINT-FND-SNAPSHOT-002); the 18 names are session-observed (zen fork v9.0.2). P0 claim 11: pal-http :3003 healthy wrapper but /mcp does NOT exist — pal-stdio (docker exec) is the only usable PAL surface."
+    last_verified: "2026-07-17"
+    note: "UNVERIFIED-SNAPSHOT: no P0 tools/list capture for pal-stdio; the 18 names are session-observed (zen fork v9.0.2). FND-SNAPSHOT-002 landed (commit 447c9c20d) but pal-stdio probed unreachable at snapshot time (0 tools in mcp_tool_surfaces.json) — live capture still owed. P0 claim 11: pal-http :3003 healthy wrapper but /mcp does NOT exist — pal-stdio (docker exec) is the only usable PAL surface; catalog fiction repaired by 1b68e62e1 (adr-mcpint-001 §4)."
 
   - id: PAL-MANAGED-LIFECYCLE
     name: Managed lifecycle (ensure-pal.sh, real healthcheck)
@@ -835,11 +835,11 @@ features:
     code_path: null
     tools: []
     source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
-    decision: packet:MCPINT-FND-CATALOG-001
+    decision: adr:adr-mcpint-001
     triage: {wiring_cost: M, value: H, boundary_fit: clean}
     packet_ref: MCPINT-FND-CATALOG-001
-    last_verified: "2026-07-16"
-    note: "Off-compose, unmanaged, required=true for Codex → hard dependency with no ensure script. P0: /health 200 with mcp_process_running:true (the #993 fix live) but catalog's :3003/mcp endpoint is fiction — FND-CATALOG-001 must fix transport truth."
+    last_verified: "2026-07-17"
+    note: "Off-compose, unmanaged, required=true for Codex → hard dependency with no ensure script. P0: /health 200 with mcp_process_running:true (the #993 fix live). Transport-truth half RESOLVED by commit 1b68e62e1 (adr-mcpint-001 §4): catalog :3003/mcp fiction removed, pal entry quarantined decision-required (wire-or-retire, PAL-HTTP-RETROFIT); ensure-script/managed lifecycle still owed — status stays planned."
 
   - id: PAL-VARIANT-DEDUPE
     name: Delete 2 unconsumed compose PAL variants + dedupe registry keys
@@ -865,8 +865,8 @@ features:
     decision: held
     triage: {wiring_cost: L, value: M, boundary_fit: clean}
     packet_ref: null
-    last_verified: "2026-07-16"
-    note: "Would fix the container-leak class; see reference_pal_mcp_container memory + reference_task_orchestrator_container_leak."
+    last_verified: "2026-07-17"
+    note: "Would fix the container-leak class; see reference_pal_mcp_container memory + reference_task_orchestrator_container_leak. adr-mcpint-001 §4: pal-http wrapper remains a health/lifecycle shim (not an MCP transport) until this retrofit is decided; catalog marks pal decision-required wire-or-retire."
 
   # ============================================================
   # 5. Serena — technical-context plane (outside Trinity)
@@ -922,11 +922,11 @@ features:
     code_path: services/serena/adhd_features.py
     tools: []
     source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
-    decision: gate:G3
+    decision: packet:DMX-DOPECODE-DEPLOY-001
     triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
-    packet_ref: null
-    last_verified: "2026-07-16"
-    note: "Implemented in local candidate only; deployed upstream wrapper has no caps."
+    packet_ref: DMX-DOPECODE-DEPLOY-001
+    last_verified: "2026-07-17"
+    note: "Implemented in local candidate only; deployed upstream wrapper has no caps. Sibling dopecode service per confirmed reconciliation 2026-07-17; dope-adhd surface cancelled."
 
   - id: F001
     name: Untracked-work detection lifecycle (detect→score→remind→auto-track→auto-close)
@@ -936,11 +936,11 @@ features:
     code_path: services/serena/untracked_work_detector.py
     tools: []
     source: [claudedocs/service-audit-2026-07-04.md, docs/03-reference/serena-v2-mcp-tools.md, docs/03-reference/f001-enhanced-untracked-work-system.md]
-    decision: gate:G3
+    decision: packet:DMX-DOPECODE-DEPLOY-001
     triage: {wiring_cost: L, value: H, boundary_fit: needs-adr}
-    packet_ref: null
-    last_verified: "2026-07-16"
-    note: "Design 4/5, reachability 1/5 — unreachable at runtime (wrapper builds only wrapper.py). Storage verified: services/serena/untracked_work_storage.py (973 lines). H5 lite probe IS live (.claude/hooks/untracked_work_probe.py). G3 rec: port lifecycle into adhd-engine."
+    packet_ref: DMX-DOPECODE-DEPLOY-001
+    last_verified: "2026-07-17"
+    note: "Design 4/5, reachability 1/5 — unreachable at runtime (wrapper builds only wrapper.py). Storage verified: services/serena/untracked_work_storage.py (973 lines). H5 lite probe IS live (.claude/hooks/untracked_work_probe.py). Sibling dopecode service per confirmed reconciliation 2026-07-17; dope-adhd surface cancelled — F001 goes live in place on DopeCode (H5 stays the lite front-end, dedupes against the DopeCode backend)."
     sub_features: [detect/track/snooze/ignore/get_config/update_config, confidence scoring + auto-track >=0.85, cross-session reminders (backoff, quiet hours, snooze 1h/4h/1d), auto-close on commit (>=80% file overlap), abandonment tracking (get_abandoned_work/mark_abandoned/get_abandonment_stats, 7-day rule; services/serena/abandonment_tracker.py), branch organization suggestion (suggest_branch_organization)]
 
   - id: SERENA-ADHD-INTEL
@@ -951,11 +951,11 @@ features:
     code_path: services/serena/intelligence
     tools: []
     source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md, docs/03-reference/serena-v2-mcp-tools.md]
-    decision: gate:G3
+    decision: packet:DMX-DOPECODE-DEPLOY-001
     triage: {wiring_cost: L, value: M, boundary_fit: needs-adr}
-    packet_ref: null
-    last_verified: "2026-07-16"
-    note: "Entire layer stranded in the undeployed candidate. Duplicated tree at services/serena/v2/ (both verified present). Adaptive Learning = #1 in source TOP-3."
+    packet_ref: DMX-DOPECODE-DEPLOY-001
+    last_verified: "2026-07-17"
+    note: "Entire layer stranded in the undeployed candidate. Duplicated tree at services/serena/v2/ (both verified present). Adaptive Learning = #1 in source TOP-3. Sibling dopecode service per confirmed reconciliation 2026-07-17; dope-adhd surface cancelled."
     sub_features: [Focus Mode Manager 5 modes LIGHT->HYPERFOCUS (services/serena/focus_manager.py), Fatigue Detection Engine 8 indicators+8 responses (intelligence/fatigue_detection_engine.py), Adaptive Learning Engine per-user attention patterns (intelligence/adaptive_learning.py), Personal Learning Profile (intelligence/learning_profile_manager.py), Cognitive Load Orchestrator (intelligence/cognitive_load_orchestrator.py), Context-Switching Optimizer, Progressive Disclosure Director (3-level max-5), Git-based navigation prediction (predict_navigation_from_git)]
 
   - id: SERENA-ANALYTICS
@@ -966,10 +966,11 @@ features:
     code_path: services/serena
     tools: []
     source: [docs/03-reference/serena-v2-mcp-tools.md, claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
-    decision: gate:G3
+    decision: packet:DMX-DOPECODE-DEPLOY-001
     triage: {wiring_cost: M, value: L, boundary_fit: needs-adr}
-    packet_ref: null
-    last_verified: "2026-07-16"
+    packet_ref: DMX-DOPECODE-DEPLOY-001
+    last_verified: "2026-07-17"
+    note: "Sibling dopecode service per confirmed reconciliation 2026-07-17; dope-adhd surface cancelled."
     sub_features: [get_pattern_stats / get_top_patterns with ADHD-risk typing, get_metrics_dashboard / get_metric_history / save_metrics_snapshot]
 
   - id: SERENA-COMPLEXITY-BANDING
@@ -980,11 +981,11 @@ features:
     code_path: services/serena/adhd_features.py
     tools: []
     source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
-    decision: gate:G5
+    decision: packet:MCPINT-IMP-COMPLEX-008
     triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
-    packet_ref: null
-    last_verified: "2026-07-16"
-    note: "1st of 3-4 competing complexity scorers (CodeComplexityAnalyzer); CRITICAL per source. G5 = single complexity authority."
+    packet_ref: MCPINT-IMP-COMPLEX-008
+    last_verified: "2026-07-17"
+    note: "1st of 3-4 competing complexity scorers (CodeComplexityAnalyzer); CRITICAL per source. G5 answered → adr-mcpint-001 §5: complexity_coordinator wired as shared library per placement map; banding becomes an input to unified_score under MCPINT-IMP-COMPLEX-008."
 
   - id: SERENA-MULTIWORKSPACE
     name: Multi-workspace pinned instances
@@ -1065,11 +1066,11 @@ features:
     code_path: null
     tools: [get_chunk_complexity]
     source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
-    decision: gate:G5
+    decision: packet:MCPINT-IMP-COMPLEX-008
     triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
-    packet_ref: null
-    last_verified: "2026-07-16"
-    note: "Docstring lies ('Tree-sitter' but ast); search results don't carry per-hit complexity despite doctrine. 2nd of 3-4 competing scorers — G5."
+    packet_ref: MCPINT-IMP-COMPLEX-008
+    last_verified: "2026-07-17"
+    note: "Docstring lies ('Tree-sitter' but ast); search results don't carry per-hit complexity despite doctrine. 2nd of 3-4 competing scorers. G5 answered → adr-mcpint-001 §5: complexity_coordinator wired as shared library per placement map; get_chunk_complexity delegates to unified_score (fixing the docstring by delegation) under MCPINT-IMP-COMPLEX-008."
 
   - id: DCTX-METRICS-EXTRAS
     name: Search metrics + decision auto-indexing config (undocumented live tools)
@@ -1196,22 +1197,22 @@ features:
     decision: shipped
     triage: {wiring_cost: S, value: H, boundary_fit: clean}
     packet_ref: null
-    last_verified: "2026-07-16"
-    note: "UNVERIFIED-SNAPSHOT: no P0 stdio tools/list capture (NOT_RUN, deferred to MCPINT-FND-SNAPSHOT-002); 5 names session-observed. ConPort research_id persistence shipped via /research:* command design."
+    last_verified: "2026-07-17"
+    note: "UNVERIFIED-SNAPSHOT: no P0 stdio tools/list capture; 5 names session-observed. FND-SNAPSHOT-002 landed (commit 447c9c20d) but gpt-researcher probed unreachable at snapshot time (0 tools in mcp_tool_surfaces.json) — live capture still owed. ConPort research_id persistence shipped via /research:* command design."
 
   - id: GPTR-TRANSPORT-TRUTH
     name: Reconcile healthcheck contradiction + undescribed :3009 /messages SSE surface
     plane: research
     server: gpt-researcher
-    status: planned
+    status: live
     code_path: null
     tools: []
     source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
-    decision: packet:MCPINT-FND-CATALOG-001
+    decision: adr:adr-mcpint-001
     triage: {wiring_cost: S, value: M, boundary_fit: clean}
     packet_ref: MCPINT-FND-CATALOG-001
-    last_verified: "2026-07-16"
-    note: "P0 claim 12 REFINED: :3009 serves an SSE-style /messages endpoint (400 on wrong content-type, not 404) + healthy /health — an HTTP surface the catalog doesn't describe."
+    last_verified: "2026-07-17"
+    note: "P0 claim 12 REFINED: :3009 serves an SSE-style /messages endpoint (400 on wrong content-type, not 404) + healthy /health. RESOLVED by commit 1b68e62e1 (adr-mcpint-001 §4): catalog now documents /messages as a non-contractual aux_surface; stdio docker-exec is the contractual transport."
 
   - id: GPTR-TWIN-ARCHIVE
     name: Archive dead in-repo twin after relocating live extraction backend
@@ -1376,8 +1377,8 @@ features:
     decision: held
     triage: {wiring_cost: S, value: M, boundary_fit: clean}
     packet_ref: null
-    last_verified: "2026-07-16"
-    note: "BLOCKED by default — correctly fail-closed against ConPort's auto-fork-on-GET write hazard (COPT-107). Unblocks when COPT-107 lands."
+    last_verified: "2026-07-17"
+    note: "BLOCKED by default — correctly fail-closed against ConPort's auto-fork-on-GET write hazard (COPT-107). Unblocks when COPT-107 lands. Posture affirmed by adr-mcpint-002 §2."
 
   - id: DCP-FACADE-DCTX-BRIDGE
     name: Facade → dope-context tools (search_code_docs, get_index_status) via MCP-JSON-RPC bridge
@@ -1387,11 +1388,11 @@ features:
     code_path: null
     tools: []
     source: [docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
-    decision: gate:G1
+    decision: adr:adr-mcpint-002
     triage: {wiring_cost: L, value: M, boundary_fit: clean}
     packet_ref: null
-    last_verified: "2026-07-16"
-    note: "3 of 12 contract tools return BLOCKED (facade is REST-only; dope-context speaks MCP JSON-RPC). NAMING: the DCP TOOL_CONTRACT calls this its own 'G1' — distinct from MCPINT gate G1, but resolution rides on MCPINT G1 (non-Claude exposure scope) + a Phase-2 transport bridge packet."
+    last_verified: "2026-07-17"
+    note: "3 of 12 contract tools return BLOCKED (facade is REST-only; dope-context speaks MCP JSON-RPC). NAMING: the DCP TOOL_CONTRACT calls this its own 'G1' — distinct from MCPINT gate G1. MCPINT G1 answered → adr-mcpint-002 §2: the 3 tools stay deferred/BLOCKED until a REST→JSON-RPC bridge exists; the facade must not grow a bespoke dope-context client."
 
   - id: DCP-ROUTING-CLASSIFIER
     name: Routing classification engine (task → Opus/Sonnet/Haiku lane, pure function)
@@ -1473,8 +1474,8 @@ features:
     decision: held
     triage: {wiring_cost: M, value: H, boundary_fit: clean}
     packet_ref: null
-    last_verified: "2026-07-16"
-    note: "route_manifest ALLOWED/DENIED becomes real enforcement when the facade deploys (IMP-FACADE-001); standalone middleware remains unbuilt."
+    last_verified: "2026-07-17"
+    note: "route_manifest ALLOWED/DENIED becomes real enforcement when the facade deploys (IMP-FACADE-001, per adr-mcpint-002); standalone middleware remains unbuilt."
 
   - id: DCP-DEAD-NEIGHBORS
     name: Kill dead neighbors (mcp-integration-bridge w/ secret-leaking debug endpoint, mcp-client, router)
@@ -1703,25 +1704,25 @@ features:
     code_path: services/dopecon-bridge
     tools: []
     source: [claudedocs/service-audit-2026-07-04.md, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
-    decision: gate:G2
+    decision: adr:adr-mcpint-004
     triage: {wiring_cost: M, value: H, boundary_fit: needs-adr}
     packet_ref: MCPINT-IMP-EVENTS-006
-    last_verified: "2026-07-16"
-    note: "P0 claim 7 VERIFIED: unauth POST /events → 401 (JWT wall, empty user store) — capture_client direct-Redis remains the only working ingress. G2 options: fix bridge JWT + bless /events (rec) | ADR-bless direct Redis | split by producer locality."
+    last_verified: "2026-07-17"
+    note: "P0 claim 7 VERIFIED: unauth POST /events → 401 (JWT wall, empty user store) — capture_client direct-Redis remains the only working ingress. G2 answered → adr-mcpint-004: fix bridge JWT + bless /events as the single authenticated ingress; execution = MCPINT-IMP-EVENTS-006."
 
   - id: SPINE-HEARTBEAT-LIMIT
     name: Heartbeat rate-limiting at producer (drop session-active spam)
     plane: chronicle
     server: dopecon-bridge
-    status: planned
-    code_path: null
+    status: live
+    code_path: src/dopemux/claude/activity_ratelimit.py
     tools: []
     source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
-    decision: packet:MCPINT-FND-HYG-007
+    decision: shipped
     triage: {wiring_cost: S, value: M, boundary_fit: clean}
     packet_ref: MCPINT-FND-HYG-007
-    last_verified: "2026-07-16"
-    note: "24,539 heartbeat rows vs 0 curated at audit time."
+    last_verified: "2026-07-17"
+    note: "24,539 heartbeat rows vs 0 curated at audit time. SHIPPED by commit 88a3d0c5c (FND-HYG-007): per-(session,event-key) cooldown in src/dopemux/claude/activity_ratelimit.py gating native_hooks _emit_activity_event (4 sites) + the claude_code_hooks session-active tick daemon (the dominant spam source); promotion-allowlist classes never limited; fail-open."
 
   - id: MCF-FABRIC
     name: Context Fabric orchestration layer (capture→redact→dedup→route→promote→retrieve→inject; context.recall/recap; proactive injection)
@@ -1790,8 +1791,8 @@ features:
     decision: held
     triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
     packet_ref: TP-MCF-006
-    last_verified: "2026-07-16"
-    note: "CONDITIONAL-GO; overlaps DMX-ARCH-CONPORT-SURFACE-002 outcomes (register records, does not re-decide)."
+    last_verified: "2026-07-17"
+    note: "CONDITIONAL-GO; overlaps DMX-ARCH-CONPORT-SURFACE-002 outcomes (register records, does not re-decide). Escaped-child hold recorded in adr-mcpint-005 §5 (MCF-FABRIC shelf)."
 
   - id: SPINE-TOKEN-TRUNCATION
     name: Progressive token truncation (9K budget) + MCP boundary-enforcement truncation
@@ -1973,8 +1974,8 @@ features:
     decision: held
     triage: {wiring_cost: M, value: M, boundary_fit: clean}
     packet_ref: null
-    last_verified: "2026-07-16"
-    note: "Actor auth dormant behind actor_authentication.enabled; server-side proof-bundle complete-gate live."
+    last_verified: "2026-07-17"
+    note: "Actor auth dormant behind actor_authentication.enabled; server-side proof-bundle complete-gate live. Flipping actor_authentication.enabled on is Codex write-parity precondition 2 per adr-mcpint-002 §1."
 
   # ============================================================
   # 14. Dashboards
@@ -2131,8 +2132,8 @@ features:
     decision: held
     triage: {wiring_cost: M, value: M, boundary_fit: clean}
     packet_ref: null
-    last_verified: "2026-07-16"
-    note: "Returns unscored flat lists today; scoring depends on G5 complexity authority."
+    last_verified: "2026-07-17"
+    note: "Returns unscored flat lists today; scoring depends on G5 complexity authority. G5 consumer delegation decided by adr-mcpint-001 §5 (calls the library's unified_score); wiring rides MCPINT-IMP-COMPLEX-008."
 
   - id: SC-FAMILY
     name: SuperClaude /sc:* command family + /dx:load /dx:save /dx:analyze /dx:review
@@ -2187,11 +2188,11 @@ features:
     code_path: null
     tools: []
     source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
-    decision: packet:MCPINT-FND-CATALOG-001
+    decision: adr:adr-mcpint-001
     triage: {wiring_cost: S, value: M, boundary_fit: clean}
     packet_ref: MCPINT-FND-CATALOG-001
-    last_verified: "2026-07-16"
-    note: "Y-list: referenced in CLAUDE.md doctrine, absent from catalog + fleet register. No P0 snapshot (harness-side server; resolve-library-id/get-library-docs observed in prior sessions)."
+    last_verified: "2026-07-17"
+    note: "Y-list: was referenced in CLAUDE.md doctrine yet absent from catalog + fleet register. CATALOGED by commit 1b68e62e1 as a managed:false external entry (adr-mcpint-001 §4). No P0 snapshot (harness-side server; resolve-library-id/get-library-docs observed in prior sessions)."
 
   - id: PERIPH-MCP-REGISTRY
     name: mcp-registry connector discovery
@@ -2201,11 +2202,11 @@ features:
     code_path: null
     tools: [list_connectors, search_mcp_registry, suggest_connectors]
     source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
-    decision: packet:MCPINT-FND-CATALOG-001
+    decision: adr:adr-mcpint-001
     triage: {wiring_cost: S, value: L, boundary_fit: clean}
     packet_ref: MCPINT-FND-CATALOG-001
-    last_verified: "2026-07-16"
-    note: "Y-list: no doc/service match anywhere. UNVERIFIED-SNAPSHOT: tools session-observed (present in this session's deferred list); no P0 capture."
+    last_verified: "2026-07-17"
+    note: "Y-list: no doc/service match anywhere. CATALOGED by commit 1b68e62e1 as a managed:false external entry (adr-mcpint-001 §4). UNVERIFIED-SNAPSHOT: tools session-observed (present in this session's deferred list); no P0 capture."
 
   - id: PERIPH-SCHEDULED-TASKS
     name: scheduled-tasks scheduling MCP
@@ -2215,11 +2216,11 @@ features:
     code_path: null
     tools: [create_scheduled_task, list_scheduled_tasks, update_scheduled_task, delete_scheduled_task]
     source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
-    decision: packet:MCPINT-FND-CATALOG-001
+    decision: adr:adr-mcpint-001
     triage: {wiring_cost: S, value: M, boundary_fit: clean}
     packet_ref: MCPINT-FND-CATALOG-001
-    last_verified: "2026-07-16"
-    note: "Y-list. Could answer the 'no scheduler' gap for adhd-notifier daily reporter + copilot ingester. UNVERIFIED-SNAPSHOT: tools session-observed; no P0 capture."
+    last_verified: "2026-07-17"
+    note: "Y-list. Could answer the 'no scheduler' gap for adhd-notifier daily reporter + copilot ingester (FND-HYG-007 designated it the copilot-ingester scheduler). CATALOGED by commit 1b68e62e1 as a managed:false external entry (adr-mcpint-001 §4). UNVERIFIED-SNAPSHOT: tools session-observed; no P0 capture."
 
   - id: SVC-LEANTIME-BRIDGE
     name: leantime-bridge (PM bridge, http-sse)
@@ -2229,11 +2230,11 @@ features:
     code_path: docker/mcp-servers-source/leantime-bridge
     tools: []
     source: [claudedocs/mcp-fleet-runtime-verification-2026-07-16.md]
-    decision: packet:MCPINT-FND-CATALOG-001
+    decision: adr:adr-mcpint-001
     triage: {wiring_cost: S, value: M, boundary_fit: clean}
     packet_ref: MCPINT-FND-CATALOG-001
-    last_verified: "2026-07-16"
-    note: "P0 claim 13 VERIFIED (but alive): /health 200 self-describing http-sse, running + healthy yet absent from mcp_catalog.yaml. tools/list NOT captured at P0 (/messages surface exists; deferred to FND-SNAPSHOT-002)."
+    last_verified: "2026-07-17"
+    note: "P0 claim 13 VERIFIED (but alive): /health 200 self-describing http-sse, running + healthy. CATALOGED by commit 1b68e62e1 (adr-mcpint-001 §4: infra/PM-sync entry, no agents row). tools/list still not captured (absent from the 447c9c20d snapshot; capture owed)."
 
   # ============================================================
   # 17. Supporting services (not classic MCP servers)
@@ -2261,11 +2262,11 @@ features:
     code_path: services/complexity_coordinator
     tools: []
     source: [claudedocs/raw/feature-register-raw-2026-07-16.md, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
-    decision: gate:G5
+    decision: packet:MCPINT-IMP-COMPLEX-008
     triage: {wiring_cost: M, value: H, boundary_fit: needs-adr}
-    packet_ref: null
-    last_verified: "2026-07-16"
-    note: "Y-list: the built answer to the 3-4-competing-scorers problem; audits flag the scorers but never mention it. Not in compose/registry. G5 rec = make this the single authority."
+    packet_ref: MCPINT-IMP-COMPLEX-008
+    last_verified: "2026-07-17"
+    note: "Y-list: the built answer to the 3-4-competing-scorers problem; audits flag the scorers but never mention it. Not in compose/registry. G5 answered → adr-mcpint-001 §5: becomes the single complexity authority wired as a SHARED LIBRARY per the placement map (relocates toward src/dopemux/complexity/; no compose service, no MCP surface) under MCPINT-IMP-COMPLEX-008."
 
   - id: SVC-CLAUDE-BRAIN
     name: claude_brain — prompt optimization + brain integration w/ ADHD accommodations
@@ -2275,11 +2276,11 @@ features:
     code_path: services/claude_brain
     tools: []
     source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
-    decision: held
+    decision: packet:DMX-DOPEBRAIN-FASTAPI-001
     triage: {wiring_cost: L, value: L, boundary_fit: needs-adr}
-    packet_ref: null
-    last_verified: "2026-07-16"
-    note: "Y-list: not covered by any audit."
+    packet_ref: DMX-DOPEBRAIN-FASTAPI-001
+    last_verified: "2026-07-17"
+    note: "Y-list: not covered by any audit. Held resolved 2026-07-17: claimed by DMX-SVCFEAT DOPEBRAIN-FASTAPI-001 (Dope Brain build-out, SVCFEAT tree f64aa1a9); status unchanged until that packet executes."
 
   - id: SVC-WEBHOOK-RECEIVER
     name: webhook_receiver (:8790) — OpenAI-first webhook sidecar + provider-agnostic event ledger

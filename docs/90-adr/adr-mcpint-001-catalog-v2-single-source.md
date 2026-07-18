@@ -5,10 +5,10 @@ type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-07-16'
-last_review: '2026-07-16'
+last_review: '2026-07-17'
 next_review: '2026-10-14'
 prelude: Extends mcp_catalog.yaml to v2 (tools pointer, agents exposure matrix, workflows refs), makes the generate pipeline the sole producer of every agent config and instruction-surface header, kills the legacy src registry, and fixes runtime-refuted transport claims.
-status: proposed
+status: accepted
 graph_metadata:
   node_type: ADR
   impact: high
@@ -23,8 +23,9 @@ graph_metadata:
 
 # ADR-MCPINT-001: mcp_catalog.yaml v2 as the Single Source of Truth for the MCP Fleet
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-07-16
+**Accepted**: 2026-07-17 — accepted by operator with PR #1073; gate answers G1-G5 2026-07-16/17; SVCFEAT reconciliation confirmed 2026-07-17.
 **Owners**: @hu3mann (program DMX-MCPINT, root `af10eefd`)
 
 ## Context
@@ -243,6 +244,12 @@ its per-tool dispositions are incorporated by reference, not restated).
 
 ## Consequences
 
+- **Amendment (2026-07-17, at acceptance)**: per the confirmed SVCFEAT reconciliation
+  (`claudedocs/mcpint-svcfeat-reconciliation-2026-07-17.md`; placement map §6), the G3
+  31-tool surface ships on the sibling **`dopecode`** service (containerized
+  `services/serena` engine) instead of `dope-adhd` on adhd-engine —
+  MCPINT-IMP-ADHDINTEL-007 is superseded by DMX-DOPECODE-DEPLOY-001; the dope-adhd
+  surface is cancelled.
 - **Packets**: MCPINT-FND-CATALOG-001 (catalog v2 + transport truth + schema),
   MCPINT-FND-SNAPSHOT-002 (landed — snapshot + command), MCPINT-FND-DRIFTGATE-003
   (tool-granular gate; dep DMX-HYG-CONPORTREFS-003), MCPINT-FND-INSTRREPAIR-004 (one-time
@@ -320,6 +327,22 @@ v1; the legacy registry stays deleted (nothing reads it).
   - `google/gemini-2.5-pro` (stance: against) — returned `status: success` with an
     **empty verdict (null content)**; no counter-analysis obtained. Recorded as a
     partial failure, not counted as agreement.
+- **PAL consensus completion (2026-07-17, pal-stdio `consensus`, continuation
+  `6fe67aa0-6c68-4d13-8947-367bde6af7c8`)**: the missing AGAINST stance re-run via
+  OpenRouter — **debt closed, no blocking objection**.
+  - `google/gemini-2.5-pro` via OpenRouter (stance: against) — verdict: **holds as
+    written; endorse** (confidence 9/10). Strongest objection: the manual
+    `dopemux mcp snapshot-tools` step is a new human-error drift vector — the committed
+    snapshot can lag runtime; demands a CI re-introspection gate (regenerate ==
+    committed or fail). Disposition: hardening feedback, already the freshness-gate
+    scope of MCPINT-FND-DRIFTGATE-003 / FND-REGISTER-GATE-006.
+  - `anthropic/claude-opus-4.1` via OpenRouter (stance: neutral) — verdict:
+    **architecturally sound and necessary** (confidence 7/10). Strongest objection:
+    the runtime-verification burden — "every transport claim runtime-verifiable"
+    needs real probe infrastructure across heterogeneous transports
+    (stdio/HTTP/docker-exec); more transport fictions likely exist beyond pal.
+    Disposition: hardening feedback on `dopemux mcp doctor`/snapshot probing
+    (FND-SNAPSHOT-002 landed the prober; serena/pal-stdio/gptr captures still owed).
 - ConPort `log_decision` for this ADR: owed at acceptance (Phase 2 exit), not at draft.
 
 ## Cross-references

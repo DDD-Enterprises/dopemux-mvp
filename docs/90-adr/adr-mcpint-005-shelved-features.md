@@ -5,10 +5,10 @@ type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-07-16'
-last_review: '2026-07-16'
+last_review: '2026-07-17'
 next_review: '2026-10-14'
 prelude: Formally shelves six planned-or-stubbed MCP features (Milvus semantic search, Zep, sprint auto-planning, multi-team coordination, the MCF fabric, and the memory semantic projection) with explicit revival conditions; records what G3/G4 deliberately kept OFF this shelf.
-status: proposed
+status: accepted
 graph_metadata:
   node_type: ADR
   impact: low
@@ -23,8 +23,9 @@ graph_metadata:
 
 # ADR-MCPINT-005: Shelved MCP Features (Combined Record)
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-07-16
+**Accepted**: 2026-07-17 — accepted by operator with PR #1073; gate answers G1-G5 2026-07-16/17; SVCFEAT reconciliation confirmed 2026-07-17.
 **Owners**: @hu3mann (program DMX-MCPINT, root `af10eefd`)
 
 ## Context
@@ -179,9 +180,27 @@ matches; the contract test (FND-REGISTER-GATE-006) locks it.
 
 ## Validation
 
-- **PAL consensus**: NOT_RUN for this ADR — the Phase-2 consensus pass covers the
-  load-bearing pair (ADR-001/ADR-002); this ADR receives consensus review at
-  merge/acceptance. See the program note appended to ADR-MCPINT-001.
+- **PAL consensus (2026-07-17, pal-stdio `consensus`, continuation
+  `abf11c1f-ec58-4ced-96ca-ef84f37792c9`)**: **RUN — both models endorse; no
+  blocking objection.**
+  - `openai/gpt-5` via OpenRouter (stance: for) — verdict: **holds as written**
+    (confidence 8/10). Strongest objection: intentionally rigid multi-condition
+    revival gates + a combined ADR could slow legitimate narrowly-scoped revivals;
+    suggests a time-boxed operator-signed experiment clause via lightweight child
+    ADRs, a quarterly shelf review, and objective MEMSPINE/dope-context readiness
+    criteria. Disposition: the friction is this ADR's stated trade-off ("revival
+    friction is deliberately high — that is the point"); no change.
+  - `anthropic/claude-opus-4.1` via OpenRouter (stance: against) — verdict:
+    **technically sound and well-structured; shelving framework "exemplary"**
+    (confidence 8/10). Strongest objection: MCF-FABRIC specifically — fragmented
+    ownership (ADR-003 injection / ADR-004 ingress / dope-context retrieval) may not
+    replace the fabric's coordinating capture→…→inject pipeline, risking lost
+    dedup/promotion-routing coherence; suggests extracting a dedup/route/promote
+    core. Disposition: not blocking — the fabric is design-only (no working
+    orchestration exists to lose); dedup is already absorbed into the
+    `capture_client` backlog per ADR-MCPINT-004 and promotion is dope-memory's
+    allowlist lane; recorded as a watch-item on the MEMSPINE spine work and covered
+    by the named revival condition.
 - ConPort `log_decision`: owed at acceptance.
 
 ## Cross-references
