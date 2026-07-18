@@ -1,6 +1,6 @@
 # MCPINT ↔ SVCFEAT Reconciliation — the Serena/DopeCode seam
 
-**Date**: 2026-07-17 · **Status**: PROPOSED (needs user confirmation — modifies the execution shape of two user-decided items)
+**Date**: 2026-07-17 · **Status**: **CONFIRMED by user 2026-07-17** (Option C applied to both trees: DEPLOY-001 `c14414ff` rescoped, IMP-ADHDINTEL-007 `e5984180` cancelled-terminal, moot deps dropped, ARCH-SERENA-003 narrowed to write-lane gating)
 **Collision surface**: MCPINT gate G3 + IMP-ADHDINTEL-007 vs DMX-SVCFEAT DOPECODE-DEPLOY-001 (item `c14414ff`, tree `f64aa1a9`, PR #1072)
 
 ## 1. The collision, precisely
