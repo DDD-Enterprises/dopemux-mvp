@@ -5,10 +5,10 @@ type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-07-16'
-last_review: '2026-07-16'
+last_review: '2026-07-17'
 next_review: '2026-10-14'
 prelude: Encodes gate G2 — dopecon-bridge POST /events becomes the sole authenticated event ingress with seeded users and service tokens; capture_client is the single producer library carrying per-request identity; the direct-Redis path is deprecated and mcp-capture retired.
-status: proposed
+status: accepted
 graph_metadata:
   node_type: ADR
   impact: high
@@ -24,8 +24,9 @@ graph_metadata:
 
 # ADR-MCPINT-004: Authenticated /events as the Single Event Ingress
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-07-16
+**Accepted**: 2026-07-17 — accepted by operator with PR #1073; gate answers G1-G5 2026-07-16/17; SVCFEAT reconciliation confirmed 2026-07-17.
 **Owners**: @hu3mann (program DMX-MCPINT, root `af10eefd`)
 
 ## Context
@@ -202,9 +203,26 @@ features, not a server.
 
 ## Validation
 
-- **PAL consensus**: NOT_RUN for this ADR — the Phase-2 consensus pass covers the
-  load-bearing pair (ADR-001/ADR-002); this ADR receives consensus review at
-  merge/acceptance. See the program note appended to ADR-MCPINT-001.
+- **PAL consensus (2026-07-17, pal-stdio `consensus`, continuation
+  `523bd511-4906-4bdf-a289-603f9c63da9b`)**: **RUN — both models endorse; no
+  blocking objection.**
+  - `anthropic/claude-opus-4.1` via OpenRouter (stance: for) — verdict:
+    **architecturally sound** (confidence 8/10); the fail-open-transport /
+    fail-closed-identity polarity called "precisely correct". Strongest objection:
+    operator-seeded service tokens are a bootstrap tactic, not durable auth — wants a
+    named evolution path to infrastructure-managed service identity (mTLS/OIDC)
+    before fleet scale. Disposition: hardening feedback on MCPINT-IMP-EVENTS-006's
+    token-issuance design; single-operator deployment makes the manual lifecycle
+    acceptable now.
+  - `openai/gpt-5` via OpenRouter (stance: against) — verdict: **"holds as written"
+    with one critical caveat** (confidence 8/10). Strongest objection: blanket
+    fail-open transport risks silent, irreversible loss of business-relevant events
+    during bridge brownouts; demands bounded non-blocking local buffering + drop
+    accounting/metrics, server-side token-scope→workspace authorization (reject
+    cross-tenant writes even with a valid token), DLQ, and explicit
+    ordering/idempotency semantics. Disposition: execution hardening fed to
+    MCPINT-IMP-EVENTS-006 verification (drop counters, scope-checked authz) — the
+    fail-open polarity itself stands per the ADR's rejected-alternatives rationale.
 - ConPort `log_decision`: owed at acceptance.
 
 ## Cross-references

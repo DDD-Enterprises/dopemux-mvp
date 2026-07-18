@@ -5,10 +5,10 @@ type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-07-16'
-last_review: '2026-07-16'
+last_review: '2026-07-17'
 next_review: '2026-10-14'
 prelude: Declares native_hooks.py SessionStart the sole implicit-context injection point with four bounded blocks under a ~3KB budget, limits PostToolUse to two channels, and formally retires the six orphaned legacy hooks.
-status: proposed
+status: accepted
 graph_metadata:
   node_type: ADR
   impact: medium
@@ -21,8 +21,9 @@ graph_metadata:
 
 # ADR-MCPINT-003: The Closed List of Implicit-Context Channels
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-07-16
+**Accepted**: 2026-07-17 — accepted by operator with PR #1073; gate answers G1-G5 2026-07-16/17; SVCFEAT reconciliation confirmed 2026-07-17.
 **Owners**: @hu3mann (program DMX-MCPINT, root `af10eefd`)
 
 ## Context
@@ -174,9 +175,35 @@ dope-adhd surface — never by resurrecting the scripts.
 
 ## Validation
 
-- **PAL consensus**: NOT_RUN for this ADR — the Phase-2 packet requires the consensus pass
-  on the load-bearing pair (ADR-001/ADR-002); this ADR receives consensus review at
-  merge/acceptance time. See the program note appended to ADR-MCPINT-001.
+- **PAL consensus (2026-07-17, pal-stdio `consensus`, continuations
+  `262e1c24-086f-4f9b-bad1-1a1746f4f871` + supplementary
+  `8f20c3b0-05ec-4c73-928d-c362d39fd88f`)**: **RUN — all responding models endorse;
+  no blocking objection.**
+  - `openai/gpt-5` via OpenRouter (stance: for) — verdict: **adopt as written**
+    (confidence 8/10). Strongest objection: fail-open + a single injection point can
+    silently degrade context quality (missing/stale blocks) without visibility;
+    mitigations that preserve the ADR shape — telemetry counters, bounded
+    "[recap unavailable]" stub lines, CI drift gate on hook-emitted templates,
+    per-block budget minimums. Disposition: hardening feedback fed to
+    MCPINT-IMP-HEALTH-004 / IMP-RECAP-003 execution.
+  - `google/gemini-2.5-pro` via OpenRouter (stance: against) — returned
+    `status: success` with a **null verdict (empty content)**; not counted (same
+    failure class as the ADR-001 native-gemini run); replaced by the supplementary run.
+  - `anthropic/claude-opus-4.1` via OpenRouter (stance: against) — verdict:
+    **fundamentally sound and necessary** (confidence 8/10). Strongest objection:
+    closed-list rigidity — every legitimate new channel costs an ADR supersession
+    (suggests a pre-budgeted experimental slot). Disposition: the friction is the
+    ADR's deliberate design (per-channel flags are a named rejected alternative);
+    no change.
+  - `deepseek/deepseek-r1-0528` via OpenRouter (stance: against) — verdict: **holds
+    as written** (confidence 9/10). Strongest objection: over-constrains rapid
+    prototyping of novel injections; also flags long-term adequacy of the ~3KB
+    budget. Disposition: pilot-flag mechanism + supersession path already cover
+    experimentation; budget adequacy is a P4-verification measurement item.
+  - An initial run (continuation `e5576ede-ae0f-4bc3-8d56-e3b76f0d712c`) was aborted:
+    `openai/gpt-5` returned `files_required_to_continue` because `relevant_files`
+    cannot be embedded from this worktree path (pal container mount gap); re-run with
+    the ADR text inlined.
 - ConPort `log_decision`: owed at acceptance.
 
 ## Cross-references
