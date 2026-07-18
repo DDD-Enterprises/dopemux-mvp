@@ -1,0 +1,121 @@
+{
+  "id": "TP-DCP-MCP-RO-0025",
+  "project": "dopemux-mvp",
+  "target": "Declare the DCP-MCP-RO series READY: run scripts/audit/exact_head_readiness.py at the exact series head with all prior packets' trusted-audit and live evidence, classify every review item, confirm no unknown reviewer/bot and no unresolved blocking thread, update BUILD_SERIES.md with the close-out roadmap rows (0011-0025), and publish the final series proof bundle.",
+  "invariants": [
+    "One public MCP endpoint; no backend ports exposed; no backend writes; no lifecycle mutations from the facade.",
+    "target_id is the only caller-facing handle; callers never supply paths, URLs, ports, workspace IDs, or runtime selectors.",
+    "Runtime discovery never grants exposure; port leases never prove ownership; heuristics may discover but never authorize; ambiguity blocks; cross-repo mounts block.",
+    "A skipped live gate is NOT a pass (ACCEPTANCE_MATRIX.md proof rule); never rewrite a historical PARTIAL/SKIPPED verdict - append new evidence.",
+    "Proof must be current to the exact head SHA (scripts/audit/exact_head_readiness.py contract).",
+    "STOP IF: the embedded auditor returns FAIL or NEEDS_SUPERVISOR.",
+    "FORBIDDEN FILE: .env*",
+    "READY only if the evaluator passes at the exact head: stale proof, skipped audit, failed/pending checks, unknown reviewers, unresolved threads, or allowlist drift each block.",
+    "No verdict rewriting: the close-out records the full PASS/FAIL/NOT_RUN history per packet.",
+    "STOP IF: exact_head_readiness reports any blocking condition - fix upstream, never patch the evaluator.",
+    "FORBIDDEN FILE: services/**",
+    "FORBIDDEN FILE: src/**",
+    "FORBIDDEN FILE: docker/**"
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0019",
+    "TP-DCP-MCP-RO-0020",
+    "TP-DCP-MCP-RO-0022",
+    "TP-DCP-MCP-RO-0023",
+    "TP-DCP-MCP-RO-0024"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0024",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "dcp/chatgpt-mcp-ro-0025-series-ready",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(dcp): DCP-MCP-RO series READY close-out",
+    "allowlist": [
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/EXACT_HEAD_READINESS.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0025.*",
+      "proof/TP-DCP-MCP-RO-0025/**"
+    ],
+    "verify": [
+      "python3 scripts/audit/exact_head_readiness.py (json captured)",
+      "git diff --stat"
+    ]
+  },
+  "pr": {
+    "title": "docs(dcp): DCP-MCP-RO series READY - close-out and final proof",
+    "body": "Final series gate: exact-head readiness evaluation with trusted audits and live evidence attached, review-item classification, BUILD_SERIES close-out for 0011-0025, and the final series proof bundle.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Run the exact-head readiness evaluator against the series head; walk its findings to closure (review classification, thread resolution upstream); update BUILD_SERIES.md roadmap rows for 0011-0025 with final verdicts; assemble the series-level proof bundle indexing every packet's proof.",
+      "requirements": [
+        "Evaluator output attached (READY) at the exact head SHA.",
+        "Review-item classification table complete; no unknown reviewer/bot.",
+        "BUILD_SERIES.md close-out rows added for 0011-0025."
+      ],
+      "expected_files": [
+        "proof/TP-DCP-MCP-RO-0025/**",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md"
+      ],
+      "context_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/EXACT_HEAD_READINESS.md",
+        "scripts/audit/exact_head_readiness.py"
+      ],
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff/evidence.",
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "python3 scripts/audit/exact_head_readiness.py"
+      ],
+      "validation": [
+        "Evaluator returns READY at the exact head; any blocker stops the packet.",
+        "Series proof indexes all packet proofs with their final buckets."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0025/ (PROOF.json, COMMAND_LOG.md, AUDITOR_REPORT.md) with embedded_audit conforming to schemas/proof/embedded_audit.schema.json, and record PASS/FAIL/NOT_RUN buckets honestly (NOT_RUN never collapsed into PASS).",
+      "requirements": [
+        "PROOF.json (schema-conformant embedded_audit).",
+        "COMMAND_LOG.md with outputs and exit codes.",
+        "AUDITOR_REPORT.md.",
+        "Full diff and diff stat."
+      ],
+      "validation": [
+        "python3 scripts/audit/validate_audit_proof.py passes on the new PROOF.json.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ]
+}

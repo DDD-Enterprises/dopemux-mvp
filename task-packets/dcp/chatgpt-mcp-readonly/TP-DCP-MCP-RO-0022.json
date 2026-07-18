@@ -1,0 +1,120 @@
+{
+  "id": "TP-DCP-MCP-RO-0022",
+  "project": "dopemux-mvp",
+  "target": "Stand up and verify the Gate-0C live exemplar set on the operator host: purge the dNh_CRM ledger contamination (using the TP-0021 tool), recreate the mvp dope-memory container with correct identity env (removing the leaked DOPE_MEMORY_WORKSPACE_ID=dNh_CRM), fulfill or release the unfulfilled per-worktree lease (3054) by starting a per-worktree dope-memory sidecar for the active DCP worktree via the proven compose-override path, restore mcp-conport_dnh_crm_8d6d to healthy, and reconcile runtime-registry hygiene (release ~30 stale test leases, register the 5 unregistered live containers, resolve the 6 conflicting task-orchestrator identity claims on port 7890).",
+  "invariants": [
+    "One public MCP endpoint; no backend ports exposed; no backend writes; no lifecycle mutations from the facade.",
+    "target_id is the only caller-facing handle; callers never supply paths, URLs, ports, workspace IDs, or runtime selectors.",
+    "Runtime discovery never grants exposure; port leases never prove ownership; heuristics may discover but never authorize; ambiguity blocks; cross-repo mounts block.",
+    "A skipped live gate is NOT a pass (ACCEPTANCE_MATRIX.md proof rule); never rewrite a historical PARTIAL/SKIPPED verdict - append new evidence.",
+    "Proof must be current to the exact head SHA (scripts/audit/exact_head_readiness.py contract).",
+    "STOP IF: the embedded auditor returns FAIL or NEEDS_SUPERVISOR.",
+    "FORBIDDEN FILE: .env*",
+    "Operator-supervised host mutations only; every container recreate/stop is listed in the plan and receipted; no data deleted without the TP-0021 export-quarantine receipt.",
+    "Lease and registry mutations go through dopemux mcp tooling (doctor/repair/reconcile), never hand-edited JSON.",
+    "Reserved singleton semantics: the 7890 identity conflict is resolved by identity evidence, not by lease assignment.",
+    "Exemplar acceptance = all three: absolute per-worktree .dopemux mount, matching runtime identity, no cross-repo state (post-purge verification query included in proof).",
+    "STOP IF: purge receipts are missing or a recreate would destroy unexported state.",
+    "FORBIDDEN FILE: services/**",
+    "FORBIDDEN FILE: src/**"
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0021"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0021",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "dcp/chatgpt-mcp-ro-0022-gate0c-exemplar",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "proof(mcp): Gate-0C live per-worktree exemplar verified",
+    "allowlist": [
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0022.*",
+      "proof/TP-DCP-MCP-RO-0022/**",
+      "docs/02-how-to/**"
+    ],
+    "verify": [
+      "dopemux mcp doctor (json output captured)",
+      "docker ps snapshot captured",
+      "git diff --stat"
+    ]
+  },
+  "pr": {
+    "title": "proof(mcp): Gate-0C live exemplar - clean per-worktree dope-memory + registry hygiene",
+    "body": "Executes the Gate-0C remediation list from the 2026-07-17 ops snapshot: contamination purge (TP-0021 tool), mvp identity fix, per-worktree sidecar stand-up for the DCP worktree, conport sidecar health restore, and runtime-registry/lease hygiene. Delivers the live exemplar proof required before any live facade acceptance.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Execute in order with receipts: (1) TP-0021 purge on /Users/hue/code/dNh_CRM/.dopemux/chronicle.sqlite (dry-run, review, --apply); (2) fix the mvp stack env source leaking DOPE_MEMORY_WORKSPACE_ID=dNh_CRM and recreate dopemux-dope-memory-1 with correct mvp identity; (3) dopemux mcp start for the active DCP worktree to stand up its per-worktree dope-memory (fulfilling or releasing lease 3054); (4) restore mcp-conport_dnh_crm_8d6d health; (5) registry hygiene via dopemux mcp doctor/repair: release stale pytest/synthetic leases, register live containers, reconcile 7890 identity dirs.",
+      "requirements": [
+        "Post-purge verification query shows zero cross-workspace rows in the dNh_CRM ledger.",
+        "docker inspect shows correct identity env + absolute .dopemux mount for every dope-memory sidecar.",
+        "instances.json registers all live sidecars; port-leases.json has no stale active test leases.",
+        "Exactly one authoritative 7890 identity claim remains, matching the live container."
+      ],
+      "expected_files": [
+        "proof/TP-DCP-MCP-RO-0022/** (doctor json, docker snapshots, purge receipts, before/after registry diffs)"
+      ],
+      "context_files": [
+        "docs/02-how-to/mcp-setup-other-repos.md",
+        "docs/02-how-to/multi-instance-workflow.md"
+      ],
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff/evidence.",
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "dopemux mcp doctor",
+        "docker ps --format '{{.Names}}\\t{{.Status}}'"
+      ],
+      "validation": [
+        "Exemplar passes all three Gate-0C conditions (mount, identity, no cross-repo state) with evidence in proof.",
+        "No unexported data was destroyed (receipts present).",
+        "Doctor reports consistent registry state (no stale-active leases, no identity conflicts)."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0022/ (PROOF.json, COMMAND_LOG.md, AUDITOR_REPORT.md) with embedded_audit conforming to schemas/proof/embedded_audit.schema.json, and record PASS/FAIL/NOT_RUN buckets honestly (NOT_RUN never collapsed into PASS).",
+      "requirements": [
+        "PROOF.json (schema-conformant embedded_audit).",
+        "COMMAND_LOG.md with outputs and exit codes.",
+        "AUDITOR_REPORT.md.",
+        "Full diff and diff stat."
+      ],
+      "validation": [
+        "python3 scripts/audit/validate_audit_proof.py passes on the new PROOF.json.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ]
+}

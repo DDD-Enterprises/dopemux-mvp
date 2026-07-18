@@ -1,0 +1,123 @@
+{
+  "id": "TP-DCP-MCP-RO-0023",
+  "project": "dopemux-mvp",
+  "target": "Execute the live-local acceptance pass: run the opt-in live facade suite (DCP_FACADE_LIVE_TESTS=1) and the acceptance-harness 'Deterministic + live' gates against the verified Gate-0C exemplar set, exercising real ownership verification (Tier A evidence), live protocol fingerprints, safe-adapter reads against live ConPort/dope-memory, resolution receipts, and the local negative battery (dead container, stale runtime row, foreign process on expected port, invalid lease on reserved port, ambiguous duplicate runtime, cross-repo mount) - producing live proof current to the exact head.",
+  "invariants": [
+    "One public MCP endpoint; no backend ports exposed; no backend writes; no lifecycle mutations from the facade.",
+    "target_id is the only caller-facing handle; callers never supply paths, URLs, ports, workspace IDs, or runtime selectors.",
+    "Runtime discovery never grants exposure; port leases never prove ownership; heuristics may discover but never authorize; ambiguity blocks; cross-repo mounts block.",
+    "A skipped live gate is NOT a pass (ACCEPTANCE_MATRIX.md proof rule); never rewrite a historical PARTIAL/SKIPPED verdict - append new evidence.",
+    "Proof must be current to the exact head SHA (scripts/audit/exact_head_readiness.py contract).",
+    "STOP IF: the embedded auditor returns FAIL or NEEDS_SUPERVISOR.",
+    "FORBIDDEN FILE: .env*",
+    "Live gates only against loopback backends on the operator host; no tunnel, no public exposure in this packet.",
+    "Negative tests may use synthetic listeners/fixtures but must never mutate real backend state (read-only + disposable fixtures).",
+    "Every 'Deterministic + live' ACCEPTANCE_MATRIX row executed is recorded PASS/FAIL with receipts; skipped rows stay NOT_RUN and are listed.",
+    "STOP IF: any BLOCKING acceptance row fails - file the failure, do not weaken the gate.",
+    "FORBIDDEN FILE: src/**",
+    "FORBIDDEN FILE: docker/**"
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0020",
+    "TP-DCP-MCP-RO-0022"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0022",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "dcp/chatgpt-mcp-ro-0023-live-local-acceptance",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "proof(dcp): live-local acceptance pass against Gate-0C exemplar",
+    "allowlist": [
+      "services/dcp-readonly-facade/tests/**",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0023.*",
+      "proof/TP-DCP-MCP-RO-0023/**",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/ACCEPTANCE_MATRIX.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/MANUAL_VALIDATION.md"
+    ],
+    "verify": [
+      "DCP_FACADE_LIVE_TESTS=1 python3 -m pytest -q services/dcp-readonly-facade/tests",
+      "git diff --stat"
+    ]
+  },
+  "pr": {
+    "title": "proof(dcp): live-local acceptance - ownership, protocol, safe adapters, negatives",
+    "body": "Runs every locally-executable live gate of the acceptance matrix against the verified Gate-0C exemplar: live ownership (Tier A), protocol fingerprints, live safe-adapter reads, receipts, and the local negative battery. Remaining NOT_RUN after this packet: vendor/tunnel gates only.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Enumerate the ACCEPTANCE_MATRIX rows classified 'Deterministic + live' plus the local negative battery; map each to a concrete live test or scripted probe (extend tests/test_live_optional.py where a row lacks coverage); execute against the exemplar set; capture per-row receipts.",
+      "requirements": [
+        "Row-by-row execution table (row id -> test/probe -> PASS/FAIL/NOT_RUN -> receipt path).",
+        "Live ownership verification reaches Tier A on the exemplar and BLOCKS on the synthetic heuristic-only candidate.",
+        "Cross-repo mount and wrong-project negatives block with correct blocked_reason.",
+        "Safe-adapter live reads return enveloped, redacted data from the exemplar backends."
+      ],
+      "expected_files": [
+        "proof/TP-DCP-MCP-RO-0023/** (row table, receipts, logs)",
+        "services/dcp-readonly-facade/tests/test_live_optional.py (extended)"
+      ],
+      "context_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/ACCEPTANCE_MATRIX.md",
+        "services/dcp-readonly-facade/tests/test_live_optional.py",
+        "services/dcp-readonly-facade/tests/test_acceptance_harness.py"
+      ],
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff/evidence.",
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "DCP_FACADE_LIVE_TESTS=1 python3 -m pytest -q services/dcp-readonly-facade/tests"
+      ],
+      "validation": [
+        "All executed BLOCKING rows PASS; failures (if any) stop the packet.",
+        "Hermetic suite still green (no live dependency leaked into default lane).",
+        "Only vendor/tunnel gates remain NOT_RUN, listed explicitly."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0023/ (PROOF.json, COMMAND_LOG.md, AUDITOR_REPORT.md) with embedded_audit conforming to schemas/proof/embedded_audit.schema.json, and record PASS/FAIL/NOT_RUN buckets honestly (NOT_RUN never collapsed into PASS).",
+      "requirements": [
+        "PROOF.json (schema-conformant embedded_audit).",
+        "COMMAND_LOG.md with outputs and exit codes.",
+        "AUDITOR_REPORT.md.",
+        "Full diff and diff stat."
+      ],
+      "validation": [
+        "python3 scripts/audit/validate_audit_proof.py passes on the new PROOF.json.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ]
+}
