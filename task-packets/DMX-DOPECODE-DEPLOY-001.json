@@ -1,0 +1,78 @@
+{
+  "id": "DMX-DOPECODE-DEPLOY-001",
+  "project": "dopemux-mvp",
+  "target": "Deploy the in-repo DopeCode/Serena engine (services/serena/mcp_server.py, 46 tools): add a Dockerfile and repoint the compose serena service off the upstream wrapper, satisfying tree-sitter + LSP + ConPort-client runtime deps. NOTE: this SUPERSEDES/reverses SVCFIN-ARCH-SERENA-SURFACE-003 (which archived the candidate) — reconcile that ADR to 'deploy in-repo engine with runtime proof' and preserve the sanctioned authority boundary (Serena = non-authoritative technical context, ConPort writes producer-only).",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Deploy runtime proof required; no build-then-strand.",
+    "Run `pytest tests/ --co` after any deletion."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfeat-dopecode",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfeat-dopecode",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "commit": {
+    "message": "feat(dopecode): ship the in-repo Serena engine, retire the wrapper",
+    "allowlist": [
+      "docker/mcp-servers/serena",
+      "compose.yml",
+      "services/serena/Dockerfile",
+      "docs/90-adr",
+      "docs/03-reference/systems/serena",
+      "task-packets/DMX-DOPECODE-DEPLOY-001.json"
+    ],
+    "verify": [
+      "docker compose config -q"
+    ]
+  },
+  "pr": {
+    "title": "feat(dopecode): deploy in-repo Serena engine (46 tools)",
+    "body": "The entire DopeCode surface (AST/write/refactor/untracked-work/receipts) is stranded because compose runs the upstream wrapper. Containerize + deploy the in-repo engine. Reverses SVCFIN-ARCH-003 archive stance per user directive.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Add a Dockerfile for services/serena/mcp_server.py with tree-sitter bindings + LSP + ConPort client.",
+      "validation": [
+        "Image builds; container starts; tools/list returns the 46-tool surface (not the upstream wrapper's)."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Repoint compose serena off docker/mcp-servers/serena (wrapper) to the in-repo engine; preserve loopback bind + authority boundary; ADR reconciled.",
+      "validation": [
+        "compose serena builds the in-repo engine; write tools stay out of any default profile per sanctioned contract; ADR updated from archive->deploy.",
+        "RUNTIME PROOF: a real MCP initialize+tools/list against the deployed serena shows the DopeCode tools."
+      ]
+    }
+  ]
+}

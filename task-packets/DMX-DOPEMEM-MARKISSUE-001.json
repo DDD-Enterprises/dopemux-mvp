@@ -1,0 +1,72 @@
+{
+  "id": "DMX-DOPEMEM-MARKISSUE-001",
+  "project": "dopemux-mvp",
+  "target": "Make memory_mark_issue actually persist: add an issue_sources table + store.insert_issue_source, persist description/confidence/evidence_window/tags with redaction. Today it is a no-op that returns issue_marked:true and writes nothing.",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Deploy runtime proof required; no build-then-strand.",
+    "Run `pytest tests/ --co` after any deletion."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfeat-dopemem",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfeat-dopemem",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "feat(dope-memory): implement memory_mark_issue persistence",
+    "allowlist": [
+      "services/working-memory-assistant/chronicle/store.py",
+      "services/working-memory-assistant/chronicle/schema.sql",
+      "services/working-memory-assistant/dope_memory_main.py",
+      "services/working-memory-assistant/tests",
+      "task-packets/DMX-DOPEMEM-MARKISSUE-001.json"
+    ],
+    "verify": [
+      "pytest services/working-memory-assistant/tests -q -k issue"
+    ]
+  },
+  "pr": {
+    "title": "feat(dope-memory): persist memory_mark_issue",
+    "body": "A live MCP tool silently discarded all input (returned issue_marked:true, wrote nothing). Adds issue_sources persistence + redaction.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Add issue_sources table (migration) + store.insert_issue_source with redaction.",
+      "validation": [
+        "schema.sql/migration adds issue_sources; store method persists description(redacted)/confidence/evidence_window_min/tags."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Wire memory_mark_issue (dope_memory_main.py:431-450) to persist instead of no-op.",
+      "validation": [
+        "Unit test: mark_issue writes a row; fields readable back; description redacted; missing entry rejected."
+      ]
+    }
+  ]
+}

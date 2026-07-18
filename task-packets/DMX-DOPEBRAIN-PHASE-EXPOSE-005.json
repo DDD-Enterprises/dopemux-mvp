@@ -1,0 +1,68 @@
+{
+  "id": "DMX-DOPEBRAIN-PHASE-EXPOSE-005",
+  "project": "dopemux-mvp",
+  "target": "Expose the Phase 2B/3 capabilities through the service: proactive intervention (break alerts, context-switch recovery) and, if worth shipping, the Phase 3A federated personalization + 3B team coordination behind explicit opt-in flags.",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Deploy runtime proof required; no build-then-strand.",
+    "Run `pytest tests/ --co` after any deletion."
+  ],
+  "depends_on": [
+    "DMX-DOPEBRAIN-FASTAPI-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfeat-dopebrain",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfeat-dopebrain",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "feat(dope-brain): expose Phase 2B/3 capabilities",
+    "allowlist": [
+      "services/claude_brain/main.py",
+      "services/claude_brain/proactive_intervention.py",
+      "services/claude_brain/phase3_federated_personalization.py",
+      "services/claude_brain/phase3_team_coordination.py",
+      "services/claude_brain/tests",
+      "task-packets/DMX-DOPEBRAIN-PHASE-EXPOSE-005.json"
+    ],
+    "verify": [
+      "pytest services/claude_brain/tests -q -k intervention"
+    ]
+  },
+  "pr": {
+    "title": "feat(dope-brain): expose intervention + phase-3 (opt-in)",
+    "body": "Surface the built proactive-intervention + federated/team-coordination engines through the service behind explicit opt-in.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Route /process-state to proactive intervention; gate Phase 3 behind opt-in flags.",
+      "validation": [
+        "/process-state returns intervention decisions (break/focus-boost) from real state; Phase 3 engines are opt-in + privacy-preserving; unit-tested; off by default."
+      ]
+    }
+  ]
+}
