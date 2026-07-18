@@ -5,7 +5,8 @@
   "invariants": [
     "Read-only: no KG write surface is exposed.",
     "No embeddings/vector code paths are enabled in ConPort (G6 boundary).",
-    "AGE/Cypher queries are parameterized; no string-built injection paths."
+    "AGE/Cypher queries are parameterized; no string-built injection paths.",
+    "This packet is the reactivation task packet required by services/conport_kg/QUARANTINE.md for the read-only graph slice (operator approval: P7 plan, 2026-07-18); orchestrator.py background event handlers stay OUT of scope."
   ],
   "depends_on": [
     "DMX-MCPINT-HRD-REPORT-001",
@@ -57,9 +58,16 @@
   "steps": [
     {
       "id": "step-1",
-      "task": "Port the graph query layer into the conport server behind two read-only tools: conport_get_neighbors and find_by_relationship_type.",
+      "task": "Port the graph query layer into the conport server behind two read-only tools: conport_get_neighbors and find_by_relationship_type. Sources: queries/models.py (DecisionCard/DecisionSummary/DecisionNeighborhood/Relationship/DecisionAnalytics progressive-disclosure models) and queries/exploration.py (Cypher builders incl. get_decision_neighborhood). exploration.py currently interpolates ids into Cypher strings — parameterize before exposure.",
       "validation": [
-        "Both tools appear in the server tool list; a neighbors query on a seeded graph returns the expected nodes in a test."
+        "Both tools appear in the server tool list; a neighbors query on a seeded graph returns the expected nodes in a test.",
+        "Exposed query path uses parameterized Cypher; no f-string id interpolation remains."
+      ],
+      "context_files": [
+        "services/conport_kg/QUARANTINE.md",
+        "services/conport_kg/queries/models.py",
+        "services/conport_kg/queries/exploration.py",
+        "claudedocs/mcp-fleet-reconciliation-2026-07-18.md"
       ]
     },
     {

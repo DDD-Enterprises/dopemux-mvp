@@ -59,9 +59,12 @@
   "steps": [
     {
       "id": "step-1",
-      "task": "Create the host wrapper + launchd plist (ops/launchd/) running desktop-commander natively on macOS, loopback-bound, with a health probe.",
+      "task": "Create the host wrapper + launchd plist (ops/launchd/) running desktop-commander natively on macOS, loopback-bound, with a health probe. Apply the token-safe response pattern from the archived validation notes (return file paths, never base64 payloads).",
       "validation": [
         "launchctl load starts the service; health probe reports healthy; a benign macOS automation call (e.g. osascript no-op) succeeds through MCP (evidence in proof)."
+      ],
+      "context_files": [
+        "docs/archive/mcp-servers/DESKTOP_COMMANDER_VALIDATION.md"
       ]
     },
     {

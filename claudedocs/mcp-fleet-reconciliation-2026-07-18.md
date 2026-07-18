@@ -79,7 +79,7 @@ Nothing in this phase re-decides SVCFIN-, SVCFEAT-, or MCPINT-owned items; overl
 - **G5** complexity authority → `complexity_coordinator` single scorer (adr-mcpint-001).
 
 **Open (P7 — resolved by PAL consensus, ≥3 models, logged to ConPort + ADR):**
-- **G6** ConPort vector-search boundary. Recommendation: ConPort stays out of embeddings; `mem.search` becomes a read-only adapter delegating to dope-context (Trinity plane law). Gates: DCTXIDX-010, KGREAD-013; seam note on DOPEMEM-005.
+- **G6** ConPort vector-search boundary. Concrete artifact under decision: `src/conport/memory_server.py` (1300-line DEAD-CODE draft with `mem.upsert`/`mem.search` → Milvus/Voyage; see §7.1). Recommendation: ConPort stays out of embeddings; `mem.search` becomes a read-only adapter delegating to dope-context (Trinity plane law). Gates: DCTXIDX-010, KGREAD-013; seam note on DOPEMEM-005.
 - **G7** Complexity federation — **ratify/challenge G5**, define the consumer API. If consensus overturns G5: halt, escalate to operator; COMPLEX-008 stays gated.
 - **G8** Leantime/PM write-sync boundary. Recommendation: write-sync stays disabled; PM tools get a read-only mirror; task-orchestrator remains sole legal mutator of workflow state. Gates: ADHDSURF-016.
 
@@ -117,10 +117,22 @@ Packet files: `task-packets/DMX-MCPINT-HRD-*.json`. Load plan: `docs/ops/load-pl
 | Predictive risk ML (562 lines, 8 categories) | `services/task-orchestrator/predictive_risk_assessment.py` | RISK-005 owns |
 | Context preservation backend | `services/adhd_engine/domains/attention/context_preserver.py` (moved from addendum path) | ADHDSURF-016 |
 | Multi-team coordination | `services/task-orchestrator/multi_team_coordination.py` | dormant-by-design, keep |
-| KG graph traversal / progressive disclosure | `services/conport_kg/` (`queries/models.py`, `orchestrator.py`, `age_client.py`) | KGREAD-013 (graph only); vector = G6 |
+| KG graph traversal / progressive disclosure | `services/conport_kg/` (`QUARANTINE.md`, `queries/models.py`, `queries/exploration.py`, `orchestrator.py`, `age_client.py`) | KGREAD-013 (graph only); vector = G6 |
+| ConPort vector draft (DEAD CODE) | `src/conport/memory_server.py` (1300 lines: `mem.upsert`/`mem.search`, OpenAI/Voyage embeddings → Milvus) | evidence artifact for G6 — never re-wire without adr-mcpint-006 |
 | Serena local engine (45+ modules: adhd_features, focus_manager, fatigue detection, adaptive learning, untracked-work detector) | `services/serena/` | DOPECODE-001 (deploy); SERENAWRAP-006 (wrapper) |
-| Capture/emit audit tool | `services/mcp-capture/server.py` | resolved by FND-HYG-007 |
-| Progressive token truncation / boundary truncation | archived docs only (CONPORT_TOKEN_LIMIT_FIX, LEANTIME_TOKEN_LIMIT_FIX) | TOKTRUNC-011 |
+| Capture/emit audit tool (SHA-256 content-addressed dedup → chronicle.sqlite, fail-closed input validation) | `services/mcp-capture/server.py` + `README.md` | resolved by FND-HYG-007; dedup invariant is prior art for EVHYG-008 |
+| Progressive token truncation / boundary truncation | `docs/archive/mcp-servers/CONPORT_TOKEN_LIMIT_FIX.md`, `docs/archive/mcp-servers/LEANTIME_TOKEN_LIMIT_FIX.md` | TOKTRUNC-011 |
+| Token-safe response validation notes | `docs/archive/mcp-servers/DESKTOP_COMMANDER_VALIDATION.md` | reference for DESKCMD-007 |
+
+### 7.1 Inspection notes (deep-read pass, 2026-07-18)
+
+- **`services/conport_kg/QUARANTINE.md`** — non-canonical Apache AGE graph projection; canonical server is `docker/mcp-servers-source/conport/`. Reactivation requires "explicit operator approval and a new task packet that re-establishes authority, integration scope, and validation evidence" — **KGREAD-013 is that packet** for the read-only graph slice (operator approval = this P7 plan, 2026-07-18).
+- **`queries/models.py`** — progressive-disclosure tiers: `DecisionCard` (T1 scan), `DecisionSummary` (T2, computes cognitive load from length), `DecisionNeighborhood` (1-/2-hop expansion), `Relationship` edges (BUILDS_UPON/DEPENDS_ON/…), `DecisionAnalytics` (degree centrality, blast radius). Directly reusable by KGREAD-013's tools.
+- **`queries/exploration.py`** — Cypher builders incl. `get_decision_neighborhood(decision_id, max_hops, limit_per_hop=10)` against graph `conport_knowledge`. Note: interpolates ids into Cypher strings — KGREAD-013 must parameterize before exposure.
+- **`orchestrator.py`** — background event handlers (`on_decision_logged` similar-decision suggestions via Redis, `on_task_started` genealogy pre-cache, `on_file_opened` related-decision lookup). **Out of scope for KGREAD-013** (read tools only); a future packet may revisit.
+- **`src/conport/memory_server.py`** — header-marked DEAD CODE, superseded by the docker server. Early `mem.upsert`/`mem.search` vector endpoints (OpenAI/Voyage → Milvus). This is the concrete artifact G6 rules on: quarantined precisely because semantic vector search belongs to Plane 3 (dope-context).
+- **`services/mcp-capture/`** — finished stdio MCP exposing `capture/emit` with fail-closed input validation and SHA-256 content addressing so identical events from different adapters collapse to one `chronicle.sqlite` row. EVHYG-008 should mirror this content-address/dedup pattern for stream ingress.
+- **`docs/archive/mcp-servers/CONPORT_TOKEN_LIMIT_FIX.md`** — canonical truncation pattern for TOKTRUNC-011: conservative estimate (~4 chars/token), 9K default budget, ~200-token base overhead, item-by-item accumulation, and truncation metadata `{original, returned, truncated}` on every truncated response.
 
 ## 8. Fleet wiring snapshot (2026-07-18)
 
