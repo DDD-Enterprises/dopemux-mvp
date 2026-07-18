@@ -1,0 +1,72 @@
+{
+  "id": "DMX-MCPINT-HRD-LANE-018",
+  "project": "dopemux-mvp",
+  "target": "Wire decide_lane() into a task-packet pipeline dispatch point (currently zero non-test consumers) and record lane decisions for replay.",
+  "invariants": [
+    "Lane decisions are logged with their inputs (replayable); unknown/unclassifiable input fails closed.",
+    "STOP CONDITION: if decide_lane() requires complexity scores, execution halts until the G7 outcome is recorded."
+  ],
+  "depends_on": [
+    "DMX-MCPINT-HRD-REPORT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/mcpint-hrd",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcpint-hrd",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "feat(dcp): wire decide_lane() into the task-packet pipeline",
+    "allowlist": [
+      "docs/03-reference/dcp",
+      "src/dopemux/commands",
+      "src/dopemux/dcp",
+      "task-packets/DMX-MCPINT-HRD-LANE-018.json",
+      "tests"
+    ],
+    "verify": [
+      "pytest tests -q -k lane"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): activate lane engine in packet pipeline",
+    "body": "decide_lane() (src/dopemux/dcp/lane_engine.py:335) is exported but has no non-test consumers. Identifies the packet intake/validation dispatch point, wires the call, and logs decisions for replay.\n\nAnchor: claudedocs/mcp-fleet-reconciliation-2026-07-18.md (P7/HRD).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Identify the dispatch point (packet intake/validation path) and wire decide_lane() with decision logging.",
+      "validation": [
+        "A sample packet routed through the pipeline yields a recorded lane decision with inputs; an unclassifiable input fails closed in a test."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Determine whether decide_lane() consumes complexity scores; if yes, record the G7 dependency in the load plan before enabling.",
+      "validation": [
+        "Proof records the complexity-input verdict; the load plan gains a G7 edge for LANE-018 if and only if the verdict is yes."
+      ]
+    }
+  ]
+}

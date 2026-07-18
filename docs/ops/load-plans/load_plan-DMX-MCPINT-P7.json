@@ -1,0 +1,98 @@
+{
+  "program": "DMX-MCPINT",
+  "phase": "P7",
+  "date": "2026-07-18",
+  "source_plan": "~/.claude/plans/deeply-investigate-and-plan-iridescent-otter.md (user-approved 2026-07-18: extend DMX-MCPINT with P7; PAL-consensus-first for G6/G7/G8; full gap breadth; MCPINT PR #1073 first then new branch; desktop-commander host-run)",
+  "audit": "claudedocs/mcp-fleet-reconciliation-2026-07-18.md (HRD-REPORT-001 anchor); claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md §8; claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md §5; claudedocs/probes/chatgpt-mcp-instance-resolution-2026-07-10/",
+  "ambition": "Close every residual Phase 0-5 roadmap gap not already owned by an MCPINT/SVCFEAT/SVCFIN item: shadow-twin wrappers, desktop-commander disposition, chronicle ingress hygiene, per-request identity, token truncation, loopback binds, KG read tools, facade dope-context bridge, lane engine, workflow-api rename, ADHD wiring — gated by G6/G7/G8 consensus decisions.",
+  "validation": "Repo ground truth re-verified 2026-07-18 at c91852665 + origin/main 415f28d95; already-done ledger excluded from packetization; REGKILL-008/RISK-005/COMPLEX-008/P6-E2E-001/DOPECODE-001/SVCFEAT-003 extended via notes, never duplicated; all 18 packets schema-validated (0 failures) against dopetask-canonical-spec.json",
+  "tag": "dmx-mcpint,p7,hrd,hardening",
+  "packets_dir": "task-packets/",
+  "spec": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+  "orchestrator": {
+    "root_id": "af10eefd-225c-49e2-85dd-137bc8231cbb",
+    "p7_phase_id": "b5de7373-45b3-420e-a503-8ecd997bb548",
+    "created": "2026-07-18",
+    "actor": "claude-mcpint-coordinator",
+    "children_created": 19,
+    "deps_created": 27,
+    "notes_upserted": 7,
+    "post_load_assertions": "P7 children==18 PASS; REPORT-001 outgoing==17 PASS; ADHDSURF-016 incoming==3 (REPORT, PMSYNC, RENAME) PASS; SVCFIN claim check on services/task-orchestrator: 0 hits PASS",
+    "item_ids": {
+      "DMX-MCPINT-HRD-REPORT-001": "72444195-d2e2-4221-bfbd-7a9bcf7c47c7",
+      "DMX-MCPINT-HRD-CONSENSUS-VEC-002": "aeb67314-a6f4-4d32-8700-b5f527f02787",
+      "DMX-MCPINT-HRD-CONSENSUS-CPLX-003": "280078d2-ce3d-443f-a49f-187db1e76ce5",
+      "DMX-MCPINT-HRD-CONSENSUS-PMSYNC-004": "bd8b3905-2622-460f-8b56-336ee0161bea",
+      "DMX-MCPINT-HRD-CONPORTWRAP-005": "da3b896f-5101-49e2-962b-522fb4a832a5",
+      "DMX-MCPINT-HRD-SERENAWRAP-006": "98c08462-8299-4088-9998-076b40377555",
+      "DMX-MCPINT-HRD-DESKCMD-007": "d4082ce7-ddd5-42bc-a24c-fe8212f4e209",
+      "DMX-MCPINT-HRD-EVHYG-008": "e62d2613-ac98-4051-9368-c08afced5f76",
+      "DMX-MCPINT-HRD-IDENTITY-009": "0e63a22c-af5a-4bc0-ad4f-aa28e857eb5e",
+      "DMX-MCPINT-HRD-DCTXIDX-010": "322fcc84-42dc-4079-a546-69f6e4e3f28f",
+      "DMX-MCPINT-HRD-TOKTRUNC-011": "b2829655-3fb1-482d-b1d3-d2f1a779f51a",
+      "DMX-MCPINT-HRD-LOOPBACK-012": "30aaebed-5fd0-4e24-8e83-ff99da4fc66e",
+      "DMX-MCPINT-HRD-KGREAD-013": "9e2b095e-209c-4b4f-92a7-2527a1de5606",
+      "DMX-MCPINT-HRD-FACADEDCTX-014": "66893e0e-70e2-4b81-a650-1c10dc99c351",
+      "DMX-MCPINT-HRD-RENAME-015": "f0bfe9f0-36ee-41d5-9c7f-e47b964f3eab",
+      "DMX-MCPINT-HRD-ADHDSURF-016": "a3182387-acbb-4caa-8967-753cb238b911",
+      "DMX-MCPINT-HRD-ADHDROUTE-017": "14ffbf38-25c7-46d6-92f4-182fff54629f",
+      "DMX-MCPINT-HRD-LANE-018": "54bc2de5-6a59-44ab-98f8-cc9dac609748"
+    },
+    "cross_tree_deps": [
+      {
+        "from": "DOPECODE-001 (DMX-SVCFEAT tree f64aa1a9, item c14414ff-44fd-4498-9b74-8869778624a5)",
+        "to": "MCPINT-HRD-SERENAWRAP-006 (98c08462-8299-4088-9998-076b40377555)",
+        "type": "BLOCKS",
+        "dep_id": "a24bfa16-3c66-4ca7-aded-ab571ff93028"
+      }
+    ]
+  },
+  "load_order": [
+    "P7-REPORT (wave 0 — blocks all)",
+    "P7 wave 1: CONSENSUS-VEC-002 || CONSENSUS-CPLX-003 || CONSENSUS-PMSYNC-004 || CONPORTWRAP-005 || DESKCMD-007 || LOOPBACK-012",
+    "P7 wave 2: IDENTITY-009 || TOKTRUNC-011 || RENAME-015 || LANE-018; EVHYG-008 after EVENTS-006; FACADEDCTX-014 after FACADE-001; DCTXIDX-010 + KGREAD-013 after G6",
+    "P7 wave 3: SERENAWRAP-006 after DOPECODE-001; ADHDSURF-016 after RENAME-015 + G8; ADHDROUTE-017 after RENAME-015 + EVENTS-006"
+  ],
+  "phases": [
+    {
+      "ref": "P7",
+      "id": "PENDING_LOAD",
+      "title": "Fleet hardening / reconciliation gaps (HRD)",
+      "model": "sonnet (opus for REPORT + CONSENSUS items)"
+    }
+  ],
+  "decision_gates": {
+    "G6": "ConPort vector-search boundary (rec: mem.search read-only adapter delegating to dope-context; ConPort stays out of embeddings) — resolved by HRD-CONSENSUS-VEC-002; gates DCTXIDX-010, KGREAD-013; seam note on DOPEMEM-005",
+    "G7": "Complexity federation — ratify/challenge standing G5 user decision (complexity_coordinator single scorer, adr-mcpint-001); resolved by HRD-CONSENSUS-CPLX-003; gates MCPINT-IMP-COMPLEX-008; overturn => halt + operator escalation",
+    "G8": "Leantime/PM write-sync boundary (rec: write-sync stays disabled; read-only mirror; task-orchestrator sole mutator) — resolved by HRD-CONSENSUS-PMSYNC-004; gates ADHDSURF-016"
+  },
+  "existing_item_notes": [
+    {"item": "MCPINT-FND-REGKILL-008", "id_prefix": "4d6ac77f", "note": "scope extension: also retire/regenerate stale services/registry.yaml (last_updated 2026-03-11)"},
+    {"item": "MCPINT-P6-E2E-001", "id_prefix": "68eb375f", "note": "scope extension: full-Trinity e2e + P7 outcome assertions"},
+    {"item": "MCPINT-IMP-COMPLEX-008", "id_prefix": "d615d5c4", "note": "gated by G7 ratification (HRD-CONSENSUS-CPLX-003)"},
+    {"item": "MCPINT-IMP-RISK-005", "id_prefix": "ba02e04b", "note": "sole owner of predictive-risk hook; ADHD cluster excludes it"},
+    {"item": "DOPECODE-001", "id_prefix": "c14414ff", "note": "cross-tree: BLOCKS HRD-SERENAWRAP-006"},
+    {"item": "DOPEMEM-005", "id_prefix": "9f515f75", "note": "crosslink (no BLOCKS): G6 defines ConPort<->dope-context retrieval seam"},
+    {"item": "SVCFEAT-003", "id_prefix": "07e52eb1", "note": "coordinate ingress payload contract with HRD-EVHYG-008"}
+  ],
+  "leaves": [
+    {"ref": "DMX-MCPINT-HRD-REPORT-001", "wave": 0, "disp": "anchor report finalization + INDEX registration", "effort": "S", "model": "opus", "depends_on": []},
+    {"ref": "DMX-MCPINT-HRD-CONSENSUS-VEC-002", "wave": 1, "disp": "G6 PAL consensus + adr-mcpint-006", "effort": "M", "model": "opus", "depends_on": ["DMX-MCPINT-HRD-REPORT-001"]},
+    {"ref": "DMX-MCPINT-HRD-CONSENSUS-CPLX-003", "wave": 1, "disp": "G7 PAL consensus ratify/challenge G5", "effort": "M", "model": "opus", "depends_on": ["DMX-MCPINT-HRD-REPORT-001"]},
+    {"ref": "DMX-MCPINT-HRD-CONSENSUS-PMSYNC-004", "wave": 1, "disp": "G8 PAL consensus + ADR", "effort": "M", "model": "opus", "depends_on": ["DMX-MCPINT-HRD-REPORT-001"]},
+    {"ref": "DMX-MCPINT-HRD-CONPORTWRAP-005", "wave": 1, "disp": "conport wrapper repoint + serena interim stub", "effort": "M", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-REPORT-001"]},
+    {"ref": "DMX-MCPINT-HRD-DESKCMD-007", "wave": 1, "disp": "host-run launchd singleton + container removal", "effort": "M", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-REPORT-001"]},
+    {"ref": "DMX-MCPINT-HRD-LOOPBACK-012", "wave": 1, "disp": "loopback bind normalization", "effort": "S", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-REPORT-001"]},
+    {"ref": "DMX-MCPINT-HRD-EVHYG-008", "wave": 2, "disp": "chronicle dedup + PII redaction", "effort": "M", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-REPORT-001", "MCPINT-IMP-EVENTS-006"]},
+    {"ref": "DMX-MCPINT-HRD-IDENTITY-009", "wave": 2, "disp": "per-request identity + instances registry", "effort": "L", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-REPORT-001"]},
+    {"ref": "DMX-MCPINT-HRD-DCTXIDX-010", "wave": 2, "disp": "decision auto-indexing flip", "effort": "S", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-CONSENSUS-VEC-002"]},
+    {"ref": "DMX-MCPINT-HRD-TOKTRUNC-011", "wave": 2, "disp": "shared truncation helper + 2 adopters", "effort": "L", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-REPORT-001"]},
+    {"ref": "DMX-MCPINT-HRD-KGREAD-013", "wave": 2, "disp": "read-only KG traversal tools", "effort": "M", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-CONSENSUS-VEC-002"]},
+    {"ref": "DMX-MCPINT-HRD-FACADEDCTX-014", "wave": 2, "disp": "facade JSON-RPC bridge + catalog + CI gate", "effort": "M", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-REPORT-001", "MCPINT-IMP-FACADE-001"]},
+    {"ref": "DMX-MCPINT-HRD-RENAME-015", "wave": 2, "disp": "workflow-api rename + MCP declaration strip", "effort": "L", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-REPORT-001"]},
+    {"ref": "DMX-MCPINT-HRD-LANE-018", "wave": 2, "disp": "decide_lane() pipeline wiring", "effort": "M", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-REPORT-001"]},
+    {"ref": "DMX-MCPINT-HRD-SERENAWRAP-006", "wave": 3, "disp": "serena wrapper repoint post-DOPECODE", "effort": "S", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-REPORT-001", "DOPECODE-001"]},
+    {"ref": "DMX-MCPINT-HRD-ADHDSURF-016", "wave": 3, "disp": "context_preserver PM surface", "effort": "M", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-RENAME-015", "DMX-MCPINT-HRD-CONSENSUS-PMSYNC-004"]},
+    {"ref": "DMX-MCPINT-HRD-ADHDROUTE-017", "wave": 3, "disp": "energy routing + event triggers", "effort": "M", "model": "sonnet", "depends_on": ["DMX-MCPINT-HRD-RENAME-015", "MCPINT-IMP-EVENTS-006"]}
+  ]
+}

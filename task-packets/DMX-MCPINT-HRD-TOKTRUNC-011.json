@@ -1,0 +1,86 @@
+{
+  "id": "DMX-MCPINT-HRD-TOKTRUNC-011",
+  "project": "dopemux-mvp",
+  "target": "Fleet token-truncation standard: one shared helper implementing progressive item-by-item truncation under a 9K-token response budget plus MCP-boundary truncation at call_tool() TextContent; adopted by conport and dope-memory first.",
+  "invariants": [
+    "Truncation is signaled, never silent: responses carry a truncation marker and paging hint.",
+    "The shared helper is the single implementation; per-server copies are forbidden.",
+    "Budget is configurable; default 9K tokens."
+  ],
+  "depends_on": [
+    "DMX-MCPINT-HRD-REPORT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/mcpint-hrd",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcpint-hrd",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "commit": {
+    "message": "feat(mcp): shared progressive token-truncation helper; adopt in conport + dope-memory",
+    "allowlist": [
+      "docker/mcp-servers-source/conport",
+      "docs/03-reference/mcp",
+      "services/working-memory-assistant",
+      "src/dopemux/mcp",
+      "task-packets/DMX-MCPINT-HRD-TOKTRUNC-011.json",
+      "tests"
+    ],
+    "verify": [
+      "pytest tests -q -k truncat"
+    ]
+  },
+  "pr": {
+    "title": "feat(mcp): fleet token-truncation standard",
+    "body": "Recovers the archived CONPORT_TOKEN_LIMIT_FIX / LEANTIME_TOKEN_LIMIT_FIX patterns lost in migration: progressive item-by-item truncation to a 9K budget and a final guard at the MCP call_tool() TextContent boundary. Spec + shared helper + first two adopters.\n\nAnchor: claudedocs/mcp-fleet-reconciliation-2026-07-18.md (P7/HRD).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Write the truncation spec (docs/03-reference/mcp/) and the shared helper with unit tests (budget edges, marker, paging hint).",
+      "validation": [
+        "Helper truncates an oversized item list progressively, emits the truncation marker, and unit tests cover under/at/over-budget cases."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Adopt the helper in conport and dope-memory tool responses (list-shaped tools first) with regression tests.",
+      "validation": [
+        "Oversized get_decisions / memory_search responses stay under budget with the marker present; regression tests added for both servers."
+      ]
+    },
+    {
+      "id": "step-3",
+      "task": "Document per-server adoption status and the rollout path for the remaining fleet.",
+      "validation": [
+        "Docs page lists adoption status per server with owners for the un-adopted remainder."
+      ]
+    }
+  ]
+}
