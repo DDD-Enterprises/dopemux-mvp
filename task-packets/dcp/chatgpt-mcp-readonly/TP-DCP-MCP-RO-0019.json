@@ -1,0 +1,128 @@
+{
+  "id": "TP-DCP-MCP-RO-0019",
+  "project": "dopemux-mvp",
+  "target": "Activate the signed local-attestation path of the embedded-audit gate (PR #1068 machinery, currently inert because config/audit/embedded-audit-allowed-signers holds no keys) and produce trusted embedded-audit evidence for the landed DCP-MCP-RO 0011-0018 series heads, retiring every 'Trusted embedded audit NOT_RUN' tail and the VALIDATED_WITH_AUDIT_GAP proof status, and closing the recorded 0011-REMEDIATION-01 FAILs (embedded-audit NEEDS_SUPERVISOR + PR Steward fail-closed at PR #1055 head).",
+  "invariants": [
+    "One public MCP endpoint; no backend ports exposed; no backend writes; no lifecycle mutations from the facade.",
+    "target_id is the only caller-facing handle; callers never supply paths, URLs, ports, workspace IDs, or runtime selectors.",
+    "Runtime discovery never grants exposure; port leases never prove ownership; heuristics may discover but never authorize; ambiguity blocks; cross-repo mounts block.",
+    "A skipped live gate is NOT a pass (ACCEPTANCE_MATRIX.md proof rule); never rewrite a historical PARTIAL/SKIPPED verdict - append new evidence.",
+    "Proof must be current to the exact head SHA (scripts/audit/exact_head_readiness.py contract).",
+    "STOP IF: the embedded auditor returns FAIL or NEEDS_SUPERVISOR.",
+    "FORBIDDEN FILE: .env*",
+    "Only PUBLIC keys enter the repository; private keys never leave operator custody; the operator personally runs ssh-keygen -Y sign.",
+    "The allowed-signers file is only trusted from main - enrollment lands via its own reviewed PR before any attestation is evaluated.",
+    "Historical proof bundles are append-only: new attestation evidence is added as new files/entries; SKIPPED verdicts are superseded, never rewritten.",
+    "STOP IF: signature verification fails or the attestation contract in scripts/audit/local_audit_acceptance.py cannot bind repo+PR+head exactly.",
+    "FORBIDDEN FILE: services/**",
+    "FORBIDDEN FILE: src/**",
+    "FORBIDDEN FILE: docker/**"
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0018"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0018",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "dcp/chatgpt-mcp-ro-0019-audit-trust-attestation",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(audit): enroll signer and attach trusted attestations for DCP-MCP-RO series",
+    "allowlist": [
+      "config/audit/embedded-audit-allowed-signers",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0019.*",
+      "proof/TP-DCP-MCP-RO-0019/**",
+      "proof/TP-DCP-MCP-RO-001*/ATTESTATION*",
+      "proof/TP-DCP-MCP-RO-001*/AUDITOR_REPAIR*",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/EXACT_HEAD_READINESS.md"
+    ],
+    "verify": [
+      "python -m scripts.audit.local_audit_acceptance --help",
+      "ssh-keygen -Y verify against config/audit/embedded-audit-allowed-signers (operator-run; record output)",
+      "git diff --stat",
+      "git status --short --branch"
+    ]
+  },
+  "pr": {
+    "title": "feat(audit): activate signed local attestations for DCP-MCP-RO trusted audits",
+    "body": "Enroll the operator public key in config/audit/embedded-audit-allowed-signers (read only from main by the gate), produce signed local embedded-audit attestations bound to the exact landed heads of DCP-MCP-RO 0011-REMEDIATION-01 and 0012-0018, re-evaluate the embedded-audit + PR Steward gates, and append superseding trusted-audit evidence to the affected proof bundles.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Inspect scripts/audit/local_audit_acceptance.py and .github/workflows/embedded-audit.yml to pin the exact attestation contract (payload shape, namespace, principal, repo+PR+head binding). Then: (1) operator enrolls their SSH public key via a dedicated reviewed PR to config/audit/embedded-audit-allowed-signers; (2) after that PR merges, operator signs local embedded-audit attestations for each affected landed head (0011-REMEDIATION-01 / 0012..0018 series evidence per the contract's granularity); (3) attach attestations and re-run the gate.",
+      "requirements": [
+        "Signer enrollment PR merged before any attestation evaluation.",
+        "One attestation per contract-required unit, bound to exact head SHAs.",
+        "Gate re-evaluation outputs captured (embedded-audit + PR Steward).",
+        "0011-REMEDIATION-01 FAIL closure recorded as superseding append-only evidence."
+      ],
+      "expected_files": [
+        "config/audit/embedded-audit-allowed-signers (public key added)",
+        "proof/TP-DCP-MCP-RO-0019/**",
+        "ATTESTATION files under affected proof bundles"
+      ],
+      "context_files": [
+        "scripts/audit/local_audit_acceptance.py",
+        ".github/workflows/embedded-audit.yml",
+        "proof/TP-DCP-MCP-RO-0011-REMEDIATION-01/PROOF.json",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/EXACT_HEAD_READINESS.md"
+      ],
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff/evidence.",
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "python -m scripts.audit.local_audit_acceptance (args pinned in S1); echo exit=$?"
+      ],
+      "validation": [
+        "Attestation verification passes against the main-ref signers file.",
+        "Embedded-audit gate accepts the local attestation (trusted verdict recorded).",
+        "No private key material or secret appears in any committed file.",
+        "Every affected packet's proof gains superseding trusted-audit evidence without rewriting history."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0019/ (PROOF.json, COMMAND_LOG.md, AUDITOR_REPORT.md) with embedded_audit conforming to schemas/proof/embedded_audit.schema.json, and record PASS/FAIL/NOT_RUN buckets honestly (NOT_RUN never collapsed into PASS).",
+      "requirements": [
+        "PROOF.json (schema-conformant embedded_audit).",
+        "COMMAND_LOG.md with outputs and exit codes.",
+        "AUDITOR_REPORT.md.",
+        "Full diff and diff stat."
+      ],
+      "validation": [
+        "python3 scripts/audit/validate_audit_proof.py passes on the new PROOF.json.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ]
+}

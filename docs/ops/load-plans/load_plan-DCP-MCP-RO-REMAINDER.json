@@ -1,0 +1,34 @@
+{
+  "program": "DCP-MCP-RO-REMAINDER",
+  "date": "2026-07-17",
+  "source_plan": "(this session's deep investigation; not separately checked in)",
+  "audit": "proof/TP-DCP-MCP-RO-0011..0018 PROOF.json verdicts (all VALIDATED_WITH_AUDIT_GAP, embedded audits SKIPPED); Gate-0C live ops snapshot 2026-07-17 (dope-memory cross-workspace contamination, registry/lease drift); PR bodies #1041/#1055/#1057/#1059/#1060/#1061/#1064/#1065/#1066/#1067",
+  "ambition": "close every NOT_RUN/blocked tail of the landed 0011-0018 series to production READY (release_ready=true)",
+  "validation": "all 8 packets Draft7-validated against dopetask-canonical-spec.json; two universal blockers confirmed from proofs: (a) trusted embedded-audit PASS (signers file empty, PR #1068 machinery inert), (b) vendor-live acceptance ACC-024/025/026 NOT_RUN",
+  "tag": "dcp-mcp-ro,remainder,series",
+  "packets_dir": "task-packets/dcp/chatgpt-mcp-readonly/",
+  "spec": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+  "root": {
+    "ref": "root",
+    "title": "DCP-MCP-RO remainder: trust, wiring, Gate-0C, live + vendor acceptance, READY",
+    "summary": "8 packets (0019-0026) closing the landed-but-not-READY 0011-0018 series: trusted-audit attestation activation, safe-adapter public wiring, dope-memory fail-closed workspace guard, Gate-0C live exemplar + registry hygiene, live-local acceptance, vendor-live ChatGPT acceptance, series READY close-out, and optional v1 surface retirement."
+  },
+  "load_order": [
+    "0019 || 0020 || 0021",
+    "0022",
+    "0023",
+    "0024",
+    "0025",
+    "(optional, any time after 0020) 0026"
+  ],
+  "leaves": [
+    {"ref": "TP-DCP-MCP-RO-0019", "parent": "root", "title": "Trusted embedded-audit attestation activation", "effort": "M", "agent": "shell", "accept": "signers enrolled via reviewed PR; signed attestations bound to exact landed heads; gate re-evaluation trusted; 0011-REMEDIATION-01 FAILs closed append-only", "depends_on": []},
+    {"ref": "TP-DCP-MCP-RO-0020", "parent": "root", "title": "Wire safe adapters into public facade tools", "effort": "M", "agent": "codex", "accept": "release-one ConPort/dope-memory tools public behind ownership+connector authz; harness rows added; hermetic suite green", "depends_on": []},
+    {"ref": "TP-DCP-MCP-RO-0021", "parent": "root", "title": "Dope-memory fail-closed workspace guard + purge tool", "effort": "M", "agent": "codex", "accept": "mismatched workspace_id stores rejected; dry-run-default quarantine tool with export receipts; tests green", "depends_on": []},
+    {"ref": "TP-DCP-MCP-RO-0022", "parent": "root", "title": "Gate-0C live exemplar + registry hygiene", "effort": "M", "agent": "shell", "accept": "exemplar passes mount+identity+no-cross-repo-state; contamination purged with receipts; leases/instances/7890-identity reconciled via dopemux mcp tooling", "depends_on": ["TP-DCP-MCP-RO-0021"]},
+    {"ref": "TP-DCP-MCP-RO-0023", "parent": "root", "title": "Live-local acceptance pass", "effort": "M", "agent": "shell", "accept": "all locally-executable Deterministic+live matrix rows PASS with receipts; only vendor/tunnel gates remain NOT_RUN", "depends_on": ["TP-DCP-MCP-RO-0020", "TP-DCP-MCP-RO-0022"]},
+    {"ref": "TP-DCP-MCP-RO-0024", "parent": "root", "title": "Vendor-live acceptance + release_ready", "effort": "M", "agent": "shell", "accept": "ChatGPT connector battery passes (ACC-024/025/026 retired); real ACC-029; tunnel teardown receipt; release_ready evaluated honestly", "depends_on": ["TP-DCP-MCP-RO-0019", "TP-DCP-MCP-RO-0023"]},
+    {"ref": "TP-DCP-MCP-RO-0025", "parent": "root", "title": "Series READY close-out", "effort": "S", "agent": "shell", "accept": "exact_head_readiness READY at exact head; review items classified; BUILD_SERIES close-out rows 0011-0025", "depends_on": ["TP-DCP-MCP-RO-0019", "TP-DCP-MCP-RO-0020", "TP-DCP-MCP-RO-0022", "TP-DCP-MCP-RO-0023", "TP-DCP-MCP-RO-0024"]},
+    {"ref": "TP-DCP-MCP-RO-0026", "parent": "root", "title": "V1 project_id surface retirement (optional)", "effort": "S", "agent": "codex", "accept": "consumer sweep proves zero non-test v1 imports then delete/quarantine; intentional-deletion label carried; suite green", "depends_on": ["TP-DCP-MCP-RO-0020"]}
+  ]
+}

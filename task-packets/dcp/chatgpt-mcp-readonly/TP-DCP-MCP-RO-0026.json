@@ -1,0 +1,118 @@
+{
+  "id": "TP-DCP-MCP-RO-0026",
+  "project": "dopemux-mvp",
+  "target": "Retire the v1 project_id facade surface (OPTIONAL cleanup; not on the READY critical path): confirm no remaining consumers of registry.py/resolver.py/tools.py v1 modules beyond tests, mark them internal-legacy or remove them with their v1-only tests, and record the migration completion in REGISTRY_V2_CONTRACT.md.",
+  "invariants": [
+    "One public MCP endpoint; no backend ports exposed; no backend writes; no lifecycle mutations from the facade.",
+    "target_id is the only caller-facing handle; callers never supply paths, URLs, ports, workspace IDs, or runtime selectors.",
+    "Runtime discovery never grants exposure; port leases never prove ownership; heuristics may discover but never authorize; ambiguity blocks; cross-repo mounts block.",
+    "A skipped live gate is NOT a pass (ACCEPTANCE_MATRIX.md proof rule); never rewrite a historical PARTIAL/SKIPPED verdict - append new evidence.",
+    "Proof must be current to the exact head SHA (scripts/audit/exact_head_readiness.py contract).",
+    "STOP IF: the embedded auditor returns FAIL or NEEDS_SUPERVISOR.",
+    "FORBIDDEN FILE: .env*",
+    "Deletion only after a consumer sweep proves zero non-test imports (evidence in proof); otherwise mark internal-legacy and defer deletion.",
+    "The public server surface must remain tools_v2-only before and after (no behavior change to v2 paths).",
+    "This packet triggers the clobber-guard SOURCE_AND_TEST_CODELETION rule by design - carry the intentional-deletion label with human ack.",
+    "FORBIDDEN FILE: src/**",
+    "FORBIDDEN FILE: docker/**"
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0020"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0020",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "dcp/chatgpt-mcp-ro-0026-v1-retire",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "chore(dcp): retire v1 project_id facade surface",
+    "allowlist": [
+      "services/dcp-readonly-facade/**",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/REGISTRY_V2_CONTRACT.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0026.*",
+      "proof/TP-DCP-MCP-RO-0026/**"
+    ],
+    "verify": [
+      "python3 -m pytest -q services/dcp-readonly-facade/tests",
+      "rg -n \"from dcp_facade.registry import|from dcp_facade.resolver import\" services/ || true",
+      "git diff --stat"
+    ]
+  },
+  "pr": {
+    "title": "chore(dcp): retire the v1 project_id facade surface (post-migration cleanup)",
+    "body": "Optional cleanup closing the 0011 residual 'v1 facade tools remain project_id-based': consumer sweep, then removal or internal-legacy quarantine of registry.py/resolver.py/tools.py with their v1-only tests. Carries the intentional-deletion label for the clobber-guard.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Sweep for v1 module consumers (imports of dcp_facade.registry/resolver/tools outside their own tests); if zero, delete modules + v1-only tests and update docs; if any remain, convert them to v2 or mark the modules internal-legacy with a deprecation note instead of deleting.",
+      "requirements": [
+        "Consumer sweep evidence in proof (rg output).",
+        "Facade suite green after removal/quarantine.",
+        "REGISTRY_V2_CONTRACT.md migration section updated to 'complete'."
+      ],
+      "expected_files": [
+        "services/dcp-readonly-facade/ (removals or legacy markers)",
+        "proof/TP-DCP-MCP-RO-0026/**"
+      ],
+      "context_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/REGISTRY_V2_CONTRACT.md"
+      ],
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff/evidence.",
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "python3 -m pytest -q services/dcp-readonly-facade/tests"
+      ],
+      "validation": [
+        "Zero non-test v1 imports remain (or documented internal-legacy quarantine).",
+        "Public surface unchanged for v2 paths."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0026/ (PROOF.json, COMMAND_LOG.md, AUDITOR_REPORT.md) with embedded_audit conforming to schemas/proof/embedded_audit.schema.json, and record PASS/FAIL/NOT_RUN buckets honestly (NOT_RUN never collapsed into PASS).",
+      "requirements": [
+        "PROOF.json (schema-conformant embedded_audit).",
+        "COMMAND_LOG.md with outputs and exit codes.",
+        "AUDITOR_REPORT.md.",
+        "Full diff and diff stat."
+      ],
+      "validation": [
+        "python3 scripts/audit/validate_audit_proof.py passes on the new PROOF.json.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ]
+}

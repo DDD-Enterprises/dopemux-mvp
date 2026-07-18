@@ -1,0 +1,132 @@
+{
+  "id": "TP-DCP-MCP-RO-0020",
+  "project": "dopemux-mvp",
+  "target": "Wire the TP-0015 release-one safe adapters (ConPort decision list/read; dope-memory chronicle search/replay) into the public FastMCP surface (services/dcp-readonly-facade/src/mcp/server.py + tools_v2) behind ownership verification and connector-policy target/tool authorization, extending the acceptance harness; hermetic tests only, no live backend required.",
+  "invariants": [
+    "One public MCP endpoint; no backend ports exposed; no backend writes; no lifecycle mutations from the facade.",
+    "target_id is the only caller-facing handle; callers never supply paths, URLs, ports, workspace IDs, or runtime selectors.",
+    "Runtime discovery never grants exposure; port leases never prove ownership; heuristics may discover but never authorize; ambiguity blocks; cross-repo mounts block.",
+    "A skipped live gate is NOT a pass (ACCEPTANCE_MATRIX.md proof rule); never rewrite a historical PARTIAL/SKIPPED verdict - append new evidence.",
+    "Proof must be current to the exact head SHA (scripts/audit/exact_head_readiness.py contract).",
+    "STOP IF: the embedded auditor returns FAIL or NEEDS_SUPERVISOR.",
+    "FORBIDDEN FILE: .env*",
+    "Release-one scope only: ConPort decision list/read and dope-memory search/replay; NO progress reads unless progress_readonly_safe=true with backend auto-fork disabled and proven; no new backend routes.",
+    "callable requires ownership_verified AND live per the capability contract {configured, discovered, ownership_verified, live, callable, blocked_reason}; configured never implies callable.",
+    "DCP-ACC-012 (blocked family tools absent/denied), DCP-ACC-013 (connector target authz), DCP-ACC-016 (progress/side-effect reads denied), DCP-ACC-020/021 (secret/header redaction) remain BLOCKING and gain harness rows for the new tools.",
+    "to_mcp_wrapper stays blocked; dope_context stays blocked (bridge is a separate packet if ever unblocked).",
+    "STOP IF: any wiring requires weakening a route denylist, redaction rule, or ownership gate.",
+    "FORBIDDEN FILE: src/**",
+    "FORBIDDEN FILE: docker/**",
+    "FORBIDDEN FILE: services/** outside services/dcp-readonly-facade"
+  ],
+  "depends_on": [
+    "TP-DCP-MCP-RO-0018"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-MCP-RO",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DCP-MCP-RO-0018",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "dcp/chatgpt-mcp-ro-0020-wire-safe-adapters",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): wire safe adapters into public facade tools",
+    "allowlist": [
+      "services/dcp-readonly-facade/**",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/OWNERSHIP_AND_SAFE_ADAPTERS.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/ACCEPTANCE_MATRIX.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0020.*",
+      "proof/TP-DCP-MCP-RO-0020/**"
+    ],
+    "verify": [
+      "python3 -m pytest -q services/dcp-readonly-facade/tests",
+      "python3 -m compileall -q services/dcp-readonly-facade",
+      "rg -n \"progress\" services/dcp-readonly-facade/src/mcp/server.py || true",
+      "git diff --stat"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): wire ConPort/dope-memory safe adapters into the public facade surface",
+    "body": "Close the TP-0015 residual 'Public FastMCP tools not yet wired to safe_adapters': expose release-one ConPort decision reads and dope-memory chronicle search/replay as public target_id tools, gated by ownership verification and connector-policy authorization, with acceptance-harness rows and hermetic tests.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "TDD: add failing hermetic tests for the new public tools (fake transports as in test_safe_adapters.py), then wire safe_adapters.py functions into tools_v2 + src/mcp/server.py behind ownership.verify + connector_policy authorization, emitting the standard envelope with authority/freshness/redaction labels and blocked_reason on every deny. Also verify (and cover with a test) that the 0013 auth context is fully wired through the 0014 ingress to tool dispatch.",
+      "requirements": [
+        "New public tools for: conport decision list, conport decision read, dope-memory chronicle search, dope-memory session replay (names per TOOL_CONTRACT.md conventions).",
+        "Ownership + connector authz evaluated before any adapter call; deny paths return envelope with blocked_reason.",
+        "Acceptance harness rows added for the new tools (authz matrix, denial, redaction).",
+        "Docs updated: TOOL_CONTRACT.md + OWNERSHIP_AND_SAFE_ADAPTERS.md wiring section."
+      ],
+      "expected_files": [
+        "services/dcp-readonly-facade/src/dcp_facade/tools_v2.py",
+        "services/dcp-readonly-facade/src/mcp/server.py",
+        "services/dcp-readonly-facade/tests/test_tools_v2.py",
+        "services/dcp-readonly-facade/tests/test_acceptance_harness.py"
+      ],
+      "context_files": [
+        "services/dcp-readonly-facade/src/dcp_facade/safe_adapters.py",
+        "services/dcp-readonly-facade/src/dcp_facade/ownership.py",
+        "services/dcp-readonly-facade/src/dcp_facade/connector_policy.py",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/OWNERSHIP_AND_SAFE_ADAPTERS.md"
+      ],
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff/evidence.",
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "python3 -m pytest -q services/dcp-readonly-facade/tests"
+      ],
+      "validation": [
+        "Full facade suite green with no live backend running.",
+        "Blocked families remain absent/denied (DCP-ACC-012).",
+        "Progress reads remain denied (DCP-ACC-016).",
+        "Secret and header redaction rows pass (DCP-ACC-020/021)."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0020/ (PROOF.json, COMMAND_LOG.md, AUDITOR_REPORT.md) with embedded_audit conforming to schemas/proof/embedded_audit.schema.json, and record PASS/FAIL/NOT_RUN buckets honestly (NOT_RUN never collapsed into PASS).",
+      "requirements": [
+        "PROOF.json (schema-conformant embedded_audit).",
+        "COMMAND_LOG.md with outputs and exit codes.",
+        "AUDITOR_REPORT.md.",
+        "Full diff and diff stat."
+      ],
+      "validation": [
+        "python3 scripts/audit/validate_audit_proof.py passes on the new PROOF.json.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ]
+}
