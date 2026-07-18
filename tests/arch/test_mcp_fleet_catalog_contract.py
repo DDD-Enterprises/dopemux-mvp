@@ -4,6 +4,7 @@ from pathlib import Path
 
 import jsonschema
 import pytest
+import yaml
 
 from dopemux.mcp import fleet_catalog
 
@@ -685,3 +686,68 @@ def test_legacy_registry_is_marked_deprecated():
 
     assert header.startswith("# DEPRECATED")
     assert "mcp_catalog.yaml" in header
+
+
+# ---------------------------------------------------------------------------
+# MCPINT-FND-CODEGEN-005 — per-applied-target parity gates (ADR-MCPINT-001 §2)
+# ---------------------------------------------------------------------------
+
+
+def test_opencode_jsonc_parity_over_managed_section():
+    """Committed opencode.jsonc managed `mcp` section == fresh catalog render."""
+    errors = fleet_catalog.validate_opencode_jsonc_parity(REPO_ROOT)
+
+    assert errors == []
+
+
+def test_copilot_proxy_config_parity():
+    """Committed mcp-proxy-config.copilot.yaml == fresh catalog render (whole file)."""
+    errors = fleet_catalog.validate_copilot_proxy_config_parity(REPO_ROOT)
+
+    assert errors == []
+
+
+def test_codex_config_toml_parity_gate():
+    """Sequenced codex target: managed region parity, or no unmanaged mcp_servers drift."""
+    errors = fleet_catalog.validate_codex_config_toml_parity(REPO_ROOT)
+
+    assert errors == []
+
+
+def test_opencode_managed_mcp_renders_only_read_safe_direct_servers():
+    """ADR-MCPINT-002: read-plane rows honor DIRECT config only for read-safe planes.
+
+    Until MCPINT-IMP-FACADE-001 deploys the dcp-readonly-facade listener, the
+    opencode managed block must contain exactly the read-safe direct surface
+    (pal-stdio) — never an invented endpoint for a facade-routed server.
+    """
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+
+    servers = fleet_catalog.render_opencode_mcp_servers(catalog)
+
+    assert set(servers) == {"pal-stdio"}
+    assert servers["pal-stdio"]["type"] == "local"
+    assert servers["pal-stdio"]["command"][0] == "docker"
+
+
+def test_copilot_proxy_config_drops_dead_hand_authored_servers():
+    """The regenerated copilot yaml must not resurrect hand-authored drift entries."""
+    catalog = fleet_catalog.load_root_catalog(REPO_ROOT)
+
+    rendered = fleet_catalog.render_copilot_proxy_config(catalog)
+    servers = yaml.safe_load(rendered)["mcpServers"]
+
+    assert set(servers) == {
+        "conport",
+        "dope-context",
+        "dope-memory",
+        "gpt-researcher",
+        "pal-stdio",
+        "serena",
+        "task-orchestrator",
+    }
+    for dead in ("mas-sequential-thinking", "conport-admin", "gpt-researcher_wrapped", "pal"):
+        assert dead not in servers
+    assert servers["conport"]["type"] == "sse"
+    assert servers["pal-stdio"]["type"] == "stdio"
+    assert servers["dope-memory"]["type"] == "http"

@@ -56,6 +56,25 @@ _CONPORT_TOOL_SNAPSHOT = frozenset(
 )
 _MCP_TOOL_SNAPSHOTS = {"conport": _CONPORT_TOOL_SNAPSHOT}
 
+# Managed-section markers for merge-style apply targets (MCPINT-FND-CODEGEN-005).
+# Everything between BEGIN and END (inclusive) is generator-owned; content outside
+# the markers is user-owned and preserved verbatim by the merge renderers.
+OPENCODE_MANAGED_BEGIN = "// BEGIN dopemux-managed mcp"
+OPENCODE_MANAGED_END = "// END dopemux-managed mcp"
+CODEX_MANAGED_BEGIN = "# BEGIN dopemux-managed mcp_servers"
+CODEX_MANAGED_END = "# END dopemux-managed mcp_servers"
+
+# Planes whose full tool surface is read-safe (no repo/authority mutation), so a
+# `read-plane` agents-matrix row may be honored by DIRECT client config while the
+# universal read plane (dcp-readonly-facade) is still planned-active with no
+# endpoint (ADR-MCPINT-002: read-plane = "facade projection and/or read-safe
+# direct config"). Everything else waits for MCPINT-IMP-FACADE-001.
+_READ_SAFE_DIRECT_PLANES = frozenset({"reasoning"})
+
+# Codex renders `full` / `full-sequenced` rows; a missing `agents:` field
+# (legacy or synthetic catalogs) records no restriction and stays renderable.
+_CODEX_RENDERABLE_EXPOSURES = (None, "full", "full-sequenced")
+
 
 REQUIRED_SERVER_PERSONALITIES: dict[str, dict[str, str]] = {
     "conport": {
@@ -211,21 +230,39 @@ def _codex_env_vars(spec: dict[str, Any]) -> list[str]:
     return sorted(set(env_keys))
 
 
-def render_codex_config_fragment(catalog: dict[str, Any]) -> str:
-    """Render singleton MCP servers in Codex `config.toml` syntax.
+def _agent_exposure(spec: dict[str, Any], agent: str) -> str | None:
+    """Exposure value for `agent` from this server's `agents:` matrix.
+
+    Returns None when the spec carries no `agents:` field at all (legacy or
+    synthetic catalogs — no restriction recorded). The sentinel string "none"
+    (whole-server or per-agent) means explicitly no exposure; a matrix dict
+    without a row for `agent` is treated as no exposure (the matrix is explicit).
+    """
+    agents = spec.get("agents")
+    if agents is None:
+        return None
+    if agents == "none":
+        return "none"
+    if isinstance(agents, dict):
+        return agents.get(agent, "none")
+    return "none"
+
+
+def _codex_server_lines(catalog: dict[str, Any]) -> list[str]:
+    """Codex `[mcp_servers.*]` table lines for every codex-renderable server.
 
     Codex currently supports stdio and streamable HTTP MCP servers. SSE-only
     singleton entries stay represented in Claude/global and health outputs.
+    Only `full` / `full-sequenced` codex agents-matrix rows render
+    (ADR-MCPINT-001 §2 / ADR-MCPINT-002 §1).
     """
-
-    lines = [
-        "# Generated from mcp_catalog.yaml by `dopemux mcp generate`.",
-        "# Dry-run is the default; review before copying into .codex/config.toml.",
-    ]
+    lines: list[str] = []
     for name, spec in sorted(catalog.get("servers", {}).items()):
         if spec.get("scope") != "singleton":
             continue
         if not mcp_commands._is_startable_global_entry(spec):
+            continue
+        if _agent_exposure(spec, "codex") not in _CODEX_RENDERABLE_EXPOSURES:
             continue
         transport = spec.get("transport", "http")
         if transport not in {"stdio", "http"}:
@@ -248,7 +285,328 @@ def render_codex_config_fragment(catalog: dict[str, Any]) -> str:
                 raise MCPFleetCatalogError(f"Singleton `{name}` requires `url` for Codex HTTP.")
             lines.append(f"url = {_toml_string(url)}")
 
+    return lines
+
+
+def render_codex_config_fragment(catalog: dict[str, Any]) -> str:
+    """Render codex-renderable MCP servers in Codex `config.toml` syntax.
+
+    This is the preview/projection output. The in-repo `.codex/config.toml`
+    write is gated: codex exposure is `full-sequenced` (ADR-MCPINT-002 G1), so
+    `dopemux mcp generate --apply` refuses it without `--allow-sequenced`.
+    """
+
+    lines = [
+        "# Generated from mcp_catalog.yaml by `dopemux mcp generate`.",
+        "# Dry-run is the default; review before copying into .codex/config.toml.",
+        "# In-repo apply is sequenced (ADR-MCPINT-002 G1): `--apply --allow-sequenced`",
+        "# writes .codex/config.toml only after DMX-MEMSPINE-IDENTITY-005 and",
+        "# task-orchestrator actor_authentication.enabled have landed.",
+        *_codex_server_lines(catalog),
+    ]
     return "\n".join(lines) + "\n"
+
+
+def render_codex_managed_region(catalog: dict[str, Any]) -> str:
+    """The generator-owned `[mcp_servers.*]` region for in-repo .codex/config.toml."""
+    lines = [
+        CODEX_MANAGED_BEGIN
+        + " — generated from mcp_catalog.yaml by `dopemux mcp generate --apply"
+        + " --allow-sequenced`. Do not hand-edit this section.",
+        *_codex_server_lines(catalog),
+        "",
+        CODEX_MANAGED_END,
+    ]
+    return "\n".join(lines)
+
+
+def _extract_marked_region(text: str, begin: str, end: str) -> str | None:
+    """Return the inclusive begin→end marked block of `text`, or None."""
+    lines = text.splitlines()
+    start = next(
+        (index for index, line in enumerate(lines) if line.strip().startswith(begin)),
+        None,
+    )
+    if start is None:
+        return None
+    stop = next(
+        (
+            index
+            for index, line in enumerate(lines[start + 1 :], start=start + 1)
+            if line.strip().startswith(end)
+        ),
+        None,
+    )
+    if stop is None:
+        return None
+    return "\n".join(lines[start : stop + 1])
+
+
+def merge_codex_config_toml(existing_text: str | None, catalog: dict[str, Any]) -> str:
+    """Merge the managed `mcp_servers` region into an existing .codex/config.toml.
+
+    Additive and marker-delimited: user keys (model, [agents], approval_policy,
+    …) are preserved verbatim; only the marked region is replaced (or appended
+    when absent). Hand-authored `[mcp_servers.*]` tables outside the markers are
+    a contract violation (generated files are never hand-edited — ADR-MCPINT-001)
+    and abort the merge.
+    """
+    region = render_codex_managed_region(catalog)
+    text = existing_text or ""
+    existing_region = _extract_marked_region(text, CODEX_MANAGED_BEGIN, CODEX_MANAGED_END)
+    if existing_region is not None:
+        remainder = text.replace(existing_region, "", 1)
+        if "[mcp_servers." in remainder:
+            raise MCPFleetCatalogError(
+                ".codex/config.toml declares [mcp_servers.*] outside the dopemux-managed "
+                "markers; remove the hand-authored tables before `--allow-sequenced` apply."
+            )
+        merged = text.replace(existing_region, region, 1)
+        return merged if merged.endswith("\n") else merged + "\n"
+    if "[mcp_servers." in text:
+        raise MCPFleetCatalogError(
+            ".codex/config.toml declares [mcp_servers.*] outside the dopemux-managed "
+            "markers; remove the hand-authored tables before `--allow-sequenced` apply."
+        )
+    base = text.rstrip("\n")
+    prefix = base + "\n\n" if base else ""
+    return prefix + region + "\n"
+
+
+# ---------------------------------------------------------------------------
+# OpenCode (opencode.jsonc) — managed-merge renderer (MCPINT-FND-CODEGEN-005)
+# ---------------------------------------------------------------------------
+
+
+def _strip_jsonc_comments(text: str) -> str:
+    """Strip // and /* */ comments from JSONC while preserving string contents."""
+    out: list[str] = []
+    index = 0
+    length = len(text)
+    in_string = False
+    while index < length:
+        char = text[index]
+        if in_string:
+            out.append(char)
+            if char == "\\" and index + 1 < length:
+                out.append(text[index + 1])
+                index += 2
+                continue
+            if char == '"':
+                in_string = False
+            index += 1
+            continue
+        if char == '"':
+            in_string = True
+            out.append(char)
+            index += 1
+            continue
+        if char == "/" and index + 1 < length and text[index + 1] == "/":
+            while index < length and text[index] != "\n":
+                index += 1
+            continue
+        if char == "/" and index + 1 < length and text[index + 1] == "*":
+            index += 2
+            while index + 1 < length and not (text[index] == "*" and text[index + 1] == "/"):
+                index += 1
+            index += 2
+            continue
+        out.append(char)
+        index += 1
+    return "".join(out)
+
+
+def _opencode_entry(spec: dict[str, Any]) -> dict[str, Any] | None:
+    """Render one catalog spec as an OpenCode `mcp` entry, or None if not renderable."""
+    transport = spec.get("transport", "http")
+    if transport == "stdio":
+        command = spec.get("command")
+        if not command:
+            return None
+        entry: dict[str, Any] = {
+            "type": "local",
+            "command": [command, *list(spec.get("args") or [])],
+            "enabled": True,
+        }
+        env_vars = _codex_env_vars(spec)
+        if env_vars:
+            entry["environment"] = {key: f"{{env:{key}}}" for key in env_vars}
+        return entry
+    if transport == "http":
+        url = spec.get("url")
+        if not url:
+            return None
+        return {"type": "remote", "url": url, "enabled": True}
+    return None
+
+
+def render_opencode_mcp_servers(catalog: dict[str, Any]) -> dict[str, Any]:
+    """OpenCode `mcp` mapping rendered truthfully from the catalog.
+
+    `read-plane` rows (ADR-MCPINT-002) are honored by DIRECT config only for
+    read-safe planes (see `_READ_SAFE_DIRECT_PLANES`); everything else joins via
+    the dcp-readonly-facade once MCPINT-IMP-FACADE-001 deploys a real listener.
+    No endpoint is ever invented for planned-active/url-less entries.
+    """
+    servers: dict[str, Any] = {}
+    for name, spec in sorted(catalog.get("servers", {}).items()):
+        exposure = _agent_exposure(spec, "opencode")
+        if exposure not in {"full", "read-plane"}:
+            continue
+        if not mcp_commands._is_startable_global_entry(spec):
+            continue
+        if exposure == "read-plane" and spec.get("plane") not in _READ_SAFE_DIRECT_PLANES:
+            continue
+        entry = _opencode_entry(spec)
+        if entry is None:
+            continue
+        servers[name] = entry
+    return servers
+
+
+def _opencode_deferred_servers(catalog: dict[str, Any]) -> list[str]:
+    """Servers with an opencode exposure row that cannot render truthfully today."""
+    rendered = set(render_opencode_mcp_servers(catalog))
+    return [
+        name
+        for name, spec in sorted(catalog.get("servers", {}).items())
+        if _agent_exposure(spec, "opencode") in {"full", "read-plane"} and name not in rendered
+    ]
+
+
+def render_opencode_managed_section_lines(catalog: dict[str, Any]) -> list[str]:
+    """The generator-owned opencode.jsonc lines (comments + `"mcp": {...}`), 2-space indented."""
+    lines = [
+        f"  {OPENCODE_MANAGED_BEGIN} — generated from mcp_catalog.yaml by"
+        " `dopemux mcp generate --apply`. Do not hand-edit this section.",
+        "  // Read-plane rows (ADR-MCPINT-002) render here only where a read-safe DIRECT",
+        "  // config exists today; the universal read plane (dcp-readonly-facade) is",
+        "  // planned-active with no endpoint until MCPINT-IMP-FACADE-001 deploys it.",
+    ]
+    deferred = _opencode_deferred_servers(catalog)
+    if deferred:
+        lines.append("  // Deferred to the facade: " + ", ".join(deferred))
+    payload = json.dumps({"mcp": render_opencode_mcp_servers(catalog)}, indent=2, sort_keys=True)
+    lines.extend(payload.splitlines()[1:-1])
+    lines.append(f"  {OPENCODE_MANAGED_END}")
+    return lines
+
+
+def render_opencode_managed_preview(catalog: dict[str, Any]) -> str:
+    """Standalone JSONC preview of the managed opencode section (output-dir projection)."""
+    return "{\n" + "\n".join(render_opencode_managed_section_lines(catalog)) + "\n}\n"
+
+
+def render_opencode_jsonc(existing_text: str | None, catalog: dict[str, Any]) -> str:
+    """Merge the managed `mcp` section into opencode.jsonc, preserving user keys.
+
+    Only the marker-delimited managed section (the `mcp` key) is generator-owned;
+    every other top-level key (`$schema`, `instructions`, `permission`, …) is
+    preserved with its original relative order. The managed section replaces the
+    existing `mcp` key in place, or is inserted before `permission` (or appended)
+    when no `mcp` key exists yet.
+    """
+    if existing_text and existing_text.strip():
+        try:
+            data = json.loads(_strip_jsonc_comments(existing_text))
+        except json.JSONDecodeError as exc:
+            raise MCPFleetCatalogError(f"opencode.jsonc is not parseable JSONC: {exc}") from exc
+        if not isinstance(data, dict):
+            raise MCPFleetCatalogError("opencode.jsonc must contain a top-level object.")
+    else:
+        data = {}
+
+    managed = object()
+    slots: list[Any] = [managed if key == "mcp" else key for key in data]
+    if managed not in slots:
+        if "permission" in slots:
+            slots.insert(slots.index("permission"), managed)
+        else:
+            slots.append(managed)
+
+    section = render_opencode_managed_section_lines(catalog)
+    lines: list[str] = ["{"]
+    for index, slot in enumerate(slots):
+        is_last = index == len(slots) - 1
+        if slot is managed:
+            block = list(section)
+            if not is_last:
+                # The trailing comma goes on the last JSON line, not the END comment.
+                for position in range(len(block) - 1, -1, -1):
+                    if not block[position].lstrip().startswith("//"):
+                        block[position] += ","
+                        break
+            lines.extend(block)
+        else:
+            chunk = json.dumps({slot: data[slot]}, indent=2).splitlines()[1:-1]
+            if not is_last:
+                chunk[-1] += ","
+            lines.extend(chunk)
+    lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
+# ---------------------------------------------------------------------------
+# Copilot proxy (mcp-proxy-config.copilot.yaml) renderer (MCPINT-FND-CODEGEN-005)
+# ---------------------------------------------------------------------------
+
+
+def render_copilot_proxy_config(catalog: dict[str, Any]) -> str:
+    """Regenerate mcp-proxy-config.copilot.yaml from the catalog.
+
+    Includes only catalog servers whose `agents.copilot` row grants exposure
+    (`full` / `full-sequenced` / `read-plane`), with their contractual catalog
+    transports. Planned-active entries (no truthful endpoint yet) are named in a
+    header comment instead of being invented.
+    """
+    servers: dict[str, Any] = {}
+    deferred: list[str] = []
+    for name, spec in sorted(catalog.get("servers", {}).items()):
+        exposure = _agent_exposure(spec, "copilot")
+        if exposure not in {"full", "full-sequenced", "read-plane"}:
+            continue
+        if not mcp_commands._is_startable_global_entry(spec):
+            if spec.get("lifecycle") == "planned-active":
+                deferred.append(name)
+            continue
+        transport = spec.get("transport", "http")
+        if transport == "stdio":
+            command = spec.get("command")
+            if not command:
+                raise MCPFleetCatalogError(
+                    f"`{name}` requires `command` for the Copilot proxy config."
+                )
+            entry: dict[str, Any] = {
+                "type": "stdio",
+                "command": command,
+                "args": list(spec.get("args") or []),
+            }
+            env_vars = _codex_env_vars(spec)
+            if env_vars:
+                entry["env"] = {key: f"${{{key}}}" for key in env_vars}
+        elif transport in {"http", "sse"}:
+            url = spec.get("url") or spec.get("url_template")
+            if not url:
+                raise MCPFleetCatalogError(
+                    f"`{name}` requires `url`/`url_template` for the Copilot proxy config."
+                )
+            entry = {"type": transport, "url": url}
+        else:
+            continue
+        servers[name] = entry
+
+    lines = [
+        "# Generated from mcp_catalog.yaml by `dopemux mcp generate`. Do not hand-edit.",
+        "# Copilot proxy MCP servers — catalog entries whose `agents.copilot` row grants",
+        "# exposure (ADR-MCPINT-001 §2 / ADR-MCPINT-002; renderer: MCPINT-FND-CODEGEN-005).",
+    ]
+    if deferred:
+        lines.append(
+            "# Deferred (planned-active, no endpoint yet — deployed by MCPINT-IMP-FACADE-001): "
+            + ", ".join(deferred)
+        )
+    payload = yaml.safe_dump({"mcpServers": servers}, sort_keys=True, default_flow_style=False)
+    return "\n".join(lines) + "\n" + payload
 
 
 def render_health_probe_list(catalog: dict[str, Any]) -> list[dict[str, Any]]:
@@ -340,6 +698,8 @@ def generate_fleet_output_files(catalog: dict[str, Any]) -> dict[str, str]:
             {"mcpServers": render_singleton_mcp_servers(catalog)}
         ),
         "codex/config.toml": render_codex_config_fragment(catalog),
+        "opencode/opencode.managed.jsonc": render_opencode_managed_preview(catalog),
+        "copilot/mcp-proxy-config.copilot.yaml": render_copilot_proxy_config(catalog),
         "health/mcp-health-probes.json": _json_dumps(render_health_probe_list(catalog)),
         "docs/mcp-fleet.md": render_mcp_doctrine_doc(catalog),
     }
@@ -389,6 +749,25 @@ def validate_decision_required_generated_config_quarantine(
             _CODEX_SERVER_HEADING_RE.findall(rendered.get("codex/config.toml", ""))
         ),
     }
+
+    opencode_payload = rendered.get("opencode/opencode.managed.jsonc")
+    if opencode_payload:
+        try:
+            opencode_data = json.loads(_strip_jsonc_comments(opencode_payload))
+        except json.JSONDecodeError:
+            errors.append("opencode/opencode.managed.jsonc is not parseable JSONC")
+        else:
+            startable_outputs["opencode/opencode.managed.jsonc"] = set(
+                opencode_data.get("mcp") or {}
+            )
+
+    copilot_payload = rendered.get("copilot/mcp-proxy-config.copilot.yaml")
+    if copilot_payload:
+        copilot_data = yaml.safe_load(copilot_payload) or {}
+        startable_outputs["copilot/mcp-proxy-config.copilot.yaml"] = set(
+            copilot_data.get("mcpServers") or {}
+        )
+
     for output_path, names in startable_outputs.items():
         for name in sorted(names & decision_required):
             errors.append(f"{output_path} includes decision-required server `{name}`")
@@ -660,3 +1039,83 @@ def validate_generated_mcp_json_parity(repo_root: Path) -> list[str]:
     if actual != expected:
         return [".mcp.json does not match catalog defaults renderer"]
     return []
+
+
+def validate_opencode_jsonc_parity(repo_root: Path) -> list[str]:
+    """Parity gate for the opencode.jsonc apply target (MCPINT-FND-CODEGEN-005).
+
+    Parity holds over the managed section only: the committed file must carry
+    the managed markers and its `mcp` mapping must equal the fresh catalog
+    render. User-owned keys (`permission`, `instructions`, …) are not checked.
+    """
+    path = repo_root / "opencode.jsonc"
+    if not path.exists():
+        return ["opencode.jsonc is missing — run `dopemux mcp generate --apply`"]
+    text = path.read_text(encoding="utf-8")
+    if OPENCODE_MANAGED_BEGIN not in text or OPENCODE_MANAGED_END not in text:
+        return [
+            "opencode.jsonc is missing the dopemux-managed mcp section markers — "
+            "run `dopemux mcp generate --apply`"
+        ]
+    try:
+        data = json.loads(_strip_jsonc_comments(text))
+    except json.JSONDecodeError as exc:
+        return [f"opencode.jsonc is not parseable JSONC: {exc}"]
+    expected = render_opencode_mcp_servers(load_root_catalog(repo_root))
+    if data.get("mcp") != expected:
+        return [
+            "opencode.jsonc managed `mcp` section does not match the catalog renderer — "
+            "re-run `dopemux mcp generate --apply`"
+        ]
+    return []
+
+
+def validate_copilot_proxy_config_parity(repo_root: Path) -> list[str]:
+    """Parity gate for the fully-generated mcp-proxy-config.copilot.yaml target."""
+    path = repo_root / "mcp-proxy-config.copilot.yaml"
+    if not path.exists():
+        return ["mcp-proxy-config.copilot.yaml is missing — run `dopemux mcp generate --apply`"]
+    expected = render_copilot_proxy_config(load_root_catalog(repo_root))
+    if path.read_text(encoding="utf-8") != expected:
+        return [
+            "mcp-proxy-config.copilot.yaml does not match the catalog renderer — "
+            "re-run `dopemux mcp generate --apply`"
+        ]
+    return []
+
+
+def validate_codex_config_toml_parity(repo_root: Path) -> list[str]:
+    """Parity gate for the sequenced .codex/config.toml target (ADR-MCPINT-002 G1).
+
+    Until `--allow-sequenced` apply lands the managed region (sequencing
+    prerequisites DMX-MEMSPINE-IDENTITY-005 + actor_authentication.enabled are
+    unmet), the gate only enforces that no `[mcp_servers.*]` tables drift into
+    the file outside generator ownership. Once the managed region exists it must
+    equal the fresh catalog render, and nothing outside it may declare servers.
+    """
+    path = repo_root / ".codex/config.toml"
+    if not path.exists():
+        return []
+    text = path.read_text(encoding="utf-8")
+    region = _extract_marked_region(text, CODEX_MANAGED_BEGIN, CODEX_MANAGED_END)
+    if region is None:
+        if CODEX_MANAGED_BEGIN in text or CODEX_MANAGED_END in text:
+            return [".codex/config.toml has malformed dopemux-managed mcp_servers markers"]
+        if "[mcp_servers." in text:
+            return [
+                ".codex/config.toml declares [mcp_servers.*] outside the dopemux-managed "
+                "region — codex configs are produced only by `dopemux mcp generate --apply "
+                "--allow-sequenced` (ADR-MCPINT-001 §2 / ADR-MCPINT-002 §1)"
+            ]
+        return []
+    errors: list[str] = []
+    if region != render_codex_managed_region(load_root_catalog(repo_root)):
+        errors.append(
+            ".codex/config.toml dopemux-managed mcp_servers region does not match the "
+            "catalog renderer — re-run `dopemux mcp generate --apply --allow-sequenced`"
+        )
+    if "[mcp_servers." in text.replace(region, "", 1):
+        errors.append(
+            ".codex/config.toml declares [mcp_servers.*] outside the dopemux-managed region"
+        )
+    return errors
