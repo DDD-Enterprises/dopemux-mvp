@@ -1,0 +1,77 @@
+{
+  "id": "DMX-DOPEBRAIN-FASTAPI-001",
+  "project": "dopemux-mvp",
+  "target": "Implement the FastAPI main.py wrapper for services/claude_brain (Dope Brain): bind the fully-built core classes (ClaudeBrainManager, PromptOptimizer, CritiqueAnalyzer, DynamicAdaptationManager, ProactiveInterventionSystem) to the 8 README endpoints on port 8080. Today main.py is a placeholder helper and the service cannot serve traffic.",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Deploy runtime proof required; no build-then-strand.",
+    "Run `pytest tests/ --co` after any deletion."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfeat-dopebrain",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfeat-dopebrain",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "commit": {
+    "message": "feat(dope-brain): implement the FastAPI main.py wrapper",
+    "allowlist": [
+      "services/claude_brain/main.py",
+      "services/claude_brain/config.py",
+      "services/claude_brain/tests",
+      "task-packets/DMX-DOPEBRAIN-FASTAPI-001.json"
+    ],
+    "verify": [
+      "pytest services/claude_brain/tests -q"
+    ]
+  },
+  "pr": {
+    "title": "feat(dope-brain): FastAPI service wrapper",
+    "body": "All Dope Brain logic classes are built but main.py is a placeholder, so the service can't serve HTTP (Dockerfile runs python main.py:8080). Implement the FastAPI wrapper binding the 8 endpoints.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Write the FastAPI app binding all core classes with startup init + graceful degradation.",
+      "validation": [
+        "main.py exposes GET /health, /api/v1/status, POST /optimize-prompt, /generate-meta-prompt, /analyze-critique, /brain-request, /adapt-response, /process-state.",
+        "Startup initializes brain_manager/adaptation_manager/intervention_system; /health reports integration status.",
+        "Degrades gracefully (fail-open) when Redis/ADHD-engine/ConPort offline."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Bind to port 8080 (Dockerfile) via config.",
+      "validation": [
+        "uvicorn serves on settings.api_port (8080); container health-check passes."
+      ]
+    }
+  ]
+}

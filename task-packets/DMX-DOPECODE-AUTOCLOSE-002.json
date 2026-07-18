@@ -1,0 +1,65 @@
+{
+  "id": "DMX-DOPECODE-AUTOCLOSE-002",
+  "project": "dopemux-mvp",
+  "target": "Close the untracked-work loop: expose git_detector.check_committed as an MCP tool and call it in the detect path so tracked work auto-closes when committed (>=80% file overlap). Logic exists but no tool/call wires it.",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Deploy runtime proof required; no build-then-strand.",
+    "Run `pytest tests/ --co` after any deletion."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfeat-dopecode",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfeat-dopecode",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "feat(dopecode): wire auto-close-on-commit",
+    "allowlist": [
+      "services/serena/git_detector.py",
+      "services/serena/untracked_work_storage.py",
+      "services/serena/mcp_server.py",
+      "services/serena/tests",
+      "task-packets/DMX-DOPECODE-AUTOCLOSE-002.json"
+    ],
+    "verify": [
+      "pytest services/serena/tests -q -k committed"
+    ]
+  },
+  "pr": {
+    "title": "feat(dopecode): auto-close untracked work on commit",
+    "body": "Feature-1 detection/track/remind/auto-track are done; auto-close-on-commit logic exists but is unwired. Expose + call it.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Register an auto-close-on-commit MCP tool + invoke check_committed in the detect flow.",
+      "validation": [
+        "A tracked item whose files land in a commit is auto-closed; unit test proves state transition detected->converted/closed."
+      ]
+    }
+  ]
+}
