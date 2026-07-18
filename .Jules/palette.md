@@ -168,3 +168,7 @@
 ## 2026-07-16 - [Task Transition Confirmation Reset]
 **Learning:** When implementing 'Soft Confirmation' patterns (like a two-step skip action) in stateful components, failing to reset the confirmation state when the target item changes (e.g., when the active task is switched or completes) can leave the confirmation state 'stuck'. This means the next item immediately renders in the confirm state, leading to potential accidental actions on the wrong item.
 **Action:** Always reset any active confirmation state (e.g., `isSkipConfirming`) and clear any associated timeout refs within the effect or logic that triggers on item/task transitions.
+
+## 2026-07-18 - [Adaptive Prediction Trend Icons]
+**Learning:** For users managing high cognitive load, a generic trend or "forecast" icon (such as a static TrendingUp) can be visually misleading if the forecasted value actually represents a decrease relative to the current state. Dynamically switching the trend icon (e.g., `TrendingUp` vs `TrendingDown`) based on a direct logical comparison to the current live load provides immediate, high-bandwidth visual context and reduces cognitive dissonance.
+**Action:** Always compare predicted/forecasted metrics to current real-time metrics, and dynamically swap trend icons to accurately reflect the direction of change.
