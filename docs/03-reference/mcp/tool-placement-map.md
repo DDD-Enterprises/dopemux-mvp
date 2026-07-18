@@ -80,7 +80,7 @@ Net: **31 tools ship** on `dope-adhd`, **9 drop** (1 delegated, 8 redundant), 2 
 3. claude_brain assess-or-shelve. *(Note: DMX-SVCFEAT DOPEBRAIN-FASTAPI-001+WIRE-002 now claim this — "held" resolves to packet:DMX-DOPEBRAIN-* if that program executes.)*
 4. desktop-commander wire-or-retire (pre-existing user decision, unchanged).
 
-## 6. Addendum 2026-07-17 — SVCFEAT/DopeCode reconciliation (PROPOSED)
+## 6. Addendum 2026-07-17 — SVCFEAT/DopeCode reconciliation (CONFIRMED by user)
 
 DMX-SVCFEAT's keystone packet DOPECODE-DEPLOY-001 (tree `f64aa1a9`) deploys the whole
 46-tool `services/serena` engine as a product ("DopeCode") — its literal spec ("repoint
