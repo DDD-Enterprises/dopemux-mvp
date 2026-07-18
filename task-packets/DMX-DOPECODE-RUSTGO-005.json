@@ -1,0 +1,63 @@
+{
+  "id": "DMX-DOPECODE-RUSTGO-005",
+  "project": "dopemux-mvp",
+  "target": "Rust/Go parity in the AST engine: add callee + import resolution (today Rust/Go get symbols-only via the generic tree-sitter path; Python/JS/TS have deep resolution).",
+  "invariants": [
+    "Every event stream must have >=1 publisher and >=1 consumer.",
+    "Fail-closed on protection/identity; fail-open on advisory/telemetry.",
+    "Deploy runtime proof required; no build-then-strand.",
+    "Run `pytest tests/ --co` after any deletion."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/svcfeat-dopecode",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/svcfeat-dopecode",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "feat(dopecode): Rust/Go navigation parity",
+    "allowlist": [
+      "services/serena/dopecode/navigation/ast_engine.py",
+      "services/serena/tests",
+      "task-packets/DMX-DOPECODE-RUSTGO-005.json"
+    ],
+    "verify": [
+      "pytest services/serena/tests -q -k ast"
+    ]
+  },
+  "pr": {
+    "title": "feat(dopecode): Rust/Go AST callee+import resolution",
+    "body": "The 5-language claim is Python/JS/TS-deep, Rust/Go symbols-only. Add callee+import resolution.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Implement Rust/Go callee+import resolution.",
+      "validation": [
+        "find_callees/get_import_graph return real results for a Rust and a Go fixture; unit-tested."
+      ]
+    }
+  ]
+}
