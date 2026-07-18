@@ -60,9 +60,15 @@
   "steps": [
     {
       "id": "step-1",
-      "task": "Run pal consensus with >=3 models (assigned for/against/neutral stances) on the G6 question, feeding the Trinity ADR, the 07-03 audit section on conport_kg, and the reconciliation report as context.",
+      "task": "Run pal consensus with >=3 models (assigned for/against/neutral stances) on the G6 question, feeding the Trinity ADR, the 07-03 audit section on conport_kg, and the reconciliation report as context. The concrete artifact under decision is src/conport/memory_server.py (1300-line DEAD-CODE draft: mem.upsert/mem.search vector endpoints, OpenAI/Voyage embeddings to Milvus) plus the quarantined services/conport_kg vector surface.",
       "validation": [
         "Proof bundle contains the full consensus transcript with >=3 model stances and a final synthesized recommendation."
+      ],
+      "context_files": [
+        "src/conport/memory_server.py",
+        "services/conport_kg/QUARANTINE.md",
+        "docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md",
+        "claudedocs/mcp-fleet-reconciliation-2026-07-18.md"
       ]
     },
     {

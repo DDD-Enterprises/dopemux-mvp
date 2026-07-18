@@ -62,9 +62,13 @@
   "steps": [
     {
       "id": "step-1",
-      "task": "Add event_id dedup to the intake path (unique constraint or TTL-backed seen-set) with replay-safety tests.",
+      "task": "Add event_id dedup to the intake path (unique constraint or TTL-backed seen-set) with replay-safety tests. Prior art: services/mcp-capture proves SHA-256 content-addressed dedup (identical events from different adapters collapse to one chronicle.sqlite row) with fail-closed input validation — mirror that pattern for stream ingress where event_id is absent or untrusted.",
       "validation": [
         "Test proves replaying an identical event twice yields exactly one stored entry and no error."
+      ],
+      "context_files": [
+        "services/mcp-capture/server.py",
+        "services/mcp-capture/README.md"
       ]
     },
     {

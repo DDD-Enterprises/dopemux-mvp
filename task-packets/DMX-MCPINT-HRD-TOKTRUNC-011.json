@@ -63,9 +63,14 @@
   "steps": [
     {
       "id": "step-1",
-      "task": "Write the truncation spec (docs/03-reference/mcp/) and the shared helper with unit tests (budget edges, marker, paging hint).",
+      "task": "Write the truncation spec (docs/03-reference/mcp/) and the shared helper with unit tests (budget edges, marker, paging hint). Recover the archived pattern verbatim as the baseline: conservative ~4-chars/token estimate, 9K default budget, ~200-token base overhead, item-by-item accumulation, and {original, returned, truncated} metadata on truncated responses.",
       "validation": [
-        "Helper truncates an oversized item list progressively, emits the truncation marker, and unit tests cover under/at/over-budget cases."
+        "Helper truncates an oversized item list progressively, emits the truncation marker, and unit tests cover under/at/over-budget cases.",
+        "Truncated responses carry {original, returned, truncated} metadata matching the archived CONPORT_TOKEN_LIMIT_FIX contract."
+      ],
+      "context_files": [
+        "docs/archive/mcp-servers/CONPORT_TOKEN_LIMIT_FIX.md",
+        "docs/archive/mcp-servers/LEANTIME_TOKEN_LIMIT_FIX.md"
       ]
     },
     {
