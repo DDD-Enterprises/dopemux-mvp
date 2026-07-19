@@ -67,6 +67,7 @@
     ".opencode"
   ],
   "allowed_root_files": [
+    "mcp_tool_surfaces.json",
     "SPECIMEN_LEDGER_REGEN_BIG.csv",
     ".implementer_state.json",
     "CLAUDE_AUTOMATION_INSTRUCTIONS.md",

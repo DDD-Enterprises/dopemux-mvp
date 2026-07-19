@@ -1,3 +1,14 @@
+---
+id: tool-placement-map
+title: Tool Placement Map
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-18'
+last_review: '2026-07-18'
+next_review: '2026-10-16'
+prelude: Tool Placement Map (reference) for dopemux documentation and developer workflows.
+---
 # MCP Tool Placement Map — where every custom tool belongs
 
 **Program**: DMX-MCPINT · **Date**: 2026-07-16 · **Status**: Design (feeds ADR-mcpint-001/002, IMP-ADHDINTEL-007, IMP-COMPLEX-008, FND-CATALOG-001)
