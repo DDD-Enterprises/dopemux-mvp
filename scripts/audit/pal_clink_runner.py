@@ -418,6 +418,33 @@ def _audit_output_as_dict(output: PalClinkAuditOutput) -> dict[str, Any]:
     }
 
 
+def _extract_json_from_text(text: str) -> dict[str, Any] | None:
+    """Extract a valid JSON dictionary from conversational or markdown-wrapped text."""
+    import re
+    # 1. Try to extract json code block
+    code_block_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL | re.IGNORECASE)
+    if code_block_match:
+        try:
+            parsed = json.loads(code_block_match.group(1))
+            if isinstance(parsed, dict):
+                return parsed
+        except json.JSONDecodeError:
+            pass
+
+    # 2. Try to find first '{' and last '}'
+    first_brace = text.find("{")
+    last_brace = text.rfind("}")
+    if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+        try:
+            parsed = json.loads(text[first_brace:last_brace+1])
+            if isinstance(parsed, dict):
+                return parsed
+        except json.JSONDecodeError:
+            pass
+
+    return None
+
+
 def _verdict_payload_from_output(output: PalClinkAuditOutput) -> dict[str, Any]:
     if output.timed_out or output.exit_code != 0 or output.error:
         return {
@@ -428,7 +455,11 @@ def _verdict_payload_from_output(output: PalClinkAuditOutput) -> dict[str, Any]:
     try:
         payload = json.loads(output.stdout)
     except json.JSONDecodeError:
-        return {"status": "success", "content": output.stdout}
+        extracted = _extract_json_from_text(output.stdout)
+        if extracted is not None:
+            payload = extracted
+        else:
+            return {"status": "success", "content": output.stdout}
     if isinstance(payload, dict):
         return _unwrap_tool_output_payload(payload)
     return {"status": "success", "content": output.stdout}
@@ -443,7 +474,11 @@ def _unwrap_tool_output_payload(payload: dict[str, Any]) -> dict[str, Any]:
     try:
         content_payload = json.loads(content)
     except json.JSONDecodeError:
-        return payload
+        extracted = _extract_json_from_text(content)
+        if extracted is not None:
+            content_payload = extracted
+        else:
+            return payload
     if isinstance(content_payload, dict):
         return content_payload
     return payload
