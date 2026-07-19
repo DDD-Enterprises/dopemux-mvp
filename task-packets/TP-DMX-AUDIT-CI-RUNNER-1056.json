@@ -1,0 +1,108 @@
+{
+  "id": "TP-DMX-AUDIT-CI-RUNNER-1056",
+  "project": "dopemux-mvp",
+  "target": "Provision and authenticate the trusted embedded-audit Claude Code runner, and enforce a noninteractive tool-free invocation contract while preserving fail-closed proof enforcement.",
+  "invariants": [
+    "Audit code and provider credentials are exposed only to trusted default-branch source in the pull_request_target workflow.",
+    "Candidate pull-request code remains data-only and is never checked out or executed with credentials.",
+    "Missing CLI, missing provider authentication, malformed output, skipped evidence, and non-passing verdicts remain non-READY and fail closed.",
+    "The repair does not change PR Steward classification, branch protection, or PR #1056's candidate head."
+  ],
+  "depends_on": [
+    "TP-DMX-AUDIT-CI-PROVENANCE-104R-IMPORT-PATH-REPAIR"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MERGE-INTEGRITY",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-MERGE-INTEGRITY-0004-TRUSTED-AUDIT-FOUNDATION",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/audit-ci-runner-1056",
+    "base_branch": "main",
+    "stacked_because": "The merged import-path repair reaches the PAL runner, but current trusted CI still lacks the selected Claude executable and provider environment."
+  },
+  "commit": {
+    "message": "fix(audit): provision trusted Claude audit runner",
+    "allowlist": [
+      ".github/workflows/embedded-audit.yml",
+      "docker/mcp-servers-source/pal/pal-mcp-server/conf/cli_clients/claude-audit.json",
+      "tools/auditor_router/pal_clink.py",
+      "tests/audit/test_run_embedded_audit.py",
+      "tests/audit/test_pal_clink_runner.py",
+      "tests/auditor_router/test_pal_clink.py",
+      "tests/fixtures/auditor_router/*/clink_configs/claude-audit.json",
+      "docs/ops/embedded-audit.md",
+      "task-packets/TP-DMX-AUDIT-CI-RUNNER-1056.json",
+      "proof/TP-DMX-AUDIT-CI-RUNNER-1056/**"
+    ],
+    "verify": [
+      "uv run --frozen pytest -q tests/audit/test_run_embedded_audit.py tests/audit/test_pal_clink_runner.py tests/auditor_router/test_pal_clink.py",
+      "uv run --frozen python -m tools.auditor_router.preflight --packet-id TP-DMX-AUDIT-CI-RUNNER-1056 --out /tmp/tp-dmx-audit-ci-runner-1056-preflight --format json",
+      "uv run --frozen python -m jsonschema -i task-packets/TP-DMX-AUDIT-CI-RUNNER-1056.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(audit): provision trusted Claude audit runner",
+    "body": "## Summary\n- Pins and provisions Claude Code in the trusted embedded-audit job.\n- Maps the existing trusted Claude API secret only into the PAL runner step.\n- Enforces noninteractive print mode with built-in and MCP tools disabled.\n- Adds focused regression coverage and updates operator documentation.\n\n## Security boundary\nCandidate code remains data-only. The workflow continues to execute trusted default-branch code and retains hard fail-closed proof enforcement.\n\n## Validation\nFocused workflow, PAL runner, route inspection, packet schema, precommit, and diff hygiene checks.\n\n## NOT_RUN\nA passing exact-head hosted audit cannot be claimed until this trusted-source workflow repair is merged and rerun.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Bind the current failure to the trusted workflow, route configuration, hosted-runner capability, and available repository secret names without exposing secret values.",
+      "validation": [
+        "The current exact-head artifact records command 'claude' not found on PATH.",
+        "The workflow has no Claude installation or provider-auth mapping before the repair.",
+        "Repository secret metadata shows CLAUDE_API_KEY exists while ANTHROPIC_API_KEY is absent."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add failing regression tests for deterministic CLI provisioning, trusted-only provider authentication, and noninteractive tool-free route arguments.",
+      "validation": [
+        "Focused tests fail against the pre-repair workflow and route configuration for the expected missing contracts."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Pin and install stable Claude Code on Node 22, map trusted provider authentication only into the runner step, and enforce the route execution contract at static inspection.",
+      "validation": [
+        "Focused tests pass.",
+        "Static preflight selects an audit-safe claude-audit route.",
+        "The hard enforcement and trusted-source checkout boundaries are unchanged."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Update operator documentation, validate the canonical packet and proof bundle, run codereview and precommit, then publish a separate repair PR without merging.",
+      "validation": [
+        "All commit.verify commands pass or are reported as NOT_RUN with an exact blocker.",
+        "Only commit.allowlist paths are staged.",
+        "PR #1056 remains unmerged and blocked until a post-merge trusted audit rerun passes."
+      ]
+    }
+  ]
+}

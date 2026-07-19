@@ -215,6 +215,17 @@ def inspect_clink_client_config(
             config=config,
         )
 
+    if expected_cli == "claude":
+        execution_error = _claude_execution_contract_error(effective_args)
+        if execution_error:
+            return _unsafe(
+                path,
+                client_name,
+                underlying_cli,
+                execution_error,
+                config=config,
+            )
+
     role_error = _role_contract_error(config)
     if role_error:
         inspection = _unsafe(path, client_name, underlying_cli, role_error, config=config)
@@ -428,6 +439,25 @@ def _command_contract_error(config: dict[str, Any], expected_cli: str) -> str | 
         return "Audit config command could not be parsed safely."
     if parts != [expected_cli]:
         return f"Audit config command must be exactly {expected_cli}."
+    return None
+
+
+def _claude_execution_contract_error(args: list[str]) -> str | None:
+    if "--print" not in args and "-p" not in args:
+        return "Claude audit config must use --print for noninteractive execution."
+
+    tools_flags = [index for index, token in enumerate(args) if token == "--tools"]
+    tools_equals_flags = [token for token in args if token.startswith("--tools=")]
+    if len(tools_flags) != 1 or tools_equals_flags:
+        return 'Claude audit config must use exactly one --tools "" pair.'
+    tools_index = tools_flags[0]
+    if tools_index + 1 >= len(args) or args[tools_index + 1] != "":
+        return 'Claude audit config must use --tools "" to disable built-in tools.'
+
+    if "--strict-mcp-config" not in args:
+        return "Claude audit config must use --strict-mcp-config."
+    if any(token == "--mcp-config" or token.startswith("--mcp-config=") for token in args):
+        return "Claude audit config must not supply --mcp-config."
     return None
 
 
