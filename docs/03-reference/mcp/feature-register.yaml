@@ -858,15 +858,15 @@ features:
     name: HTTP/SSE dual-transport retrofit (apply TO's HTTP-singleton pattern)
     plane: reasoning
     server: pal-stdio
-    status: planned
+    status: shelved
     code_path: null
     tools: []
     source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
-    decision: held
+    decision: packet:MCPINT-FND-PALRETIRE-009
     triage: {wiring_cost: L, value: M, boundary_fit: clean}
-    packet_ref: null
-    last_verified: "2026-07-17"
-    note: "Would fix the container-leak class; see reference_pal_mcp_container memory + reference_task_orchestrator_container_leak. adr-mcpint-001 §4: pal-http wrapper remains a health/lifecycle shim (not an MCP transport) until this retrofit is decided; catalog marks pal decision-required wire-or-retire."
+    packet_ref: MCPINT-FND-PALRETIRE-009
+    last_verified: "2026-07-18"
+    note: "Operator 2026-07-18: RETIRE the pal-http container; retrofit REJECTED (zero consumers; pal-stdio is the sole PAL surface). Packet MCPINT-FND-PALRETIRE-009 (650d1281) queued: remove compose pal service, catalog decision-required -> retired, KEEP ensure-pal.sh for the off-compose pal-mcp-server (Codex required=true). Prior context: would have fixed the container-leak class; see reference_pal_mcp_container + reference_task_orchestrator_container_leak memories."
 
   # ============================================================
   # 5. Serena — technical-context plane (outside Trinity)
@@ -1286,11 +1286,11 @@ features:
     code_path: docker/mcp-servers-source/desktop-commander
     tools: [focus_window, screenshot, type_text, window_list]
     source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
-    decision: packet:MCPINT-FND-CATALOG-001
+    decision: held
     triage: {wiring_cost: M, value: L, boundary_fit: violates}
-    packet_ref: MCPINT-FND-CATALOG-001
-    last_verified: "2026-07-16"
-    note: "P0 claim 14 VERIFIED-BUT-INERT: catalog quarantine only removes it from generated configs — container still up, SSE :3012 answers with these 4 tools. Last decision-required server after exa retirement; FND-CATALOG-001 must decide runtime posture (wire-or-retire)."
+    packet_ref: null
+    last_verified: "2026-07-18"
+    note: "Operator 2026-07-18: KEEP container as-is — wire-or-retire CLOSED as keep. Quarantine stands (excluded from all generated configs); container stays in compose. P0 claim 14 context: catalog quarantine only removes it from generated configs — container up, SSE :3012 answers with these 4 tools; functional desktop-commander in sessions resolves via host/MCP gateway."
 
   - id: DC-REBUILD-UPSTREAM
     name: Delete facade, run real upstream desktop-commander on host
