@@ -75,6 +75,23 @@ confirming it belongs to the supplied `pr_number`.
 The workflow passes `EMBEDDED_AUDIT_TOKEN` only to the trusted-source emitter
 step. Bootstrap and head-integrity SKIPPED paths run without that secret.
 
+`EMBEDDED_AUDIT_TOKEN` is proof provenance, not model-provider authentication.
+The hosted runner provisions the stable Claude Code `2.1.204` package on Node
+22 after PR-head integrity succeeds. Only the trusted PAL runner step receives
+provider authentication as `ANTHROPIC_API_KEY`, preferring the canonical
+`ANTHROPIC_API_KEY` repository secret and falling back to the legacy
+`CLAUDE_API_KEY` secret name. Installation, candidate-object fetch, and proof
+emission do not receive that provider credential.
+
+The `claude-audit` client contract requires noninteractive `--print` mode,
+disables built-in tools with `--tools ""`, and prevents MCP loading with
+`--strict-mcp-config` and no `--mcp-config`. Safe mode and disabled session
+persistence prevent repository customizations and audit-session state from
+affecting later runs. Static route inspection rejects a Claude audit config
+that omits these execution boundaries. If provider authentication is absent,
+the runner emits a structured error and the existing hard enforcement step
+keeps the audit and PR Steward readiness red.
+
 The pull-request workflow does not expose `EMBEDDED_AUDIT_TOKEN` to PR-head
 code. The entrypoint never records token values, and trusted-ref callers may
 record whether the expected token was present as provenance:

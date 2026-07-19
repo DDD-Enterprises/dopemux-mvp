@@ -3,8 +3,14 @@
   "runner": "claude",
   "command": "claude",
   "additional_args": [
+    "--print",
+    "--safe-mode",
+    "--no-session-persistence",
     "--permission-mode",
     "plan",
+    "--tools",
+    "",
+    "--strict-mcp-config",
     "--model",
     "sonnet"
   ],

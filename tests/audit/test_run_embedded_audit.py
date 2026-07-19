@@ -236,6 +236,27 @@ def test_embedded_audit_workflow_invokes_pal_runner_as_package_module() -> None:
     assert "python scripts/audit/pal_clink_runner.py" not in runner_step
 
 
+def test_embedded_audit_workflow_provisions_authenticated_claude_runner() -> None:
+    text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    setup_step = text.split("- name: Setup trusted Claude audit runner", 1)[1].split(
+        "- name: Run PAL clink audit", 1
+    )[0]
+    runner_step = text.split("- name: Run PAL clink audit", 1)[1].split(
+        "- name: Emit independent embedded audit proof", 1
+    )[0]
+
+    assert "uses: actions/setup-node@v4" in setup_step
+    assert 'node-version: "22"' in setup_step
+    assert "npm install --global @anthropic-ai/claude-code@2.1.204" in setup_step
+    assert "steps.head_integrity.outputs.verified == 'true'" in setup_step
+    assert "ANTHROPIC_API_KEY" not in setup_step
+    assert (
+        "ANTHROPIC_API_KEY: "
+        "${{ secrets.ANTHROPIC_API_KEY || secrets.CLAUDE_API_KEY }}"
+    ) in runner_step
+    assert 'if [ -z "$ANTHROPIC_API_KEY" ]; then' in runner_step
+
+
 def test_embedded_audit_workflow_handles_pull_request_target_metadata() -> None:
     """Regression: trigger is pull_request_target; shell must not only match pull_request."""
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
