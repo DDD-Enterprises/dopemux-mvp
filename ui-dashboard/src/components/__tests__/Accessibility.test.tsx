@@ -243,3 +243,16 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('aria-label={notificationLabel}');
   expect(appContent).toContain('tabIndex={0}');
 });
+
+test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
+  const filePath = path.join(componentsDir, 'PredictionPanel.tsx');
+  if (!fs.existsSync(filePath)) {
+    console.warn(`Skipping: Required component missing: ${filePath}`);
+    return;
+  }
+  const content = fs.readFileSync(filePath, 'utf8');
+  expect(content).toContain("const isTrendingUp = hasPrediction && typeof currentLoad === 'number' ? prediction > currentLoad : true;");
+  expect(content).toContain('const TrendIcon = isTrendingUp ? TrendingUp : TrendingDown;');
+  expect(content).toContain('aria-hidden="true"');
+  expect(content).toContain('TrendingDown');
+});
