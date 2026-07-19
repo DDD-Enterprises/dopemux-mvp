@@ -1,0 +1,28 @@
+{
+  "packet_id": "PR-MERGE-STEWARD-1075",
+  "pr_number": 1075,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "313952f03cb41faa0b153d5905dc65f3b355afb9",
+  "generated_at": "2026-07-18T23:45:00Z",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "pnpm build && pnpm test -- --run",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Introduce Adaptive Prediction Trend Icons in PredictionPanel by conditionally switching the trend icon between TrendingUp and TrendingDown based on current live cognitive load.",
+      "Fix CognitiveLoadGauge tooltip and aria-label to match existing tests exactly.",
+      "Document critical UX and accessibility learnings in the Palette journal (.Jules/palette.md)."
+    ],
+    "remaining_risks": [
+      "None. Visual representation is verified via Playwright visual screenshot and video recording."
+    ],
+    "skip_reason": null
+  }
+}
