@@ -64,6 +64,17 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
   const optimalValue = '40%';
   expect(screen.getByText(optimalValue)).toBeDefined();
   expect(screen.getByLabelText(/15-min prediction 40%, Flow Ritual/i)).toBeDefined();
+
+  // Test 4: Dynamic Trend Icons (TrendingUp vs TrendingDown)
+  const { container, rerender: rerenderTrend } = render(<PredictionPanel prediction={0.8} currentLoad={0.5} />);
+  // prediction (0.8) > currentLoad (0.5) -> TrendingUp is active, TrendingDown is not
+  expect(container.querySelector('.lucide-trending-up')).not.toBeNull();
+  expect(container.querySelector('.lucide-trending-down')).toBeNull();
+
+  rerenderTrend(<PredictionPanel prediction={0.3} currentLoad={0.6} />);
+  // prediction (0.3) <= currentLoad (0.6) -> TrendingDown is active, TrendingUp is not
+  expect(container.querySelector('.lucide-trending-down')).not.toBeNull();
+  expect(container.querySelector('.lucide-trending-up')).toBeNull();
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
