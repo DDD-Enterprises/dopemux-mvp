@@ -78,9 +78,20 @@ try:
 except ImportError:
     def on_facade_edit(_root, _fp, _sid=None): return None  # type: ignore[misc]
 
-from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
-from dopemux.workflow.service import WorkflowKernel  # noqa: E402
-from dopemux.memory.capture_client import try_emit_promotable_capture_event  # noqa: E402
+try:
+    from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
+    from dopemux.workflow.service import WorkflowKernel  # noqa: E402
+    from dopemux.memory.capture_client import try_emit_promotable_capture_event  # noqa: E402
+    _DOPEMUX_AVAILABLE = True
+except (ImportError, ModuleNotFoundError):
+    _DOPEMUX_AVAILABLE = False
+    WorkflowStatus = None
+    def contains_completion_token(*args, **kwargs): return False
+    def parse_workflow_checkpoint(*args, **kwargs): return None
+    class WorkflowKernel:
+        def __init__(self, *args, **kwargs): pass
+        def resolve(self, *args, **kwargs): return None
+    def try_emit_promotable_capture_event(*args, **kwargs): pass
 
 try:
     from dopemux.claude.activity_ratelimit import should_emit_heartbeat
