@@ -343,10 +343,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f -H \"Authorization: Bearer $${LITELLM_MASTER_KEY}\" http://localhost:4000/health || exit 1" ]
-      timeout: 10s
+      # /health probes every model (~15-30s) and exceeds the HC timeout → false unhealthy.
+      # liveliness is process-up only; readiness also checks DB and stays sub-second.
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:4000/health/readiness || exit 1" ]
+      timeout: 5s
       retries: 3
       interval: 30s
+      start_period: 45s
 
   # Dope-Context - Semantic Code & Docs Search
   dope-context:
