@@ -1,0 +1,89 @@
+{
+  "id": "DMX-MCPINT-HRD-CONPORTWRAP-005",
+  "project": "dopemux-mvp",
+  "target": "Eliminate the conport stdio shadow-twin: repoint scripts/mcp-wrappers/conport-wrapper.sh at the in-repo conport server, verify _ensure_schema is fail-closed, and interim-disable the phantom serena wrapper.",
+  "invariants": [
+    "After this packet no client path may launch upstream context-portal-mcp against this workspace.",
+    "Fail-closed: the wrapper aborts with a clear error when the in-repo server/schema is unavailable — it never silently proceeds.",
+    "The serena interim stub exits non-zero with a pointer message; no silent success.",
+    "AGENTS.md §12 transport table is authoritative and unchanged (conport = sse GET /sse for HTTP clients)."
+  ],
+  "depends_on": [
+    "DMX-MCPINT-HRD-REPORT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/mcpint-hrd",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcpint-hrd",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "commit": {
+    "message": "fix(mcp): conport wrapper exec in-repo server; disable phantom serena wrapper",
+    "allowlist": [
+      "docker/mcp-servers-source/conport",
+      "scripts/mcp-wrappers/conport-wrapper.sh",
+      "scripts/mcp-wrappers/serena-wrapper.sh",
+      "task-packets/DMX-MCPINT-HRD-CONPORTWRAP-005.json",
+      "tests"
+    ],
+    "verify": [
+      "bash -n scripts/mcp-wrappers/conport-wrapper.sh",
+      "bash -n scripts/mcp-wrappers/serena-wrapper.sh"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): retire conport shadow-twin wrapper + stub phantom serena wrapper",
+    "body": "conport-wrapper.sh currently execs upstream `uvx --from context-portal-mcp` — a shadow twin with a split database. Repoint it at the in-repo conport (docker/mcp-servers-source/conport) and verify _ensure_schema fails closed. serena-wrapper.sh points at nonexistent services/serena/v2/mcp_server.py; stub it until DOPECODE-001/SERENAWRAP-006.\n\nAnchor: claudedocs/mcp-fleet-reconciliation-2026-07-18.md (P7/HRD).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Verify current behavior: record what conport-wrapper.sh launches today and whether _ensure_schema in docker/mcp-servers-source/conport proceeds on verification failure (file:line evidence in proof).",
+      "validation": [
+        "Proof contains a written verification note: wrapper target before change, and _ensure_schema fail-open/fail-closed verdict with file:line."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Repoint conport-wrapper.sh to the in-repo conport server (exec into the compose container or launch the in-repo module), removing all context-portal-mcp/uvx references; make _ensure_schema fail-closed if it is not.",
+      "validation": [
+        "grep finds no context-portal-mcp/uvx reference in scripts/mcp-wrappers/.",
+        "Smoke call through the wrapper returns the in-repo server's tool list (evidence captured in proof).",
+        "Schema-verification failure aborts the wrapper/server start with non-zero exit in a test or recorded probe."
+      ]
+    },
+    {
+      "id": "step-3",
+      "task": "Replace serena-wrapper.sh body with an interim fail-fast stub: exit 1 with a message pointing at DOPECODE-001 / DMX-MCPINT-HRD-SERENAWRAP-006.",
+      "validation": [
+        "Running serena-wrapper.sh exits non-zero and prints the pointer message; no phantom path reference remains."
+      ]
+    }
+  ]
+}

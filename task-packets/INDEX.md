@@ -33,6 +33,24 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Status | Related ADR |
 | --- | --- | --- | --- | --- |
+| DMX-MCPINT-HRD-REPORT-001 | MCP Fleet (P7/HRD) | Consolidated fleet reconciliation report 2026-07-18 (P7 anchor) | Active | claudedocs/mcp-fleet-reconciliation-2026-07-18.md |
+| DMX-MCPINT-HRD-CONSENSUS-VEC-002 | MCP Fleet (P7/HRD) | G6 ConPort vector-search boundary via PAL consensus | Ready | adr-mcpint-006 (to be authored) |
+| DMX-MCPINT-HRD-CONSENSUS-CPLX-003 | MCP Fleet (P7/HRD) | G7 complexity federation — ratify/challenge G5 via PAL consensus | Ready | adr-mcpint-001 (G5) |
+| DMX-MCPINT-HRD-CONSENSUS-PMSYNC-004 | MCP Fleet (P7/HRD) | G8 Leantime/PM write-sync boundary via PAL consensus | Ready | ADR to be authored |
+| DMX-MCPINT-HRD-CONPORTWRAP-005 | MCP Fleet (P7/HRD) | Retire conport shadow-twin wrapper; stub phantom serena wrapper | Ready | Gate G-02a |
+| DMX-MCPINT-HRD-SERENAWRAP-006 | MCP Fleet (P7/HRD) | Repoint serena wrapper at deployed in-repo engine | Blocked on DOPECODE-001 | Gate G-02b |
+| DMX-MCPINT-HRD-DESKCMD-007 | MCP Fleet (P7/HRD) | desktop-commander host-run singleton; retire Linux container | Ready | catalog follow_on_decision |
+| DMX-MCPINT-HRD-EVHYG-008 | MCP Fleet (P7/HRD) | Chronicle ingress event_id dedup + PII redaction | Blocked on EVENTS-006 | adr-mcpint-004 (G2) |
+| DMX-MCPINT-HRD-IDENTITY-009 | MCP Fleet (P7/HRD) | Per-request instance identity + instances registry | Ready | CHATGPT_TARGET_RESOLUTION_CONTRACT |
+| DMX-MCPINT-HRD-DCTXIDX-010 | MCP Fleet (P7/HRD) | Enable dope-context decision auto-indexing | Blocked on G6 | adr-mcpint-006 |
+| DMX-MCPINT-HRD-TOKTRUNC-011 | MCP Fleet (P7/HRD) | Fleet token-truncation standard (9K budget + boundary guard) | Ready | N/A |
+| DMX-MCPINT-HRD-LOOPBACK-012 | MCP Fleet (P7/HRD) | Loopback-only binds fleet-wide | Ready | N/A |
+| DMX-MCPINT-HRD-KGREAD-013 | MCP Fleet (P7/HRD) | Read-only KG graph traversal tools in conport | Blocked on G6 | adr-mcpint-006 |
+| DMX-MCPINT-HRD-FACADEDCTX-014 | MCP Fleet (P7/HRD) | Facade dope-context JSON-RPC bridge + catalog registration | Blocked on FACADE-001 | TOOL_CONTRACT.md |
+| DMX-MCPINT-HRD-RENAME-015 | MCP Fleet (P7/HRD) | Rename python task-orchestrator → workflow-api | Ready | N/A |
+| DMX-MCPINT-HRD-ADHDSURF-016 | MCP Fleet (P7/HRD) | PM surface for context_preserver + overwhelm snapshot | Blocked on RENAME-015 + G8 | G8 ADR |
+| DMX-MCPINT-HRD-ADHDROUTE-017 | MCP Fleet (P7/HRD) | Energy-aware routing + event-bus workflow triggers | Blocked on RENAME-015 + EVENTS-006 | adr-mcpint-004 (G2) |
+| DMX-MCPINT-HRD-LANE-018 | MCP Fleet (P7/HRD) | Wire decide_lane() into packet pipeline | Ready | model-routing-domain.md |
 | TP-DMX-UR-ARTIFACT-INTAKE-001 | Universal Router | Import accepted architecture and audit evidence | Ready | UR-ARCH-001 |
 | UR-TP-001 | Universal Router | Strict Universal Router contracts and typed governance refs | Ready after dependency | UR-ARCH-001 |
 | TP-SIA-EXEC-0001 | Workflow Plane | Packet Execution Domain Models + Lease Store | Ready | SIA Packet Execution ADR |

@@ -1,0 +1,83 @@
+{
+  "id": "DMX-MCPINT-HRD-CONSENSUS-VEC-002",
+  "project": "dopemux-mvp",
+  "target": "Resolve gate G6 via PAL multi-model consensus: ConPort vector-search boundary (recommendation: mem.search becomes a read-only adapter delegating to dope-context; ConPort stays out of embeddings). Record as ConPort decision + ADR adr-mcpint-006.",
+  "invariants": [
+    "Memory Trinity plane law is the prior: ConPort = structured-context authority, dope-context = semantic retrieval; any deviation requires an explicit ADR.",
+    "Consensus uses >=3 models with for/against/neutral stances; raw stances are captured verbatim in the proof bundle.",
+    "Decision-only packet: no runtime code changes."
+  ],
+  "depends_on": [
+    "DMX-MCPINT-HRD-REPORT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/mcpint-hrd",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcpint-hrd",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "commit": {
+    "message": "docs(adr): adr-mcpint-006 ConPort vector-search boundary (G6, PAL consensus)",
+    "allowlist": [
+      "docs/90-adr/adr-mcpint-006-conport-vector-boundary.md",
+      "docs/ops/load-plans/load_plan-DMX-MCPINT-P7.json",
+      "task-packets/DMX-MCPINT-HRD-CONSENSUS-VEC-002.json"
+    ],
+    "verify": [
+      "test -f docs/90-adr/adr-mcpint-006-conport-vector-boundary.md"
+    ]
+  },
+  "pr": {
+    "title": "docs(adr): G6 ConPort vector-search boundary via PAL consensus",
+    "body": "Runs pal consensus (>=3 models, assigned stances) on whether ConPort may host vector semantic search (quarantined conport_kg Milvus/Voyage code) or must delegate to dope-context per the Memory Trinity ADR. Gates HRD-DCTXIDX-010 and HRD-KGREAD-013; seam note on DOPEMEM-005.\n\nAnchor: claudedocs/mcp-fleet-reconciliation-2026-07-18.md (P7/HRD).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Run pal consensus with >=3 models (assigned for/against/neutral stances) on the G6 question, feeding the Trinity ADR, the 07-03 audit section on conport_kg, and the reconciliation report as context. The concrete artifact under decision is src/conport/memory_server.py (1300-line DEAD-CODE draft: mem.upsert/mem.search vector endpoints, OpenAI/Voyage embeddings to Milvus) plus the quarantined services/conport_kg vector surface.",
+      "validation": [
+        "Proof bundle contains the full consensus transcript with >=3 model stances and a final synthesized recommendation."
+      ],
+      "context_files": [
+        "src/conport/memory_server.py",
+        "services/conport_kg/QUARANTINE.md",
+        "docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md",
+        "claudedocs/mcp-fleet-reconciliation-2026-07-18.md"
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Author docs/90-adr/adr-mcpint-006-conport-vector-boundary.md from the consensus outcome, log the ConPort decision, and record the G6 outcome in load_plan-DMX-MCPINT-P7.json decision_gates.",
+      "validation": [
+        "ADR committed with decision, alternatives, and consequences; ConPort decision id recorded in the proof bundle.",
+        "load_plan-DMX-MCPINT-P7.json decision_gates.G6 carries the outcome and date; DCTXIDX-010/KGREAD-013 ungate criteria are stated."
+      ]
+    }
+  ]
+}
