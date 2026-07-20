@@ -1,0 +1,75 @@
+{
+  "id": "DMX-MCPINT-HRD-ADHDROUTE-017",
+  "project": "dopemux-mvp",
+  "target": "Wire energy-aware routing and event-bus-to-orchestrator triggers through the renamed workflow-api; the predictive-risk hook remains owned by MCPINT-IMP-RISK-005.",
+  "invariants": [
+    "adhd-engine never mutates tasks directly: routing output is advisory ranking only (authority map).",
+    "Event triggers consume the G2/ADR-004 ingress contract; no new streams are introduced.",
+    "Predictive-risk hook is out of scope here (RISK-005 sole owner)."
+  ],
+  "depends_on": [
+    "DMX-MCPINT-HRD-REPORT-001",
+    "DMX-MCPINT-HRD-RENAME-015",
+    "MCPINT-IMP-EVENTS-006"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/mcpint-hrd",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcpint-hrd",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "feat(adhd): energy-aware routing + event-bus workflow triggers",
+    "allowlist": [
+      "docs",
+      "services/adhd_engine",
+      "services/workflow-api",
+      "task-packets/DMX-MCPINT-HRD-ADHDROUTE-017.json",
+      "tests"
+    ],
+    "verify": [
+      "pytest tests -q -k energy"
+    ]
+  },
+  "pr": {
+    "title": "feat(adhd): energy-aware routing + event triggers via workflow-api",
+    "body": "Wires the dormant energy-aware ranking into the /dx:next selection path and connects chronicle events to advisory workflow triggers, both through the renamed workflow-api surface.\n\nAnchor: claudedocs/mcp-fleet-reconciliation-2026-07-18.md (P7/HRD).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Consume energy-aware ranking in the next-item selection path (advisory re-ranking, never mutation).",
+      "validation": [
+        "Given a seeded energy state, next-item ranking changes accordingly in a test; no write call to the workflow engine originates from the ranking path."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Connect chronicle events (workflow.phase_changed) to the documented advisory trigger action with dedup respected.",
+      "validation": [
+        "A workflow.phase_changed event produces the advisory action exactly once (duplicate event produces none)."
+      ]
+    }
+  ]
+}

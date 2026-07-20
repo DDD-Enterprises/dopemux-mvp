@@ -1,0 +1,73 @@
+{
+  "id": "DMX-MCPINT-HRD-CONSENSUS-PMSYNC-004",
+  "project": "dopemux-mvp",
+  "target": "Resolve gate G8 via PAL consensus: Leantime/PM write-sync boundary (recommendation: write-sync stays disabled; PM surfaces are read-only mirrors; task-orchestrator remains sole legal mutator of workflow state). Record as ConPort decision + ADR.",
+  "invariants": [
+    "Authority map prior: task-orchestrator owns transition legality; PM tools own PM metadata only.",
+    "Consensus uses >=3 models with stances; decision-only packet, no runtime changes."
+  ],
+  "depends_on": [
+    "DMX-MCPINT-HRD-REPORT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/mcpint-hrd",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcpint-hrd",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "commit": {
+    "message": "docs(adr): G8 PM write-sync boundary (PAL consensus)",
+    "allowlist": [
+      "docs/90-adr",
+      "docs/ops/load-plans/load_plan-DMX-MCPINT-P7.json",
+      "task-packets/DMX-MCPINT-HRD-CONSENSUS-PMSYNC-004.json"
+    ],
+    "verify": []
+  },
+  "pr": {
+    "title": "docs(adr): G8 Leantime/PM write-sync boundary via PAL consensus",
+    "body": "PAL consensus on whether bidirectional PM write-sync (as previously drafted in the deleted mcp-integration-bridge) may ever mutate workflow state, or PM surfaces remain read-only mirrors. Gates HRD-ADHDSURF-016 (its PM surface must obey the outcome).\n\nAnchor: claudedocs/mcp-fleet-reconciliation-2026-07-18.md (P7/HRD).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Run pal consensus (>=3 models, stances) on the G8 boundary, feeding the authority map, adr-002 bounded-write scope, and the reconciliation report.",
+      "validation": [
+        "Proof bundle contains the consensus transcript (>=3 stances) and final recommendation."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Author the ADR + ConPort decision; record G8 outcome in load_plan-DMX-MCPINT-P7.json (ungate criteria for ADHDSURF-016).",
+      "validation": [
+        "ADR committed; load plan decision_gates.G8 records the outcome; ADHDSURF-016 ungate criteria stated."
+      ]
+    }
+  ]
+}

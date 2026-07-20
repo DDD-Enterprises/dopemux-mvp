@@ -1,0 +1,69 @@
+{
+  "id": "DMX-MCPINT-HRD-REPORT-001",
+  "project": "dopemux-mvp",
+  "target": "Finalize and register the consolidated 2026-07-18 MCP fleet reconciliation report as the durable anchor for phase P7.",
+  "invariants": [
+    "Report must distinguish verified/observed facts from planned work; every done-ledger row carries an evidence ref (file:line or commit).",
+    "No P7 packet may duplicate work owned by an existing MCPINT/SVCFEAT/SVCFIN item; overlaps are notes/links only."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/mcpint-hrd",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcpint-hrd",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "docs(mcp): consolidated fleet reconciliation report 2026-07-18 (P7 anchor)",
+    "allowlist": [
+      "claudedocs/mcp-fleet-reconciliation-2026-07-18.md",
+      "task-packets/DMX-MCPINT-HRD-REPORT-001.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "test -f claudedocs/mcp-fleet-reconciliation-2026-07-18.md"
+    ]
+  },
+  "pr": {
+    "title": "docs(mcp): fleet reconciliation report 2026-07-18 — P7 anchor",
+    "body": "Consolidates the 07-03 canonical audit (Phase 0-5 roadmap), 07-04 forgotten-features addendum, 07-07 chronicle runtime findings, and 07-10 instance-resolution probe into the single P7 anchor: done-ledger, gap register G-01..G-16, decision register G1-G8, packetization map.\n\nAnchor: claudedocs/mcp-fleet-reconciliation-2026-07-18.md (P7/HRD).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Re-verify the report against execution-time HEAD: confirm each done-ledger evidence ref still resolves; annotate rows that ride in-flight branches (PR #1073, fix/reserved-singleton-identity-probe) with their carrying PR.",
+      "validation": [
+        "Every done-ledger row's evidence path/commit exists at execution HEAD, or the row is explicitly annotated with the carrying PR.",
+        "Gap register rows G-01..G-16 each name exactly one owning packet or note; no orphan gaps."
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Register all 18 DMX-MCPINT-HRD packets in task-packets/INDEX.md (Active table) with subsystem, title, status, and related gate/ADR.",
+      "validation": [
+        "INDEX.md Active Task Packets table contains 18 DMX-MCPINT-HRD rows; /tp:validate locates every packet by id."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "id": "DMX-MCPINT-HRD-SERENAWRAP-006",
+  "project": "dopemux-mvp",
+  "target": "Repoint scripts/mcp-wrappers/serena-wrapper.sh at the deployed in-repo Serena engine once SVCFEAT DOPECODE-001 lands.",
+  "invariants": [
+    "Wrapper execs the DOPECODE-deployed engine entrypoint only; no phantom paths.",
+    "Read-only default: write-capable tools in the local Serena engine stay disabled unless separately ADR'd."
+  ],
+  "depends_on": [
+    "DMX-MCPINT-HRD-REPORT-001",
+    "DOPECODE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/mcpint-hrd",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcpint-hrd",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "commit": {
+    "message": "fix(mcp): serena wrapper execs deployed in-repo engine",
+    "allowlist": [
+      "scripts/mcp-wrappers/serena-wrapper.sh",
+      "task-packets/DMX-MCPINT-HRD-SERENAWRAP-006.json",
+      "tests"
+    ],
+    "verify": [
+      "bash -n scripts/mcp-wrappers/serena-wrapper.sh"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): point serena wrapper at deployed in-repo engine",
+    "body": "Successor to the interim stub from HRD-CONPORTWRAP-005. Cross-tree gated on SVCFEAT DOPECODE-001 (deploy in-repo Serena engine, 46 tools).\n\nAnchor: claudedocs/mcp-fleet-reconciliation-2026-07-18.md (P7/HRD).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Replace the stub with an exec of the DOPECODE-001-deployed engine entrypoint; smoke-test tool listing and one complexity call.",
+      "validation": [
+        "Wrapper launches the deployed engine; tools/list returns a non-empty tool set; a complexity-scoring call answers (evidence in proof).",
+        "No reference to services/serena/v2/mcp_server.py remains anywhere in scripts/."
+      ]
+    }
+  ]
+}
