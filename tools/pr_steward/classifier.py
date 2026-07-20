@@ -6,6 +6,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from tools.pr_steward.security_release_gate import classify_security_release_paths
+from tools.pr_steward.security_release_approval import evaluate_security_release_approval
+
 
 SCHEMA_VERSION = "1.1.0"
 PASSING_AUDITS = {"PASS", "PASS_WITH_RISKS"}
@@ -173,6 +176,25 @@ def build_artifacts(
         _append_once(unknowns, f"Unknown embedded audit status: {raw_status}")
 
     snapshot_changed_files = _changed_files(harvest.get("changed_files") or [])
+    changed_paths = [item["path"] for item in snapshot_changed_files if item.get("path")]
+    security_classification = classify_security_release_paths(changed_paths)
+    trusted_security_approvers = load_trusted_security_approvers(known_path)
+    security_release_errors = evaluate_security_release_approval(
+        harvest.get("security_release_approval"),
+        required=security_classification.required,
+        expected_repo=repo,
+        expected_pr=pr_number,
+        expected_head_sha=pr["head_sha"],
+        trusted_approvers=trusted_security_approvers,
+    )
+    for err in security_release_errors:
+        _append_once(blockers, err)
+    security_release = {
+        "required": security_classification.required,
+        "approved": security_classification.required and not security_release_errors,
+        "categories": list(security_classification.categories),
+        "approval": harvest.get("security_release_approval"),
+    }
     proof = _proof(harvest, pr_head_sha=pr["head_sha"])
     proof_status = _proof_status(proof)
     if proof_status in STALE_PROOF_STATUSES:
@@ -262,6 +284,7 @@ def build_artifacts(
         "ci_triage_path": "CI_TRIAGE.json",
         "embedded_audit": embedded_audit,
         "proof": proof,
+        "security_release": security_release,
         "blockers": blockers,
         "unknowns": unknowns,
         "mutation_performed": False,
@@ -624,7 +647,7 @@ def _readiness(blockers: list[str]) -> str:
     if blocker_set & {"HARVEST_INCOMPLETE", "PR_IS_DRAFT", "PR_CLOSED", "MIXED_SHA_ARTIFACT_SET"}:
         return "BLOCKED"
     if any(
-        item.startswith("EMBEDDED_AUDIT_")
+        item.startswith("EMBEDDED_AUDIT_") or item.startswith("SECURITY_RELEASE_")
         for item in blocker_set
     ) or blocker_set & {
         "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION",
