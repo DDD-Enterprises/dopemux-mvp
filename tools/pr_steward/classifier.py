@@ -62,6 +62,11 @@ def load_known_reviewers(path: Path) -> tuple[set[str], set[str]]:
     return reviewers, associations
 
 
+def load_trusted_security_approvers(path: Path) -> list[str]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return [str(item) for item in payload.get("trusted_security_release_approvers", [])]
+
+
 def build_artifacts(
     harvest: dict[str, Any],
     *,
