@@ -128,8 +128,6 @@ def enforce_independent_audit_proof(
         expected_repo=expected_repo,
     )
     if errors:
-        print("Independent audit errors detected:", file=sys.stderr)
-        print(json.dumps(errors, indent=2), file=sys.stderr)
         raise SystemExit("; ".join(errors))
 
     embedded = payload.get("embedded_audit")
@@ -137,8 +135,6 @@ def enforce_independent_audit_proof(
         raise SystemExit("audit_status_missing: embedded_audit object required")
     status = str(embedded.get("status") or "").upper()
     if status not in PASSING_AUDIT_STATUSES:
-        print("Independent audit details on failure:", file=sys.stderr)
-        print(json.dumps(payload, indent=2), file=sys.stderr)
         raise SystemExit(f"Independent audit did not pass: {status or 'UNKNOWN'}")
 
 
