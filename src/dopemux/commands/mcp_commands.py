@@ -5,7 +5,8 @@ Commands for starting, stopping, and monitoring MCP Docker servers
 (``start``/``stop``/``up``/``down``/``status``/``logs``/``start-all``), plus MCP
 config scaffolding driven by repo-local or bundled ``mcp_catalog.yaml`` data
 (``init``/``repair-config``/``fleet``/``add``/``remove``/``list``/``doctor``/
-``sync-globals``).
+``sync-globals``), plus a docker-down tool-surface snapshot builder
+(``snapshot-tools`` — see ``dopemux.mcp.tool_snapshot``).
 
 The ``servers`` group is an alias for ``mcp`` for backward compatibility.
 """
@@ -644,7 +645,23 @@ def _render_global_entry(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _is_startable_global_entry(spec: Dict[str, Any]) -> bool:
-    return spec.get("lifecycle") != "decision-required"
+    """True when a catalog entry may appear in generated startable configs.
+
+    Excluded (ADR-MCPINT-001): `decision-required` (quarantined pending a
+    follow-on decision), `planned-active` (built but not yet deployed — no
+    truthful endpoint exists), `managed: false` / `transport: external`
+    (host-level surfaces the repo does not manage), and `agents: none`
+    (infra/PM-sync entries with no agent matrix row).
+    """
+    if spec.get("lifecycle") in {"decision-required", "planned-active"}:
+        return False
+    if spec.get("managed") is False:
+        return False
+    if spec.get("transport") == "external":
+        return False
+    if spec.get("agents") == "none":
+        return False
+    return True
 
 
 def _build_global_mcp_servers(catalog: Dict[str, Any]) -> Dict[str, Any]:
@@ -861,13 +878,26 @@ def _build_local_mcp_json(server_names: List[str], catalog: Dict[str, Any]) -> D
     type=click.Path(path_type=Path, file_okay=False, dir_okay=True),
     help="Directory for generated output files when --apply is set.",
 )
-def mcp_generate_cmd(apply: bool, output_dir: Optional[Path]):
+@click.option(
+    "--allow-sequenced",
+    "allow_sequenced",
+    is_flag=True,
+    help=(
+        "Also write the full-sequenced .codex/config.toml mcp_servers block in-repo. "
+        "Refused by default until the ADR-MCPINT-002 G1 prerequisites land."
+    ),
+)
+def mcp_generate_cmd(apply: bool, output_dir: Optional[Path], allow_sequenced: bool):
     """
     🧾 Project Fleet: Render catalog-backed MCP config fragments
 
     Generates reviewable projections for local .mcp.json, Claude globals,
-    Codex config, health probes, and MCP doctrine docs. Dry-run is the default;
-    writes require both --apply and --output-dir.
+    Codex config, OpenCode + Copilot agent configs, health probes, and MCP
+    doctrine docs. Dry-run is the default; writes require both --apply and
+    --output-dir. --apply also updates the in-repo agent config targets
+    (opencode.jsonc managed mcp section, mcp-proxy-config.copilot.yaml);
+    .codex/config.toml is additionally gated behind --allow-sequenced
+    (ADR-MCPINT-002 G1 sequencing).
     """
     from dopemux.mcp import fleet_catalog
 
@@ -879,6 +909,11 @@ def mcp_generate_cmd(apply: bool, output_dir: Optional[Path]):
         for relative_path, content in outputs.items():
             line_count = len(content.splitlines())
             console.logger.info(f"[info]Would write {relative_path} ({line_count} lines)[/info]")
+        console.logger.info(
+            "[info]--apply also updates in-repo agent configs: opencode.jsonc (managed "
+            "mcp section), mcp-proxy-config.copilot.yaml, and — only with "
+            "--allow-sequenced — .codex/config.toml.[/info]"
+        )
         return
 
     if output_dir is None:
@@ -889,6 +924,81 @@ def mcp_generate_cmd(apply: bool, output_dir: Optional[Path]):
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
         console.logger.info(f"[success]Wrote {target}[/success]")
+
+    _apply_in_repo_agent_configs(catalog, output_dir, allow_sequenced)
+
+
+def _apply_in_repo_agent_configs(
+    catalog: Dict[str, Any],
+    output_dir: Path,
+    allow_sequenced: bool,
+) -> None:
+    """Write the in-repo agent config targets owned by the generate pipeline.
+
+    ADR-MCPINT-001 §2: the generate pipeline is the sole producer of agent
+    configs. opencode.jsonc is a managed-merge — only the marker-delimited `mcp`
+    section is replaced; user keys (`permission`, `instructions`, …) are
+    preserved. mcp-proxy-config.copilot.yaml is fully generated.
+    .codex/config.toml is `full-sequenced` (ADR-MCPINT-002 G1): the in-repo
+    write is refused without --allow-sequenced while a preview always lands
+    under the output dir.
+    """
+    from dopemux.mcp import fleet_catalog
+
+    repo = get_repo_root(fallback_cwd=False)
+    if not repo:
+        raise click.ClickException(
+            "--apply writes in-repo agent configs and must run inside a git repository."
+        )
+    repo_path = Path(repo)
+
+    opencode_path = repo_path / "opencode.jsonc"
+    existing_opencode = (
+        opencode_path.read_text(encoding="utf-8") if opencode_path.exists() else None
+    )
+    try:
+        merged_opencode = fleet_catalog.render_opencode_jsonc(existing_opencode, catalog)
+    except fleet_catalog.MCPFleetCatalogError as exc:
+        raise click.ClickException(str(exc)) from exc
+    opencode_path.write_text(merged_opencode, encoding="utf-8")
+    console.logger.info(
+        f"[success]Wrote {opencode_path} (managed mcp section; non-managed keys preserved)[/success]"
+    )
+
+    copilot_path = repo_path / "mcp-proxy-config.copilot.yaml"
+    copilot_path.write_text(
+        fleet_catalog.render_copilot_proxy_config(catalog), encoding="utf-8"
+    )
+    console.logger.info(f"[success]Wrote {copilot_path}[/success]")
+
+    codex_path = repo_path / ".codex" / "config.toml"
+    if allow_sequenced:
+        existing_codex = codex_path.read_text(encoding="utf-8") if codex_path.exists() else None
+        try:
+            merged_codex = fleet_catalog.merge_codex_config_toml(existing_codex, catalog)
+        except fleet_catalog.MCPFleetCatalogError as exc:
+            raise click.ClickException(str(exc)) from exc
+        codex_path.parent.mkdir(parents=True, exist_ok=True)
+        codex_path.write_text(merged_codex, encoding="utf-8")
+        console.logger.info(
+            f"[success]Wrote {codex_path} (managed mcp_servers section; existing keys preserved)[/success]"
+        )
+    else:
+        console.logger.info(
+            "[warning]Refused to write .codex/config.toml: codex exposure is "
+            "`full-sequenced` (ADR-MCPINT-002 G1) and the sequencing prerequisites "
+            "are unmet:[/warning]"
+        )
+        console.logger.info(
+            "  1. DMX-MEMSPINE-IDENTITY-005 — per-request memory-spine identity with fail-closed writes"
+        )
+        console.logger.info(
+            "  2. task-orchestrator `actor_authentication.enabled` — authenticated actor attribution"
+        )
+        console.logger.info(
+            f"[info]Preview written to {output_dir / 'codex' / 'config.toml'}; re-run with "
+            "--allow-sequenced once both prerequisites have landed.[/info]"
+        )
 
 
 def _ensure_context() -> tuple[Path, Any]:
@@ -1924,3 +2034,92 @@ def mcp_sync_globals_cmd(apply: bool, prune: bool):
     new_data["mcpServers"] = merged
     _atomic_write_json(global_path, new_data)
     console.logger.info(f"[success]Wrote {global_path}.[/success]")
+
+
+@mcp.command("snapshot-tools")
+@click.option(
+    "--seed-from",
+    "seed_from",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    default=None,
+    help="Ingest prior tools/list probe captures (verdict OK only) from this directory.",
+)
+@click.option(
+    "--output",
+    "output_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Snapshot file to read/write (default: <repo-root>/mcp_tool_surfaces.json).",
+)
+@click.option(
+    "--offline",
+    is_flag=True,
+    help="Skip live probing; only ingest --seed-from (or reuse the existing file untouched).",
+)
+@click.option(
+    "--timeout",
+    type=float,
+    default=6.0,
+    show_default=True,
+    help="Per-server network timeout (seconds) for live tools/list probes.",
+)
+def mcp_snapshot_tools_cmd(
+    seed_from: Optional[Path],
+    output_path: Optional[Path],
+    offline: bool,
+    timeout: float,
+):
+    """
+    📸 Freeze Tool Surfaces: Capture every catalog server's MCP tools/list into a committed snapshot
+
+    Builds/updates `mcp_tool_surfaces.json` — the docker-down cache the
+    (future) tool-granular drift gate and doc generators consume. Loads any
+    existing snapshot file as a base, optionally ingests seed capture files
+    (`--seed-from`), then optionally probes the live fleet's `tools/list`
+    surface for every catalog server (skip with `--offline`). Fresh data
+    always wins over stale data except when the fresh probe is itself
+    `unreachable` and the base already has better data for that server.
+    """
+    from dopemux.mcp import tool_snapshot
+
+    catalog = _load_catalog()
+
+    if output_path is None:
+        repo = get_repo_root(fallback_cwd=False)
+        if not repo:
+            raise click.ClickException(
+                "Not inside a git repository; pass --output explicitly."
+            )
+        output_path = Path(repo) / "mcp_tool_surfaces.json"
+
+    snapshot = tool_snapshot.load_snapshot(output_path)
+
+    if seed_from is not None:
+        seed_snapshot = tool_snapshot.snapshot_from_seed(seed_from)
+        snapshot = tool_snapshot.merge_snapshots(snapshot, seed_snapshot)
+
+    if not offline:
+        live_snapshot = tool_snapshot.snapshot_from_live(catalog, timeout=timeout)
+        snapshot = tool_snapshot.merge_snapshots(snapshot, live_snapshot)
+
+    servers = snapshot.get("servers") or {}
+    if not servers:
+        raise click.ClickException(
+            "Refusing to write an empty snapshot (0 servers). "
+            "Pass --seed-from with capture files, or run with the fleet up (drop --offline)."
+        )
+
+    try:
+        output_path.write_text(tool_snapshot.dump_snapshot(snapshot), encoding="utf-8")
+    except OSError as exc:
+        raise click.ClickException(f"Failed to write {output_path}: {exc}") from exc
+
+    console.logger.info(
+        f"[success]Wrote {output_path} ({len(servers)} server(s))[/success]"
+    )
+    console.logger.info("[info]== Tool Surfaces ==[/info]")
+    for name in sorted(servers):
+        entry = servers[name]
+        source = entry.get("source", "?")
+        tool_count = entry.get("tool_count", 0)
+        console.logger.info(f"  {name:<20} source={source:<11} tools={tool_count}")

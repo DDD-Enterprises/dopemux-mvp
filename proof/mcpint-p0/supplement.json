@@ -1,0 +1,138 @@
+{
+  "pal-http:3003/mcp": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "pal-http:3003/sse": {
+    "status": null,
+    "body_head": "TimeoutError: timed out"
+  },
+  "pal-http:3003/messages": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "pal-http:3003/health": {
+    "status": 200,
+    "body_head": "{\"status\": \"healthy\", \"timestamp\": 1784226350.2435722, \"mcp_process_running\": true, \"mcp_pid\": 6}"
+  },
+  "pal-http:3003/": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "pal-http:3003/docs": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "pal-http:3003/api": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "leantime-bridge:3015/mcp": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "leantime-bridge:3015/sse": {
+    "status": null,
+    "body_head": "TimeoutError: timed out"
+  },
+  "leantime-bridge:3015/messages": {
+    "status": 400,
+    "body_head": "Invalid Content-Type header"
+  },
+  "leantime-bridge:3015/health": {
+    "status": 200,
+    "body_head": "{\"status\":\"ok\",\"service\":\"leantime-bridge\",\"transport\":\"http-sse\"}"
+  },
+  "leantime-bridge:3015/": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "leantime-bridge:3015/docs": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "leantime-bridge:3015/api": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "gptr:3009/mcp": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "gptr:3009/sse": {
+    "status": null,
+    "body_head": "TimeoutError: timed out"
+  },
+  "gptr:3009/messages": {
+    "status": 400,
+    "body_head": "Invalid Content-Type header"
+  },
+  "gptr:3009/health": {
+    "status": 200,
+    "body_head": "{\"status\":\"healthy\",\"service\":\"mcp-server\"}"
+  },
+  "gptr:3009/": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "gptr:3009/docs": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "gptr:3009/api": {
+    "status": 404,
+    "body_head": "Not Found"
+  },
+  "to-compose:8000/mcp": {
+    "status": 404,
+    "body_head": "{\"detail\":\"Not Found\"}"
+  },
+  "to-compose:8000/sse": {
+    "status": 404,
+    "body_head": "{\"detail\":\"Not Found\"}"
+  },
+  "to-compose:8000/messages": {
+    "status": 404,
+    "body_head": "{\"detail\":\"Not Found\"}"
+  },
+  "to-compose:8000/health": {
+    "status": 200,
+    "body_head": "{\"service\":\"task-orchestrator\",\"status\":\"ok\",\"ts\":\"2026-07-16T18:25:58.319254Z\",\"dependencies\":{}}"
+  },
+  "to-compose:8000/": {
+    "status": 404,
+    "body_head": "{\"detail\":\"Not Found\"}"
+  },
+  "to-compose:8000/docs": {
+    "status": 200,
+    "body_head": "\n    <!DOCTYPE html>\n    <html>\n    <head>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <link type=\"text/css\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/swag"
+  },
+  "to-compose:8000/api": {
+    "status": 404,
+    "body_head": "{\"detail\":\"Not Found\"}"
+  },
+  "adhd-engine": {
+    "status": null,
+    "body_head": "URLError: <urlopen error [Errno 61] Connection refused>"
+  },
+  "dopecon-bridge": {
+    "status": 200,
+    "body_head": "{\"status\":\"healthy\",\"instance\":\"default\",\"port\":3016,\"services\":{\"status\":\"not_initialized\",\"conport\":false}}"
+  },
+  "litellm": {
+    "status": null,
+    "body_head": "URLError: <urlopen error [Errno 61] Connection refused>"
+  },
+  "conport-http-health": {
+    "status": null,
+    "body_head": "RemoteDisconnected: Remote end closed connection without response"
+  },
+  "serena-health": {
+    "status": 200,
+    "body_head": "{\"status\":\"healthy\",\"service\":\"serena-v2\",\"port\":3006}"
+  },
+  "bridge-events-unauth-post": {
+    "status": 401,
+    "body_head": "{\"detail\":\"Not authenticated\"}"
+  }
+}

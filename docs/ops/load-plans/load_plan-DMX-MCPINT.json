@@ -1,0 +1,51 @@
+{
+  "program": "DMX-MCPINT",
+  "date": "2026-07-16",
+  "source_plan": "~/.claude/plans/deeply-audit-all-mcp-luminous-orbit.md (local Claude plan, user-approved 2026-07-16)",
+  "audit": "claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md; claudedocs/service-audit-2026-07-04.md; 3 Explore agents 2026-07-15/16 (fleet current-state, historical feature register, integration surfaces)",
+  "ambition": "audit-refresh + feature register + implicit-use integration architecture (catalog v2 codegen, DCP facade universal read plane, hook injection channels, instruction-surface drift gates)",
+  "validation": "Plan agent grounding spot-checked against fleet_catalog.py/mcp_commands.py/tests-arch (all cited functions+lines verified); reconciled against DMX-SVCFIN root 3ad40a72 (SVCFIN-owned items referenced, never re-decided)",
+  "tag": "dmx-mcpint,program",
+  "orchestrator": {
+    "root_id": "af10eefd-225c-49e2-85dd-137bc8231cbb",
+    "created": "2026-07-16",
+    "actor": "claude-mcpint-coordinator",
+    "children": 32,
+    "deps": 28,
+    "cross_tree_deps": [
+      {"from": "DMX-HYG-CONPORTREFS-003 (21c8f2fb)", "to": "MCPINT-FND-DRIFTGATE-003 (bd08adf3)", "type": "BLOCKS"},
+      {"from": "DMX-MEMSPINE-IDENTITY-005 (ebd37c7d)", "to": "MCPINT-IMP-RECAP-003 (84c2df5b)", "type": "BLOCKS"}
+    ]
+  },
+  "load_order": [
+    "P0-AUDIT",
+    "P1-REGISTER -> P1-TRIAGE -> gates G1-G5 (user)",
+    "P2-ADR-001..005",
+    "P3-FND-001..007",
+    "P4-IMP-001..006 || P5-DOC-001..003",
+    "P6-E2E"
+  ],
+  "phases": [
+    {"ref": "P0", "id": "4133cabf", "title": "Runtime-verification audit refresh", "model": "opus"},
+    {"ref": "P1", "id": "043b70fa", "title": "Canonical feature register + triage", "model": "opus"},
+    {"ref": "P2", "id": "f277c866", "title": "Integration architecture ADR set (PAL consensus)", "model": "opus"},
+    {"ref": "P3", "id": "5656c82a", "title": "Foundation wiring (FND)", "model": "sonnet"},
+    {"ref": "P4", "id": "378143f9", "title": "Implicit-use channels (IMP)", "model": "sonnet"},
+    {"ref": "P5", "id": "410f6b90", "title": "Docs & workflow catalog (DOC)", "model": "haiku"},
+    {"ref": "P6", "id": "bdbe0670", "title": "E2E verification & close", "model": "opus"}
+  ],
+  "decision_gates": {
+    "G1": "non-Claude agent MCP exposure (rec: facade + read-safe singletons)",
+    "G2": "event ingress contract (rec: fix bridge JWT, bless /events)",
+    "G3": "Serena ADHD layer (rec: archive candidate, port untracked-work into adhd-engine; subordinate to DMX-ARCH-SERENA-003)",
+    "G4": "TO predictive-risk pilot (rec: flag-gated)",
+    "G5": "complexity authority (rec: complexity_coordinator single scorer)"
+  },
+  "runtime_findings_at_load": [
+    "port_allocator.py:355-383 catch-22: mcp init fails closed whenever the healthy TO singleton occupies 7890 (reserved singletons never lease, but occupancy check is lease-identity-only); envrc hand-fixed 7924->7890; fix spawned as background task",
+    "mcp-exa container running despite ADR-223 retirement (host compose state predates prune)",
+    "dopemux-mcp-desktop-commander running despite catalog quarantine",
+    "mcp-litellm crash-looping at fleet start",
+    "per-project twins for dnh_crm repo (task-orchestrator-dnh_crm, mcp-conport_dnh_crm) present alongside primary singletons"
+  ]
+}

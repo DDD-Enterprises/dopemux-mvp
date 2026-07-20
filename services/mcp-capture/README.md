@@ -1,8 +1,20 @@
-# MCP Capture Server
+# MCP Capture Server — RETIRED
+
+> **Status: RETIRED** per [ADR-MCPINT-004](../../docs/90-adr/adr-mcpint-004-event-ingress-contract.md)
+> (Authenticated `/events` as the Single Event Ingress). A second capture door
+> recreates the two-contract drift that emptied the chronicle. The canonical
+> producer path is the `capture_client` library
+> (`src/dopemux/memory/capture_client.py`) publishing through the
+> authenticated dopecon-bridge `POST /events` ingress. This server's dedup /
+> lane-awareness / audit ideas are absorbed into the `capture_client` backlog
+> as library features. Do **not** register this server in any catalog,
+> config, or compose file. Register entry: `MCP-CAPTURE`
+> (`docs/03-reference/mcp/feature-register.yaml`, status `retired`).
+> Placement: `docs/03-reference/mcp/tool-placement-map.md` §3.
 
 **Version**: 1.0.0
 **Blueprint**: OPUS-CLI-INT-02 Phase 3 (CLI-INT-002)
-**Purpose**: Expose Chronicle capture pipeline as MCP tool for cross-adapter integration
+**Purpose (historical)**: Expose Chronicle capture pipeline as MCP tool for cross-adapter integration
 
 ## Overview
 

@@ -1,0 +1,52 @@
+[
+  {
+    "server": "pal-http",
+    "verdict": "UNREACHABLE: HTTPError: HTTP Error 404: Not Found",
+    "tools": "-"
+  },
+  {
+    "server": "serena",
+    "verdict": "OK",
+    "tools": 27
+  },
+  {
+    "server": "gptr-mcp",
+    "verdict": "UNREACHABLE: HTTPError: HTTP Error 404: Not Found",
+    "tools": "-"
+  },
+  {
+    "server": "dope-context",
+    "verdict": "OK",
+    "tools": 18
+  },
+  {
+    "server": "leantime-bridge",
+    "verdict": "UNREACHABLE: HTTPError: HTTP Error 404: Not Found",
+    "tools": "-"
+  },
+  {
+    "server": "dope-memory",
+    "verdict": "OK",
+    "tools": 10
+  },
+  {
+    "server": "task-orchestrator-7890",
+    "verdict": "OK",
+    "tools": 14
+  },
+  {
+    "server": "task-orchestrator-compose-8000",
+    "verdict": "UNREACHABLE: HTTPError: HTTP Error 404: Not Found",
+    "tools": "-"
+  },
+  {
+    "server": "conport",
+    "verdict": "OK",
+    "tools": 17
+  },
+  {
+    "server": "desktop-commander",
+    "verdict": "OK",
+    "tools": 4
+  }
+]

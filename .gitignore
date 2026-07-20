@@ -397,6 +397,7 @@ LIVE_LOG*.txt
 .claude/.mcp-health-cache.json
 .claude/.surface-guard-warned.json
 .claude/.denylist-nudge-cache.json
+.claude/.activity-heartbeat-cache.json
 .antigravitycli/
 
 # Local AI tool workspaces (not repo state)
