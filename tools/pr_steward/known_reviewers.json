@@ -11,5 +11,6 @@
     "OWNER",
     "MEMBER",
     "COLLABORATOR"
-  ]
+  ],
+  "trusted_security_release_approvers": []
 }
