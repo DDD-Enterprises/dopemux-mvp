@@ -190,4 +190,6 @@ router_settings:
     - grok-4-fast
     - gpt-5-mini
 general_settings:
-  master_key: <REDACTED_LITELLM_MASTER_KEY>
+  # Must resolve from env — a literal placeholder here makes healthchecks 401
+  # (Bearer $LITELLM_MASTER_KEY is treated as a virtual key "not found in db").
+  master_key: os.environ/LITELLM_MASTER_KEY
