@@ -14,9 +14,22 @@
 #                  each worktree but stores one DB per local git repository.
 #
 # Transport:
-#   http  — Streamable HTTP (Claude Code "type": "http")
-#   sse   — Server-Sent Events  (Claude Code "type": "sse")
-#   stdio — Local process (Claude Code "type": "stdio") with command + args
+#   http     — Streamable HTTP (Claude Code "type": "http")
+#   sse      — Server-Sent Events  (Claude Code "type": "sse")
+#   stdio    — Local process (Claude Code "type": "stdio") with command + args
+#   external — Host-level surface not managed by this repo (managed: false);
+#              documented for fleet-map completeness only (ADR-MCPINT-001 §4).
+#
+# ADR-MCPINT-001 metadata (rendered by MCPINT-FND-CODEGEN-005; data-only here):
+#   agents:      per-agent exposure matrix, or the string "none" for infra/PM-sync
+#                entries with no agent matrix row. ADR-MCPINT-002 constrains when
+#                the generator may honor a row (codex full-sequenced gate).
+#   tools:       pointer into the committed mcp_tool_surfaces.json snapshot
+#                (snapshot_key + schema_version). Tool names live ONLY there.
+#   admin_tools: operator-only tools excluded from workflow docs and non-Claude
+#                exposure rows (tool-placement-map §3).
+#   workflows:   refs into docs/03-reference/mcp/workflows.yaml (MCPINT-DOC-003);
+#                no refs are populated until that file exists.
 #
 # Env-var conventions for per-worktree servers:
 #   DOPEMUX_PORT_<NAME>      — host port allocated by `dopemux mcp init`
@@ -40,17 +53,26 @@ servers:
   # ---------- Singletons (live in ~/.claude.json) ----------
 
   pal:
+    # Transport truth (P0 claim 11, ADR-MCPINT-001 §4): the pal-http wrapper is a
+    # health/lifecycle shim only — /mcp, /sse, /messages all 404. pal-stdio
+    # (docker exec) is the sole PAL MCP surface. This entry is quarantined from
+    # generated configs until PAL-HTTP-RETROFIT is decided (wire-or-retire).
+    # The url below is the health endpoint, kept for doctor/health probing.
     scope: singleton
     transport: http
     plane: reasoning
     authority_role: reasoning-infrastructure
-    lifecycle: active
+    lifecycle: decision-required
     management_model: compose-service
     identity_scope: singleton
-    follow_on_decision: none
-    url: "http://localhost:3003/mcp"
+    follow_on_decision: wire-or-retire
+    url: "http://localhost:3003/health"
     docker_compose_service: pal
-    description: "Multi-model reasoning suite (thinkdeep, planner, consensus, debug, codereview)"
+    agents: none
+    tools:
+      snapshot_key: pal
+      schema_version: 1
+    description: "PAL http wrapper — health/lifecycle shim only (no MCP endpoint; P0 claim 11). Use pal-stdio for PAL tools. Retrofit decision: PAL-HTTP-RETROFIT."
 
   serena:
     scope: singleton
@@ -63,7 +85,17 @@ servers:
     follow_on_decision: none
     url: "http://localhost:3006/mcp"
     docker_compose_service: serena
-    description: "Semantic code intelligence (LSP + Tree-sitter); workspace auto-detected from cwd"
+    agents:
+      claude: full
+      codex: full-sequenced
+      opencode: read-plane
+      gemini: read-plane
+      copilot: read-plane
+      chatgpt: facade
+    tools:
+      snapshot_key: serena
+      schema_version: 1
+    description: "Semantic code intelligence (LSP + Tree-sitter); workspace auto-detected from cwd. Write-lane gating owned by DMX-ARCH-SERENA-SURFACE-003."
 
   dope-context:
     scope: singleton
@@ -76,6 +108,16 @@ servers:
     follow_on_decision: none
     url: "http://localhost:3010/mcp"
     docker_compose_service: dope-context
+    agents:
+      claude: full
+      codex: full-sequenced
+      opencode: read-plane
+      gemini: read-plane
+      copilot: read-plane
+      chatgpt: facade
+    tools:
+      snapshot_key: dope-context
+      schema_version: 1
     description: "AST-aware semantic code & docs search; per-call workspace_path"
 
   desktop-commander:
@@ -89,6 +131,10 @@ servers:
     follow_on_decision: delete-or-host-run
     url: "http://localhost:3012/sse"
     docker_compose_service: desktop-commander
+    agents: none
+    tools:
+      snapshot_key: desktop-commander
+      schema_version: 1
     description: "Desktop automation (PR #575: pinned fastmcp==2.14.7, Starlette /health)"
 
   gpt-researcher:
@@ -106,6 +152,24 @@ servers:
     reserved_port: 3009  # gptr-mcp container binds ${GPT_RESEARCHER_PORT:-3009}
     requires_env: ["OPENAI_API_KEY"]
     optional_env: ["TAVILY_API_KEY", "EXA_API_KEY", "PERPLEXITY_API_KEY", "ANTHROPIC_API_KEY"]
+    agents:
+      claude: full
+      codex: full-sequenced
+      opencode: read-plane
+      gemini: read-plane
+      copilot: read-plane
+      chatgpt: facade
+    tools:
+      snapshot_key: gpt-researcher
+      schema_version: 1
+    aux_surfaces:
+      # Transport truth (P0 claim 12, GPTR-TRANSPORT-TRUTH): the container also
+      # serves an SSE-style /messages endpoint on :3009. It is NOT the
+      # contractual agent transport — stdio docker-exec above is.
+      - url: "http://localhost:3009/messages"
+        protocol: sse
+        contractual: false
+        note: "Runtime-observed SSE-style endpoint (400 on wrong content-type, not 404); non-contractual per ADR-MCPINT-001 §4."
     description: "Deep multi-source research (PR #575: gpt-researcher==0.14.8 pinned)"
 
   pal-stdio:
@@ -121,7 +185,17 @@ servers:
     args: ["exec", "-i", "mcp-pal-stdio", "/app/.venv/bin/python", "server.py"]
     docker_compose_service: pal-stdio
     requires_env: ["OPENAI_API_KEY", "GEMINI_API_KEY"]
-    description: "PAL via Docker MCP (thinkdeep, planner, consensus, debug, codereview, precommit)"
+    agents:
+      claude: full
+      codex: full-sequenced
+      opencode: read-plane
+      gemini: read-plane
+      copilot: read-plane
+      chatgpt: facade
+    tools:
+      snapshot_key: pal-stdio
+      schema_version: 1
+    description: "PAL via Docker MCP (thinkdeep, planner, consensus, debug, codereview, precommit) — the sole PAL MCP surface (P0 claim 11)"
 
   MCP_DOCKER:
     scope: singleton
@@ -134,7 +208,114 @@ servers:
     follow_on_decision: none
     command: docker
     args: ["mcp", "gateway", "run"]
+    agents:
+      claude: full
+      codex: none
+      opencode: none
+      gemini: none
+      copilot: none
+      chatgpt: none
+    tools:
+      snapshot_key: MCP_DOCKER
+      schema_version: 1
     description: "Docker MCP gateway — surfaces containerized MCPs from Docker MCP Toolkit"
+
+  leantime-bridge:
+    # PM-sync plane entry (P0 claim 13: running + healthy, was orphaned from the
+    # catalog). No agent matrix row — operator/PM flows only (tool-placement-map §3).
+    scope: singleton
+    transport: sse
+    plane: pm
+    authority_role: pm-adapter
+    lifecycle: active
+    management_model: compose-service
+    identity_scope: singleton
+    follow_on_decision: none
+    url: "http://localhost:3015/sse"
+    docker_compose_service: leantime-bridge
+    agents: none
+    description: "Leantime PM-sync bridge (http-sse; GET /sse + POST /messages/; SVC-LEANTIME-BRIDGE). Not an agent surface."
+
+  dcp-readonly-facade:
+    # Universal read plane (ADR-MCPINT-002). Built (services/dcp-readonly-facade,
+    # 12 tools — 3 deferred pending the REST→JSON-RPC bridge, DCP-FACADE-DCTX-BRIDGE).
+    # planned-active: compose deploy + loopback-bound port land in MCPINT-IMP-FACADE-001;
+    # url is added by that packet once a real listener exists.
+    scope: singleton
+    transport: http
+    plane: dcp-read
+    authority_role: read-plane-projection
+    lifecycle: planned-active
+    management_model: compose-service
+    identity_scope: per-repo
+    follow_on_decision: none
+    agents:
+      claude: none
+      codex: read-plane
+      opencode: read-plane
+      gemini: read-plane
+      copilot: read-plane
+      chatgpt: facade
+    description: "DCP read-only facade — cross-plane READ projection for non-attributed agents (12 tools, 3 deferred; registry_v2 + route_manifest enforcement per ADR-DCP-MCP-RO-0009). Deployed by MCPINT-IMP-FACADE-001."
+
+  # ---------- Host-level externals (managed: false — documented, not managed) ----------
+
+  mcp-registry:
+    scope: singleton
+    transport: external
+    managed: false
+    plane: gateway
+    authority_role: connector-discovery
+    lifecycle: operator-managed
+    management_model: external
+    identity_scope: host-session
+    follow_on_decision: none
+    agents:
+      claude: full
+      codex: none
+      opencode: none
+      gemini: none
+      copilot: none
+      chatgpt: none
+    description: "Host-level MCP connector registry (list/search/suggest connectors). Not managed by this repo (PERIPH-MCP-REGISTRY)."
+
+  scheduled-tasks:
+    scope: singleton
+    transport: external
+    managed: false
+    plane: automation
+    authority_role: task-scheduler
+    lifecycle: operator-managed
+    management_model: external
+    identity_scope: host-session
+    follow_on_decision: none
+    agents:
+      claude: full
+      codex: none
+      opencode: none
+      gemini: none
+      copilot: none
+      chatgpt: none
+    description: "Host-level scheduled-tasks surface; designated scheduler for notifier daily-report + copilot-ingester follow-ups (PERIPH-SCHEDULED-TASKS, tool-placement-map §3)."
+
+  context7:
+    scope: singleton
+    transport: external
+    managed: false
+    plane: research
+    authority_role: docs-lookup
+    lifecycle: operator-managed
+    management_model: external
+    identity_scope: external-provider
+    follow_on_decision: none
+    agents:
+      claude: full
+      codex: none
+      opencode: none
+      gemini: none
+      copilot: none
+      chatgpt: none
+    description: "Host-level Context7 official-docs lookup. Not managed by this repo (PERIPH-CONTEXT7)."
 
   # ---------- Per-worktree (live in <worktree>/.mcp.json) ----------
 
@@ -162,6 +343,22 @@ servers:
     docker_compose_service: conport
     requires_env: ["DOPEMUX_WORKSPACE_ID"]
     optional_env: ["GEMINI_API_KEY", "VOYAGEAI_API_KEY", "OPENAI_API_KEY"]
+    agents:
+      claude: full
+      codex: full-sequenced
+      opencode: read-plane
+      gemini: read-plane
+      copilot: read-plane
+      chatgpt: facade
+    tools:
+      snapshot_key: conport
+      schema_version: 1
+    admin_tools:
+      # Operator-only (tool-placement-map §3): excluded from workflow docs and
+      # non-Claude exposure rows.
+      - fork_instance
+      - promote
+      - promote_all
     description: "Knowledge graph, decisions, progress (PostgreSQL+AGE; per-worktree state)"
 
   dope-memory:
@@ -178,11 +375,21 @@ servers:
     default_port_base: 3020
     docker_compose_service: dope-memory
     requires_env: ["DOPE_MEMORY_WORKSPACE_ID", "DOPE_MEMORY_INSTANCE_ID"]
+    agents:
+      claude: full
+      codex: full-sequenced
+      opencode: read-plane
+      gemini: read-plane
+      copilot: read-plane
+      chatgpt: facade
+    tools:
+      snapshot_key: dope-memory
+      schema_version: 1
     description: "Temporal chronicle and working-context (per worktree instance)"
 
   task-orchestrator:
-    # Declaration may live in each repo .mcp.json, but the runtime is a host singleton.
-    # Port 7890 is reserved — never project/worktree leased (TP-DMX-MCP-RUNTIME-006R).
+    # Host singleton runtime; declaration may appear in per-repo .mcp.json.
+    # Port 7890 is reserved — never project/worktree leased (RUNTIME-006R).
     scope: per-worktree
     state_scope: single_active_project
     transport: http
@@ -204,4 +411,14 @@ servers:
       DOPEMUX_PROJECT_ROOT: "${DOPEMUX_PROJECT_ROOT:-}"
       TASK_ORCHESTRATOR_PROJECT_ROOT: "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}"
       TASK_ORCHESTRATOR_HTTP_PORT: "${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
+    agents:
+      claude: full
+      codex: full-sequenced
+      opencode: read-plane
+      gemini: read-plane
+      copilot: read-plane
+      chatgpt: facade
+    tools:
+      snapshot_key: task-orchestrator
+      schema_version: 1
     description: "Host-singleton Task Orchestrator MCP on reserved 7890 (single-active-project state)"

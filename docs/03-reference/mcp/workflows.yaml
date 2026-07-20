@@ -1,0 +1,122 @@
+# MCP Workflow Catalog — named tool sequences as executable documentation
+# Program: DMX-MCPINT (packet MCPINT-DOC-WORKFLOWS-003 — this file is the curated
+# source; the generated MD view + the drift gate that validates every `tool:` name
+# against mcp_tool_surfaces.json land with that packet).
+#
+# Semantics:
+#   trigger    — what starts the workflow (hook event, slash command, agent intent)
+#   steps      — ordered tool calls; `server` names match mcp_catalog.yaml keys;
+#                `tool` names must exist in mcp_tool_surfaces.json for that server
+#   owners     — commands/skills/hooks that embody this workflow today
+#   status     — live (every step callable now) | partial (some steps pending a
+#                packet) | planned (mechanism not yet wired)
+#   Steps with `pending:` name the packet that makes them real; drift gate treats
+#   pending steps as non-contractual until the packet lands.
+
+version: 1
+generated_view: docs/03-reference/mcp/workflows.md   # produced by DOC-003, not hand-edited
+
+workflows:
+  session-start:
+    intent: re-orient the agent with zero asks — the implicit-context spine (ADR-mcpint-003)
+    trigger: hook:SessionStart (native_hooks.py — sole injection channel)
+    status: partial
+    steps:
+      - {server: task-orchestrator, tool: get_context, note: cached replay from prior PostToolUse}
+      - {server: dope-memory, tool: memory_recap, pending: MCPINT-IMP-RECAP-003, note: "~1200 chars, fail-open 2s"}
+      - {note: fleet-capability line from cached health probe, pending: MCPINT-IMP-HEALTH-004}
+      - {note: untracked-work advisory (H5 lite probe), status: live}
+    owners: [native_hooks.py SessionStart]
+    budget: ~3KB total, every step fail-open
+
+  task-flow:
+    intent: pick, claim, work, and close orchestrator packets with gates honored
+    trigger: /dx:next, /dx:start, /dx:complete (18-command dx family)
+    status: live
+    steps:
+      - {server: task-orchestrator, tool: get_next_item}
+      - {server: task-orchestrator, tool: claim_item, note: requires requestId + actor}
+      - {server: task-orchestrator, tool: advance_item, note: "transitions:[{itemId,trigger:start}]"}
+      - {server: task-orchestrator, tool: manage_notes, note: gate-filling; proof bundle in note}
+      - {server: task-orchestrator, tool: advance_item, note: "complete w/ verification{verified,proof}"}
+    owners: [/dx:next, /dx:start, /dx:note, /dx:complete, /dx:tree, /dx:blocked]
+
+  implement:
+    intent: code change inside a claimed packet, with code-intel + verification
+    trigger: /dx:implement, /sc:implement, agent intent "implement X"
+    status: live
+    steps:
+      - {server: task-orchestrator, tool: get_context, note: item mode — gate + notes}
+      - {server: serena, tool: find_symbol, note: or get_symbols_overview for file maps}
+      - {server: serena, tool: find_referencing_symbols, note: blast-radius check before edits}
+      - {server: dope-context, tool: search_code, note: semantic recall of similar implementations}
+      - {note: native Edit/Write + pytest via Bash — system ops stay native}
+      - {server: pal-stdio, tool: codereview, note: risky diffs; precommit before commit}
+      - {server: conport, tool: log_decision, note: architectural choices made along the way}
+    owners: [/dx:implement, /sc:implement, /implement]
+
+  research:
+    intent: answer a question from the web with citations, persist the trail
+    trigger: /research-quick, /research-deep, /research-report
+    status: live
+    steps:
+      - {server: gpt-researcher, tool: quick_search, note: "<30s lane; deep_research for 2-10min lane"}
+      - {server: gpt-researcher, tool: write_report, note: from research_id}
+      - {server: conport, tool: update_context, note: persist research_id for resume (NOT update_active_context — dead name)}
+    owners: [/research-quick, /research-deep, /research-report, /sc:research]
+
+  review:
+    intent: multi-model judgment on a diff or decision before it lands
+    trigger: /sc:analyze, /dx:review, pre-merge ritual
+    status: live
+    steps:
+      - {server: pal-stdio, tool: analyze, note: structured investigation first}
+      - {server: pal-stdio, tool: codereview, note: or consensus for decision forks (2 models, for/against)}
+      - {server: pal-stdio, tool: precommit, note: diff-scope + rollback sanity}
+      - {server: conport, tool: log_decision, note: verdict + rationale}
+    owners: [/sc:analyze, /dx:review, AGENTS.md §5 chains]
+    note: PAL provider reality — only OpenRouter-backed models reliable (creds audit 2026-07-16)
+
+  memory-recall:
+    intent: pull relevant prior context across all three Trinity planes
+    trigger: agent intent "what do we know about X", /mem:recap, /ctx:search-here
+    status: live
+    steps:
+      - {server: dope-memory, tool: memory_search, note: chronicle plane}
+      - {server: conport, tool: search_content, note: decisions/progress plane (NOT search_decisions_fts — dead name)}
+      - {server: dope-context, tool: search_all, note: code+docs retrieval plane}
+      - {server: dope-memory, tool: memory_recap, note: session-shaped summary when resuming}
+    owners: [/mem:recap, /ctx:search-here, /mem-query (after FND-INSTRREPAIR-004 repairs its dead names)]
+
+  decision-log:
+    intent: durable decision with chronicle mirror — the memory spine round-trip
+    trigger: /decision, any architectural choice
+    status: partial
+    steps:
+      - {server: conport, tool: log_decision}
+      - {note: decision.logged promotes to chronicle via capture spine, pending: "G2/ADR-004 ingress reroute (IMP-EVENTS-006) + SVCFIN MEMSPINE"}
+      - {server: dope-context, tool: configure_decision_auto_indexing, note: one-time enable; Trinity Rule 2 flag still off (SVCFIN DCINDEX-006)}
+    owners: [/decision, /caveat, /followup (conport halves repaired by FND-INSTRREPAIR-004)]
+
+  cross-plane-read:
+    intent: read projection for non-attributed agents (OpenCode/Gemini/Copilot/ChatGPT)
+    trigger: any read intent from a facade-plane agent
+    status: planned
+    steps:
+      - {server: dcp-readonly-facade, tool: get_repo_state_snapshot, pending: MCPINT-IMP-FACADE-001}
+      - {server: dcp-readonly-facade, tool: search_decisions, pending: MCPINT-IMP-FACADE-001}
+      - {server: dcp-readonly-facade, tool: search_chronicle, pending: MCPINT-IMP-FACADE-001}
+      - {server: dcp-readonly-facade, tool: get_workflow_status_snapshot, pending: MCPINT-IMP-FACADE-001}
+      - {server: dcp-readonly-facade, tool: search_code_docs, pending: "phase-2 JSON-RPC bridge (BLOCKED envelope until then)"}
+    owners: [generated opencode.jsonc managed block, mcp-proxy-config.copilot.yaml]
+
+  untracked-work:
+    intent: nothing you build silently disappears — detect, remind, convert
+    trigger: hook:SessionStart (lite probe, live) + dopecode F001 lifecycle (pending)
+    status: partial
+    steps:
+      - {note: H5 lite probe advisory (src/dopemux/untracked_work.py), status: live}
+      - {server: dopecode, tool: detect_untracked_work, pending: "DOPECODE-DEPLOY-001 (per SVCFEAT reconciliation) or IMP-ADHDINTEL-007"}
+      - {server: dopecode, tool: track_untracked_work, pending: as above, note: auto-track ≥0.85 → conport log_progress}
+      - {server: task-orchestrator, tool: manage_items, note: convert tracked work into a packet when it matures}
+    owners: [H5 hook, future /dx: convert flow]

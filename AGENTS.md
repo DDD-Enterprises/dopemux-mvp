@@ -271,3 +271,24 @@ When MCP servers fail to connect, follow this sequence in order:
 - `docs/02-how-to/mcp-transport-and-port-bugs.md` — bug record + correct analysis
 - `docs/02-how-to/mcp-setup-other-repos.md` — human user guide for other repos
 - `docs/02-how-to/mcp-troubleshooting.md` — container-level troubleshooting
+
+### 12.5 Generated MCP surfaces and implicit use
+
+`mcp_catalog.yaml` (v2 fields: `agents`, `tools`, `admin_tools`, `aux_surfaces`,
+`managed`) is the single source of truth for the MCP fleet (ADR-MCPINT-001). Generated
+from it — and never hand-edited: the worktree `.mcp.json`, the global singleton fragment
+(`sync-globals`), the `opencode.jsonc` managed `mcp` block, `mcp-proxy-config.copilot.yaml`,
+and the `.codex/config.toml` managed `mcp_servers` region. Parity gates in
+`tests/arch/test_mcp_fleet_catalog_contract.py` fail CI on drift; exposure changes are
+catalog `agents:` edits followed by `dopemux mcp generate --apply`.
+
+`agents:` matrix semantics — `full`: direct config now. `full-sequenced`: full config only
+after DMX-MEMSPINE-IDENTITY-005 and task-orchestrator `actor_authentication.enabled` land
+(`--allow-sequenced` is refused until then). `read-plane`: reads via the dcp-readonly-facade
+plus read-safe direct singletons. `facade`: remote facade per ADR-DCP-MCP-RO-0009. `none`:
+no agent surface. The facade is the only cross-plane read projection for non-attributed
+agents (ADR-MCPINT-002). Implicit context is Claude-only, entering through exactly one
+channel: `native_hooks.py` SessionStart — four bounded blocks, ~3KB, fail-open
+(ADR-MCPINT-003). Tool names come only from `mcp_tool_surfaces.json` (refresh:
+`dopemux mcp snapshot-tools`). Workflow sequences: `docs/03-reference/mcp/workflows.yaml`;
+full guide: `docs/02-how-to/mcp-integration-guide.md`.

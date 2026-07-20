@@ -37,6 +37,10 @@
       "type": "string",
       "pattern": "^[A-Z][A-Z0-9_]*$"
     },
+    "agentExposure": {
+      "description": "Per-agent exposure of this server (ADR-MCPINT-001/-002). `full` = direct config; `full-sequenced` = full parity gated on ADR-MCPINT-002 preconditions (IDENTITY-005 + actor-auth); `read-plane` = read-only via the universal read plane (dcp-readonly-facade projection and/or read-safe direct config) once deployed; `facade` = remote facade access per ADR-DCP-MCP-RO-0009; `none` = no exposure.",
+      "enum": ["full", "full-sequenced", "read-plane", "facade", "none"]
+    },
     "server": {
       "type": "object",
       "additionalProperties": false,
@@ -48,16 +52,14 @@
         "state_scope": {
           "enum": ["per-repo", "per-worktree", "single_active_project"]
         },
-        "port_policy": {
-          "enum": ["reserved_singleton"]
-        },
         "transport": {
-          "enum": ["http", "sse", "stdio"]
+          "enum": ["http", "sse", "stdio", "external"]
         },
         "plane": {
           "enum": [
             "automation",
             "code-intelligence",
+            "dcp-read",
             "gateway",
             "memory",
             "pm",
@@ -71,25 +73,30 @@
           "enum": [
             "chronicle-authority",
             "code-intelligence",
+            "connector-discovery",
             "deep-research",
             "desktop-automation",
             "docker-gateway",
+            "docs-lookup",
             "pm-adapter",
+            "read-plane-projection",
             "reasoning-infrastructure",
             "retrieval-projection",
             "structured-context-authority",
+            "task-scheduler",
             "web-search",
             "workflow-authority"
           ]
         },
         "lifecycle": {
-          "enum": ["active", "decision-required", "operator-managed"]
+          "enum": ["active", "decision-required", "operator-managed", "planned-active"]
         },
         "management_model": {
           "enum": [
             "compose-service",
             "docker-exec",
             "docker-mcp-gateway",
+            "external",
             "operator-managed",
             "wrapper-singleton"
           ]
@@ -106,6 +113,108 @@
         },
         "follow_on_decision": {
           "enum": ["delete-or-host-run", "none", "wire-or-retire"]
+        },
+        "port_policy": {
+          "enum": ["reserved_singleton"]
+        },
+        "managed": {
+          "description": "false = host-level external surface documented for completeness; the repo does not manage its transport, lifecycle, or config (ADR-MCPINT-001 §4).",
+          "type": "boolean"
+        },
+        "agents": {
+          "description": "Per-agent exposure matrix (ADR-MCPINT-001 catalog v2). The string `none` means this server has no agent matrix row (infra/PM-sync entries). Rendering is owned by MCPINT-FND-CODEGEN-005; ADR-MCPINT-002 is the policy constraining when the generator may honor a row.",
+          "oneOf": [
+            {
+              "type": "string",
+              "const": "none"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "minProperties": 1,
+              "properties": {
+                "claude": {
+                  "$ref": "#/$defs/agentExposure"
+                },
+                "codex": {
+                  "$ref": "#/$defs/agentExposure"
+                },
+                "opencode": {
+                  "$ref": "#/$defs/agentExposure"
+                },
+                "gemini": {
+                  "$ref": "#/$defs/agentExposure"
+                },
+                "copilot": {
+                  "$ref": "#/$defs/agentExposure"
+                },
+                "chatgpt": {
+                  "$ref": "#/$defs/agentExposure"
+                }
+              }
+            }
+          ]
+        },
+        "workflows": {
+          "description": "Refs into docs/03-reference/mcp/workflows.yaml (named tool sequences; MCPINT-DOC-003). Refs only — workflow content is never duplicated in the catalog.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "tools": {
+          "description": "Pointer into the committed mcp_tool_surfaces.json snapshot (ADR-MCPINT-001): the snapshot is the only place tool names live. `snapshot_key` must exist under the snapshot's `servers`; `schema_version` must match the snapshot's schema_version.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["snapshot_key", "schema_version"],
+          "properties": {
+            "snapshot_key": {
+              "type": "string",
+              "minLength": 1
+            },
+            "schema_version": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "admin_tools": {
+          "description": "Operator-only tool names on this server's surface (e.g. conport fork_instance/promote/promote_all). Excluded from workflow docs and non-Claude exposure rows (tool-placement-map §3).",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "aux_surfaces": {
+          "description": "Runtime-observed auxiliary HTTP surfaces that are not the contractual MCP transport (e.g. gptr-mcp :3009 /messages SSE, P0 claim 12 / GPTR-TRANSPORT-TRUTH).",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["url", "contractual"],
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 1
+              },
+              "protocol": {
+                "enum": ["http", "sse"]
+              },
+              "contractual": {
+                "type": "boolean"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
         },
         "url": {
           "type": "string",
@@ -215,6 +324,14 @@
               },
               {
                 "required": ["url_template"]
+              },
+              {
+                "properties": {
+                  "lifecycle": {
+                    "const": "planned-active"
+                  }
+                },
+                "required": ["lifecycle"]
               }
             ]
           }
@@ -230,6 +347,32 @@
           },
           "then": {
             "required": ["command"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "transport": {
+                "const": "external"
+              }
+            },
+            "required": ["transport"]
+          },
+          "then": {
+            "required": ["managed"],
+            "not": {
+              "anyOf": [
+                {
+                  "required": ["url"]
+                },
+                {
+                  "required": ["url_template"]
+                },
+                {
+                  "required": ["command"]
+                }
+              ]
+            }
           }
         },
         {

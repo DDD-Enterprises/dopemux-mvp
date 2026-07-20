@@ -1,0 +1,2353 @@
+# Dopemux MCP Feature Register — canonical, machine-readable
+# Every feature ever planned across the MCP fleet, reconciled against runtime truth.
+meta:
+  title: Dopemux MCP Feature Register
+  generated_by: DMX-MCPINT-P1 (MCPINT-P1-REGISTER-001)
+  date: "2026-07-16"
+  worktree: .claude/worktrees/trusting-engelbart-d2fbfe @ branch claude/mcp-dopemux-integration-audit-877f32
+  source_docs:
+    - claudedocs/raw/feature-register-raw-2026-07-16.md            # RAW register (doc archaeology)
+    - claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md
+    - claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md
+    - claudedocs/service-audit-2026-07-04.md
+    - claudedocs/adhd-surfaces-deep-dive-2026-07-04.md
+    - claudedocs/memory-context-fabric-design-2026-07-04.md
+    - claudedocs/design-dcp-mcp-skills-hooks-2026-06-10.md
+    - claudedocs/dopemux-completion-plan-2026-07-07.md
+    - docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md
+    - docs/03-reference/serena-v2-mcp-tools.md
+  verification_basis: claudedocs/mcp-fleet-runtime-verification-2026-07-16.md   # P0 — runtime truth OVERRIDES doc-asserted status
+  tool_snapshot_basis: proof/mcpint-p0/tools_list/   # authoritative for `tools:` fields
+  program: DMX-MCPINT (orchestrator root af10eefd)
+  svcfin_reconciliation: docs/ops/load-plans/load_plan-DMX-SVCFIN.json (root 3ad40a72; SVCFIN-owned decisions referenced, never re-decided here)
+  status_vocabulary: [live, built-unwired, quarantined, partial, planned, vaporware, shelved, retired]
+  decision_vocabulary: "adr:<file> | packet:<id> | gate:G1..G5 | held | shipped"
+  notes: |
+    - `tools:` lists for conport / dope-memory / task-orchestrator / serena / dope-context /
+      desktop-commander are verified subsets of the P0 tools/list snapshots.
+      pal-stdio, gpt-researcher, context7, mcp-registry, scheduled-tasks, leantime-bridge had
+      NO P0 tools/list capture (NOT_RUN — deferred to MCPINT-FND-SNAPSHOT-002); their tools are
+      session-observed and flagged per-entry.
+    - `adr:adr-mcpint-001..005` were written 2026-07-16 and ACCEPTED 2026-07-17 (PR #1073; consensus pass complete).
+    - Where the raw register's doc-asserted label diverged from P0 runtime truth, runtime wins
+      and the doc label is preserved in `note:`.
+
+features:
+
+  # ============================================================
+  # 1. ConPort — Memory Trinity plane 1 (decisions/progress/context)
+  # ============================================================
+
+  - id: CONPORT-CORE
+    name: Decisions / progress / active-context CRUD
+    plane: memory
+    server: conport
+    status: live
+    code_path: null
+    tools: [log_decision, get_decisions, log_progress, get_progress, update_progress, get_context, update_context]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "P0 claim 1 VERIFIED: deployed surface = slim 17-tool stdio set on SSE :3005, v1.28.1."
+
+  - id: COPT-104
+    name: Custom-data CRUD on MCP surface
+    plane: memory
+    server: conport
+    status: live
+    code_path: null
+    tools: [save_custom_data, get_custom_data, delete_custom_data]
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: conport-optimal-104
+    last_verified: "2026-07-16"
+
+  - id: COPT-105
+    name: search_content on MCP surface
+    plane: memory
+    server: conport
+    status: live
+    code_path: null
+    tools: [search_content]
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: conport-optimal-105
+    last_verified: "2026-07-16"
+
+  - id: CONPORT-ADMIN-DISCOVERY
+    name: Dark admin + discovery tools (fork/promote/activity/summary)
+    plane: memory
+    server: conport
+    status: live
+    code_path: null
+    tools: [fork_instance, promote, promote_all, get_recent_activity, get_active_work, workspace_summary]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: packet:MCPINT-DOC-001
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-DOC-001
+    last_verified: "2026-07-16"
+    note: "Y-list: live but undocumented/under-documented; per-server contract pages fix this."
+
+  - id: COPT-201
+    name: Product-context model (migration 008 + REST + MCP tools)
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/]
+    decision: packet:DMX-ARCH-CONPORT-SURFACE-002
+    triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
+    packet_ref: COPT-201
+    last_verified: "2026-07-16"
+    note: "SVCFIN-owned surface decision. Z-listed (no working code)."
+
+  - id: COPT-106
+    name: JSON-RPC discovery parity + SSE transport URL fix
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: packet:DMX-ARCH-CONPORT-SURFACE-002
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: COPT-106
+    last_verified: "2026-07-16"
+    note: "Raw register: advertises 13 of 17, 3 dark, 1 missing. P0 SSE probe saw all 17 via tools/list; JSON-RPC-discovery parity remains unproven on other transports."
+
+  - id: COPT-107
+    name: Gate auto-fork write behind ?auto_fork=true on GET /api/progress
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: held
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: COPT-107
+    last_verified: "2026-07-17"
+    note: "LIVE HAZARD: GET currently mutates. Also blocks DCP facade search_progress (fail-closed against this exact hazard). Fail-closed facade posture recorded in adr-mcpint-002 §2 (search_progress stays behind progress_readonly_safe until this lands); ConPort surface owner DMX-ARCH-CONPORT-SURFACE-002."
+
+  - id: COPT-203
+    name: Relationship / knowledge-graph read traversal
+    plane: memory
+    server: conport
+    status: partial
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/, claudedocs/memory-context-fabric-design-2026-07-04.md]
+    decision: packet:DMX-ARCH-CONPORT-SURFACE-002
+    triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
+    packet_ref: COPT-203
+    last_verified: "2026-07-16"
+    note: "Read-only /api/workspace-relationships exists (plain table, no AGE/Cypher at runtime); UUID-safe recursive CTE depth 1-3 still a packet."
+
+  - id: COPT-202
+    name: Entity-relationship write API (link_items / get_linked_items)
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/]
+    decision: packet:DMX-ARCH-CONPORT-SURFACE-002
+    triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
+    packet_ref: COPT-202
+    last_verified: "2026-07-16"
+
+  - id: COPT-204
+    name: Decision-to-progress traversal endpoint + MCP tool
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/]
+    decision: packet:DMX-ARCH-CONPORT-SURFACE-002
+    triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
+    packet_ref: COPT-204
+    last_verified: "2026-07-16"
+
+  - id: COPT-301
+    name: Decision-outcome retrospective recording
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/]
+    decision: held
+    triage: {wiring_cost: M, value: L, boundary_fit: clean}
+    packet_ref: COPT-301
+    last_verified: "2026-07-16"
+
+  - id: COPT-302
+    name: Review reminders (REST + MCP)
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/]
+    decision: held
+    triage: {wiring_cost: M, value: L, boundary_fit: clean}
+    packet_ref: COPT-302
+    last_verified: "2026-07-16"
+    note: "scheduled-tasks MCP (live, undocumented) is a candidate substrate."
+
+  - id: COPT-303
+    name: Decision genealogy — typed decision-to-decision relationships (BUILDS_UPON)
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/, claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: L, value: M, boundary_fit: needs-adr}
+    packet_ref: COPT-303
+    last_verified: "2026-07-16"
+    note: "Related vaporware: graph.neighbors MCP parity (TP-MCF-006)."
+
+  - id: COPT-100
+    name: Operator-gated enhanced schema (13-table target)
+    plane: memory
+    server: conport
+    status: partial
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/]
+    decision: held
+    triage: {wiring_cost: L, value: M, boundary_fit: needs-adr}
+    packet_ref: conport-optimal-100-migration-foundation-gate
+    last_verified: "2026-07-16"
+    note: "Migration foundation gate; ADR PR #917/#936. Prior 'migrations-never-applied' finding marked STALE by 07-03 fleet audit."
+
+  - id: CONPORT-IDENTITY-ISOLATION
+    name: Per-worktree / per-request instance identity (not global env)
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: packet:DMX-MEMSPINE-IDENTITY-005
+    triage: {wiring_cost: L, value: H, boundary_fit: needs-adr}
+    packet_ref: DMX-MEMSPINE-IDENTITY-005
+    last_verified: "2026-07-16"
+    note: "Design defect: inert over SSE (one global DOPEMUX_INSTANCE_ID). P0 finding N2 (dope-memory carrying dNh_CRM workspace id) is the runtime smoking gun for this hazard class."
+
+  - id: INV-MEM-APPENDONLY
+    name: Append-only decision invariants (INV-MEM-002/003/004) enforcement
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-ARCH-APPENDONLY-004
+    triage: {wiring_cost: M, value: H, boundary_fit: needs-adr}
+    packet_ref: DMX-ARCH-APPENDONLY-004
+    last_verified: "2026-07-16"
+    note: "Doc-asserted 'currently fiction' — enforce via REVOKE+trigger migration or delete from doctrine. SVCFIN-owned."
+
+  - id: CONPORT-FAILCLOSED-SCHEMA
+    name: Fail-closed _ensure_schema verification
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: held
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Schema-verify currently fail-open (regression)."
+
+  - id: CONPORT-SEMSEARCH-MILVUS
+    name: Vector semantic search + node upsert (mem.search / mem.upsert, Milvus + Voyage/OpenAI)
+    plane: memory
+    server: conport
+    status: shelved
+    code_path: src/conport/memory_server.py
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: adr:adr-mcpint-005
+    triage: {wiring_cost: L, value: L, boundary_fit: violates}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Milvus never deployed; semantic retrieval is dope-context's plane (Trinity boundary conflict). Code stub verified at src/conport/memory_server.py (raw cites :905-930)."
+    sub_features: [mem.search vector query, mem.upsert embedding write]
+
+  - id: CONPORT-ZEP
+    name: Zep conversational memory integration
+    plane: memory
+    server: conport
+    status: shelved
+    code_path: src/conport/memory_server.py
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: adr:adr-mcpint-005
+    triage: {wiring_cost: L, value: L, boundary_fit: violates}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Config-only stub (raw cites memory_server.py:113); never implemented."
+
+  - id: CONPORT-KG-ADHD-VIEWS
+    name: Progressive-disclosure decision tiers + ADHD neighborhood exploration
+    plane: memory
+    server: conport
+    status: quarantined
+    code_path: services/conport_kg/queries/models.py
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: L, value: M, boundary_fit: needs-adr}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Quarantined conport_kg code. DecisionCard/Summary/FullContext tiers + 1-hop→2-hop max-10/hop exploration."
+    sub_features: [tiered decision views with cognitive-load scoring, progressive graph neighborhood exploration]
+
+  - id: CONPORT-KG-EVENTDRIVEN
+    name: Event-driven KG orchestration (auto-trigger on decision.logged/task.started + Redis precache)
+    plane: memory
+    server: conport
+    status: quarantined
+    code_path: services/conport_kg/orchestrator.py
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: L, value: M, boundary_fit: needs-adr}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Explicit 'TODO publish to bus' in source; built but never wired to the event spine."
+
+  - id: CONPORT-IMPACT-GRAPH
+    name: Decision impact graph (centrality/influence scoring)
+    plane: memory
+    server: conport
+    status: vaporware
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: L, value: L, boundary_fit: needs-adr}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Data model only; no working code."
+
+  - id: CONPORT-AGE-CLIENT
+    name: Direct PostgreSQL AGE Cypher client (<50ms)
+    plane: memory
+    server: conport
+    status: built-unwired
+    code_path: services/conport_kg/age_client.py
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Tier-0 migrations status governed by COPT-100 gate; runtime KG is a plain table today (no AGE)."
+
+  - id: COPT-206
+    name: DCP facade re-enable ConPort search + get_linked_items reader
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: COPT-206
+    last_verified: "2026-07-16"
+    note: "Depends on backend /api/search UUID-serialization 500 fix; see DCP-FACADE-SEARCH-DECISIONS."
+
+  - id: COPT-108
+    name: Integration test scaffolding (testcontainers PG+Redis)
+    plane: memory
+    server: conport
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/generated/DMX-CONPORT-OPTIMAL/]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: COPT-108
+    last_verified: "2026-07-16"
+
+  - id: CONPORT-SINGLE-SURFACE
+    name: Retire upstream-wrapper shadow twin (single ConPort surface)
+    plane: memory
+    server: conport
+    status: planned
+    code_path: docker/mcp-servers-source/conport
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-ARCH-CONPORT-SURFACE-002
+    triage: {wiring_cost: M, value: H, boundary_fit: needs-adr}
+    packet_ref: DMX-ARCH-CONPORT-SURFACE-002
+    last_verified: "2026-07-16"
+    note: ".claude/commands reference 6 tool names the real SSE server lacks (name-drift repair = DMX-HYG-CONPORTREFS-003 + MCPINT-FND-INSTRREPAIR-004); wrappers launch upstream context-portal-mcp."
+
+  # ============================================================
+  # 2. dope-memory — Memory Trinity plane 2 (chronicle/recap/reflection)
+  # ============================================================
+
+  - id: DMEM-CAPTURE-SPINE
+    name: Event intake → redaction → raw store (7d TTL) → promotion → curated chronicle
+    plane: chronicle
+    server: dope-memory
+    status: partial
+    code_path: src/dopemux/memory/capture_client.py
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/service-audit-2026-07-04.md]
+    decision: packet:DMX-MEMSPINE-PROGRESS-CHRONICLE-004
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: DMX-MEMSPINE-PROGRESS-CHRONICLE-004
+    last_verified: "2026-07-16"
+    note: "Mirror runtime-proven 0→1 (PR #1009) BUT P0 verified ENABLE_MIRROR_SYNC=false on the live container AND N2 workspace contamination (dNh_CRM) — spine not trustworthy end-to-end on this host."
+
+  - id: DMEM-RECAP-REPLAY
+    name: Recap / replay / reflection / trajectory tool set
+    plane: chronicle
+    server: dope-memory
+    status: live
+    code_path: null
+    tools: [memory_recap, memory_replay_session, memory_reflections, memory_generate_reflection, memory_trajectory]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "P0 claim 6 VERIFIED (10 tools, streamable HTTP :3020). Data quality still limited by spine (see DMEM-CAPTURE-SPINE)."
+
+  - id: DMEM-STORE-SEARCH
+    name: Manual store + search
+    plane: chronicle
+    server: dope-memory
+    status: live
+    code_path: null
+    tools: [memory_store, memory_search]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: DMEM-CORRECTIONS
+    name: Supersession-style correction lane
+    plane: chronicle
+    server: dope-memory
+    status: live
+    code_path: null
+    tools: [memory_correct, memory_mark_issue, memory_link_resolution]
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: DMEM-MIRROR-RECEIPTS
+    name: Mirror receipts from ConPort (Trinity Rule 1)
+    plane: chronicle
+    server: dope-memory
+    status: partial
+    code_path: services/working-memory-assistant/promotion/promotion.py
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: held
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Exists only in a gated CLI path; skill-layer /decision /caveat /followup receipts still TODO (see CMD-MIRROR-RECEIPTS). ENABLE_MIRROR_SYNC=false at runtime (P0 claim 9)."
+
+  - id: DMEM-PROMOTION-ALLOWLIST
+    name: Promotion allowlist for chronicle-promotable event types
+    plane: chronicle
+    server: dope-memory
+    status: live
+    code_path: services/working-memory-assistant/promotion/promotion.py
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Raw register says 7 promotable types; MCPINT plan Agent A digest says 12-type frozenset — reconcile during MCPINT-FND-SNAPSHOT-002 docs pass."
+
+  - id: DMEM-ERROR-CAPTURE
+    name: error.encountered capture (native_hooks PostToolUseFailure → capture_client)
+    plane: chronicle
+    server: dope-memory
+    status: live
+    code_path: src/dopemux/claude/native_hooks.py
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/service-audit-2026-07-04.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Shipped in #993."
+
+  - id: DMEM-TASK-EVENT-PRODUCERS
+    name: task.* / workflow.phase_changed producer completeness
+    plane: chronicle
+    server: dope-memory
+    status: partial
+    code_path: null
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-MEMSPINE-TASKCREATED-003
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: DMX-MEMSPINE-TASKCREATED-003
+    last_verified: "2026-07-16"
+    note: "PM emits only task.blocked/completed + phase-change with from_phase hardcoded 'unknown'; task.created/failed/assigned and blocker.cleared never emitted. SVCFIN owns chronicle producers."
+
+  - id: DMEM-IDENTITY-FAILCLOSED
+    name: Workspace+instance partitioning with fail-closed identity on writes
+    plane: chronicle
+    server: dope-memory
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-MEMSPINE-IDENTITY-005
+    triage: {wiring_cost: L, value: H, boundary_fit: clean}
+    packet_ref: DMX-MEMSPINE-IDENTITY-005
+    last_verified: "2026-07-16"
+    note: "P0 finding N2: primary dope-memory container carries DOPE_MEMORY_WORKSPACE_ID=dNh_CRM (another repo) — chronicle writes attribute to the wrong workspace. Runtime smoking gun; SVCFIN priority raised."
+
+  - id: TP-MCF-004
+    name: SessionStart recap injection (bounded Top-3, fail-open)
+    plane: chronicle
+    server: dope-memory
+    status: planned
+    code_path: src/dopemux/claude/native_hooks.py
+    tools: []
+    source: [claudedocs/memory-context-fabric-design-2026-07-04.md, claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: packet:MCPINT-IMP-RECAP-003
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: MCPINT-IMP-RECAP-003
+    last_verified: "2026-07-16"
+    note: "Closest existing design to the implicit-use goal. Cross-tree BLOCKS dep: DMX-MEMSPINE-IDENTITY-005 must land first (else recap injects cross-workspace contaminated data — see N2)."
+
+  - id: DMEM-REDACTION
+    name: Pre-storage redaction (secret/PII masking before chronicle.append)
+    plane: chronicle
+    server: dope-memory
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md, claudedocs/memory-context-fabric-design-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Current behavior = strip-and-store-minimal (leaks key names)."
+
+  - id: DMEM-EVENT-DEDUP
+    name: event_id idempotency dedup on EventBusConsumer
+    plane: chronicle
+    server: dope-memory
+    status: vaporware
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-17"
+    note: "Duplicate entries possible on retry today. Dedup ideas absorbed into the capture_client backlog per adr-mcpint-004 §4 (mcp-capture retirement) — library feature, not a server."
+
+  - id: DMEM-JSONRPC-PARITY
+    name: Full JSON-RPC /mcp surface (beyond /tools/*)
+    plane: chronicle
+    server: dope-memory
+    status: live
+    code_path: services/working-memory-assistant/mcp_http.py
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "ANOMALY — raw register doc-asserted PARTIAL ('only /tools/* today'); P0 captured full JSON-RPC initialize+tools/list via streamable HTTP POST /mcp on :3020. Runtime wins: live."
+
+  - id: DMEM-SCOPING-DECAY
+    name: Entity/user/project scoping; decay/TTL; import/export; replay_from_event_id determinism
+    plane: chronicle
+    server: dope-memory
+    status: vaporware
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: L, value: L, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Claude-Mem DR reference patterns; explicitly deferred."
+
+  - id: DMEM-ADHD-RECAP
+    name: ADHD-aware recap (adhd_state annotation; fewer cards when scattered)
+    plane: chronicle
+    server: dope-memory
+    status: partial
+    code_path: null
+    tools: [memory_recap]
+    source: [claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-ADHDLOOP-RECAP-003
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: DMX-ADHDLOOP-RECAP-003
+    last_verified: "2026-07-16"
+    note: "Producer annotation shipped; consumer side (TUI/CLI) SVCFIN-owned."
+
+  - id: DMEM-WMA-ARCHIVAL
+    name: WMA prototype archival + dead stdio shim (:8096) removal + dope-query husk
+    plane: chronicle
+    server: dope-memory
+    status: retired
+    code_path: services/working-memory-assistant
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/adhd-surfaces-deep-dive-2026-07-04.md]
+    decision: packet:DMX-HYG-DEADSVC-001
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: DMX-HYG-DEADSVC-001
+    last_verified: "2026-07-16"
+    note: "CAUTION for the deletion packet: services/working-memory-assistant/ ALSO hosts the LIVE dope-memory main (dope_memory_main.py, Dockerfile.dope-memory, promotion/) — prototype archival must not remove the live service. Shim: services/dope-memory/mcp_stdio_adapter.py. dope-query: services/dope-query (empty husk)."
+
+  # ============================================================
+  # 3. task-orchestrator — workflow-transition authority
+  # ============================================================
+
+  - id: TO-CORE-LIFECYCLE
+    name: Work-item graph, role lifecycle, trigger transitions, note-schema gates
+    plane: workflow
+    server: task-orchestrator
+    status: live
+    code_path: null
+    tools: [manage_items, query_items, manage_notes, query_notes, advance_item, claim_item, get_next_status, get_next_item, complete_tree, create_work_tree, get_context]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "P0 claim 2 VERIFIED: Kotlin v3.8.0 on :7890, 14 v3 tools, streamable HTTP."
+
+  - id: TO-DEP-GRAPH
+    name: Dependency graph + blocked-item queries
+    plane: workflow
+    server: task-orchestrator
+    status: live
+    code_path: null
+    tools: [manage_dependencies, query_dependencies, get_blocked_items]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Upstream bug: undercounts blocked items (0 vs 27)."
+
+  - id: TO-SINGLETON-LIFECYCLE
+    name: Repo-scoped singleton lifecycle (git-common-dir-hashed HTTP singleton)
+    plane: workflow
+    server: task-orchestrator
+    status: partial
+    code_path: src/dopemux/mcp/port_allocator.py
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: held
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "No auto-start. P0 finding N1: port_allocator.py:355-383 catch-22 — reserved singletons never lease, occupancy judged lease-identity-only, so a HEALTHY TO on 7890 blocks `mcp init --force`. Fix spawned as background task at P0."
+
+  - id: TO-ENSURE-AUTOSTART
+    name: Auto-start via ensure + truth-pack regen at v3.8.0
+    plane: workflow
+    server: task-orchestrator
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Truth pack still describes v2.2.0."
+
+  - id: TO-PYTHON-TWIN-RENAME
+    name: Rename Python services/task-orchestrator → workflow-api (end name collision)
+    plane: workflow
+    server: task-orchestrator
+    status: planned
+    code_path: services/task-orchestrator
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/service-audit-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "P0 claim 3 VERIFIED: :8000 is an unrelated Python FastAPI ('task-orchestrator' by name only; /mcp 404, Swagger at /docs)."
+
+  - id: TO-COMPLEXITY-SCORER
+    name: Task complexity scoring (ML bands 0-1, cognitive load, energy tagging)
+    plane: workflow
+    server: task-orchestrator
+    status: built-unwired
+    code_path: services/task-orchestrator/intelligence
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: packet:MCPINT-IMP-COMPLEX-008
+    triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
+    packet_ref: MCPINT-IMP-COMPLEX-008
+    last_verified: "2026-07-17"
+    note: "3rd of 3-4 competing complexity scorers; /dx:prd-parse returns unscored flat lists today. G5 answered → adr-mcpint-001 §5: complexity_coordinator wired as shared library per placement map; this scorer becomes an input to unified_score or is deleted under MCPINT-IMP-COMPLEX-008."
+
+  - id: TO-PREDRISK
+    name: Predictive risk assessment hook (8 categories incl. hyperfocus burnout)
+    plane: workflow
+    server: task-orchestrator
+    status: built-unwired
+    code_path: services/task-orchestrator/predictive_risk_assessment.py
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: packet:MCPINT-IMP-RISK-005
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: MCPINT-IMP-RISK-005
+    last_verified: "2026-07-17"
+    note: "Highest-ROI stranded item per source ('~3 lines to hook'). File verified at 527 lines (raw register said 562; duplicate copy at services/task-orchestrator/app/services/predictive_risk_assessment.py). G4 answered yes (2026-07-16): IMP-RISK-005 = flag-gated 2-week keep/kill pilot, adr-mcpint-003's sanctioned PostToolUse exception."
+
+  - id: TO-ENERGY-ROUTING
+    name: Energy-aware task routing (get_task_recommendations)
+    plane: workflow
+    server: task-orchestrator
+    status: partial
+    code_path: services/task-orchestrator/intelligence
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Live but shallow placeholder."
+
+  - id: TO-DEP-INFERENCE
+    name: Dependency auto-inference (analyze_dependencies, semantic + critical-path)
+    plane: workflow
+    server: task-orchestrator
+    status: partial
+    code_path: services/task-orchestrator/intelligence
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Current implementation = keyword-only stub."
+
+  - id: TO-SPRINT-AUTOPLAN
+    name: Sprint auto-planning (automate_sprint_planning)
+    plane: workflow
+    server: task-orchestrator
+    status: shelved
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: adr:adr-mcpint-005
+    triage: {wiring_cost: L, value: L, boundary_fit: violates}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "ConPort has no sprint API — genuinely unbuilt end-to-end (Z-list)."
+
+  - id: TO-MULTITEAM
+    name: Multi-team coordination (batched comms ≤3/day)
+    plane: workflow
+    server: task-orchestrator
+    status: shelved
+    code_path: services/task-orchestrator/multi_team_coordination.py
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: adr:adr-mcpint-005
+    triage: {wiring_cost: L, value: L, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Dormant-by-design for single-operator MVP; shelve formally."
+
+  - id: TO-STATUS-NORMALIZATION
+    name: Status-dialect normalization across surfaces (pending/in_progress vs TODO/DONE/BLOCKED)
+    plane: workflow
+    server: task-orchestrator
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: TO-DECISION-TRACEABILITY
+    name: Decision traceability (task → ConPort decision links)
+    plane: workflow
+    server: task-orchestrator
+    status: vaporware
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "P0-severity governance gap per source (proof-bundle lineage); no code anywhere."
+
+  # ============================================================
+  # 4. PAL — multi-model reasoning suite
+  # ============================================================
+
+  - id: PAL-SUITE
+    name: 18-tool multi-model reasoning suite (AGENTS.md §5 chains)
+    plane: reasoning
+    server: pal-stdio
+    status: live
+    code_path: null
+    tools: [analyze, apilookup, challenge, chat, clink, codereview, consensus, debug, docgen, listmodels, planner, precommit, refactor, secaudit, testgen, thinkdeep, tracer, version]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-17"
+    note: "UNVERIFIED-SNAPSHOT: no P0 tools/list capture for pal-stdio; the 18 names are session-observed (zen fork v9.0.2). FND-SNAPSHOT-002 landed (commit 447c9c20d) but pal-stdio probed unreachable at snapshot time (0 tools in mcp_tool_surfaces.json) — live capture still owed. P0 claim 11: pal-http :3003 healthy wrapper but /mcp does NOT exist — pal-stdio (docker exec) is the only usable PAL surface; catalog fiction repaired by 1b68e62e1 (adr-mcpint-001 §4)."
+
+  - id: PAL-MANAGED-LIFECYCLE
+    name: Managed lifecycle (ensure-pal.sh, real healthcheck)
+    plane: reasoning
+    server: pal-stdio
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: adr:adr-mcpint-001
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: MCPINT-FND-CATALOG-001
+    last_verified: "2026-07-17"
+    note: "Off-compose, unmanaged, required=true for Codex → hard dependency with no ensure script. P0: /health 200 with mcp_process_running:true (the #993 fix live). Transport-truth half RESOLVED by commit 1b68e62e1 (adr-mcpint-001 §4): catalog :3003/mcp fiction removed, pal entry quarantined decision-required (wire-or-retire, PAL-HTTP-RETROFIT); ensure-script/managed lifecycle still owed — status stays planned."
+
+  - id: PAL-VARIANT-DEDUPE
+    name: Delete 2 unconsumed compose PAL variants + dedupe registry keys
+    plane: reasoning
+    server: pal-stdio
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: packet:MCPINT-FND-CATALOG-001
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-FND-CATALOG-001
+    last_verified: "2026-07-16"
+
+  - id: PAL-HTTP-RETROFIT
+    name: HTTP/SSE dual-transport retrofit (apply TO's HTTP-singleton pattern)
+    plane: reasoning
+    server: pal-stdio
+    status: shelved
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: packet:MCPINT-FND-PALRETIRE-009
+    triage: {wiring_cost: L, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-FND-PALRETIRE-009
+    last_verified: "2026-07-18"
+    note: "Operator 2026-07-18: RETIRE the pal-http container; retrofit REJECTED (zero consumers; pal-stdio is the sole PAL surface). Packet MCPINT-FND-PALRETIRE-009 (650d1281) queued: remove compose pal service, catalog decision-required -> retired, KEEP ensure-pal.sh for the off-compose pal-mcp-server (Codex required=true). Prior context: would have fixed the container-leak class; see reference_pal_mcp_container + reference_task_orchestrator_container_leak memories."
+
+  # ============================================================
+  # 5. Serena — technical-context plane (outside Trinity)
+  # ============================================================
+
+  - id: SERENA-UPSTREAM-NAV
+    name: LSP-backed symbol nav / project scoping (deployed upstream wrapper)
+    plane: code-intel
+    server: serena
+    status: live
+    code_path: null
+    tools: [read_file, list_dir, find_file, search_for_pattern, get_symbols_overview, find_symbol, find_referencing_symbols, read_memory, list_memories, activate_project, switch_modes, get_current_config, check_onboarding_performed, onboarding, prepare_for_new_conversation, initial_instructions]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, docs/03-reference/serena-v2-mcp-tools.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "P0 claim 4 VERIFIED: :3006 → 27 tools (16 read/meta listed here; write lane split into SERENA-WRITE-LANE). Twist: health on :4006 self-identifies 'serena-v2' even though the in-repo candidate is NOT deployed."
+
+  - id: SERENA-WRITE-LANE
+    name: Edit/write lane (file+symbol writes, memory writes, shell execution)
+    plane: code-intel
+    server: serena
+    status: live
+    code_path: null
+    tools: [create_text_file, replace_content, replace_symbol_body, insert_after_symbol, insert_before_symbol, rename_symbol, write_memory, delete_memory, rename_memory, edit_memory, execute_shell_command]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: packet:DMX-ARCH-SERENA-SURFACE-003
+    triage: {wiring_cost: S, value: M, boundary_fit: violates}
+    packet_ref: DMX-ARCH-SERENA-SURFACE-003
+    last_verified: "2026-07-16"
+    note: "ANOMALY — raw register doc-asserted 'write tools kept OUT of default profile per sanctioned read-only contract' (DECISION-NEEDED if promoted). P0 snapshot shows 11 write-capable tools INCLUDING execute_shell_command live on :3006 default surface — the read-only contract is already violated at runtime. Feeds DMX-ARCH-SERENA-SURFACE-003."
+
+  - id: SERENA-LOCAL-CANDIDATE
+    name: In-repo 33/45-tool Serena candidate (services/serena)
+    plane: code-intel
+    server: serena
+    status: built-unwired
+    code_path: services/serena
+    tools: []
+    source: [docs/03-reference/serena-v2-mcp-tools.md, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: packet:DMX-ARCH-SERENA-SURFACE-003
+    triage: {wiring_cost: L, value: M, boundary_fit: needs-adr}
+    packet_ref: DMX-ARCH-SERENA-SURFACE-003
+    last_verified: "2026-07-16"
+    note: "Archive-or-promote decision SVCFIN-owned; G3 recommendation = archive candidate, port untracked-work into adhd-engine. Phantom v2/mcp_server.py path cited by broken wrapper does NOT exist (verified missing)."
+
+  - id: SERENA-ADHD-CAPS
+    name: ADHD output caps (≤10 results, 3-level depth, complexity bands)
+    plane: code-intel
+    server: serena
+    status: built-unwired
+    code_path: services/serena/adhd_features.py
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: packet:DMX-DOPECODE-DEPLOY-001
+    triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
+    packet_ref: DMX-DOPECODE-DEPLOY-001
+    last_verified: "2026-07-17"
+    note: "Implemented in local candidate only; deployed upstream wrapper has no caps. Sibling dopecode service per confirmed reconciliation 2026-07-17; dope-adhd surface cancelled."
+
+  - id: F001
+    name: Untracked-work detection lifecycle (detect→score→remind→auto-track→auto-close)
+    plane: code-intel
+    server: serena
+    status: built-unwired
+    code_path: services/serena/untracked_work_detector.py
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md, docs/03-reference/serena-v2-mcp-tools.md, docs/03-reference/f001-enhanced-untracked-work-system.md]
+    decision: packet:DMX-DOPECODE-DEPLOY-001
+    triage: {wiring_cost: L, value: H, boundary_fit: needs-adr}
+    packet_ref: DMX-DOPECODE-DEPLOY-001
+    last_verified: "2026-07-17"
+    note: "Design 4/5, reachability 1/5 — unreachable at runtime (wrapper builds only wrapper.py). Storage verified: services/serena/untracked_work_storage.py (973 lines). H5 lite probe IS live (.claude/hooks/untracked_work_probe.py). Sibling dopecode service per confirmed reconciliation 2026-07-17; dope-adhd surface cancelled — F001 goes live in place on DopeCode (H5 stays the lite front-end, dedupes against the DopeCode backend)."
+    sub_features: [detect/track/snooze/ignore/get_config/update_config, confidence scoring + auto-track >=0.85, cross-session reminders (backoff, quiet hours, snooze 1h/4h/1d), auto-close on commit (>=80% file overlap), abandonment tracking (get_abandoned_work/mark_abandoned/get_abandonment_stats, 7-day rule; services/serena/abandonment_tracker.py), branch organization suggestion (suggest_branch_organization)]
+
+  - id: SERENA-ADHD-INTEL
+    name: ADHD intelligence family (focus/fatigue/learning/load/interruption support)
+    plane: code-intel
+    server: serena
+    status: built-unwired
+    code_path: services/serena/intelligence
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md, docs/03-reference/serena-v2-mcp-tools.md]
+    decision: packet:DMX-DOPECODE-DEPLOY-001
+    triage: {wiring_cost: L, value: M, boundary_fit: needs-adr}
+    packet_ref: DMX-DOPECODE-DEPLOY-001
+    last_verified: "2026-07-17"
+    note: "Entire layer stranded in the undeployed candidate. Duplicated tree at services/serena/v2/ (both verified present). Adaptive Learning = #1 in source TOP-3. Sibling dopecode service per confirmed reconciliation 2026-07-17; dope-adhd surface cancelled."
+    sub_features: [Focus Mode Manager 5 modes LIGHT->HYPERFOCUS (services/serena/focus_manager.py), Fatigue Detection Engine 8 indicators+8 responses (intelligence/fatigue_detection_engine.py), Adaptive Learning Engine per-user attention patterns (intelligence/adaptive_learning.py), Personal Learning Profile (intelligence/learning_profile_manager.py), Cognitive Load Orchestrator (intelligence/cognitive_load_orchestrator.py), Context-Switching Optimizer, Progressive Disclosure Director (3-level max-5), Git-based navigation prediction (predict_navigation_from_git)]
+
+  - id: SERENA-ANALYTICS
+    name: Navigation-pattern stats + metrics dashboard (F1-F6 analytics)
+    plane: code-intel
+    server: serena
+    status: built-unwired
+    code_path: services/serena
+    tools: []
+    source: [docs/03-reference/serena-v2-mcp-tools.md, claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: packet:DMX-DOPECODE-DEPLOY-001
+    triage: {wiring_cost: M, value: L, boundary_fit: needs-adr}
+    packet_ref: DMX-DOPECODE-DEPLOY-001
+    last_verified: "2026-07-17"
+    note: "Sibling dopecode service per confirmed reconciliation 2026-07-17; dope-adhd surface cancelled."
+    sub_features: [get_pattern_stats / get_top_patterns with ADHD-risk typing, get_metrics_dashboard / get_metric_history / save_metrics_snapshot]
+
+  - id: SERENA-COMPLEXITY-BANDING
+    name: Complexity banding 0-1 with color bands + peak-focus advice
+    plane: code-intel
+    server: serena
+    status: built-unwired
+    code_path: services/serena/adhd_features.py
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: packet:MCPINT-IMP-COMPLEX-008
+    triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
+    packet_ref: MCPINT-IMP-COMPLEX-008
+    last_verified: "2026-07-17"
+    note: "1st of 3-4 competing complexity scorers (CodeComplexityAnalyzer); CRITICAL per source. G5 answered → adr-mcpint-001 §5: complexity_coordinator wired as shared library per placement map; banding becomes an input to unified_score under MCPINT-IMP-COMPLEX-008."
+
+  - id: SERENA-MULTIWORKSPACE
+    name: Multi-workspace pinned instances
+    plane: code-intel
+    server: serena
+    status: built-unwired
+    code_path: services/serena/multi_workspace_wrapper.py
+    tools: []
+    source: [docs/03-reference/serena-v2-mcp-tools.md]
+    decision: held
+    triage: {wiring_cost: M, value: L, boundary_fit: needs-adr}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: F002
+    name: Multi-session Serena support
+    plane: code-intel
+    server: serena
+    status: planned
+    code_path: null
+    tools: []
+    source: [docs/03-reference/f002-multi-session-support.md]
+    decision: held
+    triage: {wiring_cost: L, value: L, boundary_fit: needs-adr}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Design series only (f002-*.md x3, verified present)."
+
+  # ============================================================
+  # 6. dope-context — Memory Trinity plane 3 (retrieval, read-only)
+  # ============================================================
+
+  - id: DCTX-HYBRID-SEARCH
+    name: AST-aware hybrid dense+sparse code+docs indexing and search
+    plane: retrieval
+    server: dope-context
+    status: live
+    code_path: null
+    tools: [search_code, docs_search, search_all, index_workspace, index_docs, get_index_status, clear_index]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "P0 claim 5 VERIFIED: :3010 → 18 tools, clean 1:1. Voyage+Qdrant+BM25+rerank."
+
+  - id: DCTX-SYNC
+    name: SHA256 incremental sync, per-worktree collections
+    plane: retrieval
+    server: dope-context
+    status: live
+    code_path: null
+    tools: [sync_workspace, sync_docs]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: DCTX-AUTONOMOUS
+    name: Autonomous (watchdog) indexing, opt-in
+    plane: retrieval
+    server: dope-context
+    status: live
+    code_path: null
+    tools: [start_autonomous_indexing, stop_autonomous_indexing, get_autonomous_status, start_autonomous_docs_indexing, stop_autonomous_docs_indexing]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: DCTX-COMPLEXITY
+    name: Per-chunk complexity scoring
+    plane: retrieval
+    server: dope-context
+    status: partial
+    code_path: null
+    tools: [get_chunk_complexity]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: packet:MCPINT-IMP-COMPLEX-008
+    triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
+    packet_ref: MCPINT-IMP-COMPLEX-008
+    last_verified: "2026-07-17"
+    note: "Docstring lies ('Tree-sitter' but ast); search results don't carry per-hit complexity despite doctrine. 2nd of 3-4 competing scorers. G5 answered → adr-mcpint-001 §5: complexity_coordinator wired as shared library per placement map; get_chunk_complexity delegates to unified_score (fixing the docstring by delegation) under MCPINT-IMP-COMPLEX-008."
+
+  - id: DCTX-METRICS-EXTRAS
+    name: Search metrics + decision auto-indexing config (undocumented live tools)
+    plane: retrieval
+    server: dope-context
+    status: live
+    code_path: null
+    tools: [get_search_metrics, clear_search_metrics, configure_decision_auto_indexing]
+    source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: packet:MCPINT-DOC-001
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-DOC-001
+    last_verified: "2026-07-16"
+    note: "Y-list: live but absent from all doc-sourced registers."
+
+  - id: DCTX-LEXICAL-PHASE1
+    name: Lexical-only Phase-1 enforcement
+    plane: retrieval
+    server: dope-context
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: held
+    triage: {wiring_cost: M, value: L, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Required by repo rules, never proven."
+
+  - id: DCTX-HEALTHCHECK-FAILOPEN
+    name: Fix fail-open healthcheck (|| exit 0 → || exit 1)
+    plane: retrieval
+    server: dope-context
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/service-audit-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "[PLAN]-P0 item; healthcheck always passes today."
+
+  - id: DCTX-QDRANT-GC
+    name: Qdrant collection GC keyed to git worktree list
+    plane: retrieval
+    server: dope-context
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: DCTX-COST-GUARD
+    name: Voyage embedding cost guard
+    plane: retrieval
+    server: dope-context
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: held
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: DCTX-SIMPLE-SERVER-DELETE
+    name: Delete simple_server.py mock (fabricates plausible results)
+    plane: retrieval
+    server: dope-context
+    status: retired
+    code_path: services/dope-context/src/mcp/simple_server.py
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: packet:DMX-HYG-DEADSVC-001
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: DMX-HYG-DEADSVC-001
+    last_verified: "2026-07-16"
+    note: "File still present (P0 claim 17: graveyard prune NOT executed on this branch/host)."
+
+  - id: DCTX-CHRONICLE-INDEX
+    name: Chronicle → dope-context indexing (Trinity Rule 2, ENABLE_DOPECONTEXT_INDEX)
+    plane: retrieval
+    server: dope-context
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-MEMSPINE-DCINDEX-006
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: DMX-MEMSPINE-DCINDEX-006
+    last_verified: "2026-07-16"
+    note: "P0 claim 10 VERIFIED: ENABLE_DOPECONTEXT_INDEX entirely unset in container env (= off). Flag on only after curated chronicle entries exist. SVCFIN-owned."
+
+  - id: TP-MCF-005
+    name: Derived memory_{hash} semantic projection (index_memory / search_memory)
+    plane: retrieval
+    server: dope-context
+    status: shelved
+    code_path: null
+    tools: []
+    source: [claudedocs/memory-context-fabric-design-2026-07-04.md]
+    decision: adr:adr-mcpint-005
+    triage: {wiring_cost: L, value: M, boundary_fit: violates}
+    packet_ref: TP-MCF-005
+    last_verified: "2026-07-16"
+    note: "NO-GO: Voyage-external embedding of private memory = privacy conflict; requires its own ADR if ever revived."
+
+  # ============================================================
+  # 7. gpt-researcher — research plane
+  # ============================================================
+
+  - id: GPTR-CORE
+    name: Autonomous research + report generation (/research:* commands)
+    plane: research
+    server: gpt-researcher
+    status: live
+    code_path: null
+    tools: [deep_research, quick_search, write_report, get_research_sources, get_research_context]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-17"
+    note: "UNVERIFIED-SNAPSHOT: no P0 stdio tools/list capture; 5 names session-observed. FND-SNAPSHOT-002 landed (commit 447c9c20d) but gpt-researcher probed unreachable at snapshot time (0 tools in mcp_tool_surfaces.json) — live capture still owed. ConPort research_id persistence shipped via /research:* command design."
+
+  - id: GPTR-TRANSPORT-TRUTH
+    name: Reconcile healthcheck contradiction + undescribed :3009 /messages SSE surface
+    plane: research
+    server: gpt-researcher
+    status: live
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: adr:adr-mcpint-001
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-FND-CATALOG-001
+    last_verified: "2026-07-17"
+    note: "P0 claim 12 REFINED: :3009 serves an SSE-style /messages endpoint (400 on wrong content-type, not 404) + healthy /health. RESOLVED by commit 1b68e62e1 (adr-mcpint-001 §4): catalog now documents /messages as a non-contractual aux_surface; stdio docker-exec is the contractual transport."
+
+  - id: GPTR-TWIN-ARCHIVE
+    name: Archive dead in-repo twin after relocating live extraction backend
+    plane: research
+    server: gpt-researcher
+    status: planned
+    code_path: services/dopemux-gpt-researcher
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/service-audit-2026-07-04.md]
+    decision: packet:DMX-MEMSPINE-GPTR-TWIN-DELETE-002
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: DMX-MEMSPINE-GPTR-TWIN-DELETE-002
+    last_verified: "2026-07-16"
+    note: "Extraction backend relocation = DMX-MEMSPINE-EXTRACT-RELOCATE-001 (must precede delete). UNVERIFIED: raw register cites live backend at cli.py:4328 — no cli.py exists in the twin now; heaviest live-looking files are backend/extraction_pipeline.py + research_api/enhanced_chatlog_extractor.py. Relocation packet must re-locate the real entry point."
+
+  - id: GPTR-ADHD-TOOLS
+    name: ADHD research formatting (summarize_research / code_examples / trend_analysis / result caps)
+    plane: research
+    server: gpt-researcher
+    status: vaporware
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: L, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Implemented only in the dead twin, never on the live server (Z-list)."
+
+  - id: GPTR-DOCSEARCH
+    name: documentation_search tool
+    plane: research
+    server: gpt-researcher
+    status: retired
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: L, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Intentionally dropped — redundant with Context7 + dope-context."
+
+  # ============================================================
+  # 8. exa — retired quick-search lane
+  # ============================================================
+
+  - id: EXA-RETIRE
+    name: Quick neural search lane (4 tools, :3011) — retired by ADR-223
+    plane: research
+    server: exa
+    status: retired
+    code_path: null
+    tools: []
+    source: [docs/90-adr/adr-223-retire-exa-mcp-server.md, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: adr:docs/90-adr/adr-223-retire-exa-mcp-server.md
+    triage: {wiring_cost: S, value: L, boundary_fit: clean}
+    packet_ref: DMX-HYG-LOOPBACK-002
+    last_verified: "2026-07-16"
+    note: "ANOMALY — P0 claim 15 REFUTED AT RUNTIME: mcp-exa container Up (healthy) AND world-bound 0.0.0.0:3011 — a retired surface running with a loopback violation. Runtime posture = MCPINT-FND-CATALOG-001; loopback binding = DMX-HYG-LOOPBACK-002. WebSearch is the doctrinal fallback."
+
+  # ============================================================
+  # 9. desktop-commander
+  # ============================================================
+
+  - id: DC-RUNTIME
+    name: "GUI automation tools (facade: macOS osascript inside Linux container)"
+    plane: infra
+    server: desktop-commander
+    status: quarantined
+    code_path: docker/mcp-servers-source/desktop-commander
+    tools: [focus_window, screenshot, type_text, window_list]
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: held
+    triage: {wiring_cost: M, value: L, boundary_fit: violates}
+    packet_ref: null
+    last_verified: "2026-07-18"
+    note: "Operator 2026-07-18: KEEP container as-is — wire-or-retire CLOSED as keep. Quarantine stands (excluded from all generated configs); container stays in compose. P0 claim 14 context: catalog quarantine only removes it from generated configs — container up, SSE :3012 answers with these 4 tools; functional desktop-commander in sessions resolves via host/MCP gateway."
+
+  - id: DC-REBUILD-UPSTREAM
+    name: Delete facade, run real upstream desktop-commander on host
+    plane: infra
+    server: desktop-commander
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: held
+    triage: {wiring_cost: M, value: L, boundary_fit: needs-adr}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: DC-TOKEN-SAFE
+    name: Token-safe responses (file paths not base64 — 12 vs 168K tokens)
+    plane: infra
+    server: desktop-commander
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Lost discipline to re-enforce on any rebuild."
+
+  # ============================================================
+  # 10. DCP — read-only facade + registry + lanes + routing
+  # ============================================================
+
+  - id: DCP-FACADE
+    name: Read-only evidence facade for external LLMs (12-tool contract)
+    plane: dcp
+    server: dcp-readonly-facade
+    status: built-unwired
+    code_path: services/dcp-readonly-facade
+    tools: []
+    source: [docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: packet:MCPINT-IMP-FACADE-001
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: MCPINT-IMP-FACADE-001
+    last_verified: "2026-07-16"
+    note: "P0 claim 8 VERIFIED dark: no compose service, no catalog entry, no port — exists only in source/tests (537/539 tests green). Plan centerpiece D.4: deploy as universal read plane for non-Claude agents (subject to G1)."
+    sub_features: [list_projects, get_project_capabilities, get_repo_state_snapshot, list_proof_bundles, fetch_proof_bundle (symlink-escape blocked; 256KB cap), search_decisions, search_progress, search_chronicle, replay_chronicle_session, search_code_docs, get_index_status, get_workflow_status_snapshot]
+
+  - id: DCP-REGISTRY-V2
+    name: Registry v2 + pure resolver core (target_id, worktree scope, service-family policy)
+    plane: dcp
+    server: dcp-readonly-facade
+    status: built-unwired
+    code_path: services/dcp-readonly-facade/src/dcp_facade/registry_v2.py
+    tools: []
+    source: [claudedocs/mcp-fleet-runtime-verification-2026-07-16.md]
+    decision: packet:MCPINT-IMP-FACADE-001
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: MCPINT-IMP-FACADE-001
+    last_verified: "2026-07-16"
+    note: "#1036 landed in tree, tested, still dark (no deployment vector)."
+
+  - id: DCP-FACADE-SEARCH-DECISIONS
+    name: Facade search_decisions query mode
+    plane: dcp
+    server: dcp-readonly-facade
+    status: partial
+    code_path: services/dcp-readonly-facade
+    tools: []
+    source: [docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "List mode works; query mode deferred — ConPort backend /api/search/{ws} 500s on UUID serialization (see COPT-206)."
+
+  - id: DCP-FACADE-SEARCH-PROGRESS
+    name: Facade search_progress (fail-closed behind progress_readonly_safe)
+    plane: dcp
+    server: dcp-readonly-facade
+    status: partial
+    code_path: services/dcp-readonly-facade
+    tools: []
+    source: [docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md]
+    decision: held
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-17"
+    note: "BLOCKED by default — correctly fail-closed against ConPort's auto-fork-on-GET write hazard (COPT-107). Unblocks when COPT-107 lands. Posture affirmed by adr-mcpint-002 §2."
+
+  - id: DCP-FACADE-DCTX-BRIDGE
+    name: Facade → dope-context tools (search_code_docs, get_index_status) via MCP-JSON-RPC bridge
+    plane: dcp
+    server: dcp-readonly-facade
+    status: planned
+    code_path: null
+    tools: []
+    source: [docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: adr:adr-mcpint-002
+    triage: {wiring_cost: L, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-17"
+    note: "3 of 12 contract tools return BLOCKED (facade is REST-only; dope-context speaks MCP JSON-RPC). NAMING: the DCP TOOL_CONTRACT calls this its own 'G1' — distinct from MCPINT gate G1. MCPINT G1 answered → adr-mcpint-002 §2: the 3 tools stay deferred/BLOCKED until a REST→JSON-RPC bridge exists; the facade must not grow a bespoke dope-context client."
+
+  - id: DCP-ROUTING-CLASSIFIER
+    name: Routing classification engine (task → Opus/Sonnet/Haiku lane, pure function)
+    plane: dcp
+    server: dcp-readonly-facade
+    status: live
+    code_path: src/dopemux/dcp/routing_classifier.py
+    tools: []
+    source: [task-packets/DMX-DCP-MODEL-ROUTING-MVP-0002]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: DMX-DCP-MODEL-ROUTING-MVP-0002
+    last_verified: "2026-07-16"
+    note: "Includes 0002R status-precedence reconciliation. Consumed by the read-only DCP CLI."
+
+  - id: DCP-ROUTING-PROVENANCE
+    name: Classifier provenance hardening + trusted-input provenance contract
+    plane: dcp
+    server: dcp-readonly-facade
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: DMX-DCP-MODEL-ROUTING-MVP-0006
+    last_verified: "2026-07-16"
+    note: "Packets 0006 (provenance hardening) + 0007 (trusted-input contract), both unstarted."
+
+  - id: DCP-CLI-RO
+    name: Read-only DCP CLI projection (dopemux dcp)
+    plane: dcp
+    server: dcp-readonly-facade
+    status: live
+    code_path: src/dopemux/commands/dcp_commands.py
+    tools: []
+    source: [task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: DMX-DCP-MODEL-ROUTING-MVP-0004
+    last_verified: "2026-07-16"
+
+  - id: DCP-LANE-ENGINE
+    name: DCP Lane Engine MVP (decide_lane) + fail-closed forged-unknown handling
+    plane: dcp
+    server: dcp-readonly-facade
+    status: built-unwired
+    code_path: src/dopemux/dcp/lane_engine.py
+    tools: []
+    source: [task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: held
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: DMX-DCP-MODEL-ROUTING-MVP-0005
+    last_verified: "2026-07-16"
+    note: "Zero non-test consumers ('latent security is not security') — wire into dispatch or ADR to shelf. Postmerge fix (reject forged UNKNOWN, block passive actions) is in."
+
+  - id: DCP-CHARTER
+    name: DCP charter v1 (11 systems, live_write=false, red lane DCP-RED-MERGE-SEAM-0001) + PCP live-write gate
+    plane: dcp
+    server: dcp-readonly-facade
+    status: live
+    code_path: src/dopemux/dcp/red_lane.py
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Execution-eligibility as unforgeable computed capability; LIVE_WRITE_READY undefined-and-blocking (fail-closed, no default writer exists)."
+
+  - id: DCP-DENYLIST-MIDDLEWARE
+    name: "Denylist as runtime middleware (today: data + tests + advisory hooks only)"
+    plane: dcp
+    server: dcp-readonly-facade
+    status: planned
+    code_path: services/dcp-readonly-facade/src/dcp_facade/route_manifest.py
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: held
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-17"
+    note: "route_manifest ALLOWED/DENIED becomes real enforcement when the facade deploys (IMP-FACADE-001, per adr-mcpint-002); standalone middleware remains unbuilt."
+
+  - id: DCP-DEAD-NEIGHBORS
+    name: Kill dead neighbors (mcp-integration-bridge w/ secret-leaking debug endpoint, mcp-client, router)
+    plane: dcp
+    server: dcp-readonly-facade
+    status: retired
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/service-audit-2026-07-04.md]
+    decision: packet:DMX-HYG-DEADSVC-001
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: DMX-HYG-DEADSVC-001
+    last_verified: "2026-07-16"
+    note: "UNVERIFIED code_path: no mcp-integration-bridge directory found in this worktree (may already be deleted); its features (KG endpoints, workflow templates, progress dashboard, ADHD middleware) resurrect via clean rewrite only. Deletion packet should confirm actual remaining paths."
+
+  # ============================================================
+  # 11. ADHD engine
+  # ============================================================
+
+  - id: ADHD-ENGINE-CORE
+    name: Attention/energy state assessment + engine ignition
+    plane: adhd
+    server: adhd-engine
+    status: built-unwired
+    code_path: services/adhd_engine
+    tools: []
+    source: [claudedocs/adhd-surfaces-deep-dive-2026-07-04.md, claudedocs/service-audit-2026-07-04.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-ADHDLOOP-IGNITION-VERIFY-002
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: DMX-ADHDLOOP-IGNITION-VERIFY-002
+    last_verified: "2026-07-16"
+    note: "ANOMALY — doc-asserted 'ignition shipped this cycle' ([PLAN]-A2); P0 claim 16 REFUTED AT RUNTIME: :3025 connection refused, adhd-engine ABSENT from docker ps -a (never created in this host's compose project) despite compose.yml:462 defining it. Honesty fixes (UNAVAILABLE banding) are in code. SVCFIN owns ignition verify."
+
+  - id: ADHD-PREDICTIVE-ENGINE
+    name: PredictiveADHDEngine (IP-005 — predict hyperfocus/scatter/focus next window)
+    plane: adhd
+    server: adhd-engine
+    status: built-unwired
+    code_path: services/adhd_engine/ml/predictive_engine.py
+    tools: []
+    source: [claudedocs/adhd-surfaces-deep-dive-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Doc-asserted SHIPPED(engine)/consumer-PARTIAL; with no running container (P0 claim 16) nothing consumes it → built-unwired at runtime."
+
+  - id: ADHD-CONPORT-URL-FIX
+    name: ConPort URL config fix (:3010 → :3004 default)
+    plane: adhd
+    server: adhd-engine
+    status: partial
+    code_path: services/adhd_engine/config.py
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: held
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Default pointed at dope-context's port. NOTE: P0 finding N6 — conport HTTP health :3004 resets connections; the fix target itself needs re-verification."
+
+  - id: ADHD-HOOK-INGRESS
+    name: native_hooks PostToolUse → /external-activity ingress (first always-on signal)
+    plane: adhd
+    server: adhd-engine
+    status: planned
+    code_path: src/dopemux/claude/native_hooks.py
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-ADHDLOOP-HOOKINGRESS-001
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: DMX-ADHDLOOP-HOOKINGRESS-001
+    last_verified: "2026-07-16"
+    note: "SVCFIN-owned — the activity channel MCPINT depends on but does not duplicate."
+
+  - id: ADHD-INTERRUPTION-SHIELD
+    name: Interruption shield (DND, suppression during hyperfocus)
+    plane: adhd
+    server: adhd-engine
+    status: built-unwired
+    code_path: services/adhd_engine/domains/interruption-shield
+    tools: []
+    source: [claudedocs/adhd-surfaces-deep-dive-2026-07-04.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-ARCH-INTSHIELD-001
+    triage: {wiring_cost: L, value: M, boundary_fit: needs-adr}
+    packet_ref: DMX-ARCH-INTSHIELD-001
+    last_verified: "2026-07-16"
+    note: "Entirely unwired. Root twin also verified present at ./interruption_shield (~420 LOC per source) — SVCFIN ADR decides canonical home + twin disposal."
+
+  - id: ADHD-NOTIFIER
+    name: Notifications (break reminders, daily reporter, push)
+    plane: adhd
+    server: adhd-engine
+    status: built-unwired
+    code_path: services/adhd_engine/core/output_dispatcher.py
+    tools: []
+    source: [claudedocs/adhd-surfaces-deep-dive-2026-07-04.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Original standalone adhd-notifier (1,272 LOC per [ADHDDD]§2a) NOT found as a service dir — [PLAN] says 'notifier port shipped'; ported code verified at core/output_dispatcher.py + core/notification_styles.py (819 lines combined). Nothing schedules the daily reporter — the live-but-undocumented scheduled-tasks MCP is a candidate scheduler."
+
+  - id: ADHD-DESKTOP-NOTIFY
+    name: DesktopNotificationChannel (host macOS, self-disable in-container)
+    plane: adhd
+    server: adhd-engine
+    status: partial
+    code_path: services/adhd_engine/core/output_dispatcher.py
+    tools: []
+    source: [claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-ADHDLOOP-DESKTOP-VERIFY-004
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: DMX-ADHDLOOP-DESKTOP-VERIFY-004
+    last_verified: "2026-07-16"
+    note: "Proof pending — SVCFIN owns the verification packet."
+
+  - id: ADHD-RECAP-CONSUMER
+    name: ADHD-aware recap consumer (fewer cards when scattered, TUI/CLI)
+    plane: adhd
+    server: adhd-engine
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-ADHDLOOP-RECAP-003
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: DMX-ADHDLOOP-RECAP-003
+    last_verified: "2026-07-16"
+    note: "Distinct from MCPINT-IMP-RECAP-003 (SessionStart hook injection); same upstream memory_recap tool."
+
+  - id: ADHD-CONTEXT-PRESERVER
+    name: Context preservation backend
+    plane: adhd
+    server: adhd-engine
+    status: built-unwired
+    code_path: services/adhd_engine/domains/attention/context_preserver.py
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Live backend code; not wired to PM display."
+
+  - id: ADHD-OVERWHELM
+    name: Overwhelm detection/suppression telemetry
+    plane: adhd
+    server: adhd-engine
+    status: built-unwired
+    code_path: services/task-orchestrator/event_coordinator.py
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Telemetry exists; PM exposes no snapshot. Suppression-telemetry design: services/task-orchestrator/SUPPRESSION_TELEMETRY.md."
+
+  - id: ADHD-TIMERS-AUTOSAVE
+    name: Automatic timers / recurring auto-save / forced hyperfocus breaks
+    plane: adhd
+    server: adhd-engine
+    status: vaporware
+    code_path: null
+    tools: []
+    source: [.claude/modules/shared/adhd-patterns.md, claudedocs/adhd-cognitive-ux-audit-2026-05-31.md]
+    decision: held
+    triage: {wiring_cost: L, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Explicitly specification-only and marked as such in the module docs; /loop-or-ScheduleWakeup is the harness-side substitute."
+
+  - id: ADHD-BEHAVIORAL-RULES
+    name: Claude-facing behavioral accommodations (decision reduction, 7±2 cap, ordering, progress viz)
+    plane: adhd
+    server: adhd-engine
+    status: live
+    code_path: null
+    tools: []
+    source: [.claude/modules/shared/adhd-patterns.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Behavioral guidance in instruction surfaces, not runtime enforcement."
+
+  - id: ADHD-HONESTY-FIXES
+    name: Fabricated-telemetry honesty fixes (UNAVAILABLE banding, demo labels)
+    plane: adhd
+    server: adhd-engine
+    status: live
+    code_path: services/adhd_engine
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md, claudedocs/adhd-cognitive-ux-audit-2026-05-31.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "'Live' = merged code; runtime exercise still gated on ignition (see ADHD-ENGINE-CORE)."
+
+  - id: ADHD-DEADCODE
+    name: Dead ADHD code cluster (orchestration triangle, RTE decomposition, standalone ML twins)
+    plane: adhd
+    server: adhd-engine
+    status: retired
+    code_path: src/dopemux/orchestrator/main_orchestrator.py
+    tools: []
+    source: [claudedocs/adhd-surfaces-deep-dive-2026-07-04.md, claudedocs/service-audit-2026-07-04.md]
+    decision: packet:DMX-HYG-DEADSVC-001
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: DMX-HYG-DEADSVC-001
+    last_verified: "2026-07-16"
+    note: "Verified present: src/dopemux/orchestrator/main_orchestrator.py + adhd_orchestrator.py, src/dopemux/adhd/workflow_manager.py + rte_adapter.py (zero callers per source). UNVERIFIED: standalone ml-predictions LSTM (1,282 LOC) and ml-risk-assessment (1,159 LOC) — no matching files/dirs found in this worktree (no LSTM references in code); deletion packet should re-scan before claiming them."
+    sub_features: [workflow_manager/adhd_orchestrator/main_orchestrator/rte_adapter dead triangle, RTE→ADHD-energy→ConPort task decomposition (broken), ml-predictions LSTM standalone (unverified), ml-risk-assessment (unverified)]
+
+  # ============================================================
+  # 12. Event spine / promotion / Memory Context Fabric
+  # ============================================================
+
+  - id: SPINE-EVENT-CONTRACT
+    name: Named-stream event contract (activity.events.v1) + bridge /events ingress
+    plane: chronicle
+    server: dopecon-bridge
+    status: partial
+    code_path: services/dopecon-bridge
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: adr:adr-mcpint-004
+    triage: {wiring_cost: M, value: H, boundary_fit: needs-adr}
+    packet_ref: MCPINT-IMP-EVENTS-006
+    last_verified: "2026-07-17"
+    note: "P0 claim 7 VERIFIED: unauth POST /events → 401 (JWT wall, empty user store) — capture_client direct-Redis remains the only working ingress. G2 answered → adr-mcpint-004: fix bridge JWT + bless /events as the single authenticated ingress; execution = MCPINT-IMP-EVENTS-006."
+
+  - id: SPINE-HEARTBEAT-LIMIT
+    name: Heartbeat rate-limiting at producer (drop session-active spam)
+    plane: chronicle
+    server: dopecon-bridge
+    status: live
+    code_path: src/dopemux/claude/activity_ratelimit.py
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-FND-HYG-007
+    last_verified: "2026-07-17"
+    note: "24,539 heartbeat rows vs 0 curated at audit time. SHIPPED by commit 88a3d0c5c (FND-HYG-007): per-(session,event-key) cooldown in src/dopemux/claude/activity_ratelimit.py gating native_hooks _emit_activity_event (4 sites) + the claude_code_hooks session-active tick daemon (the dominant spam source); promotion-allowlist classes never limited; fail-open."
+
+  - id: MCF-FABRIC
+    name: Context Fabric orchestration layer (capture→redact→dedup→route→promote→retrieve→inject; context.recall/recap; proactive injection)
+    plane: chronicle
+    server: mcf
+    status: shelved
+    code_path: null
+    tools: []
+    source: [claudedocs/memory-context-fabric-design-2026-07-04.md]
+    decision: adr:adr-mcpint-005
+    triage: {wiring_cost: L, value: M, boundary_fit: needs-adr}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Entire MCF public surface (ContextBundle recall/recap, TP-MCF-007+ orchestrator/summarizer/proactive injection) is design-only, NO-GO. Shelve the fabric; keep the two near-term children (TP-MCF-004 recap injection → MCPINT-IMP-RECAP-003; TP-MCF-006 → held)."
+
+  - id: TP-MCF-001
+    name: Repo-truth authority map
+    plane: chronicle
+    server: mcf
+    status: live
+    code_path: null
+    tools: []
+    source: [claudedocs/tp-mcf-001-authority-map-2026-07-04.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: TP-MCF-001
+    last_verified: "2026-07-16"
+    note: "Doc deliverable shipped (PR #1011); no runtime change by design."
+
+  - id: TP-MCF-002
+    name: Transcript ingest → raw ledger (quarantine + redact)
+    plane: chronicle
+    server: mcf
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/memory-context-fabric-design-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: L, value: M, boundary_fit: needs-adr}
+    packet_ref: TP-MCF-002
+    last_verified: "2026-07-16"
+    note: "CONDITIONAL-GO; includes transcript quarantine (non-queryable safety artifact)."
+
+  - id: TP-MCF-003
+    name: Deterministic promotion (transcript → chronicle)
+    plane: chronicle
+    server: mcf
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/memory-context-fabric-design-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: L, value: M, boundary_fit: needs-adr}
+    packet_ref: TP-MCF-003
+    last_verified: "2026-07-16"
+    note: "NO-GO until schema exists."
+
+  - id: TP-MCF-006
+    name: ConPort graph on active runtime (verify graph.neighbors or ship relationship-query only)
+    plane: chronicle
+    server: mcf
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/memory-context-fabric-design-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: needs-adr}
+    packet_ref: TP-MCF-006
+    last_verified: "2026-07-17"
+    note: "CONDITIONAL-GO; overlaps DMX-ARCH-CONPORT-SURFACE-002 outcomes (register records, does not re-decide). Escaped-child hold recorded in adr-mcpint-005 §5 (MCF-FABRIC shelf)."
+
+  - id: SPINE-TOKEN-TRUNCATION
+    name: Progressive token truncation (9K budget) + MCP boundary-enforcement truncation
+    plane: infra
+    server: fleet
+    status: vaporware
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Fleet-wide shared utility lost in migration; single call_tool() interception point design."
+
+  - id: MCP-CAPTURE
+    name: mcp-capture (capture/emit, lane-aware, SHA256 dedup, audit trail)
+    plane: chronicle
+    server: mcp-capture
+    status: retired
+    code_path: services/mcp-capture
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md, claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: adr:adr-mcpint-004
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-FND-HYG-007
+    last_verified: "2026-07-17"
+    note: "RETIRED per ADR-mcpint-004 §4 (register-or-shelve resolved by FND-HYG-007): a second capture door recreates the two-contract drift that emptied the chronicle. Absorbed into capture_client + authenticated /events — its SHA256-dedup (DMEM-EVENT-DEDUP), lane-awareness, and capture-audit ideas fold into the capture_client backlog as library features, not a server. Source carries DEPRECATED headers (services/mcp-capture/server.py + README); was never in any catalog/config/compose and must not be added."
+
+  - id: COPILOT-INGESTER
+    name: Copilot transcript ingester
+    plane: chronicle
+    server: mcp-capture
+    status: built-unwired
+    code_path: services/copilot_transcript_ingester
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md]
+    decision: packet:MCPINT-FND-HYG-007
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-FND-HYG-007
+    last_verified: "2026-07-17"
+    note: "Live library, nothing schedules it. Scheduling decision (FND-HYG-007, per tool-placement-map §3): scheduled-tasks (host-level MCP, managed:false external entry) is the DESIGNATED scheduler for the copilot-ingester follow-up — not cron, not a new daemon. Wiring the schedule itself is follow-up work, not done here; status stays built-unwired until it lands."
+
+  # ============================================================
+  # 13. Hooks (H-series + orchestrator hooks)
+  # ============================================================
+
+  - id: HOOK-H1-DCP-GUARD
+    name: DCP surface guard (PreToolUse hard-deny red-lane + contract-surface advisory)
+    plane: hooks
+    server: hooks
+    status: live
+    code_path: .claude/hooks/dcp_surface_guard.py
+    tools: []
+    source: [claudedocs/design-dcp-mcp-skills-hooks-2026-06-10.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Raw register's Z-list correction confirmed: H1-H4 wired in native_hooks despite DESIGN_READY doc label."
+
+  - id: HOOK-H2-DENYLIST-NUDGE
+    name: Facade denylist nudge (PostToolUse denied-route token scan)
+    plane: hooks
+    server: hooks
+    status: live
+    code_path: .claude/hooks/dcp_denylist_nudge.py
+    tools: []
+    source: [claudedocs/design-dcp-mcp-skills-hooks-2026-06-10.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: HOOK-H3-HEALTH-PROBE
+    name: MCP health preflight (SessionStart 15-min-cached snapshot + leak detection)
+    plane: hooks
+    server: hooks
+    status: live
+    code_path: .claude/hooks/mcp_health_probe.py
+    tools: []
+    source: [claudedocs/design-dcp-mcp-skills-hooks-2026-06-10.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "P0 finding N4 caveat: all doctors/probes assume a responsive docker CLI — a wedged engine (21h at P0) hangs them. Docker-wedge watchdog held as candidate packet."
+
+  - id: HOOK-H3P-ENSURE-FAST
+    name: "H3-prime: dopemux mcp ensure --fast at SessionStart"
+    plane: hooks
+    server: hooks
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: held
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "H-numbering collision with H3 health probe — register disambiguates as H3'."
+
+  - id: HOOK-H4-PROOF-GUARD
+    name: Proof-tracking guard (PostToolUse gitignored TRACK-tier proof advisory)
+    plane: hooks
+    server: hooks
+    status: live
+    code_path: .claude/hooks/proof_tracking_guard.py
+    tools: []
+    source: [claudedocs/design-dcp-mcp-skills-hooks-2026-06-10.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: HOOK-H5-UNTRACKED-PROBE
+    name: Untracked-work SessionStart probe (F001-lite)
+    plane: hooks
+    server: hooks
+    status: live
+    code_path: .claude/hooks/untracked_work_probe.py
+    tools: []
+    source: [claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: HOOK-TO-CONTEXT-REPLAY
+    name: TO get_context cache → SessionStart replay (the only implicit-context loop today)
+    plane: hooks
+    server: hooks
+    status: live
+    code_path: src/dopemux/claude/native_hooks.py
+    tools: []
+    source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Text advisory, Claude-only. Plan D.2 extends SessionStart to four bounded blocks (~3KB, fail-open)."
+
+  - id: HOOK-FLEET-CAPABILITY-LINE
+    name: SessionStart fleet-capability line (what's implicitly reachable this session)
+    plane: hooks
+    server: hooks
+    status: planned
+    code_path: src/dopemux/claude/native_hooks.py
+    tools: []
+    source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: packet:MCPINT-IMP-HEALTH-004
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: MCPINT-IMP-HEALTH-004
+    last_verified: "2026-07-16"
+    note: "Reuses render_health_probe_list; cached probe, 60s TTL."
+
+  - id: HOOK-LEGACY-ORPHANS
+    name: Orphaned legacy hook scripts (check_energy, save_context, track_file_edit, log_progress, prompt_analyzer, session_lifecycle)
+    plane: hooks
+    server: hooks
+    status: built-unwired
+    code_path: .claude/hooks/check_energy.sh
+    tools: []
+    source: [.claude/modules/shared/adhd-patterns.md, claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: adr:adr-mcpint-003
+    triage: {wiring_cost: S, value: L, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "All six verified present in .claude/hooks/; 'dormant unless invoked by dispatcher' (prompt_analyzer carries stale ports). Plan D.2 retires them via the implicit-context-channels ADR."
+
+  - id: HOOK-ORCH-ENFORCEMENT
+    name: Orchestrator enforcement hooks (actor auth, skill-invocation, plan-mode guidance, complete-gate)
+    plane: hooks
+    server: hooks
+    status: partial
+    code_path: .claude/hooks/orchestrator_enforcement.py
+    tools: []
+    source: [claudedocs/design-dcp-mcp-skills-hooks-2026-06-10.md, claudedocs/service-audit-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-17"
+    note: "Actor auth dormant behind actor_authentication.enabled; server-side proof-bundle complete-gate live. Flipping actor_authentication.enabled on is Codex write-parity precondition 2 per adr-mcpint-002 §1."
+
+  # ============================================================
+  # 14. Dashboards
+  # ============================================================
+
+  - id: DASH-TUI-HUD
+    name: TUI HUD (Textual, 8 orchestrator-data panels) — canonical operator dashboard
+    plane: dashboard
+    server: dashboards
+    status: live
+    code_path: src/dopemux/tui
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md, claudedocs/adhd-surfaces-deep-dive-2026-07-04.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: DASH-REACT-UI
+    name: React ui-dashboard (web view of ADHD state)
+    plane: dashboard
+    server: dashboards
+    status: live
+    code_path: ui-dashboard
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Builds clean; dual npm/pnpm lockfiles flagged."
+
+  - id: DASH-ADHD-BACKEND
+    name: adhd-dashboard FastAPI /state mirror of TUI
+    plane: dashboard
+    server: dashboards
+    status: built-unwired
+    code_path: services/adhd-dashboard/backend.py
+    tools: []
+    source: [claudedocs/adhd-surfaces-deep-dive-2026-07-04.md, claudedocs/service-audit-2026-07-04.md]
+    decision: packet:DMX-DASH-WIRE-001
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: DMX-DASH-WIRE-001
+    last_verified: "2026-07-16"
+    note: "Orphan (not in compose), reads wrong stream. SVCFIN keep+wire decision — not re-decided here."
+
+  - id: DASH-CONPORT-KG-UI
+    name: conport_kg_ui (decision-genealogy terminal UI)
+    plane: dashboard
+    server: dashboards
+    status: built-unwired
+    code_path: services/conport_kg_ui
+    tools: []
+    source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: held
+    triage: {wiring_cost: L, value: L, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Depends on dead conport_kg service; disposition follows COPT-303/genealogy decisions."
+
+  - id: DASH-PM-COCKPIT
+    name: PM cockpit Textual shell + Grand Orchestrator cockpit
+    plane: dashboard
+    server: dashboards
+    status: planned
+    code_path: null
+    tools: []
+    source: [task-packets/DMX-COCKPIT-PM-TEXTUAL-001.json, docs/05-audit-reports/]
+    decision: held
+    triage: {wiring_cost: L, value: M, boundary_fit: clean}
+    packet_ref: DMX-COCKPIT-PM-TEXTUAL-001
+    last_verified: "2026-07-16"
+
+  - id: DASH-COCKPIT-ARCHIVE-INTENT
+    name: Cockpit archived ADHD-lifestyle intent extraction
+    plane: dashboard
+    server: dashboards
+    status: planned
+    code_path: null
+    tools: []
+    source: [proof/cockpit-archive-intent-pack-2026-04-24.proof.json]
+    decision: held
+    triage: {wiring_cost: L, value: L, boundary_fit: clean}
+    packet_ref: DMX-COCKPIT-ARCHIVE-INTENT-001
+    last_verified: "2026-07-16"
+
+  - id: DASH-MONITORING-DEAD
+    name: monitoring-dashboard (0.0.0.0:8098 unauth + startup-fatal import)
+    plane: dashboard
+    server: dashboards
+    status: retired
+    code_path: null
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md]
+    decision: packet:DMX-HYG-DEADSVC-001
+    triage: {wiring_cost: S, value: L, boundary_fit: violates}
+    packet_ref: DMX-HYG-DEADSVC-001
+    last_verified: "2026-07-16"
+    note: "UNVERIFIED code_path: no monitoring-dashboard directory found in this worktree — may already be deleted; deletion packet should confirm. Security note (unauth world-bind) stands if it resurfaces."
+
+  - id: DASH-TOPLEVEL-DEAD
+    name: Top-level dashboard/ aspirational drop (2026-04-05)
+    plane: dashboard
+    server: dashboards
+    status: retired
+    code_path: dashboard
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md]
+    decision: packet:DMX-HYG-DEADSVC-001
+    triage: {wiring_cost: S, value: L, boundary_fit: clean}
+    packet_ref: DMX-HYG-DEADSVC-001
+    last_verified: "2026-07-16"
+
+  # ============================================================
+  # 15. SuperClaude command layer / /dx: commands
+  # ============================================================
+
+  - id: DX-COMMANDS
+    name: 18 /dx:* orchestrator work-item commands
+    plane: commands
+    server: commands
+    status: live
+    code_path: .claude/commands
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Present as skills in-session (dx:start/next/tree/note/…)."
+
+  - id: DX-IMPLEMENT-TIMERS
+    name: /dx:implement focus timers, checkpoints, break prompts, forced pauses
+    plane: commands
+    server: commands
+    status: vaporware
+    code_path: null
+    tools: []
+    source: [.claude/modules/shared/adhd-patterns.md]
+    decision: held
+    triage: {wiring_cost: L, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "'Not proven wired' — Z-list."
+
+  - id: DX-PRD-PARSE
+    name: /dx:prd-parse (PRD → 15-90min chunks + complexity + energy tags + review gate)
+    plane: commands
+    server: commands
+    status: partial
+    code_path: .claude/commands
+    tools: []
+    source: [.claude/modules/shared/adhd-patterns.md, claudedocs/mcp-fleet-forgotten-features-addendum-2026-07-04.md]
+    decision: held
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-17"
+    note: "Returns unscored flat lists today; scoring depends on G5 complexity authority. G5 consumer delegation decided by adr-mcpint-001 §5 (calls the library's unified_score); wiring rides MCPINT-IMP-COMPLEX-008."
+
+  - id: SC-FAMILY
+    name: SuperClaude /sc:* command family + /dx:load /dx:save /dx:analyze /dx:review
+    plane: commands
+    server: commands
+    status: live
+    code_path: .claude/commands
+    tools: []
+    source: [.claude/modules/shared/adhd-patterns.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: CMD-MIRROR-RECEIPTS
+    name: Skill-layer mirror receipts (/decision /caveat /followup → dope-memory chronicle)
+    plane: commands
+    server: commands
+    status: planned
+    code_path: null
+    tools: []
+    source: [claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: held
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "[PLAN]-B3 remainder; pairs with DMEM-MIRROR-RECEIPTS."
+
+  - id: CMD-NAME-DRIFT-REPAIR
+    name: Instruction-surface drift repair (~11 nonexistent ConPort names, mcp-system.md protocol, /zen)
+    plane: commands
+    server: commands
+    status: planned
+    code_path: .claude/commands
+    tools: []
+    source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: packet:DMX-HYG-CONPORTREFS-003
+    triage: {wiring_cost: M, value: H, boundary_fit: clean}
+    packet_ref: MCPINT-FND-INSTRREPAIR-004
+    last_verified: "2026-07-16"
+    note: "BROKEN today: /caveat /scratch /mem:save /search-decisions /mem-query /mem-search + conport halves of /dx:context /dx:next /dx:implement /research-deep /research-report. DMX-HYG-CONPORTREFS-003 (SVCFIN) fixes the 6 ConPort commands and prototypes the gate; MCPINT-FND-INSTRREPAIR-004 finishes all surfaces; MCPINT-FND-DRIFTGATE-003 keeps them fixed (cross-tree BLOCKS dep recorded in load plan)."
+
+  # ============================================================
+  # 16. Peripheral / live-but-undocumented MCP servers
+  # ============================================================
+
+  - id: PERIPH-CONTEXT7
+    name: context7 library/docs lookup MCP
+    plane: retrieval
+    server: context7
+    status: live
+    code_path: null
+    tools: []
+    source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: adr:adr-mcpint-001
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-FND-CATALOG-001
+    last_verified: "2026-07-17"
+    note: "Y-list: was referenced in CLAUDE.md doctrine yet absent from catalog + fleet register. CATALOGED by commit 1b68e62e1 as a managed:false external entry (adr-mcpint-001 §4). No P0 snapshot (harness-side server; resolve-library-id/get-library-docs observed in prior sessions)."
+
+  - id: PERIPH-MCP-REGISTRY
+    name: mcp-registry connector discovery
+    plane: infra
+    server: mcp-registry
+    status: live
+    code_path: null
+    tools: [list_connectors, search_mcp_registry, suggest_connectors]
+    source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: adr:adr-mcpint-001
+    triage: {wiring_cost: S, value: L, boundary_fit: clean}
+    packet_ref: MCPINT-FND-CATALOG-001
+    last_verified: "2026-07-17"
+    note: "Y-list: no doc/service match anywhere. CATALOGED by commit 1b68e62e1 as a managed:false external entry (adr-mcpint-001 §4). UNVERIFIED-SNAPSHOT: tools session-observed (present in this session's deferred list); no P0 capture."
+
+  - id: PERIPH-SCHEDULED-TASKS
+    name: scheduled-tasks scheduling MCP
+    plane: infra
+    server: scheduled-tasks
+    status: live
+    code_path: null
+    tools: [create_scheduled_task, list_scheduled_tasks, update_scheduled_task, delete_scheduled_task]
+    source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: adr:adr-mcpint-001
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-FND-CATALOG-001
+    last_verified: "2026-07-17"
+    note: "Y-list. Could answer the 'no scheduler' gap for adhd-notifier daily reporter + copilot ingester (FND-HYG-007 designated it the copilot-ingester scheduler). CATALOGED by commit 1b68e62e1 as a managed:false external entry (adr-mcpint-001 §4). UNVERIFIED-SNAPSHOT: tools session-observed; no P0 capture."
+
+  - id: SVC-LEANTIME-BRIDGE
+    name: leantime-bridge (PM bridge, http-sse)
+    plane: infra
+    server: leantime-bridge
+    status: live
+    code_path: docker/mcp-servers-source/leantime-bridge
+    tools: []
+    source: [claudedocs/mcp-fleet-runtime-verification-2026-07-16.md]
+    decision: adr:adr-mcpint-001
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-FND-CATALOG-001
+    last_verified: "2026-07-17"
+    note: "P0 claim 13 VERIFIED (but alive): /health 200 self-describing http-sse, running + healthy. CATALOGED by commit 1b68e62e1 (adr-mcpint-001 §4: infra/PM-sync entry, no agents row). tools/list still not captured (absent from the 447c9c20d snapshot; capture owed)."
+
+  # ============================================================
+  # 17. Supporting services (not classic MCP servers)
+  # ============================================================
+
+  - id: SVC-DOPECON-BRIDGE
+    name: dopecon-bridge (:3016) transport/proxy — only multi-consumer event seam
+    plane: infra
+    server: dopecon-bridge
+    status: live
+    code_path: services/dopecon-bridge
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "Candidate canonical event plane (G2). Known hazards: /events publish 401 (P0 claim 7); secret-leaking /ddg/decisions proxy under-documented; ALSO hosts a 4th complexity scorer (services/dopecon-bridge/complexity_scorer.py) — feed to G5."
+
+  - id: SVC-COMPLEXITY-COORDINATOR
+    name: complexity_coordinator — unified scorer (AST + LSP + usage + ADHD multiplier → unified_score)
+    plane: infra
+    server: complexity-coordinator
+    status: built-unwired
+    code_path: services/complexity_coordinator
+    tools: []
+    source: [claudedocs/raw/feature-register-raw-2026-07-16.md, claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: packet:MCPINT-IMP-COMPLEX-008
+    triage: {wiring_cost: M, value: H, boundary_fit: needs-adr}
+    packet_ref: MCPINT-IMP-COMPLEX-008
+    last_verified: "2026-07-17"
+    note: "Y-list: the built answer to the 3-4-competing-scorers problem; audits flag the scorers but never mention it. Not in compose/registry. G5 answered → adr-mcpint-001 §5: becomes the single complexity authority wired as a SHARED LIBRARY per the placement map (relocates toward src/dopemux/complexity/; no compose service, no MCP surface) under MCPINT-IMP-COMPLEX-008."
+
+  - id: SVC-CLAUDE-BRAIN
+    name: claude_brain — prompt optimization + brain integration w/ ADHD accommodations
+    plane: infra
+    server: claude-brain
+    status: built-unwired
+    code_path: services/claude_brain
+    tools: []
+    source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: packet:DMX-DOPEBRAIN-FASTAPI-001
+    triage: {wiring_cost: L, value: L, boundary_fit: needs-adr}
+    packet_ref: DMX-DOPEBRAIN-FASTAPI-001
+    last_verified: "2026-07-17"
+    note: "Y-list: not covered by any audit. Held resolved 2026-07-17: claimed by DMX-SVCFEAT DOPEBRAIN-FASTAPI-001 (Dope Brain build-out, SVCFEAT tree f64aa1a9); status unchanged until that packet executes."
+
+  - id: SVC-WEBHOOK-RECEIVER
+    name: webhook_receiver (:8790) — OpenAI-first webhook sidecar + provider-agnostic event ledger
+    plane: infra
+    server: webhook-receiver
+    status: live
+    code_path: services/webhook_receiver
+    tools: []
+    source: [claudedocs/raw/feature-register-raw-2026-07-16.md]
+    decision: packet:MCPINT-DOC-002
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: MCPINT-DOC-002
+    last_verified: "2026-07-16"
+    note: "Y-list: in compose, never mentioned in fleet/service audits — document in the integration guide."
+
+  - id: SVC-DDDPG
+    name: dddpg — KG bridge/storage/queries + ConPort KG integration (2025-10 era)
+    plane: infra
+    server: dddpg
+    status: retired
+    code_path: services/dddpg
+    tools: []
+    source: [services/dddpg/DEEP_ANALYSIS_CURRENT_STATE.md]
+    decision: packet:DMX-HYG-DEADSVC-001
+    triage: {wiring_cost: S, value: L, boundary_fit: clean}
+    packet_ref: DMX-HYG-DEADSVC-001
+    last_verified: "2026-07-16"
+    note: "Y-list: ancient, undocumented in audits."
+
+  - id: SVC-DEAD-CLUSTER
+    name: Dead service cluster (voice-commands, intelligence, session_intelligence, dope-query, monitoring, slack-integration, legacy twins)
+    plane: infra
+    server: services
+    status: retired
+    code_path: services/voice-commands
+    tools: []
+    source: [claudedocs/service-audit-2026-07-04.md, claudedocs/dopemux-completion-plan-2026-07-07.md]
+    decision: packet:DMX-HYG-DEADSVC-001
+    triage: {wiring_cost: M, value: M, boundary_fit: clean}
+    packet_ref: DMX-HYG-DEADSVC-001
+    last_verified: "2026-07-16"
+    note: "P0 claim 17: 2026-07-06 graveyard prune NOT executed on this branch/host — verified present: services/voice-commands, services/intelligence (empty), services/session_intelligence, services/dope-query, services/serena/session_manager.py, services/adhd_engine/workspace_watcher.py. UNVERIFIED: monitoring/, slack-integration/ dirs not found (may already be gone). voice-commands is distinct from live src/dopemux/voice/."
+    sub_features: [voice-commands (zero imports), services/intelligence (empty), session_intelligence twins, dope-query husk, workspace-watcher, activity-capture, monitoring (unverified), slack-integration (unverified)]
+
+  - id: SVC-RTE
+    name: RTE repo-truth-extractor (audit-only truth extraction)
+    plane: infra
+    server: rte
+    status: live
+    code_path: services/repo-truth-extractor
+    tools: []
+    source: [claudedocs/mcp-fleet-canonical-audit-and-target-design-2026-07-03.md]
+    decision: shipped
+    triage: {wiring_cost: S, value: M, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+
+  - id: SVC-LITELLM
+    name: litellm model-routing backend (:4000)
+    plane: infra
+    server: litellm
+    status: partial
+    code_path: docker/mcp-servers-source/litellm
+    tools: []
+    source: [claudedocs/mcp-fleet-runtime-verification-2026-07-16.md]
+    decision: held
+    triage: {wiring_cost: S, value: H, boundary_fit: clean}
+    packet_ref: null
+    last_verified: "2026-07-16"
+    note: "P0 finding N3: crash-looping — ImportError DatasourceOverride from prisma.types (broken image dep); :4000 refuses connections → model-routing backend down."

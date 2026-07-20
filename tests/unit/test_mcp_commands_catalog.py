@@ -474,13 +474,17 @@ def test_mcp_generate_apply_requires_output_dir(monkeypatch):
     assert "--apply requires --output-dir" in result.output
 
 
-def test_mcp_generate_apply_writes_only_under_output_dir(tmp_path, monkeypatch):
+def test_mcp_generate_apply_writes_output_dir_and_in_repo_agent_targets(tmp_path, monkeypatch):
     catalog = _singleton_catalog()
+    output_dir = tmp_path / "out"
+    repo_dir = tmp_path / "repo"
+    repo_dir.mkdir()
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(repo_dir))
 
     result = CliRunner().invoke(
         mcp_commands.mcp_generate_cmd,
-        ["--apply", "--output-dir", str(tmp_path)],
+        ["--apply", "--output-dir", str(output_dir)],
     )
 
     assert result.exit_code == 0, result.output
@@ -488,19 +492,79 @@ def test_mcp_generate_apply_writes_only_under_output_dir(tmp_path, monkeypatch):
         "local/.mcp.json",
         "claude/mcpServers.json",
         "codex/config.toml",
+        "opencode/opencode.managed.jsonc",
+        "copilot/mcp-proxy-config.copilot.yaml",
         "health/mcp-health-probes.json",
         "docs/mcp-fleet.md",
     }
     written = {
-        str(path.relative_to(tmp_path))
-        for path in tmp_path.rglob("*")
+        str(path.relative_to(output_dir))
+        for path in output_dir.rglob("*")
         if path.is_file()
     }
     assert written == expected
-    assert json.loads((tmp_path / "claude/mcpServers.json").read_text())["mcpServers"].keys() == {
+    assert json.loads((output_dir / "claude/mcpServers.json").read_text())["mcpServers"].keys() == {
         "exa",
         "gpt-researcher",
     }
+    # In-repo agent targets are written by --apply (ADR-MCPINT-001 §2)…
+    assert (repo_dir / "opencode.jsonc").exists()
+    assert (repo_dir / "mcp-proxy-config.copilot.yaml").exists()
+    # …except the sequenced codex target, which is refused without --allow-sequenced.
+    assert not (repo_dir / ".codex" / "config.toml").exists()
+    assert "DMX-MEMSPINE-IDENTITY-005" in result.output
+    assert "actor_authentication.enabled" in result.output
+
+
+def test_mcp_generate_apply_allow_sequenced_merges_codex_config(tmp_path, monkeypatch):
+    catalog = _singleton_catalog()
+    output_dir = tmp_path / "out"
+    repo_dir = tmp_path / "repo"
+    (repo_dir / ".codex").mkdir(parents=True)
+    (repo_dir / ".codex" / "config.toml").write_text(
+        'model = "gpt-5.5"\n\n[agents]\nmax_threads = 4\n'
+    )
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(repo_dir))
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp_generate_cmd,
+        ["--apply", "--output-dir", str(output_dir), "--allow-sequenced"],
+    )
+
+    assert result.exit_code == 0, result.output
+    codex_text = (repo_dir / ".codex" / "config.toml").read_text()
+    assert 'model = "gpt-5.5"' in codex_text
+    assert "[agents]" in codex_text
+    assert "# BEGIN dopemux-managed mcp_servers" in codex_text
+    assert '[mcp_servers."exa"]' in codex_text
+
+
+def test_mcp_generate_apply_preserves_opencode_user_keys(tmp_path, monkeypatch):
+    catalog = _singleton_catalog()
+    output_dir = tmp_path / "out"
+    repo_dir = tmp_path / "repo"
+    repo_dir.mkdir()
+    (repo_dir / "opencode.jsonc").write_text(
+        '{\n  "instructions": ["AGENTS.md"],\n  "mcp": {"legacy": {"type": "local"}},\n'
+        '  "permission": {"pal_*": "ask"}\n}\n'
+    )
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(repo_dir))
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp_generate_cmd,
+        ["--apply", "--output-dir", str(output_dir)],
+    )
+
+    assert result.exit_code == 0, result.output
+    from dopemux.mcp import fleet_catalog
+
+    merged = (repo_dir / "opencode.jsonc").read_text()
+    data = json.loads(fleet_catalog._strip_jsonc_comments(merged))
+    assert data["instructions"] == ["AGENTS.md"]
+    assert data["permission"] == {"pal_*": "ask"}
+    assert "legacy" not in data["mcp"]  # managed section fully replaces the mcp key
 
 
 def test_mcp_ensure_fast_uses_local_checks_without_subprocess(tmp_path, monkeypatch):

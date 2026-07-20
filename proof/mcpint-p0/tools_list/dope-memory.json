@@ -1,0 +1,705 @@
+{
+  "server": "dope-memory",
+  "url": "http://127.0.0.1:3020/mcp",
+  "transport": "http",
+  "ts": "2026-07-16T11:23:52-0700",
+  "initialize_status": 200,
+  "initialize": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "protocolVersion": "2024-11-05",
+      "capabilities": {
+        "experimental": {},
+        "logging": {},
+        "prompts": {
+          "listChanged": true
+        },
+        "resources": {
+          "subscribe": false,
+          "listChanged": true
+        },
+        "tools": {
+          "listChanged": true
+        },
+        "extensions": {
+          "io.modelcontextprotocol/ui": {}
+        }
+      },
+      "serverInfo": {
+        "name": "dope-memory",
+        "version": "3.4.4"
+      }
+    }
+  },
+  "tools_list_status": 200,
+  "tools_list": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "tools": [
+        {
+          "name": "memory_search",
+          "description": "Search work log entries (Top-3 default, trajectory-boosted ranking,\ncursor pagination).",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "default": "",
+                "type": "string"
+              },
+              "workspace_id": {
+                "default": "dNh_CRM",
+                "type": "string"
+              },
+              "instance_id": {
+                "default": "8d6d",
+                "type": "string"
+              },
+              "session_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "category": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "entry_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "workflow_phase": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "tags_any": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "time_range": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "top_k": {
+                "default": 3,
+                "type": "integer"
+              },
+              "cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "include_superseded": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "memory_store",
+          "description": "Store a manual work log entry (secrets are redacted before write).",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "category": {
+                "type": "string"
+              },
+              "entry_type": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "workspace_id": {
+                "default": "dNh_CRM",
+                "type": "string"
+              },
+              "instance_id": {
+                "default": "8d6d",
+                "type": "string"
+              },
+              "session_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "details": {
+                "anyOf": [
+                  {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "reasoning": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "outcome": {
+                "default": "in_progress",
+                "type": "string"
+              },
+              "importance_score": {
+                "default": 6,
+                "type": "integer"
+              },
+              "tags": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "links": {
+                "anyOf": [
+                  {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "category",
+              "entry_type",
+              "summary"
+            ],
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "memory_recap",
+          "description": "Get a recap of recent work (scope: session | today | last_2_hours).",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_id": {
+                "default": "dNh_CRM",
+                "type": "string"
+              },
+              "instance_id": {
+                "default": "8d6d",
+                "type": "string"
+              },
+              "scope": {
+                "default": "session",
+                "type": "string"
+              },
+              "session_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "top_k": {
+                "default": 3,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "memory_mark_issue",
+          "description": "Mark an existing work log entry as an issue source.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "issue_entry_id": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "workspace_id": {
+                "default": "dNh_CRM",
+                "type": "string"
+              },
+              "instance_id": {
+                "default": "8d6d",
+                "type": "string"
+              },
+              "confidence": {
+                "default": 0.7,
+                "type": "number"
+              },
+              "evidence_window_min": {
+                "default": 30,
+                "type": "integer"
+              },
+              "tags": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "issue_entry_id",
+              "description"
+            ],
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "memory_link_resolution",
+          "description": "Link an issue entry to the entry that resolved it.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "issue_entry_id": {
+                "type": "string"
+              },
+              "resolution_entry_id": {
+                "type": "string"
+              },
+              "workspace_id": {
+                "default": "dNh_CRM",
+                "type": "string"
+              },
+              "instance_id": {
+                "default": "8d6d",
+                "type": "string"
+              },
+              "confidence": {
+                "default": 0.8,
+                "type": "number"
+              },
+              "evidence_window_min": {
+                "default": 30,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "issue_entry_id",
+              "resolution_entry_id"
+            ],
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "memory_replay_session",
+          "description": "Replay session entries chronologically (mode: replay_current |\nreplay_full).",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "session_id": {
+                "type": "string"
+              },
+              "workspace_id": {
+                "default": "dNh_CRM",
+                "type": "string"
+              },
+              "instance_id": {
+                "default": "8d6d",
+                "type": "string"
+              },
+              "top_k": {
+                "default": 3,
+                "type": "integer"
+              },
+              "cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "mode": {
+                "default": "replay_current",
+                "type": "string"
+              }
+            },
+            "required": [
+              "session_id"
+            ],
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "memory_correct",
+          "description": "Supersede an entry with a corrected version (correction_type:\nsummary | tags | category | outcome | retraction). The original is\npreserved immutably.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "entry_id": {
+                "type": "string"
+              },
+              "correction_type": {
+                "type": "string"
+              },
+              "workspace_id": {
+                "default": "dNh_CRM",
+                "type": "string"
+              },
+              "instance_id": {
+                "default": "8d6d",
+                "type": "string"
+              },
+              "corrected_summary": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "corrected_tags": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "corrected_category": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "corrected_entry_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "corrected_outcome": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "idempotency_key": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "entry_id",
+              "correction_type"
+            ],
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "memory_generate_reflection",
+          "description": "Generate a deterministic reflection card from recent work.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_id": {
+                "default": "dNh_CRM",
+                "type": "string"
+              },
+              "instance_id": {
+                "default": "8d6d",
+                "type": "string"
+              },
+              "session_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "window_hours": {
+                "default": 2,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "memory_reflections",
+          "description": "Fetch recent reflection cards.",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_id": {
+                "default": "dNh_CRM",
+                "type": "string"
+              },
+              "instance_id": {
+                "default": "8d6d",
+                "type": "string"
+              },
+              "session_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "limit": {
+                "default": 3,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "memory_trajectory",
+          "description": "Get the current trajectory state (stream, goal, recent steps,\nboost factor).",
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "workspace_id": {
+                "default": "dNh_CRM",
+                "type": "string"
+              },
+              "instance_id": {
+                "default": "8d6d",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        }
+      ]
+    }
+  },
+  "tool_names": [
+    "memory_correct",
+    "memory_generate_reflection",
+    "memory_link_resolution",
+    "memory_mark_issue",
+    "memory_recap",
+    "memory_reflections",
+    "memory_replay_session",
+    "memory_search",
+    "memory_store",
+    "memory_trajectory"
+  ],
+  "tool_count": 10,
+  "verdict": "OK"
+}
