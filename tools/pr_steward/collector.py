@@ -101,11 +101,17 @@ def collect_from_github(
     errors.extend(proof_errors)
     threads, thread_errors = _fetch_review_threads(repo=repo, pr_number=pr_number)
     errors.extend(thread_errors)
+    reviews_raw, review_errors = _fetch_reviews_with_commit(repo=repo, pr_number=pr_number)
+    errors.extend(review_errors)
+    security_release_approval = _select_security_release_approval(
+        reviews_raw, repo=repo, pr_number=pr_number
+    )
     return normalize_gh_payload(
         pr_payload,
         review_threads=threads,
         harvest_errors=errors,
         proof_state=proof_state,
+        security_release_approval=security_release_approval,
     )
 
 
@@ -115,6 +121,7 @@ def normalize_gh_payload(
     review_threads: list[dict[str, Any]],
     harvest_errors: list[str],
     proof_state: dict[str, Any] | None = None,
+    security_release_approval: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     review_comments = []
     for thread in review_threads:
@@ -134,6 +141,7 @@ def normalize_gh_payload(
         "checks": pr_payload.get("statusCheckRollup") or [],
         "embedded_audit": proof["embedded_audit"],
         "proof": proof["proof"],
+        "security_release_approval": security_release_approval,
     }
 
 
@@ -217,6 +225,103 @@ def _fetch_review_threads(
     return threads, errors
 
 
+def _fetch_reviews_with_commit(
+    *, repo: str, pr_number: int
+) -> tuple[list[dict[str, Any]], list[str]]:
+    owner, name = repo.split("/", 1)
+    query = textwrap.dedent(
+        """
+        query($owner: String!, $repo: String!, $number: Int!) {
+          repository(owner: $owner, name: $repo) {
+            pullRequest(number: $number) {
+              reviews(first: 100) {
+                pageInfo { hasNextPage endCursor }
+                nodes {
+                  id
+                  state
+                  submittedAt
+                  author { login }
+                  authorAssociation
+                  commit { oid }
+                }
+              }
+            }
+          }
+        }
+        """
+    ).strip()
+    result = _run(
+        [
+            "gh",
+            "api",
+            "graphql",
+            "-f",
+            f"owner={owner}",
+            "-f",
+            f"repo={name}",
+            "-F",
+            f"number={pr_number}",
+            "-f",
+            f"query={query}",
+        ]
+    )
+    if result.returncode != 0:
+        return [], [f"gh api graphql reviews failed: {result.stderr.strip()}"]
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        return [], [f"gh api graphql reviews returned invalid JSON: {exc}"]
+    page = (
+        payload.get("data", {})
+        .get("repository", {})
+        .get("pullRequest", {})
+        .get("reviews", {})
+    )
+    errors: list[str] = []
+    if page.get("pageInfo", {}).get("hasNextPage"):
+        errors.append("reviews harvest exceeded first 100 reviews")
+    return page.get("nodes") or [], errors
+
+
+def _select_security_release_approval(
+    reviews: list[dict[str, Any]], *, repo: str, pr_number: int
+) -> dict[str, Any] | None:
+    """Return the most recent APPROVED review with a bound commit, or None.
+
+    Chronological order matters: a later CHANGES_REQUESTED from anyone must
+    not be shadowed by an earlier APPROVED — GitHub's own reviewDecision
+    semantics treat the latest state per-author as authoritative, but for
+    this fail-closed gate we take the single most-recent APPROVED review
+    with commit binding, full stop. If a subsequent review (any state, any
+    author) is more recent than the latest APPROVED review, treat approval
+    as absent — a fresh review event means the approval is not necessarily
+    still current from the maintainers' perspective.
+    """
+    dated = [r for r in reviews if isinstance(r, dict) and r.get("submittedAt")]
+    if not dated:
+        return None
+    dated.sort(key=lambda r: r["submittedAt"])
+    most_recent = dated[-1]
+    if most_recent.get("state") != "APPROVED":
+        return None
+    commit = most_recent.get("commit")
+    if not isinstance(commit, dict) or not commit.get("oid"):
+        return None
+    author = most_recent.get("author") or {}
+    login = author.get("login") if isinstance(author, dict) else None
+    if not login:
+        return None
+    return {
+        "state": "APPROVED",
+        "repository": repo,
+        "pr_number": pr_number,
+        "head_sha": str(commit["oid"]),
+        "approver": str(login),
+        "approval_ref": str(most_recent.get("id") or ""),
+        "approved_at": str(most_recent.get("submittedAt") or ""),
+    }
+
+
 def _incomplete_harvest(
     *,
     repo: str,
@@ -253,6 +358,7 @@ def _incomplete_harvest(
         "checks": [],
         "embedded_audit": proof["embedded_audit"],
         "proof": proof["proof"],
+        "security_release_approval": None,
     }
 
 
