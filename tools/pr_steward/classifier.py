@@ -31,6 +31,22 @@ MISSING_PROOF_STATUSES = {"MISSING"}
 # Raw harvest still retains the entry for evidence.
 STEWARD_SELF_STATUS_CONTEXT = "PR Steward / final readiness"
 
+# Sources that make up the review item ledger's conservation guarantee: every
+# raw harvest entry from these four inputs must yield exactly one ledger item.
+REVIEW_LEDGER_SOURCES = {"review", "review_comment", "issue_comment", "review_thread"}
+# Every disposition a well-formed item can receive. Anything outside this set
+# (currently only the malformed-shape sentinel below) counts as unclassified.
+RECOGNIZED_REVIEW_DISPOSITIONS = {
+    "MUST_FIX",
+    "NEEDS_SUPERVISOR",
+    "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION",
+    "OUT_OF_SCOPE_FOLLOWUP",
+    "REJECTED_WITH_REASON",
+    "OPTIONAL_DEFERRED",
+    "AUTO_APPLIED",
+}
+UNCLASSIFIED_ITEM_DISPOSITION = "UNCLASSIFIED_ITEM_SHAPE"
+
 
 class ProofFreshness(dict):
     """Dict proof state with legacy string comparisons for older callers."""
@@ -88,14 +104,35 @@ def build_artifacts(
     pr_raw = harvest.get("pr") or {}
     review_items: list[dict[str, Any]] = []
     thread_dispositions: list[dict[str, Any]] = []
+    blockers: list[str] = []
+    unknowns: list[str] = []
+    reviews_in = _ensure_list(
+        harvest.get("reviews"), label="reviews", blockers=blockers, unknowns=unknowns
+    )
+    review_comments_in = _ensure_list(
+        harvest.get("review_comments"),
+        label="review_comments",
+        blockers=blockers,
+        unknowns=unknowns,
+    )
+    issue_comments_in = _ensure_list(
+        harvest.get("issue_comments"),
+        label="issue_comments",
+        blockers=blockers,
+        unknowns=unknowns,
+    )
+    review_threads_in = _ensure_list(
+        harvest.get("review_threads"),
+        label="review_threads",
+        blockers=blockers,
+        unknowns=unknowns,
+    )
     checks = _classify_checks(
         harvest.get("checks") or [],
         pr_head_sha=pr["head_sha"],
         strict=strict,
     )
 
-    blockers: list[str] = []
-    unknowns: list[str] = []
     _extend_once(blockers, checks["blockers"])
     _extend_once(unknowns, checks["unknowns"])
 
@@ -118,7 +155,7 @@ def build_artifacts(
 
     review_items.extend(
         _classify_reviews(
-            harvest.get("reviews") or [],
+            reviews_in,
             known_reviewers=known_reviewers,
             trusted_associations=trusted_associations,
             blockers=blockers,
@@ -126,12 +163,12 @@ def build_artifacts(
         )
     )
     resolved_review_comment_dispositions = _resolved_review_comment_dispositions(
-        harvest.get("review_threads") or []
+        review_threads_in
     )
 
     review_items.extend(
         _classify_comments(
-            harvest.get("review_comments") or [],
+            review_comments_in,
             source="review_comment",
             known_reviewers=known_reviewers,
             trusted_associations=trusted_associations,
@@ -142,7 +179,7 @@ def build_artifacts(
     )
     review_items.extend(
         _classify_comments(
-            harvest.get("issue_comments") or [],
+            issue_comments_in,
             source="issue_comment",
             known_reviewers=known_reviewers,
             trusted_associations=trusted_associations,
@@ -152,7 +189,7 @@ def build_artifacts(
     )
 
     thread_result = _classify_threads(
-        harvest.get("review_threads") or [],
+        review_threads_in,
         known_reviewers=known_reviewers,
         trusted_associations=trusted_associations,
         blockers=blockers,
@@ -162,6 +199,28 @@ def build_artifacts(
     thread_dispositions.extend(thread_result["threads"])
 
     review_items.extend(checks["review_items"])
+
+    expected_review_item_count = _review_source_item_count(
+        reviews=reviews_in,
+        issue_comments=issue_comments_in,
+        review_comments=review_comments_in,
+        review_threads=review_threads_in,
+    )
+    review_ledger_items = [
+        item for item in review_items if item["source"] in REVIEW_LEDGER_SOURCES
+    ]
+    if len(review_ledger_items) != expected_review_item_count:
+        _append_once(blockers, "HARVEST_INCOMPLETE")
+        _append_once(
+            unknowns,
+            "Review item ledger conservation check failed: expected "
+            f"{expected_review_item_count} items, got {len(review_ledger_items)}.",
+        )
+    unclassified_count = sum(
+        1
+        for item in review_ledger_items
+        if item["disposition"] not in RECOGNIZED_REVIEW_DISPOSITIONS
+    )
 
     if _detect_mixed_sha_checks(harvest.get("checks") or [], pr_head_sha=pr["head_sha"]):
         _append_once(blockers, "MIXED_SHA_ARTIFACT_SET")
@@ -220,7 +279,7 @@ def build_artifacts(
         "generated_at": generated,
         "pr_number": pr_number,
         "items": review_items,
-        "unclassified_count": 0,
+        "unclassified_count": unclassified_count,
         "mutation_performed": False,
     }
     thread_payload = {
@@ -310,6 +369,26 @@ def _classify_reviews(
 ) -> list[dict[str, Any]]:
     items = []
     for index, review in enumerate(reviews):
+        if not isinstance(review, dict):
+            item_id = f"review-{index}"
+            _append_once(blockers, "HARVEST_INCOMPLETE")
+            _append_once(
+                unknowns, f"Malformed review entry at index {index} (not a mapping)."
+            )
+            items.append(
+                _review_item(
+                    item_id=item_id,
+                    source="review",
+                    author="unknown",
+                    association=None,
+                    body="",
+                    disposition=UNCLASSIFIED_ITEM_DISPOSITION,
+                    blocking=True,
+                    blockers=["HARVEST_INCOMPLETE"],
+                    rationale="Review entry is not a mapping.",
+                )
+            )
+            continue
         author = _author_login(review)
         association = _association(review)
         body = str(review.get("body") or "")
@@ -368,6 +447,26 @@ def _classify_comments(
     items = []
     resolved_review_comment_dispositions = resolved_review_comment_dispositions or {}
     for index, comment in enumerate(comments):
+        if not isinstance(comment, dict):
+            item_id = f"{source}-{index}"
+            _append_once(blockers, "HARVEST_INCOMPLETE")
+            _append_once(
+                unknowns, f"Malformed {source} entry at index {index} (not a mapping)."
+            )
+            items.append(
+                _review_item(
+                    item_id=item_id,
+                    source=source,
+                    author="unknown",
+                    association=None,
+                    body="",
+                    disposition=UNCLASSIFIED_ITEM_DISPOSITION,
+                    blocking=True,
+                    blockers=["HARVEST_INCOMPLETE"],
+                    rationale=f"{source} entry is not a mapping.",
+                )
+            )
+            continue
         author = _author_login(comment)
         association = _association(comment)
         body = str(comment.get("body") or "")
@@ -420,13 +519,101 @@ def _classify_threads(
     items: list[dict[str, Any]] = []
     dispositions: list[dict[str, Any]] = []
     for thread_index, thread in enumerate(threads):
+        if not isinstance(thread, dict):
+            thread_id = f"thread-{thread_index}"
+            _append_once(blockers, "HARVEST_INCOMPLETE")
+            _append_once(
+                unknowns,
+                f"Malformed review_thread entry at index {thread_index} (not a mapping).",
+            )
+            items.append(
+                _review_item(
+                    item_id=thread_id,
+                    source="review_thread",
+                    author="unknown",
+                    association=None,
+                    body="",
+                    disposition=UNCLASSIFIED_ITEM_DISPOSITION,
+                    blocking=True,
+                    blockers=["HARVEST_INCOMPLETE"],
+                    rationale="Thread entry is not a mapping.",
+                )
+            )
+            dispositions.append(
+                {
+                    "thread_id": thread_id,
+                    "is_resolved": False,
+                    "review_item_ids": [thread_id],
+                    "disposition": UNCLASSIFIED_ITEM_DISPOSITION,
+                    "blocking": True,
+                    "rationale": "Thread entry is not a mapping.",
+                }
+            )
+            continue
         thread_id = str(thread.get("id") or f"thread-{thread_index}")
         is_resolved = bool(thread.get("isResolved", False))
         is_outdated = bool(thread.get("isOutdated", False))
-        comments = thread.get("comments") or []
+        raw_comments = thread.get("comments")
+        if not isinstance(raw_comments, list):
+            item_id = f"{thread_id}-comments-malformed"
+            _append_once(blockers, "HARVEST_INCOMPLETE")
+            _append_once(
+                unknowns,
+                f"Malformed review_thread.comments for {thread_id} (not a list).",
+            )
+            items.append(
+                _review_item(
+                    item_id=item_id,
+                    source="review_thread",
+                    author="unknown",
+                    association=None,
+                    body="",
+                    disposition=UNCLASSIFIED_ITEM_DISPOSITION,
+                    blocking=True,
+                    blockers=["HARVEST_INCOMPLETE"],
+                    rationale="Thread comments container is not a list.",
+                )
+            )
+            dispositions.append(
+                {
+                    "thread_id": thread_id,
+                    "is_resolved": is_resolved,
+                    "review_item_ids": [item_id],
+                    "disposition": UNCLASSIFIED_ITEM_DISPOSITION,
+                    "blocking": True,
+                    "rationale": "Thread comments container is not a list.",
+                }
+            )
+            continue
+        comments = raw_comments
         review_item_ids: list[str] = []
         unknown_author = False
+        has_malformed_comment = False
         for comment_index, comment in enumerate(comments):
+            if not isinstance(comment, dict):
+                item_id = f"{thread_id}-comment-{comment_index}"
+                review_item_ids.append(item_id)
+                has_malformed_comment = True
+                _append_once(blockers, "HARVEST_INCOMPLETE")
+                _append_once(
+                    unknowns,
+                    f"Malformed review_thread comment at {thread_id}[{comment_index}] "
+                    "(not a mapping).",
+                )
+                items.append(
+                    _review_item(
+                        item_id=item_id,
+                        source="review_thread",
+                        author="unknown",
+                        association=None,
+                        body="",
+                        disposition=UNCLASSIFIED_ITEM_DISPOSITION,
+                        blocking=True,
+                        blockers=["HARVEST_INCOMPLETE"],
+                        rationale="Thread comment is not a mapping.",
+                    )
+                )
+                continue
             item_id = str(comment.get("id") or f"{thread_id}-comment-{comment_index}")
             review_item_ids.append(item_id)
             author = _author_login(comment)
@@ -466,7 +653,11 @@ def _classify_threads(
                     rationale=rationale,
                 )
             )
-        if unknown_author:
+        if has_malformed_comment:
+            thread_disposition = UNCLASSIFIED_ITEM_DISPOSITION
+            thread_blocking = True
+            thread_rationale = "Thread contains a malformed comment entry."
+        elif unknown_author:
             thread_disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
             thread_blocking = True
             thread_rationale = "Thread contains an unknown author."
@@ -500,9 +691,14 @@ def _resolved_review_comment_dispositions(
 ) -> dict[str, dict[str, str | bool]]:
     dispositions: dict[str, dict[str, str | bool]] = {}
     for thread in threads:
-        if not bool(thread.get("isResolved", False)):
+        if not isinstance(thread, dict) or not bool(thread.get("isResolved", False)):
             continue
-        for comment in thread.get("comments") or []:
+        raw_comments = thread.get("comments")
+        if not isinstance(raw_comments, list):
+            continue
+        for comment in raw_comments:
+            if not isinstance(comment, dict):
+                continue
             comment_id = str(comment.get("id") or "")
             if not comment_id:
                 continue
@@ -1008,13 +1204,26 @@ def _review_item(
 
 
 
+def _normalize_bot_login(login: str) -> str:
+    """Canonicalize a GitHub bot login by dropping its ``[bot]`` suffix.
+
+    GitHub renders the same bot identity inconsistently across APIs/UI
+    (``chatgpt-codex-connector`` vs ``chatgpt-codex-connector[bot]``); comparing
+    on the normalized form avoids needing a literal roster entry per variant.
+    """
+    return login[: -len("[bot]")] if login.endswith("[bot]") else login
+
+
 def _known_author(
     author: str,
     association: str | None,
     known_reviewers: set[str],
     trusted_associations: set[str],
 ) -> bool:
-    return author in known_reviewers or str(association or "").upper() in trusted_associations
+    if str(association or "").upper() in trusted_associations:
+        return True
+    normalized_known = {_normalize_bot_login(r) for r in known_reviewers}
+    return _normalize_bot_login(author) in normalized_known
 
 
 def _author_login(payload: dict[str, Any]) -> str:
@@ -1062,6 +1271,50 @@ def _excerpt(body: str) -> str:
 
 def _slug(value: str) -> str:
     return re.sub(r"[^a-zA-Z0-9]+", "-", value).strip("-").lower() or "check"
+
+
+def _ensure_list(
+    value: Any, *, label: str, blockers: list[str], unknowns: list[str]
+) -> list[Any]:
+    """Normalize a harvest field to a list, blocking on a present-but-wrong type.
+
+    A missing field (None) is normal harvest shape and yields an empty list
+    silently; a field that is present but not a list is a malformed harvest
+    and must block readiness rather than crash or silently drop data.
+    """
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    _append_once(blockers, "HARVEST_INCOMPLETE")
+    _append_once(
+        unknowns, f"Harvest field {label!r} is not a list (got {type(value).__name__})."
+    )
+    return []
+
+
+def _review_source_item_count(
+    *,
+    reviews: list[Any],
+    issue_comments: list[Any],
+    review_comments: list[Any],
+    review_threads: list[Any],
+) -> int:
+    """Expected review-ledger item count, mirroring the classify_* item yield.
+
+    Each raw entry in reviews/issue_comments/review_comments yields exactly
+    one ledger item. Each review_thread yields one item per comment (or a
+    single unclassified item if the thread or its comments container is
+    malformed) — this must stay in lockstep with `_classify_threads`.
+    """
+    count = len(reviews) + len(issue_comments) + len(review_comments)
+    for thread in review_threads:
+        if not isinstance(thread, dict):
+            count += 1
+            continue
+        comments = thread.get("comments")
+        count += len(comments) if isinstance(comments, list) else 1
+    return count
 
 
 def _append_once(items: list[str], value: str) -> None:

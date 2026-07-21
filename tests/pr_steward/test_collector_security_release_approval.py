@@ -33,6 +33,7 @@ def test_single_approved_review_is_selected():
     assert result is not None
     assert result["state"] == "APPROVED"
     assert result["approver"] == "trusted-approver"
+    assert result["approver_association"] == "COLLABORATOR"
     assert result["head_sha"] == "a" * 40
     assert result["approval_ref"] == "R_1"
     assert result["repository"] == "owner/repo"
