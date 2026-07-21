@@ -39,7 +39,11 @@ from typing import Any, Optional
 
 from scripts.audit.auditor_router import _CLINK_CONF_DIR, load_route_from_clink_config
 from scripts.audit.route_schema import AuditRoute, FORBIDDEN_CLI_NAMES
-from tools.auditor_router.pal_clink import normalize_pal_clink_audit_output
+from tools.auditor_router.pal_clink import (
+    build_trusted_audit_prompt,
+    normalize_pal_clink_audit_output,
+    scan_instruction_like_content,
+)
 
 
 @dataclass(frozen=True)
@@ -293,16 +297,95 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run a PAL clink audit and capture embedded-audit payloads."
     )
-    parser.add_argument("--route-json", required=True, type=Path)
-    parser.add_argument("--prompt", required=True, type=Path)
-    parser.add_argument("--pal-output-json", required=True, type=Path)
-    parser.add_argument("--raw-output-json", required=True, type=Path)
+    parser.add_argument(
+        "--build-prompt",
+        action="store_true",
+        help=(
+            "Build the trusted audit prompt with untrusted candidate delimiters "
+            "and scan instruction-like content. Does not invoke any CLI."
+        ),
+    )
+    parser.add_argument("--route-json", type=Path)
+    parser.add_argument("--prompt", type=Path)
+    parser.add_argument("--pal-output-json", type=Path)
+    parser.add_argument("--raw-output-json", type=Path)
     parser.add_argument("--timeout-seconds", default=300.0, type=float)
+    # --build-prompt inputs/outputs
+    parser.add_argument("--repo")
+    parser.add_argument("--pr", type=int)
+    parser.add_argument("--head-sha")
+    parser.add_argument("--base-sha")
+    parser.add_argument("--changed-files", type=Path)
+    parser.add_argument("--unified-diff", type=Path)
+    parser.add_argument("--prompt-out", type=Path)
+    parser.add_argument("--instruction-like-out", type=Path)
     return parser
+
+
+def run_build_prompt_cli(args: argparse.Namespace) -> int:
+    """Assemble trusted prompt + instruction-like scan without executing candidate code."""
+    missing = [
+        name
+        for name, value in (
+            ("--repo", args.repo),
+            ("--pr", args.pr),
+            ("--head-sha", args.head_sha),
+            ("--base-sha", args.base_sha),
+            ("--changed-files", args.changed_files),
+            ("--unified-diff", args.unified_diff),
+            ("--prompt-out", args.prompt_out),
+            ("--instruction-like-out", args.instruction_like_out),
+        )
+        if value is None
+    ]
+    if missing:
+        raise ValueError(
+            "build-prompt requires: " + ", ".join(missing)
+        )
+    changed_files = args.changed_files.read_text(encoding="utf-8", errors="replace")
+    unified_diff = args.unified_diff.read_text(encoding="utf-8", errors="replace")
+    metadata_text = "\n".join(
+        [
+            f"repo={args.repo}",
+            f"pr={args.pr}",
+            f"head_sha={args.head_sha}",
+            f"base_sha={args.base_sha}",
+            "changed_files:",
+            changed_files,
+        ]
+    )
+    instruction_like = scan_instruction_like_content(
+        metadata_text=metadata_text,
+        unified_diff=unified_diff,
+    )
+    prompt = build_trusted_audit_prompt(
+        repo=str(args.repo),
+        pr_number=int(args.pr),
+        head_sha=str(args.head_sha),
+        base_sha=str(args.base_sha),
+        changed_files=changed_files,
+        unified_diff=unified_diff,
+        instruction_like=instruction_like,
+    )
+    args.prompt_out.parent.mkdir(parents=True, exist_ok=True)
+    args.prompt_out.write_text(prompt, encoding="utf-8")
+    args.instruction_like_out.parent.mkdir(parents=True, exist_ok=True)
+    args.instruction_like_out.write_text(
+        json.dumps(instruction_like, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return 0
 
 
 def run_cli(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.build_prompt:
+        return run_build_prompt_cli(args)
+    if not args.route_json or not args.prompt or not args.pal_output_json or not args.raw_output_json:
+        raise ValueError(
+            "audit mode requires --route-json, --prompt, --pal-output-json, "
+            "and --raw-output-json"
+        )
     route_record = _read_json_object(args.route_json)
     prompt = args.prompt.read_text(encoding="utf-8")
     route = route_from_auditor_record(route_record)

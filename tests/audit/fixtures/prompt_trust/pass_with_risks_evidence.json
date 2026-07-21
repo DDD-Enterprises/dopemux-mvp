@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [],
+  "risks": ["Host-side auth state not inspected by router."],
+  "rationale": "Inspected tools/auditor_router/pal_clink.py; residual non-blocking risk recorded.",
+  "inspected_paths": ["tools/auditor_router/pal_clink.py"],
+  "evidence_refs": ["diff:tools/auditor_router/pal_clink.py:+120-40"],
+  "validation_status": "pytest tests/audit/test_run_embedded_audit.py"
+}

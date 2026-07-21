@@ -356,7 +356,16 @@ def test_ci_fail_verdict_outranks_local_attestation() -> None:
 
 
 def test_ci_pass_verdict_outranks_local_attestation() -> None:
-    pass_output = {"status": "success", "verdict": "PASS", "findings": [], "risks": []}
+    pass_output = {
+        "status": "success",
+        "verdict": "PASS",
+        "findings": [],
+        "risks": [],
+        "rationale": "CI auditor inspected the PR head; local attestation is outranked.",
+        "inspected_paths": ["scripts/audit/local_audit_acceptance.py"],
+        "evidence_refs": ["ci:pal-clink"],
+        "validation_status": "NOT_RUN",
+    }
     proof = _build(pass_output, _accepted_attestation())
     assert proof["embedded_audit"]["status"] == "PASS"
     assert proof["provenance"]["audit_source"] == "ci-executed"

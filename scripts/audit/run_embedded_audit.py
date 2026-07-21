@@ -210,6 +210,7 @@ def build_embedded_audit_proof(
     route_error: str | None = None,
     pal_output_error: str | None = None,
     local_attestation: Mapping[str, Any] | None = None,
+    instruction_like_content: Mapping[str, Any] | None = None,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
     """Build a top-level proof bundle with canonical embedded_audit object."""
@@ -255,6 +256,7 @@ def build_embedded_audit_proof(
             dict(pal_output),
             route=dict(route),
             report_path=report_path,
+            instruction_like_content=instruction_like_content,
         )
         trusted_token_status = "AVAILABLE"
 
@@ -368,6 +370,15 @@ def build_parser() -> argparse.ArgumentParser:
             "CI auditor produced no real verdict."
         ),
     )
+    parser.add_argument(
+        "--instruction-like-json",
+        type=Path,
+        help=(
+            "Optional instruction-like content scan JSON produced by "
+            "scripts.audit.pal_clink_runner --build-prompt. Merged into the "
+            "normalized embedded_audit object as evidence (not raw candidate text)."
+        ),
+    )
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--generated-at")
     return parser
@@ -391,6 +402,11 @@ def run_cli(
         # Malformed/missing attestation degrades to None — fail-closed to the
         # existing SKIPPED path, never an error that masks the audit result.
         local_attestation, _ = _read_optional_json_object(args.local_attestation_json)
+    instruction_like: dict[str, Any] | None = None
+    if args.instruction_like_json:
+        instruction_like, _ = _read_optional_json_object(args.instruction_like_json)
+        if not instruction_like:
+            instruction_like = None
     proof = build_embedded_audit_proof(
         packet_id=args.packet_id,
         repo=args.repo,
@@ -403,6 +419,7 @@ def run_cli(
         route_error=route_error,
         pal_output_error=pal_output_error,
         local_attestation=local_attestation,
+        instruction_like_content=instruction_like,
         generated_at=args.generated_at,
     )
     _write_outputs(args.out, proof)
