@@ -329,6 +329,13 @@ def _collision_checks(
         expected_svc = _port_to_expected_service(
             int(port), services=services, ports=ports, catalog=catalog
         )
+        expected_spec = (catalog.get("servers") or {}).get(expected_svc or "") or {}
+        if (
+            expected_svc == "task-orchestrator"
+            and expected_spec.get("state_scope") == "multi_project_singleton"
+        ):
+            # Fixed-port TO ownership is verified by MCP handshake below, not labels.
+            continue
         expected_cname = container_names.get(expected_svc or "", "")
         # Only treat as "ours" when name matches the *expected* MCP service/container —
         # never the owner's own name fragment (avoids accepting <repo>_db on MCP ports).
@@ -648,6 +655,9 @@ def run_lifecycle(
                 target_worktree_hash=identity.worktree_hash,
                 is_free_fn=is_free,
                 docker_identity=docker_identity,
+                multi_project_singleton=(
+                    to_spec.get("state_scope") == "multi_project_singleton"
+                ),
                 skip_http=True,  # upstream jar has no /info|/health (006R)
                 for_start=True,
             )
@@ -689,12 +699,16 @@ def run_lifecycle(
                             "service": "task-orchestrator",
                         }
                     )
-            elif to_eval.start_allowed and to_eval.match == "OK":
+            elif to_eval.start_allowed and to_eval.match in {"OK", "SHARED"}:
                 warnings.append(
                     {
                         "code": "TASK_ORCHESTRATOR_START_ALLOWED",
                         "severity": "INFO",
-                        "message": "task-orchestrator already running for target project",
+                        "message": (
+                            "task-orchestrator shared singleton already running"
+                            if to_eval.match == "SHARED"
+                            else "task-orchestrator already running for target project"
+                        ),
                         "service": "task-orchestrator",
                     }
                 )
@@ -1282,6 +1296,48 @@ def _start_services(**kw: Any) -> LifecycleResult:
                 docker, cname, project_id, svc
             )
             # unlabeled TO on fixed port is already blocked in collision
+
+        to_spec = (catalog.get("servers") or {}).get("task-orchestrator") or {}
+        if (
+            svc == "task-orchestrator"
+            and not existing
+            and to_spec.get("state_scope") == "multi_project_singleton"
+            and not is_free(int(ports.get("TASK_ORCHESTRATOR_HTTP_PORT", 7890)))
+        ):
+            from .task_orchestrator_identity import (
+                is_task_orchestrator_server_name,
+                probe_mcp_server_name,
+            )
+
+            server_name = probe_mcp_server_name(
+                int(ports.get("TASK_ORCHESTRATOR_HTTP_PORT", 7890))
+            )
+            if is_task_orchestrator_server_name(server_name):
+                service_results.append(
+                    {
+                        "service": svc,
+                        "action": "shared_singleton",
+                        "reason": "verified existing shared Task Orchestrator MCP endpoint",
+                        "container_name": None,
+                        "container_names": [],
+                        "ports": svc_ports,
+                        "labels": labels,
+                        "commands": [],
+                        "probe_status": "PASS",
+                        "registry_updated": False,
+                        "findings": [
+                            {
+                                "code": "TASK_ORCHESTRATOR_SHARED_SINGLETON_OK",
+                                "severity": "INFO",
+                                "message": (
+                                    "shared singleton verified via "
+                                    f"serverInfo.name={server_name}"
+                                ),
+                            }
+                        ],
+                    }
+                )
+                continue
 
         if existing:
             service_results.append(

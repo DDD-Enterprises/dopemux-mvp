@@ -242,6 +242,43 @@ def test_task_orchestrator_container_name_matches_wrapper_state_id(tmp_path: Pat
     assert cname != f"task-orchestrator-{project_hash}"
 
 
+def test_start_reuses_verified_shared_task_orchestrator(tmp_path: Path, monkeypatch):
+    from dopemux.mcp import task_orchestrator_identity as to_identity
+
+    repo = _fixture_repo(tmp_path)
+    reg = tmp_path / "reg" / "instances.json"
+    product = tmp_path / "product"
+    product.mkdir()
+    (product / "compose.yml").write_text("services: {}\n")
+    catalog = _catalog()
+    catalog["servers"]["task-orchestrator"]["state_scope"] = (
+        "multi_project_singleton"
+    )
+    monkeypatch.setattr(
+        to_identity,
+        "probe_mcp_server_name",
+        lambda port: "mcp-task-orchestrator-current",
+    )
+
+    result = run_lifecycle(
+        "start",
+        repo=repo,
+        services=["task-orchestrator"],
+        catalog=catalog,
+        dry_run=True,
+        registry_path=reg,
+        docker_runner=_docker_empty(),
+        product_root=product,
+        process_env={},
+        port_is_free_fn=lambda port: False,
+        skip_doctor=True,
+    )
+    assert result.status == "PLANNED"
+    to_service = next(s for s in result.services if s["service"] == "task-orchestrator")
+    assert to_service["action"] == "shared_singleton"
+    assert to_service["commands"] == []
+
+
 def test_start_blocks_transport_mismatch(tmp_path: Path):
     repo = _fixture_repo(tmp_path)
     # Break transport

@@ -391,7 +391,7 @@ servers:
     # Host singleton runtime; declaration may appear in per-repo .mcp.json.
     # Port 7890 is reserved — never project/worktree leased (RUNTIME-006R).
     scope: per-worktree
-    state_scope: single_active_project
+    state_scope: multi_project_singleton
     transport: http
     plane: workflow
     authority_role: workflow-authority
@@ -421,4 +421,4 @@ servers:
     tools:
       snapshot_key: task-orchestrator
       schema_version: 1
-    description: "Host-singleton Task Orchestrator MCP on reserved 7890 (single-active-project state)"
+    description: "Host-singleton Task Orchestrator MCP on reserved 7890 (multi-project shared state)"
