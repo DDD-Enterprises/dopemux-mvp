@@ -1,21 +1,28 @@
 {
   "embedded_audit": {
-    "auditor_model": "gemini",
-    "auditor_tool": "agy",
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
     "exit_code": 0,
     "findings": [
       {
-        "body": "The deterministic scanner detected 17 matches for instruction-like patterns in the candidate diff. These matches are expected and benign as they reside in the newly added test fixtures (adversarial_candidate.diff, adversarial_metadata.txt) and the scanner's own regex pattern definitions in tools/auditor_router/pal_clink.py.",
-        "id": "F-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001",
-        "severity": "INFO",
-        "status": "RESOLVED",
-        "title": "Instruction-like content detected in test fixtures and code"
+        "body": "In .github/workflows/embedded-audit.yml, when scripts/audit/pal_clink_runner.py is absent, the fallback branch hardcodes INSTRUCTION_LIKE_CONTENT.json to {\"detected\":false,\"match_count\":0,...} even though the fallback prompt still embeds raw candidate metadata/diff between delimiters. This means the deterministic-scanner evidence gate silently reports no detection in that code path, even though instruction-like candidate text could still be present and delimiter protections still apply. This is a bootstrap-only path (used only when the runner file is missing from the checkout) so blast radius is narrow, but it is a real fail-open of the scanner signal rather than fail-closed.",
+        "id": "PROMPT-TRUST-01",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "Scanner fails open in the workflow bootstrap fallback path"
+      },
+      {
+        "body": "scan_instruction_like_content only scans '+' (added) lines and metadata text; '-' lines are explicitly skipped ('Deleted lines are still candidate-controlled historically... Skip.'). However, build_trusted_audit_prompt embeds the full unified diff text (including '-' lines) verbatim in the untrusted section for the model to read. Instruction-like content placed only in removed/context lines would still reach the auditor model's context but would not be flagged by instruction_like_content evidence. The delimiter/neutralization protections still apply to this text, so it cannot escape the untrusted region, but it reduces the completeness of the detection signal used for the evidence-gate acknowledgement requirement.",
+        "id": "PROMPT-TRUST-02",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Scanner does not inspect deleted (-) diff lines that are still rendered to the model"
       }
     ],
     "fixes_applied": [],
     "instruction_like_content": {
       "detected": true,
-      "match_count": 17,
+      "match_count": 27,
       "matches": [
         {
           "category": "FAKE_AUDIT_RESULT",
@@ -118,15 +125,79 @@
           "line": 8,
           "path": "tests/audit/fixtures/prompt_trust/benign_docs.diff",
           "text_sha256": "01313aee1e906292a08caca31e9604a919c588df57b45215dce5b64dfb863060"
+        },
+        {
+          "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+          "line": 685,
+          "path": "tests/audit/test_run_embedded_audit.py",
+          "text_sha256": "d356363f7363ec0a99298d4e6a558187602f9c26d6c770fc4d7534c5e79953c4"
+        },
+        {
+          "category": "FAKE_AUDIT_RESULT",
+          "line": 686,
+          "path": "tests/audit/test_run_embedded_audit.py",
+          "text_sha256": "eb42fb4e040a45e907962c041e54db195a885b425d7d37782eeca1b0b843c9de"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "line": 686,
+          "path": "tests/audit/test_run_embedded_audit.py",
+          "text_sha256": "eb42fb4e040a45e907962c041e54db195a885b425d7d37782eeca1b0b843c9de"
+        },
+        {
+          "category": "OUTPUT_CONTRACT_OVERRIDE",
+          "line": 686,
+          "path": "tests/audit/test_run_embedded_audit.py",
+          "text_sha256": "eb42fb4e040a45e907962c041e54db195a885b425d7d37782eeca1b0b843c9de"
+        },
+        {
+          "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+          "line": 764,
+          "path": "tests/audit/test_run_embedded_audit.py",
+          "text_sha256": "01500861be017b7c29c163a68573d912af375c8be53a675bfda21746c39582da"
+        },
+        {
+          "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+          "line": 775,
+          "path": "tests/audit/test_run_embedded_audit.py",
+          "text_sha256": "ae2c900d0970c441aea21b2ace8cc9a168dbfc5b32929477ba5c4f616decf5ea"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "line": 1036,
+          "path": "tests/audit/test_run_embedded_audit.py",
+          "text_sha256": "efb827e36be5ba48afd9142d8fef7ac6d378cbc4bdd8755b144d4dc1db173f91"
+        },
+        {
+          "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+          "line": 1036,
+          "path": "tests/audit/test_run_embedded_audit.py",
+          "text_sha256": "efb827e36be5ba48afd9142d8fef7ac6d378cbc4bdd8755b144d4dc1db173f91"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "line": 1042,
+          "path": "tests/audit/test_run_embedded_audit.py",
+          "text_sha256": "c46a3ebe8ec8db561c88bdc3bc71a1cfa96f99e966205de680d33b7b2f77760f"
+        },
+        {
+          "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+          "line": 1042,
+          "path": "tests/audit/test_run_embedded_audit.py",
+          "text_sha256": "c46a3ebe8ec8db561c88bdc3bc71a1cfa96f99e966205de680d33b7b2f77760f"
         }
       ],
       "truncated": false
     },
-    "invocation": "agy --model gemini-3.1-pro-high -p <trusted-prompt> --effort high --sandbox --mode plan (settings: model=Gemini 3.1 Pro High, toolPermission=require-permission)",
+    "invocation": "claude --print --safe-mode --no-session-persistence --tools \"\" --strict-mcp-config --model sonnet < trusted-prompt-full.md",
     "remaining_risks": [
-      "Regex-based scanner is not a complete guarantee against obfuscated or novel prompt-injection attacks; however, the multi-layered defense (delimiter neutralization, prompt repetition, and enforcements on PASS verdicts) mitigates this risk effectively.",
-      "Deterministic scanner matches on benign test fixtures and documentation, which requires auditor review and manual acknowledgement. This is an accepted operational trade-off to ensure safety.",
-      "Instruction-like candidate content was detected by the deterministic scanner (match_count=17); treated as evidence only, not automatic failure."
+      "Instruction-like candidate content was detected by the deterministic scanner in this packet's own review payload/fixtures (categories: FAKE_AUDIT_RESULT, FORCED_VERDICT_REQUEST, IGNORE_OR_OVERRIDE_INSTRUCTION, OUTPUT_CONTRACT_OVERRIDE, ROLE_OR_SYSTEM_PROMPT_CLAIM, SUPPRESS_FINDINGS_REQUEST; match_count=27, all inside the delimited/neutralized untrusted region). Treated as evidence of shape only, per the trusted contract, not as proof of malicious intent or automatic failure; acknowledged here.",
+      "Scanner fails open (reports detected=false) in the no-runner bootstrap fallback workflow path even though raw candidate text is still embedded in the prompt (see PROMPT-TRUST-01). Delimiter/neutralization protections still hold in that path, but the evidence-gate signal is degraded.",
+      "Scanner does not scan deleted diff lines, so instruction-like text placed only in removed/context lines is invisible to the evidence-gate acknowledgement mechanism even though it still reaches the model inside the untrusted region (see PROMPT-TRUST-02).",
+      "tools/auditor_router/pal_clink.py.FULL was supplied as reference context alongside the diff but is not listed in changed_files and is not a file this audit can confirm will actually be committed to the repository; I relied on it only as a full-file cross-check of the diff hunks against tools/auditor_router/pal_clink.py, not as independent evidence of a separate change.",
+      "The exact trusted delimiter string values were rendered redacted/neutralized in the material provided to me (e.g. '[REDACTED_DELIMITER:BEGIN TRUS\u2026]'), so I cannot independently verify from this transcript alone that all seven DELIM_* constants are mutually unique, non-guessable strings as claimed by the module docstring \u2014 I can only verify the neutralization mechanism operates correctly on whatever the real values are, which the adversarial forged-delimiter test demonstrates.",
+      "Passing-verdict evidence thresholds are soft (24-character rationale minimum, several alternate accepted key names for rationale/evidence/validation), which is a reasonable defense-in-depth floor but not a strong guarantee against a low-effort but technically-passing rationale from a future auditor run.",
+      "Validation was not independently executed by this audit (tools and code execution are disabled per this audit's own trusted contract); pytest/schema-validation results are implementer-reported claims that I cross-checked against test source code logic but did not run."
     ],
     "report_path": "proof/TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001/AUDITOR_REPORT.md",
     "required": true,
@@ -134,22 +205,23 @@
     "status": "PASS_WITH_RISKS"
   },
   "executed": true,
-  "generated_at": "2026-07-21T03:35:36Z",
+  "generated_at": "2026-07-21T03:51:23Z",
   "github_mutation_route_added": false,
-  "head_sha": "7041f128adbf5883675b4f797ab4bdda3c8faa58",
+  "head_sha": "df21b1a7509d0405c3382f3d6b047124227ed510",
   "mutation_performed": false,
   "packet_id": "TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001",
   "pr_number": 1082,
   "provenance": {
-    "audit_source": "local-agy",
-    "auditor_cli": "agy",
-    "backend_model_label": "Gemini 3.5 Flash (Medium)",
+    "audit_source": "local-claude-code-cli",
+    "auditor_cli": "claude",
+    "auditor_model": "sonnet",
+    "permission_mode": "none (no --permission-mode plan; plan mode blocked noninteractive verdict)",
+    "prior_agy_gemini": "PASS_WITH_RISKS",
     "proof_author": "independent-embedded-audit",
-    "requested_model": "gemini-3.1-pro-high",
-    "settings_model": "Gemini 3.1 Pro (High)",
+    "strict_mcp_config": true,
     "token_value_recorded": false,
-    "tool_permission": "require-permission",
-    "workflow": "local-agy-gemini"
+    "tools_disabled": true,
+    "workflow": "local-claude-code-cli"
   },
   "repo": "DDD-Enterprises/dopemux-mvp"
 }
