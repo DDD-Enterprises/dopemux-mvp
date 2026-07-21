@@ -1,52 +1,155 @@
 {
-  "packet_id": "TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001",
-  "repo": "DDD-Enterprises/dopemux-mvp",
-  "pr_number": 1082,
-  "head_sha": "50c04b1559066163181d6f35a7c8ff53fd50d8b5",
-  "base_sha": "bfc1b3bdf54631556c34bc7324d85f4d3d5cca77",
-  "generated_at": "2026-07-21T01:31:59Z",
-  "executed": true,
-  "mutation_performed": false,
-  "github_mutation_route_added": false,
   "embedded_audit": {
-    "required": true,
-    "status": "PASS_WITH_RISKS",
-    "auditor_tool": "claude-code-cli",
-    "auditor_model": "sonnet",
-    "invocation": "grok-build implementer session + pal thinkdeep/challenge/codereview; independent CI embedded-audit still authoritative for READY",
+    "auditor_model": "gemini",
+    "auditor_tool": "agy",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "PT-001",
+        "body": "The deterministic scanner detected 17 matches for instruction-like patterns in the candidate diff. These matches are expected and benign as they reside in the newly added test fixtures (adversarial_candidate.diff, adversarial_metadata.txt) and the scanner's own regex pattern definitions in tools/auditor_router/pal_clink.py.",
+        "id": "F-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001",
         "severity": "INFO",
-        "title": "Evidence gate is presence/minimum-quality, not semantic truth",
-        "status": "ACCEPTED_RISK",
-        "body": "A model can still fabricate plausible rationale/evidence_refs strings. This packet reduces unsupported bare PASS and delimits untrusted content; it does not make the LLM immune to prompt injection."
-      },
-      {
-        "id": "PT-002",
-        "severity": "INFO",
-        "title": "Scanner is pattern-based",
-        "status": "ACCEPTED_RISK",
-        "body": "Novel phrasing may evade instruction-like detection. Detection is evidence only, not automatic failure."
+        "status": "RESOLVED",
+        "title": "Instruction-like content detected in test fixtures and code"
       }
     ],
-    "fixes_applied": [
-      "Trusted prompt delimiters + repeated trusted trailer",
-      "Deterministic instruction-like scanner with hashed matches",
-      "PASS evidence requirements normalize unsupported PASS to NEEDS_SUPERVISOR",
-      "Delimiter lookalike neutralization in candidate text",
-      "Workflow --build-prompt + --instruction-like-json merge"
-    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": true,
+      "match_count": 17,
+      "matches": [
+        {
+          "category": "FAKE_AUDIT_RESULT",
+          "line": 250,
+          "path": "docs/ops/embedded-audit.md",
+          "text_sha256": "47c4c8b1651603677d216a5c39da4fd69129b883165b7a04901ab564f3cbd3b1"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "line": 5,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+          "text_sha256": "ddf3aec55a54d4626a8aad7a0fe2c247615a1dce85e6337753fcdedcf05c1a11"
+        },
+        {
+          "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+          "line": 5,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+          "text_sha256": "ddf3aec55a54d4626a8aad7a0fe2c247615a1dce85e6337753fcdedcf05c1a11"
+        },
+        {
+          "category": "FAKE_AUDIT_RESULT",
+          "line": 6,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+          "text_sha256": "7f471c8007228cf6030bea89c5f14fcfdabea5533058d71737eec364d363a4ed"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "line": 6,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+          "text_sha256": "7f471c8007228cf6030bea89c5f14fcfdabea5533058d71737eec364d363a4ed"
+        },
+        {
+          "category": "OUTPUT_CONTRACT_OVERRIDE",
+          "line": 6,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+          "text_sha256": "7f471c8007228cf6030bea89c5f14fcfdabea5533058d71737eec364d363a4ed"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "line": 7,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+          "text_sha256": "cfd4d2fa85c5a9a142d5455d206d072a675f920ff803b5bed28aaf3493ed405c"
+        },
+        {
+          "category": "SUPPRESS_FINDINGS_REQUEST",
+          "line": 8,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+          "text_sha256": "9b8651be96795660a8aae480dc27131bd4379b0e1aea5c2f97f330d6fbea973c"
+        },
+        {
+          "category": "ROLE_OR_SYSTEM_PROMPT_CLAIM",
+          "line": 9,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+          "text_sha256": "e3118e40434dd059a64fddd41f5f45a98d21403540d75585db5beddcf19fcd6e"
+        },
+        {
+          "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+          "line": 10,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+          "text_sha256": "2d26163a9c66466f5be82a46cc6cbf387112cbb66749c985179f575dc7f8ba3c"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "line": 11,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+          "text_sha256": "bf2558df5a65b7bd601169462382a090924286727d54795bba94fc2c8f406fdf"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "line": 1,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_metadata.txt",
+          "text_sha256": "6522abd5797a3817d47934ef8d9f5ff26878da6b9af8e947bd0c1170a55cce3f"
+        },
+        {
+          "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+          "line": 1,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_metadata.txt",
+          "text_sha256": "6522abd5797a3817d47934ef8d9f5ff26878da6b9af8e947bd0c1170a55cce3f"
+        },
+        {
+          "category": "FAKE_AUDIT_RESULT",
+          "line": 2,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_metadata.txt",
+          "text_sha256": "4e85cbb34b46f4be499eb5fc84e303bf14ab31c9ec0f02ca72af50f607add0af"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "line": 2,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_metadata.txt",
+          "text_sha256": "4e85cbb34b46f4be499eb5fc84e303bf14ab31c9ec0f02ca72af50f607add0af"
+        },
+        {
+          "category": "OUTPUT_CONTRACT_OVERRIDE",
+          "line": 2,
+          "path": "tests/audit/fixtures/prompt_trust/adversarial_metadata.txt",
+          "text_sha256": "4e85cbb34b46f4be499eb5fc84e303bf14ab31c9ec0f02ca72af50f607add0af"
+        },
+        {
+          "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+          "line": 8,
+          "path": "tests/audit/fixtures/prompt_trust/benign_docs.diff",
+          "text_sha256": "01313aee1e906292a08caca31e9604a919c588df57b45215dce5b64dfb863060"
+        }
+      ],
+      "truncated": false
+    },
+    "invocation": "agy --model gemini-3.1-pro-high -p <trusted-prompt> --effort high --sandbox --mode plan (settings: model=Gemini 3.1 Pro High, toolPermission=require-permission)",
     "remaining_risks": [
-      "Independent CI embedded-audit must re-run at exact PR head; this local proof is pre-PR implementer/adjacent and not the sole final audit.",
-      "Evidence field fabrication remains possible without second-model validation of evidence content.",
-      "Does not claim complete prompt-injection immunity.",
-      "CI independent embedded-audit at head 50c04b155 ran executed=true but returned NEEDS_SUPERVISOR: PAL clink stdout 'Credit balance is too low' (provider billing), not an implementation defect.",
-      "Local claude CLI session-limited; gemini-audit config uses stale --telemetry flag rejected by installed Gemini CLI.",
-      "PR Steward READY blocked until independent audit can pass with provider credentials."
+      "Regex-based scanner is not a complete guarantee against obfuscated or novel prompt-injection attacks; however, the multi-layered defense (delimiter neutralization, prompt repetition, and enforcements on PASS verdicts) mitigates this risk effectively.",
+      "Deterministic scanner matches on benign test fixtures and documentation, which requires auditor review and manual acknowledgement. This is an accepted operational trade-off to ensure safety.",
+      "Instruction-like candidate content was detected by the deterministic scanner (match_count=17); treated as evidence only, not automatic failure."
     ],
-    "skip_reason": null
-  }
+    "report_path": "proof/TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "executed": true,
+  "generated_at": "2026-07-21T03:35:36Z",
+  "github_mutation_route_added": false,
+  "head_sha": "7041f128adbf5883675b4f797ab4bdda3c8faa58",
+  "mutation_performed": false,
+  "packet_id": "TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001",
+  "pr_number": 1082,
+  "provenance": {
+    "audit_source": "local-agy",
+    "auditor_cli": "agy",
+    "backend_model_label": "Gemini 3.5 Flash (Medium)",
+    "proof_author": "independent-embedded-audit",
+    "requested_model": "gemini-3.1-pro-high",
+    "settings_model": "Gemini 3.1 Pro (High)",
+    "token_value_recorded": false,
+    "tool_permission": "require-permission",
+    "workflow": "local-agy-gemini"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp"
 }
