@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from tools.pr_steward.collector import _select_security_release_approval
+import json
+import subprocess
+
+from tools.pr_steward.collector import (
+    _fetch_changed_files_with_pagination_check,
+    _select_security_release_approval,
+)
 
 
 def _review(**overrides):
@@ -56,3 +62,71 @@ def test_review_without_commit_oid_is_skipped():
         [_review(commit=None)], repo="o/r", pr_number=1
     )
     assert result is None
+
+
+def _graphql_files_response(*, has_next_page: bool, paths: list[str]) -> str:
+    return json.dumps(
+        {
+            "data": {
+                "repository": {
+                    "pullRequest": {
+                        "files": {
+                            "pageInfo": {
+                                "hasNextPage": has_next_page,
+                                "endCursor": "cursor",
+                            },
+                            "nodes": [{"path": path} for path in paths],
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+
+def test_changed_files_pagination_check_no_next_page_produces_no_error(monkeypatch):
+    def fake_run(args):
+        return subprocess.CompletedProcess(
+            args,
+            0,
+            _graphql_files_response(has_next_page=False, paths=["a.py", "b.py"]),
+            "",
+        )
+
+    monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
+    paths, errors = _fetch_changed_files_with_pagination_check(
+        repo="owner/repo", pr_number=1
+    )
+    assert errors == []
+    assert paths == ["a.py", "b.py"]
+
+
+def test_changed_files_pagination_check_has_next_page_produces_harvest_error(
+    monkeypatch,
+):
+    def fake_run(args):
+        return subprocess.CompletedProcess(
+            args,
+            0,
+            _graphql_files_response(has_next_page=True, paths=["a.py"] * 100),
+            "",
+        )
+
+    monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
+    paths, errors = _fetch_changed_files_with_pagination_check(
+        repo="owner/repo", pr_number=1
+    )
+    assert errors == ["changedFiles harvest exceeded first 100 files"]
+    assert len(paths) == 100
+
+
+def test_changed_files_pagination_check_command_failure_produces_error(monkeypatch):
+    def fake_run(args):
+        return subprocess.CompletedProcess(args, 1, "", "boom")
+
+    monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
+    paths, errors = _fetch_changed_files_with_pagination_check(
+        repo="owner/repo", pr_number=1
+    )
+    assert paths == []
+    assert errors == ["gh api graphql changedFiles failed: boom"]

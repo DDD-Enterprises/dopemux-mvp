@@ -103,6 +103,10 @@ def collect_from_github(
     errors.extend(thread_errors)
     reviews_raw, review_errors = _fetch_reviews_with_commit(repo=repo, pr_number=pr_number)
     errors.extend(review_errors)
+    _changed_files_check, changed_files_errors = _fetch_changed_files_with_pagination_check(
+        repo=repo, pr_number=pr_number
+    )
+    errors.extend(changed_files_errors)
     security_release_approval = _select_security_release_approval(
         reviews_raw, repo=repo, pr_number=pr_number
     )
@@ -281,6 +285,72 @@ def _fetch_reviews_with_commit(
     if page.get("pageInfo", {}).get("hasNextPage"):
         errors.append("reviews harvest exceeded first 100 reviews")
     return page.get("nodes") or [], errors
+
+
+def _fetch_changed_files_with_pagination_check(
+    *, repo: str, pr_number: int
+) -> tuple[list[str], list[str]]:
+    """Independently verify the REST-shaped `gh pr view --json files` list is complete.
+
+    `gh pr view --json files` has a history of silently truncating large file
+    lists with no indication of truncation in its REST-shaped JSON output. A
+    truncated file list could hide a security-sensitive path (e.g. a workflow
+    file) from `classify_security_release_paths`, causing the gate to be
+    incorrectly marked not-required. This GraphQL query with an explicit
+    `pageInfo.hasNextPage` check is the completeness signal for that list;
+    the REST list itself remains the source of truth for `changed_files`
+    content.
+    """
+    owner, name = repo.split("/", 1)
+    query = textwrap.dedent(
+        """
+        query($owner: String!, $repo: String!, $number: Int!) {
+          repository(owner: $owner, name: $repo) {
+            pullRequest(number: $number) {
+              files(first: 100) {
+                pageInfo { hasNextPage endCursor }
+                nodes {
+                  path
+                }
+              }
+            }
+          }
+        }
+        """
+    ).strip()
+    result = _run(
+        [
+            "gh",
+            "api",
+            "graphql",
+            "-f",
+            f"owner={owner}",
+            "-f",
+            f"repo={name}",
+            "-F",
+            f"number={pr_number}",
+            "-f",
+            f"query={query}",
+        ]
+    )
+    if result.returncode != 0:
+        return [], [f"gh api graphql changedFiles failed: {result.stderr.strip()}"]
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        return [], [f"gh api graphql changedFiles returned invalid JSON: {exc}"]
+    page = (
+        payload.get("data", {})
+        .get("repository", {})
+        .get("pullRequest", {})
+        .get("files", {})
+    )
+    errors: list[str] = []
+    if page.get("pageInfo", {}).get("hasNextPage"):
+        errors.append("changedFiles harvest exceeded first 100 files")
+    nodes = page.get("nodes") or []
+    paths = [node.get("path") for node in nodes if isinstance(node, dict) and node.get("path")]
+    return paths, errors
 
 
 def _select_security_release_approval(
