@@ -133,6 +133,42 @@ def test_port_only_never_ok():
     assert "TASK_ORCHESTRATOR_PROJECT_IDENTITY_UNKNOWN" in codes
 
 
+def test_shared_singleton_allows_verified_task_orchestrator():
+    ev = evaluate_fixed_port_state(
+        port=7890,
+        target_project_id="dopemux-mvp",
+        target_project_root="/Users/hue/code/dopemux-mvp",
+        listening=True,
+        multi_project_singleton=True,
+        mcp_server_name="mcp-task-orchestrator-current",
+        for_start=True,
+    )
+    assert ev.match == "SHARED"
+    assert ev.start_allowed is True
+    assert any(
+        f["code"] == "TASK_ORCHESTRATOR_SHARED_SINGLETON_OK" for f in ev.findings
+    )
+
+
+def test_shared_singleton_rejects_unverified_occupant():
+    ev = evaluate_fixed_port_state(
+        port=7890,
+        target_project_id="dopemux-mvp",
+        target_project_root="/Users/hue/code/dopemux-mvp",
+        listening=True,
+        multi_project_singleton=True,
+        mcp_server_name="foreign-mcp-server",
+        for_start=True,
+    )
+    assert ev.match == "UNKNOWN"
+    assert ev.start_allowed is False
+    assert ev.start_block_code == "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER"
+    assert any(
+        f["code"] == "TASK_ORCHESTRATOR_SHARED_SINGLETON_UNVERIFIED"
+        for f in ev.findings
+    )
+
+
 def test_free_port_start_allowed():
     ev = evaluate_fixed_port_state(
         port=7890,
