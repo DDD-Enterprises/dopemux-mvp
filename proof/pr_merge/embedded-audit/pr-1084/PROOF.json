@@ -1,0 +1,44 @@
+{
+  "packet_id": "PR-MERGE-STEWARD-1084",
+  "pr_number": 1084,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "7fa80333cd5998bdf8db22e04c1f8517dc7c7c91",
+  "generated_at": "2026-07-20T00:00:00Z",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --mode plan --print (read-only Antigravity CLI, two passes: initial 5m print-timeout partial + 15m completion pass); audited diff bfc1b3bdf..7fa80333c against tools/pr_steward/{collector,classifier,security_release_gate,security_release_approval}.py, schemas/pr_steward/pr_state_snapshot.schema.json; ran `python3 -m pytest -v tests/pr_steward` in an isolated git worktree at the audited head",
+    "exit_code": 0,
+    "report_path": "proof/pr-1084/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AGY-1084-INFO-1",
+        "severity": "INFO",
+        "title": "Trailing malformed page discards prior pages in _fetch_changed_files_rest",
+        "status": "ACCEPTED_RISK",
+        "body": "The try/except json.JSONDecodeError in tools/pr_steward/collector.py::_fetch_changed_files_rest wraps the entire page-accumulation loop, so a malformed trailing page discards previously-accumulated pages and returns ([], [error]). This is fail-closed (HARVEST_INCOMPLETE), not a security bypass. Accepted as-is; no trust-boundary impact."
+      },
+      {
+        "id": "AGY-1084-INFO-2",
+        "severity": "INFO",
+        "title": "_changed_files() lacks isinstance(item, dict) guard",
+        "status": "ACCEPTED_RISK",
+        "body": "tools/pr_steward/classifier.py::_changed_files() does not guard isinstance(item, dict) before calling .get(). Pre-existing condition from before this PR; the REST normalizer upstream already validates dict-type entries before they reach this function. No regression introduced by this fix."
+      }
+    ],
+    "fixes_applied": [
+      "Classify tools/pr_steward/** and .github/actions/** as security-sensitive (trust-root self-protection) in security_release_gate.py.",
+      "Require reviewer authorAssociation in {OWNER, MEMBER, COLLABORATOR} in addition to roster membership in security_release_approval.py.",
+      "Fix bidirectional bot-login normalization bug (found by independent Claude security-engineer audit): a roster entry stored as 'foo[bot]' can no longer match an unrelated bare login 'foo' — only the candidate login is normalized, never the roster.",
+      "Migrate canonical changed-file source from `gh pr view --json files` to paginated REST pulls/{n}/files, and classify pre-rename paths alongside destination paths (closes a rename-out-of-protected-path bypass found by independent Grok CLI audit at head 7b7690fe8c25fc154fd1816d115098904262ac65)."
+    ],
+    "remaining_risks": [
+      "None beyond the two INFO findings above — all claimed fixes verified end-to-end against the exact audited head; pagination behavior and multi-hop-rename collapse confirmed empirically."
+    ],
+    "skip_reason": null
+  }
+}
