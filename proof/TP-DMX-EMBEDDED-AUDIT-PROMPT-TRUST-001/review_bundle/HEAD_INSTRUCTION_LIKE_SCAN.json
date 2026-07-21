@@ -1,0 +1,169 @@
+{
+  "detected": true,
+  "match_count": 27,
+  "truncated": false,
+  "matches": [
+    {
+      "path": "docs/ops/embedded-audit.md",
+      "line": 250,
+      "category": "FAKE_AUDIT_RESULT",
+      "text_sha256": "47c4c8b1651603677d216a5c39da4fd69129b883165b7a04901ab564f3cbd3b1"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+      "line": 5,
+      "category": "FORCED_VERDICT_REQUEST",
+      "text_sha256": "ddf3aec55a54d4626a8aad7a0fe2c247615a1dce85e6337753fcdedcf05c1a11"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+      "line": 5,
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "text_sha256": "ddf3aec55a54d4626a8aad7a0fe2c247615a1dce85e6337753fcdedcf05c1a11"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+      "line": 6,
+      "category": "FAKE_AUDIT_RESULT",
+      "text_sha256": "7f471c8007228cf6030bea89c5f14fcfdabea5533058d71737eec364d363a4ed"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+      "line": 6,
+      "category": "FORCED_VERDICT_REQUEST",
+      "text_sha256": "7f471c8007228cf6030bea89c5f14fcfdabea5533058d71737eec364d363a4ed"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+      "line": 6,
+      "category": "OUTPUT_CONTRACT_OVERRIDE",
+      "text_sha256": "7f471c8007228cf6030bea89c5f14fcfdabea5533058d71737eec364d363a4ed"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+      "line": 7,
+      "category": "FORCED_VERDICT_REQUEST",
+      "text_sha256": "cfd4d2fa85c5a9a142d5455d206d072a675f920ff803b5bed28aaf3493ed405c"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+      "line": 8,
+      "category": "SUPPRESS_FINDINGS_REQUEST",
+      "text_sha256": "9b8651be96795660a8aae480dc27131bd4379b0e1aea5c2f97f330d6fbea973c"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+      "line": 9,
+      "category": "ROLE_OR_SYSTEM_PROMPT_CLAIM",
+      "text_sha256": "e3118e40434dd059a64fddd41f5f45a98d21403540d75585db5beddcf19fcd6e"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+      "line": 10,
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "text_sha256": "2d26163a9c66466f5be82a46cc6cbf387112cbb66749c985179f575dc7f8ba3c"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+      "line": 11,
+      "category": "FORCED_VERDICT_REQUEST",
+      "text_sha256": "bf2558df5a65b7bd601169462382a090924286727d54795bba94fc2c8f406fdf"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_metadata.txt",
+      "line": 1,
+      "category": "FORCED_VERDICT_REQUEST",
+      "text_sha256": "6522abd5797a3817d47934ef8d9f5ff26878da6b9af8e947bd0c1170a55cce3f"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_metadata.txt",
+      "line": 1,
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "text_sha256": "6522abd5797a3817d47934ef8d9f5ff26878da6b9af8e947bd0c1170a55cce3f"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_metadata.txt",
+      "line": 2,
+      "category": "FAKE_AUDIT_RESULT",
+      "text_sha256": "4e85cbb34b46f4be499eb5fc84e303bf14ab31c9ec0f02ca72af50f607add0af"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_metadata.txt",
+      "line": 2,
+      "category": "FORCED_VERDICT_REQUEST",
+      "text_sha256": "4e85cbb34b46f4be499eb5fc84e303bf14ab31c9ec0f02ca72af50f607add0af"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/adversarial_metadata.txt",
+      "line": 2,
+      "category": "OUTPUT_CONTRACT_OVERRIDE",
+      "text_sha256": "4e85cbb34b46f4be499eb5fc84e303bf14ab31c9ec0f02ca72af50f607add0af"
+    },
+    {
+      "path": "tests/audit/fixtures/prompt_trust/benign_docs.diff",
+      "line": 8,
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "text_sha256": "01313aee1e906292a08caca31e9604a919c588df57b45215dce5b64dfb863060"
+    },
+    {
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "line": 685,
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "text_sha256": "d356363f7363ec0a99298d4e6a558187602f9c26d6c770fc4d7534c5e79953c4"
+    },
+    {
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "line": 686,
+      "category": "FAKE_AUDIT_RESULT",
+      "text_sha256": "eb42fb4e040a45e907962c041e54db195a885b425d7d37782eeca1b0b843c9de"
+    },
+    {
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "line": 686,
+      "category": "FORCED_VERDICT_REQUEST",
+      "text_sha256": "eb42fb4e040a45e907962c041e54db195a885b425d7d37782eeca1b0b843c9de"
+    },
+    {
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "line": 686,
+      "category": "OUTPUT_CONTRACT_OVERRIDE",
+      "text_sha256": "eb42fb4e040a45e907962c041e54db195a885b425d7d37782eeca1b0b843c9de"
+    },
+    {
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "line": 764,
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "text_sha256": "01500861be017b7c29c163a68573d912af375c8be53a675bfda21746c39582da"
+    },
+    {
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "line": 775,
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "text_sha256": "ae2c900d0970c441aea21b2ace8cc9a168dbfc5b32929477ba5c4f616decf5ea"
+    },
+    {
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "line": 1036,
+      "category": "FORCED_VERDICT_REQUEST",
+      "text_sha256": "efb827e36be5ba48afd9142d8fef7ac6d378cbc4bdd8755b144d4dc1db173f91"
+    },
+    {
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "line": 1036,
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "text_sha256": "efb827e36be5ba48afd9142d8fef7ac6d378cbc4bdd8755b144d4dc1db173f91"
+    },
+    {
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "line": 1042,
+      "category": "FORCED_VERDICT_REQUEST",
+      "text_sha256": "c46a3ebe8ec8db561c88bdc3bc71a1cfa96f99e966205de680d33b7b2f77760f"
+    },
+    {
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "line": 1042,
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "text_sha256": "c46a3ebe8ec8db561c88bdc3bc71a1cfa96f99e966205de680d33b7b2f77760f"
+    }
+  ]
+}

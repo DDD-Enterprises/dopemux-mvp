@@ -1,0 +1,21 @@
+I0720 20:35:21.365847 64664 resolver.go:85] Model ID gemini-3.1-pro-high not in local config, defaulting to CCPA
+I0720 20:35:21.365948 64664 resolver.go:111] Model resolved via default
+W0720 20:35:21.508253 64664 log_context.go:117] Cache(availableModels): Singleflight refresh failed: failed to get load code assist response: error getting token source: You are not logged into Antigravity.
+E0720 20:35:21.508440 64664 log.go:398] Failed to poll FetchAvailableModels: failed to get load code assist response: error getting token source: You are not logged into Antigravity.
+W0720 20:35:21.542146 64664 log_context.go:117] Cache(availableModels): Singleflight refresh failed: failed to get load code assist response: error getting token source: You are not logged into Antigravity.
+E0720 20:35:21.543383 64664 log.go:398] Failed to poll FetchAvailableModels: failed to get load code assist response: error getting token source: You are not logged into Antigravity.
+I0720 20:35:21.569788 64664 printmode.go:108] Print mode: starting (promptLength=43735, model="gemini-3.1-pro-high", conversationID="")
+I0720 20:35:21.575961 64664 printmode.go:154] Print mode: enabling terminal sandbox for this session
+I0720 20:35:21.575985 64664 printmode.go:314] Print mode: not authenticated, trying silent auth
+I0720 20:35:22.490868 64664 http_helpers.go:228] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xb22ad9c09b4a9052
+I0720 20:35:22.492125 64664 model_resolver.go:73] Resolving model gemini-3.1-pro-high
+I0720 20:35:22.493230 64664 model_config_manager.go:272] Propagating selected model override to backend: label="Gemini 3.5 Flash (Medium)"
+I0720 20:35:22.696634 64664 printmode.go:316] Print mode: silent auth succeeded
+I0720 20:35:22.696697 64664 model_resolver.go:73] Resolving model gemini-3.1-pro-high
+I0720 20:35:22.768190 64664 printmode.go:216] Print mode: conversation=a00798e7-815b-4483-a630-f1edddc04eda, sending message
+I0720 20:35:23.745361 64664 model_resolver.go:73] Resolving model gemini-3.1-pro-high
+I0720 20:35:23.745419 64664 model_config_manager.go:272] Propagating selected model override to backend: label="Gemini 3.5 Flash (Medium)"
+I0720 20:35:23.745496 64664 model_resolver.go:73] Resolving model gemini-3.1-pro-high
+I0720 20:35:23.745527 64664 model_config_manager.go:272] Propagating selected model override to backend: label="Gemini 3.5 Flash (Medium)"
+I0720 20:35:24.023139 64664 model_resolver.go:73] Resolving model gemini-3.1-pro-high
+I0720 20:35:24.023166 64664 model_config_manager.go:272] Propagating selected model override to backend: label="Gemini 3.5 Flash (Medium)"

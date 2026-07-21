@@ -26,6 +26,21 @@ FIXTURES = ROOT / "tests" / "fixtures" / "auditor_router"
 CANONICAL_CLINK_PROMPT = "systemprompts/clink/default_codereviewer.txt"
 
 
+def _evidence_fields(**overrides):
+    data = {
+        "rationale": (
+            "Inspected audit surfaces for authority-boundary and tool restrictions; "
+            "no blocking issues found."
+        ),
+        "inspected_paths": ["tools/auditor_router/pal_clink.py"],
+        "evidence_refs": ["diff:tools/auditor_router/pal_clink.py"],
+        "validation_status": "NOT_RUN",
+    }
+    data.update(overrides)
+    return data
+
+
+
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -561,7 +576,13 @@ def test_normalize_pal_clink_pass() -> None:
     )
 
     audit = normalize_pal_clink_audit_output(
-        {"status": "success", "verdict": "PASS", "findings": [], "risks": []},
+        {
+            "status": "success",
+            "verdict": "PASS",
+            "findings": [],
+            "risks": [],
+            **_evidence_fields(),
+        },
         route=route,
         report_path="proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
     )
@@ -582,13 +603,14 @@ def test_normalize_pal_clink_pass_with_risks() -> None:
             "verdict": "PASS_WITH_RISKS",
             "findings": [],
             "risks": ["Host-side auth state not inspected by router."],
+            **_evidence_fields(),
         },
         route=route,
         report_path="proof/TP-DMX-AUDITOR-ROUTER-PAL-CLINK-002/AUDITOR_REPORT.md",
     )
 
     assert audit["status"] == "PASS_WITH_RISKS"
-    assert audit["remaining_risks"] == ["Host-side auth state not inspected by router."]
+    assert "Host-side auth state not inspected by router." in audit["remaining_risks"]
     assert audit["auditor_model"] == "gemini"
 
 

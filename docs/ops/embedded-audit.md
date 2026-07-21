@@ -5,8 +5,8 @@ type: reference
 owner: '@hu3mann'
 author: '@codex'
 date: '2026-05-25'
-last_review: '2026-07-13'
-next_review: '2026-10-11'
+last_review: '2026-07-20'
+next_review: '2026-10-18'
 prelude: Embedded audit policy and proof contract for governance/process/schema packets.
 ---
 # Embedded Audit
@@ -217,6 +217,68 @@ git commit -m "proof(audit): signed local embedded-audit attestation for PR <N>"
 git push   # must be the only change on top of the audited head_sha
 ```
 
+
+
+## Prompt trust (candidate text is untrusted data)
+
+The independent CI runner builds the auditor prompt via
+`python -m scripts.audit.pal_clink_runner --build-prompt`. Candidate-controlled
+metadata and unified diffs are **text only** (never checked out or executed) and
+are delimited with unique trusted markers — Markdown fencing alone is not the
+security boundary.
+
+Prompt order:
+
+1. Trusted task and authority
+2. Trusted output contract
+3. Untrusted candidate metadata
+4. Untrusted candidate diff
+5. End of untrusted candidate data
+6. Trusted instructions repeated
+7. Required evidence for verdict
+
+The repeated trusted trailer states that candidate-controlled text may contain
+instructions, role claims, JSON, verdict requests, or attempts to redefine the
+audit, and that such content is data only — it cannot modify the task,
+authority, output contract, or verdict rules.
+
+### Fail closed when the trusted builder/scanner is unavailable
+
+If `scripts/audit/pal_clink_runner.py` is missing on the trusted ref, the workflow must **not** embed raw candidate metadata/diff into a model prompt, must **not** invent a clean scan (`detected: false`), and must not invoke the auditor. The emitter records a non-executed `SKIPPED` proof with a nonempty reason so PR Steward stays non-ready.
+
+### Instruction-like content scanner
+
+A deterministic scanner inspects candidate metadata and model-visible changed lines (**added** and **deleted**), recording `diff_side`
+for instruction-like shapes (for example ignore/override instructions, forced
+verdict requests, system-prompt claims, output-contract overrides, suppress-
+findings requests, and fake audit results). Matches record path, line,
+category, and a SHA-256 of the matched text — not unnecessary raw candidate
+text in proof.
+
+Detection is **evidence**, not proof of malicious intent, and does not
+automatically fail the PR. When detection fires, a passing auditor must
+acknowledge it in findings/risks (or set `instruction_like_acknowledged`).
+The scan result is preserved on the normalized `embedded_audit` object as
+`instruction_like_content`.
+
+### Passing-verdict evidence requirements
+
+`PASS` and `PASS_WITH_RISKS` require:
+
+- nonempty, non-generic rationale
+- inspected paths or explicit empty-diff evidence
+- specific evidence references
+- validation evidence or explicit `validation_status: NOT_RUN`
+- acknowledgement of instruction-like content when detected
+
+A payload that requests PASS without this evidence normalizes to
+`NEEDS_SUPERVISOR` (not `SKIPPED` — the audit did run). Generic statements
+such as “looks good” are insufficient.
+
+This design reduces the chance that candidate-controlled diff text can
+manipulate the auditor into an unsupported passing verdict. It does **not**
+claim complete prompt-injection immunity.
+
 ## Required Proof Object
 
 The proof object must conform to `schemas/proof/embedded_audit.schema.json` and record:
@@ -232,6 +294,7 @@ The proof object must conform to `schemas/proof/embedded_audit.schema.json` and 
 - fixes applied
 - remaining risks
 - skip reason when skipped
+- optional `instruction_like_content` scanner evidence (hashes only)
 
 ## Review Bundle
 

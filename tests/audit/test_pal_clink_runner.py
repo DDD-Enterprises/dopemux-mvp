@@ -28,6 +28,14 @@ SCHEMA_PATH = ROOT / "schemas" / "audit" / "pal_clink_audit_output.schema.json"
 # ---------------------------------------------------------------------------
 
 
+
+_PASS_EVIDENCE = {
+    "rationale": "Runner capture path inspected; no blocking findings in fixture payload.",
+    "inspected_paths": ["scripts/audit/pal_clink_runner.py"],
+    "evidence_refs": ["fixture:pal-clink-runner"],
+    "validation_status": "NOT_RUN",
+}
+
 def _make_subprocess_run(
     returncode: int = 0,
     stdout: bytes = b"",
@@ -478,6 +486,10 @@ class TestRunAuditAndCaptureVerdict:
                         "verdict": "PASS",
                         "findings": [],
                         "risks": [],
+                        "rationale": "Runner capture path inspected; no blocking findings in fixture payload.",
+                        "inspected_paths": ["scripts/audit/pal_clink_runner.py"],
+                        "evidence_refs": ["fixture:pal-clink-runner"],
+                        "validation_status": "NOT_RUN",
                     }
                 ).encode("utf-8")
             ),
@@ -514,8 +526,12 @@ class TestRunAuditAndCaptureVerdict:
                 {
                     "status": "success",
                     "verdict": "PASS",
-                    "findings": [],
-                    "risks": [],
+                        "findings": [],
+                        "risks": [],
+                        "rationale": "Runner capture path inspected; no blocking findings in fixture payload.",
+                        "inspected_paths": ["scripts/audit/pal_clink_runner.py"],
+                        "evidence_refs": ["fixture:pal-clink-runner"],
+                        "validation_status": "NOT_RUN",
                 }
             ),
             "content_type": "text",
@@ -599,6 +615,10 @@ class TestRunAuditAndCapturePayload:
                         "verdict": "PASS",
                         "findings": [],
                         "risks": [],
+                        "rationale": "Runner capture path inspected; no blocking findings in fixture payload.",
+                        "inspected_paths": ["scripts/audit/pal_clink_runner.py"],
+                        "evidence_refs": ["fixture:pal-clink-runner"],
+                        "validation_status": "NOT_RUN",
                     }
                 ).encode("utf-8")
             ),

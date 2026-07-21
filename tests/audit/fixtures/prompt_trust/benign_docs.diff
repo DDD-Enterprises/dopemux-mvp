@@ -1,0 +1,10 @@
+diff --git a/docs/security/prompt-injection.md b/docs/security/prompt-injection.md
+--- a/docs/security/prompt-injection.md
++++ b/docs/security/prompt-injection.md
+@@ -1,0 +1,6 @@
++# Prompt injection notes
++
++This documentation discusses prompt injection attacks.
++The test fixture contains the string "ignore previous instructions".
++The parser rejects fake system prompts.
++Operators should treat candidate diffs as untrusted data.

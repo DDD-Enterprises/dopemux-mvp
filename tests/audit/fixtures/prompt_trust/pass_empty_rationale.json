@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "verdict": "PASS",
+  "findings": [],
+  "risks": [],
+  "rationale": "",
+  "inspected_paths": ["src/example.py"],
+  "evidence_refs": ["diff:src/example.py"],
+  "validation_status": "NOT_RUN"
+}

@@ -1,0 +1,42 @@
+{
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "pal-mcp-clink",
+    "exit_code": 1,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": "pal-clink --client claude-audit --role codereviewer --input PAL_CLINK_AUDIT_INPUT.md --output PAL_CLINK_AUDIT_OUTPUT.json",
+    "remaining_risks": [
+      "PAL clink ToolOutput status was error."
+    ],
+    "report_path": "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "NEEDS_SUPERVISOR"
+  },
+  "executed": true,
+  "generated_at": "2026-07-21T01:29:42Z",
+  "github_mutation_route_added": false,
+  "head_sha": "50c04b1559066163181d6f35a7c8ff53fd50d8b5",
+  "mutation_performed": false,
+  "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
+  "pr_number": 1082,
+  "provenance": {
+    "audit_source": "ci-executed",
+    "engine_authored_proof": false,
+    "engine_requested_only": true,
+    "permissions": {
+      "actions": "read",
+      "checks": "read",
+      "contents": "read",
+      "pull-requests": "read",
+      "statuses": "read"
+    },
+    "proof_author": "independent-embedded-audit",
+    "token_source": "EMBEDDED_AUDIT_TOKEN",
+    "token_value_recorded": false,
+    "trusted_token_status": "AVAILABLE",
+    "workflow": "embedded-audit.yml"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

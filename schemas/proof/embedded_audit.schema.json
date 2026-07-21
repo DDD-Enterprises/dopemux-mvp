@@ -91,6 +91,85 @@
         "string",
         "null"
       ]
+    },
+    "instruction_like_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "detected",
+        "match_count",
+        "truncated",
+        "matches"
+      ],
+      "properties": {
+        "detected": {
+          "type": "boolean"
+        },
+        "match_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "matches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "category",
+              "text_sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "line": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "category": {
+                "type": "string",
+                "enum": [
+                  "IGNORE_OR_OVERRIDE_INSTRUCTION",
+                  "FORCED_VERDICT_REQUEST",
+                  "ROLE_OR_SYSTEM_PROMPT_CLAIM",
+                  "OUTPUT_CONTRACT_OVERRIDE",
+                  "SUPPRESS_FINDINGS_REQUEST",
+                  "FAKE_AUDIT_RESULT"
+                ]
+              },
+              "text_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "diff_side": {
+                "description": "Which model-visible candidate coordinate produced the match.",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "ADDED",
+                      "DELETED",
+                      "METADATA"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "description": "Deterministic scanner evidence for instruction-like candidate content. Matches store hashes only (no raw candidate text). Detection is evidence, not automatic failure."
     }
   },
   "allOf": [

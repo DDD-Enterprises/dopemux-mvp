@@ -1,0 +1,31 @@
+{
+  "adversarial": [
+    "tests/audit/fixtures/prompt_trust/adversarial_candidate.diff",
+    "tests/audit/fixtures/prompt_trust/adversarial_metadata.txt"
+  ],
+  "benign": [
+    "tests/audit/fixtures/prompt_trust/benign_docs.diff",
+    "tests/audit/fixtures/prompt_trust/benign_metadata.txt"
+  ],
+  "payloads": [
+    "pass_with_evidence.json",
+    "pass_with_risks_evidence.json",
+    "pass_empty_rationale.json",
+    "pass_no_evidence_refs.json"
+  ],
+  "scanner_categories": [
+    "IGNORE_OR_OVERRIDE_INSTRUCTION",
+    "FORCED_VERDICT_REQUEST",
+    "ROLE_OR_SYSTEM_PROMPT_CLAIM",
+    "OUTPUT_CONTRACT_OVERRIDE",
+    "SUPPRESS_FINDINGS_REQUEST",
+    "FAKE_AUDIT_RESULT"
+  ],
+  "pass_evidence_contract": [
+    "nonempty non-generic rationale",
+    "inspected_paths or empty_diff evidence",
+    "evidence_refs",
+    "validation_status or validation evidence (NOT_RUN allowed)",
+    "instruction_like acknowledgement when detected"
+  ]
+}
