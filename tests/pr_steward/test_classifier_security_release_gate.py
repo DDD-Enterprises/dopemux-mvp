@@ -54,18 +54,20 @@ def _base_harvest(changed_files=None, security_release_approval=None) -> dict:
 
 
 @pytest.fixture(autouse=True, scope="module")
-def _fixture_dir():
-    TRUSTED_FIXTURE.parent.mkdir(parents=True, exist_ok=True)
+def _fixture_dir(tmp_path_factory):
+    global TRUSTED_FIXTURE
+    TRUSTED_FIXTURE = (
+        tmp_path_factory.mktemp("pr_steward") / "known_reviewers_with_approver.json"
+    )
     TRUSTED_FIXTURE.write_text(
         """{
-  "known_reviewers": ["hu3mann"],
-  "trusted_author_associations": ["OWNER"],
-  "trusted_security_release_approvers": ["trusted-approver"]
+  \"known_reviewers\": [\"hu3mann\"],
+  \"trusted_author_associations\": [\"OWNER\"],
+  \"trusted_security_release_approvers\": [\"trusted-approver\"]
 }"""
     )
     yield
     TRUSTED_FIXTURE.unlink(missing_ok=True)
-
 
 def _artifacts(harvest: dict, known_reviewers_path=KNOWN_REVIEWERS_PATH) -> dict:
     return build_artifacts(
