@@ -1,0 +1,7 @@
+{
+  "content": "Credit balance is too low\n",
+  "risks": [
+    "PAL clink exited non-zero."
+  ],
+  "status": "error"
+}

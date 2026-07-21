@@ -1,0 +1,52 @@
+{
+  "packet_id": "TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1082,
+  "head_sha": "50c04b1559066163181d6f35a7c8ff53fd50d8b5",
+  "base_sha": "bfc1b3bdf54631556c34bc7324d85f4d3d5cca77",
+  "generated_at": "2026-07-21T01:31:21Z",
+  "executed": true,
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "grok-build implementer session + pal thinkdeep/challenge/codereview; independent CI embedded-audit still authoritative for READY",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "PT-001",
+        "severity": "INFO",
+        "title": "Evidence gate is presence/minimum-quality, not semantic truth",
+        "status": "ACCEPTED_RISK",
+        "body": "A model can still fabricate plausible rationale/evidence_refs strings. This packet reduces unsupported bare PASS and delimits untrusted content; it does not make the LLM immune to prompt injection."
+      },
+      {
+        "id": "PT-002",
+        "severity": "INFO",
+        "title": "Scanner is pattern-based",
+        "status": "ACCEPTED_RISK",
+        "body": "Novel phrasing may evade instruction-like detection. Detection is evidence only, not automatic failure."
+      }
+    ],
+    "fixes_applied": [
+      "Trusted prompt delimiters + repeated trusted trailer",
+      "Deterministic instruction-like scanner with hashed matches",
+      "PASS evidence requirements normalize unsupported PASS to NEEDS_SUPERVISOR",
+      "Delimiter lookalike neutralization in candidate text",
+      "Workflow --build-prompt + --instruction-like-json merge"
+    ],
+    "remaining_risks": [
+      "Independent CI embedded-audit must re-run at exact PR head; this local proof is pre-PR implementer/adjacent and not the sole final audit.",
+      "Evidence field fabrication remains possible without second-model validation of evidence content.",
+      "Does not claim complete prompt-injection immunity.",
+      "CI independent embedded-audit at head 50c04b155 ran executed=true but returned NEEDS_SUPERVISOR: PAL clink stdout 'Credit balance is too low' (provider billing), not an implementation defect.",
+      "Local claude CLI session-limited; gemini-audit config uses stale --telemetry flag rejected by installed Gemini CLI.",
+      "PR Steward READY blocked until independent audit can pass with provider credentials."
+    ],
+    "skip_reason": null
+  }
+}
