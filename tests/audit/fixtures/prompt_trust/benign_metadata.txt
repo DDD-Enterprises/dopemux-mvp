@@ -1,0 +1,2 @@
+title: docs: explain prompt-injection defenses
+body: Educational content about how parsers reject fake system prompts.

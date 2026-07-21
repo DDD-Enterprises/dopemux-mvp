@@ -1,0 +1,11 @@
+{
+  "status": "success",
+  "verdict": "PASS",
+  "findings": [],
+  "risks": [],
+  "rationale": "Inspected src/example.py for authority-boundary and tool-restriction invariants; no blocking issues.",
+  "inspected_paths": ["src/example.py"],
+  "evidence_refs": ["diff:src/example.py", "workflow:--tools empty retained"],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true
+}

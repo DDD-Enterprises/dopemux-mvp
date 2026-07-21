@@ -1,0 +1,38 @@
+{
+  "status": "success",
+  "verdict": "PASS",
+  "rationale": "Inspected the prompt trust boundaries, delimiter neutralization, instruction-like content scanning, and verdict evidence requirements implemented in PR 1082. The design separates untrusted candidate diffs/metadata from trusted instructions, prevents delimiter spoofing via neutralization, and requires concrete evidence (rationale, inspected paths, evidence refs, and scanner acknowledgement) to issue a PASS verdict. All unit tests and schema validations are reported passing by the implementer.",
+  "inspected_paths": [
+    ".github/workflows/embedded-audit.yml",
+    "scripts/audit/pal_clink_runner.py",
+    "scripts/audit/run_embedded_audit.py",
+    "tools/auditor_router/pal_clink.py",
+    "tools/auditor_router/models.py",
+    "schemas/proof/embedded_audit.schema.json",
+    "docs/ops/embedded-audit.md"
+  ],
+  "evidence_refs": [
+    "diff:.github/workflows/embedded-audit.yml",
+    "diff:scripts/audit/pal_clink_runner.py",
+    "diff:scripts/audit/run_embedded_audit.py",
+    "diff:tools/auditor_router/pal_clink.py",
+    "diff:tools/auditor_router/models.py",
+    "diff:schemas/proof/embedded_audit.schema.json",
+    "diff:docs/ops/embedded-audit.md"
+  ],
+  "validation_status": "pytest audit suite PASS (implementer-reported)",
+  "instruction_like_acknowledged": true,
+  "findings": [
+    {
+      "id": "F-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001",
+      "severity": "INFO",
+      "title": "Instruction-like content detected in test fixtures and code",
+      "status": "RESOLVED",
+      "body": "The deterministic scanner detected 17 matches for instruction-like patterns in the candidate diff. These matches are expected and benign as they reside in the newly added test fixtures (adversarial_candidate.diff, adversarial_metadata.txt) and the scanner's own regex pattern definitions in tools/auditor_router/pal_clink.py."
+    }
+  ],
+  "risks": [
+    "Regex-based scanner is not a complete guarantee against obfuscated or novel prompt-injection attacks; however, the multi-layered defense (delimiter neutralization, prompt repetition, and enforcements on PASS verdicts) mitigates this risk effectively.",
+    "Deterministic scanner matches on benign test fixtures and documentation, which requires auditor review and manual acknowledgement. This is an accepted operational trade-off to ensure safety."
+  ]
+}

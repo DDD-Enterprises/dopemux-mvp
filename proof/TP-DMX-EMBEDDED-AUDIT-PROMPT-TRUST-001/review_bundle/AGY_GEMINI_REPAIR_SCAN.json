@@ -1,0 +1,140 @@
+{
+  "detected": true,
+  "match_count": 19,
+  "matches": [
+    {
+      "category": "FAKE_AUDIT_RESULT",
+      "diff_side": "ADDED",
+      "line": 254,
+      "path": "docs/ops/embedded-audit.md",
+      "text_sha256": "47c4c8b1651603677d216a5c39da4fd69129b883165b7a04901ab564f3cbd3b1"
+    },
+    {
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "diff_side": "ADDED",
+      "line": 688,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "d356363f7363ec0a99298d4e6a558187602f9c26d6c770fc4d7534c5e79953c4"
+    },
+    {
+      "category": "FAKE_AUDIT_RESULT",
+      "diff_side": "ADDED",
+      "line": 689,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "eb42fb4e040a45e907962c041e54db195a885b425d7d37782eeca1b0b843c9de"
+    },
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "diff_side": "ADDED",
+      "line": 689,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "eb42fb4e040a45e907962c041e54db195a885b425d7d37782eeca1b0b843c9de"
+    },
+    {
+      "category": "OUTPUT_CONTRACT_OVERRIDE",
+      "diff_side": "ADDED",
+      "line": 689,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "eb42fb4e040a45e907962c041e54db195a885b425d7d37782eeca1b0b843c9de"
+    },
+    {
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "diff_side": "ADDED",
+      "line": 767,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "01500861be017b7c29c163a68573d912af375c8be53a675bfda21746c39582da"
+    },
+    {
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "diff_side": "ADDED",
+      "line": 778,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "ae2c900d0970c441aea21b2ace8cc9a168dbfc5b32929477ba5c4f616decf5ea"
+    },
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "diff_side": "ADDED",
+      "line": 1037,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "efb827e36be5ba48afd9142d8fef7ac6d378cbc4bdd8755b144d4dc1db173f91"
+    },
+    {
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "diff_side": "ADDED",
+      "line": 1037,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "efb827e36be5ba48afd9142d8fef7ac6d378cbc4bdd8755b144d4dc1db173f91"
+    },
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "diff_side": "ADDED",
+      "line": 1043,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "c46a3ebe8ec8db561c88bdc3bc71a1cfa96f99e966205de680d33b7b2f77760f"
+    },
+    {
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "diff_side": "ADDED",
+      "line": 1043,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "c46a3ebe8ec8db561c88bdc3bc71a1cfa96f99e966205de680d33b7b2f77760f"
+    },
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "diff_side": "ADDED",
+      "line": 1086,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "882284e9caa950ba0dda446871b0cc75eb2b5698802dc4b7f96df1066f97b5df"
+    },
+    {
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "diff_side": "ADDED",
+      "line": 1086,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "882284e9caa950ba0dda446871b0cc75eb2b5698802dc4b7f96df1066f97b5df"
+    },
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "diff_side": "ADDED",
+      "line": 1102,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "cfd4d2fa85c5a9a142d5455d206d072a675f920ff803b5bed28aaf3493ed405c"
+    },
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "diff_side": "ADDED",
+      "line": 1139,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "882284e9caa950ba0dda446871b0cc75eb2b5698802dc4b7f96df1066f97b5df"
+    },
+    {
+      "category": "IGNORE_OR_OVERRIDE_INSTRUCTION",
+      "diff_side": "ADDED",
+      "line": 1139,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "882284e9caa950ba0dda446871b0cc75eb2b5698802dc4b7f96df1066f97b5df"
+    },
+    {
+      "category": "FAKE_AUDIT_RESULT",
+      "diff_side": "ADDED",
+      "line": 1140,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "7f471c8007228cf6030bea89c5f14fcfdabea5533058d71737eec364d363a4ed"
+    },
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "diff_side": "ADDED",
+      "line": 1140,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "7f471c8007228cf6030bea89c5f14fcfdabea5533058d71737eec364d363a4ed"
+    },
+    {
+      "category": "OUTPUT_CONTRACT_OVERRIDE",
+      "diff_side": "ADDED",
+      "line": 1140,
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "text_sha256": "7f471c8007228cf6030bea89c5f14fcfdabea5533058d71737eec364d363a4ed"
+    }
+  ],
+  "truncated": false
+}

@@ -118,3 +118,14 @@ def _auth_status_for_route(route: dict[str, Any]) -> str:
     if route.get("status") == "AUTH_REQUIRED":
         return "AUTH_REQUIRED"
     return "NOT_CHECKED"
+
+
+# Prompt-trust scanner categories (mirrored in tools.auditor_router.pal_clink).
+INSTRUCTION_LIKE_CATEGORIES = (
+    "IGNORE_OR_OVERRIDE_INSTRUCTION",
+    "FORCED_VERDICT_REQUEST",
+    "ROLE_OR_SYSTEM_PROMPT_CLAIM",
+    "OUTPUT_CONTRACT_OVERRIDE",
+    "SUPPRESS_FINDINGS_REQUEST",
+    "FAKE_AUDIT_RESULT",
+)

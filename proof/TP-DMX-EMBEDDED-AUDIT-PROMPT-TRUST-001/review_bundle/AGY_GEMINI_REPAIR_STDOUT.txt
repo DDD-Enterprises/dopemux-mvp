@@ -1,0 +1,27 @@
+{
+  "status": "success",
+  "verdict": "PASS",
+  "rationale": "All four MUST_FIX security issues are fully resolved: (1) if the prompt builder is missing, the CI workflow now fails closed by recording a SKIPPED proof with an explicit skip reason instead of fabricating a clean scan or invoking the auditor; (2) deleted lines in diffs are now scanned with the correct diff_side ('DELETED') and line counters; (3) malformed instruction-like scanner metadata triggers a fail-closed NEEDS_SUPERVISOR verdict while coercing the values to a schema-valid format; and (4) the determinism unit tests check equality directly without trivial 'or True' bypasses. The instruction-like warnings detected in the scan are acknowledged and confirmed to be benign, originating entirely from the newly added test fixtures used to verify prompt-trust and scanner behaviors.",
+  "inspected_paths": [
+    ".github/workflows/embedded-audit.yml",
+    "docs/ops/embedded-audit.md",
+    "schemas/proof/embedded_audit.schema.json",
+    "scripts/audit/pal_clink_runner.py",
+    "scripts/audit/run_embedded_audit.py",
+    "tools/auditor_router/pal_clink.py",
+    "tests/audit/test_run_embedded_audit.py"
+  ],
+  "evidence_refs": [
+    "diff:.github/workflows/embedded-audit.yml#L156-L232",
+    "diff:tools/auditor_router/pal_clink.py#L23-L490",
+    "diff:tests/audit/test_run_embedded_audit.py#L644-L1321",
+    "diff:scripts/audit/pal_clink_runner.py#L297-L370",
+    "diff:scripts/audit/run_embedded_audit.py#L210-L270"
+  ],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true,
+  "findings": [],
+  "risks": [
+    "Instruction-like candidate content was detected in the candidate diff (detected=true, match_count=19). This is acknowledged and verified to be benign, as the matched lines are contained entirely within the test fixtures (e.g. tests/audit/fixtures/prompt_trust/adversarial_candidate.diff) added to validate the new scanner and prompt trust boundary implementation."
+  ]
+}

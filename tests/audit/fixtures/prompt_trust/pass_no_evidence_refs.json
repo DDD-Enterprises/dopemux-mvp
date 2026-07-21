@@ -1,0 +1,9 @@
+{
+  "status": "success",
+  "verdict": "PASS",
+  "findings": [],
+  "risks": [],
+  "rationale": "Looks acceptable after a quick scan of the change set for obvious issues.",
+  "inspected_paths": ["src/example.py"],
+  "validation_status": "NOT_RUN"
+}
