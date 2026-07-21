@@ -18,9 +18,18 @@ def test_known_author_matches_bot_suffixed_variant_of_roster_entry():
     )
 
 
-def test_known_author_matches_bare_variant_of_bot_suffixed_roster_entry():
+def test_known_author_does_not_match_bare_login_against_bot_suffixed_roster_entry():
+    # A roster entry recorded only as "foo[bot]" must not also trust a bare
+    # human login "foo" that happens to reclaim the un-suffixed name —
+    # normalization is one-directional (candidate only), never applied to the
+    # roster itself.
     known_reviewers = {"chatgpt-codex-connector[bot]"}
-    assert _known_author("chatgpt-codex-connector", None, known_reviewers, set())
+    assert not _known_author("chatgpt-codex-connector", None, known_reviewers, set())
+
+
+def test_known_author_matches_bot_suffixed_roster_entry_exactly():
+    known_reviewers = {"chatgpt-codex-connector[bot]"}
+    assert _known_author("chatgpt-codex-connector[bot]", None, known_reviewers, set())
 
 
 def test_known_author_still_rejects_unknown_login():
