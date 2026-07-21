@@ -1,0 +1,93 @@
+{
+  "id": "TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001",
+  "status": "DRAFT_NOT_LOADED",
+  "project": "dopemux-mvp",
+  "target": "ADR + narrowly-scoped exemption from DCP-RED-MERGE-SEAM-0001 for exactly two workflow files (.github/workflows/pr-steward.yml, .github/workflows/embedded-audit.yml), so their already-reviewed, already-tested inline-Python-to-module extractions (TP-DMX-AUDIT-STEWARD-CONTRACT-HYGIENE-001 Slices 2/3) can be wired in.",
+  "background": [
+    "src/dopemux/dcp/red_lane_rules.py FORBIDDEN_PATHS contains the pattern ^\\.github/workflows/.*$, hard-blocking Edit/Write/NotebookEdit on every workflow file (enforced by .claude/hooks/dcp_surface_guard.py, PreToolUse).",
+    "This is broader than the seam's own stated purpose in docs/03-reference/dcp/README.md, which describes DCP-RED-MERGE-SEAM-0001 as forbidding import/call/wrap/wire of src/dopemux_pr_merge_specialist/queue_drain.py (execute=True) and scripts/batch_resolve_and_merge.py — not a blanket ban on editing CI workflow YAML.",
+    "TP-DMX-AUDIT-STEWARD-CONTRACT-HYGIENE-001 Slice 2 (tools/pr_steward/workflow_run_identity.py, extracted + unit-tested at commit 94f368b8c on branch worktree-pr-steward-security-approval-parity, then reverted at 123f1b8b8 per this hard block) and Slice 3 (test-only diagnostic-proof parity coverage in tests/audit/test_run_embedded_audit.py, landed without a workflow edit) are both blocked or working around the gap this packet is meant to close cleanly."
+  ],
+  "invariants": [
+    "Scope is exactly two paths: .github/workflows/pr-steward.yml and .github/workflows/embedded-audit.yml. No other .github/workflows/* file is exempted.",
+    "The exemption must be additive and narrow (e.g. a new ALLOWED_WORKFLOW_EDITS allowlist checked before the existing forbidden-path match, or two explicit negative-lookahead carve-outs in the pattern) — it must NOT remove or weaken the ^\\.github/workflows/.*$ rule for any other workflow file.",
+    "DCP-RED-MERGE-SEAM-0001's actual merge-seam prohibition (queue_drain.py execute=True, batch_resolve_and_merge.py) is untouched by this packet.",
+    "No permission expansion: this packet does not add, broaden, or request new GitHub Actions permissions blocks in either workflow.",
+    "No merge automation: this packet does not introduce or enable any automatic PR merge, auto-approval, or merge-queue trigger in either workflow.",
+    "No release automation: this packet does not introduce or enable any release/publish/tag/deploy step in either workflow.",
+    "No broad weakening of DCP-RED-MERGE-SEAM-0001: the sync test asserting _FALLBACK_FORBIDDEN ⊆ red_lane_rules.FORBIDDEN_PATHS (mentioned in .claude/hooks/dcp_surface_guard.py) must still pass, and the merge-seam TEXT_RULES (queue_drain / batch_resolve_and_merge / gh pr merge / gh api / gh pr review / gh pr comment / gh pr edit pattern scan) remain fully enforced against both workflow files' content.",
+    "An ADR documenting the narrowed exemption's rationale, scope, and expiry/review condition (if any) is required before red_lane_rules.py is touched — this packet authors that ADR as its first step, not as an afterthought.",
+    "auditor != implementer for this packet, consistent with the repo's standing PAL-chain / role-separation doctrine."
+  ],
+  "depends_on": [],
+  "authorizes_edits_to": [
+    ".github/workflows/pr-steward.yml",
+    ".github/workflows/embedded-audit.yml"
+  ],
+  "does_not_authorize": [
+    "Any other .github/workflows/*.yml file",
+    "Changes to src/dopemux_pr_merge_specialist/queue_drain.py or scripts/batch_resolve_and_merge.py",
+    "New or broadened GITHUB_TOKEN / secrets permissions in either workflow",
+    "Any merge-automation or release-automation step",
+    "Removal of the ^\\.github/workflows/.*$ rule itself (only a scoped carve-out is authorized)"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-WORKFLOW-SEAM-LIFT",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Author docs/03-reference/dcp/artifacts/ADR-DCP-WORKFLOW-SEAM-LIFT-001.md: rationale (the two named workflows already went through reviewed, tested Python-module extraction and only need the YAML call-site swap), exact scope (the two paths above, nothing else), and what remains prohibited (see does_not_authorize).",
+      "expected_files": [
+        "docs/03-reference/dcp/artifacts/ADR-DCP-WORKFLOW-SEAM-LIFT-001.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add a narrow, additive carve-out to src/dopemux/dcp/red_lane_rules.py (and its fallback list in .claude/hooks/dcp_surface_guard.py if the sync invariant requires it) that exempts only .github/workflows/pr-steward.yml and .github/workflows/embedded-audit.yml from the blanket workflow-edit block, while leaving TEXT_RULES scanning of those two files' content fully active.",
+      "expected_files": [
+        "src/dopemux/dcp/red_lane_rules.py"
+      ],
+      "validation": [
+        "PreToolUse Edit on .github/workflows/pr-steward.yml no longer hard-blocks",
+        "PreToolUse Edit on .github/workflows/embedded-audit.yml no longer hard-blocks",
+        "PreToolUse Edit on any other .github/workflows/*.yml file still hard-blocks",
+        "existing red-lane / surface-guard test suite (tests/dcp/**) still passes"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Cherry-pick or re-derive commit 94f368b8c (tools/pr_steward/workflow_run_identity.py + tests) from worktree-pr-steward-security-approval-parity, then wire .github/workflows/pr-steward.yml's 'Validate audit workflow-run identity' step to call validate_run_identity() instead of its inline heredoc, preserving every branch/error string exactly.",
+      "validation": [
+        "python -m pytest -q tests/pr_steward/test_workflow_run_identity.py passes",
+        "workflow diff shows only the identity-check heredoc replaced by an import + function call; no other step changed"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Optionally extract embedded-audit.yml's three inline SKIPPED diagnostic-proof constructions into a shared script (scripts/audit/diagnostic_proof.py or similar) callable from the workflow, using the already-landed parity tests in tests/audit/test_run_embedded_audit.py::TestDiagnosticProofShapeParity as the behavioral contract to preserve.",
+      "validation": [
+        "python -m pytest -q tests/audit/test_run_embedded_audit.py passes",
+        "the three inline heredocs are replaced by calls into the shared script with identical emitted PROOF.json shape"
+      ]
+    }
+  ],
+  "pal_chain": {
+    "steps": [
+      "analyze",
+      "planner",
+      "implement",
+      "codereview(auditor!=implementer)",
+      "precommit"
+    ]
+  }
+}
