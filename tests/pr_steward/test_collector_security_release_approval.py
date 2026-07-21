@@ -288,10 +288,14 @@ def test_changed_files_non_string_path_with_rest_reconciliation(monkeypatch):
 
 
 def test_changed_files_non_string_dict_path_does_not_crash_sorted(monkeypatch):
-    """Verify that a dict path value doesn't crash sorted() during reconciliation."""
+    """Verify that a dict path value doesn't crash sorted() during reconciliation.
+
+    Simulate a GraphQL response where one path is a dict (unhashable).
+    This would crash sorted() if not properly filtered by the isinstance(path, str) guard.
+    """
     def fake_run(args):
         # Simulate a GraphQL response where one path is a dict (unhashable)
-        # This would crash sorted() if not properly filtered
+        # The dict-valued path should be filtered out, not crash the reconciliation
         response = json.dumps(
             {
                 "data": {
@@ -304,6 +308,7 @@ def test_changed_files_non_string_dict_path_does_not_crash_sorted(monkeypatch):
                                 },
                                 "nodes": [
                                     {"path": "file1.py"},
+                                    {"path": {"nested": "dict"}},  # Non-string dict path
                                     {"path": "file2.py"},
                                 ],
                             }
@@ -315,11 +320,15 @@ def test_changed_files_non_string_dict_path_does_not_crash_sorted(monkeypatch):
         return subprocess.CompletedProcess(args, 0, response, "")
 
     monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
-    rest_paths_with_extra = ["file1.py", "file2.py", "file3.py"]
+    # Provide rest_paths that match only the valid string paths
+    rest_paths = ["file1.py", "file2.py"]
     paths, errors = _fetch_changed_files_with_pagination_check(
-        repo="owner/repo", pr_number=1, rest_paths=rest_paths_with_extra
+        repo="owner/repo", pr_number=1, rest_paths=rest_paths
     )
-    # The reconciliation should run without TypeError
-    assert len(errors) == 1
-    assert "changed_files harvest content mismatch" in errors[0]
-    assert "file3.py" in errors[0]
+    # Should not raise TypeError when trying to add dict to set or sort
+    # Dict-valued path should be filtered out, and reconciliation should succeed
+    assert errors == []
+    assert set(paths) == {"file1.py", "file2.py"}
+    assert len(paths) == 2
+    # Verify the dict path is NOT in the result
+    assert all(isinstance(p, str) for p in paths)
