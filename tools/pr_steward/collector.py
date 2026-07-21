@@ -303,9 +303,9 @@ def _fetch_changed_files_with_pagination_check(
     truncated file list could hide a security-sensitive path (e.g. a workflow
     file) from `classify_security_release_paths`, causing the gate to be
     incorrectly marked not-required. This GraphQL query with an explicit
-    `pageInfo.hasNextPage` check is the completeness signal for that list;
-    the REST list itself remains the source of truth for `changed_files`
-    content.
+    `pageInfo.hasNextPage` check is the completeness signal for that list; the
+    REST list remains the source of truth for `changed_files` in the harvested
+    payload, while this function returns the GraphQL path list only for verification/reconciliation.
 
     When `rest_paths` is provided, this also reconciles the REST path set
     against the GraphQL path set. `hasNextPage` catches pagination overflow
