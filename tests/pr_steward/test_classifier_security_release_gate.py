@@ -215,3 +215,67 @@ def test_empty_approver_roster_fails_closed_even_with_approval():
 def test_readiness_maps_security_release_blockers_to_needs_supervisor():
     readiness = _artifacts(_base_harvest(changed_files=["CODEOWNERS"]))
     assert readiness["readiness"] == "NEEDS_SUPERVISOR"
+
+
+def _renamed_harvest(previous_path: str, new_path: str) -> dict:
+    harvest = _base_harvest()
+    harvest["changed_files"] = [
+        {
+            "path": new_path,
+            "previous_path": previous_path,
+            "status": "renamed",
+            "additions": 0,
+            "deletions": 0,
+        }
+    ]
+    return harvest
+
+
+def test_rename_out_of_protected_workflow_path_still_requires_approval():
+    readiness = _artifacts(
+        _renamed_harvest(".github/workflows/deploy.yml", "docs/deploy.yml")
+    )
+    assert readiness["security_release"]["required"] is True
+    assert "ci_workflow" in readiness["security_release"]["categories"]
+
+
+def test_rename_of_codeowners_to_backup_still_requires_approval():
+    readiness = _artifacts(_renamed_harvest("CODEOWNERS", "CODEOWNERS.bak"))
+    assert readiness["security_release"]["required"] is True
+    assert "codeowners" in readiness["security_release"]["categories"]
+
+
+def test_rename_out_of_pr_steward_trust_root_still_requires_approval():
+    readiness = _artifacts(
+        _renamed_harvest(
+            "tools/pr_steward/known_reviewers.json",
+            "tools/pr_steward_bak/known_reviewers.json",
+        )
+    )
+    assert readiness["security_release"]["required"] is True
+    assert "pr_steward_trust_root" in readiness["security_release"]["categories"]
+
+
+def test_rename_into_protected_path_requires_approval():
+    readiness = _artifacts(
+        _renamed_harvest("src/deploy.yml", ".github/workflows/deploy.yml")
+    )
+    assert readiness["security_release"]["required"] is True
+    assert "ci_workflow" in readiness["security_release"]["categories"]
+
+
+def test_rename_between_two_protected_paths_requires_approval():
+    readiness = _artifacts(
+        _renamed_harvest(
+            "tools/pr_steward/classifier.py", "tools/pr_steward/classifier_v2.py"
+        )
+    )
+    assert readiness["security_release"]["required"] is True
+    assert "pr_steward_trust_root" in readiness["security_release"]["categories"]
+
+
+def test_ordinary_unprotected_rename_does_not_require_approval():
+    readiness = _artifacts(
+        _renamed_harvest("src/example/old_name.py", "src/example/new_name.py")
+    )
+    assert readiness["security_release"]["required"] is False

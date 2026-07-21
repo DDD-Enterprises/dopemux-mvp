@@ -103,12 +103,11 @@ def collect_from_github(
     errors.extend(thread_errors)
     reviews_raw, review_errors = _fetch_reviews_with_commit(repo=repo, pr_number=pr_number)
     errors.extend(review_errors)
-    rest_files = pr_payload.get("files") or []
-    rest_changed_file_paths = [
-        f.get("path")
-        for f in rest_files
-        if isinstance(f, dict) and isinstance(f.get("path"), str)
-    ]
+    changed_files, changed_files_rest_errors = _fetch_changed_files_rest(
+        repo=repo, pr_number=pr_number
+    )
+    errors.extend(changed_files_rest_errors)
+    rest_changed_file_paths = [item["path"] for item in changed_files]
     _changed_files_check, changed_files_errors = _fetch_changed_files_with_pagination_check(
         repo=repo, pr_number=pr_number, rest_paths=rest_changed_file_paths
     )
@@ -122,6 +121,7 @@ def collect_from_github(
         harvest_errors=errors,
         proof_state=proof_state,
         security_release_approval=security_release_approval,
+        changed_files=changed_files,
     )
 
 
@@ -132,6 +132,7 @@ def normalize_gh_payload(
     harvest_errors: list[str],
     proof_state: dict[str, Any] | None = None,
     security_release_approval: dict[str, Any] | None = None,
+    changed_files: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     review_comments = []
     for thread in review_threads:
@@ -142,7 +143,7 @@ def normalize_gh_payload(
         "harvest_complete": not harvest_errors,
         "harvest_errors": harvest_errors,
         "pr": pr_payload,
-        "changed_files": pr_payload.get("files") or [],
+        "changed_files": changed_files if changed_files is not None else (pr_payload.get("files") or []),
         "commits": pr_payload.get("commits") or [],
         "reviews": pr_payload.get("reviews") or [],
         "review_comments": review_comments,
@@ -291,6 +292,78 @@ def _fetch_reviews_with_commit(
     if page.get("pageInfo", {}).get("hasNextPage"):
         errors.append("reviews harvest exceeded first 100 reviews")
     return page.get("nodes") or [], errors
+
+
+def _fetch_changed_files_rest(
+    *, repo: str, pr_number: int
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Canonical changed-file source: paginated REST pull-files endpoint.
+
+    Unlike ``gh pr view --json files`` (path/additions/deletions only), the
+    REST ``pulls/{n}/files`` endpoint reports ``status`` and, for renamed
+    entries, ``previous_filename`` — the only way to know a protected path
+    (a workflow, CODEOWNERS, or this gate's own tools/pr_steward/** trust
+    root) was renamed OUT from under the classifier rather than edited in
+    place. ``--paginate`` follows Link headers itself, so there is no
+    separate hasNextPage check on this source the way there is for GraphQL.
+    """
+    owner, name = repo.split("/", 1)
+    result = _run(
+        [
+            "gh",
+            "api",
+            f"repos/{owner}/{name}/pulls/{pr_number}/files",
+            "--paginate",
+            "-q",
+            ".",
+        ]
+    )
+    if result.returncode != 0:
+        return [], [f"gh api pulls/files failed: {result.stderr.strip()}"]
+    items: list[dict[str, Any]] = []
+    errors: list[str] = []
+    try:
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            page = json.loads(line)
+            if not isinstance(page, list):
+                errors.append("gh api pulls/files returned a non-list page")
+                continue
+            items.extend(page)
+    except json.JSONDecodeError as exc:
+        return [], [f"gh api pulls/files returned invalid JSON: {exc}"]
+
+    changed_files: list[dict[str, Any]] = []
+    for index, item in enumerate(items):
+        if not isinstance(item, dict):
+            errors.append(f"pulls/files entry at index {index} is not a mapping")
+            continue
+        path = item.get("filename")
+        if not isinstance(path, str) or not path:
+            errors.append(f"pulls/files entry at index {index} has no filename")
+            continue
+        status = item.get("status")
+        previous_path = item.get("previous_filename")
+        if status == "renamed" and (
+            not isinstance(previous_path, str) or not previous_path
+        ):
+            errors.append(
+                f"pulls/files entry {path!r} is renamed but previous_filename is "
+                "missing or malformed"
+            )
+            continue
+        changed_files.append(
+            {
+                "path": path,
+                "additions": int(item.get("additions") or 0),
+                "deletions": int(item.get("deletions") or 0),
+                "status": status,
+                "previous_path": previous_path if status == "renamed" else None,
+            }
+        )
+    return changed_files, errors
 
 
 def _fetch_changed_files_with_pagination_check(
