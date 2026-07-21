@@ -14,6 +14,7 @@ from scripts.audit.run_embedded_audit import (
     independent_audit_errors,
     run_cli,
 )
+from scripts.audit.run_embedded_audit import _skipped_audit
 from tools.pr_steward.collector import _independent_audit_errors
 
 
@@ -1314,3 +1315,196 @@ def test_force_skip_reason_is_non_executed_skipped(tmp_path: Path) -> None:
     )
     assert proof["embedded_audit"].get("instruction_like_content") is None
     assert proof["embedded_audit"]["status"] not in {"PASS", "PASS_WITH_RISKS"}
+
+# TP-DMX-AUDIT-STEWARD-CONTRACT-HYGIENE-001 Slice 3: diagnostic SKIPPED-shape
+# parity between embedded-audit.yml's inline pre-checkout/no-emitter proof
+# constructions and the canonical scripts/audit/run_embedded_audit.py
+# builders. These extract and *execute* each inline heredoc (as a
+# subprocess, exactly as the workflow invokes it: `python -` fed the
+# heredoc body) so shape drift fails the test instead of silently
+# diverging from the emitter both surfaces are supposed to agree with.
+# ---------------------------------------------------------------------------
+
+import json as _json  # noqa: E402  (import kept local to this section for clarity)
+import os as _os
+import re as _re
+import subprocess as _subprocess
+import sys as _sys
+
+import yaml as _yaml
+
+
+def _workflow_steps() -> list[dict]:
+    doc = _yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    return doc["jobs"]["embedded-audit"]["steps"]
+
+
+def _step_by_name(name: str) -> dict:
+    steps = _workflow_steps()
+    for step in steps:
+        if step.get("name") == name:
+            return step
+    raise AssertionError(f"embedded-audit.yml has no step named {name!r}")
+
+
+def _extract_python_heredoc(run_script: str) -> str:
+    match = _re.search(r"<<'PY'\n(.*?)\nPY", run_script, _re.S)
+    assert match, "expected a `python - <<'PY' ... PY` heredoc in this step's run block"
+    return match.group(1)
+
+
+def _exec_inline_diagnostic(
+    step_name: str, *, cwd: Path, artifact_dir: Path, env_overrides: dict[str, str]
+) -> dict:
+    """Extract and run a step's inline diagnostic-proof python heredoc.
+
+    Runs it as a real subprocess (python -, fed the heredoc body on stdin),
+    exactly as the workflow's `run: |` block does, so the extracted source
+    is executed unmodified rather than re-implemented in the test.
+    """
+    step = _step_by_name(step_name)
+    source = _extract_python_heredoc(step["run"])
+    env = dict(_os.environ)
+    env.update(env_overrides)
+    result = _subprocess.run(
+        [_sys.executable, "-"],
+        input=source,
+        text=True,
+        cwd=cwd,
+        env=env,
+        capture_output=True,
+    )
+    proof_path = artifact_dir / "PROOF.json"
+    assert proof_path.is_file(), (
+        f"{step_name!r} heredoc did not write PROOF.json "
+        f"(exit={result.returncode}, stderr={result.stderr!r})"
+    )
+    return _json.loads(proof_path.read_text(encoding="utf-8"))
+
+
+class TestDiagnosticProofShapeParity:
+    """Every inline SKIPPED diagnostic proof must match the canonical shape."""
+
+    _COMMON_ENV = {
+        "GITHUB_REPOSITORY": "DDD-Enterprises/dopemux-mvp",
+        "PR_NUMBER": "704",
+        "HEAD_SHA": "a" * 40,
+        "EXPECTED_PR": "704",
+        "EXPECTED_HEAD_SHA": "a" * 40,
+    }
+
+    def _assert_canonical_shape(self, proof: dict) -> None:
+        # Hard contract: embedded_audit must validate against the published
+        # schema's SKIPPED branch (auditor_tool=none, auditor_model=unknown,
+        # invocation/exit_code=null, skip_reason non-empty).
+        jsonschema.Draft7Validator(_schema()).validate(proof["embedded_audit"])
+        assert proof["executed"] is False
+        assert proof["mutation_performed"] is False
+        assert proof["github_mutation_route_added"] is False
+        assert proof["embedded_audit"]["status"] == "SKIPPED"
+
+        # Shape parity: the embedded_audit sub-object must have exactly the
+        # same keys as the canonical _skipped_audit() builder produces —
+        # not a superset or subset drifted from copy-paste divergence.
+        canonical = _skipped_audit(
+            report_path=proof["embedded_audit"]["report_path"],
+            reason=str(proof["embedded_audit"]["skip_reason"]),
+        )
+        assert set(proof["embedded_audit"].keys()) == set(canonical.keys())
+        assert proof["embedded_audit"]["auditor_tool"] == canonical["auditor_tool"]
+        assert proof["embedded_audit"]["auditor_model"] == canonical["auditor_model"]
+        assert proof["embedded_audit"]["invocation"] == canonical["invocation"]
+        assert proof["embedded_audit"]["exit_code"] == canonical["exit_code"]
+
+        # Outer proof: required-for-enforcement keys present (independent_audit_errors
+        # / enforce_independent_audit_proof read executed/pr_number/head_sha/repo).
+        # `generated_at` is intentionally excluded from this comparison: it is
+        # informational only, not validated by the schema or the enforcement gate.
+        required_outer_keys = {
+            "packet_id",
+            "repo",
+            "pr_number",
+            "head_sha",
+            "executed",
+            "mutation_performed",
+            "github_mutation_route_added",
+            "embedded_audit",
+        }
+        assert required_outer_keys <= set(proof.keys())
+
+    def test_missing_emitter_script_diagnostic_matches_canonical_shape(
+        self, tmp_path: Path
+    ) -> None:
+        # This step's run block executes `working-directory: trusted-source`,
+        # so its heredoc addresses the artifact dir as "../embedded-audit-artifacts".
+        trusted_source = tmp_path / "trusted-source"
+        trusted_source.mkdir()
+        artifact_dir = tmp_path / "embedded-audit-artifacts"
+        proof = _exec_inline_diagnostic(
+            "Emit independent embedded audit proof",
+            cwd=trusted_source,
+            artifact_dir=artifact_dir,
+            env_overrides=self._COMMON_ENV,
+        )
+        self._assert_canonical_shape(proof)
+        assert "run_embedded_audit.py" in proof["embedded_audit"]["skip_reason"]
+
+    def test_unavailable_head_diagnostic_matches_canonical_shape(
+        self, tmp_path: Path
+    ) -> None:
+        # This step's own `mkdir -p embedded-audit-artifacts` is a bash line
+        # preceding the heredoc (not part of the extracted python), so create
+        # the directory the heredoc's Path(...).write_text() expects.
+        artifact_dir = tmp_path / "embedded-audit-artifacts"
+        artifact_dir.mkdir()
+        proof = _exec_inline_diagnostic(
+            "Emit unavailable independent audit proof",
+            cwd=tmp_path,
+            artifact_dir=artifact_dir,
+            env_overrides=self._COMMON_ENV,
+        )
+        self._assert_canonical_shape(proof)
+        assert "head SHA" in proof["embedded_audit"]["skip_reason"]
+
+    def test_enforce_step_missing_proof_fallback_matches_canonical_shape(
+        self, tmp_path: Path
+    ) -> None:
+        # No PROOF.json present: the enforce step's own fallback branch must
+        # write one before raising SystemExit — that fallback is the third
+        # inline diagnostic-proof construction under test.
+        artifact_dir = tmp_path / "embedded-audit-artifacts"
+        proof = _exec_inline_diagnostic(
+            "Enforce independent audit result",
+            cwd=tmp_path,
+            artifact_dir=artifact_dir,
+            env_overrides=self._COMMON_ENV,
+        )
+        self._assert_canonical_shape(proof)
+        assert "missing" in proof["embedded_audit"]["skip_reason"].lower()
+
+    def test_all_three_diagnostic_reasons_are_distinct(self, tmp_path: Path) -> None:
+        # Regression guard: if these ever collapsed to an identical generic
+        # reason string, a supervisor could no longer tell which failure path
+        # produced a given SKIPPED proof.
+        reasons = set()
+        for step_name, subdir in (
+            ("Emit independent embedded audit proof", "trusted-source"),
+            ("Emit unavailable independent audit proof", None),
+            ("Enforce independent audit result", None),
+        ):
+            case_dir = tmp_path / step_name.replace(" ", "_")
+            cwd = case_dir / subdir if subdir else case_dir
+            cwd.mkdir(parents=True)
+            artifact_dir = case_dir / "embedded-audit-artifacts"
+            if step_name == "Emit unavailable independent audit proof":
+                # Step's own `mkdir -p` precedes the heredoc in bash; not
+                # part of the extracted python, so pre-create it here.
+                artifact_dir.mkdir()
+            proof = _exec_inline_diagnostic(
+                step_name,
+                cwd=cwd,
+                artifact_dir=artifact_dir,
+                env_overrides=self._COMMON_ENV,
+            )
+            reasons.add(proof["embedded_audit"]["skip_reason"])
+        assert len(reasons) == 3
