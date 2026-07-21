@@ -165,6 +165,11 @@
 ## 2026-07-12 - [Hardening Interactive Surfaces with Global Error Propagation]
 **Learning:** Components performing side-effect interactions (like Clipboard API calls) can fail due to browser permissions or environment limitations. Propagating these errors via an `onError` prop to the root `App.tsx` (using the global error alert system) ensures consistent user feedback and avoids "silent failures" in deeply nested components.
 **Action:** Always provide an `onError?: (msg: string) => void` prop for interactive surface components to allow centralized handling of interaction failures.
+
 ## 2026-07-16 - [Task Transition Confirmation Reset]
 **Learning:** When implementing 'Soft Confirmation' patterns (like a two-step skip action) in stateful components, failing to reset the confirmation state when the target item changes (e.g., when the active task is switched or completes) can leave the confirmation state 'stuck'. This means the next item immediately renders in the confirm state, leading to potential accidental actions on the wrong item.
 **Action:** Always reset any active confirmation state (e.g., `isSkipConfirming`) and clear any associated timeout refs within the effect or logic that triggers on item/task transitions.
+
+## 2026-07-17 - [Adaptive Prediction Trend Icons]
+**Learning:** When displaying future forecasts (like a 15-minute load prediction), static icons (like a persistent `TrendingUp` icon) fail to provide context about whether the situation is improving or worsening compared to the present. Dynamically switching between `TrendingUp` and `TrendingDown` based on a comparison to the current status provides high-bandwidth, immediate visual feedback.
+**Action:** Always compute trend direction when current and forecast metrics are available, and adaptively update associated icons to guide the user's attention.

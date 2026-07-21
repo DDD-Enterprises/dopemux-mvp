@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Check, TrendingUp } from 'lucide-react';
+import { Check, TrendingUp, TrendingDown } from 'lucide-react';
 
 import { brandTokens, statusStyles, deriveStatus, getDynamicRoast } from '../theme';
 
 interface PredictionPanelProps {
   prediction?: number;
+  currentLoad?: number;
   onError?: (message: string) => void;
 }
 
-export default function PredictionPanel({ prediction, onError }: PredictionPanelProps) {
+export default function PredictionPanel({ prediction, currentLoad, onError }: PredictionPanelProps) {
   const hasPrediction = typeof prediction === 'number';
   const value = hasPrediction ? Math.max(0, Math.min(100, Math.round(prediction * 100))) : 0;
   const status = hasPrediction ? deriveStatus(prediction) : 'optimal';
@@ -18,6 +19,8 @@ export default function PredictionPanel({ prediction, onError }: PredictionPanel
   const roast = getDynamicRoast('15-min Prediction', prediction ?? null);
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isTrendingDown = hasPrediction && typeof currentLoad === 'number' && prediction < currentLoad;
 
   const handleCopy = useCallback(async () => {
     if (!navigator.clipboard?.writeText) {
@@ -64,7 +67,11 @@ export default function PredictionPanel({ prediction, onError }: PredictionPanel
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 0.5 }}>
-        <TrendingUp size={18} color={statusMeta.color} />
+        {isTrendingDown ? (
+          <TrendingDown size={18} color={statusMeta.color} />
+        ) : (
+          <TrendingUp size={18} color={statusMeta.color} />
+        )}
         <Typography variant="overline" color="text.secondary">15-minute forecast</Typography>
       </Box>
       <Typography variant="h3" sx={{ color: statusMeta.color, my: 1 }}>{hasPrediction ? `${value}%` : 'N/A'}</Typography>
@@ -104,7 +111,13 @@ export default function PredictionPanel({ prediction, onError }: PredictionPanel
             }),
           }}
         >
-          {isCopied ? <Check size={16} color={brandTokens.colors.serumMint} style={{ marginTop: 2 }} /> : <TrendingUp size={16} color={statusMeta.color} style={{ marginTop: 2 }} />}
+          {isCopied ? (
+            <Check size={16} color={brandTokens.colors.serumMint} style={{ marginTop: 2 }} />
+          ) : isTrendingDown ? (
+            <TrendingDown size={16} color={statusMeta.color} style={{ marginTop: 2 }} />
+          ) : (
+            <TrendingUp size={16} color={statusMeta.color} style={{ marginTop: 2 }} />
+          )}
           <Box>
             <Typography variant="body2" className="dopemux-roast">{roast}</Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>{hasPrediction ? 'Forecast panel uses backend projection.' : 'Loading...'}</Typography>
