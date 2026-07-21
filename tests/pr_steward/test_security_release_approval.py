@@ -15,6 +15,7 @@ def _approval(**overrides):
         "pr_number": PR,
         "head_sha": HEAD,
         "approver": "trusted-approver",
+        "approver_association": "MEMBER",
         "approval_ref": "review-node-id-123",
         "approved_at": "2026-07-20T10:00:00Z",
     }
@@ -145,6 +146,30 @@ def test_non_approved_state_is_invalid():
 def test_unknown_approver_is_approver_unknown():
     errors = evaluate_security_release_approval(
         _approval(approver="random-user"),
+        required=True,
+        expected_repo=REPO,
+        expected_pr=PR,
+        expected_head_sha=HEAD,
+        trusted_approvers=["trusted-approver"],
+    )
+    assert "SECURITY_RELEASE_APPROVER_UNKNOWN" in errors
+
+
+def test_untrusted_association_is_approver_unknown_even_if_login_trusted():
+    errors = evaluate_security_release_approval(
+        _approval(approver_association="NONE"),
+        required=True,
+        expected_repo=REPO,
+        expected_pr=PR,
+        expected_head_sha=HEAD,
+        trusted_approvers=["trusted-approver"],
+    )
+    assert "SECURITY_RELEASE_APPROVER_UNKNOWN" in errors
+
+
+def test_missing_association_is_approver_unknown():
+    errors = evaluate_security_release_approval(
+        _approval(approver_association=None),
         required=True,
         expected_repo=REPO,
         expected_pr=PR,

@@ -16,6 +16,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any, Mapping
 
+_TRUSTED_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
+
 
 def evaluate_security_release_approval(
     approval: Mapping[str, Any] | None,
@@ -72,6 +74,10 @@ def evaluate_security_release_approval(
 
     approver = approval.get("approver")
     if not trusted_approvers or approver not in trusted_approvers:
+        errors.append("SECURITY_RELEASE_APPROVER_UNKNOWN")
+
+    approver_association = approval.get("approver_association")
+    if str(approver_association or "").upper() not in _TRUSTED_ASSOCIATIONS:
         errors.append("SECURITY_RELEASE_APPROVER_UNKNOWN")
 
     # De-duplicate while preserving first-seen order.

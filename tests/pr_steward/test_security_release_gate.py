@@ -63,6 +63,27 @@ def test_empty_changed_files_not_required():
     assert result.required is False
 
 
+def test_github_action_file_is_required_ci_workflow():
+    result = classify_security_release_paths([".github/actions/example/action.yml"])
+    assert result.required is True
+    assert "ci_workflow" in result.categories
+
+
+def test_pr_steward_trust_root_files_are_required():
+    trust_root_paths = [
+        "tools/pr_steward/known_reviewers.json",
+        "tools/pr_steward/security_release_gate.py",
+        "tools/pr_steward/security_release_approval.py",
+        "tools/pr_steward/classifier.py",
+        "tools/pr_steward/collector.py",
+        "tools/pr_steward/intake.py",
+    ]
+    for path in trust_root_paths:
+        result = classify_security_release_paths([path])
+        assert result.required is True, path
+        assert "pr_steward_trust_root" in result.categories, path
+
+
 def test_result_is_frozen():
     result = classify_security_release_paths([])
     import dataclasses

@@ -6,8 +6,7 @@ category that requires an explicit security/release approval before READY?
 It is deliberately distinct from ``dopemux.dcp.red_lane_scanner`` /
 ``red_lane_rules.FORBIDDEN_PATHS``, which encode "DCP Core must never touch
 this" (a hard block for DCP Core specifically, not a general PR-approval
-signal — see docs/superpowers/plans/2026-07-20-pr-steward-security-approval-parity.md
-trace table). ``FORBIDDEN_PATHS`` is reused here, read-only, as one input
+signal). ``FORBIDDEN_PATHS`` is reused here, read-only, as one input
 category (``dcp_boundary``) alongside PR-Steward-local categories for
 surfaces DCP Core's list doesn't cover (CODEOWNERS, schema/contract files,
 secrets-like paths). Matching a category here means "needs approval", not
@@ -23,18 +22,25 @@ from dataclasses import dataclass, field
 from dopemux.dcp.red_lane_rules import FORBIDDEN_PATHS
 
 _CI_WORKFLOW = re.compile(r"^\.github/workflows/.*$")
+_CI_ACTION = re.compile(r"^\.github/actions/.*$")
 _CODEOWNERS = re.compile(r"^(\.github/)?CODEOWNERS$")
 # DCP-RED-PROOF-CONTRACT-SCHEMA-MUTATION (schemas/dcp/dcp_red_lane_taxonomy.instance.json)
 _SCHEMA_CONTRACT = re.compile(r"^(schemas|contracts)/.*\.(schema\.json|json|proto|graphql)$")
 _SECRETS_LIKE = re.compile(
     r"(^|/)secrets?(/|$)|\.env(\.|$)", re.IGNORECASE
 )
+# This gate's own implementation and config are a trust root: anything here
+# controls who can approve future security/release-sensitive changes,
+# including changes to this very list. It must protect itself.
+_PR_STEWARD_TRUST_ROOT = re.compile(r"^tools/pr_steward/.*$")
 
 _LOCAL_CATEGORY_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("ci_workflow", _CI_WORKFLOW),
+    ("ci_workflow", _CI_ACTION),
     ("codeowners", _CODEOWNERS),
     ("schema_contract", _SCHEMA_CONTRACT),
     ("secrets", _SECRETS_LIKE),
+    ("pr_steward_trust_root", _PR_STEWARD_TRUST_ROOT),
 )
 
 

@@ -101,6 +101,7 @@ def test_red_lane_pr_with_valid_approval_is_ready():
         "pr_number": 704,
         "head_sha": HEAD_SHA,
         "approver": "trusted-approver",
+        "approver_association": "COLLABORATOR",
         "approval_ref": "review-1",
         "approved_at": "2026-05-26T01:30:00Z",
     }
@@ -124,6 +125,7 @@ def test_approval_does_not_override_other_blockers():
         "pr_number": 704,
         "head_sha": HEAD_SHA,
         "approver": "trusted-approver",
+        "approver_association": "COLLABORATOR",
         "approval_ref": "review-1",
         "approved_at": "2026-05-26T01:30:00Z",
     }
@@ -153,6 +155,7 @@ def test_new_commit_invalidates_earlier_approval():
         "pr_number": 704,
         "head_sha": "stale0000000000000000000000000000000000",
         "approver": "trusted-approver",
+        "approver_association": "COLLABORATOR",
         "approval_ref": "review-1",
         "approved_at": "2026-05-26T01:30:00Z",
     }

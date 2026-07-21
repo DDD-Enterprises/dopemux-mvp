@@ -418,12 +418,14 @@ def _select_security_release_approval(
     login = author.get("login") if isinstance(author, dict) else None
     if not login:
         return None
+    association = most_recent.get("authorAssociation")
     return {
         "state": "APPROVED",
         "repository": repo,
         "pr_number": pr_number,
         "head_sha": str(commit["oid"]),
         "approver": str(login),
+        "approver_association": str(association) if association else None,
         "approval_ref": str(most_recent.get("id") or ""),
         "approved_at": str(most_recent.get("submittedAt") or ""),
     }
