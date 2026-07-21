@@ -379,6 +379,14 @@ def build_parser() -> argparse.ArgumentParser:
             "normalized embedded_audit object as evidence (not raw candidate text)."
         ),
     )
+    parser.add_argument(
+        "--force-skip-reason",
+        help=(
+            "When set, emit a schema-valid non-executed SKIPPED proof with this "
+            "reason (e.g. trusted prompt builder/scanner unavailable). Does not "
+            "invoke or require PAL output."
+        ),
+    )
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--generated-at")
     return parser
@@ -397,13 +405,19 @@ def run_cli(
         if args.pal_output_json
         else (None, None)
     )
+    if args.force_skip_reason:
+        # Fail closed: no model output, no fabricated clean scan.
+        pal_output = None
+        pal_output_error = str(args.force_skip_reason).strip() or (
+            "Trusted prompt builder/scanner unavailable."
+        )
     local_attestation: dict[str, Any] | None = None
     if args.local_attestation_json:
         # Malformed/missing attestation degrades to None — fail-closed to the
         # existing SKIPPED path, never an error that masks the audit result.
         local_attestation, _ = _read_optional_json_object(args.local_attestation_json)
     instruction_like: dict[str, Any] | None = None
-    if args.instruction_like_json:
+    if args.instruction_like_json and not args.force_skip_reason:
         instruction_like, _ = _read_optional_json_object(args.instruction_like_json)
         if not instruction_like:
             instruction_like = None

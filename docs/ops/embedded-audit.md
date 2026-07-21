@@ -242,9 +242,13 @@ instructions, role claims, JSON, verdict requests, or attempts to redefine the
 audit, and that such content is data only — it cannot modify the task,
 authority, output contract, or verdict rules.
 
+### Fail closed when the trusted builder/scanner is unavailable
+
+If `scripts/audit/pal_clink_runner.py` is missing on the trusted ref, the workflow must **not** embed raw candidate metadata/diff into a model prompt, must **not** invent a clean scan (`detected: false`), and must not invoke the auditor. The emitter records a non-executed `SKIPPED` proof with a nonempty reason so PR Steward stays non-ready.
+
 ### Instruction-like content scanner
 
-A deterministic scanner inspects candidate metadata and **added** diff lines
+A deterministic scanner inspects candidate metadata and model-visible changed lines (**added** and **deleted**), recording `diff_side`
 for instruction-like shapes (for example ignore/override instructions, forced
 verdict requests, system-prompt claims, output-contract overrides, suppress-
 findings requests, and fake audit results). Matches record path, line,

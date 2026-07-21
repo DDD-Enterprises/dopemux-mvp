@@ -148,6 +148,22 @@
               "text_sha256": {
                 "type": "string",
                 "pattern": "^[a-f0-9]{64}$"
+              },
+              "diff_side": {
+                "description": "Which model-visible candidate coordinate produced the match.",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "ADDED",
+                      "DELETED",
+                      "METADATA"
+                    ]
+                  }
+                ]
               }
             }
           }
