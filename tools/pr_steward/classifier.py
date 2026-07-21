@@ -236,7 +236,18 @@ def build_artifacts(
 
     snapshot_changed_files = _changed_files(harvest.get("changed_files") or [])
     changed_paths = [item["path"] for item in snapshot_changed_files if item.get("path")]
-    security_classification = classify_security_release_paths(changed_paths)
+    # A rename moves a path OUT of a protected location as surely as an edit
+    # moves content into one — classify the pre-rename path too, or a rename
+    # of e.g. tools/pr_steward/known_reviewers.json to an unprotected
+    # location would silently evade the trust-root/CI/CODEOWNERS gate.
+    renamed_from_paths = [
+        item["previous_path"]
+        for item in snapshot_changed_files
+        if item.get("status") == "renamed" and item.get("previous_path")
+    ]
+    security_classification = classify_security_release_paths(
+        changed_paths + renamed_from_paths
+    )
     trusted_security_approvers = load_trusted_security_approvers(known_path)
     security_release_errors = evaluate_security_release_approval(
         harvest.get("security_release_approval"),
@@ -900,6 +911,7 @@ def _changed_files(files: list[Any]) -> list[dict[str, Any]]:
                 "additions": int(item.get("additions") or 0),
                 "deletions": int(item.get("deletions") or 0),
                 "status": item.get("status"),
+                "previous_path": item.get("previous_path"),
             }
         )
     return payload
