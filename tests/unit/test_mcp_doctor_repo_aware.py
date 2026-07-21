@@ -164,6 +164,83 @@ def test_transport_match_and_mismatch(tmp_path: Path):
     assert report.exit_code == 1
 
 
+def test_catalog_rendered_stdio_proxies_match_transport(tmp_path: Path):
+    repo = _write_fixture_repo(
+        tmp_path,
+        mcp_servers={
+            "conport": {
+                "type": "stdio",
+                "command": "uvx",
+                "args": [
+                    "mcp-proxy",
+                    "--transport",
+                    "sse",
+                    "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
+                ],
+            },
+            "dope-memory": {
+                "type": "stdio",
+                "command": "uvx",
+                "args": [
+                    "mcp-proxy",
+                    "--transport",
+                    "streamablehttp",
+                    "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
+                ],
+            },
+            "task-orchestrator": {
+                "type": "stdio",
+                "command": "uvx",
+                "args": [
+                    "mcp-proxy",
+                    "--transport",
+                    "streamablehttp",
+                    "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
+                ],
+            },
+        },
+    )
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+    )
+    codes = {(f["code"], f["service"]) for f in report.findings}
+    assert ("TRANSPORT_PROXY_MATCH", "conport") in codes
+    assert ("TRANSPORT_PROXY_MATCH", "dope-memory") in codes
+    assert ("TRANSPORT_PROXY_MATCH", "task-orchestrator") in codes
+    assert not any(code == "TRANSPORT_MISMATCH" for code, _ in codes)
+
+
+def test_stdio_proxy_with_wrong_inner_transport_fails(tmp_path: Path):
+    repo = _write_fixture_repo(
+        tmp_path,
+        mcp_servers={
+            "conport": {
+                "type": "stdio",
+                "command": "uvx",
+                "args": [
+                    "mcp-proxy",
+                    "--transport",
+                    "streamablehttp",
+                    "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
+                ],
+            },
+        },
+    )
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+    )
+    codes = {(f["code"], f["service"]) for f in report.findings}
+    assert ("TRANSPORT_MISMATCH", "conport") in codes
+
+
 def test_compose_lifecycle_hazards_from_fixture(tmp_path: Path):
     compose = """
 services:
@@ -193,8 +270,8 @@ services:
     assert any("mcp-conport" in r for r in diag2["fixed_container_name_risks"])
     assert any(".dopemux" in r for r in diag2["relative_volume_risks"])
     by_code2 = {f["code"]: f for f in diag2["findings"]}
-    assert by_code2["COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK"]["severity"] == "FAIL"
-    assert by_code2["COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK"]["severity"] == "FAIL"
+    assert by_code2["COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK"]["severity"] == "WARN"
+    assert by_code2["COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK"]["severity"] == "WARN"
     assert any(
         "DOPEMUX_WORKSPACE_ID" in r for r in diag2["identity_env_risks"]
     )
@@ -311,6 +388,37 @@ def test_docker_wrong_project_fail(tmp_path: Path):
     )
     assert any(f["code"] == "DOCKER_CONTAINER_WRONG_PROJECT" for f in report.findings)
     assert report.status == "FAIL"
+
+
+def test_docker_foreign_worktree_port_is_not_target_service(tmp_path: Path):
+    repo = _write_fixture_repo(tmp_path)
+
+    def fake_run(*args, **kwargs):
+        row = {
+            "ID": "deadbeef",
+            "Names": "dopemux-other-dope-memory",
+            "Ports": "127.0.0.1:3020->3020/tcp",
+            "Labels": (
+                "dopemux.project_root=/other/project,"
+                "dopemux.workspace_id=/other/project"
+            ),
+            "Image": "x",
+            "Status": "Up",
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(row) + "\n", stderr="")
+
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        docker_runner=fake_run,
+        skip_port_probe=True,
+        process_env={},
+    )
+    assert not any(
+        f["code"] == "DOCKER_CONTAINER_WRONG_PROJECT"
+        and f["service"] == "dope-memory"
+        for f in report.findings
+    )
 
 
 def test_docker_unlabeled_unknown(tmp_path: Path):
