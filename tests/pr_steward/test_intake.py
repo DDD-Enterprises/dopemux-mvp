@@ -384,6 +384,7 @@ def test_live_collection_uses_proof_path_for_ready_state(
 
     monkeypatch.setattr(collector, "_run", fake_run)
     monkeypatch.setattr(collector, "_fetch_review_threads", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_reviews_with_commit", lambda **_: ([], []))
 
     harvest = collector.collect_from_github(
         "DDD-Enterprises/dopemux-mvp",
@@ -441,6 +442,7 @@ def test_live_collection_rejects_dry_run_or_unproven_audit_proof(
 
     monkeypatch.setattr(collector, "_run", fake_run)
     monkeypatch.setattr(collector, "_fetch_review_threads", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_reviews_with_commit", lambda **_: ([], []))
 
     harvest = collector.collect_from_github(
         "DDD-Enterprises/dopemux-mvp",
@@ -482,6 +484,7 @@ def _blocked_by_independent_audit(
 
     monkeypatch.setattr(collector, "_run", fake_run)
     monkeypatch.setattr(collector, "_fetch_review_threads", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_reviews_with_commit", lambda **_: ([], []))
     harvest = collector.collect_from_github(
         "DDD-Enterprises/dopemux-mvp",
         704,
