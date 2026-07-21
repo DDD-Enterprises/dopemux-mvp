@@ -130,3 +130,80 @@ def test_changed_files_pagination_check_command_failure_produces_error(monkeypat
     )
     assert paths == []
     assert errors == ["gh api graphql changedFiles failed: boom"]
+
+
+def test_changed_files_reconciliation_matching_sets_produces_no_error(monkeypatch):
+    def fake_run(args):
+        return subprocess.CompletedProcess(
+            args,
+            0,
+            _graphql_files_response(has_next_page=False, paths=["a.py", "b.py"]),
+            "",
+        )
+
+    monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
+    paths, errors = _fetch_changed_files_with_pagination_check(
+        repo="owner/repo", pr_number=1, rest_paths=["a.py", "b.py"]
+    )
+    assert errors == []
+    assert paths == ["a.py", "b.py"]
+
+
+def test_changed_files_reconciliation_diverging_sets_produces_harvest_error(
+    monkeypatch,
+):
+    def fake_run(args):
+        return subprocess.CompletedProcess(
+            args,
+            0,
+            _graphql_files_response(
+                has_next_page=False, paths=["a.py", "b.py", "secret_workflow.yml"]
+            ),
+            "",
+        )
+
+    monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
+    paths, errors = _fetch_changed_files_with_pagination_check(
+        repo="owner/repo", pr_number=1, rest_paths=["a.py", "b.py"]
+    )
+    assert len(errors) == 1
+    assert "changed_files harvest content mismatch" in errors[0]
+    assert "REST reported 2 paths" in errors[0]
+    assert "GraphQL reported 3 paths" in errors[0]
+    assert "secret_workflow.yml" in errors[0]
+    assert paths == ["a.py", "b.py", "secret_workflow.yml"]
+
+
+def test_changed_files_reconciliation_skipped_when_graphql_has_next_page(monkeypatch):
+    def fake_run(args):
+        return subprocess.CompletedProcess(
+            args,
+            0,
+            _graphql_files_response(has_next_page=True, paths=["a.py"] * 100),
+            "",
+        )
+
+    monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
+    paths, errors = _fetch_changed_files_with_pagination_check(
+        repo="owner/repo", pr_number=1, rest_paths=["a.py"]
+    )
+    # Pagination-overflow error only; content reconciliation is skipped because
+    # the GraphQL side is known-incomplete and would trivially "differ".
+    assert errors == ["changedFiles harvest exceeded first 100 files"]
+
+
+def test_changed_files_reconciliation_not_run_when_rest_paths_omitted(monkeypatch):
+    def fake_run(args):
+        return subprocess.CompletedProcess(
+            args,
+            0,
+            _graphql_files_response(has_next_page=False, paths=["a.py", "b.py"]),
+            "",
+        )
+
+    monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
+    paths, errors = _fetch_changed_files_with_pagination_check(
+        repo="owner/repo", pr_number=1
+    )
+    assert errors == []
+    assert paths == ["a.py", "b.py"]
