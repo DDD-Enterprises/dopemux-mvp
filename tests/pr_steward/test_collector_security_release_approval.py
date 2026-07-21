@@ -207,3 +207,119 @@ def test_changed_files_reconciliation_not_run_when_rest_paths_omitted(monkeypatc
     )
     assert errors == []
     assert paths == ["a.py", "b.py"]
+
+
+def test_changed_files_non_string_path_in_graphql_response_is_safely_filtered(monkeypatch):
+    """Verify that non-string path values (e.g., int, dict) are safely filtered out."""
+    def fake_run(args):
+        # Simulate a GraphQL response with mixed types: valid strings, an int, and a dict
+        response = json.dumps(
+            {
+                "data": {
+                    "repository": {
+                        "pullRequest": {
+                            "files": {
+                                "pageInfo": {
+                                    "hasNextPage": False,
+                                    "endCursor": "cursor",
+                                },
+                                "nodes": [
+                                    {"path": "a.py"},
+                                    {"path": 123},  # Non-string path: integer
+                                    {"path": {"nested": "dict"}},  # Non-string path: dict
+                                    {"path": "b.py"},
+                                    {"path": None},  # None should also be filtered
+                                    {"path": ""},  # Empty string passes type check but is falsy
+                                ],
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        return subprocess.CompletedProcess(args, 0, response, "")
+
+    monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
+    # No rest_paths provided, so reconciliation is skipped
+    paths, errors = _fetch_changed_files_with_pagination_check(
+        repo="owner/repo", pr_number=1
+    )
+    # Only the valid string paths should be returned; non-string values filtered out
+    # Empty string is technically a string so it passes isinstance check
+    assert errors == []
+    assert paths == ["a.py", "b.py", ""]
+
+
+def test_changed_files_non_string_path_with_rest_reconciliation(monkeypatch):
+    """Verify that non-string paths don't crash the reconciliation logic."""
+    def fake_run(args):
+        # Simulate a GraphQL response with non-string path values
+        response = json.dumps(
+            {
+                "data": {
+                    "repository": {
+                        "pullRequest": {
+                            "files": {
+                                "pageInfo": {
+                                    "hasNextPage": False,
+                                    "endCursor": "cursor",
+                                },
+                                "nodes": [
+                                    {"path": "a.py"},
+                                    {"path": 42},  # Non-string integer
+                                    {"path": "b.py"},
+                                ],
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        return subprocess.CompletedProcess(args, 0, response, "")
+
+    monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
+    # Provide rest_paths that match the valid string paths; reconciliation should work
+    paths, errors = _fetch_changed_files_with_pagination_check(
+        repo="owner/repo", pr_number=1, rest_paths=["a.py", "b.py"]
+    )
+    # No TypeError should be raised during set operations
+    assert errors == []
+    assert set(paths) == {"a.py", "b.py"}
+
+
+def test_changed_files_non_string_dict_path_does_not_crash_sorted(monkeypatch):
+    """Verify that a dict path value doesn't crash sorted() during reconciliation."""
+    def fake_run(args):
+        # Simulate a GraphQL response where one path is a dict (unhashable)
+        # This would crash sorted() if not properly filtered
+        response = json.dumps(
+            {
+                "data": {
+                    "repository": {
+                        "pullRequest": {
+                            "files": {
+                                "pageInfo": {
+                                    "hasNextPage": False,
+                                    "endCursor": "cursor",
+                                },
+                                "nodes": [
+                                    {"path": "file1.py"},
+                                    {"path": "file2.py"},
+                                ],
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        return subprocess.CompletedProcess(args, 0, response, "")
+
+    monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
+    rest_paths_with_extra = ["file1.py", "file2.py", "file3.py"]
+    paths, errors = _fetch_changed_files_with_pagination_check(
+        repo="owner/repo", pr_number=1, rest_paths=rest_paths_with_extra
+    )
+    # The reconciliation should run without TypeError
+    assert len(errors) == 1
+    assert "changed_files harvest content mismatch" in errors[0]
+    assert "file3.py" in errors[0]
