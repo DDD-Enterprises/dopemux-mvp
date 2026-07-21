@@ -1222,8 +1222,10 @@ def _known_author(
 ) -> bool:
     if str(association or "").upper() in trusted_associations:
         return True
-    normalized_known = {_normalize_bot_login(r) for r in known_reviewers}
-    return _normalize_bot_login(author) in normalized_known
+    # Only the candidate login is normalized, never the roster: a roster entry
+    # stored as "foo[bot]" must not also match a bare human login "foo" that
+    # happens to reclaim the un-suffixed name.
+    return author in known_reviewers or _normalize_bot_login(author) in known_reviewers
 
 
 def _author_login(payload: dict[str, Any]) -> str:
