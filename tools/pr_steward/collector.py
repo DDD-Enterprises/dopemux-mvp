@@ -107,7 +107,7 @@ def collect_from_github(
     rest_changed_file_paths = [
         f.get("path")
         for f in rest_files
-        if isinstance(f, dict) and f.get("path")
+        if isinstance(f, dict) and isinstance(f.get("path"), str)
     ]
     _changed_files_check, changed_files_errors = _fetch_changed_files_with_pagination_check(
         repo=repo, pr_number=pr_number, rest_paths=rest_changed_file_paths
@@ -366,7 +366,7 @@ def _fetch_changed_files_with_pagination_check(
     if has_next_page:
         errors.append("changedFiles harvest exceeded first 100 files")
     nodes = page.get("nodes") or []
-    paths = [node.get("path") for node in nodes if isinstance(node, dict) and node.get("path")]
+    paths = [node.get("path") for node in nodes if isinstance(node, dict) and isinstance(node.get("path"), str)]
     if rest_paths is not None and not has_next_page:
         rest_set = set(rest_paths)
         graphql_set = set(paths)
