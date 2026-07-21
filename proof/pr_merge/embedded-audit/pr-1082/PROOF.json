@@ -145,9 +145,9 @@
       ],
       "truncated": false
     },
-    "invocation": "agy --model gemini-3.1-pro-high -p <trusted-prompt> --effort high --sandbox --mode plan (settings Gemini 3.1 Pro High, require-permission)",
+    "invocation": "agy --model gemini-3.1-pro-high -p <trusted-prompt> --effort high --sandbox --mode plan (settings: Gemini 3.1 Pro High, toolPermission=require-permission)",
     "remaining_risks": [
-      "Instruction-like candidate content was detected in the candidate diff (detected=true, match_count=19). This is acknowledged and verified to be benign, as the matched lines are contained entirely within the test fixtures (e.g. tests/audit/fixtures/prompt_trust/adversarial_candidate.diff) added to validate the new scanner and prompt trust boundary implementation."
+      "Instruction-like candidate content was detected by the deterministic scanner (match_count=19). This is an expected occurrence as the PR adds test fixtures for testing instruction-like detection capabilities."
     ],
     "report_path": "proof/TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001/AUDITOR_REPORT.md",
     "required": true,
@@ -155,18 +155,17 @@
     "status": "PASS_WITH_RISKS"
   },
   "executed": true,
-  "generated_at": "2026-07-21T04:44:07Z",
+  "generated_at": "2026-07-21T05:33:22Z",
   "github_mutation_route_added": false,
-  "head_sha": "245b598bf90cab02bf91cc03709be55d4e952074",
+  "head_sha": "32f0d58cf890fbba4c4b4f48ff8866da19dab3aa",
   "mutation_performed": false,
   "packet_id": "TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001",
   "pr_number": 1082,
   "provenance": {
     "audit_source": "local-agy",
-    "audited_code_sha": "245b598bf90cab02bf91cc03709be55d4e952074",
+    "audited_code_sha": "32f0d58cf890fbba4c4b4f48ff8866da19dab3aa",
     "auditor_cli": "agy",
     "proof_author": "independent-embedded-audit",
-    "repair_implementer": "claude-code-session",
     "settings_model": "Gemini 3.1 Pro (High)",
     "token_value_recorded": false,
     "workflow": "local-agy-gemini"
