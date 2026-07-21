@@ -103,8 +103,14 @@ def collect_from_github(
     errors.extend(thread_errors)
     reviews_raw, review_errors = _fetch_reviews_with_commit(repo=repo, pr_number=pr_number)
     errors.extend(review_errors)
+    rest_files = pr_payload.get("files") or []
+    rest_changed_file_paths = [
+        f.get("path")
+        for f in rest_files
+        if isinstance(f, dict) and f.get("path")
+    ]
     _changed_files_check, changed_files_errors = _fetch_changed_files_with_pagination_check(
-        repo=repo, pr_number=pr_number
+        repo=repo, pr_number=pr_number, rest_paths=rest_changed_file_paths
     )
     errors.extend(changed_files_errors)
     security_release_approval = _select_security_release_approval(
@@ -288,7 +294,7 @@ def _fetch_reviews_with_commit(
 
 
 def _fetch_changed_files_with_pagination_check(
-    *, repo: str, pr_number: int
+    *, repo: str, pr_number: int, rest_paths: list[str] | None = None
 ) -> tuple[list[str], list[str]]:
     """Independently verify the REST-shaped `gh pr view --json files` list is complete.
 
@@ -300,6 +306,16 @@ def _fetch_changed_files_with_pagination_check(
     `pageInfo.hasNextPage` check is the completeness signal for that list;
     the REST list itself remains the source of truth for `changed_files`
     content.
+
+    When `rest_paths` is provided, this also reconciles the REST path set
+    against the GraphQL path set. `hasNextPage` catches pagination overflow
+    (GraphQL side known-incomplete); this reconciliation catches the
+    orthogonal failure mode where REST silently under-reports a file (e.g. a
+    `gh` CLI bug or a timing race between the two independent API calls)
+    while *neither* source signals pagination overflow. Reconciliation is
+    skipped when GraphQL itself reports `hasNextPage` — in that case its own
+    node list is known-incomplete and would trivially "differ" from REST,
+    which would just be duplicate noise on top of the pagination error.
     """
     owner, name = repo.split("/", 1)
     query = textwrap.dedent(
@@ -346,10 +362,31 @@ def _fetch_changed_files_with_pagination_check(
         .get("files", {})
     )
     errors: list[str] = []
-    if page.get("pageInfo", {}).get("hasNextPage"):
+    has_next_page = bool(page.get("pageInfo", {}).get("hasNextPage"))
+    if has_next_page:
         errors.append("changedFiles harvest exceeded first 100 files")
     nodes = page.get("nodes") or []
     paths = [node.get("path") for node in nodes if isinstance(node, dict) and node.get("path")]
+    if rest_paths is not None and not has_next_page:
+        rest_set = set(rest_paths)
+        graphql_set = set(paths)
+        if rest_set != graphql_set:
+            only_in_rest = sorted(rest_set - graphql_set)
+            only_in_graphql = sorted(graphql_set - rest_set)
+            detail_parts = []
+            if only_in_rest:
+                detail_parts.append(
+                    f"{len(only_in_rest)} only in REST (e.g. {only_in_rest[:5]})"
+                )
+            if only_in_graphql:
+                detail_parts.append(
+                    f"{len(only_in_graphql)} only in GraphQL (e.g. {only_in_graphql[:5]})"
+                )
+            errors.append(
+                "changed_files harvest content mismatch: "
+                f"REST reported {len(rest_paths)} paths, GraphQL reported {len(paths)} "
+                f"paths, sets differ ({'; '.join(detail_parts)})"
+            )
     return paths, errors
 
 
