@@ -45,11 +45,13 @@
     "allowlist": [
       "compose.yml",
       "docker/mcp-servers-source/pal-stdio/Dockerfile",
+      "docker/mcp-servers-source/pal/.dockerignore",
       "docker/mcp-servers-source/pal/pal-mcp-server/conf/openai_models.json",
       "docker/mcp-servers-source/pal/pal-mcp-server/conf/xai_models.json",
       "docker/mcp-servers-source/pal/pal-mcp-server/providers/openai.py",
       "docker/mcp-servers-source/pal/pal-mcp-server/providers/openai_compatible.py",
       "docker/mcp-servers-source/pal/pal-mcp-server/providers/xai.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/pyproject.toml",
       "docker/mcp-servers-source/pal/pal-mcp-server/requirements.txt",
       "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_auto_mode_comprehensive.py",
       "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_auto_mode_model_listing.py",
