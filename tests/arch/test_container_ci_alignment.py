@@ -51,17 +51,10 @@ def test_compose_alignment_accepts_every_declared_build_service() -> None:
     container_matrix.validate_compose_alignment(manifest, {"services": services})
 
 
-def test_known_compose_wrapper_drift_is_explicit() -> None:
+def test_normalized_compose_paths_have_no_unresolved_drift() -> None:
     manifest = container_matrix.load_manifest()
 
-    assert container_matrix.compose_drift_targets(manifest) == [
-        "conport",
-        "litellm",
-        "serena",
-        "gptr-mcp",
-        "desktop-commander",
-        "leantime-bridge",
-    ]
+    assert container_matrix.compose_drift_targets(manifest) == []
 
 
 def test_compose_alignment_fails_closed_on_unmapped_build_service() -> None:
