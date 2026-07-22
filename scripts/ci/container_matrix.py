@@ -16,6 +16,10 @@ ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = ROOT / "config" / "containers.json"
 DEFAULT_COMPOSE = ROOT / "compose.yml"
 SERVICE_RE = re.compile(r"^[a-z0-9]+(?:[._-][a-z0-9]+)*$")
+REGISTRY_RE = re.compile(
+    r"^ghcr\.io/[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?"
+    r"(?:/[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?)*$"
+)
 ALLOWED_CLASSIFICATIONS = {
     "canonical",
     "canonical-support",
@@ -61,8 +65,9 @@ def load_manifest(path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
         raise ManifestError("Manifest root must be an object")
     if data.get("schema_version") != "1.0.0":
         raise ManifestError("schema_version must be 1.0.0")
-    if not isinstance(data.get("registry"), str) or not data["registry"].startswith("ghcr.io/"):
-        raise ManifestError("registry must be a ghcr.io namespace")
+    registry = data.get("registry")
+    if not isinstance(registry, str) or REGISTRY_RE.fullmatch(registry) is None:
+        raise ManifestError("registry must be an exact ghcr.io namespace")
     if not isinstance(data.get("platform"), str) or not data["platform"]:
         raise ManifestError("platform must be a non-empty string")
     if not isinstance(data.get("targets"), list) or not data["targets"]:
