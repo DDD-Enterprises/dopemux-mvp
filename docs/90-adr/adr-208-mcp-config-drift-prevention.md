@@ -316,9 +316,9 @@ This ADR captures architectural lessons from real-world infrastructure evolution
 
 **Prevention > Detection > Remediation**. Service discovery prevents drift at the source.
 
-## Proposed amendment: transport-neutral generation and immutable ConPort pins
+## Accepted amendment: transport-neutral generation and immutable ConPort pins
 
-Pending independent acceptance of `adr-conport-canonical-record-service-v2`:
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json):
 
 - Generated configuration remains required, but HTTP/SSE is not intrinsically superior to stdio.
 - The ConPort target uses a thin stdio launcher to authenticated MCP Streamable HTTP or a Unix socket. SSE is removed.

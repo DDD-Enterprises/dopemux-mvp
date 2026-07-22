@@ -230,7 +230,9 @@ Any change must:
 
 **Status**: ✅ Accepted and Implemented
 
-## Proposed amendment: stable identity and ConPort receipts
+## Accepted amendment: stable identity and ConPort receipts
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json).
 
 - Repository paths remain storage locators, not project or workspace authority.
 - Chronicle event identity includes stable `project_id`, `workspace_id`, event schema version, source authority, and source event/record digest so identical content in different projects cannot collide.

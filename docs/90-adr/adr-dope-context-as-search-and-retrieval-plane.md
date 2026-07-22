@@ -258,9 +258,9 @@ This ADR is implemented successfully when:
 
 **Adopt dope-context as the search and retrieval plane in the Dopemux architecture, with explicit exclusion from canonical PM, workflow, decision, progress, and chronicle authority.**
 
-## Proposed amendment: projection consistency and advisory semantics
+## Accepted amendment: projection consistency and advisory semantics
 
-Pending independent acceptance of `adr-conport-canonical-record-service-v2`:
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json):
 
 1. Every ConPort-derived index stores the canonical source record/revision, project/workspace scope, event sequence, index generation, and freshness timestamp.
 2. Create, update, supersede, delete/tombstone, replay, and full rebuild must converge before an index is enabled for agents.

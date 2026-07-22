@@ -241,7 +241,9 @@ features, not a server.
 - Runtime evidence: P0 claims 7, 9, 10; findings N2, N5; chronicle-mirror runtime proof
   (2026-07-07: `dopemux:events`=3489 / `activity.events.v1`=0 / `work_log`=0 pre-fix).
 
-## Proposed amendment: lossy telemetry versus durable canonical events
+## Accepted amendment: lossy telemetry versus durable canonical events
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json).
 
 The ingress contract distinguishes:
 
