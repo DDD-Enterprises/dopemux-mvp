@@ -360,10 +360,7 @@ class OpenAICompatibleProvider(ModelProvider):
                     for content_item in msg.get("content", []):
                         if isinstance(content_item, dict):
                             if "text" in content_item:
-                                # Truncate long text and add ellipsis
-                                text = content_item["text"]
-                                if len(text) > 100:
-                                    content_item["text"] = text[:100] + "... [truncated]"
+                                content_item["text"] = "[redacted text]"
                             if "image_url" in content_item:
                                 content_item["image_url"] = "[redacted image]"
 
