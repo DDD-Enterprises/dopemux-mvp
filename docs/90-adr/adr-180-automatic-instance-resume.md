@@ -23,6 +23,9 @@ graph_metadata:
 ---
 # ADR-180: Automatic Instance Resume After Crashes
 
+> **Proposed deprecation pending independent review (2026-07-21).**
+> Generic ConPort custom data keyed by paths, ports, or labels may not own runtime-instance lifecycle. If the ConPort CRS v2 change set is accepted, mark this file `status: deprecated`. Instance create, resume, fork, handoff, promotion, merge, archive, lineage, and grants move to the trusted instance registry. Reads may not create or auto-fork instance state. Legacy resume hints may be imported only as noncanonical aliases after evidence review.
+
 ## Status
 
 **Proposed** (Enhancement for multi-instance support)
