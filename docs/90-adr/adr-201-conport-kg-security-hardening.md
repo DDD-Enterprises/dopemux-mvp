@@ -15,3 +15,8 @@ graph_metadata:
   impact: medium
   relates_to: []
 ---
+
+# ADR-201: ConPort KG Security Hardening
+
+> **Proposed deprecation pending independent review (2026-07-21).**
+> This skeletal placeholder does not specify enforceable ConPort security and must not be treated as an accepted control. If the ConPort CRS v2 ADR change set is accepted, mark this file `status: deprecated` and redirect security authority to `adr-conport-canonical-record-service-v2`, `adr-222-deterministic-vs-llm-boundary`, and the independently executed ConPort acceptance/security plan.

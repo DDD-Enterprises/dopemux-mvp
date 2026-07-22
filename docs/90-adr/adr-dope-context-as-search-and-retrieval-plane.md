@@ -257,3 +257,14 @@ This ADR is implemented successfully when:
 ## Final decision
 
 **Adopt dope-context as the search and retrieval plane in the Dopemux architecture, with explicit exclusion from canonical PM, workflow, decision, progress, and chronicle authority.**
+
+## Proposed amendment: projection consistency and advisory semantics
+
+Pending independent acceptance of `adr-conport-canonical-record-service-v2`:
+
+1. Every ConPort-derived index stores the canonical source record/revision, project/workspace scope, event sequence, index generation, and freshness timestamp.
+2. Create, update, supersede, delete/tombstone, replay, and full rebuild must converge before an index is enabled for agents.
+3. Native FTS may be enabled only after its consistency suite passes.
+4. Vector retrieval remains disabled until privacy, provenance, tenant isolation, deterministic tie-break, update/delete, tombstone, replay, and rebuild tests pass.
+5. Retrieval is advisory. Similarity does not judge a decision conflict, approve a choice, or authorize a canonical write.
+6. A stale projection may return `PROJECTION_STALE` or route to a bounded canonical read; it may not return deleted or foreign-scope records.

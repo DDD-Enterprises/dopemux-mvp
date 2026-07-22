@@ -191,6 +191,13 @@ This preserves the separation between:
 - **contextual truth**
 - **workflow law**
 
+Pending independent acceptance of `adr-conport-canonical-record-service-v2`:
+
+- ConPort stores `progress_observation` and `work_evidence`, not workflow state.
+- A ConPort status-like label has no authority to transition a task, resolve a blocker, change queue order, mark completion, approve a workflow step, or compute next action.
+- Task Orchestrator may reference ConPort evidence by canonical URI and revision. ConPort may reference Task Orchestrator IDs. Neither reference transfers authority.
+- Migration must not infer Task Orchestrator state from legacy ConPort progress rows.
+
 ## Relationship to dope-memory
 
 dope-memory remains the canonical chronicle memory authority.

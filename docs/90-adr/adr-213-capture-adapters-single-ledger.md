@@ -15,6 +15,11 @@ graph_metadata:
   impact: medium
   relates_to: []
 ---
+# ADR-213: Capture Adapters Single Ledger
+
+> **Proposed deprecation pending independent review (2026-07-21).**
+> This proposal duplicates ADR number 213 and overlaps the accepted `adr-213-dual-capture-canonical-ledger.md`. If the ConPort CRS v2 change set is accepted, mark this file `status: deprecated` and redirect to the accepted ADR-213 plus its stable-identity and mirror-receipt amendment.
+
 # Context
 
 Dopemux needs reliable capture across Claude Code hook/plugin mode and
