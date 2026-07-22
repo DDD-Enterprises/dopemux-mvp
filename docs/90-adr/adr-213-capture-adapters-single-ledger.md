@@ -9,7 +9,7 @@ last_review: '2026-02-21'
 next_review: '2026-05-22'
 prelude: Adr 213 Capture Adapters Single Ledger (adr) for dopemux documentation and
   developer workflows.
-status: proposed
+status: deprecated
 graph_metadata:
   node_type: ADR
   impact: medium
@@ -17,8 +17,8 @@ graph_metadata:
 ---
 # ADR-213: Capture Adapters Single Ledger
 
-> **Proposed deprecation pending independent review (2026-07-21).**
-> This proposal duplicates ADR number 213 and overlaps the accepted `adr-213-dual-capture-canonical-ledger.md`. If the ConPort CRS v2 change set is accepted, mark this file `status: deprecated` and redirect to the accepted ADR-213 plus its stable-identity and mirror-receipt amendment.
+> **Deprecated (2026-07-21).**
+> The [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json) deprecated this duplicate ADR number 213 proposal. Authority redirects to accepted `adr-213-dual-capture-canonical-ledger.md` plus its stable-identity and mirror-receipt amendment.
 
 # Context
 

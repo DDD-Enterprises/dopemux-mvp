@@ -386,9 +386,9 @@ This ADR is implemented successfully when:
 
 **Adopt the Memory Trinity model in which ConPort is canonical for structured durable context, dope-memory is canonical for chronicle memory, and dope-context is canonical for semantic retrieval, with explicit prohibition on silent authority escalation across planes.**
 
-## Proposed amendment: normalized ConPort authority and durable interaction
+## Accepted amendment: normalized ConPort authority and durable interaction
 
-Pending independent acceptance of `adr-conport-canonical-record-service-v2`:
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json):
 
 1. Replace every authority use of **ConPort progress** with **ConPort progress observations and work evidence**. These records never own task status, transition legality, blockers, queue order, completion authority, or next action.
 2. dope-context retrieval, ranking, FTS, vector, and graph results are advisory derived outputs. They cannot approve, deny, supersede, or mutate canonical records.

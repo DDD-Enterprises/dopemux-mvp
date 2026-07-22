@@ -9,7 +9,7 @@ author: '@hu3mann'
 date: '2026-02-05'
 prelude: Adr 201 Conport Kg Security Hardening (adr) for dopemux documentation and
   developer workflows.
-status: proposed
+status: deprecated
 graph_metadata:
   node_type: ADR
   impact: medium
@@ -18,5 +18,5 @@ graph_metadata:
 
 # ADR-201: ConPort KG Security Hardening
 
-> **Proposed deprecation pending independent review (2026-07-21).**
-> This skeletal placeholder does not specify enforceable ConPort security and must not be treated as an accepted control. If the ConPort CRS v2 ADR change set is accepted, mark this file `status: deprecated` and redirect security authority to `adr-conport-canonical-record-service-v2`, `adr-222-deterministic-vs-llm-boundary`, and the independently executed ConPort acceptance/security plan.
+> **Deprecated (2026-07-21).**
+> The [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json) found this skeletal placeholder insufficient as an enforceable ConPort security control. Security authority redirects to `adr-conport-canonical-record-service-v2`, `adr-222-deterministic-vs-llm-boundary`, and the independently executed ConPort acceptance/security plan.
