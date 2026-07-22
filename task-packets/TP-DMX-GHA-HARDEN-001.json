@@ -1,0 +1,152 @@
+{
+  "id": "TP-DMX-GHA-HARDEN-001",
+  "project": "dopemux-mvp",
+  "target": "Audit, repair, and optimize the active root GitHub Actions workflow set without weakening required CI, trust boundaries, or fail-closed gates.",
+  "invariants": [
+    "Runtime workflow behavior and live GitHub Actions results outrank documentation claims.",
+    "Required PR gates remain fail-closed and current to the PR head.",
+    "External AI, Docker Scout, and credential-dependent lanes must not poison core CI when unconfigured.",
+    "Existing issue labels must not be replaced by AI triage output.",
+    "Workflow actions that exercise security authority must be pinned or explicitly tracked as residual risk.",
+    "No application runtime code is modified."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-GHA-HARDEN",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "chore/dependabot-codeql-v4"
+  },
+  "commit": {
+    "message": "ci: harden and optimize GitHub Actions workflows",
+    "allowlist": [
+      ".github/dependabot.yml",
+      ".github/workflows/ci-complete.yml",
+      ".github/workflows/codeql.yml",
+      ".github/workflows/docker-scout.yml",
+      ".github/workflows/docs.yml",
+      ".github/workflows/gemini-scheduled-triage.yml",
+      ".github/workflows/gemini-triage.yml",
+      ".github/workflows/preflight.yml",
+      ".github/workflows/repo-identity.yml",
+      ".github/workflows/security-review.yml",
+      ".github/workflows/workflow-lint.yml",
+      "task-packets/TP-DMX-GHA-HARDEN-001.json",
+      "proof/TP-DMX-GHA-HARDEN-001/PROOF.json",
+      "proof/TP-DMX-GHA-HARDEN-001/AUDITOR_REPORT.md"
+    ],
+    "verify": [
+      "Workflow Lint / actionlint",
+      "CodeQL matrix",
+      "Complete CI Pipeline required lanes",
+      "preflight",
+      "docs",
+      "Repo Identity Check",
+      "clobber-guard",
+      "Docker Scout credential and fallback behavior",
+      "Claude security-review credential and trusted-PR gates"
+    ]
+  },
+  "pr": {
+    "title": "chore(ci): harden and optimize GitHub Actions workflows",
+    "body": "PR #1100 contains the bounded workflow hardening set and its evidence bundle.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "census",
+      "task": "Enumerate every active root workflow and inspect triggers, permissions, actions, secrets, concurrency, summaries, and recent live failures.",
+      "requirements": [
+        "Preserve contradictions and mark unknown branch-protection or secret state explicitly."
+      ],
+      "commands": [
+        "GitHub.fetch_file for all files under .github/workflows",
+        "GitHub.fetch_commit_workflow_runs for current heads"
+      ],
+      "expected_files": [],
+      "validation": [
+        "All 17 pre-existing active root workflows are classified."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PAL_EXECUTION_RULES.md",
+        "dopetask-cannonical-spec.json"
+      ]
+    },
+    {
+      "id": "repair",
+      "task": "Repair evidence-backed workflow defects and reduce redundant or misleading lanes.",
+      "requirements": [
+        "Do not weaken required test, audit-validator, routing, or red-lane gates.",
+        "Do not make external LLM credentials a prerequisite for core CI."
+      ],
+      "commands": [
+        "Update bounded workflow allowlist through GitHub contents API"
+      ],
+      "expected_files": [
+        ".github/workflows/workflow-lint.yml"
+      ],
+      "validation": [
+        "Docker Scout does not attempt empty authentication.",
+        "Gemini triage preserves existing labels.",
+        "Security summaries distinguish skipped scans from completed scans.",
+        "Complete CI summary uses actual dependency results.",
+        "Duplicate Claude and docs jobs are removed from Complete CI."
+      ],
+      "context_files": [
+        ".github/workflows/ci-complete.yml",
+        ".github/workflows/docker-scout.yml",
+        ".github/workflows/gemini-scheduled-triage.yml",
+        ".github/workflows/gemini-triage.yml",
+        ".github/workflows/security-review.yml"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Validate the complete workflow set and bind results to the exact workflow-code head.",
+      "requirements": [
+        "Record live run IDs, conclusions, residual risks, and skipped external audit status truthfully."
+      ],
+      "commands": [
+        "actionlint 1.7.12 with checksum verification",
+        "GitHub Actions current-head runs"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-GHA-HARDEN-001/PROOF.json",
+        "proof/TP-DMX-GHA-HARDEN-001/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Actionlint succeeds on all active workflows.",
+        "CodeQL succeeds on the pinned v4 action.",
+        "Required Complete CI lanes succeed.",
+        "PR remains draft because workflow files are red-lane and independent embedded audit is unavailable."
+      ],
+      "context_files": [
+        "proof/TP-DMX-GHA-HARDEN-001/PROOF.json"
+      ]
+    }
+  ]
+}
