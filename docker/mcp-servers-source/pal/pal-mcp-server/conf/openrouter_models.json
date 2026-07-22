@@ -365,25 +365,6 @@
       "temperature_constraint": "fixed",
       "description": "GPT-5 nano (400K context, 128K output) - Fastest, cheapest version of GPT-5 for summarization and classification tasks",
       "intelligence_score": 8
-    },
-    {
-      "model_name": "x-ai/grok-4",
-      "aliases": [
-        "grok-4",
-        "grok4",
-        "grok"
-      ],
-      "context_window": 256000,
-      "max_output_tokens": 256000,
-      "supports_extended_thinking": true,
-      "supports_json_mode": true,
-      "supports_function_calling": true,
-      "supports_images": true,
-      "max_image_size_mb": 20.0,
-      "supports_temperature": true,
-      "temperature_constraint": "range",
-      "description": "xAI's Grok 4 via OpenRouter with vision and advanced reasoning",
-      "intelligence_score": 15
     }
   ]
 }

@@ -1,0 +1,106 @@
+{
+  "id": "TP-DMX-PAL-MODEL-REFRESH-001",
+  "project": "dopemux-mvp",
+  "target": "Refresh vendored PAL model catalogs and routing for Grok 4.5 and GPT-5.6, then prove source/runtime parity and direct provider usability.",
+  "invariants": [
+    "Provider model identifiers and capabilities come from current official provider documentation and live account model listings.",
+    "Retired XAI canonical models are not selected by PAL.",
+    "Tracked PAL source and its Docker runtime symlink remain byte-equivalent for changed PAL files.",
+    "Secrets remain external to tracked files and command output."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "codex/pal-model-refresh",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/pal-model-refresh",
+    "base_branch": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "commit": {
+    "message": "fix(pal): refresh XAI and OpenAI model catalogs",
+    "allowlist": [
+      "compose.yml",
+      "docker/mcp-servers-source/pal-stdio/Dockerfile",
+      "docker/mcp-servers-source/pal/.dockerignore",
+      "docker/mcp-servers-source/pal/pal-mcp-server/conf/openai_models.json",
+      "docker/mcp-servers-source/pal/pal-mcp-server/conf/openrouter_models.json",
+      "docker/mcp-servers-source/pal/pal-mcp-server/conf/xai_models.json",
+      "docker/mcp-servers-source/pal/pal-mcp-server/providers/openai.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/providers/openai_compatible.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/providers/xai.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/pyproject.toml",
+      "docker/mcp-servers-source/pal/pal-mcp-server/requirements.txt",
+      "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_auto_mode_comprehensive.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_auto_mode_model_listing.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_intelligent_fallback.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_openai_provider.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_per_tool_model_defaults.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_supported_models_aliases.py",
+      "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_xai_provider.py",
+      "proof/pr_merge/embedded-audit/pr-1088/AUDITOR_REPORT.md",
+      "proof/pr_merge/embedded-audit/pr-1088/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1088/PROOF.json.sig",
+      "task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json",
+      "tests/arch/test_pal_model_catalog_contract.py"
+    ],
+    "verify": [
+      "python -m pytest -q tests/arch/test_pal_model_catalog_contract.py",
+      "python -m pytest -q docker/mcp-servers-source/pal/pal-mcp-server/tests/test_xai_provider.py docker/mcp-servers-source/pal/pal-mcp-server/tests/test_openai_provider.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(pal): refresh XAI and OpenAI model catalogs",
+    "body": "Replace retired XAI model routing with Grok 4.5, add GPT-5.6 Sol/Terra/Luna, propagate XAI credentials into PAL services, and enforce parity between development and runtime PAL trees.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "catalog-contract",
+      "task": "Add failing contract tests for current provider IDs, aliases, route preferences, compose wiring, and mirrored PAL trees.",
+      "validation": [
+        "Tests fail against stale catalogs for expected reasons before implementation."
+      ]
+    },
+    {
+      "id": "refresh-models",
+      "task": "Update XAI and OpenAI catalogs, preferred-model routing, Responses API parameter handling, and compose XAI key propagation.",
+      "validation": [
+        "Focused provider and architecture tests pass in source tree.",
+        "Changed PAL source and runtime files are byte-equivalent."
+      ]
+    },
+    {
+      "id": "runtime-proof",
+      "task": "Rebuild PAL services and run bounded direct model probes without exposing credentials.",
+      "validation": [
+        "Direct Grok 4.5 and GPT-5.6 calls return successful bounded responses, or exact external blocker is recorded as NOT_RUN."
+      ]
+    }
+  ]
+}

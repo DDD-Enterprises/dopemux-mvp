@@ -76,22 +76,21 @@ class TestSupportedModelsAliases:
             assert isinstance(config.aliases, list), f"{model_name} aliases must be a list"
 
         # Test specific aliases
-        assert "grok" in provider.MODEL_CAPABILITIES["grok-4"].aliases
-        assert "grok4" in provider.MODEL_CAPABILITIES["grok-4"].aliases
-        assert "grok3" in provider.MODEL_CAPABILITIES["grok-3"].aliases
-        assert "grok3fast" in provider.MODEL_CAPABILITIES["grok-3-fast"].aliases
-        assert "grokfast" in provider.MODEL_CAPABILITIES["grok-3-fast"].aliases
+        assert "grok" in provider.MODEL_CAPABILITIES["grok-4.5"].aliases
+        assert "grok4.5" in provider.MODEL_CAPABILITIES["grok-4.5"].aliases
+        assert "grok-4.5-latest" in provider.MODEL_CAPABILITIES["grok-4.5"].aliases
+        assert "grok-build-latest" in provider.MODEL_CAPABILITIES["grok-4.5"].aliases
 
         # Test alias resolution
-        assert provider._resolve_model_name("grok") == "grok-4"
-        assert provider._resolve_model_name("grok4") == "grok-4"
-        assert provider._resolve_model_name("grok3") == "grok-3"
-        assert provider._resolve_model_name("grok3fast") == "grok-3-fast"
-        assert provider._resolve_model_name("grokfast") == "grok-3-fast"
+        assert provider._resolve_model_name("grok") == "grok-4.5"
+        assert provider._resolve_model_name("grok4.5") == "grok-4.5"
+        assert provider._resolve_model_name("grok-4") == "grok-4"
+        assert provider._resolve_model_name("grok-4.5-latest") == "grok-4.5"
+        assert provider._resolve_model_name("grok-build-latest") == "grok-4.5"
 
         # Test case insensitive resolution
-        assert provider._resolve_model_name("Grok") == "grok-4"
-        assert provider._resolve_model_name("GROKFAST") == "grok-3-fast"
+        assert provider._resolve_model_name("Grok") == "grok-4.5"
+        assert provider._resolve_model_name("GROK-BUILD-LATEST") == "grok-4.5"
 
     def test_dial_provider_aliases(self):
         """Test DIAL provider's alias structure."""
@@ -140,10 +139,10 @@ class TestSupportedModelsAliases:
         # Test XAI
         xai_provider = XAIModelProvider("test-key")
         xai_models = xai_provider.list_models(respect_restrictions=False)
-        assert "grok-3" in xai_models
+        assert "grok-4.5" in xai_models
         assert "grok" in xai_models
-        assert "grok-3-fast" in xai_models
-        assert "grokfast" in xai_models
+        assert "grok-4.5-latest" in xai_models
+        assert "grok-build-latest" in xai_models
 
         # Test DIAL
         dial_provider = DIALModelProvider("test-key")

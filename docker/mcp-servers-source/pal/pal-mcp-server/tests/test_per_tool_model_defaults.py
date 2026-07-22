@@ -97,8 +97,7 @@ class TestModelSelection:
             ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.EXTENDED_REASONING)
-            # OpenAI prefers GPT-5-Codex for extended reasoning (coding tasks)
-            assert model == "gpt-5-codex"
+            assert model == "gpt-5.6-sol"
 
     def test_extended_reasoning_with_gemini_only(self):
         """Test EXTENDED_REASONING prefers pro when only Gemini is available."""
@@ -132,8 +131,7 @@ class TestModelSelection:
             ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.FAST_RESPONSE)
-            # OpenAI now prefers gpt-5 for fast response (based on our new preference order)
-            assert model == "gpt-5"
+            assert model == "gpt-5.6-luna"
 
     def test_fast_response_with_gemini_only(self):
         """Test FAST_RESPONSE prefers flash when only Gemini is available."""
@@ -166,8 +164,7 @@ class TestModelSelection:
             ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.BALANCED)
-            # OpenAI prefers gpt-5 for balanced (based on our new preference order)
-            assert model == "gpt-5"
+            assert model == "gpt-5.6-terra"
 
     def test_no_category_uses_balanced_logic(self):
         """Test that no category specified uses balanced logic."""
@@ -194,7 +191,7 @@ class TestFlexibleModelSelection:
                 "env": {"OPENAI_API_KEY": "test-key"},
                 "provider_type": ProviderType.OPENAI,
                 "category": ToolModelCategory.EXTENDED_REASONING,
-                "expected": "gpt-5-codex",  # GPT-5-Codex prioritized for coding tasks
+                "expected": "gpt-5.6-sol",
             },
             # Case 2: Gemini provider for fast response
             {
@@ -208,7 +205,7 @@ class TestFlexibleModelSelection:
                 "env": {"OPENAI_API_KEY": "test-key"},
                 "provider_type": ProviderType.OPENAI,
                 "category": ToolModelCategory.FAST_RESPONSE,
-                "expected": "gpt-5",  # Based on new preference order
+                "expected": "gpt-5.6-luna",
             },
         ]
 

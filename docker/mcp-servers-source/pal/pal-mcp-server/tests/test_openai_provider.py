@@ -1,6 +1,8 @@
 """Tests for OpenAI provider implementation."""
 
+import logging
 import os
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from providers.openai import OpenAIModelProvider
@@ -345,3 +347,153 @@ class TestOpenAIProvider:
         # Verify the response
         assert result.content == "Test response"
         assert result.model_name == "o3-mini"
+
+    def test_gpt_5_6_alias_and_capabilities(self):
+        provider = OpenAIModelProvider("test-key")
+
+        assert provider._resolve_model_name("gpt-5.6") == "gpt-5.6-sol"
+        assert provider._resolve_model_name("sol") == "gpt-5.6-sol"
+        for model_name in ("gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna"):
+            capabilities = provider.get_capabilities(model_name)
+            assert capabilities.context_window == 1_050_000
+            assert capabilities.max_output_tokens == 128_000
+            assert capabilities.use_openai_response_api is True
+
+    def test_current_model_preferences_use_gpt_5_6_family(self):
+        from tools.models import ToolModelCategory
+
+        provider = OpenAIModelProvider("test-key")
+        allowed = ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"]
+
+        assert provider.get_preferred_model(ToolModelCategory.EXTENDED_REASONING, allowed) == "gpt-5.6-sol"
+        assert provider.get_preferred_model(ToolModelCategory.FAST_RESPONSE, allowed) == "gpt-5.6-luna"
+        assert provider.get_preferred_model(ToolModelCategory.BALANCED, allowed) == "gpt-5.6-terra"
+
+    @patch("providers.openai_compatible.OpenAI")
+    def test_gpt_5_6_uses_responses_max_output_tokens(self, mock_openai_class):
+        mock_client = MagicMock()
+        mock_openai_class.return_value = mock_client
+        mock_response = MagicMock()
+        mock_response.output_text = "ok"
+        mock_response.model = "gpt-5.6-terra"
+        mock_response.usage = None
+        mock_client.responses.create.return_value = mock_response
+
+        provider = OpenAIModelProvider("test-key")
+        provider.generate_content(
+            prompt="Reply ok.",
+            model_name="gpt-5.6-terra",
+            max_output_tokens=16,
+        )
+
+        call_args = mock_client.responses.create.call_args.kwargs
+        assert call_args["max_output_tokens"] == 16
+        assert "max_completion_tokens" not in call_args
+
+    @patch("providers.openai_compatible.OpenAI")
+    def test_gpt_5_6_responses_preserves_image_inputs(self, mock_openai_class, caplog):
+        mock_client = MagicMock()
+        mock_openai_class.return_value = mock_client
+        mock_response = MagicMock(output_text="described", usage=None)
+        mock_client.responses.create.return_value = mock_response
+        caplog.set_level(logging.INFO)
+
+        provider = OpenAIModelProvider("test-key")
+        provider._process_image = MagicMock(
+            return_value={
+                "type": "image_url",
+                "image_url": {"url": "data:image/png;base64,AA=="},
+            }
+        )
+        provider.generate_content(
+            prompt="Describe image.",
+            model_name="gpt-5.6-terra",
+            images=["image.png"],
+        )
+
+        content = mock_client.responses.create.call_args.kwargs["input"][0]["content"]
+        assert mock_client.responses.create.call_args.kwargs["store"] is True
+        assert content == [
+            {"type": "input_text", "text": "Describe image."},
+            {"type": "input_image", "image_url": "data:image/png;base64,AA=="},
+        ]
+        assert "data:image/png;base64,AA==" not in caplog.text
+        assert "Describe image." not in caplog.text
+        assert "[redacted text]" in caplog.text
+        assert "[redacted image]" in caplog.text
+
+    def test_responses_logging_redacts_all_input_text(self):
+        provider = OpenAIModelProvider("test-key")
+        long_secret = "long-secret-" * 20
+
+        sanitized = provider._sanitize_for_logging(
+            {
+                "input": [
+                    {"role": "system", "content": [{"type": "input_text", "text": long_secret}]},
+                    {"role": "user", "content": [{"type": "input_text", "text": "short-secret"}]},
+                ]
+            }
+        )
+
+        serialized = str(sanitized)
+        assert "short-secret" not in serialized
+        assert long_secret[:100] not in serialized
+        assert serialized.count("[redacted text]") == 2
+
+    @patch("providers.openai_compatible.OpenAI")
+    def test_gpt_5_6_responses_extracts_usage_fields(self, mock_openai_class):
+        mock_client = MagicMock()
+        mock_openai_class.return_value = mock_client
+        mock_response = MagicMock(output_text="ok")
+        mock_response.usage = SimpleNamespace(input_tokens=12, output_tokens=5, total_tokens=17)
+        mock_client.responses.create.return_value = mock_response
+
+        provider = OpenAIModelProvider("test-key")
+        result = provider.generate_content(prompt="Reply ok.", model_name="gpt-5.6-terra")
+
+        assert result.usage == {
+            "input_tokens": 12,
+            "output_tokens": 5,
+            "total_tokens": 17,
+        }
+
+    @patch("providers.openai_compatible.OpenAI")
+    def test_gpt_5_6_responses_preserves_instruction_roles(self, mock_openai_class):
+        mock_client = MagicMock()
+        mock_openai_class.return_value = mock_client
+        mock_client.responses.create.return_value = MagicMock(output_text="ok", usage=None)
+
+        provider = OpenAIModelProvider("test-key")
+        provider._generate_with_responses_endpoint(
+            model_name="gpt-5.6-sol",
+            messages=[
+                {"role": "system", "content": "System instruction."},
+                {"role": "developer", "content": "Developer instruction."},
+                {"role": "user", "content": "User request."},
+            ],
+            temperature=1.0,
+        )
+
+        assert mock_client.responses.create.call_args.kwargs["input"] == [
+            {"role": "system", "content": [{"type": "input_text", "text": "System instruction."}]},
+            {"role": "developer", "content": [{"type": "input_text", "text": "Developer instruction."}]},
+            {"role": "user", "content": [{"type": "input_text", "text": "User request."}]},
+        ]
+
+    @patch("providers.openai_compatible.OpenAI")
+    def test_openrouter_responses_omits_store_parameter(self, mock_openai_class):
+        mock_client = MagicMock()
+        mock_openai_class.return_value = mock_client
+        mock_response = MagicMock(output_text="ok", usage=None)
+        mock_client.responses.create.return_value = mock_response
+
+        provider = OpenAIModelProvider("test-key")
+        with patch.object(provider, "get_provider_type", return_value=ProviderType.OPENROUTER):
+            provider._generate_with_responses_endpoint(
+                model_name="openai/gpt-5.6-terra",
+                messages=[{"role": "user", "content": "Reply ok."}],
+                temperature=1.0,
+            )
+
+        call_args = mock_client.responses.create.call_args.kwargs
+        assert "store" not in call_args

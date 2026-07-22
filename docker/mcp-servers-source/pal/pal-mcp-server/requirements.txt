@@ -1,6 +1,6 @@
 mcp>=1.28.1
 google-genai>=1.19.0
-openai>=1.55.2  # Minimum version for httpx 0.28.0 compatibility
+openai>=1.66.0  # Responses API plus httpx 0.28.0 compatibility
 pydantic>=2.0.0
 python-dotenv>=1.2.2
 importlib-resources>=5.0.0; python_version<"3.9"
