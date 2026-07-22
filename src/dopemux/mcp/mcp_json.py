@@ -244,6 +244,16 @@ def plan_mcp_json_repairs(
                     if "CATALOG_FIELD_DRIFT" not in change_reasons:
                         change_reasons.append("CATALOG_FIELD_DRIFT")
 
+        # Catalog now renders http/sse transports as a stdio+command entry
+        # (mcp-proxy wraps the URL into `args`). When the desired entry has no
+        # `url` key but the current one does, the old `url` is dead weight left
+        # over from the pre-proxy shape — drop it so repaired entries don't carry
+        # a stale, unused field alongside `command`/`args`.
+        if "url" not in desired and "url" in new_entry:
+            del new_entry["url"]
+            if "CATALOG_FIELD_DRIFT" not in change_reasons:
+                change_reasons.append("CATALOG_FIELD_DRIFT")
+
         # Preserve description if user has one and desired also has one: prefer catalog
         if "description" in desired:
             new_entry["description"] = desired["description"]

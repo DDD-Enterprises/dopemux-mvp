@@ -268,7 +268,7 @@ services:
       dopecon-bridge:
         condition: service_started
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:3004/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl -fsI http://localhost:3005/sse || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s

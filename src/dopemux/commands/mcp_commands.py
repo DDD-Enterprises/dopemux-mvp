@@ -588,14 +588,24 @@ def _render_local_entry(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
     Uses ${VAR} placeholders so Claude Code expands them at session start.
     """
     transport = spec.get("transport", "http")
-    entry: Dict[str, Any] = {"type": transport}
 
     if transport in {"http", "sse"}:
         url = spec.get("url_template") or spec.get("url")
         if not url:
             raise click.ClickException(f"Server `{name}` missing `url`/`url_template`.")
-        entry["url"] = url
+        proxy_transport = "streamablehttp" if transport == "http" else "sse"
+        entry: Dict[str, Any] = {
+            "type": "stdio",
+            "command": "uvx",
+            "args": [
+                "mcp-proxy",
+                "--transport",
+                proxy_transport,
+                url
+            ]
+        }
     elif transport == "stdio":
+        entry = {"type": "stdio"}
         entry["command"] = spec.get("command_template") or spec.get("command")
         if not entry["command"]:
             raise click.ClickException(f"Server `{name}` missing `command`/`command_template`.")
@@ -620,13 +630,23 @@ def _render_local_entry(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
 def _render_global_entry(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
     """Render a singleton catalog entry as a ~/.claude.json mcpServers value."""
     transport = spec.get("transport", "http")
-    entry: Dict[str, Any] = {"type": transport}
 
     if transport in {"http", "sse"}:
         if not spec.get("url"):
             raise click.ClickException(f"Singleton `{name}` requires `url`.")
-        entry["url"] = spec["url"]
+        proxy_transport = "streamablehttp" if transport == "http" else "sse"
+        entry: Dict[str, Any] = {
+            "type": "stdio",
+            "command": "uvx",
+            "args": [
+                "mcp-proxy",
+                "--transport",
+                proxy_transport,
+                spec["url"]
+            ]
+        }
     elif transport == "stdio":
+        entry = {"type": "stdio"}
         if not spec.get("command"):
             raise click.ClickException(f"Singleton `{name}` requires `command`.")
         entry["command"] = spec["command"]
@@ -641,6 +661,7 @@ def _render_global_entry(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
 
     if spec.get("description"):
         entry["description"] = spec["description"]
+
     return entry
 
 

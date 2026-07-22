@@ -106,7 +106,13 @@ def test_repair_config_apply_json(fixture_repo):
     data = json.loads(result.output)
     assert data["status"] == "APPLIED"
     mcp = json.loads((fixture_repo / ".mcp.json").read_text())
-    assert mcp["mcpServers"]["dope-memory"]["type"] == "http"
+    # http/sse catalog entries are rendered as stdio + `uvx mcp-proxy ...`
+    # (Claude Code proxy wrapper), not a raw type:http/sse + url entry.
+    dope_memory = mcp["mcpServers"]["dope-memory"]
+    assert dope_memory["type"] == "stdio"
+    assert "url" not in dope_memory
+    assert dope_memory["command"] == "uvx"
+    assert dope_memory["args"][:2] == ["mcp-proxy", "--transport"]
     assert mcp["mcpServers"]["custom"]["url"] == "http://localhost:1/x"
     assert (fixture_repo / ".envrc.dopemux-mcp").is_file()
 

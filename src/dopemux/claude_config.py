@@ -25,25 +25,29 @@ logger = logging.getLogger(__name__)
 
 # Mapping from profile-friendly names to actual Claude config names
 MCP_NAME_MAPPING = {
-    # Profile name -> Claude config name (with dopemux- prefix)
-    "serena-v2": "dopemux-serena",
-    "serena": "dopemux-serena",
-    "dopemux-serena": "dopemux-serena",
-    # Direct mappings (prefixed)
-    "conport": "dopemux-conport",
-    "dopemux-conport": "dopemux-conport",
-    "zen": "dopemux-zen",
-    "dopemux-zen": "dopemux-zen",
-    "pal": "dopemux-pal",
-    "dopemux-pal": "dopemux-pal",
-    "gpt-researcher": "dopemux-gpt-researcher",
-    "dopemux-gpt-researcher": "dopemux-gpt-researcher",
-    "claude-context": "dopemux-claude-context",
-    "dopemux-claude-context": "dopemux-claude-context",
-    "desktop-commander": "dopemux-desktop-commander",
-    "dopemux-desktop-commander": "dopemux-desktop-commander",
-    "leantime-bridge": "dopemux-leantime-bridge",
-    "dopemux-leantime-bridge": "dopemux-leantime-bridge",
+    # Profile MCP name -> Claude config (`.claude/claude_config.json`) mcpServers key.
+    # Claude config keys are UNPREFIXED (conport, serena, zen, ...) — matching the
+    # deployed `.mcp.json` — so this table strips the internal `dopemux-` registry
+    # prefix. The MCPRegistry keeps its own `dopemux-*` server IDs; that is a
+    # separate namespace and is intentionally not the target here.
+    "serena-v2": "serena",
+    "serena": "serena",
+    "dopemux-serena": "serena",
+    "conport": "conport",
+    "dopemux-conport": "conport",
+    "zen": "zen",
+    "dopemux-zen": "zen",
+    "pal": "pal",
+    "dopemux-pal": "pal",
+    "gpt-researcher": "gpt-researcher",
+    "dopemux-gpt-researcher": "gpt-researcher",
+    "claude-context": "claude-context",
+    "dopemux-claude-context": "claude-context",
+    "dope-context": "dope-context",
+    "desktop-commander": "desktop-commander",
+    "dopemux-desktop-commander": "desktop-commander",
+    "leantime-bridge": "leantime-bridge",
+    "dopemux-leantime-bridge": "leantime-bridge",
 }
 
 
@@ -303,6 +307,15 @@ class ClaudeConfig:
     ) -> Dict[str, Dict[str, Any]]:
         """Filter MCP servers based on profile.
 
+        Mounts every profile server that resolves to a configured Claude config
+        key. Servers a profile lists but that are not present in the config
+        (e.g. optional tooling not installed in this workspace) are skipped with
+        a warning rather than aborting — a profile referencing an unavailable
+        optional server should still start with the servers that *are* present.
+
+        The one hard requirement is the memory-authority server ``conport``: if
+        it cannot be resolved, the profile is unusable and this raises.
+
         Args:
             profile: Profile with list of MCP servers to include
 
@@ -310,32 +323,34 @@ class ClaudeConfig:
             Dictionary of filtered MCP server configurations
 
         Raises:
-            ClaudeConfigError: If required MCP servers are missing from config
+            ClaudeConfigError: If the required ``conport`` memory server is not
+                configured (all other missing servers are skipped, not fatal).
         """
         all_servers = self.get_mcp_servers()
         filtered_servers = {}
-        missing_servers = []
+        skipped_servers = []
 
         for profile_mcp_name in profile.mcps:
             # Map profile name to Claude config name
             config_name = MCP_NAME_MAPPING.get(profile_mcp_name, profile_mcp_name)
 
-            if config_name is None:
-                # MCP not yet configured
-                missing_servers.append(profile_mcp_name)
-                continue
+            if config_name and config_name in all_servers:
+                filtered_servers[config_name] = all_servers[config_name]
+            else:
+                skipped_servers.append(profile_mcp_name)
 
-            if config_name not in all_servers:
-                missing_servers.append(f"{profile_mcp_name} (maps to '{config_name}')")
-                continue
-
-            filtered_servers[config_name] = all_servers[config_name]
-
-        if missing_servers:
+        if "conport" not in filtered_servers:
             raise ClaudeConfigError(
-                f"Profile '{profile.name}' requires MCP servers that are not configured:\n" +
-                "\n".join(f"  • {name}" for name in missing_servers) +
-                f"\n\nPlease configure these servers in {self.config_path}"
+                f"Profile '{profile.name}' cannot mount the required memory "
+                f"server 'conport'. Please configure it in {self.config_path}"
+            )
+
+        if skipped_servers:
+            logger.warning(
+                "Profile '%s': skipping MCP servers not configured in %s: %s",
+                profile.name,
+                self.config_path,
+                ", ".join(skipped_servers),
             )
 
         return filtered_servers

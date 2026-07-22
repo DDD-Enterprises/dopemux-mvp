@@ -10,14 +10,14 @@
         "DOPEMUX_INSTANCE_ID",
         "-e",
         "DOPEMUX_WORKSPACE_ID",
-        "mcp-conport_fix/installer-mac-linux-audit",
+        "mcp-conport_fix/litellm-master-key-healthcheck",
         "uvx",
         "--from",
         "context-portal-mcp",
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "fix/installer-mac-linux-audit",
+        "DOPEMUX_INSTANCE_ID": "fix/litellm-master-key-healthcheck",
         "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
       }
     },

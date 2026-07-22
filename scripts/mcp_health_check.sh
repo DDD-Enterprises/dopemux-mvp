@@ -32,26 +32,39 @@ check_health() {
 check_mcp_endpoint() {
     local name=$1
     local port=$2
+    local path=${3:-mcp}
     
-    echo "🔌 Checking $name MCP endpoint ($port/mcp)..."
+    echo "🔌 Checking $name MCP endpoint ($port/$path)..."
     
-    # Try POST to /mcp endpoint
-    response=$(curl -sS -X POST \
-        -H 'Content-Type: application/json' \
-        -H 'Accept: application/json' \
-        --data '{"jsonrpc":"2.0","id":"probe","method":"initialize","params":{}}' \
-        "http://localhost:$port/mcp" 2>&1 || true)
-    
-    if echo "$response" | grep -q '"jsonrpc"'; then
-        echo "✅ $name MCP endpoint responding"
-        return 0
-    elif echo "$response" | grep -q "405\|Method Not Allowed"; then
-        echo "⚠️  $name MCP endpoint exists (method not allowed - expected for GET)"
-        return 0
+    if [ "$path" = "sse" ]; then
+        response=$(curl -sS -m 2 -H "Accept: text/event-stream" "http://localhost:$port/sse" 2>&1 || true)
+        if echo "$response" | grep -q 'event: endpoint'; then
+            echo "✅ $name MCP endpoint responding"
+            return 0
+        else
+            echo "❌ $name MCP endpoint not responding properly"
+            echo "   Response: $response"
+            return 1
+        fi
     else
-        echo "❌ $name MCP endpoint not responding properly"
-        echo "   Response: $response"
-        return 1
+        # Try POST to /mcp endpoint
+        response=$(curl -sS -X POST \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json' \
+            --data '{"jsonrpc":"2.0","id":"probe","method":"initialize","params":{}}' \
+            "http://localhost:$port/$path" 2>&1 || true)
+        
+        if echo "$response" | grep -q '"jsonrpc"'; then
+            echo "✅ $name MCP endpoint responding"
+            return 0
+        elif echo "$response" | grep -q "405\|Method Not Allowed"; then
+            echo "⚠️  $name MCP endpoint exists (method not allowed - expected for GET)"
+            return 0
+        else
+            echo "❌ $name MCP endpoint not responding properly"
+            echo "   Response: $response"
+            return 1
+        fi
     fi
 }
 
@@ -100,9 +113,9 @@ echo
 echo "🔌 MCP Endpoint Checks:"
 echo "----------------------"
 
-check_mcp_endpoint "Dope-Context" 3010 || record_failure
-check_mcp_endpoint "PAL" 3003 || record_failure
-check_mcp_endpoint "ConPort" 3004 || record_failure
+check_mcp_endpoint "Dope-Context" 3010 "mcp" || record_failure
+check_mcp_endpoint "PAL" 3003 "sse" || record_failure
+check_mcp_endpoint "ConPort" 3004 "mcp" || record_failure
 
 echo
 echo "🔌 Stdio MCP Checks:"
