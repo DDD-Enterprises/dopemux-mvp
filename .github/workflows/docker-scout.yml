@@ -17,18 +17,64 @@ on:
       - "docker/**/Dockerfile*"
       - ".github/workflows/docker-scout.yml"
       - ".github/workflows/containers.yml"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   REGISTRY: docker.io
-  NAMESPACE: docker.io/${{ vars.DOCKER_SCOUT_HUB_NAMESPACE }}
 
 jobs:
+  configuration:
+    name: Detect Docker Scout configuration
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.detect.outputs.enabled }}
+      namespace: ${{ steps.detect.outputs.namespace }}
+    steps:
+      - name: Detect required Docker Hub configuration
+        id: detect
+        env:
+          DOCKER_SCOUT_HUB_NAMESPACE: ${{ vars.DOCKER_SCOUT_HUB_NAMESPACE }}
+          DOCKER_SCOUT_HUB_USER: ${{ secrets.DOCKER_SCOUT_HUB_USER }}
+          DOCKER_SCOUT_HUB_PASSWORD: ${{ secrets.DOCKER_SCOUT_HUB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -n "$DOCKER_SCOUT_HUB_NAMESPACE" ] \
+            && [ -n "$DOCKER_SCOUT_HUB_USER" ] \
+            && [ -n "$DOCKER_SCOUT_HUB_PASSWORD" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "namespace=docker.io/${DOCKER_SCOUT_HUB_NAMESPACE}" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "namespace=" >> "$GITHUB_OUTPUT"
+            echo "::warning::Docker Scout is not configured. Set DOCKER_SCOUT_HUB_NAMESPACE and both Docker Hub credentials to enable this advisory workflow."
+          fi
+
+  unconfigured:
+    name: Docker Scout not configured
+    needs: configuration
+    if: needs.configuration.outputs.enabled != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record advisory skip
+        run: |
+          {
+            echo "## Docker Scout"
+            echo
+            echo "Skipped cleanly because the required Docker Hub namespace or credentials are unavailable."
+            echo "Core container builds remain independent of this advisory scan."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   scout:
     name: Scout ${{ matrix.service }}
+    needs: configuration
+    if: needs.configuration.outputs.enabled == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -39,6 +85,7 @@ jobs:
       security-events: write
 
     env:
+      NAMESPACE: ${{ needs.configuration.outputs.namespace }}
       DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
       DOCKER_SCOUT_ORGANIZATION: ${{ vars.DOCKER_SCOUT_ORGANIZATION }}
       DOCKER_SCOUT_COMPARE_ENABLED: ${{ vars.DOCKER_SCOUT_COMPARE_ENABLED }}
@@ -88,7 +135,7 @@ jobs:
 
       - name: Authenticate to Docker Hardened Images
         id: dhi_login
-        if: ${{ env.DHI_TOKEN != '' }}
+        if: env.DHI_TOKEN != ''
         continue-on-error: true
         uses: docker/login-action@v4
         with:
@@ -96,16 +143,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ env.DHI_TOKEN }}
 
-      - name: Fail when DHI login unavailable on non-PR runs
-        if: ${{ steps.dhi_login.outcome != 'success' && github.event_name != 'pull_request' }}
+      - name: Fall back to public base images when DHI is unavailable
+        if: steps.dhi_login.outcome != 'success'
         run: |
-          echo "::error::DHI login unavailable (outcome: ${{ steps.dhi_login.outcome }}). Refusing to rewrite dhi.io image references on non-pull_request runs — Scout results must reflect the same hardened images that are built and published."
-          exit 1
-
-      - name: Fallback to public images when DHI login unavailable (PR only)
-        if: ${{ steps.dhi_login.outcome != 'success' && github.event_name == 'pull_request' }}
-        run: |
-          echo "::warning::DHI login unavailable (outcome: ${{ steps.dhi_login.outcome }}). Rewriting dhi.io/ base image references to public Docker Hub equivalents for this PR Scout build."
+          echo "::warning::DHI login unavailable (outcome: ${{ steps.dhi_login.outcome }}). Rewriting dhi.io/ references to the same public fallback used by the container build workflow."
           find . -name "Dockerfile*" -type f -exec sed -i 's|dhi.io/||g' {} +
 
       - name: Set up Docker Buildx
@@ -149,7 +190,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=scout-${{ matrix.service }}
 
       - name: Record production environment
-        if: ${{ github.event_name != 'pull_request' && steps.scout_compare.outputs.enabled == 'true' }}
+        if: github.event_name != 'pull_request' && steps.scout_compare.outputs.enabled == 'true'
         env:
           DOCKER_SCOUT_HUB_USER: ${{ secrets.DOCKER_SCOUT_HUB_USER }}
           DOCKER_SCOUT_HUB_PASSWORD: ${{ secrets.DOCKER_SCOUT_HUB_PASSWORD }}
@@ -165,7 +206,7 @@ jobs:
             --platform linux/amd64
 
       - name: Docker Scout compare against production
-        if: ${{ github.event_name == 'pull_request' && steps.scout_compare.outputs.enabled == 'true' }}
+        if: github.event_name == 'pull_request' && steps.scout_compare.outputs.enabled == 'true'
         uses: docker/scout-action@v1
         with:
           command: compare
@@ -177,7 +218,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Docker Scout CVEs on pull requests
-        if: ${{ github.event_name == 'pull_request' && steps.scout_compare.outputs.enabled != 'true' }}
+        if: github.event_name == 'pull_request' && steps.scout_compare.outputs.enabled != 'true'
         uses: docker/scout-action@v1
         with:
           command: cves
@@ -186,7 +227,7 @@ jobs:
           summary: true
 
       - name: Docker Scout CVEs
-        if: ${{ github.event_name != 'pull_request' }}
+        if: github.event_name != 'pull_request'
         uses: docker/scout-action@v1
         with:
           command: cves
@@ -197,8 +238,8 @@ jobs:
           sarif-file: scout-${{ matrix.service }}.sarif
 
       - name: Upload Scout SARIF
-        if: ${{ always() && github.event_name != 'pull_request' }}
-        uses: github/codeql-action/upload-sarif@v3
+        if: always() && github.event_name != 'pull_request'
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: scout-${{ matrix.service }}.sarif
           category: docker-scout-${{ matrix.service }}
