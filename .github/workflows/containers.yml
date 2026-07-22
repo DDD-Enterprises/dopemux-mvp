@@ -60,7 +60,25 @@ jobs:
         run: python scripts/ci/container_matrix.py validate-manifest
 
       - name: Validate manifest against canonical Compose wiring
-        run: python scripts/ci/container_matrix.py validate-compose
+        id: compose_validation
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python scripts/ci/container_matrix.py validate-compose 2>&1 | tee compose-validation.log
+
+      - name: Upload Compose validation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: compose-validation
+          path: compose-validation.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce Compose validation
+        if: ${{ steps.compose_validation.outcome != 'success' }}
+        run: exit 1
 
       - name: Generate build matrix
         id: matrix
