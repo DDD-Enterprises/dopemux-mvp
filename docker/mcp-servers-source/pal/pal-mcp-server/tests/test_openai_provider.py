@@ -412,6 +412,7 @@ class TestOpenAIProvider:
         )
 
         content = mock_client.responses.create.call_args.kwargs["input"][0]["content"]
+        assert mock_client.responses.create.call_args.kwargs["store"] is True
         assert content == [
             {"type": "input_text", "text": "Describe image."},
             {"type": "input_image", "image_url": "data:image/png;base64,AA=="},

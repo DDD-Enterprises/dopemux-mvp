@@ -463,8 +463,14 @@ class OpenAICompatibleProvider(ModelProvider):
             "reasoning": {"effort": effort},
         }
 
-        if self.get_provider_type() != ProviderType.OPENROUTER:
-            completion_params["store"] = True
+        contains_images = any(
+            block.get("type") == "input_image" for message in input_messages for block in message["content"]
+        )
+
+        provider_type = self.get_provider_type()
+        if provider_type != ProviderType.OPENROUTER:
+            # xAI advises disabling server-side history for image requests because storage can make them fail.
+            completion_params["store"] = not (provider_type == ProviderType.XAI and contains_images)
         else:
             logging.debug(f"Omitting 'store' parameter for OpenRouter provider (model: {model_name})")
 
