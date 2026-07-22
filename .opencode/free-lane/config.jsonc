@@ -1,0 +1,73 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // Restricted "public-code lane" config for free OpenCode Zen / OpenRouter
+  // free-tier models. Loaded via OPENCODE_CONFIG by scripts/opencode/free-lane.sh
+  // — do NOT set this as the repo's default opencode.jsonc; it is additive and
+  // merges UNDER the project config, so keep this file self-contained.
+  //
+  // Threat model: these models may retain/train on submitted data, and repo
+  // content is untrusted input to the agent (prompt injection risk). This lane
+  // assumes the worktree only contains material already public on origin/main,
+  // and denies everything that could leak secrets, mutate shared state, or
+  // reach outside the sandboxed worktree.
+  "share": "disabled",
+  "model": "opencode/laguna-s-2.1-free",
+  "permission": {
+    "*": "ask",
+
+    "read": {
+      "*": "allow",
+      "**/.env": "deny",
+      "**/.env.*": "deny",
+      "**/*.pem": "deny",
+      "**/*.key": "deny",
+      "**/*.p12": "deny",
+      "**/*.pfx": "deny",
+      "**/credentials*": "deny",
+      "**/cookies*": "deny",
+      "**/.envrc*": "deny",
+      "**/.git/**": "deny"
+    },
+
+    "edit": "ask",
+
+    "bash": {
+      "*": "ask",
+
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git show*": "allow",
+      "git grep*": "allow",
+      "rg *": "allow",
+
+      "pytest *": "allow",
+      "python -m pytest *": "allow",
+      "python -m compileall *": "allow",
+      "ruff *": "allow",
+      "black --check *": "allow",
+
+      "git commit*": "deny",
+      "git push*": "deny",
+      "git tag*": "deny",
+      "gh *": "deny",
+      "sudo *": "deny",
+      "rm *": "deny",
+      "curl *": "deny",
+      "wget *": "deny",
+
+      "npm install*": "deny",
+      "pnpm install*": "deny",
+      "pip install*": "deny",
+      "uv add*": "deny",
+      "uv pip install*": "deny"
+    },
+
+    "external_directory": "deny",
+    "webfetch": "deny",
+    "websearch": "deny",
+    "mcp_*": "deny",
+    "task": "ask",
+    "skill": "ask"
+  }
+}
