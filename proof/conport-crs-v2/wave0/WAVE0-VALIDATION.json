@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0.0",
+  "checks": [
+    {
+      "id": "candidate-json-parse",
+      "status": "PASS",
+      "count": 5
+    },
+    {
+      "id": "candidate-artifact-count",
+      "status": "PASS",
+      "count": 12
+    },
+    {
+      "id": "candidate-primary-verdict",
+      "status": "PASS"
+    },
+    {
+      "id": "baseline-drift",
+      "status": "PASS",
+      "detail": "origin/main equals synthesis baseline"
+    },
+    {
+      "id": "frontmatter-guard",
+      "status": "PASS",
+      "count": 22
+    },
+    {
+      "id": "docs-validator",
+      "status": "PASS",
+      "count": 22,
+      "warnings": 8,
+      "detail": "Warnings are legacy recommended-section gaps in ADR-201, ADR-221, and adr-index"
+    },
+    {
+      "id": "markdownlint",
+      "status": "PASS",
+      "count": 22
+    },
+    {
+      "id": "adr-id-uniqueness",
+      "status": "PASS"
+    },
+    {
+      "id": "index-link-resolution",
+      "status": "PASS"
+    },
+    {
+      "id": "status-and-wave2-guard",
+      "status": "PASS"
+    },
+    {
+      "id": "allowlist-and-forbidden-path",
+      "status": "PASS"
+    },
+    {
+      "id": "git-diff-check",
+      "status": "PASS"
+    },
+    {
+      "id": "precommit",
+      "status": "PASS"
+    },
+    {
+      "id": "codereview",
+      "status": "PASS",
+      "detail": "Codex implementation review; DCP effective-row hazard corrected before commit"
+    },
+    {
+      "id": "embedded-audit",
+      "status": "NOT_RUN",
+      "detail": "External Claude review blocked by privacy policy; no repository diff transmitted"
+    },
+    {
+      "id": "runtime-validation",
+      "status": "NOT_RUN",
+      "detail": "Runtime mutation and exercise forbidden by packet"
+    },
+    {
+      "id": "pr-scoped-audit",
+      "status": "NOT_RUN",
+      "detail": "No PR authorized"
+    }
+  ],
+  "counts": {
+    "PASS": 14,
+    "FAIL": 0,
+    "NOT_RUN": 3
+  },
+  "overall": "PASS_WITH_NOT_RUN_BOUNDARIES"
+}
