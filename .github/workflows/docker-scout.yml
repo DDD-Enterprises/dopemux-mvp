@@ -198,7 +198,7 @@ jobs:
 
       - name: Upload Scout SARIF
         if: ${{ always() && github.event_name != 'pull_request' }}
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: scout-${{ matrix.service }}.sarif
           category: docker-scout-${{ matrix.service }}
