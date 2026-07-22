@@ -1,0 +1,23 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1101,
+  "head_sha": "1515a84c98f56bc82ec1f521748811df797087d9",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "antigravity",
+    "auditor_model": "gemini",
+    "invocation": "scripts.audit.local_audit_acceptance",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1101/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Credential-aware Docker Hub login detection",
+      "Local image scanning (local://<ref>)",
+      "Unauthenticated local fallback scanner (Trivy) for PRs",
+      "CodeQL v4 upload-sarif upgrade"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
