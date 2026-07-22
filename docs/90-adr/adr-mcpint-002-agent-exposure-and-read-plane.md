@@ -251,3 +251,12 @@ from every non-Claude row (placement map §3).
 ---
 
 *PAL consensus outcome recorded in the Validation section above (2026-07-17).*
+
+## Accepted amendment: ConPort audience policy
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json).
+
+- Claude Code and Codex receive the same normalized ConPort names and schemas, with client-specific allowlists. Reads and writes both require resolved project/workspace/instance identity.
+- Configuration reachability is not authorization. The server enforces actor/client role, approval, idempotency, revision, commit lineage, and scope.
+- DCP receives only an allowlisted redacted read-only subset. It has no write, admin, raw sensitive export, or direct database route.
+- Admin, quarantine, import-apply, restore, identity-admin, and projection-control tools are absent from agent discovery.

@@ -438,3 +438,13 @@ This ADR is implemented successfully when:
 ---
 
 **Note (U7 resolved 2026-04-24)**: Pin state is owned by dope-memory and carried on the chronicle receipt as `pinned_at: Option<Timestamp>` (null = not pinned, non-null = pinned at that timestamp). Pin and unpin operations each write a new receipt (append-only semantics); reaper reads the latest receipt per packet id. This preserves the chronicle authority invariant and enables the TUI packet lifecycle without state mutation.
+
+## Accepted amendment: ConPort source events and mirror receipts
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json):
+
+- ConPort emits `conport.record.changed.v1` from an atomic transaction outbox. The event includes stable project/workspace/instance identity, aggregate and revision IDs, actor/client/request/idempotency, source-control provenance, payload digest, sensitivity, supersession/tombstone fields, and policy decision ID.
+- dope-memory remains canonical for the append-only chronicle receipt, not for the current ConPort record.
+- A mirror receipt records `event_id`, consumer ID, source digest, status, attempt count, processing timestamps, target record ID/digest, and error code.
+- Consumer failure is fail-open only with respect to the already committed ConPort record. Delivery is queued, retried, observable, and dead-lettered. It is never silently dropped.
+- Replaying the same event is idempotent and produces the same receipt or a duplicate receipt with no duplicate chronicle event.

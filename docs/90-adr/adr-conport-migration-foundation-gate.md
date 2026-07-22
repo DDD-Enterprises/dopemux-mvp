@@ -114,3 +114,18 @@ pre-existing ledger this gate does not own."
   is never silently mutated.
 - The gate's native ledger schema and the guard's `NATIVE_LEDGER_COLUMNS`
   constant must stay in sync (enforced by a unit test).
+
+## Accepted amendment: CRS v2 migration boundary
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json). The migration gate additionally requires:
+
+1. a target-specific schema/migration bundle digest and target epoch;
+2. a verified encrypted backup and isolated restore receipt before source mutation;
+3. deterministic legacy export and source digest;
+4. row-level classification into canonical-safe, alias-resolvable, instance-scoped, packet-scoped, foreign-project, system, test/fixture, or ambiguous;
+5. quarantine of ambiguous, foreign, system, and test records unless separately authorized;
+6. evidence-based provenance backfill only, with unknown values retained as unknown or quarantined;
+7. RLS, idempotency, revision, outbox, and cross-scope negative tests;
+8. no hidden DDL and no automatic production migration;
+9. no mutation of the legacy migration ledger to imply target acceptance;
+10. rollback to a verified accepted epoch before irreversible cleanup.

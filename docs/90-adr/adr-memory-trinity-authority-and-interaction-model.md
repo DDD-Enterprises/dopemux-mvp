@@ -385,3 +385,13 @@ This ADR is implemented successfully when:
 ## Final decision
 
 **Adopt the Memory Trinity model in which ConPort is canonical for structured durable context, dope-memory is canonical for chronicle memory, and dope-context is canonical for semantic retrieval, with explicit prohibition on silent authority escalation across planes.**
+
+## Accepted amendment: normalized ConPort authority and durable interaction
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json):
+
+1. Replace every authority use of **ConPort progress** with **ConPort progress observations and work evidence**. These records never own task status, transition legality, blockers, queue order, completion authority, or next action.
+2. dope-context retrieval, ranking, FTS, vector, and graph results are advisory derived outputs. They cannot approve, deny, supersede, or mutate canonical records.
+3. Every cross-plane operation carries resolved `project_id`, `workspace_id`, and where applicable `instance_id`, plus actor/client/request and source provenance.
+4. A ConPort canonical write and its outbox event are atomic. dope-memory, dope-context, and graph consumers acknowledge with idempotent receipts and rebuild from canonical snapshot plus ordered events.
+5. Transport outage after commit may delay a mirror, but may not erase the canonical event. Failure to create the outbox row fails the canonical transaction.

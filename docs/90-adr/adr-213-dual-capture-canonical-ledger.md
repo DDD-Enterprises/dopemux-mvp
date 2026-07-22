@@ -229,3 +229,13 @@ Any change must:
 ---
 
 **Status**: ✅ Accepted and Implemented
+
+## Accepted amendment: stable identity and ConPort receipts
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json).
+
+- Repository paths remain storage locators, not project or workspace authority.
+- Chronicle event identity includes stable `project_id`, `workspace_id`, event schema version, source authority, and source event/record digest so identical content in different projects cannot collide.
+- A ConPort mirror event stores the ConPort `event_id`, aggregate/revision URI, payload digest, actor/client/request identity, and policy decision reference.
+- The global rollup remains read-only and must filter by stable project/workspace identity before aggregation.
+- Historical receipt IDs are not rewritten. Any new derivation rule is versioned and linked by provenance.

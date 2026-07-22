@@ -111,6 +111,15 @@ ConPort is not authoritative for:
 
 This authority is accepted as the target architecture even though runtime invariant enforcement is not yet complete.
 
+#### Proposed ConPort CRS v2 authority amendment
+
+| System | Canonical authority | Explicit exclusions |
+|---|---|---|
+| ConPort CRS v2 | Decisions and approval/supersession history; durable structured product/project context; lease-bound active-context revisions; typed progress observations/work evidence; allowlisted custom structured data; typed relationship assertions | Task/workflow status, transition legality, blockers, queue, completion authority, next action; Leantime metadata; chronicle; retrieval ranking; raw scratch |
+
+- Every cross-plane read or write uses registry-resolved `project_id`, `workspace_id`, and where applicable `instance_id`; paths, panes, ports, and adapter routes are not authority.
+- A PM view may display ConPort observations beside Task Orchestrator state, but it must label their distinct authorities and may not infer one from the other.
+
 ### 4. dope-memory is the canonical authority for chronological work chronicle memory
 
 dope-memory is authoritative for:

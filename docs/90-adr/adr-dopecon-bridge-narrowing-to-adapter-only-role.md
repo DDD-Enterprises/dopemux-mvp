@@ -280,3 +280,10 @@ This ADR is implemented successfully when:
 ## Final decision
 
 **Adopt an adapter-only target architecture for `dopecon-bridge` and remove its mixed-authority role over time.**
+
+## Proposed ConPort CRS v2 adapter constraints
+
+- dopecon-bridge must call the normalized ConPort contract through the same trusted identity and policy engine as every other client.
+- It may not connect to canonical ConPort tables, set database session scope, mint project/workspace/instance IDs, consume admin credentials, or bypass approval and revision checks.
+- It preserves source authority, identity, provenance, event ID, payload digest, and policy decision ID through translation.
+- Canonical events use a durable outbox and consumer receipts. Bridge outage queues and retries; it never changes a successful canonical commit into an untracked drop.

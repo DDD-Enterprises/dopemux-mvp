@@ -240,3 +240,14 @@ features, not a server.
   DMX-ADHDLOOP-HOOKINGRESS-001.
 - Runtime evidence: P0 claims 7, 9, 10; findings N2, N5; chronicle-mirror runtime proof
   (2026-07-07: `dopemux:events`=3489 / `activity.events.v1`=0 / `work_log`=0 pre-fix).
+
+## Accepted amendment: lossy telemetry versus durable canonical events
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json).
+
+The ingress contract distinguishes:
+
+1. `ephemeral_telemetry`: may fail open, rate-limit, coalesce, or drop according to its product policy;
+2. `canonical_record_change`: must originate from an atomic canonical transaction outbox, is idempotent, ordered by source sequence, retried, receipted, replayable, and dead-lettered with alerting.
+
+A canonical record change may not be dropped after commit. Failure to create its outbox row fails the canonical write transaction. A consumer outage delays the mirror but does not roll back the already committed record. Identity validation remains fail closed for both classes.

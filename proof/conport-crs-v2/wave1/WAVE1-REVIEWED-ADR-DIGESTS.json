@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0.0",
+  "algorithm": "sha256",
+  "reviewed_commit": "a5b9006aa3f5a95f81e4bab324931ade71ee8b31",
+  "files": [
+    {
+      "path": "docs/90-adr/adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md",
+      "bytes": 5612,
+      "sha256": "7f90760486abee29e150c84f0bb64e4b8e60852f8b44888566b0b2b45bfa9ca2"
+    },
+    {
+      "path": "docs/90-adr/adr-180-automatic-instance-resume.md",
+      "bytes": 13874,
+      "sha256": "c851159dafdb217f17279b680247615333449a5146e5a0f6c3c1759c23cd4656"
+    },
+    {
+      "path": "docs/90-adr/adr-201-conport-kg-security-hardening.md",
+      "bytes": 906,
+      "sha256": "f6828134387f0a3e8445cc308faf57e3cbe2bd1d11a17bfe1dfdd99ef02b3851"
+    },
+    {
+      "path": "docs/90-adr/adr-208-mcp-config-drift-prevention.md",
+      "bytes": 10683,
+      "sha256": "8037268828f289afbba3d8dc72a42bb27a79799c96927fa7aaaac1437dd08c2f"
+    },
+    {
+      "path": "docs/90-adr/adr-213-capture-adapters-single-ledger.md",
+      "bytes": 3295,
+      "sha256": "50c33ba0f05da01030c0fa2a4c34a30155faab2fcf2f982877a0683e0322432c"
+    },
+    {
+      "path": "docs/90-adr/adr-213-dual-capture-canonical-ledger.md",
+      "bytes": 7750,
+      "sha256": "e61182f9d186f6c61d77a5420b28f5345ec1feeed161311ebdb6726b4e540f68"
+    },
+    {
+      "path": "docs/90-adr/adr-221-event-stream-rate-limits.md",
+      "bytes": 10156,
+      "sha256": "1f816b4b83b6293b4c6ec17ee895305f5c1f389ea45591067fdb179d9ec97175"
+    },
+    {
+      "path": "docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md",
+      "bytes": 10874,
+      "sha256": "2aa879489fdd12ca7ae4337dc03b19daf8acf52d80b878dd66850153b1b3a66e"
+    },
+    {
+      "path": "docs/90-adr/adr-conport-canonical-record-service-v2.md",
+      "bytes": 15913,
+      "sha256": "83caf3a5b8e77245f5334caf21f89ea8c89a6ccd8eb6f23e429e9e116a0fa4bc"
+    },
+    {
+      "path": "docs/90-adr/adr-conport-migration-foundation-gate.md",
+      "bytes": 6494,
+      "sha256": "21b5e96f7c3a5ff8c6a5259ce4dfc3b2de44beb0512cf5ea01d0f9fdea034710"
+    },
+    {
+      "path": "docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md",
+      "bytes": 14158,
+      "sha256": "c52bd40498934a3455228b75774cc9bb4bb6f42273f4b4a6725d3db958122eb7"
+    },
+    {
+      "path": "docs/90-adr/adr-dope-context-as-search-and-retrieval-plane.md",
+      "bytes": 9206,
+      "sha256": "4617b18cafc4c6b87d96787e46c7f5de757f61c57337628833c2b61a291daf34"
+    },
+    {
+      "path": "docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md",
+      "bytes": 14699,
+      "sha256": "81850803f0d538fa1c0f2f23ffece051133b04c1f07f5a21360f63ddde6fa7d4"
+    },
+    {
+      "path": "docs/90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md",
+      "bytes": 10470,
+      "sha256": "586ca63d90669b0bacebf731469c1df4d69fd2c17e881e57eaadf8b9a4e6cfb8"
+    },
+    {
+      "path": "docs/90-adr/adr-index.md",
+      "bytes": 8001,
+      "sha256": "23b81c5fc8a13c95bd8aec6bf554573f60c5ff99405dd1ab94c013859998e3b1"
+    },
+    {
+      "path": "docs/90-adr/adr-mcpint-001-catalog-v2-single-source.md",
+      "bytes": 23514,
+      "sha256": "75d01a86f502656c6db8a3ba96323b22425ea0117fcee305d6a9d4ddae77b216"
+    },
+    {
+      "path": "docs/90-adr/adr-mcpint-002-agent-exposure-and-read-plane.md",
+      "bytes": 15109,
+      "sha256": "6bb653b738c1a9420bfaf310df331231d0cc4c4ec5994fa17893a8b22781281d"
+    },
+    {
+      "path": "docs/90-adr/adr-mcpint-004-event-ingress-contract.md",
+      "bytes": 14180,
+      "sha256": "04c72f6ee9bfc589c5b316ff60943a87e13ebd989f81d4a470c716e98c15b4eb"
+    },
+    {
+      "path": "docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md",
+      "bytes": 13438,
+      "sha256": "d2aba5245e0f91567fbcdb75b2933a7e60c64f132c5fd3f823d1d4d7fe9428df"
+    },
+    {
+      "path": "docs/90-adr/adr-pm-plane-authority-boundaries.md",
+      "bytes": 11607,
+      "sha256": "2dbb2e1373a7b883daee42ca8204d616a1dac53b576b6bf6e22223002e5b735a"
+    },
+    {
+      "path": "docs/90-adr/adr-serena-as-technical-context-plane.md",
+      "bytes": 8960,
+      "sha256": "c5860de3dfafaa2c3b46cbe2ccae0d8fde0ae487e95c03bac2d3b7129a471511"
+    },
+    {
+      "path": "docs/90-adr/adr-task-orchestrator-as-workflow-authority.md",
+      "bytes": 10943,
+      "sha256": "1020a285361e57d8d6802312be5956514ad3c1bf465fe4402417cfacde5c7a25"
+    }
+  ],
+  "acceptance_record": "CONPORT-W1-ADR-INDEPENDENT-REVIEW",
+  "accepted_at": "2026-07-21",
+  "acceptance_status": "ACCEPTED"
+}
