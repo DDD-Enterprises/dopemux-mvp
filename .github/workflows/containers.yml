@@ -1,19 +1,39 @@
 name: Container Build and Publish (GHCR)
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
+    tags: ["v*"]
     paths:
-      - 'Dockerfile'
-      - 'services/**/Dockerfile*'
-      - 'docker/**/Dockerfile*'
-      - '.github/workflows/containers.yml'
+      - "Dockerfile"
+      - "compose.yml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "src/**"
+      - "tools/**"
+      - "services/**"
+      - "docker/**"
+      - "config/containers.json"
+      - "scripts/ci/container_matrix.py"
+      - "tests/arch/test_container_ci_alignment.py"
+      - ".github/workflows/containers.yml"
+      - ".github/workflows/docker-scout.yml"
   pull_request:
     paths:
-      - 'Dockerfile'
-      - 'services/**/Dockerfile*'
-      - 'docker/**/Dockerfile*'
-      - '.github/workflows/containers.yml'
+      - "Dockerfile"
+      - "compose.yml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "src/**"
+      - "tools/**"
+      - "services/**"
+      - "docker/**"
+      - "config/containers.json"
+      - "scripts/ci/container_matrix.py"
+      - "tests/arch/test_container_ci_alignment.py"
+      - ".github/workflows/containers.yml"
+      - ".github/workflows/docker-scout.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,98 +44,87 @@ env:
   NAMESPACE: ghcr.io/ddd-enterprises/dopemux-mvp
 
 jobs:
+  prepare:
+    name: Validate container inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Validate checked-in container manifest
+        run: python scripts/ci/container_matrix.py validate-manifest
+
+      - name: Validate manifest against canonical Compose wiring
+        run: python scripts/ci/container_matrix.py validate-compose
+
+      - name: Generate build matrix
+        id: matrix
+        run: python scripts/ci/container_matrix.py matrix --github-output "$GITHUB_OUTPUT"
+
   build:
     name: "Build ${{ matrix.service }}"
+    needs: prepare
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     permissions:
       contents: read
       packages: write
+      attestations: write
+      id-token: write
 
     env:
       DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
 
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - service: dopemux-backend
-            dockerfile: Dockerfile
-            context: .
-            smoke_test: "false"
-
-          # -- Frontend
-          # Removed - ui-dashboard deprecated
-
-          # -- MCP: ConPort
-          - service: conport
-            dockerfile: docker/mcp-servers-source/conport/Dockerfile
-            context: .
-            smoke_test: "false"
-
-          # -- MCP: LiteLLM proxy
-          - service: litellm
-            dockerfile: docker/mcp-servers-source/litellm/Dockerfile
-            context: .
-            smoke_test: "false"
-
-          # -- Cognitive: Task Orchestrator
-          - service: task-orchestrator
-            dockerfile: services/task-orchestrator/Dockerfile
-            context: .
-            smoke_test: "false"
-            smoke_port: "8000"
-            smoke_path: "/health"
-
-          # -- Cognitive: Claude Brain
-          - service: claude-brain
-            dockerfile: services/claude_brain/Dockerfile
-            context: .
-            smoke_test: "false"
-
-          # -- Cognitive: ADHD Engine
-          - service: adhd-engine
-            dockerfile: services/adhd_engine/Dockerfile
-            context: .
-            smoke_test: "false"
-            smoke_port: "8095"
-            smoke_path: "/health"
-
-          # -- Coordination: DopeconBridge
-          - service: dopecon-bridge
-            dockerfile: services/dopecon-bridge/Dockerfile
-            context: .
-            smoke_test: "false"
-
-          # -- Integration: Webhook Receiver
-          - service: webhook-receiver
-            dockerfile: services/webhook_receiver/Dockerfile
-            context: .
-            smoke_test: "false"
-
-          # -- Memory: Dope Memory
-          - service: dope-memory
-            dockerfile: services/working-memory-assistant/Dockerfile.dope-memory
-            context: .
-            smoke_test: "true"
-            smoke_port: "3020"
-            smoke_path: "/health"
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
+
+      - name: Resolve publication posture
+        id: publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          enabled=false
+          if [ "${GITHUB_EVENT_NAME}" = "push" ] && { [ "${GITHUB_REF}" = "refs/heads/main" ] || [[ "${GITHUB_REF}" == refs/tags/v* ]]; }; then
+            enabled=true
+          fi
+          if [ "${{ matrix.publish }}" != "true" ]; then
+            enabled=false
+          fi
+          echo "enabled=${enabled}" >> "$GITHUB_OUTPUT"
+
+      - name: Detect Docker Hardened Images dependency
+        id: dhi_required
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -Eq '^FROM[[:space:]]+dhi\.io/' "${{ matrix.dockerfile }}"; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Log in to GHCR
+        if: ${{ steps.publish.outputs.enabled == 'true' }}
         uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to Docker Hardened Images (dhi.io)
+      - name: Log in to Docker Hardened Images
         id: dhi_login
-        if: ${{ env.DHI_TOKEN != '' }}
+        if: ${{ steps.dhi_required.outputs.enabled == 'true' && env.DHI_TOKEN != '' }}
         continue-on-error: true
         uses: docker/login-action@v4
         with:
@@ -123,81 +132,92 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ env.DHI_TOKEN }}
 
-      - name: Fallback to public images when DHI unavailable
-        if: ${{ steps.dhi_login.outcome != 'success' }}
+      - name: Fail closed when hardened bases cannot be published
+        if: ${{ steps.dhi_required.outputs.enabled == 'true' && steps.dhi_login.outcome != 'success' && steps.publish.outputs.enabled == 'true' }}
+        shell: bash
         run: |
-          echo "::warning::dhi.io login unavailable. Rewriting dhi.io/ base image references to public Docker Hub equivalents."
-          find . -name "Dockerfile*" -type f -exec sed -i 's|dhi.io/||g' {} +
+          echo "::error::${{ matrix.service }} uses a dhi.io base image, but DHI authentication is unavailable. Refusing to publish a different public-base artifact."
+          exit 1
 
-      - name: Extract metadata
+      - name: Use public base fallback for pull-request verification
+        if: ${{ steps.dhi_required.outputs.enabled == 'true' && steps.dhi_login.outcome != 'success' && steps.publish.outputs.enabled != 'true' }}
+        shell: bash
+        run: |
+          echo "::warning::DHI authentication is unavailable. Rewriting only ${{ matrix.dockerfile }} to public base references for non-publishing verification."
+          sed -i 's|dhi.io/||g' "${{ matrix.dockerfile }}"
+
+      - name: Extract image metadata
         id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ${{ env.NAMESPACE }}/${{ matrix.service }}
+          images: ${{ env.NAMESPACE }}/${{ matrix.image }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.event.pull_request.head.sha || github.sha }}
+            io.dopemux.container.classification=${{ matrix.classification }}
           tags: |
-            # Tag as 'latest' on main branch pushes
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            # Always tag with the git SHA (short)
-            type=sha,prefix=,format=short
-            # Tag PRs with pr-<number>
+            type=raw,value=main,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,prefix=sha-,format=short
             type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Build image reference
+      - name: Compute smoke-test image reference
         id: image_ref
+        shell: bash
         run: |
+          set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "value=${{ env.NAMESPACE }}/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+            echo "value=${{ env.NAMESPACE }}/${{ matrix.image }}:pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
           else
-            echo "value=${{ env.NAMESPACE }}/${{ matrix.service }}:sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Resolve build tags
-        id: build_tags
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ matrix.smoke_test }}" = "true" ]; then
-            echo "value=${{ steps.image_ref.outputs.value }}" >> "$GITHUB_OUTPUT"
-          else
-            {
-              echo "value<<EOF"
-              echo "${{ steps.meta.outputs.tags }}"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
+            echo "value=${{ env.NAMESPACE }}/${{ matrix.image }}:sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build and publish ${{ matrix.service }}
+        id: build
         uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
-          push: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
-          load: ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }}
+          platforms: ${{ matrix.platform }}
+          push: ${{ steps.publish.outputs.enabled == 'true' }}
+          load: ${{ steps.publish.outputs.enabled != 'true' && matrix.smoke_test == true }}
           pull: true
-          tags: ${{ steps.build_tags.outputs.value }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
-          provenance: ${{ github.event_name != 'pull_request' }}
-          sbom: ${{ github.event_name != 'pull_request' }}
+          provenance: ${{ steps.publish.outputs.enabled == 'true' && 'mode=max' || false }}
+          sbom: ${{ steps.publish.outputs.enabled == 'true' }}
+
+      - name: Generate registry-backed provenance attestation
+        if: ${{ steps.publish.outputs.enabled == 'true' && steps.build.outputs.digest != '' }}
+        uses: actions/attest@v4
+        with:
+          subject-name: ${{ env.NAMESPACE }}/${{ matrix.image }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
 
       - name: Inspect loaded image metadata
-        if: ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }}
+        if: ${{ steps.publish.outputs.enabled != 'true' && matrix.smoke_test == true }}
         run: docker image inspect "${{ steps.image_ref.outputs.value }}" >/dev/null
 
       - name: Smoke test container startup
-        if: ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }}
+        if: ${{ steps.publish.outputs.enabled != 'true' && matrix.smoke_test == true }}
         env:
           IMAGE_REF: ${{ steps.image_ref.outputs.value }}
           CONTAINER_NAME: ci-${{ matrix.service }}
           SMOKE_PORT: ${{ matrix.smoke_port }}
           SMOKE_PATH: ${{ matrix.smoke_path }}
+        shell: bash
         run: |
           set -euo pipefail
 
           container_started=false
-
           cleanup() {
             if [ "$container_started" = true ]; then
               docker logs "$CONTAINER_NAME" 2>/dev/null || true
@@ -208,7 +228,6 @@ jobs:
 
           extra_env_args=()
           if [ "${{ matrix.service }}" = "adhd-engine" ]; then
-            # The service already supports degraded startup for local/test workflows.
             extra_env_args+=( -e ADHD_ENGINE_ALLOW_DEGRADED_STARTUP=1 )
           fi
 
@@ -243,14 +262,72 @@ jobs:
 
           curl -fsS "$health_url"
 
-      - name: Build Summary
+      - name: Write container proof record
         if: always()
+        env:
+          SERVICE: ${{ matrix.service }}
+          IMAGE: ${{ env.NAMESPACE }}/${{ matrix.image }}
+          CLASSIFICATION: ${{ matrix.classification }}
+          DOCKERFILE: ${{ matrix.dockerfile }}
+          CONTEXT: ${{ matrix.context }}
+          PLATFORM: ${{ matrix.platform }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          PUBLISHED: ${{ steps.publish.outputs.enabled }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        shell: bash
         run: |
-          echo "## ${{ matrix.service }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Image | \`${{ env.NAMESPACE }}/${{ matrix.service }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Tags | ${{ steps.meta.outputs.tags }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Pushed | ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Smoke tested | ${{ github.event_name == 'pull_request' && matrix.smoke_test == 'true' }} |" >> $GITHUB_STEP_SUMMARY
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          record = {
+              "schema_version": "1.0.0",
+              "service": os.environ["SERVICE"],
+              "image": os.environ["IMAGE"],
+              "classification": os.environ["CLASSIFICATION"],
+              "dockerfile": os.environ["DOCKERFILE"],
+              "context": os.environ["CONTEXT"],
+              "platform": os.environ["PLATFORM"],
+              "tags": [line for line in os.environ.get("TAGS", "").splitlines() if line],
+              "digest": os.environ.get("DIGEST") or None,
+              "published": os.environ.get("PUBLISHED") == "true",
+              "head_sha": os.environ["HEAD_SHA"],
+              "workflow_run_id": int(os.environ["RUN_ID"]),
+              "workflow_run_attempt": int(os.environ["RUN_ATTEMPT"]),
+          }
+          Path("container-proof.json").write_text(
+              json.dumps(record, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload container proof record
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: container-proof-${{ matrix.service }}
+          path: container-proof.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Build summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## ${{ matrix.service }}"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Image | \`${{ env.NAMESPACE }}/${{ matrix.image }}\` |"
+            echo "| Classification | \`${{ matrix.classification }}\` |"
+            echo "| Dockerfile | \`${{ matrix.dockerfile }}\` |"
+            echo "| Tags | ${{ steps.meta.outputs.tags }} |"
+            echo "| Digest | \`${{ steps.build.outputs.digest }}\` |"
+            echo "| Published | \`${{ steps.publish.outputs.enabled }}\` |"
+            echo "| Smoke tested | \`${{ steps.publish.outputs.enabled != 'true' && matrix.smoke_test == true }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
