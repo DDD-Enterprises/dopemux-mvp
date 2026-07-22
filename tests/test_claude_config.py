@@ -30,23 +30,23 @@ SAMPLE_CLAUDE_CONFIG = {
     },
     "alwaysThinkingEnabled": False,
     "mcpServers": {
-        "dopemux-conport": {
+        "conport": {
             "type": "stdio",
             "command": "uvx",
             "args": ["--from", "context-portal-mcp", "dopemux-conport-mcp"]
         },
-        "dopemux-serena": {
+        "serena": {
             "type": "stdio",
             "command": "python3",
             "args": ["/path/to/serena/server.py"]
         },
-        "dopemux-zen": {
+        "zen": {
             "type": "stdio",
             "command": "uv",
             "args": ["run", "python", "server.py"],
             "cwd": "/path/to/dopemux-zen"
         },
-        "dopemux-pal": {
+        "pal": {
             "type": "stdio",
             "command": "uvx",
             "args": [
@@ -55,7 +55,7 @@ SAMPLE_CLAUDE_CONFIG = {
                 "pal-mcp-server"
             ]
         },
-        "dopemux-gpt-researcher": {
+        "gpt-researcher": {
             "type": "stdio",
             "command": "python3",
             "args": ["/path/to/gpt-researcher/server.py"]
@@ -108,7 +108,7 @@ class TestClaudeConfig:
         assert "mcpServers" in config
         assert "env" in config
         assert config["alwaysThinkingEnabled"] is False
-        assert "dopemux-conport" in config["mcpServers"]
+        assert "conport" in config["mcpServers"]
 
     def test_read_config_not_found(self, temp_config_dir):
         """Test reading non-existent config file."""
@@ -184,9 +184,9 @@ class TestClaudeConfig:
         servers = claude_config.get_mcp_servers()
 
         assert isinstance(servers, dict)
-        assert "dopemux-conport" in servers
-        assert "dopemux-serena" in servers
-        assert "dopemux-zen" in servers
+        assert "conport" in servers
+        assert "serena" in servers
+        assert "zen" in servers
 
     def test_filter_mcp_servers_for_profile(self, claude_config):
         """Test filtering MCP servers for a profile."""
@@ -200,12 +200,18 @@ class TestClaudeConfig:
         filtered = claude_config.filter_mcp_servers_for_profile(profile)
 
         assert len(filtered) == 3
-        assert "dopemux-conport" in filtered
-        assert "dopemux-serena" in filtered
-        assert "dopemux-zen" in filtered
+        # Filter returns unprefixed Claude-config keys (dopemux-* -> bare name).
+        assert "conport" in filtered
+        assert "serena" in filtered
+        assert "zen" in filtered
 
-    def test_filter_mcp_servers_missing(self, claude_config):
-        """Test filtering with missing MCP servers."""
+    def test_filter_mcp_servers_skips_unconfigured(self, claude_config):
+        """Unconfigured (optional) servers are skipped, not fatal.
+
+        A profile may list servers that are not installed in this workspace.
+        As long as the memory-authority server (conport) resolves, filtering
+        mounts what exists and silently drops the rest.
+        """
         profile = Profile(
             name="test",
             display_name="Test",
@@ -213,10 +219,34 @@ class TestClaudeConfig:
             mcps=["dopemux-conport", "unknown-mcp"]
         )
 
+        filtered = claude_config.filter_mcp_servers_for_profile(profile)
+
+        assert "conport" in filtered
+        assert "unknown-mcp" not in filtered
+        assert len(filtered) == 1
+
+    def test_filter_mcp_servers_missing_conport_raises(self, temp_config_dir):
+        """Filtering must fail closed when the required conport server is absent."""
+        config_path = temp_config_dir / "settings.json"
+        config_without_conport = {
+            "mcpServers": {
+                "serena": {"type": "stdio", "command": "python3", "args": []}
+            }
+        }
+        with open(config_path, "w") as f:
+            json.dump(config_without_conport, f)
+        claude_config = ClaudeConfig(config_path=config_path)
+
+        profile = Profile(
+            name="test",
+            display_name="Test",
+            description="Test",
+            mcps=["dopemux-conport", "dopemux-serena"]
+        )
+
         with pytest.raises(ClaudeConfigError) as exc_info:
             claude_config.filter_mcp_servers_for_profile(profile)
-        assert "not configured" in str(exc_info.value).lower()
-        assert "unknown-mcp" in str(exc_info.value)
+        assert "conport" in str(exc_info.value).lower()
 
     def test_apply_profile(self, claude_config):
         """Test applying a profile to config."""
@@ -231,8 +261,8 @@ class TestClaudeConfig:
 
         # Should only have 2 MCP servers
         assert len(new_config["mcpServers"]) == 2
-        assert "dopemux-conport" in new_config["mcpServers"]
-        assert "dopemux-zen" in new_config["mcpServers"]
+        assert "conport" in new_config["mcpServers"]
+        assert "zen" in new_config["mcpServers"]
 
         # Should preserve other settings
         assert new_config["env"] == SAMPLE_CLAUDE_CONFIG["env"]
@@ -340,9 +370,9 @@ class TestClaudeConfig:
         servers = claude_config.get_available_mcp_servers()
 
         assert isinstance(servers, list)
-        assert "dopemux-conport" in servers
-        assert "dopemux-serena" in servers
-        assert "dopemux-zen" in servers
+        assert "conport" in servers
+        assert "serena" in servers
+        assert "zen" in servers
 
     def test_validate_profile_against_config(self, claude_config):
         """Test validating profile against config."""
@@ -370,11 +400,12 @@ class TestMCPNameMapping:
         assert "dopemux-zen" in MCP_NAME_MAPPING
         assert "pal" in MCP_NAME_MAPPING
 
-    def test_mapping_bidirectional(self):
-        """Test mapping works correctly."""
-        # dopemux-serena maps to serena
-        assert MCP_NAME_MAPPING["dopemux-serena"] == "dopemux-serena"
-
-        # Direct mappings map to themselves
-        assert MCP_NAME_MAPPING["dopemux-conport"] == "dopemux-conport"
-        assert MCP_NAME_MAPPING["dopemux-zen"] == "dopemux-zen"
+    def test_mapping_targets_unprefixed_config_keys(self):
+        """Mapping resolves profile names to the unprefixed Claude-config keys."""
+        # dopemux-* profile names strip to the bare Claude-config mcpServers key.
+        assert MCP_NAME_MAPPING["dopemux-serena"] == "serena"
+        assert MCP_NAME_MAPPING["dopemux-conport"] == "conport"
+        assert MCP_NAME_MAPPING["dopemux-zen"] == "zen"
+        # Bare aliases already match config keys.
+        assert MCP_NAME_MAPPING["conport"] == "conport"
+        assert MCP_NAME_MAPPING["serena-v2"] == "serena"
