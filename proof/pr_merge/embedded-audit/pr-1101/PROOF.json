@@ -1,7 +1,7 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1101,
-  "head_sha": "1515a84c98f56bc82ec1f521748811df797087d9",
+  "head_sha": "4eb5786888f8184eb2075b7cdd8be220cb04c829",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
@@ -14,7 +14,7 @@
     "fixes_applied": [
       "Credential-aware Docker Hub login detection",
       "Local image scanning (local://<ref>)",
-      "Unauthenticated local fallback scanner (Trivy) for PRs",
+      "Unauthenticated local fallback scanner (docker run aquasec/trivy) for PRs",
       "CodeQL v4 upload-sarif upgrade"
     ],
     "remaining_risks": [],
