@@ -11,6 +11,7 @@ import utils.model_restrictions as model_restrictions
 from providers.gemini import GeminiModelProvider
 from providers.openai import OpenAIModelProvider
 from providers.openrouter import OpenRouterProvider
+from providers.registries.openrouter import OpenRouterModelRegistry
 from providers.registry import ModelProviderRegistry
 from providers.shared import ProviderType
 from providers.xai import XAIModelProvider
@@ -53,6 +54,14 @@ def _register_core_providers(*, include_xai: bool = False):
     ModelProviderRegistry.register_provider(ProviderType.OPENROUTER, OpenRouterProvider)
     if include_xai:
         ModelProviderRegistry.register_provider(ProviderType.XAI, XAIModelProvider)
+
+
+def test_openrouter_catalog_excludes_retired_grok_4_aliases():
+    registry = OpenRouterModelRegistry()
+
+    assert "x-ai/grok-4" not in registry.list_models()
+    for retired_name in ("grok-4", "grok4", "grok"):
+        assert registry.resolve(retired_name) is None
 
 
 @pytest.mark.no_mock_provider
@@ -225,5 +234,6 @@ def test_error_listing_without_restrictions_shows_full_catalog(monkeypatch, rese
     available_models = _extract_available_models(payload["content"])
     assert "gemini-2.5-pro" in available_models
     assert "gpt-5" in available_models
-    assert "grok-4" in available_models
+    assert "grok-4.5" in available_models
+    assert "grok-4" not in available_models
     assert len(available_models) >= 5

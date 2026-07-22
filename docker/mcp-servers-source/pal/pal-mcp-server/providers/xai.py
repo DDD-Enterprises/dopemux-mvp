@@ -48,39 +48,12 @@ class XAIModelProvider(RegistryBackedProviderMixin, OpenAICompatibleProvider):
         Returns:
             Preferred model name or None
         """
-        from tools.models import ToolModelCategory
-
         if not allowed_models:
             return None
 
-        if category == ToolModelCategory.EXTENDED_REASONING:
-            # Prefer GROK-4 for advanced reasoning with thinking mode
-            if "grok-4" in allowed_models:
-                return "grok-4"
-            elif "grok-3" in allowed_models:
-                return "grok-3"
-            # Fall back to any available model
-            return allowed_models[0]
-
-        elif category == ToolModelCategory.FAST_RESPONSE:
-            # Prefer GROK-3-Fast for speed, then GROK-4
-            if "grok-3-fast" in allowed_models:
-                return "grok-3-fast"
-            elif "grok-4" in allowed_models:
-                return "grok-4"
-            # Fall back to any available model
-            return allowed_models[0]
-
-        else:  # BALANCED or default
-            # Prefer GROK-4 for balanced use (best overall capabilities)
-            if "grok-4" in allowed_models:
-                return "grok-4"
-            elif "grok-3" in allowed_models:
-                return "grok-3"
-            elif "grok-3-fast" in allowed_models:
-                return "grok-3-fast"
-            # Fall back to any available model
-            return allowed_models[0]
+        if "grok-4.5" in allowed_models:
+            return "grok-4.5"
+        return allowed_models[0]
 
 
 # Load registry data at import time

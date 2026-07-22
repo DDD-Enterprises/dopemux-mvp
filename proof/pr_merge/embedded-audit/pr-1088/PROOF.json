@@ -1,0 +1,63 @@
+{
+  "packet_id": "PR-MERGE-STEWARD-1088",
+  "pr_number": 1088,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "df1b67261876dbb57ae1ebe3ed024f007d0bbab8",
+  "generated_at": "2026-07-22T03:35:44Z",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "Claude Code CLI Sonnet read-only audit at exact SHA df1b67261876dbb57ae1ebe3ed024f007d0bbab8; git merge-base origin/main HEAD; exact 24-path set comparison against task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json commit.allowlist; python -m pytest -q tests/arch/test_pal_model_catalog_contract.py (6 passed); pytest -q tests/test_xai_provider.py tests/test_openai_provider.py (41 passed); pytest -q tests/test_auto_mode_comprehensive.py tests/test_auto_mode_model_listing.py tests/test_auto_mode_provider_selection.py tests/test_intelligent_fallback.py tests/test_per_tool_model_defaults.py tests/test_supported_models_aliases.py (72 passed); task packet jsonschema validation; git diff --check; secret-pattern scan; full findings in proof/pr_merge/embedded-audit/pr-1088/AUDITOR_REPORT.md",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1088/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-1088-MED-1",
+        "severity": "MEDIUM",
+        "title": "pal-stdio build context not covered by new .dockerignore security patterns",
+        "status": "ACCEPTED_RISK",
+        "body": "compose.yml keeps pal-stdio on the repository-root build context. The root .dockerignore excludes environment files but lacks the additional key, certificate, secrets, and private-directory patterns added to docker/mcp-servers-source/pal/.dockerignore. This predates the PR and is not a regression; follow-up hardening should cover the root context without broadening this packet."
+      },
+      {
+        "id": "F-1088-MED-2",
+        "severity": "MEDIUM",
+        "title": "Nested PR proof report path conflicts with the canonical schema pattern",
+        "status": "ACCEPTED_RISK",
+        "body": "schemas/proof/embedded_audit.schema.json permits one directory segment below proof/, while the established PR Steward convention stores reports under proof/pr_merge/embedded-audit/pr-<N>/. scripts/audit/local_audit_acceptance.py intentionally allows the trusted emitter to override report_path. Resolving this structural mismatch requires a separate schema or convention change."
+      },
+      {
+        "id": "F-1088-LOW-1",
+        "severity": "LOW",
+        "title": "Standalone PAL reference catalog remains materially ahead of the vendored catalog",
+        "status": "ACCEPTED_RISK",
+        "body": "The standalone PAL fork carries additional OpenAI and OpenRouter catalog entries and dynamic-selection behavior outside this packet. Shared reviewer fixes are synchronized, but full catalog convergence remains separate work."
+      },
+      {
+        "id": "F-1088-INFO-1",
+        "severity": "INFO",
+        "title": "Usage extraction returns zero for one non-integer total_tokens edge case",
+        "status": "ACCEPTED_RISK",
+        "body": "If a provider exposes total_tokens but the value is non-integer, _extract_usage records zero instead of input_tokens plus output_tokens. Current provider response fixtures do not exercise this shape."
+      }
+    ],
+    "fixes_applied": [
+      "Regenerated exact-head audit proof for df1b67261876dbb57ae1ebe3ed024f007d0bbab8 after all functional reviewer fixes and main synchronization.",
+      "Converted fixes_applied to the schema-required array of strings.",
+      "Removed retired OpenRouter x-ai/grok-4 and aliases grok-4, grok4, and grok with registry regression coverage.",
+      "Redacted every Responses API input text block in log copies while preserving outgoing request payloads.",
+      "Extended the Task Packet allowlist to exact 24-path equality, including openrouter_models.json and AUDITOR_REPORT.md."
+    ],
+    "remaining_risks": [
+      "Task packet runtime-proof live Grok 4.5 and GPT-5.6 probes were NOT_RUN in this audit because network access was prohibited.",
+      "Current xAI and OpenAI catalog limits were not independently rechecked against live vendor documentation in this no-network audit.",
+      "pal-stdio root build-context ignore hardening remains follow-up work.",
+      "Standalone and vendored PAL catalogs remain intentionally non-identical outside shared reviewer fixes.",
+      "The nested PR proof report_path remains incompatible with the general schema pattern; trusted CI overrides it under the established acceptance path."
+    ],
+    "skip_reason": null
+  }
+}
