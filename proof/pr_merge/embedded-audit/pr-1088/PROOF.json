@@ -2,8 +2,8 @@
   "packet_id": "PR-MERGE-STEWARD-1088",
   "pr_number": 1088,
   "repo": "DDD-Enterprises/dopemux-mvp",
-  "head_sha": "d52b594bcd29a7c659455cffe321ab08c22e37cb",
-  "generated_at": "2026-07-22T02:30:58Z",
+  "head_sha": "26dd93931bf01db133b07e1571d03f8809026746",
+  "generated_at": "2026-07-22T02:52:38Z",
   "mutation_performed": false,
   "github_mutation_route_added": false,
   "embedded_audit": {
@@ -11,9 +11,9 @@
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
     "auditor_model": "sonnet",
-    "invocation": "git rev-parse HEAD + git fetch origin codex/pal-model-refresh (exact-head/origin match); git diff --name-status 5a9f8f7b5d4a03be323723a92baf3c4e162d5b65..d52b594bcd29a7c659455cffe321ab08c22e37cb (22-path scope, Python set-equality vs task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json commit.allowlist); jsonschema.validate() of the packet against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json; python -m pytest -q tests/arch/test_pal_model_catalog_contract.py; python -m pytest -q docker/mcp-servers-source/pal/pal-mcp-server/tests/test_xai_provider.py docker/mcp-servers-source/pal/pal-mcp-server/tests/test_openai_provider.py (plus the 6 other changed pal-mcp-server test files, 71 passed, informational); git diff --check 5a9f8f7b5..d52b594bcd; regex secret-pattern scan over the full diff and PROOF.json.sig; line-by-line review of providers/{xai,openai,openai_compatible}.py, conf/{xai,openai}_models.json, compose.yml, both .dockerignore files, pyproject.toml/requirements.txt; byte-diff of standalone PAL repo /tmp/pal-model-refresh @ eccf09a236c429eadbe0732d845ecd42eedefbbb against the embedded copy plus a standalone test run (42 passed)",
+    "invocation": "git rev-parse HEAD + git diff --name-status 5a9f8f7b5d4a03be323723a92baf3c4e162d5b65..26dd93931bf01db133b07e1571d03f8809026746 (22-path scope, Python set-equality vs task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json commit.allowlist, re-verified after the reasoning-effort fix commit); python -m pytest -q tests/arch/test_pal_model_catalog_contract.py (6/6 passed); python -m pytest -q docker/mcp-servers-source/pal/pal-mcp-server/tests/{test_xai_provider,test_openai_provider,test_auto_mode_comprehensive,test_auto_mode_model_listing,test_auto_mode_provider_selection,test_intelligent_fallback,test_per_tool_model_defaults,test_supported_models_aliases}.py (111/111 passed); direct read of providers/openai_compatible.py's _generate_with_responses_endpoint to confirm default_reasoning_effort now takes effect; full findings/methodology in proof/pr_merge/embedded-audit/pr-1088/AUDITOR_REPORT.md",
     "exit_code": 0,
-    "report_path": "proof/pr_merge/embedded-audit/pr-1088/PROOF.json",
+    "report_path": "proof/pr_merge/embedded-audit/pr-1088/AUDITOR_REPORT.md",
     "findings": [
       {
         "id": "F-1088-MED-1",
@@ -35,13 +35,28 @@
         "title": "_extract_usage total_tokens fallback returns 0 instead of input+output sum in one edge case",
         "status": "ACCEPTED_RISK",
         "body": "providers/openai_compatible.py's _extract_usage: if response.usage.total_tokens exists but is not an int (e.g. None), the code sets total_tokens=0 rather than falling back to input_tokens+output_tokens. Not exercised by any observed OpenAI/xAI/OpenRouter response shape in the current tests; informational only, no fix applied."
+      },
+      {
+        "id": "F-1088-P2-1",
+        "severity": "MEDIUM",
+        "title": "OpenRouter xAI catalog entry still exposes retired Grok 4 aliases",
+        "status": "ACCEPTED_RISK",
+        "body": "chatgpt-codex-connector correctly flagged that conf/openrouter_models.json still registers x-ai/grok-4 under aliases grok-4/grok4/grok, so a retired-alias request rejected by the native XAI provider could still fall through to OpenRouter and reach a retired model. conf/openrouter_models.json is NOT in task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json's commit.allowlist (22 paths); editing it here would break the exact-scope match this and the prior audit round both certified. Left unfixed under this packet as a scope-boundary decision, not an oversight; requires either extending the packet or a follow-up TP."
       }
     ],
-    "fixes_applied": [],
+    "fixes_applied": [
+      {
+        "id": "F-1088-FIX-1",
+        "title": "Preserve Grok 4.5's documented default reasoning effort",
+        "commit": "26dd93931bf01db133b07e1571d03f8809026746",
+        "body": "chatgpt-codex-connector (P2) flagged that the new grok-4.5 catalog entry omitted default_reasoning_effort, so unconfigured Responses-API calls silently received PAL's generic 'medium' instead of xAI's documented Grok 4.5 default of 'high'. Fixed by adding default_reasoning_effort: 'high' to the grok-4.5 entry in conf/xai_models.json (both source and symlinked runtime path) and correcting the one test that had hardcoded the prior 'medium' expectation (tests/test_xai_provider.py::test_generate_content_resolves_alias_before_api_call). Verified by reading providers/openai_compatible.py's _generate_with_responses_endpoint directly and by re-running the full pal-mcp-server provider/auto-mode test suite (111/111 passed)."
+      }
+    ],
     "remaining_risks": [
-      "Task packet step 'runtime-proof' (direct Grok 4.5 / GPT-5.6 bounded live API probes) was not executed by this or the prior audit — verification remains static (diff review + unit/contract tests), never a live provider call. Treat that packet step as NOT_RUN pending an operator-run probe.",
+      "Task packet step 'runtime-proof' (direct Grok 4.5 / GPT-5.6 bounded live API probes) was not executed by this or any prior audit round — verification remains static (diff review + unit/contract tests), never a live provider call. Treat that packet step as NOT_RUN pending an operator-run probe.",
       "Grok 4.5 (500K context) and GPT-5.6 (1.05M context, 128K max_output_tokens) catalog figures are not independently confirmed against current xAI/OpenAI vendor documentation; no live lookup was performed under this audit's no-live-call constraint.",
-      "conf/xai_models.json's grok-4.5 entry intentionally omits max_output_tokens (no officially-documented limit to encode); providers/openai_compatible.py only sets the param when max_output_tokens is truthy, so the omission is safe and matches the packet's 'no invented limit' requirement."
+      "conf/xai_models.json's grok-4.5 entry intentionally omits max_output_tokens (no officially-documented limit to encode); providers/openai_compatible.py only sets the param when max_output_tokens is truthy, so the omission is safe and matches the packet's 'no invented limit' requirement.",
+      "F-1088-P2-1 (OpenRouter retired-alias exposure) remains open pending a scope decision — see findings above."
     ],
     "skip_reason": null
   }
