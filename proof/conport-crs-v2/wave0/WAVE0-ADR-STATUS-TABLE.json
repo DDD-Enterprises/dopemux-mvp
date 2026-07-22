@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0.0",
+  "rows": [
+    {
+      "path": "adr-conport-canonical-record-service-v2.md",
+      "wave0": "proposed",
+      "wave1_if_accepted": "accepted"
+    },
+    {
+      "path": "adr-conport-as-decision-progress-and-context-authority.md",
+      "wave0": "accepted with proposed supersession notice",
+      "wave1_if_accepted": "superseded"
+    },
+    {
+      "path": "adr-memory-trinity-authority-and-interaction-model.md",
+      "wave0": "accepted with proposed amendment",
+      "wave1_if_accepted": "accepted amended"
+    },
+    {
+      "path": "adr-dope-memory-as-chronicle-memory-authority.md",
+      "wave0": "accepted with proposed amendment",
+      "wave1_if_accepted": "accepted amended"
+    },
+    {
+      "path": "adr-dope-context-as-search-and-retrieval-plane.md",
+      "wave0": "accepted with proposed amendment",
+      "wave1_if_accepted": "accepted amended"
+    },
+    {
+      "path": "adr-pm-plane-authority-boundaries.md",
+      "wave0": "proposed",
+      "wave1_if_accepted": "proposed"
+    },
+    {
+      "path": "adr-dopecon-bridge-narrowing-to-adapter-only-role.md",
+      "wave0": "proposed",
+      "wave1_if_accepted": "proposed"
+    },
+    {
+      "path": "adr-serena-as-technical-context-plane.md",
+      "wave0": "proposed",
+      "wave1_if_accepted": "proposed"
+    },
+    {
+      "path": "adr-task-orchestrator-as-workflow-authority.md",
+      "wave0": "proposed",
+      "wave1_if_accepted": "proposed"
+    },
+    {
+      "path": "adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md",
+      "wave0": "accepted with proposed amendment",
+      "wave1_if_accepted": "accepted amended"
+    },
+    {
+      "path": "adr-conport-migration-foundation-gate.md",
+      "wave0": "accepted with proposed amendment",
+      "wave1_if_accepted": "accepted amended"
+    },
+    {
+      "path": "adr-208-mcp-config-drift-prevention.md",
+      "wave0": "accepted with proposed amendment",
+      "wave1_if_accepted": "accepted amended"
+    },
+    {
+      "path": "adr-mcpint-001-catalog-v2-single-source.md",
+      "wave0": "accepted with proposed amendment",
+      "wave1_if_accepted": "accepted amended"
+    },
+    {
+      "path": "adr-mcpint-002-agent-exposure-and-read-plane.md",
+      "wave0": "accepted with proposed amendment",
+      "wave1_if_accepted": "accepted amended"
+    },
+    {
+      "path": "adr-mcpint-004-event-ingress-contract.md",
+      "wave0": "accepted with proposed amendment",
+      "wave1_if_accepted": "accepted amended"
+    },
+    {
+      "path": "adr-213-dual-capture-canonical-ledger.md",
+      "wave0": "accepted with proposed amendment",
+      "wave1_if_accepted": "accepted amended"
+    },
+    {
+      "path": "adr-201-conport-kg-security-hardening.md",
+      "wave0": "proposed with proposed deprecation",
+      "wave1_if_accepted": "deprecated"
+    },
+    {
+      "path": "adr-213-capture-adapters-single-ledger.md",
+      "wave0": "proposed with proposed deprecation",
+      "wave1_if_accepted": "deprecated"
+    },
+    {
+      "path": "adr-180-automatic-instance-resume.md",
+      "wave0": "proposed with proposed deprecation",
+      "wave1_if_accepted": "deprecated"
+    },
+    {
+      "path": "adr-221-event-stream-rate-limits.md",
+      "wave0": "accepted with proposed amendment",
+      "wave1_if_accepted": "accepted amended"
+    },
+    {
+      "path": "adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md",
+      "wave0": "proposed amended proposal",
+      "wave1_if_accepted": "proposed"
+    }
+  ],
+  "target_status_verified": "proposed",
+  "effective_status_changes": []
+}
