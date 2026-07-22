@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "verdict": "PASS",
+  "bundle": {
+    "path": "git-custody/CONPORT-W0-ADR-CUSTODY.bundle",
+    "sha256": "b8c3700e383f13d758c12002616d95e5b42e33e0fa2f62ef53fdca7e9207fe18",
+    "bytes": 272027,
+    "advertised_ref": "refs/heads/docs/conport-crs-v2-adr-wave0",
+    "advertised_head": "5186bc9013d0e7e8e22ef8a03c9ae58aa3447c9f",
+    "prerequisite": "9d7878092e31d021eceaf829355e73bec33b36eb",
+    "contained_commits": [
+      "5a9f8f7b5d4a03be323723a92baf3c4e162d5b65",
+      "a5b9006aa3f5a95f81e4bab324931ade71ee8b31",
+      "5186bc9013d0e7e8e22ef8a03c9ae58aa3447c9f"
+    ],
+    "verify_status": "PASS"
+  },
+  "baseline": {
+    "commit": "5a9f8f7b5d4a03be323723a92baf3c4e162d5b65",
+    "parent": "9d7878092e31d021eceaf829355e73bec33b36eb",
+    "tree": "017f480d656fc5e6a048278d7ac9071b6219c326"
+  },
+  "reviewed_commit": {
+    "commit": "a5b9006aa3f5a95f81e4bab324931ade71ee8b31",
+    "parent": "5a9f8f7b5d4a03be323723a92baf3c4e162d5b65",
+    "tree": "73fe54ea841369b3c3126562d8bd1ba22384200d",
+    "commit_count_from_baseline": 1,
+    "merge_base": "5a9f8f7b5d4a03be323723a92baf3c4e162d5b65"
+  },
+  "diff": {
+    "path": "wave0-proof/WAVE0-DIFF.patch",
+    "sha256": "4f54df3a8115b295164c746c4da0413b6bcf38d0efa847e3e9d4d843f8b2a72a",
+    "recomputed_equal": true
+  },
+  "changed_adrs": {
+    "path": "wave0-proof/WAVE0-GIT-CUSTODY-FILES.json",
+    "file_count": 22,
+    "all_equal": true,
+    "canonical_json_sha256": "aabc9b7db8e2fa5632453d5b0a3ce2f2afbe042ec7c9b8c368c530aecc18f298"
+  },
+  "checks": {
+    "bundle_verify": "PASS",
+    "reviewed_parent_equals_baseline": "PASS",
+    "merge_base_equals_baseline": "PASS",
+    "baseline_is_ancestor": "PASS",
+    "baseline_to_reviewed_commit_count": "PASS",
+    "diff_byte_equality": "PASS",
+    "changed_adr_tree_byte_equality": "PASS"
+  }
+}

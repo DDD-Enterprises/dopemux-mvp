@@ -67,6 +67,38 @@
       "detail": "Codex implementation review; DCP effective-row hazard corrected before commit"
     },
     {
+      "id": "git-bundle-verify",
+      "status": "PASS"
+    },
+    {
+      "id": "reviewed-parent-equals-baseline",
+      "status": "PASS"
+    },
+    {
+      "id": "merge-base-and-ancestry",
+      "status": "PASS"
+    },
+    {
+      "id": "baseline-to-reviewed-commit-count",
+      "status": "PASS",
+      "count": 1
+    },
+    {
+      "id": "baseline-to-reviewed-diff-equality",
+      "status": "PASS"
+    },
+    {
+      "id": "reviewed-tree-to-packaged-files",
+      "status": "PASS",
+      "count": 22
+    },
+    {
+      "id": "prior-independent-substantive-review",
+      "status": "PASS",
+      "count": 13,
+      "detail": "All mandatory architecture questions resolved positively; custody re-review remains required"
+    },
+    {
       "id": "embedded-audit",
       "status": "NOT_RUN",
       "detail": "External Claude review blocked by privacy policy; no repository diff transmitted"
@@ -83,7 +115,7 @@
     }
   ],
   "counts": {
-    "PASS": 14,
+    "PASS": 21,
     "FAIL": 0,
     "NOT_RUN": 3
   },

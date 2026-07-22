@@ -13,3 +13,5 @@ Custody checks:
 3. Verify candidate ZIP identity recorded in `wave0-proof/WAVE0-SOURCE-CUSTODY.json`.
 4. Verify reviewed ADR commit is `a5b9006aa3f5a95f81e4bab324931ade71ee8b31` over baseline `5a9f8f7b5d4a03be323723a92baf3c4e162d5b65`.
 5. Treat `UNKNOWN` and `NOT_RUN` as unresolved; do not promote them to PASS.
+
+Custody re-review may be limited to bundle, ancestry, tree, patch, and packaged-byte verification because ADR content remains pinned to reviewed commit `a5b9006aa3f5a95f81e4bab324931ade71ee8b31`. Follow `wave0-proof/WAVE0-CUSTODY-VERIFY.md`; verify every check in `wave0-proof/WAVE0-GIT-CUSTODY.json` and every row in `wave0-proof/WAVE0-GIT-CUSTODY-FILES.json`.
