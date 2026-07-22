@@ -1,0 +1,22 @@
+{
+  "commit_sha": "9d99271075d6c6a25b8e88f052094115058eed5a",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Repaired Align.bottom crash by converting to Align(..., vertical='bottom')",
+      "Corrected start_wizard return type annotation"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1078/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "9d99271075d6c6a25b8e88f052094115058eed5a",
+  "pr_number": 1078,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
