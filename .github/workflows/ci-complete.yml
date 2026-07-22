@@ -138,7 +138,7 @@ jobs:
             services/working-memory-assistant/tests/test_mcp_http_endpoint.py \
             --maxfail=1 --disable-warnings --no-cov
 
-      - name: Run DCP red-lane gate
+      - name: 🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)
         run: |
           PYTHONPATH=src uv run --frozen pytest \
             tests/dcp/ \
