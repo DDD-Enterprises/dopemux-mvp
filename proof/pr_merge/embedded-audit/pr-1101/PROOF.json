@@ -1,0 +1,22 @@
+{
+  "commit_sha": "2a4c0e081972224cf183c1cd84c4a8d369a86066",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Credential-aware Docker Scout authentication and fallback scanning",
+      "Migrated CodeQL upload-sarif action to v4"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1101/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "2a4c0e081972224cf183c1cd84c4a8d369a86066",
+  "pr_number": 1101,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
