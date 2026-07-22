@@ -2,9 +2,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy dependency manifests first for better caching
-COPY pyproject.toml .
-COPY src/dopemux/__init__.py src/dopemux/
+# Copy dependency metadata and every package tree declared by pyproject.toml
+# before installing the repository package. Copying only dopemux/__init__.py
+# leaves setuptools-declared packages such as src/conport and tools absent.
+COPY pyproject.toml ./
+COPY src/ src/
+COPY tools/ tools/
 
 ENV PYTHONUNBUFFERED=1 \
     MCP_SERVER_HOST=0.0.0.0 \
