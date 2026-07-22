@@ -118,7 +118,9 @@
       "image": "serena",
       "classification": "canonical-support",
       "context": ".",
-      "dockerfile": "docker/mcp-servers/serena/Dockerfile",
+      "dockerfile": "docker/mcp-servers-source/serena/Dockerfile",
+      "compose_dockerfile": "docker/mcp-servers/serena/Dockerfile",
+      "compose_path_status": "missing-wrapper",
       "compose_services": ["serena"],
       "publish": true,
       "smoke_test": false
@@ -128,7 +130,9 @@
       "image": "gptr-mcp",
       "classification": "canonical-support",
       "context": ".",
-      "dockerfile": "docker/mcp-servers/gptr-mcp/Dockerfile",
+      "dockerfile": "docker/mcp-servers-source/gptr-mcp/Dockerfile",
+      "compose_dockerfile": "docker/mcp-servers/gptr-mcp/Dockerfile",
+      "compose_path_status": "missing-wrapper",
       "compose_services": ["gptr-mcp"],
       "publish": true,
       "smoke_test": false
@@ -138,7 +142,9 @@
       "image": "desktop-commander",
       "classification": "canonical-support",
       "context": ".",
-      "dockerfile": "docker/mcp-servers/desktop-commander/Dockerfile",
+      "dockerfile": "docker/mcp-servers-source/desktop-commander/Dockerfile",
+      "compose_dockerfile": "docker/mcp-servers/desktop-commander/Dockerfile",
+      "compose_path_status": "missing-wrapper",
       "compose_services": ["desktop-commander"],
       "publish": true,
       "smoke_test": false
@@ -148,7 +154,9 @@
       "image": "leantime-bridge",
       "classification": "canonical-support",
       "context": ".",
-      "dockerfile": "docker/mcp-servers/leantime-bridge/Dockerfile",
+      "dockerfile": "docker/mcp-servers-source/leantime-bridge/Dockerfile",
+      "compose_dockerfile": "docker/mcp-servers/leantime-bridge/Dockerfile",
+      "compose_path_status": "missing-wrapper",
       "compose_services": ["leantime-bridge"],
       "publish": true,
       "smoke_test": false
