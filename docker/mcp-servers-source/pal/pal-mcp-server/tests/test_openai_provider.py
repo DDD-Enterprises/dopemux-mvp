@@ -1,6 +1,8 @@
 """Tests for OpenAI provider implementation."""
 
+import logging
 import os
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from providers.openai import OpenAIModelProvider
@@ -389,11 +391,12 @@ class TestOpenAIProvider:
         assert "max_completion_tokens" not in call_args
 
     @patch("providers.openai_compatible.OpenAI")
-    def test_gpt_5_6_responses_preserves_image_inputs(self, mock_openai_class):
+    def test_gpt_5_6_responses_preserves_image_inputs(self, mock_openai_class, caplog):
         mock_client = MagicMock()
         mock_openai_class.return_value = mock_client
         mock_response = MagicMock(output_text="described", usage=None)
         mock_client.responses.create.return_value = mock_response
+        caplog.set_level(logging.INFO)
 
         provider = OpenAIModelProvider("test-key")
         provider._process_image = MagicMock(
@@ -413,6 +416,25 @@ class TestOpenAIProvider:
             {"type": "input_text", "text": "Describe image."},
             {"type": "input_image", "image_url": "data:image/png;base64,AA=="},
         ]
+        assert "data:image/png;base64,AA==" not in caplog.text
+        assert "[redacted image]" in caplog.text
+
+    @patch("providers.openai_compatible.OpenAI")
+    def test_gpt_5_6_responses_extracts_usage_fields(self, mock_openai_class):
+        mock_client = MagicMock()
+        mock_openai_class.return_value = mock_client
+        mock_response = MagicMock(output_text="ok")
+        mock_response.usage = SimpleNamespace(input_tokens=12, output_tokens=5, total_tokens=17)
+        mock_client.responses.create.return_value = mock_response
+
+        provider = OpenAIModelProvider("test-key")
+        result = provider.generate_content(prompt="Reply ok.", model_name="gpt-5.6-terra")
+
+        assert result.usage == {
+            "input_tokens": 12,
+            "output_tokens": 5,
+            "total_tokens": 17,
+        }
 
     @patch("providers.openai_compatible.OpenAI")
     def test_gpt_5_6_responses_preserves_instruction_roles(self, mock_openai_class):

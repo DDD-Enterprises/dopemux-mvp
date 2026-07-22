@@ -349,11 +349,14 @@ class OpenAICompatibleProvider(ModelProvider):
             for msg in sanitized.get("input", []):
                 if isinstance(msg, dict) and "content" in msg:
                     for content_item in msg.get("content", []):
-                        if isinstance(content_item, dict) and "text" in content_item:
-                            # Truncate long text and add ellipsis
-                            text = content_item["text"]
-                            if len(text) > 100:
-                                content_item["text"] = text[:100] + "... [truncated]"
+                        if isinstance(content_item, dict):
+                            if "text" in content_item:
+                                # Truncate long text and add ellipsis
+                                text = content_item["text"]
+                                if len(text) > 100:
+                                    content_item["text"] = text[:100] + "... [truncated]"
+                            if "image_url" in content_item:
+                                content_item["image_url"] = "[redacted image]"
 
         # Remove any API keys that might be in headers/auth
         sanitized.pop("api_key", None)
@@ -394,7 +397,7 @@ class OpenAICompatibleProvider(ModelProvider):
         self,
         model_name: str,
         messages: list,
-        temperature: float,
+        temperature: Optional[float],
         max_output_tokens: Optional[int] = None,
         capabilities: Optional[ModelCapabilities] = None,
         **kwargs,
@@ -459,6 +462,11 @@ class OpenAICompatibleProvider(ModelProvider):
         # Responses API uses max_output_tokens, unlike Chat Completions.
         if max_output_tokens:
             completion_params["max_output_tokens"] = max_output_tokens
+
+        if temperature is not None:
+            response_capabilities = capabilities or self.get_all_model_capabilities().get(model_name)
+            if response_capabilities is None or response_capabilities.supports_temperature:
+                completion_params["temperature"] = temperature
 
         # For responses endpoint, we only add parameters that are explicitly supported
         # Remove unsupported chat completion parameters that may cause API errors
@@ -649,7 +657,7 @@ class OpenAICompatibleProvider(ModelProvider):
             return self._generate_with_responses_endpoint(
                 model_name=resolved_model,
                 messages=messages,
-                temperature=temperature,
+                temperature=effective_temperature,
                 max_output_tokens=max_output_tokens,
                 capabilities=capabilities,
                 **kwargs,
@@ -736,10 +744,23 @@ class OpenAICompatibleProvider(ModelProvider):
         usage = {}
 
         if hasattr(response, "usage") and response.usage:
-            # Safely extract token counts with None handling
-            usage["input_tokens"] = getattr(response.usage, "prompt_tokens", 0) or 0
-            usage["output_tokens"] = getattr(response.usage, "completion_tokens", 0) or 0
-            usage["total_tokens"] = getattr(response.usage, "total_tokens", 0) or 0
+            usage_object = response.usage
+
+            def _token_count(primary: str, fallback: str) -> int:
+                value = getattr(usage_object, primary, None)
+                if not isinstance(value, int):
+                    value = getattr(usage_object, fallback, None)
+                return value if isinstance(value, int) else 0
+
+            usage["input_tokens"] = _token_count("input_tokens", "prompt_tokens")
+            usage["output_tokens"] = _token_count("output_tokens", "completion_tokens")
+            total_tokens = getattr(usage_object, "total_tokens", None)
+            if isinstance(total_tokens, int):
+                usage["total_tokens"] = total_tokens
+            elif hasattr(usage_object, "total_tokens"):
+                usage["total_tokens"] = 0
+            else:
+                usage["total_tokens"] = usage["input_tokens"] + usage["output_tokens"]
 
         return usage
 
