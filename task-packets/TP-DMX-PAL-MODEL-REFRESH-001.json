@@ -59,6 +59,8 @@
       "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_per_tool_model_defaults.py",
       "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_supported_models_aliases.py",
       "docker/mcp-servers-source/pal/pal-mcp-server/tests/test_xai_provider.py",
+      "proof/pr_merge/embedded-audit/pr-1088/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1088/PROOF.json.sig",
       "task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json",
       "tests/arch/test_pal_model_catalog_contract.py"
     ],
