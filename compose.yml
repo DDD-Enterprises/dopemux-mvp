@@ -106,7 +106,7 @@ services:
 
   # MySQL (Leantime)
   mysql_leantime:
-    image: mysql:8.0
+    image: mysql:9.7
     container_name: mysql_leantime
     restart: unless-stopped
     networks:
