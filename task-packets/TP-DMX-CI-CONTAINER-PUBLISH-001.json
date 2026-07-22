@@ -3,7 +3,7 @@
   "project": "dopemux-mvp",
   "target": "Align Docker CI with the canonical Compose build fleet and publish immutable GHCR images with provenance.",
   "invariants": [
-    "Runtime and compose wiring remain higher authority than generated CI metadata.",
+    "Runtime and normalized compose wiring remain higher authority than generated CI metadata.",
     "Pull requests never publish images or receive registry credentials unnecessarily.",
     "Main and release publication uses GHCR with GITHUB_TOKEN and immutable SHA tags.",
     "Docker Scout credentials are optional and may not block container build verification when absent.",
@@ -32,7 +32,6 @@
     "allowlist": [
       ".github/workflows/containers.yml",
       ".github/workflows/docker-scout.yml",
-      "compose.yml",
       "config/containers.json",
       "scripts/ci/container_matrix.py",
       "tests/arch/test_container_ci_alignment.py",
@@ -115,17 +114,20 @@
     },
     {
       "id": "compose-alignment",
-      "task": "Repair Compose Dockerfile paths that currently point at missing wrapper files.",
+      "task": "Validate the inventory against Docker Compose's normalized build paths and fail closed on unmapped or conflicting services.",
       "requirements": [
-        "ConPort and LiteLLM use their existing source Dockerfiles already proven by CI builds.",
+        "Use docker compose config output rather than filename assumptions.",
+        "Do not edit Compose when normalized runtime evidence already resolves wrapper paths.",
         "No service authority or port changes are introduced."
       ],
       "expected_files": [
-        "compose.yml"
+        "config/containers.json",
+        "scripts/ci/container_matrix.py",
+        "tests/arch/test_container_ci_alignment.py"
       ],
       "validation": [
         "docker compose config is structurally valid.",
-        "Manifest and Compose Dockerfile paths agree."
+        "Manifest and normalized Compose Dockerfile paths agree."
       ]
     }
   ]
