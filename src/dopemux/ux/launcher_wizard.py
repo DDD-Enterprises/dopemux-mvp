@@ -200,7 +200,7 @@ class LauncherWizard:
         # Display the last 15 log messages to prevent overflow
         log_text = Text("\n").join(self._boot_log_messages[-15:])
         return Panel(
-            Align.bottom(log_text),
+            Align(log_text, vertical="bottom"),
             title="[panel.title]Logs[/panel.title]",
             border_style="table.border",
             expand=True,
@@ -294,7 +294,7 @@ class LauncherWizard:
         self.console.print(footer_text)
 
 
-def start_wizard() -> Optional[Tuple[str, LauncherWizard]]:
+def start_wizard() -> Tuple[Optional[str], Optional[LauncherWizard]]:
     """
     Initializes and runs the Dopemux Launcher Wizard.
 
