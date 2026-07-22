@@ -1,7 +1,7 @@
 version: 2
 
 updates:
-  # Python dependencies from pyproject.toml + uv.lock
+  # Root Python dependencies from pyproject.toml and uv.lock.
   - package-ecosystem: "uv"
     directory: "/"
     schedule:
@@ -9,7 +9,7 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "America/Vancouver"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 2
     groups:
       python-minor-patch:
         patterns:
@@ -21,7 +21,7 @@ updates:
       prefix: "deps"
       include: "scope"
 
-  # Root Next.js / TypeScript application
+  # Root Next.js and TypeScript dependencies.
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -29,7 +29,7 @@ updates:
       day: "tuesday"
       time: "09:00"
       timezone: "America/Vancouver"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 2
     groups:
       javascript-minor-patch:
         patterns:
@@ -41,7 +41,7 @@ updates:
       prefix: "deps"
       include: "scope"
 
-  # Actions referenced under .github/workflows
+  # Actions referenced by workflows under .github/workflows.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -49,7 +49,7 @@ updates:
       day: "wednesday"
       time: "09:00"
       timezone: "America/Vancouver"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 2
     groups:
       actions-minor-patch:
         patterns:
@@ -58,10 +58,11 @@ updates:
           - "minor"
           - "patch"
     commit-message:
-      prefix: "deps"
+      prefix: "ci"
       include: "scope"
 
-  # Container images referenced by compose.yml
+  # Images declared in the canonical root compose.yml.
+  # Keep this lane one-at-a-time because container tags are not reliably SemVer.
   - package-ecosystem: "docker-compose"
     directory: "/"
     schedule:
@@ -69,14 +70,7 @@ updates:
       day: "thursday"
       time: "09:00"
       timezone: "America/Vancouver"
-    open-pull-requests-limit: 3
-    groups:
-      container-minor-patch:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
+    open-pull-requests-limit: 1
     commit-message:
       prefix: "deps"
       include: "scope"
