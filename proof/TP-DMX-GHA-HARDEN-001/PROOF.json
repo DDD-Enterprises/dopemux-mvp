@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-GHA-HARDEN-001",
+  "series_id": "DMX-GHA-HARDEN",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "chore/dependabot-codeql-v4",
+  "base_branch": "main",
+  "head_before": "acb6dcc1fe1f9a3164cf4e5fefe61981985f4f06",
+  "head_after": "e700cc0794ebb0de2e791573d26594882c94eb99",
+  "mutation_performed": true,
+  "github_mutation_performed": true,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [
+    "User explicitly requested scanning, optimizing, and fixing all GitHub workflows."
+  ],
+  "forbidden_surfaces_touched": true,
+  "files_changed": [
+    ".github/dependabot.yml",
+    ".github/workflows/ci-complete.yml",
+    ".github/workflows/codeql.yml",
+    ".github/workflows/docker-scout.yml",
+    ".github/workflows/docs.yml",
+    ".github/workflows/gemini-scheduled-triage.yml",
+    ".github/workflows/gemini-triage.yml",
+    ".github/workflows/preflight.yml",
+    ".github/workflows/repo-identity.yml",
+    ".github/workflows/security-review.yml",
+    ".github/workflows/workflow-lint.yml"
+  ],
+  "purpose": "Audit all active root GitHub Actions workflows and repair evidence-backed reliability, security, cost, and truthfulness defects without weakening required CI or making external credentials mandatory for core gates.",
+  "commands": [
+    {
+      "cmd": "Workflow Lint run 29908297532: checksum-verified actionlint 1.7.12 over .github/workflows",
+      "exit_code": 0,
+      "result": "SUCCESS"
+    },
+    {
+      "cmd": "CodeQL run 29908297229 on workflow-code SHA 6b33e8fe67f60f76599f53941fe56121a9dd0bdf",
+      "exit_code": 0,
+      "result": "SUCCESS"
+    },
+    {
+      "cmd": "Complete CI run 29908297656 required lanes",
+      "exit_code": 0,
+      "result": "code-quality, unit tests, extractor smoke, audit-validator, routing-consistency, extractor-full, and auditor-router all SUCCESS"
+    },
+    {
+      "cmd": "Security Review run 29908297428",
+      "exit_code": 0,
+      "result": "credential detection and truthful summary SUCCESS; Claude analysis SKIPPED by credential gate"
+    },
+    {
+      "cmd": "Repo Identity, clobber-guard, preflight, and docs current-head runs",
+      "exit_code": 0,
+      "result": "SUCCESS"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {
+        "check": "workflow_census",
+        "status": "PASS",
+        "detail": "All 17 pre-existing active root workflows were inspected; workflow-lint.yml was added as the eighteenth active workflow."
+      },
+      {
+        "check": "actionlint",
+        "status": "PASS",
+        "detail": "Run 29908297532 completed successfully with checksum-verified actionlint 1.7.12."
+      },
+      {
+        "check": "codeql_v4",
+        "status": "PASS",
+        "detail": "Run 29908297229 completed successfully using the pinned CodeQL v4.37.3 commit."
+      },
+      {
+        "check": "required_ci_lanes",
+        "status": "PASS",
+        "detail": "Run 29908297656 completed every required lane successfully before the final ci-complete simplification. The simplification preserves the same required commands and removes only duplicate advisory jobs."
+      },
+      {
+        "check": "docker_auth_regression",
+        "status": "PASS",
+        "detail": "The observed Docker Scout run passed credential detection and Docker Hub authentication; missing-credential behavior is now an explicit clean skip."
+      },
+      {
+        "check": "triage_mutation_safety",
+        "status": "PASS",
+        "detail": "Both Gemini triage workflows use addLabels and remove only status/needs-triage after valid output; unrelated labels are preserved."
+      },
+      {
+        "check": "summary_truthfulness",
+        "status": "PASS",
+        "detail": "Complete CI and dedicated security summaries now report actual job/dependency results and distinguish skipped external analysis from successful analysis."
+      },
+      {
+        "check": "merge_not_performed",
+        "status": "PASS",
+        "detail": "PR #1100 remains draft; no merge or auto-merge action was taken."
+      }
+    ]
+  },
+  "remaining_risks": [
+    "The branch was four commits behind main at the last comparison and must be updated before merge review.",
+    "Workflow files are a red-lane security/release authority surface; independent semantic review is still required.",
+    "Branch-protection enforcement of the named checks remains UNKNOWN.",
+    "Established Gemini workflows remain on google-github-actions/run-gemini-cli@v0 under existing ratchet exclusions because no compatible immutable SHA was proven in this bounded run.",
+    "The Docker Scout matrix remains expensive and should be redesigned around trusted artifact reuse in a separate packet.",
+    "The proof-only commit and any branch update require fresh exact-head CI before merge readiness can be claimed."
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-GHA-HARDEN-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Deterministic workflow lint and live CI do not replace independent semantic review of red-lane workflow policy."
+    ],
+    "skip_reason": "External embedded-auditor capacity/credentials were unavailable. The PR remains draft and no merge-readiness claim is made."
+  }
+}
