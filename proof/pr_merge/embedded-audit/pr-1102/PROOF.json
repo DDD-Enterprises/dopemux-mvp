@@ -1,0 +1,20 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1102,
+  "head_sha": "405d007d2b0d3e7646cb5e0b6121c23c8483f98a",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "antigravity",
+    "auditor_model": "gemini",
+    "invocation": "scripts.audit.local_audit_acceptance",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1102/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Added intentional-deletion label to PR #1102"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
