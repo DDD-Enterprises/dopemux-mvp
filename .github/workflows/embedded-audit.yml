@@ -59,7 +59,7 @@ jobs:
           fi
 
       - name: Checkout trusted audit source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Trusted base/default-branch code only. Candidate head is fetched as
           # data later and never checked out as the working tree.
