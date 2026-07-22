@@ -418,7 +418,27 @@ class TestOpenAIProvider:
             {"type": "input_image", "image_url": "data:image/png;base64,AA=="},
         ]
         assert "data:image/png;base64,AA==" not in caplog.text
+        assert "Describe image." not in caplog.text
+        assert "[redacted text]" in caplog.text
         assert "[redacted image]" in caplog.text
+
+    def test_responses_logging_redacts_all_input_text(self):
+        provider = OpenAIModelProvider("test-key")
+        long_secret = "long-secret-" * 20
+
+        sanitized = provider._sanitize_for_logging(
+            {
+                "input": [
+                    {"role": "system", "content": [{"type": "input_text", "text": long_secret}]},
+                    {"role": "user", "content": [{"type": "input_text", "text": "short-secret"}]},
+                ]
+            }
+        )
+
+        serialized = str(sanitized)
+        assert "short-secret" not in serialized
+        assert long_secret[:100] not in serialized
+        assert serialized.count("[redacted text]") == 2
 
     @patch("providers.openai_compatible.OpenAI")
     def test_gpt_5_6_responses_extracts_usage_fields(self, mock_openai_class):
