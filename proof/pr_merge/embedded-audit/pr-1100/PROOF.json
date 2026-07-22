@@ -1,0 +1,22 @@
+{
+  "commit_sha": "3e1615562a5e8b538b2a731aa41522f52182cf25",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Dependabot configuration tuning and grouping",
+      "Migrated all active CodeQL workflow occurrences to v4"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1100/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "3e1615562a5e8b538b2a731aa41522f52182cf25",
+  "pr_number": 1100,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
