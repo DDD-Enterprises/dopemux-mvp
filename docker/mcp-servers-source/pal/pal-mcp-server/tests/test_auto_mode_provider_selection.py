@@ -97,10 +97,9 @@ class TestAutoModeProviderSelection:
             fast_response = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.FAST_RESPONSE)
             balanced = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.BALANCED)
 
-            # Should select appropriate OpenAI models based on new preference order
-            assert extended_reasoning == "gpt-5-codex"  # GPT-5-Codex prioritized for extended reasoning
-            assert fast_response == "gpt-5"  # gpt-5 comes first in fast response preference
-            assert balanced == "gpt-5"  # gpt-5 for balanced
+            assert extended_reasoning == "gpt-5.6-sol"
+            assert fast_response == "gpt-5.6-luna"
+            assert balanced == "gpt-5.6-terra"
 
         finally:
             # Restore original environment
@@ -320,8 +319,8 @@ class TestAutoModeProviderSelection:
                 ("pro", ProviderType.GOOGLE, "gemini-2.5-pro"),
                 ("mini", ProviderType.OPENAI, "gpt-5-mini"),  # "mini" now resolves to gpt-5-mini
                 ("o3mini", ProviderType.OPENAI, "o3-mini"),
-                ("grok", ProviderType.XAI, "grok-4"),
-                ("grokfast", ProviderType.XAI, "grok-3-fast"),
+                ("grok", ProviderType.XAI, "grok-4.5"),
+                ("grok-build-latest", ProviderType.XAI, "grok-4.5"),
             ]
 
             for alias, expected_provider_type, expected_resolved_name in test_cases:

@@ -277,14 +277,15 @@ services:
   # Zen - Multi-Model Reasoning
   pal:
     build:
-      context: .
-      dockerfile: docker/mcp-servers/pal/Dockerfile
+      context: docker/mcp-servers-source/pal
+      dockerfile: Dockerfile
     container_name: mcp-pal
     restart: unless-stopped
     networks:
       - dopemux-network
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - MCP_SERVER_PORT=${PAL_PORT:-3003}
@@ -300,7 +301,7 @@ services:
   pal-stdio:
     build:
       context: .
-      dockerfile: docker/mcp-servers/pal-stdio/Dockerfile
+      dockerfile: docker/mcp-servers-source/pal-stdio/Dockerfile
     container_name: mcp-pal-stdio
     restart: unless-stopped
     # Keep stdin open so the MCP stdio server.py does not read EOF and exit
@@ -313,6 +314,7 @@ services:
       - dopemux-network
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     # No ports exposed - Docker MCP Toolkit execs into container for stdio transport
