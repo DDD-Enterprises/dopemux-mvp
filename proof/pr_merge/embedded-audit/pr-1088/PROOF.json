@@ -2,8 +2,8 @@
   "packet_id": "PR-MERGE-STEWARD-1088",
   "pr_number": 1088,
   "repo": "DDD-Enterprises/dopemux-mvp",
-  "head_sha": "26dd93931bf01db133b07e1571d03f8809026746",
-  "generated_at": "2026-07-22T02:52:38Z",
+  "head_sha": "df1b67261876dbb57ae1ebe3ed024f007d0bbab8",
+  "generated_at": "2026-07-22T03:35:44Z",
   "mutation_performed": false,
   "github_mutation_route_added": false,
   "embedded_audit": {
@@ -11,7 +11,7 @@
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
     "auditor_model": "sonnet",
-    "invocation": "git rev-parse HEAD + git diff --name-status 5a9f8f7b5d4a03be323723a92baf3c4e162d5b65..26dd93931bf01db133b07e1571d03f8809026746 (22-path scope, Python set-equality vs task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json commit.allowlist, re-verified after the reasoning-effort fix commit); python -m pytest -q tests/arch/test_pal_model_catalog_contract.py (6/6 passed); python -m pytest -q docker/mcp-servers-source/pal/pal-mcp-server/tests/{test_xai_provider,test_openai_provider,test_auto_mode_comprehensive,test_auto_mode_model_listing,test_auto_mode_provider_selection,test_intelligent_fallback,test_per_tool_model_defaults,test_supported_models_aliases}.py (111/111 passed); direct read of providers/openai_compatible.py's _generate_with_responses_endpoint to confirm default_reasoning_effort now takes effect; full findings/methodology in proof/pr_merge/embedded-audit/pr-1088/AUDITOR_REPORT.md",
+    "invocation": "Claude Code CLI Sonnet read-only audit at exact SHA df1b67261876dbb57ae1ebe3ed024f007d0bbab8; git merge-base origin/main HEAD; exact 24-path set comparison against task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json commit.allowlist; python -m pytest -q tests/arch/test_pal_model_catalog_contract.py (6 passed); pytest -q tests/test_xai_provider.py tests/test_openai_provider.py (41 passed); pytest -q tests/test_auto_mode_comprehensive.py tests/test_auto_mode_model_listing.py tests/test_auto_mode_provider_selection.py tests/test_intelligent_fallback.py tests/test_per_tool_model_defaults.py tests/test_supported_models_aliases.py (72 passed); task packet jsonschema validation; git diff --check; secret-pattern scan; full findings in proof/pr_merge/embedded-audit/pr-1088/AUDITOR_REPORT.md",
     "exit_code": 0,
     "report_path": "proof/pr_merge/embedded-audit/pr-1088/AUDITOR_REPORT.md",
     "findings": [
@@ -20,43 +20,43 @@
         "severity": "MEDIUM",
         "title": "pal-stdio build context not covered by new .dockerignore security patterns",
         "status": "ACCEPTED_RISK",
-        "body": "compose.yml's pal-stdio service build context remains '.' (repo root). The newly-added docker/mcp-servers-source/pal/.dockerignore is only effective for the pal service (context=docker/mcp-servers-source/pal); pal-stdio is instead governed by the pre-existing root .dockerignore, which excludes .env/.env.*.local but lacks the new *.key/*.pem/*.p12/*.pfx/*.crt/*.csr/secrets//private/ patterns. Not a regression (root context predates this PR) and .env is still excluded either way. The contract test (test_pal_builds_use_canonical_non_symlink_source_paths) only asserts dockerignore coverage for the pal service, not pal-stdio, so this gap is untested. Recommend a follow-up TP to extend coverage or add a dedicated pal-stdio dockerignore."
+        "body": "compose.yml keeps pal-stdio on the repository-root build context. The root .dockerignore excludes environment files but lacks the additional key, certificate, secrets, and private-directory patterns added to docker/mcp-servers-source/pal/.dockerignore. This predates the PR and is not a regression; follow-up hardening should cover the root context without broadening this packet."
+      },
+      {
+        "id": "F-1088-MED-2",
+        "severity": "MEDIUM",
+        "title": "Nested PR proof report path conflicts with the canonical schema pattern",
+        "status": "ACCEPTED_RISK",
+        "body": "schemas/proof/embedded_audit.schema.json permits one directory segment below proof/, while the established PR Steward convention stores reports under proof/pr_merge/embedded-audit/pr-<N>/. scripts/audit/local_audit_acceptance.py intentionally allows the trusted emitter to override report_path. Resolving this structural mismatch requires a separate schema or convention change."
       },
       {
         "id": "F-1088-LOW-1",
         "severity": "LOW",
-        "title": "Standalone PAL reference repo is materially ahead of the ported catalog, not byte-equivalent",
+        "title": "Standalone PAL reference catalog remains materially ahead of the vendored catalog",
         "status": "ACCEPTED_RISK",
-        "body": "Standalone /tmp/pal-model-refresh @ eccf09a236c429eadbe0732d845ecd42eedefbbb (exact match to the standalone head supplied for audit) confirms identical grok-4.5 and gpt-5.6-sol/terra/luna behavior and passing tests (42 passed vs Dopemux's 40, extra coverage for retired-alias and cost-control cases). Standalone's conf/openai_models.json carries 37 models vs Dopemux's 13 (gpt-5.1 through gpt-5.5, o1 family, gpt-4o family unported), plus a dynamic_model_selection_enabled() preference system and an OpenAI-client max_retries=0 cost-control setting absent from the Dopemux copy. Scope-bounded to this PR's declared 22-file allowlist, not a functional defect in what was ported; flagged for awareness of drift between the two trees."
+        "body": "The standalone PAL fork carries additional OpenAI and OpenRouter catalog entries and dynamic-selection behavior outside this packet. Shared reviewer fixes are synchronized, but full catalog convergence remains separate work."
       },
       {
         "id": "F-1088-INFO-1",
         "severity": "INFO",
-        "title": "_extract_usage total_tokens fallback returns 0 instead of input+output sum in one edge case",
+        "title": "Usage extraction returns zero for one non-integer total_tokens edge case",
         "status": "ACCEPTED_RISK",
-        "body": "providers/openai_compatible.py's _extract_usage: if response.usage.total_tokens exists but is not an int (e.g. None), the code sets total_tokens=0 rather than falling back to input_tokens+output_tokens. Not exercised by any observed OpenAI/xAI/OpenRouter response shape in the current tests; informational only, no fix applied."
-      },
-      {
-        "id": "F-1088-P2-1",
-        "severity": "MEDIUM",
-        "title": "OpenRouter xAI catalog entry still exposes retired Grok 4 aliases",
-        "status": "ACCEPTED_RISK",
-        "body": "chatgpt-codex-connector correctly flagged that conf/openrouter_models.json still registers x-ai/grok-4 under aliases grok-4/grok4/grok, so a retired-alias request rejected by the native XAI provider could still fall through to OpenRouter and reach a retired model. conf/openrouter_models.json is NOT in task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json's commit.allowlist (22 paths); editing it here would break the exact-scope match this and the prior audit round both certified. Left unfixed under this packet as a scope-boundary decision, not an oversight; requires either extending the packet or a follow-up TP."
+        "body": "If a provider exposes total_tokens but the value is non-integer, _extract_usage records zero instead of input_tokens plus output_tokens. Current provider response fixtures do not exercise this shape."
       }
     ],
     "fixes_applied": [
-      {
-        "id": "F-1088-FIX-1",
-        "title": "Preserve Grok 4.5's documented default reasoning effort",
-        "commit": "26dd93931bf01db133b07e1571d03f8809026746",
-        "body": "chatgpt-codex-connector (P2) flagged that the new grok-4.5 catalog entry omitted default_reasoning_effort, so unconfigured Responses-API calls silently received PAL's generic 'medium' instead of xAI's documented Grok 4.5 default of 'high'. Fixed by adding default_reasoning_effort: 'high' to the grok-4.5 entry in conf/xai_models.json (both source and symlinked runtime path) and correcting the one test that had hardcoded the prior 'medium' expectation (tests/test_xai_provider.py::test_generate_content_resolves_alias_before_api_call). Verified by reading providers/openai_compatible.py's _generate_with_responses_endpoint directly and by re-running the full pal-mcp-server provider/auto-mode test suite (111/111 passed)."
-      }
+      "Regenerated exact-head audit proof for df1b67261876dbb57ae1ebe3ed024f007d0bbab8 after all functional reviewer fixes and main synchronization.",
+      "Converted fixes_applied to the schema-required array of strings.",
+      "Removed retired OpenRouter x-ai/grok-4 and aliases grok-4, grok4, and grok with registry regression coverage.",
+      "Redacted every Responses API input text block in log copies while preserving outgoing request payloads.",
+      "Extended the Task Packet allowlist to exact 24-path equality, including openrouter_models.json and AUDITOR_REPORT.md."
     ],
     "remaining_risks": [
-      "Task packet step 'runtime-proof' (direct Grok 4.5 / GPT-5.6 bounded live API probes) was not executed by this or any prior audit round — verification remains static (diff review + unit/contract tests), never a live provider call. Treat that packet step as NOT_RUN pending an operator-run probe.",
-      "Grok 4.5 (500K context) and GPT-5.6 (1.05M context, 128K max_output_tokens) catalog figures are not independently confirmed against current xAI/OpenAI vendor documentation; no live lookup was performed under this audit's no-live-call constraint.",
-      "conf/xai_models.json's grok-4.5 entry intentionally omits max_output_tokens (no officially-documented limit to encode); providers/openai_compatible.py only sets the param when max_output_tokens is truthy, so the omission is safe and matches the packet's 'no invented limit' requirement.",
-      "F-1088-P2-1 (OpenRouter retired-alias exposure) remains open pending a scope decision — see findings above."
+      "Task packet runtime-proof live Grok 4.5 and GPT-5.6 probes were NOT_RUN in this audit because network access was prohibited.",
+      "Current xAI and OpenAI catalog limits were not independently rechecked against live vendor documentation in this no-network audit.",
+      "pal-stdio root build-context ignore hardening remains follow-up work.",
+      "Standalone and vendored PAL catalogs remain intentionally non-identical outside shared reviewer fixes.",
+      "The nested PR proof report_path remains incompatible with the general schema pattern; trusted CI overrides it under the established acceptance path."
     ],
     "skip_reason": null
   }
