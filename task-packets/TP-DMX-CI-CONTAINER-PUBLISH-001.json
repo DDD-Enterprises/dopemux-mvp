@@ -33,6 +33,7 @@
       ".github/workflows/containers.yml",
       ".github/workflows/docker-scout.yml",
       "config/containers.json",
+      "docker/mcp-servers-source/leantime-bridge/Dockerfile",
       "scripts/ci/container_matrix.py",
       "tests/arch/test_container_ci_alignment.py",
       "task-packets/TP-DMX-CI-CONTAINER-PUBLISH-001.json"
@@ -43,6 +44,7 @@
       "python -m pytest -q tests/arch/test_container_ci_alignment.py --no-cov",
       "python -m json.tool config/containers.json",
       "python -m json.tool task-packets/TP-DMX-CI-CONTAINER-PUBLISH-001.json",
+      "docker build -f docker/mcp-servers-source/leantime-bridge/Dockerfile .",
       "git diff --check"
     ]
   },
@@ -128,6 +130,22 @@
       "validation": [
         "docker compose config is structurally valid.",
         "Manifest and normalized Compose Dockerfile paths agree."
+      ]
+    },
+    {
+      "id": "leantime-bridge-build-repair",
+      "task": "Repair the evidence-backed setuptools package discovery failure in the Leantime Bridge image.",
+      "requirements": [
+        "Copy the complete src and tools package trees before pip install.",
+        "Do not change the bridge runtime command, port, environment contract, or service code.",
+        "Apply the same packaging pattern already proven by the other repository images."
+      ],
+      "expected_files": [
+        "docker/mcp-servers-source/leantime-bridge/Dockerfile"
+      ],
+      "validation": [
+        "The Leantime Bridge image builds with repository-root context.",
+        "The full container matrix no longer fails at Leantime Bridge package installation."
       ]
     }
   ]
