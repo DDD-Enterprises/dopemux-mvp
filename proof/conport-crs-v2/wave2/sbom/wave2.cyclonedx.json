@@ -1,0 +1,4294 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "container",
+      "name": "conport",
+      "version": "sha256:98d378a8718002346ac6b6fd0b3943cd93dd738ae65fcbe5f6cec5f2b0d52b11",
+      "properties": [
+        {
+          "name": "wave2:image-id",
+          "value": "sha256:98d378a8718002346ac6b6fd0b3943cd93dd738ae65fcbe5f6cec5f2b0d52b11"
+        },
+        {
+          "name": "wave2:source-input-sha256",
+          "value": "58d3bccdc1338037ab74d528dd46bffdf7ecfca87c60216dd73b07f3e73c59c4"
+        },
+        {
+          "name": "wave2:inventory-sha256",
+          "value": "7fb0a86134cb3f718aaf1e003dd310a8f1b3720325d5a72d75c3675b381b4aaf"
+        }
+      ]
+    },
+    "tools": [
+      {
+        "vendor": "dopemux",
+        "name": "wave2-zero-egress-inventory-generator"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "adduser",
+      "version": "3.152",
+      "purl": "pkg:deb/debian/adduser@3.152?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "apt",
+      "version": "3.0.3",
+      "purl": "pkg:deb/debian/apt@3.0.3?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "base-files",
+      "version": "13.8+deb13u6",
+      "purl": "pkg:deb/debian/base-files@13.8%2Bdeb13u6?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "base-passwd",
+      "version": "3.6.7",
+      "purl": "pkg:deb/debian/base-passwd@3.6.7?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "bash",
+      "version": "5.2.37-2+b9",
+      "purl": "pkg:deb/debian/bash@5.2.37-2%2Bb9?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "bash-completion",
+      "version": "1:2.16.0-7",
+      "purl": "pkg:deb/debian/bash-completion@1%3A2.16.0-7?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "bsdutils",
+      "version": "1:2.41-5",
+      "purl": "pkg:deb/debian/bsdutils@1%3A2.41-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ca-certificates",
+      "version": "20250419",
+      "purl": "pkg:deb/debian/ca-certificates@20250419?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "coreutils",
+      "version": "9.7-3",
+      "purl": "pkg:deb/debian/coreutils@9.7-3?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "curl",
+      "version": "8.14.1-2+deb13u4",
+      "purl": "pkg:deb/debian/curl@8.14.1-2%2Bdeb13u4?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dash",
+      "version": "0.5.12-12",
+      "purl": "pkg:deb/debian/dash@0.5.12-12?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "debconf",
+      "version": "1.5.91",
+      "purl": "pkg:deb/debian/debconf@1.5.91?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "debian-archive-keyring",
+      "version": "2025.1",
+      "purl": "pkg:deb/debian/debian-archive-keyring@2025.1?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "debianutils",
+      "version": "5.23.2",
+      "purl": "pkg:deb/debian/debianutils@5.23.2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "diffutils",
+      "version": "1:3.10-4",
+      "purl": "pkg:deb/debian/diffutils@1%3A3.10-4?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dpkg",
+      "version": "1.22.22",
+      "purl": "pkg:deb/debian/dpkg@1.22.22?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "findutils",
+      "version": "4.10.0-3",
+      "purl": "pkg:deb/debian/findutils@4.10.0-3?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gcc-14-base:arm64",
+      "version": "14.2.0-19",
+      "purl": "pkg:deb/debian/gcc-14-base%3Aarm64@14.2.0-19?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "git",
+      "version": "1:2.47.3-0+deb13u1",
+      "purl": "pkg:deb/debian/git@1%3A2.47.3-0%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "git-man",
+      "version": "1:2.47.3-0+deb13u1",
+      "purl": "pkg:deb/debian/git-man@1%3A2.47.3-0%2Bdeb13u1?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "grep",
+      "version": "3.11-4+b1",
+      "purl": "pkg:deb/debian/grep@3.11-4%2Bb1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gzip",
+      "version": "1.13-1",
+      "purl": "pkg:deb/debian/gzip@1.13-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hostname",
+      "version": "3.25",
+      "purl": "pkg:deb/debian/hostname@3.25?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "init-system-helpers",
+      "version": "1.69~deb13u1",
+      "purl": "pkg:deb/debian/init-system-helpers@1.69~deb13u1?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "krb5-locales",
+      "version": "1.21.3-5+deb13u1",
+      "purl": "pkg:deb/debian/krb5-locales@1.21.3-5%2Bdeb13u1?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "less",
+      "version": "668-1",
+      "purl": "pkg:deb/debian/less@668-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libacl1:arm64",
+      "version": "2.3.2-2+b1",
+      "purl": "pkg:deb/debian/libacl1%3Aarm64@2.3.2-2%2Bb1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libapt-pkg7.0:arm64",
+      "version": "3.0.3",
+      "purl": "pkg:deb/debian/libapt-pkg7.0%3Aarm64@3.0.3?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libattr1:arm64",
+      "version": "1:2.5.2-3",
+      "purl": "pkg:deb/debian/libattr1%3Aarm64@1%3A2.5.2-3?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libaudit-common",
+      "version": "1:4.0.2-2",
+      "purl": "pkg:deb/debian/libaudit-common@1%3A4.0.2-2?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libaudit1:arm64",
+      "version": "1:4.0.2-2+b2",
+      "purl": "pkg:deb/debian/libaudit1%3Aarm64@1%3A4.0.2-2%2Bb2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libblkid1:arm64",
+      "version": "2.41-5",
+      "purl": "pkg:deb/debian/libblkid1%3Aarm64@2.41-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libbrotli1:arm64",
+      "version": "1.1.0-2+b7",
+      "purl": "pkg:deb/debian/libbrotli1%3Aarm64@1.1.0-2%2Bb7?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libbsd0:arm64",
+      "version": "0.12.2-2",
+      "purl": "pkg:deb/debian/libbsd0%3Aarm64@0.12.2-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libbz2-1.0:arm64",
+      "version": "1.0.8-6",
+      "purl": "pkg:deb/debian/libbz2-1.0%3Aarm64@1.0.8-6?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libc-bin",
+      "version": "2.41-12+deb13u3",
+      "purl": "pkg:deb/debian/libc-bin@2.41-12%2Bdeb13u3?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libc6:arm64",
+      "version": "2.41-12+deb13u3",
+      "purl": "pkg:deb/debian/libc6%3Aarm64@2.41-12%2Bdeb13u3?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libcap-ng0:arm64",
+      "version": "0.8.5-4+b1",
+      "purl": "pkg:deb/debian/libcap-ng0%3Aarm64@0.8.5-4%2Bb1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libcap2:arm64",
+      "version": "1:2.75-10+deb13u1+b1",
+      "purl": "pkg:deb/debian/libcap2%3Aarm64@1%3A2.75-10%2Bdeb13u1%2Bb1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libcbor0.10:arm64",
+      "version": "0.10.2-2",
+      "purl": "pkg:deb/debian/libcbor0.10%3Aarm64@0.10.2-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libcom-err2:arm64",
+      "version": "1.47.2-3+b11",
+      "purl": "pkg:deb/debian/libcom-err2%3Aarm64@1.47.2-3%2Bb11?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libcrypt1:arm64",
+      "version": "1:4.4.38-1",
+      "purl": "pkg:deb/debian/libcrypt1%3Aarm64@1%3A4.4.38-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libcurl3t64-gnutls:arm64",
+      "version": "8.14.1-2+deb13u4",
+      "purl": "pkg:deb/debian/libcurl3t64-gnutls%3Aarm64@8.14.1-2%2Bdeb13u4?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libcurl4t64:arm64",
+      "version": "8.14.1-2+deb13u4",
+      "purl": "pkg:deb/debian/libcurl4t64%3Aarm64@8.14.1-2%2Bdeb13u4?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libdb5.3t64:arm64",
+      "version": "5.3.28+dfsg2-9",
+      "purl": "pkg:deb/debian/libdb5.3t64%3Aarm64@5.3.28%2Bdfsg2-9?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libdebconfclient0:arm64",
+      "version": "0.280",
+      "purl": "pkg:deb/debian/libdebconfclient0%3Aarm64@0.280?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libedit2:arm64",
+      "version": "3.1-20250104-1",
+      "purl": "pkg:deb/debian/libedit2%3Aarm64@3.1-20250104-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "liberror-perl",
+      "version": "0.17030-1",
+      "purl": "pkg:deb/debian/liberror-perl@0.17030-1?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libexpat1:arm64",
+      "version": "2.7.1-2",
+      "purl": "pkg:deb/debian/libexpat1%3Aarm64@2.7.1-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libffi8:arm64",
+      "version": "3.4.8-2",
+      "purl": "pkg:deb/debian/libffi8%3Aarm64@3.4.8-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libfido2-1:arm64",
+      "version": "1.15.0-1+b1",
+      "purl": "pkg:deb/debian/libfido2-1%3Aarm64@1.15.0-1%2Bb1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libgcc-s1:arm64",
+      "version": "14.2.0-19",
+      "purl": "pkg:deb/debian/libgcc-s1%3Aarm64@14.2.0-19?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libgdbm-compat4t64:arm64",
+      "version": "1.24-2",
+      "purl": "pkg:deb/debian/libgdbm-compat4t64%3Aarm64@1.24-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libgdbm6t64:arm64",
+      "version": "1.24-2",
+      "purl": "pkg:deb/debian/libgdbm6t64%3Aarm64@1.24-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libgmp10:arm64",
+      "version": "2:6.3.0+dfsg-3",
+      "purl": "pkg:deb/debian/libgmp10%3Aarm64@2%3A6.3.0%2Bdfsg-3?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libgnutls30t64:arm64",
+      "version": "3.8.9-3+deb13u4",
+      "purl": "pkg:deb/debian/libgnutls30t64%3Aarm64@3.8.9-3%2Bdeb13u4?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libgssapi-krb5-2:arm64",
+      "version": "1.21.3-5+deb13u1",
+      "purl": "pkg:deb/debian/libgssapi-krb5-2%3Aarm64@1.21.3-5%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libhogweed6t64:arm64",
+      "version": "3.10.1-1",
+      "purl": "pkg:deb/debian/libhogweed6t64%3Aarm64@3.10.1-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libidn2-0:arm64",
+      "version": "2.3.8-2",
+      "purl": "pkg:deb/debian/libidn2-0%3Aarm64@2.3.8-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libk5crypto3:arm64",
+      "version": "1.21.3-5+deb13u1",
+      "purl": "pkg:deb/debian/libk5crypto3%3Aarm64@1.21.3-5%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libkeyutils1:arm64",
+      "version": "1.6.3-6",
+      "purl": "pkg:deb/debian/libkeyutils1%3Aarm64@1.6.3-6?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libkrb5-3:arm64",
+      "version": "1.21.3-5+deb13u1",
+      "purl": "pkg:deb/debian/libkrb5-3%3Aarm64@1.21.3-5%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libkrb5support0:arm64",
+      "version": "1.21.3-5+deb13u1",
+      "purl": "pkg:deb/debian/libkrb5support0%3Aarm64@1.21.3-5%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "liblastlog2-2:arm64",
+      "version": "2.41-5",
+      "purl": "pkg:deb/debian/liblastlog2-2%3Aarm64@2.41-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libldap-common",
+      "version": "2.6.10+dfsg-1",
+      "purl": "pkg:deb/debian/libldap-common@2.6.10%2Bdfsg-1?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libldap2:arm64",
+      "version": "2.6.10+dfsg-1",
+      "purl": "pkg:deb/debian/libldap2%3Aarm64@2.6.10%2Bdfsg-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "liblz4-1:arm64",
+      "version": "1.10.0-4",
+      "purl": "pkg:deb/debian/liblz4-1%3Aarm64@1.10.0-4?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "liblzma5:arm64",
+      "version": "5.8.1-1+deb13u1",
+      "purl": "pkg:deb/debian/liblzma5%3Aarm64@5.8.1-1%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libmd0:arm64",
+      "version": "1.1.0-2+b1",
+      "purl": "pkg:deb/debian/libmd0%3Aarm64@1.1.0-2%2Bb1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libmount1:arm64",
+      "version": "2.41-5",
+      "purl": "pkg:deb/debian/libmount1%3Aarm64@2.41-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libncursesw6:arm64",
+      "version": "6.5+20250216-2",
+      "purl": "pkg:deb/debian/libncursesw6%3Aarm64@6.5%2B20250216-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libnettle8t64:arm64",
+      "version": "3.10.1-1",
+      "purl": "pkg:deb/debian/libnettle8t64%3Aarm64@3.10.1-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libnghttp2-14:arm64",
+      "version": "1.64.0-1.1+deb13u1",
+      "purl": "pkg:deb/debian/libnghttp2-14%3Aarm64@1.64.0-1.1%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libnghttp3-9:arm64",
+      "version": "1.8.0-1",
+      "purl": "pkg:deb/debian/libnghttp3-9%3Aarm64@1.8.0-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libngtcp2-16:arm64",
+      "version": "1.11.0-1+deb13u1",
+      "purl": "pkg:deb/debian/libngtcp2-16%3Aarm64@1.11.0-1%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libngtcp2-crypto-gnutls8:arm64",
+      "version": "1.11.0-1+deb13u1",
+      "purl": "pkg:deb/debian/libngtcp2-crypto-gnutls8%3Aarm64@1.11.0-1%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libp11-kit0:arm64",
+      "version": "0.25.5-3",
+      "purl": "pkg:deb/debian/libp11-kit0%3Aarm64@0.25.5-3?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libpam-modules-bin",
+      "version": "1.7.0-5",
+      "purl": "pkg:deb/debian/libpam-modules-bin@1.7.0-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libpam-modules:arm64",
+      "version": "1.7.0-5",
+      "purl": "pkg:deb/debian/libpam-modules%3Aarm64@1.7.0-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libpam-runtime",
+      "version": "1.7.0-5",
+      "purl": "pkg:deb/debian/libpam-runtime@1.7.0-5?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libpam0g:arm64",
+      "version": "1.7.0-5",
+      "purl": "pkg:deb/debian/libpam0g%3Aarm64@1.7.0-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libpcre2-8-0:arm64",
+      "version": "10.46-1~deb13u1",
+      "purl": "pkg:deb/debian/libpcre2-8-0%3Aarm64@10.46-1~deb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libperl5.40:arm64",
+      "version": "5.40.1-6",
+      "purl": "pkg:deb/debian/libperl5.40%3Aarm64@5.40.1-6?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libpq5:arm64",
+      "version": "17.10-0+deb13u1",
+      "purl": "pkg:deb/debian/libpq5%3Aarm64@17.10-0%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libpsl5t64:arm64",
+      "version": "0.21.2-1.1+b1",
+      "purl": "pkg:deb/debian/libpsl5t64%3Aarm64@0.21.2-1.1%2Bb1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libreadline8t64:arm64",
+      "version": "8.2-6",
+      "purl": "pkg:deb/debian/libreadline8t64%3Aarm64@8.2-6?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "librtmp1:arm64",
+      "version": "2.4+20151223.gitfa8646d.1-2+b5",
+      "purl": "pkg:deb/debian/librtmp1%3Aarm64@2.4%2B20151223.gitfa8646d.1-2%2Bb5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libsasl2-2:arm64",
+      "version": "2.1.28+dfsg1-9",
+      "purl": "pkg:deb/debian/libsasl2-2%3Aarm64@2.1.28%2Bdfsg1-9?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libsasl2-modules-db:arm64",
+      "version": "2.1.28+dfsg1-9",
+      "purl": "pkg:deb/debian/libsasl2-modules-db%3Aarm64@2.1.28%2Bdfsg1-9?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libsasl2-modules:arm64",
+      "version": "2.1.28+dfsg1-9",
+      "purl": "pkg:deb/debian/libsasl2-modules%3Aarm64@2.1.28%2Bdfsg1-9?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libseccomp2:arm64",
+      "version": "2.6.0-2",
+      "purl": "pkg:deb/debian/libseccomp2%3Aarm64@2.6.0-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libselinux1:arm64",
+      "version": "3.8.1-1",
+      "purl": "pkg:deb/debian/libselinux1%3Aarm64@3.8.1-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libsemanage-common",
+      "version": "3.8.1-1",
+      "purl": "pkg:deb/debian/libsemanage-common@3.8.1-1?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libsemanage2:arm64",
+      "version": "3.8.1-1",
+      "purl": "pkg:deb/debian/libsemanage2%3Aarm64@3.8.1-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libsepol2:arm64",
+      "version": "3.8.1-1",
+      "purl": "pkg:deb/debian/libsepol2%3Aarm64@3.8.1-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libsmartcols1:arm64",
+      "version": "2.41-5",
+      "purl": "pkg:deb/debian/libsmartcols1%3Aarm64@2.41-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libsqlite3-0:arm64",
+      "version": "3.46.1-7+deb13u1",
+      "purl": "pkg:deb/debian/libsqlite3-0%3Aarm64@3.46.1-7%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libssh2-1t64:arm64",
+      "version": "1.11.1-1+deb13u1",
+      "purl": "pkg:deb/debian/libssh2-1t64%3Aarm64@1.11.1-1%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libssl3t64:arm64",
+      "version": "3.5.6-1~deb13u2",
+      "purl": "pkg:deb/debian/libssl3t64%3Aarm64@3.5.6-1~deb13u2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libstdc++6:arm64",
+      "version": "14.2.0-19",
+      "purl": "pkg:deb/debian/libstdc%2B%2B6%3Aarm64@14.2.0-19?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libsystemd0:arm64",
+      "version": "257.13-1~deb13u1",
+      "purl": "pkg:deb/debian/libsystemd0%3Aarm64@257.13-1~deb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libtasn1-6:arm64",
+      "version": "4.20.0-2+deb13u1",
+      "purl": "pkg:deb/debian/libtasn1-6%3Aarm64@4.20.0-2%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libtinfo6:arm64",
+      "version": "6.5+20250216-2",
+      "purl": "pkg:deb/debian/libtinfo6%3Aarm64@6.5%2B20250216-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libudev1:arm64",
+      "version": "257.13-1~deb13u1",
+      "purl": "pkg:deb/debian/libudev1%3Aarm64@257.13-1~deb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libunistring5:arm64",
+      "version": "1.3-2",
+      "purl": "pkg:deb/debian/libunistring5%3Aarm64@1.3-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libuuid1:arm64",
+      "version": "2.41-5",
+      "purl": "pkg:deb/debian/libuuid1%3Aarm64@2.41-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libx11-6:arm64",
+      "version": "2:1.8.12-1",
+      "purl": "pkg:deb/debian/libx11-6%3Aarm64@2%3A1.8.12-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libx11-data",
+      "version": "2:1.8.12-1",
+      "purl": "pkg:deb/debian/libx11-data@2%3A1.8.12-1?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libxau6:arm64",
+      "version": "1:1.0.11-1",
+      "purl": "pkg:deb/debian/libxau6%3Aarm64@1%3A1.0.11-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libxcb1:arm64",
+      "version": "1.17.0-2+b1",
+      "purl": "pkg:deb/debian/libxcb1%3Aarm64@1.17.0-2%2Bb1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libxdmcp6:arm64",
+      "version": "1:1.1.5-1",
+      "purl": "pkg:deb/debian/libxdmcp6%3Aarm64@1%3A1.1.5-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libxext6:arm64",
+      "version": "2:1.3.4-1+b3",
+      "purl": "pkg:deb/debian/libxext6%3Aarm64@2%3A1.3.4-1%2Bb3?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libxmuu1:arm64",
+      "version": "2:1.1.3-3+b4",
+      "purl": "pkg:deb/debian/libxmuu1%3Aarm64@2%3A1.1.3-3%2Bb4?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libxxhash0:arm64",
+      "version": "0.8.3-2",
+      "purl": "pkg:deb/debian/libxxhash0%3Aarm64@0.8.3-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libzstd1:arm64",
+      "version": "1.5.7+dfsg-1",
+      "purl": "pkg:deb/debian/libzstd1%3Aarm64@1.5.7%2Bdfsg-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "login",
+      "version": "1:4.16.0-2+really2.41-5",
+      "purl": "pkg:deb/debian/login@1%3A4.16.0-2%2Breally2.41-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "login.defs",
+      "version": "1:4.17.4-2",
+      "purl": "pkg:deb/debian/login.defs@1%3A4.17.4-2?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mawk",
+      "version": "1.3.4.20250131-1",
+      "purl": "pkg:deb/debian/mawk@1.3.4.20250131-1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mount",
+      "version": "2.41-5",
+      "purl": "pkg:deb/debian/mount@2.41-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ncurses-base",
+      "version": "6.5+20250216-2",
+      "purl": "pkg:deb/debian/ncurses-base@6.5%2B20250216-2?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ncurses-bin",
+      "version": "6.5+20250216-2",
+      "purl": "pkg:deb/debian/ncurses-bin@6.5%2B20250216-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "netbase",
+      "version": "6.5",
+      "purl": "pkg:deb/debian/netbase@6.5?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssh-client",
+      "version": "1:10.0p1-7+deb13u4",
+      "purl": "pkg:deb/debian/openssh-client@1%3A10.0p1-7%2Bdeb13u4?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssl",
+      "version": "3.5.6-1~deb13u2",
+      "purl": "pkg:deb/debian/openssl@3.5.6-1~deb13u2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssl-provider-legacy",
+      "version": "3.5.6-1~deb13u2",
+      "purl": "pkg:deb/debian/openssl-provider-legacy@3.5.6-1~deb13u2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "passwd",
+      "version": "1:4.17.4-2",
+      "purl": "pkg:deb/debian/passwd@1%3A4.17.4-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "patch",
+      "version": "2.8-2",
+      "purl": "pkg:deb/debian/patch@2.8-2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "perl",
+      "version": "5.40.1-6",
+      "purl": "pkg:deb/debian/perl@5.40.1-6?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "perl-base",
+      "version": "5.40.1-6",
+      "purl": "pkg:deb/debian/perl-base@5.40.1-6?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "perl-modules-5.40",
+      "version": "5.40.1-6",
+      "purl": "pkg:deb/debian/perl-modules-5.40@5.40.1-6?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "postgresql-client",
+      "version": "17+278",
+      "purl": "pkg:deb/debian/postgresql-client@17%2B278?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "postgresql-client-17",
+      "version": "17.10-0+deb13u1",
+      "purl": "pkg:deb/debian/postgresql-client-17@17.10-0%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "postgresql-client-common",
+      "version": "278",
+      "purl": "pkg:deb/debian/postgresql-client-common@278?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "publicsuffix",
+      "version": "20250328.1952-0.1",
+      "purl": "pkg:deb/debian/publicsuffix@20250328.1952-0.1?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "readline-common",
+      "version": "8.2-6",
+      "purl": "pkg:deb/debian/readline-common@8.2-6?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sed",
+      "version": "4.9-2+deb13u1",
+      "purl": "pkg:deb/debian/sed@4.9-2%2Bdeb13u1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sensible-utils",
+      "version": "0.0.25",
+      "purl": "pkg:deb/debian/sensible-utils@0.0.25?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sqv",
+      "version": "1.3.0-3+b2",
+      "purl": "pkg:deb/debian/sqv@1.3.0-3%2Bb2?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sysvinit-utils",
+      "version": "3.14-4",
+      "purl": "pkg:deb/debian/sysvinit-utils@3.14-4?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tar",
+      "version": "1.35+dfsg-3.1",
+      "purl": "pkg:deb/debian/tar@1.35%2Bdfsg-3.1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tzdata",
+      "version": "2026b-0+deb13u1",
+      "purl": "pkg:deb/debian/tzdata@2026b-0%2Bdeb13u1?arch=all",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "util-linux",
+      "version": "2.41-5",
+      "purl": "pkg:deb/debian/util-linux@2.41-5?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xauth",
+      "version": "1:1.1.2-1.1",
+      "purl": "pkg:deb/debian/xauth@1%3A1.1.2-1.1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "zlib1g:arm64",
+      "version": "1:1.3.dfsg+really1.3.1-1+b1",
+      "purl": "pkg:deb/debian/zlib1g%3Aarm64@1%3A1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=arm64",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "dpkg-query-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiofiles",
+      "version": "25.1.0",
+      "purl": "pkg:pypi/aiofiles@25.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiohappyeyeballs",
+      "version": "2.6.1",
+      "purl": "pkg:pypi/aiohappyeyeballs@2.6.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiohttp",
+      "version": "3.14.1",
+      "purl": "pkg:pypi/aiohttp@3.14.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiolimiter",
+      "version": "1.2.1",
+      "purl": "pkg:pypi/aiolimiter@1.2.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aioredis",
+      "version": "2.0.1",
+      "purl": "pkg:pypi/aioredis@2.0.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiosignal",
+      "version": "1.4.0",
+      "purl": "pkg:pypi/aiosignal@1.4.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alembic",
+      "version": "1.18.4",
+      "purl": "pkg:pypi/alembic@1.18.4",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "amqp",
+      "version": "5.3.1",
+      "purl": "pkg:pypi/amqp@5.3.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "annotated-doc",
+      "version": "0.0.4",
+      "purl": "pkg:pypi/annotated-doc@0.0.4",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "annotated-types",
+      "version": "0.7.0",
+      "purl": "pkg:pypi/annotated-types@0.7.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "anthropic",
+      "version": "0.87.0",
+      "purl": "pkg:pypi/anthropic@0.87.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "anyio",
+      "version": "4.13.0",
+      "purl": "pkg:pypi/anyio@4.13.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "async-timeout",
+      "version": "5.0.1",
+      "purl": "pkg:pypi/async-timeout@5.0.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "asyncio-mqtt",
+      "version": "0.16.2",
+      "purl": "pkg:pypi/asyncio-mqtt@0.16.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "asyncpg",
+      "version": "0.31.0",
+      "purl": "pkg:pypi/asyncpg@0.31.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "attrs",
+      "version": "26.1.0",
+      "purl": "pkg:pypi/attrs@26.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "Authlib",
+      "version": "1.7.2",
+      "purl": "pkg:pypi/Authlib@1.7.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "backports.tarfile",
+      "version": "1.2.0",
+      "purl": "pkg:pypi/backports.tarfile@1.2.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "bcrypt",
+      "version": "5.0.0",
+      "purl": "pkg:pypi/bcrypt@5.0.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "beartype",
+      "version": "0.22.9",
+      "purl": "pkg:pypi/beartype@0.22.9",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "beautifulsoup4",
+      "version": "4.14.3",
+      "purl": "pkg:pypi/beautifulsoup4@4.14.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "billiard",
+      "version": "4.2.4",
+      "purl": "pkg:pypi/billiard@4.2.4",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "burner-redis",
+      "version": "0.1.7",
+      "purl": "pkg:pypi/burner-redis@0.1.7",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cachetools",
+      "version": "7.0.5",
+      "purl": "pkg:pypi/cachetools@7.0.5",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "celery",
+      "version": "5.6.3",
+      "purl": "pkg:pypi/celery@5.6.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "certifi",
+      "version": "2026.2.25",
+      "purl": "pkg:pypi/certifi@2026.2.25",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cffi",
+      "version": "2.0.0",
+      "purl": "pkg:pypi/cffi@2.0.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "chardet",
+      "version": "7.4.0.post2",
+      "purl": "pkg:pypi/chardet@7.4.0.post2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "charset-normalizer",
+      "version": "3.4.6",
+      "purl": "pkg:pypi/charset-normalizer@3.4.6",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "click",
+      "version": "8.1.8",
+      "purl": "pkg:pypi/click@8.1.8",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "click-default-group",
+      "version": "1.2.4",
+      "purl": "pkg:pypi/click-default-group@1.2.4",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "click-didyoumean",
+      "version": "0.3.1",
+      "purl": "pkg:pypi/click-didyoumean@0.3.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "click-plugins",
+      "version": "1.1.1.2",
+      "purl": "pkg:pypi/click-plugins@1.1.1.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "click-repl",
+      "version": "0.3.0",
+      "purl": "pkg:pypi/click-repl@0.3.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cloudpickle",
+      "version": "3.1.2",
+      "purl": "pkg:pypi/cloudpickle@3.1.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cronsim",
+      "version": "2.7",
+      "purl": "pkg:pypi/cronsim@2.7",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cryptography",
+      "version": "48.0.1",
+      "purl": "pkg:pypi/cryptography@48.0.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cyclopts",
+      "version": "4.17.0",
+      "purl": "pkg:pypi/cyclopts@4.17.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "diskcache",
+      "version": "5.6.3",
+      "purl": "pkg:pypi/diskcache@5.6.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "distro",
+      "version": "1.9.0",
+      "purl": "pkg:pypi/distro@1.9.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dnspython",
+      "version": "2.8.0",
+      "purl": "pkg:pypi/dnspython@2.8.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "docker",
+      "version": "7.1.0",
+      "purl": "pkg:pypi/docker@7.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "docstring_parser",
+      "version": "0.17.0",
+      "purl": "pkg:pypi/docstring_parser@0.17.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dopemux",
+      "version": "0.1.0",
+      "purl": "pkg:pypi/dopemux@0.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ecdsa",
+      "version": "0.19.2",
+      "purl": "pkg:pypi/ecdsa@0.19.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "email-validator",
+      "version": "2.3.0",
+      "purl": "pkg:pypi/email-validator@2.3.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "exceptiongroup",
+      "version": "1.2.2",
+      "purl": "pkg:pypi/exceptiongroup@1.2.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fastapi",
+      "version": "0.135.2",
+      "purl": "pkg:pypi/fastapi@0.135.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fastmcp",
+      "version": "2.14.0",
+      "purl": "pkg:pypi/fastmcp@2.14.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fastuuid",
+      "version": "0.14.0",
+      "purl": "pkg:pypi/fastuuid@0.14.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ffmpeg-python",
+      "version": "0.2.0",
+      "purl": "pkg:pypi/ffmpeg-python@0.2.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "filelock",
+      "version": "3.25.2",
+      "purl": "pkg:pypi/filelock@3.25.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "frozenlist",
+      "version": "1.8.0",
+      "purl": "pkg:pypi/frozenlist@1.8.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fsspec",
+      "version": "2026.3.0",
+      "purl": "pkg:pypi/fsspec@2026.3.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "future",
+      "version": "1.0.0",
+      "purl": "pkg:pypi/future@1.0.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "google-auth",
+      "version": "2.49.1",
+      "purl": "pkg:pypi/google-auth@2.49.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "google-genai",
+      "version": "1.69.0",
+      "purl": "pkg:pypi/google-genai@1.69.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "greenlet",
+      "version": "3.3.2",
+      "purl": "pkg:pypi/greenlet@3.3.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "grpcio",
+      "version": "1.80.0",
+      "purl": "pkg:pypi/grpcio@1.80.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "h11",
+      "version": "0.16.0",
+      "purl": "pkg:pypi/h11@0.16.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "h2",
+      "version": "4.3.0",
+      "purl": "pkg:pypi/h2@4.3.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hf-xet",
+      "version": "1.4.2",
+      "purl": "pkg:pypi/hf-xet@1.4.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hpack",
+      "version": "4.1.0",
+      "purl": "pkg:pypi/hpack@4.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpcore",
+      "version": "1.0.9",
+      "purl": "pkg:pypi/httpcore@1.0.9",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httptools",
+      "version": "0.7.1",
+      "purl": "pkg:pypi/httptools@0.7.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpx",
+      "version": "0.28.1",
+      "purl": "pkg:pypi/httpx@0.28.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpx-sse",
+      "version": "0.4.3",
+      "purl": "pkg:pypi/httpx-sse@0.4.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "huggingface_hub",
+      "version": "1.8.0",
+      "purl": "pkg:pypi/huggingface_hub@1.8.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hyperframe",
+      "version": "6.1.0",
+      "purl": "pkg:pypi/hyperframe@6.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "idna",
+      "version": "3.15",
+      "purl": "pkg:pypi/idna@3.15",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "importlib_metadata",
+      "version": "8.5.0",
+      "purl": "pkg:pypi/importlib_metadata@8.5.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jaraco.classes",
+      "version": "3.4.0",
+      "purl": "pkg:pypi/jaraco.classes@3.4.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jaraco.context",
+      "version": "6.1.2",
+      "purl": "pkg:pypi/jaraco.context@6.1.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jaraco.functools",
+      "version": "4.5.0",
+      "purl": "pkg:pypi/jaraco.functools@4.5.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jeepney",
+      "version": "0.9.0",
+      "purl": "pkg:pypi/jeepney@0.9.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "Jinja2",
+      "version": "3.1.6",
+      "purl": "pkg:pypi/Jinja2@3.1.6",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jiter",
+      "version": "0.13.0",
+      "purl": "pkg:pypi/jiter@0.13.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "joblib",
+      "version": "1.5.3",
+      "purl": "pkg:pypi/joblib@1.5.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "joserfc",
+      "version": "1.7.1",
+      "purl": "pkg:pypi/joserfc@1.7.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jsonpatch",
+      "version": "1.33",
+      "purl": "pkg:pypi/jsonpatch@1.33",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jsonpointer",
+      "version": "3.1.1",
+      "purl": "pkg:pypi/jsonpointer@3.1.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jsonschema",
+      "version": "4.25.1",
+      "purl": "pkg:pypi/jsonschema@4.25.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jsonschema-path",
+      "version": "0.5.0",
+      "purl": "pkg:pypi/jsonschema-path@0.5.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "purl": "pkg:pypi/jsonschema-specifications@2025.9.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "keyring",
+      "version": "25.7.0",
+      "purl": "pkg:pypi/keyring@25.7.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "kombu",
+      "version": "5.6.2",
+      "purl": "pkg:pypi/kombu@5.6.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "langchain-core",
+      "version": "1.3.3",
+      "purl": "pkg:pypi/langchain-core@1.3.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "langchain-protocol",
+      "version": "0.0.15",
+      "purl": "pkg:pypi/langchain-protocol@0.0.15",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "langchain-text-splitters",
+      "version": "1.1.2",
+      "purl": "pkg:pypi/langchain-text-splitters@1.1.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "langsmith",
+      "version": "0.8.18",
+      "purl": "pkg:pypi/langsmith@0.8.18",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "linkify-it-py",
+      "version": "2.1.0",
+      "purl": "pkg:pypi/linkify-it-py@2.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "litellm",
+      "version": "1.85.1",
+      "purl": "pkg:pypi/litellm@1.85.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lxml",
+      "version": "6.1.0",
+      "purl": "pkg:pypi/lxml@6.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "Mako",
+      "version": "1.3.10",
+      "purl": "pkg:pypi/Mako@1.3.10",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "Markdown",
+      "version": "3.10.2",
+      "purl": "pkg:pypi/Markdown@3.10.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "markdown-it-py",
+      "version": "4.0.0",
+      "purl": "pkg:pypi/markdown-it-py@4.0.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "MarkupSafe",
+      "version": "3.0.3",
+      "purl": "pkg:pypi/MarkupSafe@3.0.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mcp",
+      "version": "1.23.3",
+      "purl": "pkg:pypi/mcp@1.23.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mdit-py-plugins",
+      "version": "0.5.0",
+      "purl": "pkg:pypi/mdit-py-plugins@0.5.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mdurl",
+      "version": "0.1.2",
+      "purl": "pkg:pypi/mdurl@0.1.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "more-itertools",
+      "version": "11.1.0",
+      "purl": "pkg:pypi/more-itertools@11.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "msgpack",
+      "version": "1.2.1",
+      "purl": "pkg:pypi/msgpack@1.2.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "multidict",
+      "version": "6.7.1",
+      "purl": "pkg:pypi/multidict@6.7.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "numpy",
+      "version": "2.4.4",
+      "purl": "pkg:pypi/numpy@2.4.4",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openai",
+      "version": "2.30.0",
+      "purl": "pkg:pypi/openai@2.30.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openapi-pydantic",
+      "version": "0.5.1",
+      "purl": "pkg:pypi/openapi-pydantic@0.5.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-api",
+      "version": "1.37.0",
+      "purl": "pkg:pypi/opentelemetry-api@1.37.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "orjson",
+      "version": "3.11.7",
+      "purl": "pkg:pypi/orjson@3.11.7",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "packaging",
+      "version": "26.0",
+      "purl": "pkg:pypi/packaging@26.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "paho-mqtt",
+      "version": "2.1.0",
+      "purl": "pkg:pypi/paho-mqtt@2.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pandas",
+      "version": "3.0.1",
+      "purl": "pkg:pypi/pandas@3.0.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "passlib",
+      "version": "1.7.4",
+      "purl": "pkg:pypi/passlib@1.7.4",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pathable",
+      "version": "0.6.0",
+      "purl": "pkg:pypi/pathable@0.6.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pathvalidate",
+      "version": "3.3.1",
+      "purl": "pkg:pypi/pathvalidate@3.3.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pdfminer.six",
+      "version": "20251230",
+      "purl": "pkg:pypi/pdfminer.six@20251230",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pdfplumber",
+      "version": "0.11.9",
+      "purl": "pkg:pypi/pdfplumber@0.11.9",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pillow",
+      "version": "12.3.0",
+      "purl": "pkg:pypi/pillow@12.3.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "platformdirs",
+      "version": "4.9.4",
+      "purl": "pkg:pypi/platformdirs@4.9.4",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pluggy",
+      "version": "1.6.0",
+      "purl": "pkg:pypi/pluggy@1.6.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "portalocker",
+      "version": "3.2.0",
+      "purl": "pkg:pypi/portalocker@3.2.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "prometheus_client",
+      "version": "0.24.1",
+      "purl": "pkg:pypi/prometheus_client@0.24.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "prompt_toolkit",
+      "version": "3.0.52",
+      "purl": "pkg:pypi/prompt_toolkit@3.0.52",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "propcache",
+      "version": "0.4.1",
+      "purl": "pkg:pypi/propcache@0.4.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "protobuf",
+      "version": "6.33.6",
+      "purl": "pkg:pypi/protobuf@6.33.6",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "psutil",
+      "version": "7.2.2",
+      "purl": "pkg:pypi/psutil@7.2.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "psycopg2-binary",
+      "version": "2.9.11",
+      "purl": "pkg:pypi/psycopg2-binary@2.9.11",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "py-key-value-aio",
+      "version": "0.3.0",
+      "purl": "pkg:pypi/py-key-value-aio@0.3.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "py-key-value-shared",
+      "version": "0.3.0",
+      "purl": "pkg:pypi/py-key-value-shared@0.3.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyasn1",
+      "version": "0.6.3",
+      "purl": "pkg:pypi/pyasn1@0.6.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyasn1_modules",
+      "version": "0.4.2",
+      "purl": "pkg:pypi/pyasn1_modules@0.4.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pycparser",
+      "version": "3.0",
+      "purl": "pkg:pypi/pycparser@3.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pydantic",
+      "version": "2.12.5",
+      "purl": "pkg:pypi/pydantic@2.12.5",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pydantic-settings",
+      "version": "2.14.2",
+      "purl": "pkg:pypi/pydantic-settings@2.14.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pydantic_core",
+      "version": "2.41.5",
+      "purl": "pkg:pypi/pydantic_core@2.41.5",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pydocket",
+      "version": "0.21.1",
+      "purl": "pkg:pypi/pydocket@0.21.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "Pygments",
+      "version": "2.20.0",
+      "purl": "pkg:pypi/Pygments@2.20.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "PyJWT",
+      "version": "2.13.0",
+      "purl": "pkg:pypi/PyJWT@2.13.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pymilvus",
+      "version": "2.6.11",
+      "purl": "pkg:pypi/pymilvus@2.6.11",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "PyMuPDF",
+      "version": "1.27.2.2",
+      "purl": "pkg:pypi/PyMuPDF@1.27.2.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pypdfium2",
+      "version": "5.6.0",
+      "purl": "pkg:pypi/pypdfium2@5.6.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyperclip",
+      "version": "1.11.0",
+      "purl": "pkg:pypi/pyperclip@1.11.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "purl": "pkg:pypi/python-dateutil@2.9.0.post0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-docx",
+      "version": "1.2.0",
+      "purl": "pkg:pypi/python-docx@1.2.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-dotenv",
+      "version": "1.2.2",
+      "purl": "pkg:pypi/python-dotenv@1.2.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-jose",
+      "version": "3.5.0",
+      "purl": "pkg:pypi/python-jose@3.5.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-json-logger",
+      "version": "4.1.0",
+      "purl": "pkg:pypi/python-json-logger@4.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-multipart",
+      "version": "0.0.31",
+      "purl": "pkg:pypi/python-multipart@0.0.31",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pytz",
+      "version": "2026.1.post1",
+      "purl": "pkg:pypi/pytz@2026.1.post1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "purl": "pkg:pypi/PyYAML@6.0.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "qdrant-client",
+      "version": "1.17.1",
+      "purl": "pkg:pypi/qdrant-client@1.17.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "questionary",
+      "version": "2.1.1",
+      "purl": "pkg:pypi/questionary@2.1.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rank-bm25",
+      "version": "0.2.2",
+      "purl": "pkg:pypi/rank-bm25@0.2.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "readchar",
+      "version": "4.2.1",
+      "purl": "pkg:pypi/readchar@4.2.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "redis",
+      "version": "6.4.0",
+      "purl": "pkg:pypi/redis@6.4.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "referencing",
+      "version": "0.37.0",
+      "purl": "pkg:pypi/referencing@0.37.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "regex",
+      "version": "2026.3.32",
+      "purl": "pkg:pypi/regex@2026.3.32",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "requests",
+      "version": "2.33.0",
+      "purl": "pkg:pypi/requests@2.33.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "requests-toolbelt",
+      "version": "1.0.0",
+      "purl": "pkg:pypi/requests-toolbelt@1.0.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rich",
+      "version": "15.0.0",
+      "purl": "pkg:pypi/rich@15.0.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rich-rst",
+      "version": "2.0.1",
+      "purl": "pkg:pypi/rich-rst@2.0.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rpds-py",
+      "version": "0.30.0",
+      "purl": "pkg:pypi/rpds-py@0.30.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rsa",
+      "version": "4.9.1",
+      "purl": "pkg:pypi/rsa@4.9.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "scikit-learn",
+      "version": "1.8.0",
+      "purl": "pkg:pypi/scikit-learn@1.8.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "scipy",
+      "version": "1.17.1",
+      "purl": "pkg:pypi/scipy@1.17.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "SecretStorage",
+      "version": "3.5.0",
+      "purl": "pkg:pypi/SecretStorage@3.5.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "setuptools",
+      "version": "82.0.1",
+      "purl": "pkg:pypi/setuptools@82.0.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "shellingham",
+      "version": "1.5.4",
+      "purl": "pkg:pypi/shellingham@1.5.4",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "six",
+      "version": "1.17.0",
+      "purl": "pkg:pypi/six@1.17.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sniffio",
+      "version": "1.3.1",
+      "purl": "pkg:pypi/sniffio@1.3.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "soupsieve",
+      "version": "2.8.4",
+      "purl": "pkg:pypi/soupsieve@2.8.4",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "SQLAlchemy",
+      "version": "2.0.48",
+      "purl": "pkg:pypi/SQLAlchemy@2.0.48",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sqlite-fts4",
+      "version": "1.0.3",
+      "purl": "pkg:pypi/sqlite-fts4@1.0.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sqlite-utils",
+      "version": "3.38",
+      "purl": "pkg:pypi/sqlite-utils@3.38",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sse-starlette",
+      "version": "3.3.4",
+      "purl": "pkg:pypi/sse-starlette@3.3.4",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "starlette",
+      "version": "1.3.1",
+      "purl": "pkg:pypi/starlette@1.3.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "structlog",
+      "version": "25.5.0",
+      "purl": "pkg:pypi/structlog@25.5.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tabulate",
+      "version": "0.10.0",
+      "purl": "pkg:pypi/tabulate@0.10.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tenacity",
+      "version": "9.1.4",
+      "purl": "pkg:pypi/tenacity@9.1.4",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "textual",
+      "version": "6.2.1",
+      "purl": "pkg:pypi/textual@6.2.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "threadpoolctl",
+      "version": "3.6.0",
+      "purl": "pkg:pypi/threadpoolctl@3.6.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tiktoken",
+      "version": "0.12.0",
+      "purl": "pkg:pypi/tiktoken@0.12.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tokenizers",
+      "version": "0.22.2",
+      "purl": "pkg:pypi/tokenizers@0.22.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "toml",
+      "version": "0.10.2",
+      "purl": "pkg:pypi/toml@0.10.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tqdm",
+      "version": "4.67.3",
+      "purl": "pkg:pypi/tqdm@4.67.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tree-sitter",
+      "version": "0.25.2",
+      "purl": "pkg:pypi/tree-sitter@0.25.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tree-sitter-go",
+      "version": "0.23.0",
+      "purl": "pkg:pypi/tree-sitter-go@0.23.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tree-sitter-javascript",
+      "version": "0.23.0",
+      "purl": "pkg:pypi/tree-sitter-javascript@0.23.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tree-sitter-python",
+      "version": "0.23.0",
+      "purl": "pkg:pypi/tree-sitter-python@0.23.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tree-sitter-rust",
+      "version": "0.23.0",
+      "purl": "pkg:pypi/tree-sitter-rust@0.23.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tree-sitter-typescript",
+      "version": "0.23.0",
+      "purl": "pkg:pypi/tree-sitter-typescript@0.23.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "typer",
+      "version": "0.23.1",
+      "purl": "pkg:pypi/typer@0.23.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "typing-inspection",
+      "version": "0.4.2",
+      "purl": "pkg:pypi/typing-inspection@0.4.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "typing_extensions",
+      "version": "4.15.0",
+      "purl": "pkg:pypi/typing_extensions@4.15.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tzdata",
+      "version": "2025.3",
+      "purl": "pkg:pypi/tzdata@2025.3",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tzlocal",
+      "version": "5.3.1",
+      "purl": "pkg:pypi/tzlocal@5.3.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uc-micro-py",
+      "version": "2.0.0",
+      "purl": "pkg:pypi/uc-micro-py@2.0.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uncalled-for",
+      "version": "0.3.2",
+      "purl": "pkg:pypi/uncalled-for@0.3.2",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "urllib3",
+      "version": "2.7.0",
+      "purl": "pkg:pypi/urllib3@2.7.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uuid_utils",
+      "version": "0.14.1",
+      "purl": "pkg:pypi/uuid_utils@0.14.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uvicorn",
+      "version": "0.42.0",
+      "purl": "pkg:pypi/uvicorn@0.42.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uvloop",
+      "version": "0.22.1",
+      "purl": "pkg:pypi/uvloop@0.22.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vine",
+      "version": "5.1.0",
+      "purl": "pkg:pypi/vine@5.1.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "voyageai",
+      "version": "0.3.7",
+      "purl": "pkg:pypi/voyageai@0.3.7",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "watchdog",
+      "version": "6.0.0",
+      "purl": "pkg:pypi/watchdog@6.0.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "watchfiles",
+      "version": "1.1.1",
+      "purl": "pkg:pypi/watchfiles@1.1.1",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wcwidth",
+      "version": "0.6.0",
+      "purl": "pkg:pypi/wcwidth@0.6.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "websockets",
+      "version": "16.0",
+      "purl": "pkg:pypi/websockets@16.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xxhash",
+      "version": "3.6.0",
+      "purl": "pkg:pypi/xxhash@3.6.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "yarl",
+      "version": "1.23.0",
+      "purl": "pkg:pypi/yarl@1.23.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "zipp",
+      "version": "3.23.0",
+      "purl": "pkg:pypi/zipp@3.23.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "zstandard",
+      "version": "0.25.0",
+      "purl": "pkg:pypi/zstandard@0.25.0",
+      "properties": [
+        {
+          "name": "wave2:source",
+          "value": "importlib-metadata-network-none"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "suite": "trixie",
+  "architecture": "arm64",
+  "debian_timestamp": "20260722T022634Z",
+  "debian_security_timestamp": "20260722T034327Z",
+  "base_image_digest": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93",
+  "uv_image_digest": "sha256:ecd4de2f060c64bea0ff8ecb182ddf46ba3fcccdc8a60cfdbaf20d1a047d7437",
+  "check_valid_until": false,
+  "tls_verification_disabled": false,
+  "signature_verification_disabled": false,
+  "package_manager_source_definition_sha256": "6cc76b9e8e4db7b4973d1494d8bdd2ebd67f7cbec5a089e14f271f20c2011cc3",
+  "direct_apt_requests": ["bash", "git", "curl", "postgresql-client"],
+  "dpkg_architecture": "arm64"
+}

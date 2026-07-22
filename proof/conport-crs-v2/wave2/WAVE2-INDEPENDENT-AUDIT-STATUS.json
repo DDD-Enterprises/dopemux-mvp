@@ -1,0 +1,17 @@
+{
+  "status": "NOT_RUN",
+  "route_preflight": {
+    "tool": "agy",
+    "model": "claude-sonnet-4-6",
+    "mode": "read-only",
+    "available": true
+  },
+  "blocker": "External audit destination denied. Tenant-approved local or tenant-CI read-only route remains REQUIRED and UNKNOWN.",
+  "recommended_route": "LOCAL_OR_TENANT_CI_READ_ONLY_PENDING_TENANT_APPROVAL",
+  "local_validation_completed": [
+    "proof manifest integrity",
+    "JSON parsing",
+    "git diff --check",
+    "pinned-input static checks"
+  ]
+}

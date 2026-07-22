@@ -1,17 +1,33 @@
 # ConPort MCP Server Dockerfile
-FROM python:3.11-slim
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+FROM python:3.11-slim@sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93
+COPY --from=ghcr.io/astral-sh/uv:latest@sha256:ecd4de2f060c64bea0ff8ecb182ddf46ba3fcccdc8a60cfdbaf20d1a047d7437 /uv /uvx /bin/
 
 WORKDIR /app
 
 # Copy dependency manifests first for better caching
 COPY pyproject.toml .
+COPY uv.lock .
 COPY README.md .
 COPY src src
 COPY tools tools
 
-# Install system dependencies
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+# Install system dependencies from immutable Debian snapshots.
+RUN rm -f /etc/apt/sources.list /etc/apt/sources.list.d/* \
+    && printf '%s\n' \
+      'Types: deb' \
+      'URIs: https://snapshot.debian.org/archive/debian/20260722T022634Z/' \
+      'Suites: trixie trixie-updates' \
+      'Components: main' \
+      'Check-Valid-Until: no' \
+      '' \
+      'Types: deb' \
+      'URIs: https://snapshot.debian.org/archive/debian-security/20260722T034327Z/' \
+      'Suites: trixie-security' \
+      'Components: main' \
+      'Check-Valid-Until: no' \
+      > /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
+    && apt-get install -y \
     bash \
     git \
     curl \
@@ -19,7 +35,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies from centralized manifest
-RUN uv pip install --system --no-cache .[services]
+RUN uv sync --frozen --no-dev --extra services
+ENV PATH="/app/.venv/bin:${PATH}"
 
 # Copy shared monitoring module (relative to root build context)
 RUN mkdir -p /app/shared/monitoring

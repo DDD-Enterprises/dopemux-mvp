@@ -1,0 +1,12 @@
+{
+  "run_id": "20260722T042611Z",
+  "build_a_image_id": "sha256:98d378a8718002346ac6b6fd0b3943cd93dd738ae65fcbe5f6cec5f2b0d52b11",
+  "build_b_image_id": "sha256:e42f9cb6350a07cfeae3b31bf1f8228ee1b68be9600ec3de7e57785d76a20cb4",
+  "build_a_created": "2026-07-22T04:27:07.182641303Z",
+  "build_b_created": "2026-07-22T04:27:07.182641303Z",
+  "equal": false,
+  "result": "NOT_EQUAL",
+  "interpretation": "APT package manifests match; byte-identical OCI reproducibility is not claimed.",
+  "first_observed_difference": "image IDs and creation times differ",
+  "root_cause": "UNKNOWN"
+}

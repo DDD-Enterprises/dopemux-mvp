@@ -1,0 +1,21 @@
+{
+  "run_id": "20260722T042611Z",
+  "build_a_tag": "conport-w2-apt-proof-a:20260722T042611Z",
+  "build_b_tag": "conport-w2-apt-proof-b:20260722T042611Z",
+  "capture_mode": "network_none_dpkg_query",
+  "package_count_a": 144,
+  "package_count_b": 144,
+  "manifest_sha256_a": "510b52152954b8baff95f4d18b6aa053ae2f23eecdc6a4052b950b7acf5df73e",
+  "manifest_sha256_b": "510b52152954b8baff95f4d18b6aa053ae2f23eecdc6a4052b950b7acf5df73e",
+  "manual_package_count_a": 22,
+  "manual_package_count_b": 22,
+  "manual_package_manifest_sha256_a": "b9855b8d7685bee28a6a64ddc7d4047fe9f599f7bbe04c5b3d373fe238166c37",
+  "manual_package_manifest_sha256_b": "b9855b8d7685bee28a6a64ddc7d4047fe9f599f7bbe04c5b3d373fe238166c37",
+  "manual_package_sets_match": true,
+  "apt_source_definition_sha256": "6cc76b9e8e4db7b4973d1494d8bdd2ebd67f7cbec5a089e14f271f20c2011cc3",
+  "dpkg_architecture": "arm64",
+  "additions": [],
+  "removals": [],
+  "row_changes": [],
+  "verdict": "PASS"
+}

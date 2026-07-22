@@ -1,0 +1,20 @@
+{
+  "target_git_commit": "95264461d2d25b79baa0ded0ecbf6bf6b3343f10",
+  "build_only_image_digest": "sha256:75a83d8e21a284345ec27988d0b19d519f32490c7b3d35af48d2286663be7ad1",
+  "build_only_image_status": "BUILT_NOT_DEPLOYED",
+  "schema_bundle": {
+    "status": "NOT_IMPLEMENTED_WAVE4"
+  },
+  "reproducibility": {
+    "status": "WAVE2_APT_SNAPSHOT_PIN_REPAIRED",
+    "base_image_digest": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93",
+    "uv_image_digest": "sha256:ecd4de2f060c64bea0ff8ecb182ddf46ba3fcccdc8a60cfdbaf20d1a047d7437",
+    "debian_snapshot": "20260722T022634Z",
+    "debian_security_snapshot": "20260722T034327Z",
+    "package_manifest_sha256": "510b52152954b8baff95f4d18b6aa053ae2f23eecdc6a4052b950b7acf5df73e",
+    "oci_image_ids_equal": false,
+    "source_input_sha256": "58d3bccdc1338037ab74d528dd46bffdf7ecfca87c60216dd73b07f3e73c59c4",
+    "remaining_parent_blocker": "SBOM inventory remains NOT_RUN; OCI image IDs differ."
+  },
+  "target_deployment": "NOT_AUTHORIZED"
+}

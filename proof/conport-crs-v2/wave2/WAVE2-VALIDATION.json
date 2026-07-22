@@ -1,0 +1,18 @@
+{
+  "input_custody": "PASS",
+  "wave1_effective": "PASS",
+  "secret_safe_redaction_pipeline": "PASS",
+  "host_wide_writer_freeze": "PASS",
+  "post_freeze_writer_state": "PASS",
+  "target_build_only": "PASS",
+  "target_pin_reproducibility": "PASS_FOR_PINNED_INPUTS_AND_APT_MANIFESTS; OCI_OUTPUT_NOT_EQUAL",
+  "apt_snapshot_paired_manifest_repair": "PASS",
+  "apt_pair_build_inputs": "PASS_SOURCE_INPUTS_MATCH_PRE_AND_POST_BUILD",
+  "apt_pair_network_validation": "PASS_SANITIZED_LOG_AND_INSTALLED_SOURCE_EVIDENCE",
+  "apt_pair_manual_package_sets": "PASS",
+  "sbom_inventory": "CANDIDATE_ZERO_EGRESS_GENERATED_TENANT_ACCEPTANCE_UNKNOWN_PARENT_WAVE2_BLOCKER",
+  "independent_embedded_audit": "NOT_RUN_PENDING_TENANT_APPROVED_LOCAL_OR_CI_ROUTE",
+  "precommit": "PASS_RELEVANT_LOCAL_HOOKS; EMBEDDED_AUDIT_SCHEMA_HOOK_SKIPPED_NO_PROOF_JSON",
+  "verdict": "WAVE2_APT_SNAPSHOT_PIN_REPAIRED",
+  "freeze_retention": "ACTIVE_PENDING_REMEDIATION_OR_EXPLICIT_ROLLBACK"
+}

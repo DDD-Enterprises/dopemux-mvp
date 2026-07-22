@@ -1,0 +1,13 @@
+{
+  "build_a": "PASS_NO_CACHE_SNAPSHOT_SOURCE_RESOLUTION",
+  "build_b": "PASS_NO_CACHE_SNAPSHOT_SOURCE_RESOLUTION",
+  "apt_source_definitions": "MATCH_BY_SOURCE",
+  "application_lock": "MATCH_BY_SOURCE",
+  "complete_package_manifest_comparison": "PASS_PAIRED_MANIFESTS_MATCH",
+  "package_manifest_sha256": "510b52152954b8baff95f4d18b6aa053ae2f23eecdc6a4052b950b7acf5df73e",
+  "package_manifest_line_count": 144,
+  "oci_digest_equality": "FAIL_IMAGE_IDS_NOT_EQUAL",
+  "source_input_sha256": "58d3bccdc1338037ab74d528dd46bffdf7ecfca87c60216dd73b07f3e73c59c4",
+  "network_validation": "PASS_SANITIZED_LOG_AND_INSTALLED_SOURCE_EVIDENCE",
+  "verdict": "WAVE2_APT_SNAPSHOT_PIN_REPAIRED"
+}

@@ -1,0 +1,17 @@
+{
+  "policy_id": "CONPORT-W2-SECRET-SAFE-RUNTIME-INVENTORY-v1",
+  "status": "PASS",
+  "redactor": "redact_docker_inspect.js",
+  "assertions": [
+    "Sensitive environment keys are emitted without values.",
+    "Only allowlisted identity environment values are emitted.",
+    "Entrypoint and command are suppressed.",
+    "Only allowlisted labels are emitted."
+  ],
+  "validation": {
+    "synthetic_sensitive_value_absent_from_output": true,
+    "sensitive_key_classification_present": true,
+    "allowlisted_identity_value_present": true,
+    "command_and_entrypoint_suppressed": true
+  }
+}

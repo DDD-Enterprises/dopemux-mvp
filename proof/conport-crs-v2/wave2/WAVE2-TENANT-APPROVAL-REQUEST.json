@@ -1,0 +1,38 @@
+{
+  "request_id": "CONPORT-W2-TENANT-AUDIT-SBOM-APPROVAL-001",
+  "repository": "dopemux-mvp",
+  "worktree": ".worktrees/CONPORT-W2-FREEZE-PIN-INVENTORY",
+  "exact_base_sha": "95264461d2d25b79baa0ded0ecbf6bf6b3343f10",
+  "exact_head_sha": "95264461d2d25b79baa0ded0ecbf6bf6b3343f10",
+  "changed_paths": [
+    "docker/mcp-servers-source/conport/Dockerfile",
+    "proof/conport-crs-v2/wave2/MANIFEST.json"
+  ],
+  "exact_proof_paths": "Enumerated with SHA-256 in proof/conport-crs-v2/wave2/MANIFEST.json.",
+  "freeze": "ACTIVE",
+  "implementation_changes": "STOP_PENDING_TENANT_DECISION",
+  "audit_route_requested": {
+    "execution": "tenant-controlled local runner or self-hosted CI runner",
+    "auditor_identity": "separate from implementer",
+    "checkout": "exact detached SHA, read-only",
+    "network_egress": "none",
+    "credentials": "none",
+    "repository_mutation": "forbidden",
+    "output": "JSON audit report in proof/conport-crs-v2/wave2"
+  },
+  "sbom_tool_requested": {
+    "tool": "Anchore Syft",
+    "distribution": "tenant-mirrored pinned version",
+    "integrity": "checksum-verified binary",
+    "scan_target": "exact final built image",
+    "outputs": ["CycloneDX JSON", "SPDX JSON"]
+  },
+  "requested_tenant_decisions": {
+    "AUDITOR_ROUTE_APPROVED": "YES_OR_NO",
+    "SBOM_TOOL_APPROVED": "YES_OR_NO",
+    "APPROVED_RUNNER": "REQUIRED_IF_YES",
+    "APPROVED_SYFT_VERSION": "REQUIRED_IF_YES",
+    "APPROVED_BINARY_SOURCE": "REQUIRED_IF_YES"
+  },
+  "resume_condition": "Both tenant approvals recorded against this exact proof manifest and unchanged implementation diff."
+}

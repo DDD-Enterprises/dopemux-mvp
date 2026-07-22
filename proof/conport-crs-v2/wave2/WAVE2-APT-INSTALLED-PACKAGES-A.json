@@ -1,0 +1,1017 @@
+{
+  "capture_mode": "docker_run_network_none_dpkg_query",
+  "locale": "C",
+  "row_format": "binary-package-tab-version-tab-architecture-tab-status",
+  "total_package_count": 144,
+  "complete_manifest_sha256": "510b52152954b8baff95f4d18b6aa053ae2f23eecdc6a4052b950b7acf5df73e",
+  "packages": [
+    {
+      "name": "adduser",
+      "version": "3.152",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "a6169d70183a0f9293adee37f6f3d064dc14075c9c0fc96481c9c9f4818406cd"
+    },
+    {
+      "name": "apt",
+      "version": "3.0.3",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "ad64f9ac16580e5bb91c95e9f4b0379cfda038297345900a9703603f1f25d862"
+    },
+    {
+      "name": "base-files",
+      "version": "13.8+deb13u6",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "62c7eaffeed2a0b8f6209ef7a85dcef4f2de441e1f3b2412f28dff7247735a06"
+    },
+    {
+      "name": "base-passwd",
+      "version": "3.6.7",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "e3af0148cae217ff07868266b7906e3196ecb6639f3f6b8c083166950f74f15c"
+    },
+    {
+      "name": "bash",
+      "version": "5.2.37-2+b9",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "0c78d5cdf92a3c373b624da09dcb05169c6620bbd91622716d7ff011da8c771b"
+    },
+    {
+      "name": "bash-completion",
+      "version": "1:2.16.0-7",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "f6bcd8e7e209471d9174c70a29bcebc092fb71387fdad2cfa76541a9e2457e8e"
+    },
+    {
+      "name": "bsdutils",
+      "version": "1:2.41-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "e752c74b596e21daa98f0b02a7ac578b20ffc229378d66b59781879b27779625"
+    },
+    {
+      "name": "ca-certificates",
+      "version": "20250419",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "54d3243b8fe6cc65b8d3131eadfefebf8f51b0a107be10c94a38e8d7718fc597"
+    },
+    {
+      "name": "coreutils",
+      "version": "9.7-3",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "b528e90c900f7c5176a4559d440370f484dfe856c98f4175fc7ada29fbffeea4"
+    },
+    {
+      "name": "curl",
+      "version": "8.14.1-2+deb13u4",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "79db60a1dae95e5422c70a0b38202ca7e824d3234818c60d2db25d3b84022264"
+    },
+    {
+      "name": "dash",
+      "version": "0.5.12-12",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "9a1c02f19e192a032dccc0f324c3c45b91e8445338e3a96b6588370779c2b48a"
+    },
+    {
+      "name": "debconf",
+      "version": "1.5.91",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "7dd0296f7a6549d6bc2890385d5ec3c96576c1989dbc86cc74dc78723dad431b"
+    },
+    {
+      "name": "debian-archive-keyring",
+      "version": "2025.1",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "f72acf1d4e2ca0c5060bcc8abadf89125d0a94b821eb00e70d98506f88ebd6b8"
+    },
+    {
+      "name": "debianutils",
+      "version": "5.23.2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "c211f51e8b9571cc87ad9b8380415e027eb860f2dce7b7eb8442c204c9c170ea"
+    },
+    {
+      "name": "diffutils",
+      "version": "1:3.10-4",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "ab83d30d452fe1869c5191fc3283628ee2a1c79ffe2e4883a60c83bcedc1e9c2"
+    },
+    {
+      "name": "dpkg",
+      "version": "1.22.22",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "6006351b40e17b3e8be25006581f8d733a081cb47fce24d27bc3a7d9f7dbfebe"
+    },
+    {
+      "name": "findutils",
+      "version": "4.10.0-3",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "db6237ef7913efd9a3bd1487d483a303707c8df7bacc032bbc0cd5c287637d1a"
+    },
+    {
+      "name": "gcc-14-base:arm64",
+      "version": "14.2.0-19",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "8668406c61cbb1b0ae5bdc164d8ecda043dc2343d5030f4e09048f5e964d324f"
+    },
+    {
+      "name": "git",
+      "version": "1:2.47.3-0+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "5f1203ab8b983165a3055a49b0320d8a7e7a756902a31b7f8c132b45f965eb95"
+    },
+    {
+      "name": "git-man",
+      "version": "1:2.47.3-0+deb13u1",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "0c64b6c10c93ab9344648c245d51f4a23287caae0b318166c38315ccc6dd69a5"
+    },
+    {
+      "name": "grep",
+      "version": "3.11-4+b1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "b1bd5439de91f7ed1a99b24fb72bfaac6fdb8f78a2c04169f8f14d39a63c8d0a"
+    },
+    {
+      "name": "gzip",
+      "version": "1.13-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "6098d4fde8cd8ee0b49af08938cba0083aaafbcd39ab52f815d4f2bd1f65b3a4"
+    },
+    {
+      "name": "hostname",
+      "version": "3.25",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "3600e69723b74d29497a06c3d454369839f94cf0177a99a754f48353a4bb981f"
+    },
+    {
+      "name": "init-system-helpers",
+      "version": "1.69~deb13u1",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "f0cb6e0f90ba202bfc5a3ba5d2270e0865cdee0f20bfde7999ee4518557946db"
+    },
+    {
+      "name": "krb5-locales",
+      "version": "1.21.3-5+deb13u1",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "be7839f8403a182d26d817c876e07bae834cdf7482bb7d701573f8ac2592daf2"
+    },
+    {
+      "name": "less",
+      "version": "668-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "065e85ddeae5889284c8d9503ca8d21830cd3f4a655ec03134fd629833201564"
+    },
+    {
+      "name": "libacl1:arm64",
+      "version": "2.3.2-2+b1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "bfe9f12c5a7b677d1b7b5d0c1ef04187f98e02db60c4776049ede37d2eee5c3e"
+    },
+    {
+      "name": "libapt-pkg7.0:arm64",
+      "version": "3.0.3",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "6529d73079c88bb78d06d0676a93588e80004612d6e5111e35c2bf1db019ab39"
+    },
+    {
+      "name": "libattr1:arm64",
+      "version": "1:2.5.2-3",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "4cb7ca179dad455dc5e6629792ecd939d633fe1395e7ff132c8c84c7d73861b7"
+    },
+    {
+      "name": "libaudit-common",
+      "version": "1:4.0.2-2",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "4a9fea9e4195959b43126ed04264b6356a4359909099ad0e8357a79eab84836e"
+    },
+    {
+      "name": "libaudit1:arm64",
+      "version": "1:4.0.2-2+b2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "40995e5f9552fb4a3aabf9c025e27235e05faf445b0348a5d47655253047ca17"
+    },
+    {
+      "name": "libblkid1:arm64",
+      "version": "2.41-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "eddf5a4a77d1ae6589ac82b75608a78c44e36c9bc1b298831767ccd83d9d5992"
+    },
+    {
+      "name": "libbrotli1:arm64",
+      "version": "1.1.0-2+b7",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "00c18bfe0f04a1e94733d0a3e4ddc14a078273b5ff1c1bc8f211a6ea6c4ef015"
+    },
+    {
+      "name": "libbsd0:arm64",
+      "version": "0.12.2-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "61b7be0969d918cd18d51ca15c0f50c61847d528692ee898f656809228997073"
+    },
+    {
+      "name": "libbz2-1.0:arm64",
+      "version": "1.0.8-6",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "52569a73eb8d60424814731bcf97842253ce69301eea88b763b67906b9fccf2a"
+    },
+    {
+      "name": "libc-bin",
+      "version": "2.41-12+deb13u3",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "540bb6758a7448cc71875cbb2520889db2800fca5f8c1e8c26c7e44f16cf60db"
+    },
+    {
+      "name": "libc6:arm64",
+      "version": "2.41-12+deb13u3",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "d9a6b4e918d3b324c748fcf752a4553c492537ac10d4d2a39bce4aa60dfbed71"
+    },
+    {
+      "name": "libcap-ng0:arm64",
+      "version": "0.8.5-4+b1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "f46625496abe71bf46b741e256324c871ec79f0a8e795be6a26803363343f280"
+    },
+    {
+      "name": "libcap2:arm64",
+      "version": "1:2.75-10+deb13u1+b1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "b2a4bc966465cfc4e2493e2e69acc4af45a5a811a4f071eb5d4e050f488947f2"
+    },
+    {
+      "name": "libcbor0.10:arm64",
+      "version": "0.10.2-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "bedc627a8ce213b8e85cb868433ece01651d7553ca79e33bf0bc127da1cb4dc8"
+    },
+    {
+      "name": "libcom-err2:arm64",
+      "version": "1.47.2-3+b11",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "35f61e7c57e83bff3e4e96d62174effb8b9ca78b86aff07eb110d5df4641dde1"
+    },
+    {
+      "name": "libcrypt1:arm64",
+      "version": "1:4.4.38-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "90c05f666982f1f60bf9c78da3e83363b8f5e7343b775697defd69978d2dd9fa"
+    },
+    {
+      "name": "libcurl3t64-gnutls:arm64",
+      "version": "8.14.1-2+deb13u4",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "d1133baa5bdf5f566aad72d8ccadb2d7d486327c005fa221e7b1b7fc54241491"
+    },
+    {
+      "name": "libcurl4t64:arm64",
+      "version": "8.14.1-2+deb13u4",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "7c6ff7128a8d1115903e204049b45415502a5b9fae0f26c80846fee8b30e0d97"
+    },
+    {
+      "name": "libdb5.3t64:arm64",
+      "version": "5.3.28+dfsg2-9",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "6674c04a4bff1f2311072790f1db03c68b23ad4ea470e6fc28da99d9db88a642"
+    },
+    {
+      "name": "libdebconfclient0:arm64",
+      "version": "0.280",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "4342f3b7c7de08fa877e3c7d5fbbb5bb11b80ef13310345dda80c8a65a17438b"
+    },
+    {
+      "name": "libedit2:arm64",
+      "version": "3.1-20250104-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "55691182366c9da8c734224c4389ed042b10036db0d0bc0e47f69c4c79d27381"
+    },
+    {
+      "name": "liberror-perl",
+      "version": "0.17030-1",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "643a76ac937d367fbe6b115f4216002c4bc08a0a1b6947d9201d7f347197906e"
+    },
+    {
+      "name": "libexpat1:arm64",
+      "version": "2.7.1-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "8012a88a957855ef2515b1c7a951fe60f7d848f6a817ed5188bf507e412b1267"
+    },
+    {
+      "name": "libffi8:arm64",
+      "version": "3.4.8-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "a9d497f06580bcaa52f71c661852bf0e483737a23f48279893d1ebe686eb2b27"
+    },
+    {
+      "name": "libfido2-1:arm64",
+      "version": "1.15.0-1+b1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "42feba057a662221690d07665be163064cd2796030f4d7b04038ece480461a2b"
+    },
+    {
+      "name": "libgcc-s1:arm64",
+      "version": "14.2.0-19",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "876c4b6a6ae83387f861c5e765cdb3401b6719aa622121fc6088d3073ac362be"
+    },
+    {
+      "name": "libgdbm-compat4t64:arm64",
+      "version": "1.24-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "0b4a1185ad9d5034ee8ae33f374f35e8cc2d901b86f6967e2ad4102c810322c4"
+    },
+    {
+      "name": "libgdbm6t64:arm64",
+      "version": "1.24-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "b26095519b0980b1de8d87c94acc429d150246f8592ed36e3c48dee36df46743"
+    },
+    {
+      "name": "libgmp10:arm64",
+      "version": "2:6.3.0+dfsg-3",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "89f2815640b9152a951be2feea536c17ca5525da87a0d9fcddd4d8391705e3f7"
+    },
+    {
+      "name": "libgnutls30t64:arm64",
+      "version": "3.8.9-3+deb13u4",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "51198f29d8afbb84561b8ce042bafa8f467cd0b9dd3ad7c304cf9eee866d616a"
+    },
+    {
+      "name": "libgssapi-krb5-2:arm64",
+      "version": "1.21.3-5+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "846dc3c41dc539d9d13ca38e03158b797f9660885853bb3998a8aa53dc1c0cf8"
+    },
+    {
+      "name": "libhogweed6t64:arm64",
+      "version": "3.10.1-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "02c1b5d516b1b6d4b6ea30c33ce72089aed8e0dd7e7f59d7c43b0e409120848a"
+    },
+    {
+      "name": "libidn2-0:arm64",
+      "version": "2.3.8-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "0d25985150a751e66b8930cae75dbdff933cf7d58bfba9b090136784e04b5a0e"
+    },
+    {
+      "name": "libk5crypto3:arm64",
+      "version": "1.21.3-5+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "79b1523d5cf53d1970a1f0bef1d0320b87151a0176371586d91f91f15940275f"
+    },
+    {
+      "name": "libkeyutils1:arm64",
+      "version": "1.6.3-6",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "cccd7f0a7f26a881c9ec2822b5bd0d1feef8709f3fc964100fb3c4f6544b2d91"
+    },
+    {
+      "name": "libkrb5-3:arm64",
+      "version": "1.21.3-5+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "5420992bc9a17d3c8541ff3a6fed2708ce301382b3157fe2e9003089b7d6f882"
+    },
+    {
+      "name": "libkrb5support0:arm64",
+      "version": "1.21.3-5+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "16e64c7f5563a7ec04a22307ad2aa59e86932a9b6c828e7c21ab41f19da542e1"
+    },
+    {
+      "name": "liblastlog2-2:arm64",
+      "version": "2.41-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "744c1081ac408d984ae8b8d89a78f372bd05bdabd5b3f5ea2c8d8e31b2d86306"
+    },
+    {
+      "name": "libldap-common",
+      "version": "2.6.10+dfsg-1",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "d0c4ade2ee8336ac806ab2060dd92ce9a73f65acd4a475079d541a1f4f3d19bf"
+    },
+    {
+      "name": "libldap2:arm64",
+      "version": "2.6.10+dfsg-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "c75856d34751d4f8912ca56622c73eef3b8d894deff74bd6baeff75498338bd8"
+    },
+    {
+      "name": "liblz4-1:arm64",
+      "version": "1.10.0-4",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "4297fcbafff42fcdbc85c403c428040af5eff855270e53906bdcb6942ac518ed"
+    },
+    {
+      "name": "liblzma5:arm64",
+      "version": "5.8.1-1+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "4fc445082e913cb2a6467ef59338eaeaa707969a8193f22b747df21c0ba57f23"
+    },
+    {
+      "name": "libmd0:arm64",
+      "version": "1.1.0-2+b1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "f3dd698daac32c5b5b4a75468e8842f261dc43f829579f63bce23aa9d9c502a9"
+    },
+    {
+      "name": "libmount1:arm64",
+      "version": "2.41-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "d5e3760aa5529d5f545d4e44cdef0c8367ce0b4ed611d5d47dcce7e3acaa6574"
+    },
+    {
+      "name": "libncursesw6:arm64",
+      "version": "6.5+20250216-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "eaf78c25e5f4e0c151f1591af34854180bc61ebb2b4b93dfb3f8f9ab1da7f0e5"
+    },
+    {
+      "name": "libnettle8t64:arm64",
+      "version": "3.10.1-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "7c11239fe3ad9de3e42d1c0413cf0b14dee46d04c5266ab5f28f315b4a9069f4"
+    },
+    {
+      "name": "libnghttp2-14:arm64",
+      "version": "1.64.0-1.1+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "e614dfd7aa6db1de140f95773ec72956373bc079fda3aafada678120efaf379f"
+    },
+    {
+      "name": "libnghttp3-9:arm64",
+      "version": "1.8.0-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "fcb6283ae1db75ca94c0e3801200133a1b5ba2ae9aa017bfd689ca93f0b16fac"
+    },
+    {
+      "name": "libngtcp2-16:arm64",
+      "version": "1.11.0-1+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "73c5f70eaf52690e4ea227185ec5452db43a12006b30f8c10f7ac01ee5ff75ab"
+    },
+    {
+      "name": "libngtcp2-crypto-gnutls8:arm64",
+      "version": "1.11.0-1+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "d6ca45eba690e5b7c22b323325c0815d8202d8ae7176d6a1c87130c5158ff8f8"
+    },
+    {
+      "name": "libp11-kit0:arm64",
+      "version": "0.25.5-3",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "4b78b422ed3a35000399bd8111e4d950e03c237a24f1e1f0f85c89b3986e069a"
+    },
+    {
+      "name": "libpam-modules-bin",
+      "version": "1.7.0-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "1927391d88aecb225302862f11f39cd82e1becbeb362708b7b86c72c37313085"
+    },
+    {
+      "name": "libpam-modules:arm64",
+      "version": "1.7.0-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "847618d5869b3fa06326e4cfdbdf26c45750ac7f35b2f3c3d0804000a07cde29"
+    },
+    {
+      "name": "libpam-runtime",
+      "version": "1.7.0-5",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "2b011a417204e8bf2620a38e730723eb4f4775bdbb1709d2bb0fbda7289601bf"
+    },
+    {
+      "name": "libpam0g:arm64",
+      "version": "1.7.0-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "e79544601dfa46d38996f10c2a6b9c813c6e27c55452cb83e86934470387bee9"
+    },
+    {
+      "name": "libpcre2-8-0:arm64",
+      "version": "10.46-1~deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "686b74f114751527348992545d2f8fadf1ae79fcacae26ca98cf08051e75a85c"
+    },
+    {
+      "name": "libperl5.40:arm64",
+      "version": "5.40.1-6",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "f7881bcfb738d7397d05e95aa7310218e0b5a7d9ecaca5d030ce7ed4e9529c3d"
+    },
+    {
+      "name": "libpq5:arm64",
+      "version": "17.10-0+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "d51dcebab5be801b551b7d360db7fb8248be94f018dd86d54b207ce14c70570e"
+    },
+    {
+      "name": "libpsl5t64:arm64",
+      "version": "0.21.2-1.1+b1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "3b4e93f9dace94f9deb90feff7be19200b1f33de05cc3c3845f1e6e3a0f92839"
+    },
+    {
+      "name": "libreadline8t64:arm64",
+      "version": "8.2-6",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "74ff142d68239a8782430a91f3d0ff92385ac487a9bfbc53739e5602a52f5cad"
+    },
+    {
+      "name": "librtmp1:arm64",
+      "version": "2.4+20151223.gitfa8646d.1-2+b5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "d11b1acf63694c7fff62308cac922cf36c06f1560e888437dbc060239d4b3180"
+    },
+    {
+      "name": "libsasl2-2:arm64",
+      "version": "2.1.28+dfsg1-9",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "29982deb111dca3651ae31919bc88d430c1203898c88427c6e5060dcb5262a29"
+    },
+    {
+      "name": "libsasl2-modules-db:arm64",
+      "version": "2.1.28+dfsg1-9",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "3ddfb266abe2bfc09dc0db1f01ce43d9c72b77187d9f6a0d81d150faf947e656"
+    },
+    {
+      "name": "libsasl2-modules:arm64",
+      "version": "2.1.28+dfsg1-9",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "d69fe8764038739939dfd759168b9dcc9beed3f21d8911b75925408b7468e2ac"
+    },
+    {
+      "name": "libseccomp2:arm64",
+      "version": "2.6.0-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "8879528d8e9c1b4a91f29264ecfd12477c4c9be642acddc24380e7d1d565cc4e"
+    },
+    {
+      "name": "libselinux1:arm64",
+      "version": "3.8.1-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "31801a68990f144e22a6a1ef3bba3f04cb08f66a474ddcaa1399b30b6bee2dec"
+    },
+    {
+      "name": "libsemanage-common",
+      "version": "3.8.1-1",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "188215da4d98d8b486d234974d656b0b2a0eb20e9fd18bae8fb85231ff6b1e49"
+    },
+    {
+      "name": "libsemanage2:arm64",
+      "version": "3.8.1-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "10982962d24bf689bab86141fad48b590f1ea95b394cfb4b5f6eca42c5ccac94"
+    },
+    {
+      "name": "libsepol2:arm64",
+      "version": "3.8.1-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "e12cf625765fc36a814543f975f076ea571aa4450186c48226c277f55054d293"
+    },
+    {
+      "name": "libsmartcols1:arm64",
+      "version": "2.41-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "f94e389256a043234f9d0017c4a370d2561285fb28c9e768df409545620057fe"
+    },
+    {
+      "name": "libsqlite3-0:arm64",
+      "version": "3.46.1-7+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "e512e52eeb46c6f7d972cb8506ddc9d30565a14e06361c689a33963d1b40959f"
+    },
+    {
+      "name": "libssh2-1t64:arm64",
+      "version": "1.11.1-1+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "a7db947bebf4cebacdc2162a36e786864cb98356b76abac7a7563fc54834e32f"
+    },
+    {
+      "name": "libssl3t64:arm64",
+      "version": "3.5.6-1~deb13u2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "76bcf18d61296a6929563b4b82d24c36cd90363afe56cbd914464e55f076ebf0"
+    },
+    {
+      "name": "libstdc++6:arm64",
+      "version": "14.2.0-19",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "4dd9755df839c555e77b2dd2fee2feb2f4c98f5736396ee3b13cacd119528c2e"
+    },
+    {
+      "name": "libsystemd0:arm64",
+      "version": "257.13-1~deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "e1b543d71160fe7a274f6a9c0bfd1394d3ae7d4347d272be00c2214d7a1fb6c1"
+    },
+    {
+      "name": "libtasn1-6:arm64",
+      "version": "4.20.0-2+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "74ca81ed73786c84d1ef87f2d4b775ca518b14e97132f5a09114db3c1a6fd33d"
+    },
+    {
+      "name": "libtinfo6:arm64",
+      "version": "6.5+20250216-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "318f35a16acd31892b89f95cf42e8b21181d3889d99b746924a003f6201f4549"
+    },
+    {
+      "name": "libudev1:arm64",
+      "version": "257.13-1~deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "c336e160426280152e43120b2a71c3c627b37b7bb53a107085c9632d9903b9d0"
+    },
+    {
+      "name": "libunistring5:arm64",
+      "version": "1.3-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "d375d41c5b0f2cd760d1a73758135e4bafb286515aeb959a1e7c2a11ba121736"
+    },
+    {
+      "name": "libuuid1:arm64",
+      "version": "2.41-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "f86c2e2e2fee5fdbb6311b0d3d00bb75ff1af74619f10d5ed02b343b197bdc30"
+    },
+    {
+      "name": "libx11-6:arm64",
+      "version": "2:1.8.12-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "63a429edd5bbd8b5439439016e2a3810768a87bc7029f61018e70625f1742a10"
+    },
+    {
+      "name": "libx11-data",
+      "version": "2:1.8.12-1",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "74f73e54573f018ea5997eaa115ce6bda05e37a61e2ba7079a0eb00100006178"
+    },
+    {
+      "name": "libxau6:arm64",
+      "version": "1:1.0.11-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "ba376ee2e1cf1499f618c9a76e907d2649a5944da4559bcd64d1903dfe1036e9"
+    },
+    {
+      "name": "libxcb1:arm64",
+      "version": "1.17.0-2+b1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "82271de1305209140b75a45eae0ac8d8371186f5f186cbe41115d9f1fd53edf2"
+    },
+    {
+      "name": "libxdmcp6:arm64",
+      "version": "1:1.1.5-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "6d1be9da37096e840fc36742328ca0b619bc66ba5576013fdc004c2f01265d47"
+    },
+    {
+      "name": "libxext6:arm64",
+      "version": "2:1.3.4-1+b3",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "6ba25b21e662ea089331f7585b6174cb3921b81857c7fb2127c445dc53cd52c6"
+    },
+    {
+      "name": "libxmuu1:arm64",
+      "version": "2:1.1.3-3+b4",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "b72f6173a4596ad9e2a6eaf6f25f21bbfaad078519d2a2bee35f6d80c6dbf5d4"
+    },
+    {
+      "name": "libxxhash0:arm64",
+      "version": "0.8.3-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "1295f600a5cd580d9d16cdd12d5d271bef8341e4188674d335e0319589e23d42"
+    },
+    {
+      "name": "libzstd1:arm64",
+      "version": "1.5.7+dfsg-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "5808c36430ad3090e747fad3ff31c9ec8e9f3761318df1b0392b3bdaa046191e"
+    },
+    {
+      "name": "login",
+      "version": "1:4.16.0-2+really2.41-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "dcc917f29cb16850353b586b28e39a1cc43d8cb335263906191a632535dc877a"
+    },
+    {
+      "name": "login.defs",
+      "version": "1:4.17.4-2",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "5273f75ee96c29a07e3f987f982c95c1ce6d01c649c4b500a9072f9dd3e16098"
+    },
+    {
+      "name": "mawk",
+      "version": "1.3.4.20250131-1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "76f9397a64160ff8dbab54d60323e7a9feaaa8a4fca89264cc32001a900e0b05"
+    },
+    {
+      "name": "mount",
+      "version": "2.41-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "1459cbadf0df79a79ea138a1e36d4edea7b493c46557214c569f04c5848b8b89"
+    },
+    {
+      "name": "ncurses-base",
+      "version": "6.5+20250216-2",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "95c8707b5f783b044b40302122b8fe3f991c6ba9bf76d3eda2c02ac7bef56807"
+    },
+    {
+      "name": "ncurses-bin",
+      "version": "6.5+20250216-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "82734be5d536f9099e2180246d3991810ed7087b6e8debb1ee81c94ac4606659"
+    },
+    {
+      "name": "netbase",
+      "version": "6.5",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "336fc4d5ebdd82931154fe2f6b7a9323edea11f5934c8c99a1575727450f0845"
+    },
+    {
+      "name": "openssh-client",
+      "version": "1:10.0p1-7+deb13u4",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "b40c6f634653b714fe249a45aa70cf9b20bbcb39d62737eeda3cb1124e5cd5fa"
+    },
+    {
+      "name": "openssl",
+      "version": "3.5.6-1~deb13u2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "758bfcff09fe3f2d4a8a0ee34f0d831de1052a5092ce86830025cb137add1afd"
+    },
+    {
+      "name": "openssl-provider-legacy",
+      "version": "3.5.6-1~deb13u2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "1ab7f55011e74701e42233ce01f25ceeb245e9c1495a2b87af8835ad31e842ed"
+    },
+    {
+      "name": "passwd",
+      "version": "1:4.17.4-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "2416258db4abb458814101d9f76b95f6e9c7659ba4bd3fccd1848f5b0db82603"
+    },
+    {
+      "name": "patch",
+      "version": "2.8-2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "7142377bee55b810c7930c53d2becdd5691f2402442f6e880f6cee5439cc06ed"
+    },
+    {
+      "name": "perl",
+      "version": "5.40.1-6",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "71f25605fe2cec937d4ee75c3674370ee84684698a9a1a398f785772a2e9b4e8"
+    },
+    {
+      "name": "perl-base",
+      "version": "5.40.1-6",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "be0e8d911a538caeaefcb262c98223e15ff77cdae2d987ca08e72538f62d2f9e"
+    },
+    {
+      "name": "perl-modules-5.40",
+      "version": "5.40.1-6",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "0ed7e217c3ad88b7c8129c2987ed182a555ff58bda5bf3a53e391f89131c41f7"
+    },
+    {
+      "name": "postgresql-client",
+      "version": "17+278",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "5b18a2a2c39207c64b099d3f79bb9473ead4ab569bc591ad6731ca3d825e4d1d"
+    },
+    {
+      "name": "postgresql-client-17",
+      "version": "17.10-0+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "fb1f689098730cd49bc5fcd2aae9b28d1cf6c3a70fcf2a763987c99c34257842"
+    },
+    {
+      "name": "postgresql-client-common",
+      "version": "278",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "585f0a9e679a2454065530d6fe2cedebd754dcb7db6a37b5720ea9e943a1c26a"
+    },
+    {
+      "name": "publicsuffix",
+      "version": "20250328.1952-0.1",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "aebba861b0b1de5dc9447d1f7343f21eb0a7ad32f9ea09f852f3d3ba3db6e120"
+    },
+    {
+      "name": "readline-common",
+      "version": "8.2-6",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "597d4d8ed996ac54ce99103f5c353b0605faec9d5c1c06bf1ddb74766d331ec8"
+    },
+    {
+      "name": "sed",
+      "version": "4.9-2+deb13u1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "d5f078fa791069e43efd9de4ce862c41c50a06fb43107c8b73fa5df2c9a9413d"
+    },
+    {
+      "name": "sensible-utils",
+      "version": "0.0.25",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "113b9a530c505564fc7d8123a0d4fcbe908f55e72404379f3603eee49a198a13"
+    },
+    {
+      "name": "sqv",
+      "version": "1.3.0-3+b2",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "d1db476ec92896b642c49eb5645fd2c9b7adeb4604a6f5b3cf49d60997f4772c"
+    },
+    {
+      "name": "sysvinit-utils",
+      "version": "3.14-4",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "95acc171055bd79ba52f692d3db95de1e4a4f3be4c1291517a1691659267fa22"
+    },
+    {
+      "name": "tar",
+      "version": "1.35+dfsg-3.1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "cf5e3315a979dccddc16c8ac283022933b21735c4b1f18bce4ced1851a703dfd"
+    },
+    {
+      "name": "tzdata",
+      "version": "2026b-0+deb13u1",
+      "architecture": "all",
+      "status": "ii ",
+      "row_sha256": "b648b6b668ad2cc1db195a6d725c4cd3907d7982970288c9ec144f3f70ff2582"
+    },
+    {
+      "name": "util-linux",
+      "version": "2.41-5",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "00715a9f34a47842ecdf2c3429c3f5d61810c9bea0be6c571cd906ab210fe37f"
+    },
+    {
+      "name": "xauth",
+      "version": "1:1.1.2-1.1",
+      "architecture": "arm64",
+      "status": "ii ",
+      "row_sha256": "75ecc3bfdae436f1092bd679c2b69e8b37876760f5fcbae8ef9a4ee063332fa9"
+    },
+    {
+      "name": "zlib1g:arm64",
+      "version": "1:1.3.dfsg+really1.3.1-1+b1",
+      "architecture": "arm64",
+      "status": "ii",
+      "row_sha256": "df5ab7bde73dccc26d8754709b6618e620076b4005099a3aa16c9f8293317481"
+    }
+  ]
+}

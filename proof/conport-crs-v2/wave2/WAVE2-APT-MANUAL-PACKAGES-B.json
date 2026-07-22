@@ -1,0 +1,29 @@
+{
+  "capture_mode": "docker_run_network_none_apt_mark_showmanual",
+  "total_package_count": 22,
+  "complete_manifest_sha256": "b9855b8d7685bee28a6a64ddc7d4047fe9f599f7bbe04c5b3d373fe238166c37",
+  "packages": [
+    "bash",
+    "ca-certificates",
+    "curl",
+    "git",
+    "libbz2-1.0",
+    "libc6",
+    "libcrypt1",
+    "libdb5.3t64",
+    "libffi8",
+    "libgdbm6t64",
+    "liblzma5",
+    "libncursesw6",
+    "libreadline8t64",
+    "libsqlite3-0",
+    "libssl3t64",
+    "libtinfo6",
+    "libuuid1",
+    "libzstd1",
+    "netbase",
+    "postgresql-client",
+    "tzdata",
+    "zlib1g"
+  ]
+}

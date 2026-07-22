@@ -1,0 +1,40 @@
+{
+  "control_decision": {
+    "wave2_freeze": "ACTIVE",
+    "readiness": "BLOCKED_PENDING_AUDIT_AND_SBOM"
+  },
+  "independent_audit_route": {
+    "status": "RECOMMENDED_PENDING_TENANT_APPROVAL",
+    "route": "LOCAL_OR_TENANT_CI_READ_ONLY",
+    "egress": "NONE",
+    "identity": "SEPARATE_FROM_IMPLEMENTER",
+    "requirements": [
+      "exact detached commit",
+      "read-only repository access",
+      "no credentials",
+      "no network egress",
+      "no repository mutation",
+      "structured hash-bound report",
+      "explicit PASS_FAIL_NOT_RUN gates"
+    ]
+  },
+  "sbom": {
+    "candidate": "ANCHORE_SYFT",
+    "status": "PENDING_TENANT_APPROVAL",
+    "required_formats": ["CycloneDX JSON", "SPDX JSON"],
+    "required_source": "final built image",
+    "installation": "NOT_AUTHORIZED",
+    "tenant_mirrored_checksum_verified_binary_required": true
+  },
+  "unknowns": [
+    "tenant allowlists and disclosure rules",
+    "permitted CI runners and artifact destinations",
+    "whether deterministic machine review qualifies as independent audit"
+  ],
+  "prohibited_in_current_state": [
+    "external audit disclosure",
+    "unapproved Syft installation",
+    "SBOM attestation",
+    "Wave 2 readiness declaration"
+  ]
+}

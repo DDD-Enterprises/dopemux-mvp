@@ -1,0 +1,13 @@
+{
+  "policy_id": "CONPORT-W2-SECRET-SAFE-RUNTIME-INVENTORY-v1",
+  "status": "PASS_FOR_WRITTEN_WAVE2_ARTIFACTS",
+  "raw_docker_inspect_persisted": false,
+  "environment_value_dumps_persisted": false,
+  "inspection_commands": [
+    "redacted Docker build logs retained only under private temporary storage and represented in proof by SHA-256",
+    "network-isolated dpkg-query package manifests",
+    "network-isolated apt-mark manual-package manifests",
+    "network-isolated APT source and architecture reads"
+  ],
+  "secret_boundary": "No credential values or raw Docker inspection/build output included in this proof directory."
+}

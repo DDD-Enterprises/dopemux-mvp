@@ -1,0 +1,33 @@
+{
+  "request_id": "CONPORT-W2-TENANT-AUDIT-SBOM-APPROVAL-001",
+  "decision_record_sha256": "99e1c92e26a8145c956d5e1d213a59f26326e9e2c8fc22e00642f1893bd7cfde",
+  "decision_status": "APPROVED_WITH_CONDITIONS",
+  "decision_authority": "hu3mann",
+  "decided_at": "2026-07-22T05:51:13Z",
+  "packet_contract_alignment": "AUTHORIZED",
+  "approved_runner": "GitHub-hosted Actions runner: ubuntu-24.04 (x64)",
+  "approved_syft_version": "v1.49.0",
+  "approved_binary_source": "Official Anchore Syft GitHub Release v1.49.0",
+  "network_policy": "GITHUB_INFRASTRUCTURE_AND_APPROVED_ACQUISITION_ONLY",
+  "audit_scan_external_requests": "NONE_OBSERVED_REQUIRED_DURING_SCAN",
+  "candidate_binding": {
+    "base_sha": "95264461d2d25b79baa0ded0ecbf6bf6b3343f10",
+    "head_sha": "95264461d2d25b79baa0ded0ecbf6bf6b3343f10",
+    "dockerfile_sha256": "9c72aeade610f9bcb050c91a47642a42d52f03c853ca14d1c45e07a9b568877e",
+    "proof_manifest_sha256": "b8ebda8ddba85d57fe96a3c2b46b51bac91c0e3170b380d469b1e490747dc1d0",
+    "working_tree_patch_sha256": "7355aa0412297388d78261e0a7baa77c0cb5dd29431da256b6872c841acf2d99",
+    "changed_paths": [
+      "docker/mcp-servers-source/conport/Dockerfile",
+      "proof/conport-crs-v2/wave2/MANIFEST.json"
+    ]
+  },
+  "downstream_packets": {
+    "TP-CONPORT-W2-INDEPENDENT-AUDIT-20260721": "UNBLOCKED",
+    "TP-CONPORT-W2-SBOM-INVENTORY-20260721": "UNBLOCKED"
+  },
+  "freeze": "ACTIVE",
+  "execution_started": false,
+  "repository_mutation_authorized": false,
+  "writer_restart_authorized": false,
+  "parent_wave2_readiness": "BLOCKED_UNTIL_BOTH_CHILD_PACKETS_TERMINAL"
+}

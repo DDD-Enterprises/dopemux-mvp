@@ -1,0 +1,22 @@
+{
+  "activated_at_utc": "2026-07-22T03:31:10Z",
+  "mechanism": "HOST_WIDE_STOP_WITH_RESTART_DISABLED",
+  "scoped_containers": [
+    "conport-dnh-crm-tgmirror0117",
+    "dopemux-dopemux-mvp-dcd6-conport",
+    "mcp-conport-dnh-crm-8d6d",
+    "mcp-conport"
+  ],
+  "pre_freeze_restart_policy": "unless-stopped",
+  "post_freeze_restart_policy": "no",
+  "post_freeze_state": "exited",
+  "verification": "PASS",
+  "read_availability": "UNAVAILABLE_BY_DESIGN_DURING_FREEZE",
+  "data_mutation": false,
+  "container_removal": false,
+  "rollback_requires_explicit_authorization": true,
+  "rollback_commands": [
+    "docker update --restart=unless-stopped <scoped-container>",
+    "docker start <scoped-container>"
+  ]
+}

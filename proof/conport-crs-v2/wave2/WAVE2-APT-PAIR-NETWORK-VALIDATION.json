@@ -1,0 +1,13 @@
+{
+  "inspection_mode": "docker_run_network_none_read_only_source_capture",
+  "source_definition_sha256_a": "6cc76b9e8e4db7b4973d1494d8bdd2ebd67f7cbec5a089e14f271f20c2011cc3",
+  "source_definition_sha256_b": "6cc76b9e8e4db7b4973d1494d8bdd2ebd67f7cbec5a089e14f271f20c2011cc3",
+  "source_definitions_match": true,
+  "allowed_hosts": [
+    "snapshot.debian.org"
+  ],
+  "mutable_debian_source_definitions_present": false,
+  "build_network_endpoint_observation": "PASS_SANITIZED_LOGS_CONTAIN_SNAPSHOT_DEBIAN_AND_NO_KNOWN_MUTABLE_DEBIAN_HOSTS",
+  "explicit_snapshot_only_network_enforcement": "PASS_BUILD_LOG_AND_INSTALLED_SOURCE_DEFINITION_EVIDENCE",
+  "verdict": "PASS"
+}

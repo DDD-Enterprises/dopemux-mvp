@@ -1,0 +1,9 @@
+{
+  "conport-dnh-crm-tgmirror0117": "FROZEN_LEGACY",
+  "dopemux-dopemux-mvp-dcd6-conport": "FROZEN_LEGACY",
+  "mcp-conport-dnh-crm-8d6d": "FROZEN_LEGACY",
+  "mcp-conport": "FROZEN_LEGACY",
+  "build_only_conport_image": "TARGET_BUILD_ONLY_NOT_DEPLOYED",
+  "apt_snapshot_repair": "WAVE2_APT_SNAPSHOT_PIN_REPAIRED",
+  "floating_uvx_legacy_route": "FORBIDDEN"
+}

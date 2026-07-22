@@ -1,0 +1,481 @@
+[
+  {
+    "container_id": "3f4f02c495a8101d88f688793a8cc573de2f7ec9bc2ba23e022cf4d877fafabf",
+    "name": "conport-dnh-crm-tgmirror0117",
+    "image_id": "sha256:52470540473686ba32a91a23151c43280b067865f70cf5c9ce2d139825fffdec",
+    "image_reference": "dnh_crm_tgmirror0117-conport",
+    "image_manifest_digest": "sha256:36d0e9a7c6a05a8e80a616eb224522628c7fee5d9c8b3d1580a832fadb7c8bde",
+    "state": "running",
+    "health": "healthy",
+    "restart_policy": "unless-stopped",
+    "network_mode": "dopemux-network",
+    "ports": {
+      "3004/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "35101"
+        }
+      ],
+      "3005/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "35103"
+        }
+      ],
+      "4004/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "35102"
+        }
+      ]
+    },
+    "mounts": [],
+    "compose_and_dopemux_labels": {
+      "com.docker.compose.project": "dnh_crm_tgmirror0117",
+      "com.docker.compose.project.working_dir": "/Users/hue/code/dopemux-mvp",
+      "com.docker.compose.service": "conport"
+    },
+    "environment": [
+      {
+        "key": "AGE_HOST",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "DOPEMUX_INSTANCE_ID",
+        "classification": "ALLOWLISTED",
+        "value": "crm-tgmirror0117"
+      },
+      {
+        "key": "MCP_SERVER_PORT",
+        "classification": "ALLOWLISTED",
+        "value": "3005"
+      },
+      {
+        "key": "DOPE_MEMORY_EVENTS_REDIS_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "QDRANT_URL",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "POSTGRES_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "AGE_PORT",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "AGE_PASSWORD",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "DOPECON_BRIDGE_URL",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "DATABASE_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "REDIS_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "DOPE_MEMORY_INPUT_STREAM",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "PATH",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "LANG",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "GPG_KEY",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "PYTHON_VERSION",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "PYTHON_SHA256",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      }
+    ],
+    "entrypoint": "REDACTED_NOT_REQUIRED_FOR_FREEZE_DECISION",
+    "command": "REDACTED_NOT_REQUIRED_FOR_FREEZE_DECISION"
+  },
+  {
+    "container_id": "caf9fab3d2d12331c9f8fe32969f3196d514d643ce23ed2e80186f53abe06d56",
+    "name": "dopemux-dopemux-mvp-dcd6-conport",
+    "image_id": "sha256:4c7348a51f146b998d20e40d8587fdff65137b6b4f1a1c9061de7a900452da48",
+    "image_reference": "dopemux_dopemux_mvp_dcd6-conport",
+    "image_manifest_digest": "sha256:7c89ff14c0f9dd525339fb29c8c69c36196f6965eb1c079b0ed020ca77364138",
+    "state": "running",
+    "health": "healthy",
+    "restart_policy": "unless-stopped",
+    "network_mode": "dopemux-network",
+    "ports": {
+      "3004/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "3019"
+        }
+      ],
+      "3005/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "3007"
+        }
+      ],
+      "4004/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "4005"
+        }
+      ]
+    },
+    "mounts": [],
+    "compose_and_dopemux_labels": {
+      "com.docker.compose.project": "dopemux_dopemux_mvp_dcd6",
+      "com.docker.compose.project.working_dir": "/Users/hue/code/dopemux-mvp",
+      "com.docker.compose.service": "conport",
+      "dopemux.catalog_service": "conport",
+      "dopemux.project_id": "dopemux-mvp-2e346e2084bca021",
+      "dopemux.scope": "worktree",
+      "dopemux.transport": "sse",
+      "dopemux.workspace_id": "/Users/hue/code/dopemux-mvp",
+      "dopemux.worktree_root": "/Users/hue/code/dopemux-mvp"
+    },
+    "environment": [
+      {
+        "key": "DATABASE_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "DOPEMUX_WORKTREE_ROOT",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "DOPE_MEMORY_INPUT_STREAM",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "QDRANT_URL",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "REDIS_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "DOPE_MEMORY_EVENTS_REDIS_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "AGE_PASSWORD",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "MCP_SERVER_PORT",
+        "classification": "ALLOWLISTED",
+        "value": "3005"
+      },
+      {
+        "key": "DOPEMUX_WORKSPACE_ROOT",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "DOPEMUX_PROJECT_ROOT",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "DOPEMUX_INSTANCE_ID",
+        "classification": "ALLOWLISTED",
+        "value": "dcd6"
+      },
+      {
+        "key": "AGE_HOST",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "DOPEMUX_WORKSPACE_ID",
+        "classification": "ALLOWLISTED",
+        "value": "/Users/hue/code/dopemux-mvp"
+      },
+      {
+        "key": "POSTGRES_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "DOPECON_BRIDGE_URL",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "AGE_PORT",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "PATH",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "LANG",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "GPG_KEY",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "PYTHON_VERSION",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "PYTHON_SHA256",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      }
+    ],
+    "entrypoint": "REDACTED_NOT_REQUIRED_FOR_FREEZE_DECISION",
+    "command": "REDACTED_NOT_REQUIRED_FOR_FREEZE_DECISION"
+  },
+  {
+    "container_id": "458d4b46b36da5269b535a5b961190165916d8d9039f45e832e45f89e1e41f95",
+    "name": "mcp-conport-dnh-crm-8d6d",
+    "image_id": "sha256:93ec07e48353ff227b98d85ccbe4b76935ecedd0383a3840b97ad3c9ebc7e0f6",
+    "image_reference": "dopemux_dnh_crm_8d6d-conport",
+    "image_manifest_digest": "sha256:df9c7f07d2ab9acf4edaaf09c2b79e4e79075c2700174fd9aea8bae4a1ec1d7c",
+    "state": "running",
+    "health": "healthy",
+    "restart_policy": "unless-stopped",
+    "network_mode": "dopemux-network",
+    "ports": {
+      "3004/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "3040"
+        }
+      ],
+      "3005/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "3041"
+        }
+      ],
+      "4004/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "4040"
+        }
+      ]
+    },
+    "mounts": [],
+    "compose_and_dopemux_labels": {
+      "com.docker.compose.project": "dopemux_dnh_crm_8d6d",
+      "com.docker.compose.project.working_dir": "/Users/hue/code/dopemux-mvp",
+      "com.docker.compose.service": "conport"
+    },
+    "environment": [
+      {
+        "key": "POSTGRES_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "DOPE_MEMORY_EVENTS_REDIS_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "DOPEMUX_INSTANCE_ID",
+        "classification": "ALLOWLISTED",
+        "value": "8d6d"
+      },
+      {
+        "key": "DOPECON_BRIDGE_URL",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "QDRANT_URL",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "AGE_HOST",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "DOPE_MEMORY_INPUT_STREAM",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "AGE_PASSWORD",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "AGE_PORT",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "MCP_SERVER_PORT",
+        "classification": "ALLOWLISTED",
+        "value": "3005"
+      },
+      {
+        "key": "REDIS_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "DATABASE_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "PATH",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "LANG",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "GPG_KEY",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "PYTHON_VERSION",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "PYTHON_SHA256",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      }
+    ],
+    "entrypoint": "REDACTED_NOT_REQUIRED_FOR_FREEZE_DECISION",
+    "command": "REDACTED_NOT_REQUIRED_FOR_FREEZE_DECISION"
+  },
+  {
+    "container_id": "529e0e211050777bf024427d4430b44ff776a0566721d546c350bf9701e4cbdf",
+    "name": "mcp-conport",
+    "image_id": "sha256:c00117e39199d87bf944ec6343908568e377070eb882bb500faf65c463e27fd6",
+    "image_reference": "dopemux-conport",
+    "image_manifest_digest": "sha256:d3782c330a4e1567b626cb46b7e022160949848b78b95b44a130e1927e0859d5",
+    "state": "running",
+    "health": "unhealthy",
+    "restart_policy": "unless-stopped",
+    "network_mode": "dopemux-network",
+    "ports": {
+      "3004/tcp": [
+        {
+          "HostIp": "0.0.0.0",
+          "HostPort": "3004"
+        },
+        {
+          "HostIp": "::",
+          "HostPort": "3004"
+        }
+      ],
+      "3005/tcp": [
+        {
+          "HostIp": "0.0.0.0",
+          "HostPort": "3005"
+        },
+        {
+          "HostIp": "::",
+          "HostPort": "3005"
+        }
+      ],
+      "4004/tcp": [
+        {
+          "HostIp": "0.0.0.0",
+          "HostPort": "4004"
+        },
+        {
+          "HostIp": "::",
+          "HostPort": "4004"
+        }
+      ]
+    },
+    "mounts": [],
+    "compose_and_dopemux_labels": {
+      "com.docker.compose.project": "dopemux",
+      "com.docker.compose.project.working_dir": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+      "com.docker.compose.service": "conport"
+    },
+    "environment": [
+      {
+        "key": "DOPE_MEMORY_INPUT_STREAM",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "AGE_PORT",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "DOPECON_BRIDGE_URL",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "DATABASE_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "QDRANT_URL",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "AGE_HOST",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "POSTGRES_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "DOPE_MEMORY_EVENTS_REDIS_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "AGE_PASSWORD",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "DOPEMUX_INSTANCE_ID",
+        "classification": "ALLOWLISTED",
+        "value": "main"
+      },
+      {
+        "key": "MCP_SERVER_PORT",
+        "classification": "ALLOWLISTED",
+        "value": "3005"
+      },
+      {
+        "key": "REDIS_URL",
+        "classification": "SECRET_REDACTED"
+      },
+      {
+        "key": "PATH",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "LANG",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "GPG_KEY",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "PYTHON_VERSION",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      },
+      {
+        "key": "PYTHON_SHA256",
+        "classification": "NON_SECRET_VALUE_OMITTED"
+      }
+    ],
+    "entrypoint": "REDACTED_NOT_REQUIRED_FOR_FREEZE_DECISION",
+    "command": "REDACTED_NOT_REQUIRED_FOR_FREEZE_DECISION"
+  }
+]

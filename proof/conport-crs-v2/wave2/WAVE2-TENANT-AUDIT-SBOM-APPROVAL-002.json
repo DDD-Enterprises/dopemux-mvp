@@ -1,0 +1,51 @@
+{
+  "record_type": "TENANT_AUDIT_SBOM_DECISION_AMENDMENT",
+  "amendment_id": "CONPORT-W2-TENANT-AUDIT-SBOM-APPROVAL-002",
+  "request_id": "CONPORT-W2-TENANT-AUDIT-SBOM-APPROVAL-001",
+  "supersedes_record": "WAVE2-TENANT-DECISION-RECORD-FINAL.json",
+  "supersedes_fields": ["APPROVED_RUNNER", "network_egress"],
+  "reason": [
+    "The approved GitHub-hosted runner cannot access the uncommitted candidate.",
+    "The existing workflow does not pin the approved exact runner label.",
+    "No repository mutation or patch-transmission route is authorized."
+  ],
+  "decision_status": "APPROVED_WITH_CONDITIONS",
+  "AUDITOR_ROUTE_APPROVED": "YES",
+  "SBOM_TOOL_APPROVED": "YES",
+  "APPROVED_RUNNER": {
+    "runner_type": "LOCAL_READ_ONLY_RUNNER",
+    "hostname": "dddmbp.local",
+    "operating_system": "Darwin",
+    "architecture": "arm64",
+    "runner_user": "hue",
+    "candidate_worktree": "/Users/hue/code/dopemux-mvp/.worktrees/CONPORT-W2-FREEZE-PIN-INVENTORY"
+  },
+  "APPROVED_AUDITOR_IDENTITY": "hu3mann",
+  "APPROVED_SYFT_VERSION": "v1.49.0",
+  "APPROVED_BINARY_SOURCE": "Official Anchore Syft GitHub Release v1.49.0",
+  "network_egress": {
+    "acquisition_phase": "OFFICIAL_GITHUB_RELEASE_ONLY_FOR_SYFT_ASSET_AND_VERIFICATION_ARTIFACTS",
+    "audit_phase": "NONE",
+    "sbom_scan_phase": "NONE",
+    "evidence_phase": "LOCAL_FILESYSTEM_ONLY"
+  },
+  "repository_permissions": "READ_ONLY",
+  "repository_mutation": "FORBIDDEN",
+  "patch_transmission": "FORBIDDEN",
+  "candidate_commit_or_push": "FORBIDDEN",
+  "conditions": [
+    "Local runner operates directly against unchanged candidate worktree.",
+    "Auditor identity is distinct from Codex implementer.",
+    "Syft remains pinned to v1.49.0.",
+    "Syft asset and release checksum/signature material are acquired before audit and scan phases.",
+    "No application-initiated network access during audit or SBOM scan.",
+    "No repository file may be modified by auditor or SBOM process.",
+    "Audit and SBOM outputs land only in a separate temporary evidence directory until later repository-write authorization.",
+    "Four scoped writers remain exited.",
+    "Wave 2 freeze remains active after audit and SBOM completion."
+  ],
+  "decision_authority": "hu3mann",
+  "decided_at": "2026-07-22T06:09:03Z",
+  "record_state": "FINAL",
+  "execution_status": "READY_FOR_LOCAL_PACKET_EXECUTION_PENDING_PREflight"
+}

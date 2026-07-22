@@ -1,0 +1,57 @@
+{
+  "record_type": "WAVE2_LOCAL_SBOM_EXECUTION_RECORD",
+  "supersedes_candidate_images": [
+    "conport-w2-apt-proof-a:20260722T042611Z (absent on host at execution time)",
+    "conport-w2-apt-proof-b:20260722T042611Z (absent on host at execution time)"
+  ],
+  "executed_under": "CONPORT-W2-TENANT-AUDIT-SBOM-APPROVAL-002 (local read-only runner amendment, decided 2026-07-22T06:09:03Z; now landed alongside this record as WAVE2-TENANT-AUDIT-SBOM-APPROVAL-002.json)",
+  "preflight": {
+    "dockerfile_sha256_match": "PASS (9c72aeade610f9bcb050c91a47642a42d52f03c853ca14d1c45e07a9b568877e)",
+    "working_tree_patch_sha256_match": "PASS (7355aa0412297388d78261e0a7baa77c0cb5dd29431da256b6872c841acf2d99)",
+    "head_sha_match": "PASS (95264461d2d25b79baa0ded0ecbf6bf6b3343f10)",
+    "hostname_match": "PASS (dddmbp.local)",
+    "four_scoped_writers_exited": "FAIL_DEVIATION: containers mcp-conport, mcp-conport-dnh-crm-8d6d, dopemux-dopemux-mvp-dcd6-conport, conport-dnh-crm-tgmirror0117 do not exist in any state (not running, not exited) -- contradicts WAVE2-WRITE-FREEZE-RECEIPT.json which asserted container_removal:false. Assessed as benign for this scan (absent containers cannot write), but rollback_commands in that receipt are no longer executable as written.",
+    "candidate_images_a_b_present": "FAIL: neither exists on host; rebuilt as image C below"
+  },
+  "rebuild": {
+    "reason": "Original candidate images A/B no longer exist locally; Dockerfile and worktree diff are byte-identical to the approved candidate binding, so image was rebuilt fresh for scanning.",
+    "command_class": "docker_build_no_cache",
+    "dockerfile": "docker/mcp-servers-source/conport/Dockerfile",
+    "build_context": ".",
+    "local_tag": "conport-w2-apt-proof-c:20260722T110706Z",
+    "image_manifest_list_digest": "sha256:a2d7b4d9754fb59eb91365a2f9bfdad7516ca1506fdcaa00acf7566ef9da231e",
+    "build_log_sha256_only": "see independent-sbom-c/wave2-build-c.log.sha256 -- raw log retained locally only, following the existing WAVE2 convention of representing sanitized logs by SHA-256 in-repo"
+  },
+  "syft_acquisition": {
+    "requested_version": "v1.49.0",
+    "source": "https://github.com/anchore/syft/releases/download/v1.49.0/",
+    "assets_fetched": [
+      "syft_1.49.0_darwin_arm64.tar.gz",
+      "syft_1.49.0_checksums.txt",
+      "syft_1.49.0_checksums.txt.sig",
+      "syft_1.49.0_checksums.txt.pem"
+    ],
+    "checksum_verification": "PASS (sha256 4d137302fb3e049cb1b124b1cbd840a77280dc9f50a45a5a4389250a2228b3cb matched syft_1.49.0_checksums.txt entry)",
+    "signature_verification": "NOT_RUN: cosign is not installed locally, and installing it was judged out of scope for the approved acquisition window (\"OFFICIAL_GITHUB_RELEASE_ONLY_FOR_SYFT_ASSET_AND_VERIFICATION_ARTIFACTS\", i.e. syft's own release/verification assets only, not additional tooling). Only the sha256 checksum listed in the official checksums.txt was verified; the Sigstore keyless signature (.sig/.pem) over that checksums.txt was NOT cryptographically verified.",
+    "extracted_binary_sha256": "edcfa80da9767f12a670721bc542b8a0d25c5d61e90a5ce06128cf4d68679ac5",
+    "version_confirmed": "syft 1.49.0, GitCommit 29fd7d0dec81cf03e0a1194a1985c7c893bb2396, darwin/arm64"
+  },
+  "scan": {
+    "target": "docker:conport-w2-apt-proof-c:20260722T110706Z",
+    "scheme": "local docker daemon only, no registry pull, no scan-phase network egress",
+    "outputs": [
+      { "file": "independent-sbom-c/conport-w2-c.cyclonedx.json", "sha256": "2c60f10f9132723e83a6f1854aac549bbd9664e95ba0337c1f58eccdfd3e8dcc", "component_count": 7836 },
+      { "file": "independent-sbom-c/conport-w2-c.spdx.json", "sha256": "5ffb5670122f26fb8e1c7af0f11d0ee503cdc01543c503c0f40b209df7795724", "package_count": 1453 }
+    ],
+    "note": "CycloneDX component_count includes all catalogers (os packages, python site-packages, binary/file-level entries); SPDX package_count reflects top-level 'packages' array only. Discrepancy is expected format behavior, not a scan error."
+  },
+  "repository_mutation": "AUTHORIZED_OVERRIDE. Tenant authority explicitly instructed committing and pushing this record, the SBOM outputs, the landed APPROVAL-002 amendment, and the underlying Dockerfile candidate diff despite parent_wave2_readiness remaining BLOCKED_UNTIL_BOTH_CHILD_PACKETS_TERMINAL and candidate_commit_or_push being recorded FORBIDDEN in APPROVAL-002. This is a deliberate, explicit override of that gate, not an oversight; the independent-audit packet remains outstanding after this commit.",
+  "wave2_freeze": "Container-level freeze status unchanged by this execution (still recorded ACTIVE in WAVE2-VALIDATION.json), but the commit/push gate itself was overridden per tenant instruction above.",
+  "independent_audit_status": "STILL NOT_RUN. This record covers SBOM generation only, not the separate independent embedded-audit packet (TP-CONPORT-W2-INDEPENDENT-AUDIT-20260721), which remains unexecuted and is now committed to main history in an unaudited state pending that follow-up.",
+  "known_gaps": [
+    "Signature verification of Syft release assets not performed (cosign unavailable, install judged out of approved scope).",
+    "Image C is not the image referenced in the original tenant approval's candidate_binding.changed_paths record (A/B); it is a same-input rebuild, package-manifest-equivalent per prior WAVE2-VALIDATION.json apt-pin reproducibility PASS, but OCI digest differs.",
+    "Four-scoped-writer freeze integrity could not be re-verified in its originally documented form (exited-but-present); containers are absent entirely, likely from unrelated same-day MCP fleet work on this session's branch.",
+    "Independent embedded audit (TP-CONPORT-W2-INDEPENDENT-AUDIT-20260721) is still outstanding at the time this candidate was committed and pushed -- flag for supervisor follow-up."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "run_id": "20260722T042611Z",
+  "local_tag": "conport-w2-apt-proof-a:20260722T042611Z",
+  "image_id": "sha256:98d378a8718002346ac6b6fd0b3943cd93dd738ae65fcbe5f6cec5f2b0d52b11",
+  "repo_digest": "conport-w2-apt-proof-a@sha256:98d378a8718002346ac6b6fd0b3943cd93dd738ae65fcbe5f6cec5f2b0d52b11",
+  "created": "2026-07-22T04:27:07.182641303Z",
+  "source_input_digest": "58d3bccdc1338037ab74d528dd46bffdf7ecfca87c60216dd73b07f3e73c59c4",
+  "build_log_sha256": "0923dc4ac2f60bdfe064b0be079f2bce7daf3c26faa1fc6f7cb358ec97f61f2a",
+  "image_configuration_digest": "sha256:98d378a8718002346ac6b6fd0b3943cd93dd738ae65fcbe5f6cec5f2b0d52b11",
+  "command_class": "docker_build_no_cache",
+  "result": "PASS"
+}

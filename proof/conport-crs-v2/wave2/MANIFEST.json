@@ -1,0 +1,187 @@
+{
+  "packet_id": "TP-CONPORT-W2-APT-PAIRED-MANIFEST-REPAIR-02",
+  "artifact_count": 36,
+  "self_excluded": true,
+  "artifacts": [
+    {
+      "path": "WAVE2-APT-BUILD-A.json",
+      "bytes": 698,
+      "sha256": "facaf271d6446692af9598b57268d84afd8d4f1edb038e11a3b4a2f2cf3aa06c"
+    },
+    {
+      "path": "WAVE2-APT-BUILD-B.json",
+      "bytes": 698,
+      "sha256": "e9dc33055314ac889e64a7fd77d5026b5ab8d4a6ec6b27bbadb12f4c139f219b"
+    },
+    {
+      "path": "WAVE2-APT-IMAGE-DIGEST-COMPARISON.json",
+      "bytes": 582,
+      "sha256": "8d509adf393d54b66218221c211031b4e049a6dfdbcd16597bb455a7236690c6"
+    },
+    {
+      "path": "WAVE2-APT-INSTALLED-PACKAGES-A.json",
+      "bytes": 31567,
+      "sha256": "e3254cc6f3540f8755ec4e971f71fd4284e4f8c0949596967ee3104ff9b05615"
+    },
+    {
+      "path": "WAVE2-APT-INSTALLED-PACKAGES-B.json",
+      "bytes": 31567,
+      "sha256": "e3254cc6f3540f8755ec4e971f71fd4284e4f8c0949596967ee3104ff9b05615"
+    },
+    {
+      "path": "WAVE2-APT-INSTALLED-PACKAGES.json",
+      "bytes": 33338,
+      "sha256": "0f521ab8a6bef842e8a5ca7941fbdfea34a134ce4387e9352e5f7fb971e6bbd1"
+    },
+    {
+      "path": "WAVE2-APT-MANUAL-PACKAGES-A.json",
+      "bytes": 588,
+      "sha256": "368117eaae0b5f6b7c779df6d9f7ad56ba8dec0fb78d30a90b58fa020f8f108b"
+    },
+    {
+      "path": "WAVE2-APT-MANUAL-PACKAGES-B.json",
+      "bytes": 588,
+      "sha256": "368117eaae0b5f6b7c779df6d9f7ad56ba8dec0fb78d30a90b58fa020f8f108b"
+    },
+    {
+      "path": "WAVE2-APT-PAIR-INPUTS-A.json",
+      "bytes": 48512,
+      "sha256": "976f2ec57bf5a77227bf3d16673b153d6966a4ad761544fcc9da359e23cf8c48"
+    },
+    {
+      "path": "WAVE2-APT-PAIR-INPUTS-B.json",
+      "bytes": 48512,
+      "sha256": "590c1fb7b5081c8c0fd91aa9b27717a8699eccd328e2ea639409a3561d08ff4d"
+    },
+    {
+      "path": "WAVE2-APT-PAIR-NETWORK-VALIDATION.json",
+      "bytes": 667,
+      "sha256": "4797f9054e5fd6946c2afda672aafa5ea932026d840bbc39356493eec8059653"
+    },
+    {
+      "path": "WAVE2-APT-PAIRED-MANIFEST-COMPARISON.json",
+      "bytes": 960,
+      "sha256": "03fb0ac0c791b551e0187010778fa5be12f0e8be9657fffe03addfa05a120fc6"
+    },
+    {
+      "path": "WAVE2-APT-REPRODUCIBILITY-COMPARISON.json",
+      "bytes": 683,
+      "sha256": "5bba1ccbd9c142d58793ef5dfb32b478de9c803b72dce25eee8a90d2a0b999b3"
+    },
+    {
+      "path": "WAVE2-APT-SNAPSHOT-PIN.json",
+      "bytes": 667,
+      "sha256": "d960d45c61f38c412ffd5424b1723e3724e6979a31e63b0515bf0ea1894c5415"
+    },
+    {
+      "path": "WAVE2-COMMAND-LOG.md",
+      "bytes": 915,
+      "sha256": "5c431c902971eab6800dfbeefae4a147773e1b1956f2ee5dd1d96c4c002d7f39"
+    },
+    {
+      "path": "WAVE2-DISPOSITION.json",
+      "bytes": 358,
+      "sha256": "db5cb3c3658e02624cb5e95742f57846878c224969e2f80b94a934d5be4a5c21"
+    },
+    {
+      "path": "WAVE2-HOST-PROCESS-INVENTORY.json",
+      "bytes": 187,
+      "sha256": "d8006c026ffa17aaa74aff845684345464f103ff8335b010557e32e7acd9a583"
+    },
+    {
+      "path": "WAVE2-HOST-PROCESS-POST-FREEZE.json",
+      "bytes": 187,
+      "sha256": "69f51b465ac246f96775796cf7da943d66058eae17ac55109e85d79ca3e984ce"
+    },
+    {
+      "path": "WAVE2-INDEPENDENT-AUDIT-STATUS.json",
+      "bytes": 513,
+      "sha256": "50c4afe3fda1f149735fd39e10f45d7ab7038679169f1ade98dbf8b6937f1e96"
+    },
+    {
+      "path": "WAVE2-PIN-REGISTER.json",
+      "bytes": 1016,
+      "sha256": "e675081b684b2165e120871083c1076bd9dd37d5cc9ff0a44b458d50a1678b0f"
+    },
+    {
+      "path": "WAVE2-PRE-FREEZE-INVENTORY.json",
+      "bytes": 12927,
+      "sha256": "26732ad4431d8e3e7c064129244cc420a1ff0543aeb06eab2880a53c638b6316"
+    },
+    {
+      "path": "WAVE2-REDACTION-PIPELINE-VALIDATION.json",
+      "bytes": 591,
+      "sha256": "0ee4c3ca9e044c20ec189b8c4dfbc5841ea7247aa4817209ca50e79e62e48fa8"
+    },
+    {
+      "path": "WAVE2-REDACTION-REPORT.json",
+      "bytes": 633,
+      "sha256": "ab007da0a54a06b56966a065063826e22905e99164ecd8af47973b2b0acd1787"
+    },
+    {
+      "path": "WAVE2-RUNTIME-INVENTORY.json",
+      "bytes": 11308,
+      "sha256": "15cfdab14b50285eefbc9eb597e77b46a6f69b611cbeb9fde64595577ee317de"
+    },
+    {
+      "path": "WAVE2-SBOM.json",
+      "bytes": 660,
+      "sha256": "e2cc2226ab8bb0d656b644314dbe6b4798921d550ff807c63b9b4404be0f32bf"
+    },
+    {
+      "path": "WAVE2-SECRET-EXPOSURE-INCIDENT.json",
+      "bytes": 470,
+      "sha256": "8ed051de18ca9537f39d47ba02eff1772f8befaba0f16bea7e3fe0756cedcf3a"
+    },
+    {
+      "path": "WAVE2-TENANT-APPROVAL-REQUEST.json",
+      "bytes": 1594,
+      "sha256": "08407bbc3554d0af34d4e717e8eba4a612059bab49e157281ebbca7fe03609b8"
+    },
+    {
+      "path": "WAVE2-TENANT-ROUTE-DECISION.json",
+      "bytes": 1226,
+      "sha256": "a164462add178a8c0780052d02b2c53a41f610d8f7ce37b05dd64fea355fa5f5"
+    },
+    {
+      "path": "WAVE2-VALIDATION.json",
+      "bytes": 959,
+      "sha256": "469aa6e32f095291ca34317917111f7113795b14998c2014d27bcaffab54527c"
+    },
+    {
+      "path": "WAVE2-WRITE-FREEZE-PLAN.md",
+      "bytes": 2218,
+      "sha256": "fdb7a9370c6bccc30c821075f84f7a07a97afda99b59608f483cab640013e683"
+    },
+    {
+      "path": "WAVE2-WRITE-FREEZE-RECEIPT.json",
+      "bytes": 709,
+      "sha256": "21306784015be5a75b70b8ef13d10fc7fe3d0851205cd013d51a44799da25e74"
+    },
+    {
+      "path": "redact_docker_inspect.js",
+      "bytes": 2467,
+      "sha256": "fdfeb265b9e35b9b55a9087a185205b1ca03f1ea25972e488e720bf3e43ea247"
+    },
+    {
+      "path": "sbom/INVENTORY.json",
+      "bytes": 661,
+      "sha256": "f8cf8fc303ab056c6dbcc172dd6968c690b5fa0f60912c41d0c432c922c8357c"
+    },
+    {
+      "path": "sbom/SHA256SUMS",
+      "bytes": 183,
+      "sha256": "876b549ec50a1492caee6dbf58f76f8b0e9631637fe0da5c7986bf5a7227b9eb"
+    },
+    {
+      "path": "sbom/wave2.cyclonedx.json",
+      "bytes": 101878,
+      "sha256": "dcc8bd287b8ff19ece436ada0292d3ecea9f82c330a7280f6484595947447b3b"
+    },
+    {
+      "path": "sbom/wave2.spdx.json",
+      "bytes": 231244,
+      "sha256": "60f7695b01060f9fb3876afdd9037253d72269ac64273a427802679e3079d37c"
+    }
+  ]
+}

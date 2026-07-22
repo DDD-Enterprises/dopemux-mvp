@@ -1,0 +1,13 @@
+{
+  "status": "CANDIDATE_ZERO_EGRESS_GENERATED_TENANT_ACCEPTANCE_UNKNOWN",
+  "reason": "No standalone syft, repo SBOM generator, or Docker sbom subcommand is available locally. A local final-image inventory generated CycloneDX and SPDX documents from network-isolated dpkg and Python metadata captures. Anchore Syft remains a candidate pending tenant approval, mirrored distribution, and checksum verification.",
+  "artifacts": [
+    "sbom/wave2.cyclonedx.json",
+    "sbom/wave2.spdx.json",
+    "sbom/SHA256SUMS",
+    "sbom/INVENTORY.json"
+  ],
+  "component_count": 355,
+  "blocks_narrow_apt_manifest_repair": false,
+  "blocks_parent_wave2_completion": true
+}
