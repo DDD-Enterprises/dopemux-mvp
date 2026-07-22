@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "overall": "PASS_WITH_REMAINING_PR_GATES",
+  "checks": [
+    {"id": "substantive-review", "status": "PASS", "passed": 13, "total": 13},
+    {"id": "custody-re-review", "status": "PASS", "verdict": "ACCEPTED"},
+    {"id": "reviewed-commit-binding", "status": "PASS"},
+    {"id": "reviewed-package-binding", "status": "PASS"},
+    {"id": "reviewed-adr-digests", "status": "PASS", "count": 22},
+    {"id": "reviewer-independence-attestation", "status": "PASS", "personal_identity": "UNKNOWN"},
+    {"id": "embedded-audit", "status": "NOT_RUN"},
+    {"id": "pr-scoped-audit", "status": "NOT_RUN"},
+    {"id": "pr-head-pin", "status": "NOT_RUN"},
+    {"id": "runtime-validation", "status": "NOT_RUN", "reason": "forbidden and unnecessary for documentation effectuation"}
+  ],
+  "counts": {"PASS": 6, "FAIL": 0, "NOT_RUN": 4},
+  "implementation_authorized": false,
+  "merge_authorized": false,
+  "wave2_authorized": false
+}

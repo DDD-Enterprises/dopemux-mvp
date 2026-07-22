@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "record_id": "CONPORT-W1-ADR-INDEPENDENT-REVIEW-ACCEPTANCE",
+  "packet_id": "CONPORT-W1-ADR-INDEPENDENT-REVIEW",
+  "date": "2026-07-21",
+  "verdict": "ACCEPTED",
+  "reviewed_commit": "a5b9006aa3f5a95f81e4bab324931ade71ee8b31",
+  "reviewed_parent": "5a9f8f7b5d4a03be323723a92baf3c4e162d5b65",
+  "reviewed_tree": "73fe54ea841369b3c3126562d8bd1ba22384200d",
+  "reviewed_package": {
+    "name": "CONPORT-W1-ADR-INDEPENDENT-REVIEW-INPUT.zip",
+    "bytes": 503903,
+    "sha256": "8289a552cd3d02c6465a189d51052b2c93a5710f279aa3212208118aee9c6d37"
+  },
+  "substantive_review": {
+    "prior_overall_verdict": "CHANGES_REQUIRED",
+    "architecture_disposition": "PASS",
+    "mandatory_questions_passed": 13,
+    "mandatory_questions_total": 13,
+    "sole_prior_blocker": "BLOCKING_CUSTODY",
+    "content_reopened_during_custody_review": false
+  },
+  "custody_re_review": {
+    "verdict": "ACCEPTED",
+    "review_type": "CUSTODY_ONLY_RE_REVIEW",
+    "source_json": "review-evidence/CONPORT-W1-CUSTODY-REREVIEW.json",
+    "source_json_sha256": "5c2ff9d2d370a625391f64011f0e2a35ebde7919d5893dfc9e9e9377809c4bdb",
+    "source_zip": "review-evidence/CONPORT-W1-CUSTODY-REREVIEW.zip",
+    "source_zip_sha256": "5f43977c57a453759066ea7efe449dc4fcffe7f7eda11d5a7ffe05423a35c388"
+  },
+  "adr_digest_set": {
+    "path": "WAVE1-REVIEWED-ADR-DIGESTS.json",
+    "sha256": "b98e517a50b2032b4732bb0707415fab0f8bbab95c48c9b96fe0ea096146f7fc",
+    "algorithm": "sha256",
+    "count": 22,
+    "all_bound_to_reviewed_commit": true
+  },
+  "reviewer_independence": {
+    "attested": true,
+    "reviewer_class": "independent_external_architecture_reviewer",
+    "wave0_author_class": "codex_documentation_implementer",
+    "same_agent_or_session": false,
+    "personal_identity": "UNKNOWN_NOT_ENCODED_IN_SUPPLIED_REVIEW_ARTIFACTS",
+    "basis": "Operator-supplied substantive review and custody re-review were produced outside the Wave 0 implementation session and independently verified the packaged bytes."
+  },
+  "effectuation_authorized": true,
+  "effectuation_scope": "Wave 1 deterministic ADR status and amendment-label patch only",
+  "implementation_authorized": false,
+  "runtime_mutated": false,
+  "merge_authorized": false,
+  "wave2_authorized": false,
+  "required_follow_up": [
+    "Effectuate accepted ADR statuses and labels",
+    "Open docs/proof-only PR",
+    "Run embedded audit and PR-scoped exact-head gates",
+    "Obtain explicit merge authorization before merge"
+  ]
+}
