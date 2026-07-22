@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install uv
 
 # Copy PAL source (same as HTTP variant, without unused wrapper)
-COPY docker/mcp-servers/pal/pal-mcp-server/ .
+COPY docker/mcp-servers-source/pal/pal-mcp-server/ .
 
 # Install dependencies using uv
 RUN rm -rf .venv && uv venv && \

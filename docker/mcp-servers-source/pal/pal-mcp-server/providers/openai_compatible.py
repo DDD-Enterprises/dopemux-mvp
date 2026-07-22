@@ -407,14 +407,37 @@ class OpenAICompatibleProvider(ModelProvider):
             role = message.get("role", "")
             content = message.get("content", "")
 
-            if role == "system":
-                # For o3-pro, system messages should be handled carefully to avoid policy violations
-                # Instead of prefixing with "System:", we'll include the system content naturally
-                input_messages.append({"role": "user", "content": [{"type": "input_text", "text": content}]})
-            elif role == "user":
-                input_messages.append({"role": "user", "content": [{"type": "input_text", "text": content}]})
-            elif role == "assistant":
-                input_messages.append({"role": "assistant", "content": [{"type": "output_text", "text": content}]})
+            if isinstance(content, str):
+                block_type = "output_text" if role == "assistant" else "input_text"
+                response_content = [{"type": block_type, "text": content}]
+            elif isinstance(content, list):
+                response_content = []
+                for item in content:
+                    if not isinstance(item, dict):
+                        raise ValueError("Responses API content blocks must be objects")
+
+                    item_type = item.get("type")
+                    if item_type in {"text", "input_text", "output_text"}:
+                        text = item.get("text")
+                        if not isinstance(text, str):
+                            raise ValueError("Responses API text blocks require string text")
+                        block_type = "output_text" if role == "assistant" else "input_text"
+                        response_content.append({"type": block_type, "text": text})
+                    elif item_type in {"image_url", "input_image"}:
+                        image_url = item.get("image_url")
+                        if isinstance(image_url, dict):
+                            image_url = image_url.get("url")
+                        if not isinstance(image_url, str):
+                            raise ValueError("Responses API image blocks require an image URL")
+                        response_content.append({"type": "input_image", "image_url": image_url})
+                    else:
+                        raise ValueError(f"Unsupported Responses API content block type: {item_type!r}")
+            else:
+                raise ValueError("Responses API message content must be text or a content-block list")
+
+            if role not in {"system", "developer", "user", "assistant"}:
+                raise ValueError(f"Unsupported Responses API message role: {role!r}")
+            input_messages.append({"role": role, "content": response_content})
 
         # Prepare completion parameters for responses endpoint
         # Based on OpenAI documentation, use nested reasoning object for responses endpoint
@@ -426,12 +449,16 @@ class OpenAICompatibleProvider(ModelProvider):
             "model": model_name,
             "input": input_messages,
             "reasoning": {"effort": effort},
-            "store": True,
         }
 
-        # Add max tokens if specified (using max_completion_tokens for responses endpoint)
+        if self.get_provider_type() != ProviderType.OPENROUTER:
+            completion_params["store"] = True
+        else:
+            logging.debug(f"Omitting 'store' parameter for OpenRouter provider (model: {model_name})")
+
+        # Responses API uses max_output_tokens, unlike Chat Completions.
         if max_output_tokens:
-            completion_params["max_completion_tokens"] = max_output_tokens
+            completion_params["max_output_tokens"] = max_output_tokens
 
         # For responses endpoint, we only add parameters that are explicitly supported
         # Remove unsupported chat completion parameters that may cause API errors
