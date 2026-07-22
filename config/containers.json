@@ -1,0 +1,183 @@
+{
+  "schema_version": "1.0.0",
+  "registry": "ghcr.io/ddd-enterprises/dopemux-mvp",
+  "platform": "linux/amd64",
+  "targets": [
+    {
+      "service": "leantime",
+      "image": "leantime",
+      "classification": "canonical-support",
+      "context": "docker/leantime",
+      "dockerfile": "docker/leantime/Dockerfile",
+      "compose_services": ["leantime"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "conport",
+      "image": "conport",
+      "classification": "canonical",
+      "context": ".",
+      "dockerfile": "docker/mcp-servers-source/conport/Dockerfile",
+      "compose_services": ["conport"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "pal",
+      "image": "pal",
+      "classification": "canonical-support",
+      "context": "docker/mcp-servers-source/pal",
+      "dockerfile": "docker/mcp-servers-source/pal/Dockerfile",
+      "compose_services": ["pal"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "pal-stdio",
+      "image": "pal-stdio",
+      "classification": "canonical-support",
+      "context": ".",
+      "dockerfile": "docker/mcp-servers-source/pal-stdio/Dockerfile",
+      "compose_services": ["pal-stdio"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "litellm",
+      "image": "litellm",
+      "classification": "canonical-support",
+      "context": ".",
+      "dockerfile": "docker/mcp-servers-source/litellm/Dockerfile",
+      "compose_services": ["litellm"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "dope-context",
+      "image": "dope-context",
+      "classification": "canonical",
+      "context": ".",
+      "dockerfile": "services/dope-context/Dockerfile",
+      "compose_services": ["dope-context"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "dopecon-bridge",
+      "image": "dopecon-bridge",
+      "classification": "canonical",
+      "context": ".",
+      "dockerfile": "services/dopecon-bridge/Dockerfile",
+      "compose_services": ["dopecon-bridge"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "task-orchestrator",
+      "image": "task-orchestrator",
+      "classification": "canonical",
+      "context": ".",
+      "dockerfile": "services/task-orchestrator/Dockerfile",
+      "compose_services": ["task-orchestrator"],
+      "publish": true,
+      "smoke_test": false,
+      "smoke_port": "8000",
+      "smoke_path": "/health"
+    },
+    {
+      "service": "adhd-engine",
+      "image": "adhd-engine",
+      "classification": "canonical-support",
+      "context": ".",
+      "dockerfile": "services/adhd_engine/Dockerfile",
+      "compose_services": ["adhd-engine"],
+      "publish": true,
+      "smoke_test": false,
+      "smoke_port": "8095",
+      "smoke_path": "/health"
+    },
+    {
+      "service": "dope-memory",
+      "image": "dope-memory",
+      "classification": "canonical",
+      "context": ".",
+      "dockerfile": "services/working-memory-assistant/Dockerfile.dope-memory",
+      "compose_services": ["dope-memory"],
+      "publish": true,
+      "smoke_test": true,
+      "smoke_port": "3020",
+      "smoke_path": "/health"
+    },
+    {
+      "service": "serena",
+      "image": "serena",
+      "classification": "canonical-support",
+      "context": ".",
+      "dockerfile": "docker/mcp-servers/serena/Dockerfile",
+      "compose_services": ["serena"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "gptr-mcp",
+      "image": "gptr-mcp",
+      "classification": "canonical-support",
+      "context": ".",
+      "dockerfile": "docker/mcp-servers/gptr-mcp/Dockerfile",
+      "compose_services": ["gptr-mcp"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "desktop-commander",
+      "image": "desktop-commander",
+      "classification": "canonical-support",
+      "context": ".",
+      "dockerfile": "docker/mcp-servers/desktop-commander/Dockerfile",
+      "compose_services": ["desktop-commander"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "leantime-bridge",
+      "image": "leantime-bridge",
+      "classification": "canonical-support",
+      "context": ".",
+      "dockerfile": "docker/mcp-servers/leantime-bridge/Dockerfile",
+      "compose_services": ["leantime-bridge"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "webhook-receiver",
+      "image": "webhook-receiver",
+      "classification": "canonical-support",
+      "context": ".",
+      "dockerfile": "services/webhook_receiver/Dockerfile",
+      "compose_services": ["webhook-receiver", "webhook-poller"],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "dopemux-backend",
+      "image": "dopemux-backend",
+      "classification": "legacy-compatibility",
+      "context": ".",
+      "dockerfile": "Dockerfile",
+      "compose_services": [],
+      "publish": true,
+      "smoke_test": false
+    },
+    {
+      "service": "claude-brain",
+      "image": "claude-brain",
+      "classification": "legacy-unwired",
+      "context": ".",
+      "dockerfile": "services/claude_brain/Dockerfile",
+      "compose_services": [],
+      "publish": true,
+      "smoke_test": false
+    }
+  ]
+}
