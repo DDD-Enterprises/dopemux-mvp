@@ -68,14 +68,11 @@ class OpenAICompatibleProvider(ModelProvider):
     ) -> None:
         """Respect provider-specific allowlists before default restriction checks."""
 
-        super()._ensure_model_allowed(capabilities, canonical_name, requested_name)
-
         if self.allowed_models is not None:
             requested = requested_name.lower()
             canonical = canonical_name.lower()
 
             if requested not in self.allowed_models and canonical not in self.allowed_models:
-                allowed = False
                 for allowed_entry in list(self.allowed_models):
                     normalized_resolved = self._allowed_alias_cache.get(allowed_entry)
                     if normalized_resolved is None:
@@ -91,17 +88,29 @@ class OpenAICompatibleProvider(ModelProvider):
                         self._allowed_alias_cache[allowed_entry] = normalized_resolved
 
                     if normalized_resolved == canonical:
-                        # Canonical match discovered via alias resolution – mark as allowed and
-                        # memoise the canonical entry for future lookups.
-                        allowed = True
                         self._allowed_alias_cache[canonical] = canonical
                         self.allowed_models.add(canonical)
+                        try:
+                            from utils.model_restrictions import get_restriction_service
+
+                            restriction_service = get_restriction_service()
+                            service_allowed = restriction_service.get_allowed_models(self.get_provider_type())
+                            if service_allowed is not None:
+                                service_allowed.add(canonical)
+                        except Exception:  # pragma: no cover - local enforcement remains available
+                            pass
                         break
 
-                if not allowed:
-                    raise ValueError(
-                        f"Model '{requested_name}' is not allowed by restriction policy. Allowed models: {sorted(self.allowed_models)}"
-                    )
+        # Apply global restriction policy after alias normalization.
+        super()._ensure_model_allowed(capabilities, canonical_name, requested_name)
+
+        if self.allowed_models is not None:
+            requested = requested_name.lower()
+            canonical = canonical_name.lower()
+            if requested not in self.allowed_models and canonical not in self.allowed_models:
+                raise ValueError(
+                    f"Model '{requested_name}' is not allowed by restriction policy. Allowed models: {sorted(self.allowed_models)}"
+                )
 
     def _parse_allowed_models(self) -> Optional[set[str]]:
         """Parse allowed models from environment variable.
