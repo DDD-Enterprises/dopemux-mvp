@@ -2,23 +2,46 @@
   "packet_id": "PR-MERGE-STEWARD-1088",
   "pr_number": 1088,
   "repo": "DDD-Enterprises/dopemux-mvp",
-  "head_sha": "d918f2bc1147fd7de17c844a5337686558e848c6",
-  "generated_at": "2026-07-22T01:30:30Z",
+  "head_sha": "d52b594bcd29a7c659455cffe321ab08c22e37cb",
+  "generated_at": "2026-07-22T02:30:58Z",
   "mutation_performed": false,
   "github_mutation_route_added": false,
   "embedded_audit": {
     "required": true,
-    "status": "PASS",
+    "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
     "auditor_model": "sonnet",
-    "invocation": "git diff 5a9f8f7b5d4a03be323723a92baf3c4e162d5b65..d918f2bc1147fd7de17c844a5337686558e848c6 (path/content review); git show <sha>:task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json (allowlist diff); python -m pytest -q tests/arch/test_pal_model_catalog_contract.py; python -m pytest -q docker/mcp-servers-source/pal/pal-mcp-server/tests/test_xai_provider.py docker/mcp-servers-source/pal/pal-mcp-server/tests/test_openai_provider.py; git diff --check; grep -Ein secret-patterns over full diff",
+    "invocation": "git rev-parse HEAD + git fetch origin codex/pal-model-refresh (exact-head/origin match); git diff --name-status 5a9f8f7b5d4a03be323723a92baf3c4e162d5b65..d52b594bcd29a7c659455cffe321ab08c22e37cb (22-path scope, Python set-equality vs task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json commit.allowlist); jsonschema.validate() of the packet against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json; python -m pytest -q tests/arch/test_pal_model_catalog_contract.py; python -m pytest -q docker/mcp-servers-source/pal/pal-mcp-server/tests/test_xai_provider.py docker/mcp-servers-source/pal/pal-mcp-server/tests/test_openai_provider.py (plus the 6 other changed pal-mcp-server test files, 71 passed, informational); git diff --check 5a9f8f7b5..d52b594bcd; regex secret-pattern scan over the full diff and PROOF.json.sig; line-by-line review of providers/{xai,openai,openai_compatible}.py, conf/{xai,openai}_models.json, compose.yml, both .dockerignore files, pyproject.toml/requirements.txt; byte-diff of standalone PAL repo /tmp/pal-model-refresh @ eccf09a236c429eadbe0732d845ecd42eedefbbb against the embedded copy plus a standalone test run (42 passed)",
     "exit_code": 0,
     "report_path": "proof/pr_merge/embedded-audit/pr-1088/PROOF.json",
-    "findings": [],
+    "findings": [
+      {
+        "id": "F-1088-MED-1",
+        "severity": "MEDIUM",
+        "title": "pal-stdio build context not covered by new .dockerignore security patterns",
+        "status": "ACCEPTED_RISK",
+        "body": "compose.yml's pal-stdio service build context remains '.' (repo root). The newly-added docker/mcp-servers-source/pal/.dockerignore is only effective for the pal service (context=docker/mcp-servers-source/pal); pal-stdio is instead governed by the pre-existing root .dockerignore, which excludes .env/.env.*.local but lacks the new *.key/*.pem/*.p12/*.pfx/*.crt/*.csr/secrets//private/ patterns. Not a regression (root context predates this PR) and .env is still excluded either way. The contract test (test_pal_builds_use_canonical_non_symlink_source_paths) only asserts dockerignore coverage for the pal service, not pal-stdio, so this gap is untested. Recommend a follow-up TP to extend coverage or add a dedicated pal-stdio dockerignore."
+      },
+      {
+        "id": "F-1088-LOW-1",
+        "severity": "LOW",
+        "title": "Standalone PAL reference repo is materially ahead of the ported catalog, not byte-equivalent",
+        "status": "ACCEPTED_RISK",
+        "body": "Standalone /tmp/pal-model-refresh @ eccf09a236c429eadbe0732d845ecd42eedefbbb (exact match to the standalone head supplied for audit) confirms identical grok-4.5 and gpt-5.6-sol/terra/luna behavior and passing tests (42 passed vs Dopemux's 40, extra coverage for retired-alias and cost-control cases). Standalone's conf/openai_models.json carries 37 models vs Dopemux's 13 (gpt-5.1 through gpt-5.5, o1 family, gpt-4o family unported), plus a dynamic_model_selection_enabled() preference system and an OpenAI-client max_retries=0 cost-control setting absent from the Dopemux copy. Scope-bounded to this PR's declared 22-file allowlist, not a functional defect in what was ported; flagged for awareness of drift between the two trees."
+      },
+      {
+        "id": "F-1088-INFO-1",
+        "severity": "INFO",
+        "title": "_extract_usage total_tokens fallback returns 0 instead of input+output sum in one edge case",
+        "status": "ACCEPTED_RISK",
+        "body": "providers/openai_compatible.py's _extract_usage: if response.usage.total_tokens exists but is not an int (e.g. None), the code sets total_tokens=0 rather than falling back to input_tokens+output_tokens. Not exercised by any observed OpenAI/xAI/OpenRouter response shape in the current tests; informational only, no fix applied."
+      }
+    ],
     "fixes_applied": [],
     "remaining_risks": [
-      "Task packet step 'runtime-proof' (direct Grok 4.5 / GPT-5.6 bounded API probes) was not executed by this audit — verification here is static (diff review + unit/contract tests), not a live provider call. Treat that packet step as NOT_RUN pending an operator-run probe.",
-      "conf/xai_models.json's grok-4.5 entry omits max_output_tokens (present on all other catalog entries); non-blocking since providers/openai_compatible.py only sets the param when max_output_tokens is truthy, but worth confirming intentional vs. omitted."
+      "Task packet step 'runtime-proof' (direct Grok 4.5 / GPT-5.6 bounded live API probes) was not executed by this or the prior audit — verification remains static (diff review + unit/contract tests), never a live provider call. Treat that packet step as NOT_RUN pending an operator-run probe.",
+      "Grok 4.5 (500K context) and GPT-5.6 (1.05M context, 128K max_output_tokens) catalog figures are not independently confirmed against current xAI/OpenAI vendor documentation; no live lookup was performed under this audit's no-live-call constraint.",
+      "conf/xai_models.json's grok-4.5 entry intentionally omits max_output_tokens (no officially-documented limit to encode); providers/openai_compatible.py only sets the param when max_output_tokens is truthy, so the omission is safe and matches the packet's 'no invented limit' requirement."
     ],
     "skip_reason": null
   }
