@@ -1,4 +1,5 @@
 import json
+import tomllib
 from pathlib import Path
 
 import yaml
@@ -42,6 +43,9 @@ def test_current_openai_catalog_includes_gpt_5_6_family():
 
 def test_pal_openai_dependency_supports_responses_api():
     assert "openai>=1.66.0" in (SOURCE_PAL / "requirements.txt").read_text()
+    with (SOURCE_PAL / "pyproject.toml").open("rb") as project_file:
+        dependencies = tomllib.load(project_file)["project"]["dependencies"]
+    assert "openai>=1.66.0" in dependencies
 
 
 def test_pal_source_and_runtime_model_surfaces_match():
@@ -51,6 +55,7 @@ def test_pal_source_and_runtime_model_surfaces_match():
         "providers/openai.py",
         "providers/openai_compatible.py",
         "providers/xai.py",
+        "pyproject.toml",
         "requirements.txt",
         "tests/test_openai_provider.py",
         "tests/test_xai_provider.py",
@@ -79,6 +84,19 @@ def test_pal_builds_use_canonical_non_symlink_source_paths():
         "dockerfile": "Dockerfile",
     }
     assert not (ROOT / pal_build["context"]).is_symlink()
+
+    dockerignore = (
+        (ROOT / pal_build["context"] / ".dockerignore").read_text().splitlines()
+    )
+    for sensitive_pattern in (
+        ".env",
+        ".env.local",
+        ".venv/",
+        "logs/*.log*",
+        "*.key",
+        "*.pem",
+    ):
+        assert sensitive_pattern in dockerignore
 
     assert services["pal-stdio"]["build"] == {
         "context": ".",
