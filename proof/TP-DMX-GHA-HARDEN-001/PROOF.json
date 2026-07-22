@@ -5,8 +5,9 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "chore/dependabot-codeql-v4",
   "base_branch": "main",
-  "head_before": "acb6dcc1fe1f9a3164cf4e5fefe61981985f4f06",
-  "head_after": "e700cc0794ebb0de2e791573d26594882c94eb99",
+  "implementation_head_sha": "de8ea3c0272260f1bddb6414d047e5b67ce4a1f7",
+  "main_sha_at_refresh": "e795c99af7a295f79083308c97e1739846fecf62",
+  "branch_behind_main": 0,
   "mutation_performed": true,
   "github_mutation_performed": true,
   "secret_values_recorded": false,
@@ -30,33 +31,38 @@
   "purpose": "Audit all active root GitHub Actions workflows and repair evidence-backed reliability, security, cost, and truthfulness defects without weakening required CI or making external credentials mandatory for core gates.",
   "commands": [
     {
-      "cmd": "Workflow Lint run 29908297532: checksum-verified actionlint 1.7.12 over .github/workflows",
+      "cmd": "Workflow Lint run 29909845766: checksum-verified actionlint 1.7.12 over .github/workflows",
       "exit_code": 0,
       "result": "SUCCESS"
     },
     {
-      "cmd": "CodeQL run 29908297229 on workflow-code SHA 6b33e8fe67f60f76599f53941fe56121a9dd0bdf",
+      "cmd": "CodeQL run 29909845991 on implementation head de8ea3c0272260f1bddb6414d047e5b67ce4a1f7",
+      "exit_code": 0,
+      "result": "javascript-typescript, ruby, and python all SUCCESS"
+    },
+    {
+      "cmd": "Complete CI run 29909845483",
+      "exit_code": 0,
+      "result": "Code quality, unit tests, canonical DCP red-lane gate, proof validator, routing consistency, extractor smoke/full, auditor router, and CI Pipeline Summary all SUCCESS"
+    },
+    {
+      "cmd": "Security Review run 29909845507",
+      "exit_code": 0,
+      "result": "credential detection and truthful summary SUCCESS; Claude analysis SKIPPED by credential/trusted-PR gate"
+    },
+    {
+      "cmd": "Repo Identity 29909845976, clobber-guard 29909845927, preflight 29909845482, docs 29909845654",
       "exit_code": 0,
       "result": "SUCCESS"
     },
     {
-      "cmd": "Complete CI run 29908297656 required lanes",
-      "exit_code": 0,
-      "result": "code-quality, unit tests, extractor smoke, audit-validator, routing-consistency, extractor-full, and auditor-router all SUCCESS"
-    },
-    {
-      "cmd": "Security Review run 29908297428",
-      "exit_code": 0,
-      "result": "credential detection and truthful summary SUCCESS; Claude analysis SKIPPED by credential gate"
-    },
-    {
-      "cmd": "Repo Identity, clobber-guard, preflight, and docs current-head runs",
-      "exit_code": 0,
-      "result": "SUCCESS"
+      "cmd": "Docker Scout run 29909845544",
+      "exit_code": null,
+      "result": "IN_PROGRESS at proof refresh; credential detection, Docker Hub auth, DHI fallback, image builds, and observed CVE scans were functioning"
     }
   ],
   "validation": {
-    "status": "PASS",
+    "status": "PASS_WITH_RISKS",
     "details": [
       {
         "check": "workflow_census",
@@ -66,32 +72,42 @@
       {
         "check": "actionlint",
         "status": "PASS",
-        "detail": "Run 29908297532 completed successfully with checksum-verified actionlint 1.7.12."
+        "detail": "Run 29909845766 completed successfully with checksum-verified actionlint 1.7.12."
       },
       {
         "check": "codeql_v4",
         "status": "PASS",
-        "detail": "Run 29908297229 completed successfully using the pinned CodeQL v4.37.3 commit."
+        "detail": "Run 29909845991 completed successfully for JavaScript/TypeScript, Ruby, and Python using the pinned CodeQL v4.37.3 commit."
       },
       {
         "check": "required_ci_lanes",
         "status": "PASS",
-        "detail": "Run 29908297656 completed every required lane successfully before the final ci-complete simplification. The simplification preserves the same required commands and removes only duplicate advisory jobs."
+        "detail": "Run 29909845483 completed every required lane and the fail-closed CI Pipeline Summary successfully."
+      },
+      {
+        "check": "dcp_contract_regression",
+        "status": "PASS_AFTER_FIX",
+        "detail": "Run 29909285292 correctly failed when the canonical DCP gate step name was shortened. Commit de8ea3c restored the exact manifest-declared name; the DCP red-lane gate then passed in run 29909845483."
       },
       {
         "check": "docker_auth_regression",
         "status": "PASS",
-        "detail": "The observed Docker Scout run passed credential detection and Docker Hub authentication; missing-credential behavior is now an explicit clean skip."
+        "detail": "Docker Scout no longer attempts empty Docker Hub authentication; configured runs pass credential detection and authentication, while unconfigured repositories get an explicit clean skip."
       },
       {
         "check": "triage_mutation_safety",
         "status": "PASS",
-        "detail": "Both Gemini triage workflows use addLabels and remove only status/needs-triage after valid output; unrelated labels are preserved."
+        "detail": "Both Gemini triage workflows use additive labels and remove only status/needs-triage after valid output; unrelated labels are preserved."
       },
       {
         "check": "summary_truthfulness",
         "status": "PASS",
-        "detail": "Complete CI and dedicated security summaries now report actual job/dependency results and distinguish skipped external analysis from successful analysis."
+        "detail": "Complete CI and dedicated security summaries report actual job/dependency results and distinguish skipped external analysis from successful analysis."
+      },
+      {
+        "check": "branch_freshness",
+        "status": "PASS",
+        "detail": "Branch was merged from main without force-push and was zero commits behind main at implementation validation."
       },
       {
         "check": "merge_not_performed",
@@ -100,13 +116,30 @@
       }
     ]
   },
+  "review_item_classification": [
+    {
+      "item": "Docker Scout reports critical/high vulnerabilities in existing images, including the LiteLLM image.",
+      "classification": "OUT_OF_SCOPE_FOLLOWUP",
+      "reason": "Image dependency remediation changes application/container content and was not authorized inside this workflow-only packet. The scanner was not weakened or suppressed."
+    },
+    {
+      "item": "google-github-actions/run-gemini-cli remains referenced as @v0 under existing ratchet exclusions.",
+      "classification": "OPTIONAL_DEFERRED",
+      "reason": "No compatible immutable commit was proven during this bounded repair; guessing a SHA would be security theatre."
+    },
+    {
+      "item": "Independent embedded LLM audit unavailable.",
+      "classification": "NEEDS_SUPERVISOR",
+      "reason": "Deterministic lint and CI validate execution but do not replace independent semantic red-lane review."
+    }
+  ],
   "remaining_risks": [
-    "The branch was four commits behind main at the last comparison and must be updated before merge review.",
     "Workflow files are a red-lane security/release authority surface; independent semantic review is still required.",
     "Branch-protection enforcement of the named checks remains UNKNOWN.",
     "Established Gemini workflows remain on google-github-actions/run-gemini-cli@v0 under existing ratchet exclusions because no compatible immutable SHA was proven in this bounded run.",
     "The Docker Scout matrix remains expensive and should be redesigned around trusted artifact reuse in a separate packet.",
-    "The proof-only commit and any branch update require fresh exact-head CI before merge readiness can be claimed."
+    "Docker Scout surfaced pre-existing critical/high image vulnerabilities that require separate image-remediation packets.",
+    "This proof-only refresh creates a newer PR head; exact-head merge readiness still requires PR Steward and current checks."
   ],
   "embedded_audit": {
     "required": true,

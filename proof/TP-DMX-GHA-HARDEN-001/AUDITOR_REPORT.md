@@ -4,9 +4,9 @@
 
 `PASS_WITH_RISKS_FOR_DRAFT_REVIEW`
 
-The active root GitHub Actions set was fully inventoried and the evidence-backed defects were repaired on PR #1100. Deterministic workflow lint and live current-head CI passed at workflow-code SHA `e700cc0794ebb0de2e791573d26594882c94eb99` before this proof-only commit.
+The active root GitHub Actions set was fully inventoried and the evidence-backed defects were repaired on PR #1100. Deterministic workflow lint and live CI passed at implementation SHA `de8ea3c0272260f1bddb6414d047e5b67ce4a1f7`.
 
-This is **not** a merge-readiness verdict. Workflow files are a security/release authority surface, the branch was four commits behind `main` at the last comparison, and no independent embedded LLM auditor was available. Keep the PR draft until the proof-only head reruns are current and PR Steward classifies the final state.
+This is **not** a merge-readiness verdict. Workflow files are a security/release authority surface and no independent embedded LLM auditor was available. Keep the PR draft until PR Steward classifies the final proof-only head, review threads, bots, and checks.
 
 ## Workflow census
 
@@ -63,14 +63,23 @@ A new eighteenth workflow, `workflow-lint.yml`, now validates the complete activ
 - Preflight avoids `apt-get update` when `jq` is already present.
 - Dependabot update concurrency was reduced and container updates were ungrouped because image tags are not reliably SemVer.
 
+## Regression caught by the repo's own contract gate
+
+While simplifying `ci-complete.yml`, the canonical DCP step name was shortened to `Run DCP red-lane gate`. The DCP contract manifest treats the exact name `🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)` as a machine-checked interface. Run `29909285292` failed correctly. Commit `de8ea3c` restored the exact name, and run `29909845483` passed the DCP gate and all required Complete CI lanes.
+
+This was not cosmetic pedantry. The failure proved that workflow labels are part of the repository's executable governance contract.
+
 ## Validation evidence
 
-- **Workflow Lint run 29908297532:** `actionlint` completed successfully; checksum verification, installation, and validation steps all passed.
-- **CodeQL run 29908297229:** completed successfully for the current workflow-code head.
-- **Complete CI run 29908297656:** all required lanes completed successfully before `ci-complete.yml` was simplified. The required gates were code quality, tests, extractor smoke, audit proof validation, routing consistency, extractor full, and auditor router.
-- **Security Review run 29908297428:** credential detection and truthful summary passed; the external Claude analysis was explicitly `skipped` because the credential gate did not authorize it.
-- **Repo Identity, clobber guard, preflight, and docs:** completed successfully for the workflow-code head.
-- **Docker Scout:** credential detection and Docker Hub authentication succeeded in the observed run; DHI fallback executed successfully. The long image matrix was still executing when the final workflow-code commit superseded the run.
+Implementation SHA: `de8ea3c0272260f1bddb6414d047e5b67ce4a1f7`
+
+- **Workflow Lint run 29909845766:** checksum verification, actionlint installation, and validation of all workflows succeeded.
+- **CodeQL run 29909845991:** JavaScript/TypeScript, Ruby, and Python analyses succeeded.
+- **Complete CI run 29909845483:** code quality, unit tests, dope-memory gate, canonical DCP red-lane gate, brand lint, import smoke, audit proof validator, routing consistency, extractor smoke/full, auditor router, and fail-closed CI Pipeline Summary succeeded.
+- **Security Review run 29909845507:** credential detection and truthful summary passed; the external Claude analysis was explicitly skipped by the credential/trusted-PR gate.
+- **Repo Identity run 29909845976, clobber guard 29909845927, preflight 29909845482, docs 29909845654:** succeeded.
+- **Docker Scout run 29909845544:** still executing at proof refresh, but credential detection, Docker Hub authentication, public-base fallback, image builds, and observed CVE scans were functioning.
+- **Branch freshness:** branch was merged from current `main` without force-push and was zero commits behind at implementation validation.
 
 ## Embedded audit
 
@@ -79,14 +88,20 @@ A new eighteenth workflow, `workflow-lint.yml`, now validates the complete activ
 - `auditor_verdict`: `SKIPPED`
 - `skip_reason`: External embedded-auditor capacity/credentials were unavailable. Deterministic `actionlint` plus live GitHub Actions were used as implementation validation, but they do not replace independent semantic review of red-lane workflow policy.
 
+## Review-item classifications
+
+- Docker Scout image vulnerabilities: `OUT_OF_SCOPE_FOLLOWUP`. The scanner surfaced existing critical/high findings. Suppressing them would be idiotic; image remediation belongs in separate packets.
+- Remaining `google-github-actions/run-gemini-cli@v0` references: `OPTIONAL_DEFERRED`. No compatible immutable SHA was proven, so no guessed pin was introduced.
+- Missing independent embedded auditor: `NEEDS_SUPERVISOR`.
+
 ## Remaining risks
 
-1. **Branch freshness:** the branch was four commits behind `main` at the last comparison. Rebase or update the branch, rerun current-head checks, and inspect conflicts before merge.
-2. **Independent review:** no independent embedded auditor reviewed this red-lane workflow change. PR Steward or an approved independent reviewer must classify the final exact head.
-3. **Branch protection:** whether `CI Pipeline Summary`, `Workflow Lint`, CodeQL, or other checks are enforced by branch protection remains `UNKNOWN` from this run.
-4. **Third-party action pinning:** several established Google Gemini workflows intentionally remain on `google-github-actions/run-gemini-cli@v0` with repository ratchet exclusions. No immutable compatible SHA was established during this bounded repair, so this remains a separate follow-up rather than a guessed pin.
-5. **Docker Scout cost:** the nine-image Scout matrix is expensive and duplicates some build work. A future artifact-reuse design should consume trusted images from the container workflow rather than silently changing scan provenance here.
-6. **CodeQL transport:** a future `ECONNRESET` while downloading the official CodeQL bundle remains a transient GitHub transport failure. The supported response is a job rerun, not an invented downloader or swallowed failure.
+1. **Independent review:** no independent embedded auditor reviewed this red-lane workflow change. PR Steward or an approved independent reviewer must classify the final exact head.
+2. **Branch protection:** whether `CI Pipeline Summary`, `Workflow Lint`, CodeQL, or other checks are enforced by branch protection remains `UNKNOWN` from this run.
+3. **Third-party action pinning:** several established Google Gemini workflows intentionally remain on `google-github-actions/run-gemini-cli@v0` with repository ratchet exclusions. No immutable compatible SHA was established during this bounded repair.
+4. **Docker Scout cost:** the nine-image Scout matrix is expensive and duplicates some build work. A future artifact-reuse design should consume trusted images from the container workflow rather than silently changing scan provenance here.
+5. **Container vulnerabilities:** Scout surfaced existing critical/high image findings, including the LiteLLM image. Those are real follow-ups outside this workflow-only packet.
+6. **Proof-only head:** refreshing this report creates a newer PR head. Merge readiness remains blocked until PR Steward confirms checks/proof are current and no unknown review items remain.
 
 ## Final posture
 
