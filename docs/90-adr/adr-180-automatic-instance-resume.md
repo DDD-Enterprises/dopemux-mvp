@@ -28,7 +28,7 @@ graph_metadata:
 
 ## Status
 
-**Proposed** (Enhancement for multi-instance support)
+**Deprecated** (2026-07-21; superseded by the ConPort CRS v2 lifecycle model)
 
 **Depends On**: ADR-179 (ConPort Worktree Support)
 
@@ -491,4 +491,4 @@ start B → mark orphaned → start different service on 3030 → resume B → v
 **Author**: Claude Code with SuperClaude framework
 **Reviewers**: dopemux-core
 **Related**: ADR-179 (ConPort Worktree Support)
-**Status**: Proposed (Implementation planned for Phase 3)
+**Status**: Deprecated (2026-07-21; implementation plan withdrawn)
