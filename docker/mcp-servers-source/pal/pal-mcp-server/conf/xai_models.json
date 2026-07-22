@@ -44,6 +44,7 @@
       "supports_images": true,
       "supports_temperature": true,
       "use_openai_response_api": true,
+      "default_reasoning_effort": "high",
       "max_image_size_mb": 20.0,
       "allow_code_generation": true
     }
