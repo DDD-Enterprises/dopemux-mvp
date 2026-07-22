@@ -275,3 +275,11 @@ Costs:
 - Some capabilities remain blocked.
 
 These costs are preferable to cross-project data leakage or wrong-worktree evidence.
+
+## Accepted amendment: ConPort CRS v2 resolution
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json).
+
+ConPort resolves to one centralized logical `ConPort CRS v2` service through a trusted project/workspace/instance gateway. Worktree path is alias evidence for `instance_id`, not service authority. Every DCP read includes a resolved identity envelope. DCP receives an allowlisted redacted read-only contract through an adapter backed by the same policy engine and has no direct database, raw admin, write, or sensitive export route.
+
+A DCP ConPort read fails closed when identity is unresolved, ambiguous, stale, unauthorized, or mismatched. Configuration reachability and runtime discovery do not grant access.

@@ -232,3 +232,9 @@ This ADR is implemented successfully when:
 ## Final decision
 
 **Adopt Serena as the technical/code context plane in the Dopemux architecture, with explicit exclusion from PM, workflow, decision, and chronicle authority.**
+
+## Proposed ConPort CRS v2 write boundary amendment
+
+- Serena and source-code tooling may provide commit-bound technical evidence and canonical references to a proposed ConPort decision.
+- They may not directly accept, approve, supersede, or mutate a ConPort decision or durable product context.
+- Any ConPort proposal that cites Serena must include the resolved project/workspace/instance envelope, full commit SHA, source path or symbol, and request provenance.

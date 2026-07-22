@@ -37,7 +37,7 @@ PM mode must support feature design, research packets, ideas/epics/stories, task
    |---|---|---|
    | metadata write | `leantime` | `WRITE -> leantime : <field>` |
    | workflow write (status, queue order, blockers, approvals) | `task-orchestrator` | `WRITE -> task-orchestrator : <action>` |
-   | decision / progress write | `conport` | `WRITE -> conport : <action>` |
+   | decision proposal or typed progress observation/work evidence | `conport-crs-v2` | `WRITE -> conport-crs-v2 : <action>` |
    | history receipt | `dope-memory` | `WRITE -> dope-memory : <action>` |
 
 2. **A pane displaying a field does not imply that pane's backing service owns that field.** The confirm modal's target service name is canonical; the pane layout is not.
@@ -60,6 +60,8 @@ PM mode must support feature design, research packets, ideas/epics/stories, task
    These route to `task-orchestrator` regardless of which pane the operator invokes them from.
 
 5. **The human role model is exactly two roles: `operator` and `approver`.** A session may carry `operator`, `approver`, or both. Non-`[a]` canonical writes require `operator`. `[a] approve` requires `approver`. This decision does not create a third role and does not alter bounded Leantime write scope.
+
+   The operator/approver UI role and confirm label are not enforcement. A durable decision acceptance or supersession requires a digest-bound approval token or server-recorded approval verified by the ConPort policy engine. ConPort progress observations cannot mutate Task Orchestrator workflow state.
 
 6. **Bridge and proxy services never own canonical state.** `dopecon-bridge` actions require `shift-Y` and render the adapter confirm label `ADAPTER -> dopecon-bridge : <action>`. `dopetask` is execution-only and does not own task or packet state.
 

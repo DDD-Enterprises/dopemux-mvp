@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0.0",
+  "verdict": "CONPORT_W0_ADR_DOCS_READY_FOR_INDEPENDENT_REVIEW",
+  "baseline_head": "5a9f8f7b5d4a03be323723a92baf3c4e162d5b65",
+  "execution_head": "a5b9006aa3f5a95f81e4bab324931ade71ee8b31",
+  "reviewed_adr_commit": "a5b9006aa3f5a95f81e4bab324931ade71ee8b31",
+  "branch": "docs/conport-crs-v2-adr-wave0",
+  "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/TP-CONPORT-W0-ADR-DOCS",
+  "candidate_zip": {
+    "name": "CONPORT-TARGET-MODEL-CANDIDATE-v2.zip",
+    "sha256": "f0e63f9a0a34b26269ea4a75020bfa81c4738180e270801e97aad1eea1bfaac1"
+  },
+  "changed_paths": [
+    "docs/90-adr/adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md",
+    "docs/90-adr/adr-180-automatic-instance-resume.md",
+    "docs/90-adr/adr-201-conport-kg-security-hardening.md",
+    "docs/90-adr/adr-208-mcp-config-drift-prevention.md",
+    "docs/90-adr/adr-213-capture-adapters-single-ledger.md",
+    "docs/90-adr/adr-213-dual-capture-canonical-ledger.md",
+    "docs/90-adr/adr-221-event-stream-rate-limits.md",
+    "docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md",
+    "docs/90-adr/adr-conport-canonical-record-service-v2.md",
+    "docs/90-adr/adr-conport-migration-foundation-gate.md",
+    "docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md",
+    "docs/90-adr/adr-dope-context-as-search-and-retrieval-plane.md",
+    "docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md",
+    "docs/90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md",
+    "docs/90-adr/adr-index.md",
+    "docs/90-adr/adr-mcpint-001-catalog-v2-single-source.md",
+    "docs/90-adr/adr-mcpint-002-agent-exposure-and-read-plane.md",
+    "docs/90-adr/adr-mcpint-004-event-ingress-contract.md",
+    "docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md",
+    "docs/90-adr/adr-pm-plane-authority-boundaries.md",
+    "docs/90-adr/adr-serena-as-technical-context-plane.md",
+    "docs/90-adr/adr-task-orchestrator-as-workflow-authority.md"
+  ],
+  "new_paths": [
+    "docs/90-adr/adr-conport-canonical-record-service-v2.md"
+  ],
+  "status_changes": [],
+  "deviations": [
+    "Added repo-required graph_metadata frontmatter",
+    "Placed some proposal blocks at structurally compatible final sections",
+    "Kept accepted DCP effective resolution row unchanged and recorded proposed replacement in labeled amendment",
+    "Added H1 to skeletal ADR-201 and duplicate ADR-213 proposal"
+  ],
+  "validation_counts": {
+    "PASS": 21,
+    "FAIL": 0,
+    "NOT_RUN": 3
+  },
+  "unresolved_unknowns": [
+    "Independent Wave 1 disposition",
+    "Formal embedded audit",
+    "PR-scoped audit and head pin"
+  ],
+  "custody_review": {
+    "prior_disposition": "CHANGES_REQUIRED",
+    "substantive_adr_questions": "PASS_13_OF_13",
+    "blocking_finding": "BLOCKING_CUSTODY",
+    "repair_scope": "git bundle and deterministic identity receipts only",
+    "adr_content_changed": false,
+    "reviewed_adr_commit_changed": false,
+    "custody_re_review_required": true
+  },
+  "no_runtime_change": true,
+  "no_implementation_beyond_docs": true,
+  "independent_review_required": true,
+  "implementation_authorized": false,
+  "runtime_mutated": false,
+  "merge_authorized": false
+}

@@ -1,0 +1,541 @@
+diff --git a/docs/90-adr/adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md b/docs/90-adr/adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md
+index af24b3c36..ad274249e 100644
+--- a/docs/90-adr/adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md
++++ b/docs/90-adr/adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md
+@@ -40 +40 @@ PM mode must support feature design, research packets, ideas/epics/stories, task
+-   | decision / progress write | `conport` | `WRITE -> conport : <action>` |
++   | decision proposal or typed progress observation/work evidence | `conport-crs-v2` | `WRITE -> conport-crs-v2 : <action>` |
+@@ -63,0 +64,2 @@ PM mode must support feature design, research packets, ideas/epics/stories, task
++   The operator/approver UI role and confirm label are not enforcement. A durable decision acceptance or supersession requires a digest-bound approval token or server-recorded approval verified by the ConPort policy engine. ConPort progress observations cannot mutate Task Orchestrator workflow state.
++
+diff --git a/docs/90-adr/adr-180-automatic-instance-resume.md b/docs/90-adr/adr-180-automatic-instance-resume.md
+index 73d8b7014..fccb5fd04 100644
+--- a/docs/90-adr/adr-180-automatic-instance-resume.md
++++ b/docs/90-adr/adr-180-automatic-instance-resume.md
+@@ -25,0 +26,3 @@ graph_metadata:
++> **Proposed deprecation pending independent review (2026-07-21).**
++> Generic ConPort custom data keyed by paths, ports, or labels may not own runtime-instance lifecycle. If the ConPort CRS v2 change set is accepted, mark this file `status: deprecated`. Instance create, resume, fork, handoff, promotion, merge, archive, lineage, and grants move to the trusted instance registry. Reads may not create or auto-fork instance state. Legacy resume hints may be imported only as noncanonical aliases after evidence review.
++
+diff --git a/docs/90-adr/adr-201-conport-kg-security-hardening.md b/docs/90-adr/adr-201-conport-kg-security-hardening.md
+index cae079071..a83d360b7 100644
+--- a/docs/90-adr/adr-201-conport-kg-security-hardening.md
++++ b/docs/90-adr/adr-201-conport-kg-security-hardening.md
+@@ -17,0 +18,5 @@ graph_metadata:
++
++# ADR-201: ConPort KG Security Hardening
++
++> **Proposed deprecation pending independent review (2026-07-21).**
++> This skeletal placeholder does not specify enforceable ConPort security and must not be treated as an accepted control. If the ConPort CRS v2 ADR change set is accepted, mark this file `status: deprecated` and redirect security authority to `adr-conport-canonical-record-service-v2`, `adr-222-deterministic-vs-llm-boundary`, and the independently executed ConPort acceptance/security plan.
+diff --git a/docs/90-adr/adr-208-mcp-config-drift-prevention.md b/docs/90-adr/adr-208-mcp-config-drift-prevention.md
+index d5717b6c9..1d5e386a3 100644
+--- a/docs/90-adr/adr-208-mcp-config-drift-prevention.md
++++ b/docs/90-adr/adr-208-mcp-config-drift-prevention.md
+@@ -317,0 +318,10 @@ This ADR captures architectural lessons from real-world infrastructure evolution
++
++## Proposed amendment: transport-neutral generation and immutable ConPort pins
++
++Pending independent acceptance of `adr-conport-canonical-record-service-v2`:
++
++- Generated configuration remains required, but HTTP/SSE is not intrinsically superior to stdio.
++- The ConPort target uses a thin stdio launcher to authenticated MCP Streamable HTTP or a Unix socket. SSE is removed.
++- The catalog entry binds exact git, lock, image, configuration, policy, tool-contract, and schema digests.
++- Runtime `/info`, health, or discovery output is diagnostic and may verify configured pins; it never establishes authority by port, process, container, path, or environment.
++- Floating `uvx --from context-portal-mcp` is prohibited in target configurations.
+diff --git a/docs/90-adr/adr-213-capture-adapters-single-ledger.md b/docs/90-adr/adr-213-capture-adapters-single-ledger.md
+index 87a8beab0..ad701f39a 100644
+--- a/docs/90-adr/adr-213-capture-adapters-single-ledger.md
++++ b/docs/90-adr/adr-213-capture-adapters-single-ledger.md
+@@ -17,0 +18,5 @@ graph_metadata:
++# ADR-213: Capture Adapters Single Ledger
++
++> **Proposed deprecation pending independent review (2026-07-21).**
++> This proposal duplicates ADR number 213 and overlaps the accepted `adr-213-dual-capture-canonical-ledger.md`. If the ConPort CRS v2 change set is accepted, mark this file `status: deprecated` and redirect to the accepted ADR-213 plus its stable-identity and mirror-receipt amendment.
++
+diff --git a/docs/90-adr/adr-213-dual-capture-canonical-ledger.md b/docs/90-adr/adr-213-dual-capture-canonical-ledger.md
+index e5f87bde5..e1ac4ae32 100644
+--- a/docs/90-adr/adr-213-dual-capture-canonical-ledger.md
++++ b/docs/90-adr/adr-213-dual-capture-canonical-ledger.md
+@@ -231,0 +232,8 @@ Any change must:
++
++## Proposed amendment: stable identity and ConPort receipts
++
++- Repository paths remain storage locators, not project or workspace authority.
++- Chronicle event identity includes stable `project_id`, `workspace_id`, event schema version, source authority, and source event/record digest so identical content in different projects cannot collide.
++- A ConPort mirror event stores the ConPort `event_id`, aggregate/revision URI, payload digest, actor/client/request identity, and policy decision reference.
++- The global rollup remains read-only and must filter by stable project/workspace identity before aggregation.
++- Historical receipt IDs are not rewritten. Any new derivation rule is versioned and linked by provenance.
+diff --git a/docs/90-adr/adr-221-event-stream-rate-limits.md b/docs/90-adr/adr-221-event-stream-rate-limits.md
+index 5513df5ac..55e8dcafe 100644
+--- a/docs/90-adr/adr-221-event-stream-rate-limits.md
++++ b/docs/90-adr/adr-221-event-stream-rate-limits.md
+@@ -44,0 +45,6 @@ Naive approaches fail:
++## Proposed amendment: event-class boundary
++
++The rate-limit, drop, tail-buffer, and coalescing rules in this ADR apply only to ephemeral UI/event-pane delivery. They do not govern canonical record-change, approval, identity, supersession, deletion/tombstone, audit, migration, or mirror-receipt events.
++
++Canonical events use a durable outbox, ordered sequence, idempotent delivery, bounded retry, dead letter, and replay. They may be batched for transport only when every individual event remains independently addressable and digest-verifiable. They may not be dropped or semantically coalesced.
++
+@@ -76,0 +83 @@ class EventBroadcaster:
++- This drop rule is restricted to `ephemeral_telemetry`; it is prohibited for `canonical_record_change`.
+diff --git a/docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md b/docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md
+index a7297f7fa..23702bef2 100644
+--- a/docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md
++++ b/docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md
+@@ -25,0 +26,3 @@ graph_metadata:
++> **Proposed supersession pending independent review (2026-07-21).**
++> `adr-conport-canonical-record-service-v2` proposes to supersede this ADR because current runtime evidence invalidates the tolerated multi-surface deployment and the broad `progress` authority. Until the proposed ADR is independently accepted, this ADR remains effective. If accepted, this file changes to `status: superseded`, adds `superseded_by: adr-conport-canonical-record-service-v2`, and its historical content remains unchanged.
++
+diff --git a/docs/90-adr/adr-conport-canonical-record-service-v2.md b/docs/90-adr/adr-conport-canonical-record-service-v2.md
+new file mode 100644
+index 000000000..dbdac7f05
+--- /dev/null
++++ b/docs/90-adr/adr-conport-canonical-record-service-v2.md
+@@ -0,0 +1,234 @@
++---
++id: adr-conport-canonical-record-service-v2
++title: ADR - ConPort Canonical Record Service v2
++type: adr
++owner: "@hu3mann"
++author: "Wave 0 documentation packet"
++date: 2026-07-21
++last_review: 2026-07-21
++next_review: 2026-08-21
++status: proposed
++graph_metadata:
++  node_type: ADR
++  impact: high
++  relates_to:
++    - adr-conport-as-decision-progress-and-context-authority
++    - adr-memory-trinity-authority-and-interaction-model
++supersedes_if_accepted:
++  - adr-conport-as-decision-progress-and-context-authority
++relates_to:
++  - adr-memory-trinity-authority-and-interaction-model
++  - adr-dope-memory-as-chronicle-memory-authority
++  - adr-dope-context-as-search-and-retrieval-plane
++  - adr-task-orchestrator-as-workflow-authority
++  - adr-pm-plane-authority-boundaries
++  - adr-mcpint-001
++  - adr-mcpint-002
++  - adr-mcpint-004
++  - adr-conport-migration-foundation-gate
++prelude: Proposes one normalized Dopemux ConPort canonical record service with registry-backed identity, bounded authority, durable events, derived projections, and ADR-gated rollout.
++---
++
++# ADR: ConPort Canonical Record Service v2
++
++## Status and authority
++
++**Proposed.** This text has no implementation authority until an independent Wave 1 review accepts the exact ADR digest. Acceptance does not itself authorize code, migration, deployment, cleanup, or cutover.
++
++## Context
++
++Current evidence identifies two healthy ConPort-like containers sharing one PostgreSQL store while exposing incompatible custom JSON-RPC, SSE/stdio, admin, and upstream-wrapper stories. The store contains multiple project names, absolute-path aliases, packet scopes, `_system`, foreign-project data, pytest paths, and records with missing instance provenance. No evidence-based rule makes either container canonical. One container was globally bound, package launch included unpinned `uvx --from context-portal-mcp`, and live MCP lifecycle behavior was not established across the advertised surfaces.
++
++The accepted ConPort authority ADR makes ConPort broadly canonical for decisions, progress, and context and temporarily tolerates multiple surfaces. That decision is too broad and too weakly enforced for the observed deployment. Existing Memory Trinity, PM, workflow, DCP, MCP integration, migration, and event ADRs do not fully specify stable project/workspace/instance identity, per-call authorization, atomic outbox behavior, promotion provenance, projection consistency, or a single canonical runtime identity.
++
++## Decision
++
++### 1. Canonical service identity
++
++Dopemux will use one logical canonical service named **Dopemux ConPort Canonical Record Service v2** (`ConPort CRS v2`). It is a newly normalized Dopemux custom runtime in `DDD-Enterprises/dopemux-mvp`.
++
++The current custom containers, the upstream package, and any wrappers remain evidence or compatibility fixtures until a target build is independently accepted. Upstream `context-portal-mcp` may be pinned as a protocol/tool reference but may not run as a parallel canonical service.
++
++Before runtime activation, the target identity must bind exact values for:
++
++- full git commit SHA;
++- dependency lock SHA-256;
++- OCI image digest;
++- SBOM digest;
++- generated configuration SHA-256;
++- policy bundle SHA-256;
++- normalized tool contract SHA-256;
++- schema and migration bundle SHA-256.
++
++Floating package versions, image tags, branches, or unpinned `uvx` are prohibited in the target.
++
++### 2. Canonical storage
++
++Canonical records will live in a dedicated PostgreSQL database or explicitly isolated database boundary, with canonical schema `conport_v2`, least-privilege roles, row-level security, immutable revisions, deterministic idempotency, audit records, quarantine, projection checkpoints, and a transaction outbox.
++
++The legacy shared `public` schema is not declared canonical merely because it is currently populated. Existing data must be exported, classified, quarantined where necessary, and imported through an explicit migration plan. No provenance may be invented.
++
++### 3. Identity boundary
++
++Every canonical record is scoped by stable registry-issued identifiers:
++
++- `project_id`: stable project/product/repository identity;
++- `workspace_id`: durable canonical logical data partition under a project;
++- `instance_id`: temporary execution scope such as a worktree, branch, task packet, agent session, or supervised run.
++
++Paths, names, ports, containers, compose projects, current working directories, and ambient environment variables are aliases or evidence only. They never authorize a call by themselves.
++
++A trusted gateway resolves client claims against authenticated actor/client identity, registry state, repository markers, aliases, grants, commit/branch/worktree lineage, task-packet references, and registry generation. Alias collision, wrong project, wrong workspace, wrong instance, stale registry generation, forged actor/client, stale or unrelated commit, and test namespace use fail closed.
++
++Every canonical read and write requires `project_id`, `workspace_id`, `instance_id`, `actor_id`, `client_id`, and `request_id`. Every write additionally requires `idempotency_key`, `commit_sha`, `branch_ref`, trusted `worktree_ref`, `issued_at`, and `registry_generation`. Optional `task_packet_id`, `session_id`, and `parent_instance_id` carry additional provenance.
++
++Every response, including denial, returns a safe resolved identity envelope with canonical IDs, alias evidence, applied grants, registry generation, commit relation, authenticated principal, and policy decision ID.
++
++### 4. Multi-workspace and multi-instance hosting
++
++One logical service may host multiple workspaces only after RLS, scoped credentials/session settings, query-level scope defense, cross-scope negative tests, projection isolation, audit, and leakage tests pass. Shared database hosting is a conditional topology, not an assumption.
++
++Multiple containers may share the database only as intentional stateless replicas behind one trusted routing authority after image, lock, configuration, policy, schema, tool, authorization, and concurrent-idempotency equivalence is proven. Otherwise use one canonical process.
++
++Test and fixture data use physically separate database/schema/role boundaries. Production identity resolution rejects temporary and test namespace patterns.
++
++### 5. Instance lifecycle
++
++Instance create, fork, handoff, promote, merge, supersede, archive, and delete/purge are explicit operations. Reads never create or auto-fork state.
++
++Promotion and merge create new revisions or grants while preserving original project, workspace, instance, actor, client, commit, request, and source-revision provenance. Promotion never clears identity. Merge requires a deterministic plan, human approval, revision checks, per-record decisions, and an immutable receipt.
++
++Active context is durable but lease-bound, reviewable, and instance-scoped by default. Cross-instance visibility requires an explicit bounded and expiring grant or reviewed promotion.
++
++### 6. Authority classes
++
++ConPort CRS v2 is canonical for:
++
++- architectural and product decisions and their immutable approval/supersession history;
++- durable structured product/project context;
++- active-context revisions and handoff records;
++- typed progress observations and work evidence;
++- allowlisted custom structured data;
++- typed semantic relationship assertions;
++- ConPort audit, provenance, idempotency, and outbox records.
++
++ConPort CRS v2 is not canonical for:
++
++- task status, transition legality, blockers, queue, completion authority, approvals in workflow, or next action, which belong to Task Orchestrator;
++- passive PM metadata, which belongs to Leantime;
++- chronology, which belongs to dope-memory;
++- semantic retrieval and ranking, which belong to dope-context and remain advisory;
++- source-code truth, which belongs to source code and repository documentation, with Serena as a technical-context plane;
++- adapter routing, DCP views, graph topology, vector neighborhoods, cache entries, or raw scratch notes.
++
++The word `progress` in ConPort contracts means only `progress_observation` or `work_evidence`. A ConPort observation may reference a workflow object but may not transition it.
++
++Scratch notes are local/session state. They enter ConPort only through explicit reviewed conversion into a typed record with provenance. Secrets and large binary artifacts are rejected; large artifacts are stored by content-addressed reference in an approved external store.
++
++### 7. Relationship, graph, FTS, and vector posture
++
++A typed relationship assertion may be a canonical ConPort record. An AGE edge, graph topology, path ranking, FTS index row, embedding, Qdrant point, Redis key, or dope-context result is derived.
++
++Native PostgreSQL FTS may be enabled after create/update/supersede/delete/replay/rebuild consistency tests pass. Vector retrieval remains outside canonical ConPort and may be enabled only through dope-context after privacy, provenance, tenant isolation, deterministic tie-break, update/delete consistency, tombstone, replay, and rebuild gates pass.
++
++All semantic retrieval is advisory. It may surface related records but may not judge conflicts, approve decisions, or authorize writes.
++
++### 8. Tool and transport contract
++
++Agent-facing tools use one normalized versioned contract and one policy engine. Claude Code and Codex receive bounded reads plus policy-gated proposal, active-context, evidence, and structured-data writes. DCP receives a redacted read-only subset. Internal services use exact allowlists and service credentials. Admin tools use a separate operator control plane and are absent from agent discovery.
++
++The target transport is a thin local stdio launcher to authenticated MCP Streamable HTTP or a Unix-domain-socket core. Authenticated private-network service access may be used when necessary. SSE is not part of the target.
++
++MCP annotations are hints only. Identity, authorization, approval, revision checks, idempotency, RLS, and database constraints enforce behavior.
++
++### 9. Decision workflow
++
++Before a material technical proposal, an agent performs a bounded decision conflict check. Retrieval is advisory and the agent must read related decisions and reason.
++
++A decision enters as `proposed`. Acceptance or supersession requires explicit digest-bound human approval verified by the server. Supersession atomically creates/accepts the replacement and marks the old decision superseded with bidirectional references. History is never silently deleted.
++
++Deterministic JSONL plus Markdown export is required for portability, review, backup, and human inspection.
++
++### 10. Events, mirrors, and projections
++
++Every canonical revision and lifecycle change writes an outbox event in the same database transaction. If the record or outbox insert fails, the whole transaction fails. After commit, consumer outage does not roll back the record. The durable outbox retries and records consumer receipts; exhausted attempts enter dead letter and alert an operator.
++
++Canonical change events are non-lossy. They are exempt from UI event dropping and from coalescing that could erase decision, supersession, deletion, identity, or revision semantics.
++
++The ConPort-to-dope-memory event carries event, aggregate, revision, operation, identity, actor/client/request/idempotency, source-control provenance, payload digest, redacted summary, supersession/tombstone, sensitivity, policy decision, and schema version fields. dope-memory owns the chronicle receipt. dope-context, AGE, FTS, vector, caches, and rollups use source snapshots and ordered event cursors, propagate tombstones, expose lag/freshness, and can be rebuilt.
++
++### 11. Migration and rollout
++
++Migration is incremental and ADR-gated:
++
++1. Wave 0 documentation proposal;
++2. Wave 1 independent acceptance or rejection;
++3. freeze, fresh inventory, immutable pins;
++4. identity registry and policy engine;
++5. isolated canonical schema, RLS, revision, idempotency, audit, quarantine, and outbox;
++6. normalized service and adapter;
++7. backup, export, row classification, quarantine, validated import, and shadow reads;
++8. isolation and lifecycle negative tests;
++9. agent policy and client trials;
++10. event, mirror, FTS, retrieval, and graph projections;
++11. security, observability, backup/restore, and rollback rehearsal;
++12. final acceptance, controlled cutover, rollback window, then deprecation and cleanup.
++
++No big-bang rewrite and no dual canonical writes are permitted.
++
++### 12. Rollback
++
++The rollback unit is the last independently accepted epoch binding application, configuration, policy, tool contract, schema, migration bundle, and canonical event cursor. Before rollback, stop target writes. Do not cross an irreversible migration or cleanup boundary without a verified restore. Preserve idempotency and outbox evidence, restore the accepted epoch, and reconcile committed events.
++
++### 13. Security
++
++Canonical routes bind to loopback, Unix socket, or an authenticated private boundary. Global unauthenticated binding is prohibited. The service uses authenticated actor/client identity, least-privilege roles, RLS, deterministic policy, approval verification, secret-safe logs, audit, denial metrics, bounded requests, and independent security review.
++
++No deny may live only in an LLM instruction. Agent guidance is advisory; the policy engine and storage constraints carry the hard boundary.
++
++### 14. Acceptance invariants
++
++The target is not implementation-ready until all required acceptance gates pass, including source/runtime identity, schema, MCP handshakes, multi-project/workspace/instance isolation, wrong-scope negatives, alias collisions, decision conflict/supersession, progress authority, active-context visibility, projection consistency, mirror replay, backup/restore, deterministic export/import, contaminated migration, Claude Code, Codex, DCP, performance, security, and rollback.
++
++An unexecuted test is `NOT_RUN`, never `PASS`.
++
++## Consequences
++
++### Positive
++
++- One named canonical service and policy engine replace shadow authority.
++- Stable identity and provenance become enforceable rather than conventional.
++- Progress no longer competes with workflow authority.
++- Decisions gain server-enforced approval, atomic supersession, and portable export.
++- Mirrors and projections become durable, replayable, and explicitly noncanonical.
++- Claude Code, Codex, DCP, and internal services share one normalized contract with audience-specific exposure.
++
++### Negative
++
++- The target is a new bounded service, not a configuration-only cleanup.
++- Identity registry, RLS, migration classification, outbox, approval, and lifecycle add engineering and operating cost.
++- Existing records cannot be blindly relabeled.
++- A centralized service creates an operational dependency that requires backup, recovery, observability, and strict network controls.
++- Some legacy tools and client assumptions must be broken rather than preserved.
++
++## Alternatives rejected
++
++### Keep current shadow twins
++
++Rejected. Their authority equivalence, authorization, and isolation are not proven.
++
++### Replace directly with upstream per-workspace SQLite
++
++Rejected as a direct target. It improves physical file isolation but does not establish Dopemux project/instance/actor/client/commit authority, cross-plane contracts, DCP routing, shared policy, or migration semantics.
++
++### Upstream core with unrestricted Dopemux extensions
++
++Rejected. Without a single normalized authority and explicit extension boundary, it recreates the overloaded-family problem.
++
++### One service per workspace
++
++Not selected as the default. It can physically isolate data but multiplies lifecycle, discovery, update, backup, DCP, and client-routing burden. It remains a contingency if the shared-service isolation gates cannot pass.
++
++## Non-authorization statement
++
++This ADR is a proposal. It authorizes no code, schema, migration, runtime, data, client, deployment, cleanup, or merge action.
+diff --git a/docs/90-adr/adr-conport-migration-foundation-gate.md b/docs/90-adr/adr-conport-migration-foundation-gate.md
+index 6efc13c2d..28f0a442b 100644
+--- a/docs/90-adr/adr-conport-migration-foundation-gate.md
++++ b/docs/90-adr/adr-conport-migration-foundation-gate.md
+@@ -116,0 +117,15 @@ pre-existing ledger this gate does not own."
++
++## Proposed amendment: CRS v2 migration boundary
++
++Pending independent acceptance of `adr-conport-canonical-record-service-v2`, the migration gate additionally requires:
++
++1. a target-specific schema/migration bundle digest and target epoch;
++2. a verified encrypted backup and isolated restore receipt before source mutation;
++3. deterministic legacy export and source digest;
++4. row-level classification into canonical-safe, alias-resolvable, instance-scoped, packet-scoped, foreign-project, system, test/fixture, or ambiguous;
++5. quarantine of ambiguous, foreign, system, and test records unless separately authorized;
++6. evidence-based provenance backfill only, with unknown values retained as unknown or quarantined;
++7. RLS, idempotency, revision, outbox, and cross-scope negative tests;
++8. no hidden DDL and no automatic production migration;
++9. no mutation of the legacy migration ledger to imply target acceptance;
++10. rollback to a verified accepted epoch before irreversible cleanup.
+diff --git a/docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md b/docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md
+index 982c47d60..5a65c7078 100644
+--- a/docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md
++++ b/docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md
+@@ -277,0 +278,6 @@ These costs are preferable to cross-project data leakage or wrong-worktree evide
++
++## Proposed ConPort CRS v2 resolution amendment
++
++ConPort resolves to one centralized logical `ConPort CRS v2` service through a trusted project/workspace/instance gateway. Worktree path is alias evidence for `instance_id`, not service authority. Every DCP read includes a resolved identity envelope. DCP receives an allowlisted redacted read-only contract through an adapter backed by the same policy engine and has no direct database, raw admin, write, or sensitive export route.
++
++A DCP ConPort read fails closed when identity is unresolved, ambiguous, stale, unauthorized, or mismatched. Configuration reachability and runtime discovery do not grant access.
+diff --git a/docs/90-adr/adr-dope-context-as-search-and-retrieval-plane.md b/docs/90-adr/adr-dope-context-as-search-and-retrieval-plane.md
+index 28cf40113..8472b1a68 100644
+--- a/docs/90-adr/adr-dope-context-as-search-and-retrieval-plane.md
++++ b/docs/90-adr/adr-dope-context-as-search-and-retrieval-plane.md
+@@ -259,0 +260,11 @@ This ADR is implemented successfully when:
++
++## Proposed amendment: projection consistency and advisory semantics
++
++Pending independent acceptance of `adr-conport-canonical-record-service-v2`:
++
++1. Every ConPort-derived index stores the canonical source record/revision, project/workspace scope, event sequence, index generation, and freshness timestamp.
++2. Create, update, supersede, delete/tombstone, replay, and full rebuild must converge before an index is enabled for agents.
++3. Native FTS may be enabled only after its consistency suite passes.
++4. Vector retrieval remains disabled until privacy, provenance, tenant isolation, deterministic tie-break, update/delete, tombstone, replay, and rebuild tests pass.
++5. Retrieval is advisory. Similarity does not judge a decision conflict, approve a choice, or authorize a canonical write.
++6. A stale projection may return `PROJECTION_STALE` or route to a bounded canonical read; it may not return deleted or foreign-scope records.
+diff --git a/docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md b/docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md
+index 841d3008d..f5bb2a184 100644
+--- a/docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md
++++ b/docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md
+@@ -440,0 +441,10 @@ This ADR is implemented successfully when:
++
++## Proposed amendment: ConPort source events and mirror receipts
++
++Pending independent acceptance of `adr-conport-canonical-record-service-v2`:
++
++- ConPort emits `conport.record.changed.v1` from an atomic transaction outbox. The event includes stable project/workspace/instance identity, aggregate and revision IDs, actor/client/request/idempotency, source-control provenance, payload digest, sensitivity, supersession/tombstone fields, and policy decision ID.
++- dope-memory remains canonical for the append-only chronicle receipt, not for the current ConPort record.
++- A mirror receipt records `event_id`, consumer ID, source digest, status, attempt count, processing timestamps, target record ID/digest, and error code.
++- Consumer failure is fail-open only with respect to the already committed ConPort record. Delivery is queued, retried, observable, and dead-lettered. It is never silently dropped.
++- Replaying the same event is idempotent and produces the same receipt or a duplicate receipt with no duplicate chronicle event.
+diff --git a/docs/90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md b/docs/90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md
+index 72f619fae..dcec86aab 100644
+--- a/docs/90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md
++++ b/docs/90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md
+@@ -282,0 +283,7 @@ This ADR is implemented successfully when:
++
++## Proposed ConPort CRS v2 adapter constraints
++
++- dopecon-bridge must call the normalized ConPort contract through the same trusted identity and policy engine as every other client.
++- It may not connect to canonical ConPort tables, set database session scope, mint project/workspace/instance IDs, consume admin credentials, or bypass approval and revision checks.
++- It preserves source authority, identity, provenance, event ID, payload digest, and policy decision ID through translation.
++- Canonical events use a durable outbox and consumer receipts. Bridge outage queues and retries; it never changes a successful canonical commit into an untracked drop.
+diff --git a/docs/90-adr/adr-index.md b/docs/90-adr/adr-index.md
+index d39e36daf..8807bab0f 100644
+--- a/docs/90-adr/adr-index.md
++++ b/docs/90-adr/adr-index.md
+@@ -8,2 +8,2 @@ date: '2026-03-12'
+-last_review: '2026-03-12'
+-next_review: '2026-06-10'
++last_review: '2026-07-21'
++next_review: '2026-08-21'
+@@ -30,0 +31 @@ graph_metadata:
++| [adr-conport-canonical-record-service-v2.md](adr-conport-canonical-record-service-v2.md) | ADR: ConPort Canonical Record Service v2 | Proposed | Define one normalized ConPort canonical record service with registry-backed project/workspace/instance identity, bounded decision/context/evidence authority, durable outbox events, derived projections, and ADR-gated rollout. | ConPort authority, Memory Trinity, dope-memory, dope-context, Task Orchestrator, MCP integration |
+@@ -34,2 +35,2 @@ graph_metadata:
+-| [adr-conport-as-decision-progress-and-context-authority.md](adr-conport-as-decision-progress-and-context-authority.md) | ADR: ConPort as decision, progress, and context authority | Proposed | Make ConPort the sole canonical source for decisions, progress, and durable structured project context. | PM Plane Authority Boundaries, dopecon-bridge, dope-memory, Memory Trinity, Serena, dope-context |
+-| [adr-dope-memory-as-chronicle-memory-authority.md](adr-dope-memory-as-chronicle-memory-authority.md) | ADR: dope-memory as chronicle memory authority | Proposed | Establish dope-memory as the canonical chronicle memory layer while excluding PM, workflow, and decision authority. | PM Plane Authority Boundaries, ConPort, Task Orchestrator, Memory Trinity, Serena, dope-context |
++| [adr-conport-as-decision-progress-and-context-authority.md](adr-conport-as-decision-progress-and-context-authority.md) | ADR: ConPort as decision, progress, and context authority | Accepted; proposed supersession notice | Make ConPort the sole canonical source for decisions, progress, and durable structured project context. | PM Plane Authority Boundaries, dopecon-bridge, dope-memory, Memory Trinity, Serena, dope-context |
++| [adr-dope-memory-as-chronicle-memory-authority.md](adr-dope-memory-as-chronicle-memory-authority.md) | ADR: dope-memory as chronicle memory authority | Accepted; proposed amendment | Establish dope-memory as the canonical chronicle memory layer while excluding PM, workflow, and decision authority. | PM Plane Authority Boundaries, ConPort, Task Orchestrator, Memory Trinity, Serena, dope-context |
+@@ -37 +38 @@ graph_metadata:
+-| [adr-memory-trinity-authority-and-interaction-model.md](adr-memory-trinity-authority-and-interaction-model.md) | ADR: Memory Trinity authority and interaction model | Proposed | Define ConPort, dope-memory, and dope-context as distinct canonical planes with no silent authority escalation. | PM Plane Authority Boundaries, ConPort, dope-memory, dope-context, Serena |
++| [adr-memory-trinity-authority-and-interaction-model.md](adr-memory-trinity-authority-and-interaction-model.md) | ADR: Memory Trinity authority and interaction model | Accepted; proposed amendment | Define ConPort, dope-memory, and dope-context as distinct canonical planes with no silent authority escalation. | PM Plane Authority Boundaries, ConPort, dope-memory, dope-context, Serena |
+@@ -39 +40 @@ graph_metadata:
+-| [adr-dope-context-as-search-and-retrieval-plane.md](adr-dope-context-as-search-and-retrieval-plane.md) | ADR: dope-context as search and retrieval plane | Proposed | Bound dope-context to retrieval and provenance-aware search rather than canonical PM, workflow, context, or chronicle truth. | PM Plane Authority Boundaries, ConPort, dope-memory, Serena, Memory Trinity |
++| [adr-dope-context-as-search-and-retrieval-plane.md](adr-dope-context-as-search-and-retrieval-plane.md) | ADR: dope-context as search and retrieval plane | Accepted; proposed amendment | Bound dope-context to retrieval and provenance-aware search rather than canonical PM, workflow, context, or chronicle truth. | PM Plane Authority Boundaries, ConPort, dope-memory, Serena, Memory Trinity |
+@@ -45,0 +47,30 @@ graph_metadata:
++
++## ConPort CRS v2 Wave 0 review status map
++
++| Filename | Status in Wave 0 review material | Status after accepted Wave 1 |
++|---|---|---|
++| `adr-conport-canonical-record-service-v2.md` | Proposed | Accepted |
++| `adr-conport-as-decision-progress-and-context-authority.md` | Accepted; proposed supersession notice | Superseded |
++| `adr-memory-trinity-authority-and-interaction-model.md` | Accepted; proposed amendment | Accepted, amended |
++| `adr-dope-memory-as-chronicle-memory-authority.md` | Accepted; proposed amendment | Accepted, amended |
++| `adr-dope-context-as-search-and-retrieval-plane.md` | Accepted; proposed amendment | Accepted, amended |
++| `adr-pm-plane-authority-boundaries.md` | Proposed | Proposed |
++| `adr-dopecon-bridge-narrowing-to-adapter-only-role.md` | Proposed | Proposed |
++| `adr-serena-as-technical-context-plane.md` | Proposed | Proposed |
++| `adr-task-orchestrator-as-workflow-authority.md` | Proposed | Proposed |
++| `adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md` | Accepted; proposed amendment | Accepted, amended |
++| `adr-conport-migration-foundation-gate.md` | Accepted; proposed amendment | Accepted, amended |
++| `adr-208-mcp-config-drift-prevention.md` | Accepted; proposed amendment | Accepted, amended |
++| `adr-mcpint-001-catalog-v2-single-source.md` | Accepted; proposed amendment | Accepted, amended |
++| `adr-mcpint-002-agent-exposure-and-read-plane.md` | Accepted; proposed amendment | Accepted, amended |
++| `adr-mcpint-004-event-ingress-contract.md` | Accepted; proposed amendment | Accepted, amended |
++| `adr-213-dual-capture-canonical-ledger.md` | Accepted; proposed amendment | Accepted, amended |
++| `adr-201-conport-kg-security-hardening.md` | Proposed; proposed deprecation | Deprecated |
++| `adr-213-capture-adapters-single-ledger.md` | Proposed; proposed deprecation | Deprecated |
++| `adr-180-automatic-instance-resume.md` | Proposed; proposed deprecation | Deprecated |
++| `adr-221-event-stream-rate-limits.md` | Accepted; proposed amendment | Accepted, amended |
++| `adr-222-deterministic-vs-llm-boundary.md` | Accepted | Accepted |
++| `adr-001-workflow-centric-ia-and-handoff-packet-model.md` | Proposed | Proposed |
++| `adr-002-pm-mode-authority-split-and-bounded-leantime-write-scope.md` | Proposed; amended proposal | Proposed |
++
++Wave 0 records proposal material only. Effective Wave 1 statuses require independent acceptance of exact Wave 0 digests; acceptance does not authorize Wave 2 implementation.
+diff --git a/docs/90-adr/adr-mcpint-001-catalog-v2-single-source.md b/docs/90-adr/adr-mcpint-001-catalog-v2-single-source.md
+index c6c71ad1e..02cca11ba 100644
+--- a/docs/90-adr/adr-mcpint-001-catalog-v2-single-source.md
++++ b/docs/90-adr/adr-mcpint-001-catalog-v2-single-source.md
+@@ -362,0 +363,4 @@ v1; the legacy registry stays deleted (nothing reads it).
++
++## Proposed ConPort CRS v2 catalog amendment
++
++The catalog contains one logical agent-facing ConPort identity: `conport-crs-v2`. It references the accepted normalized tool-contract digest and immutable runtime pins. Agent configuration may expose a local stdio launcher, but the launcher routes to the same authenticated policy-enforced core. The separate operator admin contract is not an agent catalog entry. Tool counts are generated from the accepted snapshot and are never hand-coded as an architectural invariant.
+diff --git a/docs/90-adr/adr-mcpint-002-agent-exposure-and-read-plane.md b/docs/90-adr/adr-mcpint-002-agent-exposure-and-read-plane.md
+index aee161675..a98727637 100644
+--- a/docs/90-adr/adr-mcpint-002-agent-exposure-and-read-plane.md
++++ b/docs/90-adr/adr-mcpint-002-agent-exposure-and-read-plane.md
+@@ -253,0 +254,7 @@ from every non-Claude row (placement map §3).
++
++## Proposed amendment: ConPort audience policy
++
++- Claude Code and Codex receive the same normalized ConPort names and schemas, with client-specific allowlists. Reads and writes both require resolved project/workspace/instance identity.
++- Configuration reachability is not authorization. The server enforces actor/client role, approval, idempotency, revision, commit lineage, and scope.
++- DCP receives only an allowlisted redacted read-only subset. It has no write, admin, raw sensitive export, or direct database route.
++- Admin, quarantine, import-apply, restore, identity-admin, and projection-control tools are absent from agent discovery.
+diff --git a/docs/90-adr/adr-mcpint-004-event-ingress-contract.md b/docs/90-adr/adr-mcpint-004-event-ingress-contract.md
+index d1400e5fb..b60cffea2 100644
+--- a/docs/90-adr/adr-mcpint-004-event-ingress-contract.md
++++ b/docs/90-adr/adr-mcpint-004-event-ingress-contract.md
+@@ -242,0 +243,9 @@ features, not a server.
++
++## Proposed amendment: lossy telemetry versus durable canonical events
++
++The ingress contract distinguishes:
++
++1. `ephemeral_telemetry`: may fail open, rate-limit, coalesce, or drop according to its product policy;
++2. `canonical_record_change`: must originate from an atomic canonical transaction outbox, is idempotent, ordered by source sequence, retried, receipted, replayable, and dead-lettered with alerting.
++
++A canonical record change may not be dropped after commit. Failure to create its outbox row fails the canonical write transaction. A consumer outage delays the mirror but does not roll back the already committed record. Identity validation remains fail closed for both classes.
+diff --git a/docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md b/docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md
+index f1d111719..50dc86446 100644
+--- a/docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md
++++ b/docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md
+@@ -387,0 +388,10 @@ This ADR is implemented successfully when:
++
++## Proposed amendment: normalized ConPort authority and durable interaction
++
++Pending independent acceptance of `adr-conport-canonical-record-service-v2`:
++
++1. Replace every authority use of **ConPort progress** with **ConPort progress observations and work evidence**. These records never own task status, transition legality, blockers, queue order, completion authority, or next action.
++2. dope-context retrieval, ranking, FTS, vector, and graph results are advisory derived outputs. They cannot approve, deny, supersede, or mutate canonical records.
++3. Every cross-plane operation carries resolved `project_id`, `workspace_id`, and where applicable `instance_id`, plus actor/client/request and source provenance.
++4. A ConPort canonical write and its outbox event are atomic. dope-memory, dope-context, and graph consumers acknowledge with idempotent receipts and rebuild from canonical snapshot plus ordered events.
++5. Transport outage after commit may delay a mirror, but may not erase the canonical event. Failure to create the outbox row fails the canonical transaction.
+diff --git a/docs/90-adr/adr-pm-plane-authority-boundaries.md b/docs/90-adr/adr-pm-plane-authority-boundaries.md
+index 157bcb9ee..0c4b537e9 100644
+--- a/docs/90-adr/adr-pm-plane-authority-boundaries.md
++++ b/docs/90-adr/adr-pm-plane-authority-boundaries.md
+@@ -113,0 +114,9 @@ This authority is accepted as the target architecture even though runtime invari
++#### Proposed ConPort CRS v2 authority amendment
++
++| System | Canonical authority | Explicit exclusions |
++|---|---|---|
++| ConPort CRS v2 | Decisions and approval/supersession history; durable structured product/project context; lease-bound active-context revisions; typed progress observations/work evidence; allowlisted custom structured data; typed relationship assertions | Task/workflow status, transition legality, blockers, queue, completion authority, next action; Leantime metadata; chronicle; retrieval ranking; raw scratch |
++
++- Every cross-plane read or write uses registry-resolved `project_id`, `workspace_id`, and where applicable `instance_id`; paths, panes, ports, and adapter routes are not authority.
++- A PM view may display ConPort observations beside Task Orchestrator state, but it must label their distinct authorities and may not infer one from the other.
++
+diff --git a/docs/90-adr/adr-serena-as-technical-context-plane.md b/docs/90-adr/adr-serena-as-technical-context-plane.md
+index 99069caba..aeec9276e 100644
+--- a/docs/90-adr/adr-serena-as-technical-context-plane.md
++++ b/docs/90-adr/adr-serena-as-technical-context-plane.md
+@@ -234,0 +235,6 @@ This ADR is implemented successfully when:
++
++## Proposed ConPort CRS v2 write boundary amendment
++
++- Serena and source-code tooling may provide commit-bound technical evidence and canonical references to a proposed ConPort decision.
++- They may not directly accept, approve, supersede, or mutate a ConPort decision or durable product context.
++- Any ConPort proposal that cites Serena must include the resolved project/workspace/instance envelope, full commit SHA, source path or symbol, and request provenance.
+diff --git a/docs/90-adr/adr-task-orchestrator-as-workflow-authority.md b/docs/90-adr/adr-task-orchestrator-as-workflow-authority.md
+index c60478db1..37d33584a 100644
+--- a/docs/90-adr/adr-task-orchestrator-as-workflow-authority.md
++++ b/docs/90-adr/adr-task-orchestrator-as-workflow-authority.md
+@@ -193,0 +194,7 @@ This preserves the separation between:
++Pending independent acceptance of `adr-conport-canonical-record-service-v2`:
++
++- ConPort stores `progress_observation` and `work_evidence`, not workflow state.
++- A ConPort status-like label has no authority to transition a task, resolve a blocker, change queue order, mark completion, approve a workflow step, or compute next action.
++- Task Orchestrator may reference ConPort evidence by canonical URI and revision. ConPort may reference Task Orchestrator IDs. Neither reference transfers authority.
++- Migration must not infer Task Orchestrator state from legacy ConPort progress rows.
++

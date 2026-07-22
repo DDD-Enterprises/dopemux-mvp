@@ -315,3 +315,13 @@ diff .claude.json .claude.json.generated
 This ADR captures architectural lessons from real-world infrastructure evolution. The pattern applies beyond MCP servers to any microservices architecture where client config lags behind server deployment.
 
 **Prevention > Detection > Remediation**. Service discovery prevents drift at the source.
+
+## Accepted amendment: transport-neutral generation and immutable ConPort pins
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json):
+
+- Generated configuration remains required, but HTTP/SSE is not intrinsically superior to stdio.
+- The ConPort target uses a thin stdio launcher to authenticated MCP Streamable HTTP or a Unix socket. SSE is removed.
+- The catalog entry binds exact git, lock, image, configuration, policy, tool-contract, and schema digests.
+- Runtime `/info`, health, or discovery output is diagnostic and may verify configured pins; it never establishes authority by port, process, container, path, or environment.
+- Floating `uvx --from context-portal-mcp` is prohibited in target configurations.

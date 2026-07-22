@@ -4,7 +4,7 @@ title: 'ADR-180: Automatic Instance Resume After Crashes'
 type: adr
 owner: dopemux-core
 date: 2025-10-04
-status: proposed
+status: deprecated
 adhd_cognitive_load: 0.5
 adhd_attention_required: medium
 tags:
@@ -23,9 +23,12 @@ graph_metadata:
 ---
 # ADR-180: Automatic Instance Resume After Crashes
 
+> **Deprecated (2026-07-21).**
+> Under the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json), generic ConPort custom data keyed by paths, ports, or labels may not own runtime-instance lifecycle. Instance create, resume, fork, handoff, promotion, merge, archive, lineage, and grants belong to the trusted instance registry. Reads may not create or auto-fork state. Legacy resume hints may be imported only as noncanonical aliases after evidence review.
+
 ## Status
 
-**Proposed** (Enhancement for multi-instance support)
+**Deprecated** (2026-07-21; superseded by the ConPort CRS v2 lifecycle model)
 
 **Depends On**: ADR-179 (ConPort Worktree Support)
 
@@ -488,4 +491,4 @@ start B → mark orphaned → start different service on 3030 → resume B → v
 **Author**: Claude Code with SuperClaude framework
 **Reviewers**: dopemux-core
 **Related**: ADR-179 (ConPort Worktree Support)
-**Status**: Proposed (Implementation planned for Phase 3)
+**Status**: Deprecated (2026-07-21; implementation plan withdrawn)

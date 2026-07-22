@@ -42,6 +42,14 @@ Naive approaches fail:
 
 ## Solution
 
+## Accepted amendment: event-class boundary
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json).
+
+The rate-limit, drop, tail-buffer, and coalescing rules in this ADR apply only to ephemeral UI/event-pane delivery. They do not govern canonical record-change, approval, identity, supersession, deletion/tombstone, audit, migration, or mirror-receipt events.
+
+Canonical events use a durable outbox, ordered sequence, idempotent delivery, bounded retry, dead letter, and replay. They may be batched for transport only when every individual event remains independently addressable and digest-verifiable. They may not be dropped or semantically coalesced.
+
 Three-tier rate limiting strategy:
 
 ### Tier 1: Server-Side Rate Limiting
@@ -74,6 +82,7 @@ class EventBroadcaster:
 
 **Behavior**:
 - Events exceeding rate limit are dropped (logged to telemetry)
+- This drop rule is restricted to `ephemeral_telemetry`; it is prohibited for `canonical_record_change`.
 - No blocking or queuing (preserves responsiveness)
 - Clients unaware of dropped events (application semantics preserved)
 

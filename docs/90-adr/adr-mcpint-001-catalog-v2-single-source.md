@@ -360,3 +360,9 @@ v1; the legacy registry stays deleted (nothing reads it).
 ---
 
 *PAL consensus outcome recorded in the Validation section above (2026-07-17).*
+
+## Accepted amendment: ConPort CRS v2 catalog
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json).
+
+The catalog contains one logical agent-facing ConPort identity: `conport-crs-v2`. It references the accepted normalized tool-contract digest and immutable runtime pins. Agent configuration may expose a local stdio launcher, but the launcher routes to the same authenticated policy-enforced core. The separate operator admin contract is not an agent catalog entry. Tool counts are generated from the accepted snapshot and are never hand-coded as an architectural invariant.

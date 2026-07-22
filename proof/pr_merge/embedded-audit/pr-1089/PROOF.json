@@ -1,0 +1,82 @@
+{
+  "packet_id": "PR-MERGE-STEWARD-1089",
+  "pr_number": 1089,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "32a6024592929ae1748144aeb775f612c86d6ba7",
+  "base_sha": "5a9f8f7b5d4a03be323723a92baf3c4e162d5b65",
+  "generated_at": "2026-07-22T02:34:59Z",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "read /tmp/conport1089-local-audit-input.md in full (17,736 lines: trusted preamble, output contract, untrusted candidate metadata, untrusted unified diff incl. base85 binary patch regions); git log/show/diff-stat 5a9f8f7b5..32a602459 (read-only, no checkout); shasum -a 256 spot-checks of docs/90-adr/adr-002*.md, adr-conport-canonical-record-service-v2.md, adr-index.md at reviewed commit a5b9006aa3f5a95f81e4bab324931ade71ee8b31 against WAVE0-FILE-HASHES.json; shasum -a 256 of the 3 committed binary artifacts (CONPORT-W0-ADR-CUSTODY.bundle, CONPORT-W1-ADR-INDEPENDENT-REVIEW-INPUT.zip, CONPORT-W1-CUSTODY-REREVIEW.zip) against their .sha256 sidecars; git bundle verify + scratch-clone fetch of CONPORT-W0-ADR-CUSTODY.bundle to reconstruct commit/parent/tree receipt against WAVE0-CUSTODY-VERIFY.md; manual line-by-line fidelity comparison of Wave-0 reviewed ADR text vs. PR-head effectuated text across all 21 touched ADRs; grep -inE secret/credential/instruction-injection patterns over full diff text and both base85 binary-patch regions; no PR branch checkout, no code execution (PR is docs/proof-bundle only, no code paths touched)",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1089/PROOF.json",
+    "verdict": "PASS_WITH_RISKS",
+    "instruction_like_acknowledged": false,
+    "findings": [
+      {
+        "id": "F1-provenance-not-reproducible",
+        "severity": "medium-high",
+        "summary": "The 'independence' of the Wave 1 architecture review cannot be established from repository evidence; the entire governance claim (which authorizes flipping ~14 ADRs) rests on unverifiable self-attestation. All 5 commits in the ConPort CRS v2 chain share the same unsigned author identity within a 61-minute window, and WAVE1-ACCEPTANCE.json itself records the reviewer's personal identity as UNKNOWN_NOT_ENCODED_IN_SUPPLIED_REVIEW_ARTIFACTS."
+      },
+      {
+        "id": "F2-effectuation-gap-not-hash-bound",
+        "severity": "medium",
+        "summary": "The merged ADR text (PR head) differs byte-for-byte from the text Wave 1 hash-pinned as 'reviewed' (WAVE1-REVIEWED-ADR-DIGESTS.json pins the pre-effectuation 'proposed, pending' commit, not PR head). No artifact in the bundle binds the two by hash; the bundle's own WAVE0/WAVE1-VALIDATION.json correctly mark 'pr-head-pin' as NOT_RUN. Auditor's manual line-by-line comparison found the transform faithful, but this is not a cryptographic guarantee."
+      },
+      {
+        "id": "F3-non-additive-edit-adr-002",
+        "severity": "low",
+        "summary": "adr-002's authority table row was rewritten in place (conport → conport-crs-v2 write target) rather than appended as a labeled amendment, unlike the other 19 modified ADRs. Content matches the accepted change set's intent; flagged only because it's the one case of in-place decision-prose edit rather than pure append."
+      },
+      {
+        "id": "F4-disclosed-structural-deviations",
+        "severity": "informational",
+        "summary": "WAVE0-DISPOSITION.json discloses added H1 headers on skeletal adr-201 and duplicate adr-213 so the deprecation notice has a heading to follow; confirmed honestly self-reported and content-neutral."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Merge-gate risk: the PR's own proof bundle states implementation_authorized=false, merge_authorized=false, wave2_authorized=false, and lists 'embedded audit', 'PR-scoped audit', 'PR-head pin', and 'explicit merge authorization' as outstanding follow-ups. This run satisfies the embedded-audit gate at head 32a6024592929ae1748144aeb775f612c86d6ba7 only; separate explicit human merge authorization is still required per the bundle's own design and must not be inferred from this PASS_WITH_RISKS verdict.",
+      "Authority-legitimacy risk (see F1): downstream tooling should not treat 'Wave 1 ACCEPTED' as a strong independent-governance signal without out-of-band confirmation of who actually performed the review.",
+      "Hash-binding risk (see F2): future automation must not assume WAVE1-REVIEWED-ADR-DIGESTS.json describes the ADR text now live in the repo post-merge — it describes the pre-effectuation text. No PR-head-pinned digest set exists yet in this bundle.",
+      "Partial verification depth: only 3 of 22 file hashes and the outer container hash of 2 zip archives (not all 49 packaged entries within) were spot-checked; full internal-content verification of the zip payloads was not performed."
+    ],
+    "skip_reason": null,
+    "validation_status": {
+      "candidate_diff_matches_actual_git_history": "PASS",
+      "internal_status_consistency_vs_disposition_records": "PASS",
+      "wave0_file_hash_spot_check": "PASS (3 of 22 files spot-checked)",
+      "binary_artifact_hash_verification": "PASS (3 of 3 committed binaries, outer container only)",
+      "zip_internal_49_entry_content_verification": "NOT_RUN",
+      "git_bundle_verify_and_ancestry_reconstruction": "PASS",
+      "effectuation_text_fidelity_vs_wave0_reviewed_text": "PASS (manual comparison, not hash-bound — see F2)",
+      "reviewer_independence_verification": "FAIL (cannot be established from available git evidence — see F1)",
+      "secrets_and_injection_scan": "PASS",
+      "adr_index_and_cross_reference_sanity_check": "PASS",
+      "scope_and_blast_radius_review": "PASS (one noted non-additive edit — F3)",
+      "pytest_or_any_code_execution": "NOT_RUN (no code in this PR)",
+      "runtime_or_deployment_validation": "NOT_RUN (out of scope; docs/proof-only PR)",
+      "pr_branch_checkout": "NOT_RUN (intentionally not performed per audit instructions)"
+    },
+    "evidence_refs": [
+      "git diff-stat 5a9f8f7b5d4a03be323723a92baf3c4e162d5b65..32a6024592929ae1748144aeb775f612c86d6ba7: 46 files changed, 2331 insertions(+), 15 deletions(-), matches candidate metadata changed_files list exactly",
+      "PR head commit chain: 5186bc901 -> 5bb6689bc -> 80e8ea4d8 -> 19c9f1276 -> 32a602459, all same unsigned author/committer within a 61-minute window",
+      "Recomputed sha256 of 3 spot-checked ADR files at reviewed commit a5b9006aa3f5a95f81e4bab324931ade71ee8b31: match WAVE0-FILE-HASHES.json / WAVE0-GIT-CUSTODY-FILES.json",
+      "Recomputed sha256 of CONPORT-W0-ADR-CUSTODY.bundle, CONPORT-W1-ADR-INDEPENDENT-REVIEW-INPUT.zip, CONPORT-W1-CUSTODY-REREVIEW.zip as committed at PR head: match their .sha256 sidecars",
+      "git bundle verify + scratch-clone reconstruction of commit/parent/tree receipt matches WAVE0-CUSTODY-VERIFY.md exactly",
+      "git diff of 3 spot-checked ADRs between base_sha and head_sha reproduced byte-identically to the untrusted candidate diff text",
+      "grep -inE secret/injection scan across full 17,736-line input file and both base85 binary-patch regions: zero suspicious matches"
+    ],
+    "rationale": "Docs/governance-only PR (20 modified ADRs + 1 new ADR + proof/conport-crs-v2 wave0+wave1 bundle, no code paths touched). Candidate diff verified to match actual git history byte-for-byte on spot-checks; internal status-flip consistency against disposition/acceptance records holds; committed binary custody artifacts (bundle + 2 zips) hash-verified against sidecars and reconstructed via git-bundle-verify; no secrets or embedded instructions found. Two material, self-disclosed provenance gaps keep this below a clean PASS: (1) 'independent' Wave 1 review authority rests on unsigned same-author commits within a 61-minute window with reviewer identity marked UNKNOWN in the bundle's own acceptance record; (2) no digest set in the bundle is hash-bound to actual PR-head content — only manual line-by-line comparison (not cryptographic) establishes effectuation fidelity. No evidence of fabrication, injection, secret leakage, or undisclosed scope creep. Full agent transcript and reasoning retained in session (agentId a4ddf939bd8069935).",
+    "instruction_scan": {
+      "detected_by_candidate_own_scan": false,
+      "detected_by_independent_agent_scan": false,
+      "match_count": 0
+    }
+  }
+}
