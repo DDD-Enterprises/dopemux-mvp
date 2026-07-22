@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,16 @@ def test_checked_in_manifest_is_valid_and_paths_exist() -> None:
     assert manifest["registry"] == "ghcr.io/ddd-enterprises/dopemux-mvp"
     assert manifest["platform"] == "linux/amd64"
     assert len(manifest["targets"]) >= 15
+
+
+def test_manifest_rejects_embedded_ghcr_host_substring(tmp_path: Path) -> None:
+    manifest = container_matrix.load_manifest()
+    manifest["registry"] = "attacker.example/ghcr.io/ddd-enterprises/dopemux-mvp"
+    candidate = tmp_path / "containers.json"
+    candidate.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(container_matrix.ManifestError, match="exact ghcr.io namespace"):
+        container_matrix.load_manifest(candidate)
 
 
 def test_matrix_preserves_publish_and_smoke_metadata() -> None:
