@@ -75,7 +75,7 @@ services:
 
   # Redis Events (for EventBus streaming)
   redis-events:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: redis-events
     restart: unless-stopped
     networks:
@@ -91,7 +91,7 @@ services:
 
   # Redis Primary (for caching)
   redis-primary:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: redis-primary
     restart: unless-stopped
     networks:
@@ -131,7 +131,7 @@ services:
 
   # Redis (Leantime cache/session support)
   redis_leantime:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: redis_leantime
     restart: unless-stopped
     networks:
