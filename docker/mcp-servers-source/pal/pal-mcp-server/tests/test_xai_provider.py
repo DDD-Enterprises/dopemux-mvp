@@ -179,6 +179,20 @@ class TestXAIProvider:
         assert result.content == "Test response"
         assert result.model_name == "grok-4.5"
 
+    @patch("providers.openai_compatible.OpenAI")
+    def test_image_responses_disable_server_storage(self, mock_openai_class):
+        mock_client = MagicMock()
+        mock_openai_class.return_value = mock_client
+        mock_client.responses.create.return_value = MagicMock(output_text="described", usage=None)
+
+        provider = XAIModelProvider("test-key")
+        provider._process_image = MagicMock(
+            return_value={"type": "image_url", "image_url": {"url": "data:image/png;base64,AA=="}}
+        )
+        provider.generate_content(prompt="Describe image.", model_name="grok-4.5", images=["image.png"])
+
+        assert mock_client.responses.create.call_args.kwargs["store"] is False
+
     def test_current_model_preferences_use_grok_4_5(self):
         from tools.models import ToolModelCategory
 
