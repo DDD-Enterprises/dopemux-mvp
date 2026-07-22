@@ -7,14 +7,14 @@ author: "Wave 0 documentation packet"
 date: 2026-07-21
 last_review: 2026-07-21
 next_review: 2026-08-21
-status: proposed
+status: accepted
 graph_metadata:
   node_type: ADR
   impact: high
   relates_to:
     - adr-conport-as-decision-progress-and-context-authority
     - adr-memory-trinity-authority-and-interaction-model
-supersedes_if_accepted:
+supersedes:
   - adr-conport-as-decision-progress-and-context-authority
 relates_to:
   - adr-memory-trinity-authority-and-interaction-model
@@ -26,14 +26,14 @@ relates_to:
   - adr-mcpint-002
   - adr-mcpint-004
   - adr-conport-migration-foundation-gate
-prelude: Proposes one normalized Dopemux ConPort canonical record service with registry-backed identity, bounded authority, durable events, derived projections, and ADR-gated rollout.
+prelude: Defines one normalized Dopemux ConPort canonical record service with registry-backed identity, bounded authority, durable events, derived projections, and ADR-gated rollout.
 ---
 
 # ADR: ConPort Canonical Record Service v2
 
 ## Status and authority
 
-**Proposed.** This text has no implementation authority until an independent Wave 1 review accepts the exact ADR digest. Acceptance does not itself authorize code, migration, deployment, cleanup, or cutover.
+**Accepted (2026-07-21).** Independent Wave 1 review accepted the exact ADR digest under the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json). Acceptance does not itself authorize code, migration, deployment, cleanup, cutover, merge, or Wave 2.
 
 ## Context
 
@@ -231,4 +231,4 @@ Not selected as the default. It can physically isolate data but multiplies lifec
 
 ## Non-authorization statement
 
-This ADR is a proposal. It authorizes no code, schema, migration, runtime, data, client, deployment, cleanup, or merge action.
+This accepted ADR authorizes no code, schema, migration, runtime, data, client, deployment, cleanup, merge, or Wave 2 action by itself.

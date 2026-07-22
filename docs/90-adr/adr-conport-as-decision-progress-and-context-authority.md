@@ -8,7 +8,8 @@ date: '2026-03-11'
 last_review: '2026-06-19'
 next_review: '2026-09-19'
 prelude: ConPort is the canonical source for decisions, progress, and durable structured project context across the PM plane.
-status: accepted
+status: superseded
+superseded_by: adr-conport-canonical-record-service-v2
 graph_metadata:
   node_type: ADR
   impact: high
@@ -23,10 +24,10 @@ graph_metadata:
 
 # ADR: ConPort as decision, progress, and context authority
 
-> **Proposed supersession pending independent review (2026-07-21).**
-> `adr-conport-canonical-record-service-v2` proposes to supersede this ADR because current runtime evidence invalidates the tolerated multi-surface deployment and the broad `progress` authority. Until the proposed ADR is independently accepted, this ADR remains effective. If accepted, this file changes to `status: superseded`, adds `superseded_by: adr-conport-canonical-record-service-v2`, and its historical content remains unchanged.
+> **Superseded (2026-07-21).**
+> `adr-conport-canonical-record-service-v2` supersedes this ADR under the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json) because reviewed evidence invalidated the tolerated multi-surface deployment and broad `progress` authority. Historical content remains below for auditability.
 
-**Status:** Accepted
+**Status:** Superseded
 **Date:** 2026-03-11
 **Owners:** Dopemux Memory Plane / PM Plane / Context Plane
 **Decision Type:** Authority Boundary / Context Architecture

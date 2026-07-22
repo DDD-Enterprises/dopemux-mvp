@@ -115,9 +115,9 @@ pre-existing ledger this gate does not own."
 - The gate's native ledger schema and the guard's `NATIVE_LEDGER_COLUMNS`
   constant must stay in sync (enforced by a unit test).
 
-## Proposed amendment: CRS v2 migration boundary
+## Accepted amendment: CRS v2 migration boundary
 
-Pending independent acceptance of `adr-conport-canonical-record-service-v2`, the migration gate additionally requires:
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json). The migration gate additionally requires:
 
 1. a target-specific schema/migration bundle digest and target epoch;
 2. a verified encrypted backup and isolated restore receipt before source mutation;

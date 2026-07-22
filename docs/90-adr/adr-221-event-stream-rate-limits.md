@@ -42,7 +42,9 @@ Naive approaches fail:
 
 ## Solution
 
-## Proposed amendment: event-class boundary
+## Accepted amendment: event-class boundary
+
+Accepted on 2026-07-21 by the [Wave 1 acceptance record](../../proof/conport-crs-v2/wave1/WAVE1-ACCEPTANCE.json).
 
 The rate-limit, drop, tail-buffer, and coalescing rules in this ADR apply only to ephemeral UI/event-pane delivery. They do not govern canonical record-change, approval, identity, supersession, deletion/tombstone, audit, migration, or mirror-receipt events.
 
