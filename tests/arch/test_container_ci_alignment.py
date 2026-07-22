@@ -38,15 +38,23 @@ def test_compose_alignment_accepts_every_declared_build_service() -> None:
     manifest = container_matrix.load_manifest()
     services = {}
     for target in manifest["targets"]:
+        compose_context = target.get("compose_context", target["context"])
+        compose_dockerfile = target.get("compose_dockerfile", target["dockerfile"])
         for compose_service in target["compose_services"]:
             services[compose_service] = {
                 "build": {
-                    "context": str((ROOT / target["context"]).resolve()),
-                    "dockerfile": str((ROOT / target["dockerfile"]).resolve()),
+                    "context": str((ROOT / compose_context).resolve()),
+                    "dockerfile": str((ROOT / compose_dockerfile).resolve()),
                 }
             }
 
     container_matrix.validate_compose_alignment(manifest, {"services": services})
+
+
+def test_known_compose_wrapper_drift_is_explicit() -> None:
+    manifest = container_matrix.load_manifest()
+
+    assert container_matrix.compose_drift_targets(manifest) == ["conport", "litellm"]
 
 
 def test_compose_alignment_fails_closed_on_unmapped_build_service() -> None:
