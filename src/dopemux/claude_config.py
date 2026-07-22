@@ -14,6 +14,7 @@ import logging
 import json
 import os
 import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -346,12 +347,15 @@ class ClaudeConfig:
             )
 
         if skipped_servers:
-            logger.warning(
-                "Profile '%s': skipping MCP servers not configured in %s: %s",
-                profile.name,
-                self.config_path,
-                ", ".join(skipped_servers),
+            message = (
+                f"Profile '{profile.name}': skipping MCP servers not configured "
+                f"in {self.config_path}: {', '.join(skipped_servers)}"
             )
+            logger.warning(message)
+            # logger.warning alone is easy to miss in interactive use (it may
+            # not reach the terminal depending on logging config); echo to
+            # stderr too so a degraded profile is never silent.
+            print(f"⚠️  {message}", file=sys.stderr)
 
         return filtered_servers
 

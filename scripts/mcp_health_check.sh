@@ -114,8 +114,10 @@ echo "🔌 MCP Endpoint Checks:"
 echo "----------------------"
 
 check_mcp_endpoint "Dope-Context" 3010 "mcp" || record_failure
-check_mcp_endpoint "PAL" 3003 "sse" || record_failure
 check_mcp_endpoint "ConPort" 3004 "mcp" || record_failure
+# PAL-http (3003) is a health/lifecycle shim only — /mcp, /sse, /messages all
+# 404 by design (ADR-MCPINT-001 §4, P0 claim 11). Its liveness is covered by
+# check_health above; the real MCP surface is pal-stdio, covered below.
 
 echo
 echo "🔌 Stdio MCP Checks:"

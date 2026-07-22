@@ -270,8 +270,9 @@ services:
     assert any("mcp-conport" in r for r in diag2["fixed_container_name_risks"])
     assert any(".dopemux" in r for r in diag2["relative_volume_risks"])
     by_code2 = {f["code"]: f for f in diag2["findings"]}
-    assert by_code2["COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK"]["severity"] == "WARN"
-    assert by_code2["COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK"]["severity"] == "WARN"
+    # A verified compose file that actually shows the hazard escalates to FAIL.
+    assert by_code2["COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK"]["severity"] == "FAIL"
+    assert by_code2["COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK"]["severity"] == "FAIL"
     assert any(
         "DOPEMUX_WORKSPACE_ID" in r for r in diag2["identity_env_risks"]
     )

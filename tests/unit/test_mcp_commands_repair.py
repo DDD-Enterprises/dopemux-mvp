@@ -117,6 +117,43 @@ def test_repair_config_apply_json(fixture_repo):
     assert (fixture_repo / ".envrc.dopemux-mcp").is_file()
 
 
+def test_repair_config_preserves_remote_proxy_target_on_re_apply(fixture_repo):
+    """A custom remote/credentialed proxy target must survive a second repair.
+
+    Regression test: after the first --apply migrates an entry to the
+    stdio+mcp-proxy shape, a user may hand-edit `args[-1]` to point at a
+    remote or credentialed conport/dope-memory instead of the catalog's
+    localhost default. A later `repair-config --apply` must not silently
+    overwrite that back to the catalog target.
+    """
+    runner = CliRunner()
+    first = runner.invoke(
+        mcp_commands.mcp,
+        ["repair-config", "--repo", str(fixture_repo), "--apply", "--json"],
+    )
+    assert first.exit_code == 0, first.output
+
+    mcp_json_path = fixture_repo / ".mcp.json"
+    mcp = json.loads(mcp_json_path.read_text())
+    remote_url = "https://user:secret@remote-dope-memory.example.com/mcp"
+    mcp["mcpServers"]["dope-memory"]["args"][-1] = remote_url
+    mcp_json_path.write_text(json.dumps(mcp) + "\n")
+
+    second = runner.invoke(
+        mcp_commands.mcp,
+        ["repair-config", "--repo", str(fixture_repo), "--apply", "--json"],
+    )
+    assert second.exit_code == 0, second.output
+    data = json.loads(second.output)
+    assert any(
+        p.get("service") == "dope-memory" and "non-localhost" in p.get("reason", "")
+        for p in data.get("preserved_entries", [])
+    ), data
+
+    mcp_after = json.loads(mcp_json_path.read_text())
+    assert mcp_after["mcpServers"]["dope-memory"]["args"][-1] == remote_url
+
+
 def test_fleet_init_dry_run_json(fixture_repo, monkeypatch):
     runner = CliRunner()
     result = runner.invoke(

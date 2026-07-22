@@ -21,6 +21,28 @@ ENVRC_FILENAME = ".envrc.dopemux-mcp"
 PROJECT_MCP_FILENAME = ".mcp.json"
 
 
+def _service_summary(name: str, entry: Any) -> Dict[str, Any]:
+    """Flatten an mcpServers entry for diagnostic display.
+
+    Catalog-rendered http/sse entries are wrapped as ``stdio`` + `uvx
+    mcp-proxy ... <url>` (see mcp_commands._render_local_entry); raw `url` is
+    absent on those. Recover it from `args` so the raw diagnostic dump doesn't
+    silently show `url: null` for every proxied server.
+    """
+    if not isinstance(entry, dict):
+        return {"name": name, "type": "unknown", "url": None}
+    url = entry.get("url")
+    args = entry.get("args")
+    if url is None and entry.get("command") == "uvx" and isinstance(args, list) and "mcp-proxy" in args:
+        url = args[-1] if args else None
+    return {
+        "name": name,
+        "type": entry.get("type"),
+        "url": url,
+        "command": entry.get("command"),
+    }
+
+
 @dataclass
 class ProjectIdentityView:
     project_id: Optional[str]
@@ -186,19 +208,7 @@ def load_mcp_json(path: Path) -> Dict[str, Any]:
             "servers": {},
             "error": "mcpServers is not a mapping",
         }
-    service_summaries = []
-    for name, entry in servers.items():
-        if not isinstance(entry, dict):
-            service_summaries.append({"name": name, "type": "unknown", "url": None})
-            continue
-        service_summaries.append(
-            {
-                "name": name,
-                "type": entry.get("type"),
-                "url": entry.get("url"),
-                "command": entry.get("command"),
-            }
-        )
+    service_summaries = [_service_summary(name, entry) for name, entry in servers.items()]
     return {
         "path": str(path),
         "present": True,
@@ -235,19 +245,7 @@ def load_global_claude(path: Optional[Path] = None) -> Dict[str, Any]:
     servers = data.get("mcpServers") or {}
     if not isinstance(servers, dict):
         servers = {}
-    services = []
-    for name, entry in servers.items():
-        if not isinstance(entry, dict):
-            services.append({"name": name, "type": "unknown", "url": None})
-            continue
-        services.append(
-            {
-                "name": name,
-                "type": entry.get("type"),
-                "url": entry.get("url"),
-                "command": entry.get("command"),
-            }
-        )
+    services = [_service_summary(name, entry) for name, entry in servers.items()]
     return {
         "path": str(global_path),
         "present": True,
@@ -487,23 +485,29 @@ def compose_lifecycle_diagnostics(
             }
         )
 
-    # These are raw-compose hazards. The repo-aware lifecycle always generates
-    # an override with unique names and an absolute memory bind, so doctor must
-    # preserve visibility without rejecting a verified scoped runtime.
+    # FAIL only when compose content was inspected and shows the hazard.
+    # Convention-only notes (no compose file) stay WARN so doctor does not
+    # hard-fail repos that never ship a dopemux compose.yml.
+    compose_verified = bool(text)
     if fixed_name_risks:
         findings_seed.append(
             {
                 "code": "COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK",
-                "severity": "WARN",
+                "severity": "FAIL" if compose_verified else "WARN",
                 "service": "conport",
                 "message": (
-                    "Fixed/default mcp-conport container name is unsafe for raw "
-                    "multi-project compose use; repo-aware lifecycle overrides it."
+                    "Fixed/default mcp-conport container name risks replacing the primary "
+                    "ConPort container when starting another project's stack."
+                    if compose_verified
+                    else (
+                        "Compose file unavailable; cannot verify container_name uniqueness. "
+                        "Convention risk: conport may default to mcp-conport."
+                    )
                 ),
                 "evidence": fixed_name_risks,
                 "recommendation": (
-                    "Use `dopemux mcp start`; it generates unique names and labels. "
-                    "Do not use raw compose for a second project."
+                    "Always set unique CONPORT_CONTAINER_NAME per project/worktree; "
+                    "Packet 002 should enforce labels + unique names."
                 ),
             }
         )
@@ -512,16 +516,21 @@ def compose_lifecycle_diagnostics(
         findings_seed.append(
             {
                 "code": "COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK",
-                "severity": "WARN",
+                "severity": "FAIL" if compose_verified else "WARN",
                 "service": "dope-memory",
                 "message": (
-                    "Relative dope-memory volume is unsafe for raw multi-project compose "
-                    "use; repo-aware lifecycle overrides it with an absolute target bind."
+                    "Starting dope-memory for another repo from dopemux-mvp compose can bind "
+                    "dopemux-mvp/.dopemux instead of the target repo .dopemux, causing memory-state bleed."
+                    if compose_verified
+                    else (
+                        "Compose file unavailable; cannot verify volume binds. "
+                        "Convention risk: dope-memory may bind ./.dopemux relative to compose cwd."
+                    )
                 ),
                 "evidence": relative_volume_risks,
                 "recommendation": (
-                    "Use `dopemux mcp start`; it generates an absolute target-repo data bind. "
-                    "Do not use raw compose for a second project."
+                    "Do not start foreign-repo dope-memory via dopemux-mvp cwd compose until "
+                    "Packet 002 binds absolute target-repo data paths."
                 ),
             }
         )

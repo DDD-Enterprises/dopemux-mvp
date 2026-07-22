@@ -210,9 +210,39 @@ def plan_mcp_json_repairs(
             )
             continue
 
-        # Non-localhost / credential URLs: preserve URL, only repair type if safe
+        # Non-localhost / credential URLs: never silently repair. The current
+        # target may live in a flat `url` field (pre-proxy shape) or be
+        # embedded in `args[-1]` of an already-migrated stdio+mcp-proxy entry
+        # (see mcp_commands._render_local_entry) — check both, since `desired`
+        # no longer carries a `url` key at all for http/sse-owned catalog
+        # entries once they're proxy-rendered, so a plain `desired.get("url")`
+        # guard would never fire post-migration.
         current_url = current.get("url")
+        if not isinstance(current_url, str):
+            current_args = current.get("args")
+            if (
+                current.get("command") == "uvx"
+                and isinstance(current_args, list)
+                and "mcp-proxy" in current_args
+                and current_args
+            ):
+                current_url = current_args[-1]
         url_ok = _url_is_repairable(current_url if isinstance(current_url, str) else None)
+
+        desired_args = desired.get("args")
+        catalog_renders_proxy_url = (
+            desired.get("command") == "uvx" and isinstance(desired_args, list) and "mcp-proxy" in desired_args
+        )
+        if not url_ok and isinstance(current_url, str) and catalog_renders_proxy_url:
+            preserved.append(
+                {
+                    "path": mcp_json_path,
+                    "service": name,
+                    "reason": "non-localhost or credential URL preserved",
+                }
+            )
+            merged[name] = dict(current)
+            continue
 
         new_entry = dict(current)
         change_reasons: List[str] = []
@@ -221,19 +251,6 @@ def plan_mcp_json_repairs(
         if desired_type and current.get("type") != desired_type:
             new_entry["type"] = desired_type
             change_reasons.append("TRANSPORT_MISMATCH")
-
-        if url_ok and desired.get("url") and current.get("url") != desired.get("url"):
-            new_entry["url"] = desired["url"]
-            change_reasons.append("URL_MISMATCH")
-        elif not url_ok and desired.get("url") and current.get("url") != desired.get("url"):
-            # Explicitly do not change non-local URLs
-            preserved.append(
-                {
-                    "path": mcp_json_path,
-                    "service": name,
-                    "reason": "non-localhost or credential URL preserved",
-                }
-            )
 
         # Align env / command / args only when present in desired catalog entry
         for key in ("env", "command", "args"):
