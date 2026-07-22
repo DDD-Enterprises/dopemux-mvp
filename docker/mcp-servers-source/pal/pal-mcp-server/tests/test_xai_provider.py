@@ -94,7 +94,7 @@ class TestXAIProvider:
             provider.get_capabilities("grok-3")
 
     @patch.dict(os.environ, {"XAI_ALLOWED_MODELS": "grok"})
-    def test_alias_restriction_allows_alias_only(self):
+    def test_alias_restriction_allows_canonical_model(self):
         import utils.model_restrictions
         from providers.registry import ModelProviderRegistry
 
@@ -103,7 +103,7 @@ class TestXAIProvider:
         provider = XAIModelProvider("test-key")
 
         assert provider.validate_model_name("grok") is True
-        assert provider.validate_model_name("grok-4.5") is False
+        assert provider.validate_model_name("grok-4.5") is True
 
     @patch.dict(os.environ, {"XAI_ALLOWED_MODELS": "grok-4.5"})
     def test_canonical_restriction_allows_alias_resolution(self):
