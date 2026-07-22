@@ -22,6 +22,7 @@ ALLOWED_CLASSIFICATIONS = {
     "legacy-compatibility",
     "legacy-unwired",
 }
+ALLOWED_COMPOSE_PATH_STATUSES = {"aligned", "missing-wrapper"}
 REQUIRED_TARGET_FIELDS = {
     "service",
     "image",
@@ -119,6 +120,20 @@ def validate_manifest(data: dict[str, Any], *, check_paths: bool = True) -> None
             raise ManifestError(f"{label}.context must be a non-empty string")
         if not isinstance(dockerfile, str) or not dockerfile:
             raise ManifestError(f"{label}.dockerfile must be a non-empty string")
+
+        compose_context = target.get("compose_context", context)
+        compose_dockerfile = target.get("compose_dockerfile", dockerfile)
+        compose_path_status = target.get("compose_path_status", "aligned")
+        if not isinstance(compose_context, str) or not compose_context:
+            raise ManifestError(f"{label}.compose_context must be a non-empty string")
+        if not isinstance(compose_dockerfile, str) or not compose_dockerfile:
+            raise ManifestError(f"{label}.compose_dockerfile must be a non-empty string")
+        if compose_path_status not in ALLOWED_COMPOSE_PATH_STATUSES:
+            raise ManifestError(
+                f"{label}.compose_path_status is invalid: {compose_path_status!r}"
+            )
+        if compose_path_status == "missing-wrapper" and not compose_services:
+            raise ManifestError(f"{label} cannot declare missing-wrapper without Compose services")
 
         if check_paths:
             context_path = (ROOT / context).resolve()
@@ -222,10 +237,12 @@ def validate_compose_alignment(data: dict[str, Any], config: dict[str, Any]) -> 
     actual = compose_build_map(config)
     expected: dict[str, tuple[str, str, str]] = {}
     for target in data["targets"]:
+        compose_context = target.get("compose_context", target["context"])
+        compose_dockerfile = target.get("compose_dockerfile", target["dockerfile"])
         for compose_service in target["compose_services"]:
             expected[compose_service] = (
-                target["context"],
-                target["dockerfile"],
+                compose_context,
+                compose_dockerfile,
                 target["service"],
             )
 
@@ -246,6 +263,14 @@ def validate_compose_alignment(data: dict[str, Any], config: dict[str, Any]) -> 
             )
     if conflicts:
         raise ManifestError("Compose/manifest build conflicts:\n- " + "\n- ".join(conflicts))
+
+
+def compose_drift_targets(data: dict[str, Any]) -> list[str]:
+    return [
+        target["service"]
+        for target in data["targets"]
+        if target.get("compose_path_status", "aligned") != "aligned"
+    ]
 
 
 def _write_github_output(name: str, value: str, output_path: str | None) -> None:
@@ -288,7 +313,14 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "validate-compose":
             config = _run_compose_config(args.compose)
             validate_compose_alignment(data, config)
-            print(f"PASS: {len(compose_build_map(config))} Compose build services aligned")
+            print(f"PASS: {len(compose_build_map(config))} Compose build services mapped")
+            drift = compose_drift_targets(data)
+            if drift:
+                print(
+                    "WARNING: Compose still references missing wrapper Dockerfiles for: "
+                    + ", ".join(drift),
+                    file=sys.stderr,
+                )
         else:  # pragma: no cover
             raise AssertionError(f"Unhandled command: {args.command}")
     except ManifestError as exc:
