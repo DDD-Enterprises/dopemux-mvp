@@ -1,1 +1,0 @@
-"""MCP client implementations for external service integration."""
