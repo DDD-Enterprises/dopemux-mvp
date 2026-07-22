@@ -1,0 +1,155 @@
+{
+  "authorization": {
+    "implementation_authorized": false,
+    "merge_authorized": false,
+    "runtime_mutated": false,
+    "wave2_authorized": false
+  },
+  "carried_forward_boundaries": [
+    {
+      "check": "embedded-audit",
+      "status": "NOT_RUN"
+    },
+    {
+      "check": "runtime-validation",
+      "status": "NOT_RUN"
+    },
+    {
+      "check": "pr-scoped-audit",
+      "status": "NOT_RUN"
+    }
+  ],
+  "checks": [
+    {
+      "id": "outer-zip-byte-count",
+      "observed": 503903,
+      "status": "PASS"
+    },
+    {
+      "id": "outer-sidecar-sha256",
+      "observed": "8289a552cd3d02c6465a189d51052b2c93a5710f279aa3212208118aee9c6d37",
+      "status": "PASS"
+    },
+    {
+      "id": "zip-crc",
+      "status": "PASS"
+    },
+    {
+      "id": "safe-relative-paths",
+      "status": "PASS"
+    },
+    {
+      "id": "duplicate-entry-check",
+      "status": "PASS"
+    },
+    {
+      "archive_entries_including_manifest": 50,
+      "id": "manifest-inventory",
+      "payload_entries": 49,
+      "status": "PASS"
+    },
+    {
+      "id": "manifest-byte-and-sha256-verification",
+      "status": "PASS",
+      "verified_entries": 49
+    },
+    {
+      "id": "json-parse",
+      "json_files": 13,
+      "status": "PASS"
+    },
+    {
+      "candidate_sha256": "f0e63f9a0a34b26269ea4a75020bfa81c4738180e270801e97aad1eea1bfaac1",
+      "id": "candidate-identity-recorded",
+      "status": "PASS"
+    },
+    {
+      "bytes": 272027,
+      "id": "git-bundle-byte-and-sha256",
+      "sha256": "b8c3700e383f13d758c12002616d95e5b42e33e0fa2f62ef53fdca7e9207fe18",
+      "status": "PASS"
+    },
+    {
+      "advertised_head": "5186bc9013d0e7e8e22ef8a03c9ae58aa3447c9f",
+      "id": "git-bundle-header",
+      "prerequisite": "9d7878092e31d021eceaf829355e73bec33b36eb",
+      "status": "PASS"
+    },
+    {
+      "id": "git-pack-trailer-checksum",
+      "sha1": "3d2b7bf12b6d24df1849d947159065b3da2ebeed",
+      "status": "PASS"
+    },
+    {
+      "count": 3,
+      "id": "contained-commit-count",
+      "status": "PASS"
+    },
+    {
+      "commit": "5a9f8f7b5d4a03be323723a92baf3c4e162d5b65",
+      "id": "baseline-commit-object",
+      "parent": "9d7878092e31d021eceaf829355e73bec33b36eb",
+      "status": "PASS",
+      "tree": "017f480d656fc5e6a048278d7ac9071b6219c326"
+    },
+    {
+      "commit": "a5b9006aa3f5a95f81e4bab324931ade71ee8b31",
+      "id": "reviewed-commit-object",
+      "parent": "5a9f8f7b5d4a03be323723a92baf3c4e162d5b65",
+      "status": "PASS",
+      "tree": "73fe54ea841369b3c3126562d8bd1ba22384200d"
+    },
+    {
+      "commit": "5186bc9013d0e7e8e22ef8a03c9ae58aa3447c9f",
+      "id": "advertised-proof-head-object",
+      "parent": "a5b9006aa3f5a95f81e4bab324931ade71ee8b31",
+      "status": "PASS"
+    },
+    {
+      "commit_count": 1,
+      "id": "baseline-to-reviewed-distance",
+      "status": "PASS"
+    },
+    {
+      "id": "reviewed-blob-resolution-from-bundle",
+      "resolved_and_matched": 22,
+      "status": "PASS"
+    },
+    {
+      "id": "git-tree-file-records",
+      "rows": 22,
+      "status": "PASS"
+    },
+    {
+      "bytes": 44289,
+      "id": "patch-recompute-byte-equality",
+      "sha256": "4f54df3a8115b295164c746c4da0413b6bcf38d0efa847e3e9d4d843f8b2a72a",
+      "status": "PASS"
+    },
+    {
+      "id": "target-adr-remains-proposed",
+      "status": "PASS"
+    },
+    {
+      "effective_status_changes": 0,
+      "id": "effective-status-change-check",
+      "status": "PASS"
+    }
+  ],
+  "disposition": "The blocking custody defect is repaired. Acceptance applies only to the exact input ZIP digest and reviewed ADR commit identified above.",
+  "method_note": {
+    "git_bundle_verify": "The sandbox could not create a network clone containing the prerequisite commit. Equivalent independent verification was performed at the bundle-object level: bundle header and prerequisite identity, pack trailer checksum, direct commit SHA reconstruction, OFS-delta advertised-head reconstruction, one-commit ancestry, all 22 reviewed blobs resolved from bundle deltas, and exact patch reproduction. Connected GitHub metadata independently confirmed the prerequisite commit identity."
+  },
+  "review_type": "CUSTODY_ONLY_RE_REVIEW",
+  "schema_version": "1.0.0",
+  "scope": {
+    "baseline": "5a9f8f7b5d4a03be323723a92baf3c4e162d5b65",
+    "input_zip": "CONPORT-W1-ADR-INDEPENDENT-REVIEW-INPUT.zip",
+    "input_zip_bytes": 503903,
+    "input_zip_sha256": "8289a552cd3d02c6465a189d51052b2c93a5710f279aa3212208118aee9c6d37",
+    "reviewed_adr_commit": "a5b9006aa3f5a95f81e4bab324931ade71ee8b31",
+    "reviewed_tree": "73fe54ea841369b3c3126562d8bd1ba22384200d",
+    "substantive_adr_content_reopened": false
+  },
+  "verdict": "ACCEPTED"
+}
