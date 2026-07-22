@@ -45,7 +45,7 @@
     "Added H1 to skeletal ADR-201 and duplicate ADR-213 proposal"
   ],
   "validation_counts": {
-    "PASS": 14,
+    "PASS": 21,
     "FAIL": 0,
     "NOT_RUN": 3
   },
@@ -54,6 +54,15 @@
     "Formal embedded audit",
     "PR-scoped audit and head pin"
   ],
+  "custody_review": {
+    "prior_disposition": "CHANGES_REQUIRED",
+    "substantive_adr_questions": "PASS_13_OF_13",
+    "blocking_finding": "BLOCKING_CUSTODY",
+    "repair_scope": "git bundle and deterministic identity receipts only",
+    "adr_content_changed": false,
+    "reviewed_adr_commit_changed": false,
+    "custody_re_review_required": true
+  },
   "no_runtime_change": true,
   "no_implementation_beyond_docs": true,
   "independent_review_required": true,

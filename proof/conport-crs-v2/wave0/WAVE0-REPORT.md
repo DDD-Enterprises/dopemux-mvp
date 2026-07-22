@@ -31,6 +31,18 @@ Created proposed ConPort CRS v2 ADR, added proposal-labeled amendments or deprec
 
 Codex performed implementation review and corrected one effective-status hazard before commit. External Claude formal audit was blocked by environment privacy policy because repository diff transmission lacked explicit operator approval. Embedded audit is `NOT_RUN`; independent Wave 1 review remains required and is not represented as completed.
 
+## Custody Repair
+
+Independent Wave 1 substantive review returned `CHANGES_REQUIRED` solely because reviewed commit ancestry was not independently reconstructible from package bytes. Repaired package adds:
+
+- `CONPORT-W0-ADR-CUSTODY.bundle`, containing baseline and reviewed commit objects;
+- reviewed commit parent and tree receipt;
+- baseline merge-base, ancestry, and one-commit-distance checks;
+- recomputed baseline-to-reviewed patch byte equality;
+- Git-tree-to-packaged-byte equality for all 22 changed ADR files.
+
+ADR content and reviewed ADR commit remain unchanged.
+
 ## Unknowns
 
 - Independent architecture disposition: `NOT_RUN`.
