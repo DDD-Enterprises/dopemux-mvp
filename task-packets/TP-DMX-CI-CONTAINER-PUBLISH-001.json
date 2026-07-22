@@ -1,0 +1,132 @@
+{
+  "id": "TP-DMX-CI-CONTAINER-PUBLISH-001",
+  "project": "dopemux-mvp",
+  "target": "Align Docker CI with the canonical Compose build fleet and publish immutable GHCR images with provenance.",
+  "invariants": [
+    "Runtime and compose wiring remain higher authority than generated CI metadata.",
+    "Pull requests never publish images or receive registry credentials unnecessarily.",
+    "Main and release publication uses GHCR with GITHUB_TOKEN and immutable SHA tags.",
+    "Docker Scout credentials are optional and may not block container build verification when absent.",
+    "No Docker Hub publication occurs from the Dopemux container workflow.",
+    "Every Compose build service is mapped to a CI target or an explicit exclusion."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CI-CONTAINER-PUBLISH",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/container-ci-ghcr-publish"
+  },
+  "commit": {
+    "message": "fix(ci): align container builds and GHCR publishing",
+    "allowlist": [
+      ".github/workflows/containers.yml",
+      ".github/workflows/docker-scout.yml",
+      "compose.yml",
+      "config/containers.json",
+      "scripts/ci/container_matrix.py",
+      "tests/arch/test_container_ci_alignment.py",
+      "task-packets/TP-DMX-CI-CONTAINER-PUBLISH-001.json"
+    ],
+    "verify": [
+      "python scripts/ci/container_matrix.py validate-manifest",
+      "python scripts/ci/container_matrix.py validate-compose",
+      "python -m pytest -q tests/arch/test_container_ci_alignment.py --no-cov",
+      "python -m json.tool config/containers.json",
+      "python -m json.tool task-packets/TP-DMX-CI-CONTAINER-PUBLISH-001.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(ci): align container builds and GHCR publishing",
+    "body": "Build the canonical Dopemux container fleet from one checked-in manifest, publish immutable GHCR images on main and release tags, capture digests and provenance, and make Docker Scout fail-safe when its Docker Hub credentials are unavailable.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inventory",
+      "task": "Create one machine-readable inventory covering every custom Compose build service and retained legacy compatibility image.",
+      "requirements": [
+        "Classify each target as canonical, support, or legacy compatibility.",
+        "Record context, Dockerfile, GHCR image name, Compose services, and smoke-test metadata."
+      ],
+      "expected_files": [
+        "config/containers.json",
+        "scripts/ci/container_matrix.py",
+        "tests/arch/test_container_ci_alignment.py"
+      ],
+      "validation": [
+        "Manifest schema and path validation pass.",
+        "Every Compose service with build configuration is covered exactly once."
+      ]
+    },
+    {
+      "id": "publish",
+      "task": "Refactor container CI to consume the manifest, build pull requests, and publish main or release images to GHCR.",
+      "requirements": [
+        "Use GITHUB_TOKEN for GHCR.",
+        "Publish SHA, main/latest, and semantic version tags as applicable.",
+        "Capture image digest and generate registry-backed provenance attestation.",
+        "Do not publish pull-request images."
+      ],
+      "expected_files": [
+        ".github/workflows/containers.yml"
+      ],
+      "validation": [
+        "Workflow YAML parses.",
+        "Matrix is generated from config/containers.json.",
+        "Publish condition is limited to main and v* tag pushes."
+      ]
+    },
+    {
+      "id": "scout",
+      "task": "Make Docker Scout analysis optional when Docker Hub credentials are missing and prevent Docker Hub image publication.",
+      "requirements": [
+        "No login action receives empty credentials.",
+        "Missing credentials produce a warning and successful skipped analysis.",
+        "Scout builds local images only."
+      ],
+      "expected_files": [
+        ".github/workflows/docker-scout.yml"
+      ],
+      "validation": [
+        "Workflow contains an explicit credential capability gate.",
+        "Scout build-push action has push false."
+      ]
+    },
+    {
+      "id": "compose-alignment",
+      "task": "Repair Compose Dockerfile paths that currently point at missing wrapper files.",
+      "requirements": [
+        "ConPort and LiteLLM use their existing source Dockerfiles already proven by CI builds.",
+        "No service authority or port changes are introduced."
+      ],
+      "expected_files": [
+        "compose.yml"
+      ],
+      "validation": [
+        "docker compose config is structurally valid.",
+        "Manifest and Compose Dockerfile paths agree."
+      ]
+    }
+  ]
+}
