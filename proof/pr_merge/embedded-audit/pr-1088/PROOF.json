@@ -1,0 +1,25 @@
+{
+  "packet_id": "PR-MERGE-STEWARD-1088",
+  "pr_number": 1088,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "d918f2bc1147fd7de17c844a5337686558e848c6",
+  "generated_at": "2026-07-22T01:30:30Z",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "git diff 5a9f8f7b5d4a03be323723a92baf3c4e162d5b65..d918f2bc1147fd7de17c844a5337686558e848c6 (path/content review); git show <sha>:task-packets/TP-DMX-PAL-MODEL-REFRESH-001.json (allowlist diff); python -m pytest -q tests/arch/test_pal_model_catalog_contract.py; python -m pytest -q docker/mcp-servers-source/pal/pal-mcp-server/tests/test_xai_provider.py docker/mcp-servers-source/pal/pal-mcp-server/tests/test_openai_provider.py; git diff --check; grep -Ein secret-patterns over full diff",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1088/PROOF.json",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Task packet step 'runtime-proof' (direct Grok 4.5 / GPT-5.6 bounded API probes) was not executed by this audit — verification here is static (diff review + unit/contract tests), not a live provider call. Treat that packet step as NOT_RUN pending an operator-run probe.",
+      "conf/xai_models.json's grok-4.5 entry omits max_output_tokens (present on all other catalog entries); non-blocking since providers/openai_compatible.py only sets the param when max_output_tokens is truthy, but worth confirming intentional vs. omitted."
+    ],
+    "skip_reason": null
+  }
+}
