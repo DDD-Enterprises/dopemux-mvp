@@ -1,0 +1,22 @@
+{
+  "commit_sha": "1d81056f89e5348d744fef926d95b92ed7507831",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Added caveman plugin config across AI-tool instruction files",
+      "Rebased cleanly on latest main post PR #1076/#1086"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1106/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "1d81056f89e5348d744fef926d95b92ed7507831",
+  "pr_number": 1106,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
