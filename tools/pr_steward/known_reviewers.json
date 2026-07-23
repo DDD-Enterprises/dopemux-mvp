@@ -14,5 +14,7 @@
     "MEMBER",
     "COLLABORATOR"
   ],
-  "trusted_security_release_approvers": []
+  "trusted_security_release_approvers": [
+    "hu3mann"
+  ]
 }
