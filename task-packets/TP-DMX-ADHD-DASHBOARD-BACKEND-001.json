@@ -1,0 +1,26 @@
+{
+  "id": "TP-DMX-ADHD-DASHBOARD-BACKEND-001",
+  "project": "dopemux-mvp",
+  "target": "adhd-dashboard-backend",
+  "repo_binding": {
+    "repo": "DDD-Enterprises/dopemux-mvp",
+    "base_branch": "main"
+  },
+  "series": "DMX-SVCFIN",
+  "commit": "fix(dashboard): deploy adhd-dashboard backend and compose wiring (recreates #1056)",
+  "pr": 1116,
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Register adhd-dashboard service in service registry and wire in compose.yml",
+      "validation": "uv run pytest tests/arch/ services/adhd-dashboard/tests/"
+    }
+  ],
+  "execution": {
+    "agent": "gemini",
+    "pal_chain": {
+      "enabled": true,
+      "grammar": "analyze -> thinkdeep -> challenge -> planner -> challenge -> implement -> codereview -> precommit -> challenge"
+    }
+  }
+}
