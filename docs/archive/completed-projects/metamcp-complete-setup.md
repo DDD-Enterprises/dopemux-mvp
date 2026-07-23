@@ -14,7 +14,7 @@ prelude: Metamcp_Complete_Setup (explanation) for dopemux documentation and deve
 
 **Goal:** Configure all dopemux MCP servers through MetaMCP for role-based access
 **MetaMCP:** http://localhost:12008
-**API Key:** sk_mt_P3cvUc02eTQTEbELrirCQ9jjEqzbTYqyWdjdbJm3sBW5RCxOOPeMgA1sylNF4gNY
+**API Key:** sk_mt_REDACTED-ROTATE-IMMEDIATELY
 
 ---
 
@@ -232,7 +232,7 @@ Note: Add your OPENAI_API_KEY to .env, then: docker-compose -f docker-compose.un
 **Endpoint 1: quickfix-endpoint**
 - Namespace: dopemux-quickfix
 - Transport: SSE
-- Auth: API Key (use: sk_mt_P3cvUc02eTQTEbELrirCQ9jjEqzbTYqyWdjdbJm3sBW5RCxOOPeMgA1sylNF4gNY)
+- Auth: API Key (use: sk_mt_REDACTED-ROTATE-IMMEDIATELY)
 
 **Endpoint 2: act-endpoint**
 - Namespace: dopemux-act
@@ -302,7 +302,7 @@ Already created with your API key! Located at:
         "http://localhost:12008/metamcp/plan-endpoint/sse"
       ],
       "env": {
-        "API_ACCESS_TOKEN": "sk_mt_P3cvUc02eTQTEbELrirCQ9jjEqzbTYqyWdjdbJm3sBW5RCxOOPeMgA1sylNF4gNY"
+        "API_ACCESS_TOKEN": "sk_mt_REDACTED-ROTATE-IMMEDIATELY"
       }
     }
   }
@@ -320,7 +320,7 @@ Already created with your API key! Located at:
         "http://localhost:12008/metamcp/research-endpoint/sse"
       ],
       "env": {
-        "API_ACCESS_TOKEN": "sk_mt_P3cvUc02eTQTEbELrirCQ9jjEqzbTYqyWdjdbJm3sBW5RCxOOPeMgA1sylNF4gNY"
+        "API_ACCESS_TOKEN": "sk_mt_REDACTED-ROTATE-IMMEDIATELY"
       }
     }
   }

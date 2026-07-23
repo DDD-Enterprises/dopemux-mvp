@@ -1,0 +1,22 @@
+{
+  "commit_sha": "ff7edc9a57081fdfca47fb49922ba954f586cf3b",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Modernized Voyage models and hardened indexing in dope-context",
+      "Rebased cleanly on latest main post PR #1076/#1086"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1112/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "ff7edc9a57081fdfca47fb49922ba954f586cf3b",
+  "pr_number": 1112,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

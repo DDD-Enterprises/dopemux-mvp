@@ -13,7 +13,7 @@ prelude: Docs  Leantime Api Troubleshooting (explanation) for dopemux documentat
 # Leantime API Troubleshooting Guide
 
 **Current Status**: API key authentication failing with "Invalid API Key" error
-**Token Format**: `lt_Y62b0Z11Whu2rxh5xXrMUO6oW4GgTE6N_4vpKPXd5bThCgICUe9bmR8v1l18NmYHl` ✅ (Correct format)
+**Token Format**: `lt_REDACTED-ROTATE-IMMEDIATELY` ✅ (Correct format)
 
 ## 🚨 Issue Diagnosis
 
@@ -127,7 +127,7 @@ async def login_and_get_session():
 
 ### Priority 2: Test API (2 minutes)
 ```bash
-curl -H "Authorization: Bearer lt_Y62b0Z11Whu2rxh5xXrMUO6oW4GgTE6N_4vpKPXd5bThCgICUe9bmR8v1l18NmYHl" http://localhost:8080/api/
+curl -H "Authorization: Bearer lt_REDACTED-ROTATE-IMMEDIATELY" http://localhost:8080/api/
 ```
 
 ### Priority 3: Verify Integration (5 minutes)
