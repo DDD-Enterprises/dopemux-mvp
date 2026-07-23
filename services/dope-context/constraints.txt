@@ -1,0 +1,2 @@
+# Required for voyage-context-4 auto-chunking and model-aware tokenization.
+voyageai>=0.5.0,<0.6
