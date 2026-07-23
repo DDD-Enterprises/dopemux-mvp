@@ -1,97 +1,107 @@
-"""
-VoyageAI Embedder - Task 1
-Multi-vector embedding generation with caching and cost tracking.
-"""
+"""Voyage text embedding client with model-aware batching and accounting."""
+
+from __future__ import annotations
 
 import asyncio
 import hashlib
-import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
-import voyageai
 from voyageai import AsyncClient
+
+from ..utils.model_tokenizer import (
+    VoyageTokenCounter,
+    allocate_total_tokens,
+    partition_indices,
+)
+from .model_registry import (
+    DEFAULT_CODE_MODEL,
+    DEFAULT_OUTPUT_DIMENSION,
+    DEFAULT_OUTPUT_DTYPE,
+    env_model,
+    get_model_spec,
+    validate_dimension,
+)
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class EmbeddingRequest:
-    """Single embedding request with metadata."""
+    """Single embedding request with all vector-shaping parameters."""
 
     text: str
-    model: Literal["voyage-code-3", "voyage-3-lite", "voyage-context-3"]
-    input_type: Literal["document", "query"]
+    model: str
+    input_type: str
     truncation: bool = True
+    output_dimension: int = DEFAULT_OUTPUT_DIMENSION
+    output_dtype: str = DEFAULT_OUTPUT_DTYPE
 
     def cache_key(self) -> str:
-        """Generate cache key from request params."""
-        content = f"{self.model}:{self.input_type}:{self.text}"
-        return hashlib.sha256(content.encode()).hexdigest()
+        content = (
+            f"{self.model}:{self.input_type}:{self.truncation}:"
+            f"{self.output_dimension}:{self.output_dtype}:{self.text}"
+        )
+        return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
 @dataclass
 class EmbeddingResponse:
-    """Embedding response with metadata."""
+    """Embedding response with request-local token and cost metadata."""
 
     embedding: List[float]
     model: str
     tokens: int
     cached: bool = False
     cost_usd: float = 0.0
+    output_dimension: int = DEFAULT_OUTPUT_DIMENSION
+    output_dtype: str = DEFAULT_OUTPUT_DTYPE
+    token_count_exact: bool = True
 
 
 @dataclass
 class CostTracker:
-    """Track embedding API costs."""
+    """Track embedding API usage using current per-token pricing."""
 
     total_tokens: int = 0
     total_requests: int = 0
     total_cost_usd: float = 0.0
     cache_hits: int = 0
 
-    # Voyage pricing (per 1M tokens)
-    PRICING = {
-        "voyage-code-3": 0.12,
-        "voyage-3-lite": 0.04,
-        "voyage-context-3": 0.12,
-    }
-
     def add_request(self, model: str, tokens: int, cached: bool = False) -> float:
-        """Add request and return cost."""
         self.total_requests += 1
-
         if cached:
             self.cache_hits += 1
             return 0.0
 
         self.total_tokens += tokens
-        cost = (tokens / 1_000_000) * self.PRICING.get(model, 0.12)
+        price = get_model_spec(model, endpoint="embeddings").price_per_million_tokens
+        cost = (tokens / 1_000_000) * price
         self.total_cost_usd += cost
         return cost
 
     def summary(self) -> Dict:
-        """Get cost summary."""
         cache_rate = self.cache_hits / max(self.total_requests, 1)
         return {
             "total_requests": self.total_requests,
             "total_tokens": self.total_tokens,
-            "total_cost_usd": round(self.total_cost_usd, 4),
+            "total_cost_usd": round(self.total_cost_usd, 6),
             "cache_hits": self.cache_hits,
             "cache_rate": round(cache_rate, 3),
         }
 
 
 class VoyageEmbedder:
-    """
-    VoyageAI embedding client with:
-    - Multi-model support (voyage-code-3, voyage-3-lite, voyage-context-3)
-    - Request batching (up to 128 texts per call)
-    - In-memory caching with TTL
-    - Cost tracking
-    - Rate limiting
+    """Async Voyage embedding client used by code and identifier vectors.
+
+    The class preserves the original public API while adding:
+    - Voyage 4 model support and fail-closed model validation
+    - dimension/dtype-aware caching
+    - model-specific token counting
+    - token-aware request partitioning
+    - exact batch cost allocation from API-reported totals
     """
 
     def __init__(
@@ -99,323 +109,299 @@ class VoyageEmbedder:
         api_key: str,
         cache_ttl_hours: int = 24,
         max_batch_size: int = 128,
-        rate_limit_rpm: int = 2000,  # Voyage API limit for code-3
-        default_model: str = "voyage-code-3",
+        rate_limit_rpm: int = 2000,
+        default_model: Optional[str] = None,
+        output_dimension: int = DEFAULT_OUTPUT_DIMENSION,
+        output_dtype: str = DEFAULT_OUTPUT_DTYPE,
     ):
-        """
-        Initialize VoyageAI embedder.
-
-        Args:
-            api_key: VoyageAI API key
-            cache_ttl_hours: Cache TTL in hours (default 24h)
-            max_batch_size: Max texts per batch (default 128, Voyage limit)
-            rate_limit_rpm: Requests per minute (default 300)
-            default_model: Default embedding model (voyage-code-3 for code, voyage-context-3 for docs)
-        """
-        self.default_model = default_model
+        self.default_model = default_model or env_model(
+            "DOPE_CONTEXT_CODE_EMBED_MODEL", DEFAULT_CODE_MODEL
+        )
+        get_model_spec(self.default_model, endpoint="embeddings")
+        self.output_dimension = validate_dimension(self.default_model, output_dimension)
+        self.output_dtype = output_dtype
         self.client = AsyncClient(api_key=api_key)
+        self.token_counter = VoyageTokenCounter(api_key=api_key)
         self.cache: Dict[str, Tuple[EmbeddingResponse, datetime]] = {}
         self.cache_ttl = timedelta(hours=cache_ttl_hours)
-        self.max_batch_size = max_batch_size
-        self.rate_limit_rpm = rate_limit_rpm
+        self.max_batch_size = max(1, max_batch_size)
+        self.rate_limit_rpm = max(1, rate_limit_rpm)
         self.cost_tracker = CostTracker()
-
-        # Rate limiting
         self._request_times: List[datetime] = []
         self._rate_limit_lock = asyncio.Lock()
 
-    async def _check_rate_limit(self):
-        """Enforce rate limiting."""
+    async def _check_rate_limit(self) -> None:
         async with self._rate_limit_lock:
             now = datetime.now()
-
-            # Remove requests older than 1 minute
             self._request_times = [
-                t for t in self._request_times if now - t < timedelta(minutes=1)
+                value
+                for value in self._request_times
+                if now - value < timedelta(minutes=1)
             ]
-
-            # Wait if at limit
             if len(self._request_times) >= self.rate_limit_rpm:
                 oldest = self._request_times[0]
                 wait_seconds = 60 - (now - oldest).total_seconds()
                 if wait_seconds > 0:
-                    logger.info(f"Rate limit reached, waiting {wait_seconds:.1f}s")
+                    logger.info("Voyage RPM limit reached; sleeping %.1fs", wait_seconds)
                     await asyncio.sleep(wait_seconds)
-
-            self._request_times.append(now)
+            self._request_times.append(datetime.now())
 
     def _get_cached(self, cache_key: str) -> Optional[EmbeddingResponse]:
-        """Get cached embedding if valid."""
-        if cache_key not in self.cache:
+        cached = self.cache.get(cache_key)
+        if cached is None:
             return None
-
-        response, cached_at = self.cache[cache_key]
-
-        # Check TTL
+        response, cached_at = cached
         if datetime.now() - cached_at > self.cache_ttl:
             del self.cache[cache_key]
             return None
-
-        # Return cached response
-        cached_response = EmbeddingResponse(
+        return EmbeddingResponse(
             embedding=response.embedding,
             model=response.model,
             tokens=response.tokens,
             cached=True,
             cost_usd=0.0,
+            output_dimension=response.output_dimension,
+            output_dtype=response.output_dtype,
+            token_count_exact=response.token_count_exact,
         )
-        return cached_response
 
-    def _cache_response(self, cache_key: str, response: EmbeddingResponse):
-        """Cache embedding response."""
+    def _cache_response(self, cache_key: str, response: EmbeddingResponse) -> None:
         self.cache[cache_key] = (response, datetime.now())
 
-    async def embed(
+    async def _api_embed(
+        self,
+        texts: List[str],
+        *,
+        model: str,
+        input_type: str,
+        truncation: bool,
+        output_dimension: int,
+        output_dtype: str,
+    ):
+        """Call the modern SDK, with a compatibility path for old test stubs."""
+
+        kwargs = {
+            "texts": texts,
+            "model": model,
+            "input_type": input_type,
+            "truncation": truncation,
+            "output_dimension": output_dimension,
+            "output_dtype": output_dtype,
+        }
+        try:
+            return await self.client.embed(**kwargs)
+        except TypeError as exc:
+            # Older voyageai releases and repository test doubles do not accept
+            # Matryoshka/dtype keywords. Only default-shape requests are safe to
+            # retry because silently dropping a non-default shape corrupts schema.
+            if (
+                output_dimension != DEFAULT_OUTPUT_DIMENSION
+                or output_dtype != DEFAULT_OUTPUT_DTYPE
+            ):
+                raise RuntimeError(
+                    "Installed voyageai client does not support output_dimension/"
+                    "output_dtype; install voyageai>=0.5.0"
+                ) from exc
+            legacy_kwargs = {
+                key: value
+                for key, value in kwargs.items()
+                if key not in {"output_dimension", "output_dtype"}
+            }
+            return await self.client.embed(**legacy_kwargs)
+
+    def _request(
         self,
         text: str,
-        model: Optional[
-            Literal["voyage-code-3", "voyage-3-lite", "voyage-context-3"]
-        ] = None,
-        input_type: Literal["document", "query"] = "document",
-        truncation: bool = True,
-    ) -> EmbeddingResponse:
-        """
-        Embed single text with caching.
-
-        Args:
-            text: Text to embed
-            model: Voyage model to use (defaults to default_model)
-            input_type: "document" for indexing, "query" for search
-            truncation: Truncate to model's max length
-
-        Returns:
-            EmbeddingResponse with vector and metadata
-        """
-        if model is None:
-            model = self.default_model
-
-        request = EmbeddingRequest(
+        *,
+        model: str,
+        input_type: str,
+        truncation: bool,
+        output_dimension: int,
+        output_dtype: str,
+    ) -> EmbeddingRequest:
+        if input_type not in {"document", "query"}:
+            raise ValueError("input_type must be 'document' or 'query'")
+        get_model_spec(model, endpoint="embeddings")
+        dimension = validate_dimension(model, output_dimension)
+        return EmbeddingRequest(
             text=text,
             model=model,
             input_type=input_type,
             truncation=truncation,
+            output_dimension=dimension,
+            output_dtype=output_dtype,
         )
 
-        # Check cache
-        cache_key = request.cache_key()
-        cached = self._get_cached(cache_key)
+    async def embed(
+        self,
+        text: str,
+        model: Optional[str] = None,
+        input_type: str = "document",
+        truncation: bool = True,
+        output_dimension: Optional[int] = None,
+        output_dtype: Optional[str] = None,
+    ) -> EmbeddingResponse:
+        model = model or self.default_model
+        request = self._request(
+            text,
+            model=model,
+            input_type=input_type,
+            truncation=truncation,
+            output_dimension=output_dimension or self.output_dimension,
+            output_dtype=output_dtype or self.output_dtype,
+        )
+        cached = self._get_cached(request.cache_key())
         if cached:
             self.cost_tracker.add_request(model, cached.tokens, cached=True)
-            logger.debug(f"Cache hit for {model}")
             return cached
 
-        # Rate limit
+        token_counts = await self.token_counter.count_each([text], model)
+        spec = get_model_spec(model, endpoint="embeddings")
+        if token_counts[0].count > spec.per_input_tokens and not truncation:
+            raise ValueError(
+                f"Input has {token_counts[0].count} tokens; model '{model}' "
+                f"accepts {spec.per_input_tokens} per input"
+            )
+
         await self._check_rate_limit()
+        result = await self._api_embed(
+            [text],
+            model=model,
+            input_type=input_type,
+            truncation=truncation,
+            output_dimension=request.output_dimension,
+            output_dtype=request.output_dtype,
+        )
+        if not getattr(result, "embeddings", None):
+            raise ValueError("Voyage API returned no embeddings")
 
-        # Call API
-        try:
-            result = await self.client.embed(
-                texts=[text],
-                model=model,
-                input_type=input_type,
-                truncation=truncation,
-            )
-
-            # Extract response
-            embedding = result.embeddings[0]
-            tokens = result.total_tokens
-
-            # Track cost
-            cost = self.cost_tracker.add_request(model, tokens, cached=False)
-
-            response = EmbeddingResponse(
-                embedding=embedding,
-                model=model,
-                tokens=tokens,
-                cached=False,
-                cost_usd=cost,
-            )
-
-            # Cache
-            self._cache_response(cache_key, response)
-
-            logger.debug(f"Embedded 1 text with {model}: {tokens} tokens, ${cost:.6f}")
-
-            return response
-
-        except Exception as e:
-            logger.error(f"Embedding failed: {e}")
-            raise
+        tokens = int(getattr(result, "total_tokens", token_counts[0].count))
+        response = EmbeddingResponse(
+            embedding=result.embeddings[0],
+            model=model,
+            tokens=tokens,
+            cost_usd=self.cost_tracker.add_request(model, tokens),
+            output_dimension=request.output_dimension,
+            output_dtype=request.output_dtype,
+            token_count_exact=True,
+        )
+        self._cache_response(request.cache_key(), response)
+        return response
 
     async def embed_batch(
         self,
         texts: List[str],
-        model: Literal[
-            "voyage-code-3", "voyage-3-lite", "voyage-context-3"
-        ] = "voyage-code-3",
-        input_type: Literal["document", "query"] = "document",
+        model: Optional[str] = None,
+        input_type: str = "document",
         truncation: bool = True,
+        output_dimension: Optional[int] = None,
+        output_dtype: Optional[str] = None,
     ) -> List[EmbeddingResponse]:
-        """
-        Embed batch of texts with caching and batching.
-
-        Automatically splits into sub-batches of max_batch_size.
-
-        Args:
-            texts: List of texts to embed
-            model: Voyage model to use
-            input_type: "document" for indexing, "query" for search
-            truncation: Truncate to model's max length
-
-        Returns:
-            List of EmbeddingResponse in same order as input
-        """
         if not texts:
             return []
 
-        # Check cache for all texts
-        responses: List[Optional[EmbeddingResponse]] = []
-        uncached_indices: List[int] = []
-        uncached_texts: List[str] = []
+        model = model or self.default_model
+        dimension = validate_dimension(model, output_dimension or self.output_dimension)
+        dtype = output_dtype or self.output_dtype
+        spec = get_model_spec(model, endpoint="embeddings")
 
-        for i, text in enumerate(texts):
-            request = EmbeddingRequest(
-                text=text,
+        responses: List[Optional[EmbeddingResponse]] = [None] * len(texts)
+        uncached_indices: List[int] = []
+        uncached_requests: List[EmbeddingRequest] = []
+
+        for index, text in enumerate(texts):
+            request = self._request(
+                text,
                 model=model,
                 input_type=input_type,
                 truncation=truncation,
+                output_dimension=dimension,
+                output_dtype=dtype,
             )
-            cache_key = request.cache_key()
-            cached = self._get_cached(cache_key)
-
-            if cached:
+            cached = self._get_cached(request.cache_key())
+            if cached is not None:
                 self.cost_tracker.add_request(model, cached.tokens, cached=True)
-                responses.append(cached)
+                responses[index] = cached
             else:
-                responses.append(None)
-                uncached_indices.append(i)
-                uncached_texts.append(text)
+                uncached_indices.append(index)
+                uncached_requests.append(request)
 
-        # If all cached, return
-        if not uncached_texts:
-            logger.debug(f"All {len(texts)} texts cached")
-            return responses  # type: ignore
+        if not uncached_requests:
+            return [response for response in responses if response is not None]
 
-        logger.debug(f"Batch: {len(texts)} total, {len(uncached_texts)} uncached")
+        token_counts = await self.token_counter.count_each(
+            [request.text for request in uncached_requests], model
+        )
+        estimated = [item.count for item in token_counts]
+        if not truncation:
+            too_large = [
+                index
+                for index, count in enumerate(estimated)
+                if count > spec.per_input_tokens
+            ]
+            if too_large:
+                raise ValueError(
+                    f"Inputs {too_large} exceed {spec.per_input_tokens} tokens "
+                    f"for model '{model}'"
+                )
 
-        # Split into sub-batches
-        sub_batches = [
-            uncached_texts[i : i + self.max_batch_size]
-            for i in range(0, len(uncached_texts), self.max_batch_size)
+        effective_counts = [
+            min(count, spec.per_input_tokens) if truncation else count
+            for count in estimated
         ]
+        batches = partition_indices(
+            effective_counts,
+            max_inputs=min(self.max_batch_size, spec.max_request_inputs),
+            max_tokens=spec.max_request_tokens,
+        )
 
-        # Embed all sub-batches
-        all_embeddings: List[EmbeddingResponse] = []
-
-        for batch in sub_batches:
+        for batch_indices in batches:
+            batch_requests = [uncached_requests[index] for index in batch_indices]
+            batch_texts = [request.text for request in batch_requests]
             await self._check_rate_limit()
+            result = await self._api_embed(
+                batch_texts,
+                model=model,
+                input_type=input_type,
+                truncation=truncation,
+                output_dimension=dimension,
+                output_dtype=dtype,
+            )
+            embeddings = list(getattr(result, "embeddings", []))
+            if len(embeddings) != len(batch_requests):
+                raise ValueError(
+                    f"Voyage returned {len(embeddings)} embeddings for "
+                    f"{len(batch_requests)} inputs"
+                )
 
-            try:
-                result = await self.client.embed(
-                    texts=batch,
+            batch_estimates = [effective_counts[index] for index in batch_indices]
+            total_tokens = int(getattr(result, "total_tokens", sum(batch_estimates)))
+            allocated = allocate_total_tokens(batch_estimates, total_tokens)
+
+            for local_index, (request, embedding, tokens) in enumerate(
+                zip(batch_requests, embeddings, allocated)
+            ):
+                global_uncached_index = batch_indices[local_index]
+                original_index = uncached_indices[global_uncached_index]
+                response = EmbeddingResponse(
+                    embedding=embedding,
                     model=model,
-                    input_type=input_type,
-                    truncation=truncation,
+                    tokens=tokens,
+                    cost_usd=self.cost_tracker.add_request(model, tokens),
+                    output_dimension=dimension,
+                    output_dtype=dtype,
+                    token_count_exact=token_counts[global_uncached_index].exact,
                 )
+                self._cache_response(request.cache_key(), response)
+                responses[original_index] = response
 
-                # Process results
-                for j, embedding in enumerate(result.embeddings):
-                    original_text = batch[j]
+        if any(response is None for response in responses):
+            raise RuntimeError("Internal embedding batch merge left missing responses")
+        return [response for response in responses if response is not None]
 
-                    # Estimate tokens (total / count)
-                    tokens = result.total_tokens // len(batch)
-                    cost = self.cost_tracker.add_request(model, tokens, cached=False)
-
-                    response = EmbeddingResponse(
-                        embedding=embedding,
-                        model=model,
-                        tokens=tokens,
-                        cached=False,
-                        cost_usd=cost,
-                    )
-
-                    # Cache
-                    request = EmbeddingRequest(
-                        text=original_text,
-                        model=model,
-                        input_type=input_type,
-                        truncation=truncation,
-                    )
-                    self._cache_response(request.cache_key(), response)
-
-                    all_embeddings.append(response)
-
-                logger.debug(
-                    f"Embedded batch of {len(batch)} with {model}: "
-                    f"{result.total_tokens} tokens"
-                )
-
-            except Exception as e:
-                logger.error(f"Batch embedding failed: {e}")
-                raise
-
-        # Merge cached and new embeddings
-        for idx, response in zip(uncached_indices, all_embeddings):
-            responses[idx] = response
-
-        return responses  # type: ignore
-
-    def clear_cache(self):
-        """Clear embedding cache."""
+    def clear_cache(self) -> None:
         self.cache.clear()
-        logger.info("Embedding cache cleared")
+        logger.info("Voyage embedding cache cleared")
 
     def get_cost_summary(self) -> Dict:
-        """Get cost tracking summary."""
         return self.cost_tracker.summary()
-
-
-# Example usage
-async def main():
-    """Example usage of VoyageEmbedder."""
-    import os
-
-    api_key = os.getenv("VOYAGE_API_KEY")
-    if not api_key:
-        logger.info("Set VOYAGE_API_KEY environment variable")
-        return
-
-    embedder = VoyageEmbedder(api_key=api_key, cache_ttl_hours=24)
-
-    # Single embedding
-    response = await embedder.embed(
-        text="async def process_request(data: dict):",
-        model="voyage-code-3",
-        input_type="document",
-    )
-    logger.info(
-        f"Single embedding: {len(response.embedding)}d, ${response.cost_usd:.6f}"
-    )
-
-    # Batch embedding
-    code_chunks = [
-        "def calculate_total(items: List[Item]) -> float:",
-        "class UserService:",
-        "async with session.begin():",
-    ]
-
-    responses = await embedder.embed_batch(
-        texts=code_chunks,
-        model="voyage-code-3",
-        input_type="document",
-    )
-    logger.info(f"Batch: {len(responses)} embeddings")
-
-    # Cost summary
-    summary = embedder.get_cost_summary()
-    logger.info(f"Cost summary: {summary}")
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    asyncio.run(main())

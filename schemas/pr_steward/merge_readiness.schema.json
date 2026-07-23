@@ -16,7 +16,8 @@
     "proof",
     "blockers",
     "unknowns",
-    "mutation_performed"
+    "mutation_performed",
+    "security_release"
   ],
   "properties": {
     "schema_version": {
@@ -124,6 +125,23 @@
     "mutation_performed": {
       "type": "boolean",
       "const": false
+    },
+    "security_release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "approved", "categories", "approval"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "approved": { "type": "boolean" },
+        "categories": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "approval": {
+          "type": ["object", "null"],
+          "additionalProperties": true
+        }
+      }
     }
   },
   "allOf": [
@@ -187,6 +205,16 @@
           },
           "unknowns": {
             "maxItems": 0
+          },
+          "security_release": {
+            "if": {
+              "properties": { "required": { "const": true } },
+              "required": ["required"]
+            },
+            "then": {
+              "properties": { "approved": { "const": true } },
+              "required": ["approved"]
+            }
           }
         }
       }

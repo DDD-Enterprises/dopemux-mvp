@@ -10301,7 +10301,7 @@
       "evidence": {
         "anchor": "L305",
         "excerpt_hash": "22f8cdfb27a404dece832febb3f3a7cd6052777dd3dfbd5f7eb0760236681b49",
-        "excerpt_snippet": "\"API_ACCESS_TOKEN\": \"sk_mt_P3cvUc02eTQTEbELrirCQ9jjEqzbTYqyWdjdbJm3sBW5RCxOOPeMgA1sylNF4gNY\"",
+        "excerpt_snippet": "\"API_ACCESS_TOKEN\": \"sk_mt_REDACTED-ROTATE-IMMEDIATELY\"",
         "path": "docs/archive/completed-projects/metamcp-complete-setup-2.md"
       },
       "name": "API_ACCESS_TOKEN",

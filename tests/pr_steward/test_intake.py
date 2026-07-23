@@ -384,6 +384,9 @@ def test_live_collection_uses_proof_path_for_ready_state(
 
     monkeypatch.setattr(collector, "_run", fake_run)
     monkeypatch.setattr(collector, "_fetch_review_threads", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_reviews_with_commit", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_changed_files_with_pagination_check", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_changed_files_rest", lambda **_: ([], []))
 
     harvest = collector.collect_from_github(
         "DDD-Enterprises/dopemux-mvp",
@@ -441,6 +444,9 @@ def test_live_collection_rejects_dry_run_or_unproven_audit_proof(
 
     monkeypatch.setattr(collector, "_run", fake_run)
     monkeypatch.setattr(collector, "_fetch_review_threads", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_reviews_with_commit", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_changed_files_with_pagination_check", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_changed_files_rest", lambda **_: ([], []))
 
     harvest = collector.collect_from_github(
         "DDD-Enterprises/dopemux-mvp",
@@ -482,6 +488,9 @@ def _blocked_by_independent_audit(
 
     monkeypatch.setattr(collector, "_run", fake_run)
     monkeypatch.setattr(collector, "_fetch_review_threads", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_reviews_with_commit", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_changed_files_with_pagination_check", lambda **_: ([], []))
+    monkeypatch.setattr(collector, "_fetch_changed_files_rest", lambda **_: ([], []))
     harvest = collector.collect_from_github(
         "DDD-Enterprises/dopemux-mvp",
         704,
@@ -951,7 +960,7 @@ def base_ready_harvest() -> dict:
         "harvest_complete": True,
         "harvest_errors": [],
         "pr": base_pr_payload(head_sha=head_sha),
-        "changed_files": [{"path": "tools/pr_steward/intake.py", "additions": 1}],
+        "changed_files": [{"path": "src/example/ordinary.py", "additions": 1}],
         "commits": [{"oid": head_sha, "messageHeadline": "test"}],
         "reviews": [],
         "review_comments": [],
@@ -994,7 +1003,7 @@ def base_pr_payload(*, head_sha: str) -> dict:
         "author": {"login": "hu3mann"},
         "createdAt": "2026-05-26T01:00:00Z",
         "updatedAt": "2026-05-26T02:00:00Z",
-        "files": [{"path": "tools/pr_steward/intake.py", "additions": 1}],
+        "files": [{"path": "src/example/ordinary.py", "additions": 1}],
         "commits": [{"oid": head_sha, "messageHeadline": "test"}],
         "reviews": [],
         "comments": [],

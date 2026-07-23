@@ -1,0 +1,23 @@
+{
+  "commit_sha": "259a9e4866f56b5138c902b48635678f7e21fcf9",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "De-prefixed all MCP_NAME_MAPPING targets to bare Claude-config keys",
+      "Include resolved config key in skipped server warnings when distinct",
+      "Corrected profile server filter error handling to warn instead of raise on optional servers"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1079/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "259a9e4866f56b5138c902b48635678f7e21fcf9",
+  "pr_number": 1079,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

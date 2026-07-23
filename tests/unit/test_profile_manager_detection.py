@@ -75,7 +75,7 @@ def test_detect_profile_matches_exact_mcp_set(tmp_path: Path):
     manager, workspace, root = _build_manager(tmp_path)
     config_path = _write_claude_config(
         root / ".claude" / "settings.json",
-        {"mcpServers": {"dopemux-conport": {}, "dopemux-zen": {}, "dopemux-pal": {}}},
+        {"mcpServers": {"conport": {}, "zen": {}, "pal": {}}},
     )
 
     detected = manager.detect_profile_from_claude_config(
@@ -92,7 +92,7 @@ def test_detect_profile_uses_overlap_threshold(tmp_path: Path):
     manager, workspace, root = _build_manager(tmp_path)
     config_path = _write_claude_config(
         root / ".claude" / "settings.json",
-        {"mcpServers": {"dopemux-conport": {}, "dopemux-zen": {}, "dopemux-pal": {}, "dopemux-serena": {}, "litellm": {}}},
+        {"mcpServers": {"conport": {}, "zen": {}, "pal": {}, "serena": {}, "litellm": {}}},
     )
 
     detected = manager.detect_profile_from_claude_config(

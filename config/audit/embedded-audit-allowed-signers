@@ -5,8 +5,11 @@
 #
 # This file is read ONLY from the trusted ref (main) by the embedded-audit
 # workflow — entries added on a PR branch have no effect until merged.
-# While this file contains no keys, the local-attestation path is inert and
-# the audit gate behaves exactly as before (fail-closed).
+# One or more public keys are registered below, which activates the
+# local-attestation path under its existing strict conditions (repo+PR+head
+# binding, proof-dir-only diff, signature verification via `ssh-keygen -Y
+# verify`). An empty file (no keys) would instead leave that path inert and
+# the audit gate behaving exactly as before it existed (fail-closed).
 #
 # One-time setup on the machine that runs local audits:
 #   ssh-keygen -t ed25519 -N '' -f ~/.ssh/dopemux_audit_signing \
