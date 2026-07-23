@@ -55,7 +55,7 @@
 ```yaml
 Current: VoyageAI voyage-code-3
 Dimensions: 1024 (code-optimized)
-API Key: Valid (pa-mAcnUO4FAXLmg3Qrm01sLdG0fxQ4N3Acpr3Dx1AvT2R)
+API Key: Valid (pa-REDACTED-ROTATE-IMMEDIATELY)
 Collection: hybrid_code_chunks_38c61f4e
 Files Indexed: 690
 Code Chunks: 8,312
@@ -107,8 +107,8 @@ const rerank_strategy = {
 
 ### **Environment Variables Updated:**
 ```bash
-VOYAGEAI_API_KEY=pa-mAcnUO4FAXLmg3Qrm01sLdG0fxQ4N3Acpr3Dx1AvT2R
-OPENAI_API_KEY=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
+VOYAGEAI_API_KEY=pa-REDACTED-ROTATE-IMMEDIATELY
+OPENAI_API_KEY=sk-REDACTED-ROTATE-IMMEDIATELY
 # Plus others: GEMINI_API_KEY, CONTEXT7_API_KEY, etc.
 ```
 

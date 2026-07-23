@@ -39,7 +39,7 @@
 - ✅ **Container Build**: Successfully built `dopemux-exa:latest`
 
 ### 5. **API Integration Details**
-- ✅ **Authentication**: Real API key integration (`EXA_API_KEY=8f180834-2db5-4574-8b68-f8512628ee66`)
+- ✅ **Authentication**: Real API key integration (`EXA_API_KEY=00000000-REDACTED-ROTATE-IMMEDIATELY`)
 - ✅ **Parameter Support**: Full parameter support including:
   - Date filtering (`start_published_date`, `end_published_date`)
   - Domain filtering (`include_domains`, `exclude_domains`)
@@ -102,7 +102,7 @@ async def health_check(request):
 - ✅ **Container Start**: Starts without errors via `docker run` and `docker-compose up`
 - ✅ **Health Endpoint**: Returns `{"status":"healthy","service":"Exa MCP Server","exa_api_configured":true,"version":"1.0.0"}`
 - ✅ **FastMCP Server**: Binds to `0.0.0.0:3008` with MCP protocol active
-- ✅ **API Key**: Real EXA_API_KEY (`8f180834-2db5-4574-8b68-f8512628ee66`) properly configured
+- ✅ **API Key**: Real EXA_API_KEY (`00000000-REDACTED-ROTATE-IMMEDIATELY`) properly configured
 
 ### **✅ Phase 2: MCP Tools Verification**
 - ✅ **Server Architecture**: FastMCP with proper lifespan management
@@ -133,7 +133,7 @@ async def health_check(request):
 4. `find_similar` - Similar website discovery
 
 ### **Environment Configuration**
-- `EXA_API_KEY`: `8f180834-2db5-4574-8b68-f8512628ee66`
+- `EXA_API_KEY`: `00000000-REDACTED-ROTATE-IMMEDIATELY`
 - `MCP_SERVER_PORT`: `3008`
 
 ## 📋 **Success Criteria**
@@ -166,7 +166,7 @@ async def health_check(request):
 
 ```bash
 # Test container health
-docker run -d --name test-exa-mcp -p 3008:3008 -e EXA_API_KEY="8f180834-2db5-4574-8b68-f8512628ee66" dopemux-exa:latest
+docker run -d --name test-exa-mcp -p 3008:3008 -e EXA_API_KEY="00000000-REDACTED-ROTATE-IMMEDIATELY" dopemux-exa:latest
 curl http://localhost:3008/health
 
 # Test MCP endpoint (after health check passes)
