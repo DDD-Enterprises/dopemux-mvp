@@ -286,7 +286,7 @@ jobs:
         id: steward
         if: success()
         run: |
-          python -m tools.pr_steward.intake \
+          PYTHONPATH=. python -m tools.pr_steward.intake \
             --repo "$GITHUB_REPOSITORY" \
             --pr "${{ steps.proof.outputs.pr_number }}" \
             --out pr-steward-artifacts \
