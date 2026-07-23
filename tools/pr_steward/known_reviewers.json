@@ -5,7 +5,9 @@
     "github-actions[bot]",
     "github-actions",
     "dependabot[bot]",
-    "hu3mann"
+    "hu3mann",
+    "google-labs-jules",
+    "github-advanced-security"
   ],
   "trusted_author_associations": [
     "OWNER",
