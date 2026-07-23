@@ -118,3 +118,26 @@ into scaffold YAML.
 ## Review Bundle
 
 For PR Steward packets, `proof/<PACKET_ID>/review_bundle/` is the single supervisor upload unit. The generated PR Steward outputs from fixture or live smoke runs must be copied into `review_bundle/artifacts/`, or listed in `review_bundle/MANIFEST.json` as excluded with a reason.
+
+## Two Implementations, Two Schema Families — Not Interchangeable
+
+There are **two separate PR Steward implementations** in this repository. They
+are not variants of each other, do not share code, and their identically- or
+similarly-named schema files are **not interchangeable**:
+
+| | Dopemux PR Steward | PCP-Core readiness evaluator |
+| --- | --- | --- |
+| Code | `tools/pr_steward/*.py` (this document) | `src/dopemux/pcp/pr_steward.py` |
+| Schemas | `schemas/pr_steward/*.json` | `schemas/project_control_plane/*.json` |
+| Wired into | `.github/workflows/pr-steward.yml` | Not wired into any GitHub Actions workflow |
+| Scope | Dopemux-specific: known-reviewer roster, security/release approval gate, embedded-audit binding, thread/comment ledger conservation (this document, in full) | Generic, project-agnostic PCP Core: advisory `MERGE_READINESS` signal from harvested PR intake, no Dopemux-specific classification |
+| Nature | The gate this repository's branch protection is intended to enforce | A specialisable core that Dopemux's own gate co-exists with, per `src/dopemux/pcp/pr_steward.py`'s own module docstring — it does not replace it |
+
+**Collision to watch**: both families ship a `merge_readiness.schema.json`
+(`schemas/pr_steward/merge_readiness.schema.json` vs
+`schemas/project_control_plane/merge_readiness.schema.json`). They describe
+different `MERGE_READINESS.json` shapes produced by different code paths.
+Validating one implementation's output against the other family's schema is
+a bug, not a compatible substitution — always match code to its own schema
+directory (`tools/pr_steward/*` → `schemas/pr_steward/*`; `src/dopemux/pcp/*`
+→ `schemas/project_control_plane/*`).

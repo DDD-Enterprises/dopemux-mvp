@@ -101,11 +101,27 @@ def collect_from_github(
     errors.extend(proof_errors)
     threads, thread_errors = _fetch_review_threads(repo=repo, pr_number=pr_number)
     errors.extend(thread_errors)
+    reviews_raw, review_errors = _fetch_reviews_with_commit(repo=repo, pr_number=pr_number)
+    errors.extend(review_errors)
+    changed_files, changed_files_rest_errors = _fetch_changed_files_rest(
+        repo=repo, pr_number=pr_number
+    )
+    errors.extend(changed_files_rest_errors)
+    rest_changed_file_paths = [item["path"] for item in changed_files]
+    _changed_files_check, changed_files_errors = _fetch_changed_files_with_pagination_check(
+        repo=repo, pr_number=pr_number, rest_paths=rest_changed_file_paths
+    )
+    errors.extend(changed_files_errors)
+    security_release_approval = _select_security_release_approval(
+        reviews_raw, repo=repo, pr_number=pr_number
+    )
     return normalize_gh_payload(
         pr_payload,
         review_threads=threads,
         harvest_errors=errors,
         proof_state=proof_state,
+        security_release_approval=security_release_approval,
+        changed_files=changed_files,
     )
 
 
@@ -115,6 +131,8 @@ def normalize_gh_payload(
     review_threads: list[dict[str, Any]],
     harvest_errors: list[str],
     proof_state: dict[str, Any] | None = None,
+    security_release_approval: dict[str, Any] | None = None,
+    changed_files: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     review_comments = []
     for thread in review_threads:
@@ -125,7 +143,7 @@ def normalize_gh_payload(
         "harvest_complete": not harvest_errors,
         "harvest_errors": harvest_errors,
         "pr": pr_payload,
-        "changed_files": pr_payload.get("files") or [],
+        "changed_files": changed_files if changed_files is not None else (pr_payload.get("files") or []),
         "commits": pr_payload.get("commits") or [],
         "reviews": pr_payload.get("reviews") or [],
         "review_comments": review_comments,
@@ -134,6 +152,7 @@ def normalize_gh_payload(
         "checks": pr_payload.get("statusCheckRollup") or [],
         "embedded_audit": proof["embedded_audit"],
         "proof": proof["proof"],
+        "security_release_approval": security_release_approval,
     }
 
 
@@ -217,6 +236,274 @@ def _fetch_review_threads(
     return threads, errors
 
 
+def _fetch_reviews_with_commit(
+    *, repo: str, pr_number: int
+) -> tuple[list[dict[str, Any]], list[str]]:
+    owner, name = repo.split("/", 1)
+    query = textwrap.dedent(
+        """
+        query($owner: String!, $repo: String!, $number: Int!) {
+          repository(owner: $owner, name: $repo) {
+            pullRequest(number: $number) {
+              reviews(first: 100) {
+                pageInfo { hasNextPage endCursor }
+                nodes {
+                  id
+                  state
+                  submittedAt
+                  author { login }
+                  authorAssociation
+                  commit { oid }
+                }
+              }
+            }
+          }
+        }
+        """
+    ).strip()
+    result = _run(
+        [
+            "gh",
+            "api",
+            "graphql",
+            "-f",
+            f"owner={owner}",
+            "-f",
+            f"repo={name}",
+            "-F",
+            f"number={pr_number}",
+            "-f",
+            f"query={query}",
+        ]
+    )
+    if result.returncode != 0:
+        return [], [f"gh api graphql reviews failed: {result.stderr.strip()}"]
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        return [], [f"gh api graphql reviews returned invalid JSON: {exc}"]
+    page = (
+        payload.get("data", {})
+        .get("repository", {})
+        .get("pullRequest", {})
+        .get("reviews", {})
+    )
+    errors: list[str] = []
+    if page.get("pageInfo", {}).get("hasNextPage"):
+        errors.append("reviews harvest exceeded first 100 reviews")
+    return page.get("nodes") or [], errors
+
+
+def _fetch_changed_files_rest(
+    *, repo: str, pr_number: int
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Canonical changed-file source: paginated REST pull-files endpoint.
+
+    Unlike ``gh pr view --json files`` (path/additions/deletions only), the
+    REST ``pulls/{n}/files`` endpoint reports ``status`` and, for renamed
+    entries, ``previous_filename`` — the only way to know a protected path
+    (a workflow, CODEOWNERS, or this gate's own tools/pr_steward/** trust
+    root) was renamed OUT from under the classifier rather than edited in
+    place. ``--paginate`` follows Link headers itself, so there is no
+    separate hasNextPage check on this source the way there is for GraphQL.
+    """
+    owner, name = repo.split("/", 1)
+    result = _run(
+        [
+            "gh",
+            "api",
+            f"repos/{owner}/{name}/pulls/{pr_number}/files",
+            "--paginate",
+            "-q",
+            ".",
+        ]
+    )
+    if result.returncode != 0:
+        return [], [f"gh api pulls/files failed: {result.stderr.strip()}"]
+    items: list[dict[str, Any]] = []
+    errors: list[str] = []
+    try:
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            page = json.loads(line)
+            if not isinstance(page, list):
+                errors.append("gh api pulls/files returned a non-list page")
+                continue
+            items.extend(page)
+    except json.JSONDecodeError as exc:
+        return [], [f"gh api pulls/files returned invalid JSON: {exc}"]
+
+    changed_files: list[dict[str, Any]] = []
+    for index, item in enumerate(items):
+        if not isinstance(item, dict):
+            errors.append(f"pulls/files entry at index {index} is not a mapping")
+            continue
+        path = item.get("filename")
+        if not isinstance(path, str) or not path:
+            errors.append(f"pulls/files entry at index {index} has no filename")
+            continue
+        status = item.get("status")
+        previous_path = item.get("previous_filename")
+        if status == "renamed" and (
+            not isinstance(previous_path, str) or not previous_path
+        ):
+            errors.append(
+                f"pulls/files entry {path!r} is renamed but previous_filename is "
+                "missing or malformed"
+            )
+            continue
+        changed_files.append(
+            {
+                "path": path,
+                "additions": int(item.get("additions") or 0),
+                "deletions": int(item.get("deletions") or 0),
+                "status": status,
+                "previous_path": previous_path if status == "renamed" else None,
+            }
+        )
+    return changed_files, errors
+
+
+def _fetch_changed_files_with_pagination_check(
+    *, repo: str, pr_number: int, rest_paths: list[str] | None = None
+) -> tuple[list[str], list[str]]:
+    """Independently verify the REST-shaped `gh pr view --json files` list is complete.
+
+    `gh pr view --json files` has a history of silently truncating large file
+    lists with no indication of truncation in its REST-shaped JSON output. A
+    truncated file list could hide a security-sensitive path (e.g. a workflow
+    file) from `classify_security_release_paths`, causing the gate to be
+    incorrectly marked not-required. This GraphQL query with an explicit
+    `pageInfo.hasNextPage` check is the completeness signal for that list; the
+    REST list remains the source of truth for `changed_files` in the harvested
+    payload, while this function returns the GraphQL path list only for verification/reconciliation.
+
+    When `rest_paths` is provided, this also reconciles the REST path set
+    against the GraphQL path set. `hasNextPage` catches pagination overflow
+    (GraphQL side known-incomplete); this reconciliation catches the
+    orthogonal failure mode where REST silently under-reports a file (e.g. a
+    `gh` CLI bug or a timing race between the two independent API calls)
+    while *neither* source signals pagination overflow. Reconciliation is
+    skipped when GraphQL itself reports `hasNextPage` — in that case its own
+    node list is known-incomplete and would trivially "differ" from REST,
+    which would just be duplicate noise on top of the pagination error.
+    """
+    owner, name = repo.split("/", 1)
+    query = textwrap.dedent(
+        """
+        query($owner: String!, $repo: String!, $number: Int!) {
+          repository(owner: $owner, name: $repo) {
+            pullRequest(number: $number) {
+              files(first: 100) {
+                pageInfo { hasNextPage endCursor }
+                nodes {
+                  path
+                }
+              }
+            }
+          }
+        }
+        """
+    ).strip()
+    result = _run(
+        [
+            "gh",
+            "api",
+            "graphql",
+            "-f",
+            f"owner={owner}",
+            "-f",
+            f"repo={name}",
+            "-F",
+            f"number={pr_number}",
+            "-f",
+            f"query={query}",
+        ]
+    )
+    if result.returncode != 0:
+        return [], [f"gh api graphql changedFiles failed: {result.stderr.strip()}"]
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        return [], [f"gh api graphql changedFiles returned invalid JSON: {exc}"]
+    page = (
+        payload.get("data", {})
+        .get("repository", {})
+        .get("pullRequest", {})
+        .get("files", {})
+    )
+    errors: list[str] = []
+    has_next_page = bool(page.get("pageInfo", {}).get("hasNextPage"))
+    if has_next_page:
+        errors.append("changedFiles harvest exceeded first 100 files")
+    nodes = page.get("nodes") or []
+    paths = [node.get("path") for node in nodes if isinstance(node, dict) and isinstance(node.get("path"), str)]
+    if rest_paths is not None and not has_next_page:
+        rest_set = set(rest_paths)
+        graphql_set = set(paths)
+        if rest_set != graphql_set:
+            only_in_rest = sorted(rest_set - graphql_set)
+            only_in_graphql = sorted(graphql_set - rest_set)
+            detail_parts = []
+            if only_in_rest:
+                detail_parts.append(
+                    f"{len(only_in_rest)} only in REST (e.g. {only_in_rest[:5]})"
+                )
+            if only_in_graphql:
+                detail_parts.append(
+                    f"{len(only_in_graphql)} only in GraphQL (e.g. {only_in_graphql[:5]})"
+                )
+            errors.append(
+                "changed_files harvest content mismatch: "
+                f"REST reported {len(rest_paths)} paths, GraphQL reported {len(paths)} "
+                f"paths, sets differ ({'; '.join(detail_parts)})"
+            )
+    return paths, errors
+
+
+def _select_security_release_approval(
+    reviews: list[dict[str, Any]], *, repo: str, pr_number: int
+) -> dict[str, Any] | None:
+    """Return the most recent APPROVED review with a bound commit, or None.
+
+    Chronological order matters: a later CHANGES_REQUESTED from anyone must
+    not be shadowed by an earlier APPROVED — GitHub's own reviewDecision
+    semantics treat the latest state per-author as authoritative, but for
+    this fail-closed gate we take the single most-recent APPROVED review
+    with commit binding, full stop. If a subsequent review (any state, any
+    author) is more recent than the latest APPROVED review, treat approval
+    as absent — a fresh review event means the approval is not necessarily
+    still current from the maintainers' perspective.
+    """
+    dated = [r for r in reviews if isinstance(r, dict) and r.get("submittedAt")]
+    if not dated:
+        return None
+    dated.sort(key=lambda r: r["submittedAt"])
+    most_recent = dated[-1]
+    if most_recent.get("state") != "APPROVED":
+        return None
+    commit = most_recent.get("commit")
+    if not isinstance(commit, dict) or not commit.get("oid"):
+        return None
+    author = most_recent.get("author") or {}
+    login = author.get("login") if isinstance(author, dict) else None
+    if not login:
+        return None
+    association = most_recent.get("authorAssociation")
+    return {
+        "state": "APPROVED",
+        "repository": repo,
+        "pr_number": pr_number,
+        "head_sha": str(commit["oid"]),
+        "approver": str(login),
+        "approver_association": str(association) if association else None,
+        "approval_ref": str(most_recent.get("id") or ""),
+        "approved_at": str(most_recent.get("submittedAt") or ""),
+    }
+
+
 def _incomplete_harvest(
     *,
     repo: str,
@@ -253,6 +540,7 @@ def _incomplete_harvest(
         "checks": [],
         "embedded_audit": proof["embedded_audit"],
         "proof": proof["proof"],
+        "security_release_approval": None,
     }
 
 
