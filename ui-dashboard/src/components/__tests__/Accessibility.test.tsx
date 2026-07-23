@@ -64,6 +64,16 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
   const optimalValue = '40%';
   expect(screen.getByText(optimalValue)).toBeDefined();
   expect(screen.getByLabelText(/15-min prediction 40%, Flow Ritual/i)).toBeDefined();
+
+  // Test 4: Verify dynamic trend icon (TrendingUp when prediction > currentLoad)
+  const { container: containerUp } = render(<PredictionPanel prediction={0.8} currentLoad={0.4} />);
+  expect(containerUp.querySelector('.lucide-trending-up')).not.toBeNull();
+  expect(containerUp.querySelector('.lucide-trending-down')).toBeNull();
+
+  // Test 5: Verify dynamic trend icon (TrendingDown when prediction < currentLoad)
+  const { container: containerDown } = render(<PredictionPanel prediction={0.3} currentLoad={0.7} />);
+  expect(containerDown.querySelector('.lucide-trending-down')).not.toBeNull();
+  expect(containerDown.querySelector('.lucide-trending-up')).toBeNull();
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
@@ -242,4 +252,17 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
   expect(appContent).toContain('aria-label={notificationLabel}');
   expect(appContent).toContain('tabIndex={0}');
+});
+
+test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
+  const filePath = path.join(componentsDir, 'PredictionPanel.tsx');
+  if (!fs.existsSync(filePath)) {
+    console.warn(`Skipping: Required component missing: ${filePath}`);
+    return;
+  }
+  const content = fs.readFileSync(filePath, 'utf8');
+  expect(content).toContain("const isTrendingUp = hasPrediction && typeof currentLoad === 'number' ? prediction > currentLoad : true;");
+  expect(content).toContain('const TrendIcon = isTrendingUp ? TrendingUp : TrendingDown;');
+  expect(content).toContain('aria-hidden="true"');
+  expect(content).toContain('TrendingDown');
 });
