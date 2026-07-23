@@ -1,24 +1,29 @@
-"""
-Voyage Reranking Layer - Task 6
-Reranks search results using voyage-rerank-2.5 with ADHD-optimized progressive disclosure.
-"""
+"""Voyage reranking with bounded candidate sizing and correct token pricing."""
+
+from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List
 
-import voyageai
 from voyageai import AsyncClient
 
+from ..embeddings.model_registry import DEFAULT_RERANK_MODEL, env_model
 from ..search.dense_search import SearchResult
+from ..utils.model_tokenizer import VoyageTokenCounter
 
 logger = logging.getLogger(__name__)
+
+RERANK_PRICING_PER_MILLION = {
+    "rerank-2.5": 0.05,
+    "rerank-2.5-lite": 0.02,
+}
+RERANK_MAX_DOCUMENTS = 1_000
+RERANK_MAX_TOTAL_TOKENS = 600_000
 
 
 @dataclass
 class RerankResult:
-    """Single reranking result with metadata."""
-
     search_result: SearchResult
     relevance_score: float
     original_rank: int
@@ -27,53 +32,39 @@ class RerankResult:
 
 @dataclass
 class RerankResponse:
-    """Complete reranking response with ADHD features."""
-
-    # Top-10 results (always displayed)
     top_results: List[RerankResult]
-
-    # Remaining results (cached for "show more")
     cached_results: List[RerankResult]
-
-    # Metadata
     total_results: int
     tokens_used: int
     cost_usd: float
 
     def get_all_results(self) -> List[RerankResult]:
-        """Get all results (top + cached)."""
         return self.top_results + self.cached_results
 
 
 @dataclass
 class CostTracker:
-    """Track Voyage reranking costs."""
-
     total_requests: int = 0
     total_documents: int = 0
     total_tokens: int = 0
     total_cost_usd: float = 0.0
 
-    # Voyage reranking pricing: $0.05 per 1000 requests
-    PRICE_PER_1K_REQUESTS = 0.05
-
-    def add_request(self, num_documents: int, tokens: int = 0) -> float:
-        """Add reranking request and return cost."""
+    def add_request(self, model: str, num_documents: int, tokens: int) -> float:
         self.total_requests += 1
         self.total_documents += num_documents
         self.total_tokens += tokens
-
-        # Cost based on requests, not documents
-        cost = self.PRICE_PER_1K_REQUESTS / 1000
+        price = RERANK_PRICING_PER_MILLION.get(model)
+        if price is None:
+            raise ValueError(f"Unsupported Voyage reranker model '{model}'")
+        cost = (tokens / 1_000_000) * price
         self.total_cost_usd += cost
-
         return cost
 
     def summary(self) -> Dict:
-        """Get cost summary."""
         return {
             "total_requests": self.total_requests,
             "total_documents": self.total_documents,
+            "total_tokens": self.total_tokens,
             "total_cost_usd": round(self.total_cost_usd, 6),
             "avg_docs_per_request": round(
                 self.total_documents / max(self.total_requests, 1), 1
@@ -82,37 +73,89 @@ class CostTracker:
 
 
 class VoyageReranker:
-    """
-    Voyage reranking layer with ADHD-optimized progressive disclosure.
-
-    Features:
-    - voyage-rerank-2.5 model
-    - Progressive disclosure (top-10 display, rest cached)
-    - Cost tracking
-    - Handles up to 1000 documents per request
-    """
+    """Rerank initial candidates with progressive disclosure."""
 
     def __init__(
         self,
         api_key: str,
-        model: str = "rerank-2.5",
+        model: str | None = None,
         top_n_display: int = 10,
         max_cache: int = 40,
     ):
-        """
-        Initialize Voyage reranker.
-
-        Args:
-            api_key: VoyageAI API key
-            model: Reranking model (default: rerank-2.5)
-            top_n_display: Number of top results to display (ADHD: 10)
-            max_cache: Max cached results beyond top_n (ADHD: 40)
-        """
+        self.model = model or env_model(
+            "DOPE_CONTEXT_RERANK_MODEL", DEFAULT_RERANK_MODEL
+        )
+        if self.model not in RERANK_PRICING_PER_MILLION:
+            raise ValueError(
+                f"Unsupported reranker '{self.model}'; expected one of "
+                f"{sorted(RERANK_PRICING_PER_MILLION)}"
+            )
         self.client = AsyncClient(api_key=api_key)
-        self.model = model
-        self.top_n_display = top_n_display
-        self.max_cache = max_cache
+        self.token_counter = VoyageTokenCounter(api_key=api_key)
+        self.top_n_display = max(1, top_n_display)
+        self.max_cache = max(0, max_cache)
         self.cost_tracker = CostTracker()
+
+    @staticmethod
+    def _document_text(result: SearchResult) -> str:
+        if result.context_snippet:
+            return f"{result.context_snippet}\n\n{result.content}"
+        return result.content
+
+    async def _bounded_candidates(
+        self, query: str, results: List[SearchResult]
+    ) -> tuple[List[SearchResult], List[str], int]:
+        candidates = results[:RERANK_MAX_DOCUMENTS]
+        documents = [self._document_text(result) for result in candidates]
+        query_count = (await self.token_counter.count_each([query], self.model))[0]
+        document_counts = await self.token_counter.count_each(documents, self.model)
+
+        bounded_results: List[SearchResult] = []
+        bounded_documents: List[str] = []
+        document_total = 0
+        for result, document, token_count in zip(
+            candidates, documents, document_counts
+        ):
+            next_count = len(bounded_documents) + 1
+            next_total = (
+                query_count.count * next_count
+                + document_total
+                + token_count.count
+            )
+            if next_total > RERANK_MAX_TOTAL_TOKENS:
+                break
+            bounded_results.append(result)
+            bounded_documents.append(document)
+            document_total += token_count.count
+
+        total_tokens = query_count.count * len(bounded_documents) + document_total
+        return bounded_results, bounded_documents, total_tokens
+
+    async def _api_rerank(
+        self,
+        *,
+        query: str,
+        documents: List[str],
+        return_documents: bool,
+    ):
+        kwargs = {
+            "query": query,
+            "documents": documents,
+            "model": self.model,
+            "top_k": None,
+            "return_documents": return_documents,
+            "truncation": True,
+        }
+        try:
+            return await self.client.rerank(**kwargs)
+        except TypeError:
+            # Compatibility with old SDKs and repository test doubles.
+            legacy = {
+                key: value
+                for key, value in kwargs.items()
+                if key not in {"return_documents", "truncation"}
+            }
+            return await self.client.rerank(**legacy)
 
     async def rerank(
         self,
@@ -120,181 +163,85 @@ class VoyageReranker:
         results: List[SearchResult],
         return_documents: bool = False,
     ) -> RerankResponse:
-        """
-        Rerank search results using Voyage.
-
-        Args:
-            query: Search query
-            results: Search results from hybrid search
-            return_documents: Whether to return document text in response
-
-        Returns:
-            RerankResponse with top-N and cached results
-        """
         if not results:
-            return RerankResponse(
-                top_results=[],
-                cached_results=[],
-                total_results=0,
-                tokens_used=0,
-                cost_usd=0.0,
+            return RerankResponse([], [], 0, 0, 0.0)
+
+        bounded_results, documents, estimated_tokens = await self._bounded_candidates(
+            query, results
+        )
+        if not documents:
+            logger.warning("No rerank candidates fit within Voyage token limits")
+            return self._fallback(results)
+
+        if len(bounded_results) < len(results):
+            logger.info(
+                "Trimmed rerank candidates from %s to %s for token limits",
+                len(results),
+                len(bounded_results),
             )
-
-        # Prepare documents for reranking
-        # Use contextualized content (context + code)
-        documents = []
-        for result in results:
-            # Combine context snippet and code for better reranking
-            if result.context_snippet:
-                doc_text = f"{result.context_snippet}\n\n{result.content}"
-            else:
-                doc_text = result.content
-
-            documents.append(doc_text)
-
-        logger.debug(f"Reranking {len(documents)} results with {self.model}")
 
         try:
-            # Call Voyage rerank API
-            reranking = await self.client.rerank(
+            reranking = await self._api_rerank(
                 query=query,
                 documents=documents,
-                model=self.model,
-                top_k=None,  # Return all with scores
+                return_documents=return_documents,
             )
-
-            # Track cost
-            tokens = getattr(reranking, "total_tokens", 0)
+            tokens = int(getattr(reranking, "total_tokens", 0) or estimated_tokens)
             cost = self.cost_tracker.add_request(
+                model=self.model,
                 num_documents=len(documents),
                 tokens=tokens,
             )
 
-            # Create RerankResult objects
-            reranked_results = []
-
-            for rerank_item in reranking.results:
-                original_idx = rerank_item.index
-                original_result = results[original_idx]
-
+            reranked_results: List[RerankResult] = []
+            for new_rank, item in enumerate(reranking.results):
+                original_index = int(item.index)
+                if original_index >= len(bounded_results):
+                    raise ValueError(
+                        f"Voyage reranker returned invalid index {original_index}"
+                    )
                 reranked_results.append(
                     RerankResult(
-                        search_result=original_result,
-                        relevance_score=rerank_item.relevance_score,
-                        original_rank=original_idx,
-                        new_rank=len(reranked_results),  # Current position
+                        search_result=bounded_results[original_index],
+                        relevance_score=float(item.relevance_score),
+                        original_rank=original_index,
+                        new_rank=new_rank,
                     )
                 )
 
-            # Split into top-N and cached
-            total = len(reranked_results)
-            top_results = reranked_results[: self.top_n_display]
-            cached_results = reranked_results[
+            return self._split(reranked_results, tokens=tokens, cost=cost)
+        except Exception as exc:
+            logger.error("Reranking failed; preserving initial order: %s", exc)
+            return self._fallback(results)
+
+    def _split(
+        self,
+        results: List[RerankResult],
+        *,
+        tokens: int,
+        cost: float,
+    ) -> RerankResponse:
+        return RerankResponse(
+            top_results=results[: self.top_n_display],
+            cached_results=results[
                 self.top_n_display : self.top_n_display + self.max_cache
-            ]
-
-            logger.info(
-                f"Reranked {total} results: {len(top_results)} displayed, "
-                f"{len(cached_results)} cached"
-            )
-
-            return RerankResponse(
-                top_results=top_results,
-                cached_results=cached_results,
-                total_results=total,
-                tokens_used=tokens,
-                cost_usd=cost,
-            )
-
-        except Exception as e:
-            logger.error(f"Reranking failed: {e}")
-            # Fallback: return original results without reranking
-            fallback_results = [
-                RerankResult(
-                    search_result=result,
-                    relevance_score=result.score,
-                    original_rank=i,
-                    new_rank=i,
-                )
-                for i, result in enumerate(results)
-            ]
-
-            return RerankResponse(
-                top_results=fallback_results[: self.top_n_display],
-                cached_results=fallback_results[
-                    self.top_n_display : self.top_n_display + self.max_cache
-                ],
-                total_results=len(fallback_results),
-                tokens_used=0,
-                cost_usd=0.0,
-            )
-
-    def get_cost_summary(self) -> Dict:
-        """Get cost tracking summary."""
-        return self.cost_tracker.summary()
-
-
-# Example usage
-async def main():
-    """Example usage of VoyageReranker."""
-    import os
-
-    from ..search.dense_search import SearchResult
-
-    api_key = os.getenv("VOYAGE_API_KEY")
-    if not api_key:
-        logger.info("Set VOYAGE_API_KEY environment variable")
-        return
-
-    reranker = VoyageReranker(api_key=api_key)
-
-    # Example search results
-    search_results = [
-        SearchResult(
-            id="1",
-            score=0.85,
-            payload={},
-            file_path="src/auth.py",
-            function_name="validate_user",
-            language="python",
-            content="def validate_user(token): return verify_jwt(token)",
-            context_snippet="Validates user authentication token",
-        ),
-        SearchResult(
-            id="2",
-            score=0.80,
-            payload={},
-            file_path="src/utils.py",
-            function_name="calculate_score",
-            language="python",
-            content="def calculate_score(data): return sum(data) / len(data)",
-            context_snippet="Calculates average score from data",
-        ),
-    ]
-
-    # Rerank
-    response = await reranker.rerank(
-        query="user authentication validation",
-        results=search_results,
-    )
-
-    logger.info(f"Reranked {response.total_results} results:")
-    logger.info(f"Top {len(response.top_results)} displayed:")
-    for r in response.top_results:
-        print(
-            f"  {r.search_result.file_path}:{r.search_result.function_name} "
-            f"(score: {r.relevance_score:.4f}, rank: {r.original_rank}→{r.new_rank})"
+            ],
+            total_results=len(results),
+            tokens_used=tokens,
+            cost_usd=cost,
         )
 
-    logger.info(f"\n{len(response.cached_results)} cached for 'show more'")
+    def _fallback(self, results: List[SearchResult]) -> RerankResponse:
+        fallback = [
+            RerankResult(
+                search_result=result,
+                relevance_score=result.score,
+                original_rank=index,
+                new_rank=index,
+            )
+            for index, result in enumerate(results)
+        ]
+        return self._split(fallback, tokens=0, cost=0.0)
 
-    # Cost summary
-    summary = reranker.get_cost_summary()
-    logger.info(f"\nCost summary: {summary}")
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    logging.basicConfig(level=logging.DEBUG)
-    asyncio.run(main())
+    def get_cost_summary(self) -> Dict:
+        return self.cost_tracker.summary()

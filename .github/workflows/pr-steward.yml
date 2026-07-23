@@ -40,6 +40,17 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -e .
+
       - name: Set audit run ID
         id: audit_run
         env:
@@ -286,7 +297,7 @@ jobs:
         id: steward
         if: success()
         run: |
-          python -m tools.pr_steward.intake \
+          PYTHONPATH=. python -m tools.pr_steward.intake \
             --repo "$GITHUB_REPOSITORY" \
             --pr "${{ steps.proof.outputs.pr_number }}" \
             --out pr-steward-artifacts \

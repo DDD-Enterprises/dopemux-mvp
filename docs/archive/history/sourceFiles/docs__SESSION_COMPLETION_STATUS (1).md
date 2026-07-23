@@ -71,7 +71,7 @@ milvus-standalone            Up 76 minutes (healthy)
 ### **VoyageAI Configuration**:
 - **Embeddings**: `voyage-code-3` (1024 dimensions, code-specialized)
 - **Reranker**: `rerank-2.5` (superior quality vs Milvus strategies)
-- **API Key**: Valid (pa-mAcnUO4FAXLmg3Qrm01sLdG0fxQ4N3Acpr3Dx1AvT2R)
+- **API Key**: Valid (pa-REDACTED-ROTATE-IMMEDIATELY)
 - **Indexing**: Background re-indexing in progress (~690 files)
 
 ### **Test Results Verified**:

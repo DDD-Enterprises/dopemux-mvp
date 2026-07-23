@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy dependency manifests first for better caching
 COPY pyproject.toml .
+COPY services/dope-context/constraints.txt services/dope-context/constraints.txt
 COPY src/ src/
 COPY tools/ tools/
 
@@ -16,8 +17,10 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-# Install dependencies from centralized manifest
-RUN uv pip install --system --no-cache .[services]
+# Context-4 support and model-aware tokenization require the modern Voyage SDK.
+RUN uv pip install --system --no-cache \
+    --constraint services/dope-context/constraints.txt \
+    ".[services]"
 
 # Copy the entire dope-context service (relative to root)
 COPY services/dope-context/ .
@@ -29,6 +32,9 @@ RUN if [ -d "/app/src/mcp" ]; then cd /app/src/mcp && uv pip install --system --
 ENV MCP_SERVER_PORT=3010
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app/src
+ENV DOPE_CONTEXT_CODE_EMBED_MODEL=voyage-code-3
+ENV DOPE_CONTEXT_DOC_EMBED_MODEL=voyage-context-4
+ENV DOPE_CONTEXT_RERANK_MODEL=rerank-2.5
 
 # Create data and logs directories
 RUN mkdir -p /app/data /app/logs

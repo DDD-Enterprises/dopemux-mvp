@@ -1,0 +1,22 @@
+{
+  "commit_sha": "d6a5ea8c1ccc55168ff2a71c3ca9dd150ed486f5",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Added fail-closed security/release approval parity gate to live PR Steward path",
+      "Rebased cleanly on latest main incorporating PR #1100 and PR #1079"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1084/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "d6a5ea8c1ccc55168ff2a71c3ca9dd150ed486f5",
+  "pr_number": 1084,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

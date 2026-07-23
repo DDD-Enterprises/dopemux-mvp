@@ -1,0 +1,22 @@
+{
+  "commit_sha": "2d63c96b7f199dee38c7861e41ce06e52a9d54bb",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Redacted live API keys/tokens leaked in committed documentation",
+      "Rebased cleanly on latest main post PR #1076/#1086"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1111/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "2d63c96b7f199dee38c7861e41ce06e52a9d54bb",
+  "pr_number": 1111,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

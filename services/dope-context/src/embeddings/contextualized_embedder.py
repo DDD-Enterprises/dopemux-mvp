@@ -1,404 +1,521 @@
-"""
-Contextualized Voyage Embedder for voyage-context-3
-Uses contextualized_embed() API for document-aware chunk embeddings.
-"""
+"""Voyage contextualized embedding client for document-aware retrieval."""
+
+from __future__ import annotations
 
 import asyncio
 import hashlib
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
-import voyageai
 from voyageai import AsyncClient
+
+from ..utils.model_tokenizer import (
+    VoyageTokenCounter,
+    allocate_total_tokens,
+    partition_indices,
+)
+from .model_registry import (
+    DEFAULT_DOC_MODEL,
+    DEFAULT_OUTPUT_DIMENSION,
+    DEFAULT_OUTPUT_DTYPE,
+    env_model,
+    get_model_spec,
+    resolve_context_model,
+    validate_dimension,
+)
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class ContextualizedEmbeddingResponse:
-    """Response from contextualized embedding."""
+    """Contextualized vectors and model-specific accounting for one document."""
 
-    embeddings: List[List[float]]  # List of chunk embeddings
+    embeddings: List[List[float]]
     model: str
     total_tokens: int
     cached: bool = False
     cost_usd: float = 0.0
+    chunk_tokens: List[int] = field(default_factory=list)
+    chunk_texts: List[str] = field(default_factory=list)
+    output_dimension: int = DEFAULT_OUTPUT_DIMENSION
+    output_dtype: str = DEFAULT_OUTPUT_DTYPE
+    token_count_exact: bool = True
 
 
 @dataclass
 class CostTracker:
-    """Track embedding API costs."""
-
     total_tokens: int = 0
     total_requests: int = 0
     total_cost_usd: float = 0.0
     cache_hits: int = 0
 
-    # voyage-context-3 pricing (per 1M tokens)
-    PRICING = {
-        "voyage-context-3": 0.12,  # Same as voyage-code-3
-    }
-
     def add_request(self, model: str, tokens: int, cached: bool = False) -> float:
-        """Add request and return cost."""
         self.total_requests += 1
-
         if cached:
             self.cache_hits += 1
             return 0.0
 
         self.total_tokens += tokens
-        cost = (tokens / 1_000_000) * self.PRICING.get(model, 0.12)
+        price = get_model_spec(
+            model, endpoint="contextualized_embeddings"
+        ).price_per_million_tokens
+        cost = (tokens / 1_000_000) * price
         self.total_cost_usd += cost
         return cost
 
     def summary(self) -> Dict:
-        """Get cost summary."""
-        cache_rate = self.cache_hits / max(self.total_requests, 1)
         return {
             "total_requests": self.total_requests,
             "total_tokens": self.total_tokens,
-            "total_cost_usd": round(self.total_cost_usd, 4),
+            "total_cost_usd": round(self.total_cost_usd, 6),
             "cache_hits": self.cache_hits,
-            "cache_rate": round(cache_rate, 3),
+            "cache_rate": round(self.cache_hits / max(self.total_requests, 1), 3),
         }
 
 
 class ContextualizedEmbedder:
-    """
-    Voyage AI contextualized embedding client for voyage-context-3.
+    """Contextualized Voyage client with a context-4 default.
 
-    Features:
-    - Document-aware chunk embeddings (global context + local content)
-    - 14.24% better accuracy than standard embeddings
-    - Batching support (up to 1000 inputs, 120K tokens, 16K chunks)
-    - In-memory caching with TTL
-    - Cost tracking
+    Existing context-3 call sites are migrated onto the configured model unless
+    ``DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3`` is explicitly enabled. This keeps
+    rollback possible while preventing stale literals from pinning production
+    to the legacy model forever.
     """
 
     def __init__(
         self,
         api_key: str,
         cache_ttl_hours: int = 24,
-        rate_limit_rpm: int = 2000,  # Voyage API limit for context-3
+        rate_limit_rpm: int = 2000,
+        default_model: Optional[str] = None,
+        output_dimension: int = DEFAULT_OUTPUT_DIMENSION,
+        output_dtype: str = DEFAULT_OUTPUT_DTYPE,
     ):
-        """
-        Initialize contextualized embedder.
-
-        Args:
-            api_key: VoyageAI API key
-            cache_ttl_hours: Cache TTL in hours (default 24h)
-            rate_limit_rpm: Requests per minute (default 300)
-        """
+        self.default_model = default_model or env_model(
+            "DOPE_CONTEXT_DOC_EMBED_MODEL", DEFAULT_DOC_MODEL
+        )
+        get_model_spec(self.default_model, endpoint="contextualized_embeddings")
+        self.output_dimension = validate_dimension(self.default_model, output_dimension)
+        self.output_dtype = output_dtype
         self.client = AsyncClient(api_key=api_key)
+        self.token_counter = VoyageTokenCounter(api_key=api_key)
         self.cache: Dict[str, Tuple[ContextualizedEmbeddingResponse, datetime]] = {}
         self.cache_ttl = timedelta(hours=cache_ttl_hours)
-        self.rate_limit_rpm = rate_limit_rpm
+        self.rate_limit_rpm = max(1, rate_limit_rpm)
         self.cost_tracker = CostTracker()
-
-        # Rate limiting
         self._request_times: List[datetime] = []
         self._rate_limit_lock = asyncio.Lock()
 
-    def _cache_key(
-        self, document_chunks: List[str], model: str, input_type: str
-    ) -> str:
-        """Generate cache key from document chunks."""
-        content = f"{model}:{input_type}:" + "|".join(document_chunks)
-        return hashlib.sha256(content.encode()).hexdigest()
-
-    def _validate_model(self, model: str) -> None:
-        """Fail closed if model drifts from contextualized contract."""
-        if model != "voyage-context-3":
-            raise ValueError(
-                f"ContextualizedEmbedder requires model='voyage-context-3', got '{model}'"
+    def _resolve_model(self, requested: Optional[str]) -> str:
+        model = resolve_context_model(requested, self.default_model)
+        get_model_spec(model, endpoint="contextualized_embeddings")
+        if requested == "voyage-context-3" and model != requested:
+            logger.warning(
+                "Migrating legacy voyage-context-3 request to configured model %s",
+                model,
             )
+        return model
 
-    async def _check_rate_limit(self):
-        """Enforce rate limiting."""
+    @staticmethod
+    def _cache_key(
+        document_chunks: Sequence[str],
+        *,
+        model: str,
+        input_type: str,
+        output_dimension: int,
+        output_dtype: str,
+        enable_auto_chunking: bool,
+        chunk_size: int,
+        chunk_overlap: int,
+    ) -> str:
+        payload = "\x1e".join(document_chunks)
+        content = (
+            f"{model}:{input_type}:{output_dimension}:{output_dtype}:"
+            f"{enable_auto_chunking}:{chunk_size}:{chunk_overlap}:{payload}"
+        )
+        return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+    async def _check_rate_limit(self) -> None:
         async with self._rate_limit_lock:
             now = datetime.now()
-
-            # Remove requests older than 1 minute
             self._request_times = [
-                t for t in self._request_times if now - t < timedelta(minutes=1)
+                value
+                for value in self._request_times
+                if now - value < timedelta(minutes=1)
             ]
-
-            # Wait if at limit
             if len(self._request_times) >= self.rate_limit_rpm:
                 oldest = self._request_times[0]
                 wait_seconds = 60 - (now - oldest).total_seconds()
                 if wait_seconds > 0:
-                    logger.info(f"Rate limit reached, waiting {wait_seconds:.1f}s")
+                    logger.info("Voyage RPM limit reached; sleeping %.1fs", wait_seconds)
                     await asyncio.sleep(wait_seconds)
+            self._request_times.append(datetime.now())
 
-            self._request_times.append(now)
-
-    def _get_cached(self, cache_key: str) -> Optional[ContextualizedEmbeddingResponse]:
-        """Get cached embedding if valid."""
-        if cache_key not in self.cache:
+    def _get_cached(
+        self, cache_key: str
+    ) -> Optional[ContextualizedEmbeddingResponse]:
+        cached = self.cache.get(cache_key)
+        if cached is None:
             return None
-
-        response, cached_at = self.cache[cache_key]
-
-        # Check TTL
+        response, cached_at = cached
         if datetime.now() - cached_at > self.cache_ttl:
             del self.cache[cache_key]
             return None
-
-        # Return cached response
         return ContextualizedEmbeddingResponse(
             embeddings=response.embeddings,
             model=response.model,
             total_tokens=response.total_tokens,
             cached=True,
             cost_usd=0.0,
+            chunk_tokens=response.chunk_tokens,
+            chunk_texts=response.chunk_texts,
+            output_dimension=response.output_dimension,
+            output_dtype=response.output_dtype,
+            token_count_exact=response.token_count_exact,
         )
 
     def _cache_response(
         self, cache_key: str, response: ContextualizedEmbeddingResponse
-    ):
-        """Cache embedding response."""
+    ) -> None:
         self.cache[cache_key] = (response, datetime.now())
+
+    async def _api_contextualized_embed(
+        self,
+        inputs,
+        *,
+        model: str,
+        input_type: str,
+        output_dimension: int,
+        output_dtype: str,
+        enable_auto_chunking: bool = False,
+        chunk_size: int = 512,
+        chunk_overlap: int = 0,
+    ):
+        kwargs = {
+            "inputs": inputs,
+            "model": model,
+            "input_type": input_type,
+            "output_dimension": output_dimension,
+            "output_dtype": output_dtype,
+            "enable_auto_chunking": enable_auto_chunking,
+        }
+        if enable_auto_chunking:
+            kwargs["chunk_size"] = chunk_size
+            kwargs["chunk_overlap"] = chunk_overlap
+        try:
+            return await self.client.contextualized_embed(**kwargs)
+        except TypeError as exc:
+            if (
+                model != "voyage-context-3"
+                or output_dimension != DEFAULT_OUTPUT_DIMENSION
+                or output_dtype != DEFAULT_OUTPUT_DTYPE
+                or enable_auto_chunking
+            ):
+                raise RuntimeError(
+                    "Installed voyageai client lacks voyage-context-4 options; "
+                    "install voyageai>=0.5.0"
+                ) from exc
+            legacy = {
+                key: value
+                for key, value in kwargs.items()
+                if key
+                not in {
+                    "output_dtype",
+                    "enable_auto_chunking",
+                    "chunk_size",
+                    "chunk_overlap",
+                }
+            }
+            return await self.client.contextualized_embed(**legacy)
+
+    @staticmethod
+    def _result_objects(result) -> List:
+        objects = getattr(result, "results", None)
+        if objects is None:
+            objects = getattr(result, "data", None)
+        if objects is None:
+            raise ValueError("Voyage contextualized API returned no results")
+        return list(objects)
+
+    @staticmethod
+    def _extract_embeddings(result_object) -> List[List[float]]:
+        embeddings = getattr(result_object, "embeddings", None)
+        if embeddings is not None:
+            return list(embeddings)
+
+        data = getattr(result_object, "data", None)
+        if data is not None:
+            return [list(item.embedding) for item in data]
+
+        raise ValueError("Voyage contextualized result has no embeddings")
+
+    @staticmethod
+    def _extract_chunk_texts(result_object, fallback: Sequence[str]) -> List[str]:
+        chunk_texts = getattr(result_object, "chunk_texts", None)
+        if chunk_texts is not None:
+            return list(chunk_texts)
+
+        data = getattr(result_object, "data", None)
+        if data is not None:
+            texts = [getattr(item, "text", None) for item in data]
+            if all(text is not None for text in texts):
+                return [str(text) for text in texts]
+
+        return list(fallback)
 
     async def embed_document(
         self,
         chunks: List[str],
-        model: str = "voyage-context-3",
+        model: Optional[str] = None,
         input_type: str = "document",
-        output_dimension: int = 1024,
+        output_dimension: Optional[int] = None,
+        output_dtype: Optional[str] = None,
+        enable_auto_chunking: bool = False,
+        chunk_size: int = 512,
+        chunk_overlap: int = 0,
     ) -> ContextualizedEmbeddingResponse:
-        """
-        Embed document chunks with global context.
+        if not chunks:
+            raise ValueError("chunks cannot be empty")
+        if input_type not in {"document", "query"}:
+            raise ValueError("input_type must be 'document' or 'query'")
+        if enable_auto_chunking and len(chunks) != 1:
+            raise ValueError(
+                "auto-chunking accepts one full document per embed_document call"
+            )
+        if enable_auto_chunking and chunk_overlap >= chunk_size:
+            raise ValueError("chunk_overlap must be smaller than chunk_size")
 
-        Args:
-            chunks: List of text chunks from the same document
-            model: voyage-context-3 (only supported model)
-            input_type: "document" for indexing, "query" for search
-            output_dimension: 256, 512, 1024 (default), or 2048
-
-        Returns:
-            ContextualizedEmbeddingResponse with embeddings for each chunk
-        """
-        self._validate_model(model)
-
-        # Check cache
-        cache_key = self._cache_key(chunks, model, input_type)
+        model = self._resolve_model(model)
+        dimension = validate_dimension(model, output_dimension or self.output_dimension)
+        dtype = output_dtype or self.output_dtype
+        cache_key = self._cache_key(
+            chunks,
+            model=model,
+            input_type=input_type,
+            output_dimension=dimension,
+            output_dtype=dtype,
+            enable_auto_chunking=enable_auto_chunking,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
         cached = self._get_cached(cache_key)
-        if cached:
+        if cached is not None:
             self.cost_tracker.add_request(model, cached.total_tokens, cached=True)
-            logger.debug(f"Cache hit for document with {len(chunks)} chunks")
             return cached
 
-        # Rate limit
+        counts = await self.token_counter.count_each(chunks, model)
+        spec = get_model_spec(model, endpoint="contextualized_embeddings")
+        if len(chunks) > 16_000:
+            raise ValueError("Contextualized requests cannot exceed 16,000 chunks")
+        if sum(item.count for item in counts) > spec.max_request_tokens:
+            raise ValueError(
+                f"Document has {sum(item.count for item in counts)} tokens; "
+                f"request limit is {spec.max_request_tokens}"
+            )
+        too_large = [
+            index
+            for index, item in enumerate(counts)
+            if item.count > spec.per_input_tokens
+        ]
+        if too_large and not enable_auto_chunking:
+            raise ValueError(
+                f"Chunks {too_large} exceed {spec.per_input_tokens} tokens each"
+            )
+
         await self._check_rate_limit()
-
-        # Call API with contextualized_embed
-        try:
-            result = await self.client.contextualized_embed(
-                inputs=[chunks],  # Single document
-                model=model,
-                input_type=input_type,
-                output_dimension=output_dimension,
+        api_inputs = chunks if enable_auto_chunking else [chunks]
+        result = await self._api_contextualized_embed(
+            api_inputs,
+            model=model,
+            input_type=input_type,
+            output_dimension=dimension,
+            output_dtype=dtype,
+            enable_auto_chunking=enable_auto_chunking,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
+        result_objects = self._result_objects(result)
+        if len(result_objects) != 1:
+            raise ValueError(
+                f"Expected one contextualized result, got {len(result_objects)}"
             )
 
-            # Extract response (result.results is a list of ContextualizedEmbeddingsResult objects)
-            embeddings = result.results[0].embeddings  # First (and only) document
-            tokens = result.total_tokens
-
-            # Track cost
-            cost = self.cost_tracker.add_request(model, tokens, cached=False)
-
-            response = ContextualizedEmbeddingResponse(
-                embeddings=embeddings,
-                model=model,
-                total_tokens=tokens,
-                cached=False,
-                cost_usd=cost,
+        result_object = result_objects[0]
+        embeddings = self._extract_embeddings(result_object)
+        returned_texts = self._extract_chunk_texts(result_object, chunks)
+        if len(embeddings) != len(returned_texts):
+            raise ValueError(
+                f"Voyage returned {len(embeddings)} vectors for "
+                f"{len(returned_texts)} chunks"
             )
 
-            # Cache
-            self._cache_response(cache_key, response)
-
-            logger.debug(
-                f"Embedded {len(chunks)} chunks with {model}: "
-                f"{tokens} tokens, ${cost:.6f}"
-            )
-
-            return response
-
-        except Exception as e:
-            logger.error(f"Contextualized embedding failed: {e}")
-            raise
+        returned_counts = await self.token_counter.count_each(returned_texts, model)
+        total_tokens = int(
+            getattr(result, "total_tokens", sum(item.count for item in returned_counts))
+        )
+        chunk_tokens = allocate_total_tokens(
+            [item.count for item in returned_counts], total_tokens
+        )
+        response = ContextualizedEmbeddingResponse(
+            embeddings=embeddings,
+            model=model,
+            total_tokens=total_tokens,
+            cost_usd=self.cost_tracker.add_request(model, total_tokens),
+            chunk_tokens=chunk_tokens,
+            chunk_texts=returned_texts,
+            output_dimension=dimension,
+            output_dtype=dtype,
+            token_count_exact=all(item.exact for item in returned_counts),
+        )
+        self._cache_response(cache_key, response)
+        return response
 
     async def embed_documents_batch(
         self,
         documents: List[List[str]],
-        model: str = "voyage-context-3",
+        model: Optional[str] = None,
         input_type: str = "document",
-        output_dimension: int = 1024,
+        output_dimension: Optional[int] = None,
+        output_dtype: Optional[str] = None,
     ) -> List[ContextualizedEmbeddingResponse]:
-        """
-        Embed multiple documents in batch.
+        if not documents:
+            return []
+        if any(not document for document in documents):
+            raise ValueError("documents cannot contain empty chunk lists")
 
-        Args:
-            documents: List of documents (each document is a list of chunks)
-            model: voyage-context-3
-            input_type: "document" for indexing, "query" for search
-            output_dimension: 256, 512, 1024 (default), or 2048
+        model = self._resolve_model(model)
+        dimension = validate_dimension(model, output_dimension or self.output_dimension)
+        dtype = output_dtype or self.output_dtype
+        spec = get_model_spec(model, endpoint="contextualized_embeddings")
 
-        Returns:
-            List of ContextualizedEmbeddingResponse (one per document)
-        """
-        self._validate_model(model)
-
-        # Check cache for all documents
-        responses: List[Optional[ContextualizedEmbeddingResponse]] = []
+        responses: List[Optional[ContextualizedEmbeddingResponse]] = [None] * len(
+            documents
+        )
         uncached_indices: List[int] = []
-        uncached_docs: List[List[str]] = []
+        uncached_documents: List[List[str]] = []
+        uncached_keys: List[str] = []
 
-        for i, chunks in enumerate(documents):
-            cache_key = self._cache_key(chunks, model, input_type)
-            cached = self._get_cached(cache_key)
-
-            if cached:
-                self.cost_tracker.add_request(model, cached.total_tokens, cached=True)
-                responses.append(cached)
-            else:
-                responses.append(None)
-                uncached_indices.append(i)
-                uncached_docs.append(chunks)
-
-        # If all cached, return
-        if not uncached_docs:
-            logger.debug(f"All {len(documents)} documents cached")
-            return responses  # type: ignore
-
-        logger.debug(f"Batch: {len(documents)} total, {len(uncached_docs)} uncached")
-
-        # Rate limit
-        await self._check_rate_limit()
-
-        # Embed uncached documents
-        try:
-            result = await self.client.contextualized_embed(
-                inputs=uncached_docs,
+        for index, chunks in enumerate(documents):
+            key = self._cache_key(
+                chunks,
                 model=model,
                 input_type=input_type,
-                output_dimension=output_dimension,
+                output_dimension=dimension,
+                output_dtype=dtype,
+                enable_auto_chunking=False,
+                chunk_size=512,
+                chunk_overlap=0,
             )
+            cached = self._get_cached(key)
+            if cached is not None:
+                self.cost_tracker.add_request(model, cached.total_tokens, cached=True)
+                responses[index] = cached
+            else:
+                uncached_indices.append(index)
+                uncached_documents.append(chunks)
+                uncached_keys.append(key)
 
-            # Process results (result.results is a list of ContextualizedEmbeddingsResult objects)
-            for i, (doc_chunks, result_obj) in enumerate(
-                zip(uncached_docs, result.results)
+        if not uncached_documents:
+            return [response for response in responses if response is not None]
+
+        doc_counts = []
+        for document in uncached_documents:
+            counts = await self.token_counter.count_each(document, model)
+            values = [item.count for item in counts]
+            if any(value > spec.per_input_tokens for value in values):
+                raise ValueError(
+                    f"A document chunk exceeds {spec.per_input_tokens} tokens"
+                )
+            doc_counts.append(sum(values))
+
+        batch_indices = partition_indices(
+            doc_counts,
+            max_inputs=spec.max_request_inputs,
+            max_tokens=spec.max_request_tokens,
+        )
+
+        for group in batch_indices:
+            group_documents = [uncached_documents[index] for index in group]
+            if sum(len(document) for document in group_documents) > 16_000:
+                raise ValueError(
+                    "Contextualized request cannot exceed 16,000 total chunks"
+                )
+
+            await self._check_rate_limit()
+            result = await self._api_contextualized_embed(
+                group_documents,
+                model=model,
+                input_type=input_type,
+                output_dimension=dimension,
+                output_dtype=dtype,
+            )
+            objects = self._result_objects(result)
+            if len(objects) != len(group_documents):
+                raise ValueError(
+                    f"Voyage returned {len(objects)} document results for "
+                    f"{len(group_documents)} documents"
+                )
+
+            group_estimates = [doc_counts[index] for index in group]
+            group_total = int(getattr(result, "total_tokens", sum(group_estimates)))
+            allocated_docs = allocate_total_tokens(group_estimates, group_total)
+
+            for local_index, (document, result_object, doc_tokens) in enumerate(
+                zip(group_documents, objects, allocated_docs)
             ):
-                embeddings = result_obj.embeddings
-                # Estimate tokens per document
-                tokens = result.total_tokens // len(uncached_docs)
-                cost = self.cost_tracker.add_request(model, tokens, cached=False)
-
+                uncached_index = group[local_index]
+                embeddings = self._extract_embeddings(result_object)
+                returned_texts = self._extract_chunk_texts(result_object, document)
+                if len(embeddings) != len(returned_texts):
+                    raise ValueError(
+                        "Contextualized embedding count does not match chunk count"
+                    )
+                returned_counts = await self.token_counter.count_each(
+                    returned_texts, model
+                )
+                chunk_tokens = allocate_total_tokens(
+                    [item.count for item in returned_counts], doc_tokens
+                )
                 response = ContextualizedEmbeddingResponse(
                     embeddings=embeddings,
                     model=model,
-                    total_tokens=tokens,
-                    cached=False,
-                    cost_usd=cost,
+                    total_tokens=doc_tokens,
+                    cost_usd=self.cost_tracker.add_request(model, doc_tokens),
+                    chunk_tokens=chunk_tokens,
+                    chunk_texts=returned_texts,
+                    output_dimension=dimension,
+                    output_dtype=dtype,
+                    token_count_exact=all(item.exact for item in returned_counts),
                 )
+                self._cache_response(uncached_keys[uncached_index], response)
+                responses[uncached_indices[uncached_index]] = response
 
-                # Cache
-                cache_key = self._cache_key(doc_chunks, model, input_type)
-                self._cache_response(cache_key, response)
-
-                # Store in results
-                original_idx = uncached_indices[i]
-                responses[original_idx] = response
-
-            logger.debug(
-                f"Embedded batch of {len(uncached_docs)} documents: "
-                f"{result.total_tokens} tokens"
-            )
-
-            return responses  # type: ignore
-
-        except Exception as e:
-            logger.error(f"Batch contextualized embedding failed: {e}")
-            raise
+        if any(response is None for response in responses):
+            raise RuntimeError("Internal contextualized batch merge is incomplete")
+        return [response for response in responses if response is not None]
 
     async def embed_documents_grouped(
         self,
         documents: List[List[str]],
-        model: str = "voyage-context-3",
+        model: Optional[str] = None,
         input_type: str = "document",
-        output_dimension: int = 1024,
+        output_dimension: Optional[int] = None,
+        output_dtype: Optional[str] = None,
     ) -> List[ContextualizedEmbeddingResponse]:
-        """
-        Contract alias: embed ordered chunk lists grouped by document.
-        """
         return await self.embed_documents_batch(
             documents=documents,
             model=model,
             input_type=input_type,
             output_dimension=output_dimension,
+            output_dtype=output_dtype,
         )
 
-    def clear_cache(self):
-        """Clear embedding cache."""
+    def clear_cache(self) -> None:
         self.cache.clear()
         logger.info("Contextualized embedding cache cleared")
 
     def get_cost_summary(self) -> Dict:
-        """Get cost tracking summary."""
         return self.cost_tracker.summary()
-
-
-# Example usage
-async def main():
-    """Example usage of ContextualizedEmbedder."""
-    import os
-
-    api_key = os.getenv("VOYAGE_API_KEY")
-    if not api_key:
-        logger.info("Set VOYAGE_API_KEY environment variable")
-        return
-
-    embedder = ContextualizedEmbedder(api_key=api_key, cache_ttl_hours=24)
-
-    # Single document
-    doc_chunks = [
-        "Chapter 1: Introduction to Python",
-        "Python is a high-level programming language.",
-        "It supports multiple paradigms including OOP and functional.",
-    ]
-
-    response = await embedder.embed_document(
-        chunks=doc_chunks,
-        model="voyage-context-3",
-        input_type="document",
-    )
-    logger.info(
-        f"Single doc: {len(response.embeddings)} chunks, ${response.cost_usd:.6f}"
-    )
-
-    # Batch documents
-    docs = [
-        ["Doc 1 chunk 1", "Doc 1 chunk 2"],
-        ["Doc 2 chunk 1", "Doc 2 chunk 2", "Doc 2 chunk 3"],
-    ]
-
-    responses = await embedder.embed_documents_batch(
-        documents=docs,
-        model="voyage-context-3",
-        input_type="document",
-    )
-    logger.info(f"Batch: {len(responses)} documents")
-
-    # Cost summary
-    summary = embedder.get_cost_summary()
-    logger.info(f"Cost summary: {summary}")
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    asyncio.run(main())
