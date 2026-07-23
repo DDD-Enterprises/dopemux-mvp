@@ -1,76 +1,72 @@
-# Task Packet: TP-DOPECONTEXT-VOYAGE4-0001 · Dope-Context · Voyage 4 and Index Safety
+---
+id: TP-DOPECONTEXT-VOYAGE4-0001
+title: Tp Dopecontext Voyage4 0001
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-22'
+last_review: '2026-07-22'
+next_review: '2026-10-20'
+prelude: Task packet for Voyage 4 model modernization, token accounting, and
+  deterministic failure-safe dope-context document indexing.
+---
+# Task Packet: TP-DOPECONTEXT-VOYAGE4-0001
 
 ## Objective
 
-Modernize the canonical dope-context Voyage integration to current models and
-make document indexing token-aware, dimension-safe, deterministic, and
-failure-preserving without replacing the Python/FastMCP/Qdrant architecture.
+Modernize the canonical dope-context Voyage integration and make document
+indexing token-aware, dimension-safe, deterministic, and failure-preserving
+without replacing the Python, FastMCP, and Qdrant architecture.
 
 ## Status
 
 `IMPLEMENTATION_CANDIDATE`
 
-Final completion requires repository CI, embedded audit, and PR Steward proof
-against the final PR head.
+Completion requires current-head CI, embedded audit, and PR Steward proof.
 
 ## Risk
 
 `MEDIUM-HIGH`
 
-Reason: model and vector-schema behavior changes can invalidate or contaminate
-derived Qdrant indexes even though source files remain authoritative.
-
-## Base
-
-- Repo: `DDD-Enterprises/dopemux-mvp`
-- Base branch: `main`
-- Base SHA inspected:
-  `b2ee5f11de04861c202d31241f909d83d85fbe41`
+Model and vector-schema changes can contaminate derived Qdrant indexes even
+though source files remain authoritative.
 
 ## Scope
 
 ### IN
 
-- Voyage embedding model registry and defaults
+- current Voyage model registry and defaults
 - model-specific token accounting
-- contextualized embedding cache correctness
-- standard embedding cache correctness
-- Voyage request partitioning
-- reranker token pricing and request limits
-- docs index payload version/fingerprint
+- embedding and contextual cache correctness
+- token-bounded request partitioning
+- reranker token pricing
+- docs index version and fingerprint metadata
 - deterministic docs point IDs
-- failure-safe docs replacement
+- failure-safe document replacement
 - exact-source stale cleanup
-- focused tests
-- current implementation audit/reference note
-- dope-context container constraint for Voyage SDK 0.5
+- focused tests, audit, and container constraints
 
 ### OUT
 
 - replacing Qdrant with Milvus
 - wholesale upstream Claude Context import
-- broad `mcp/server.py` refactor
-- code-index chunker redesign
-- code collection migration or deletion
-- production collection cutover
-- network/live Voyage calls
-- Qdrant data deletion outside deterministic stale replacement
-- unrelated dependency or Docker hardening
-- PM, memory, bridge, or workflow-plane changes
+- production collection migration or deletion
+- broad MCP server refactoring
+- code chunker redesign
+- live Voyage calls
+- unrelated systems or dependencies
 
 ## Invariants
 
-- Source code and documents remain upstream authority.
-- Qdrant indexes remain derived retrieval artifacts.
-- dope-context remains code/docs retrieval authority only.
-- Existing collection data must not be deleted before replacement vectors are
-  successfully generated and inserted.
-- Model/dimension/dtype changes must be visible in derived index metadata.
-- Existing `voyage-context-3` remains an explicit rollback option.
-- Code embeddings continue to default to `voyage-code-3`.
-- Output budgeting remains separate from embedding token accounting.
-- No secrets or API keys enter source, tests, logs, or proof.
-- No live Voyage request is required for unit validation.
+- Source code and documents remain authoritative.
+- Qdrant collections remain derived retrieval artifacts.
+- dope-context remains retrieval authority only.
+- Existing document vectors are not deleted before replacements are ready.
+- Model, dimension, dtype, and chunker changes remain visible.
+- Context-3 remains an explicit bounded rollback.
+- Code defaults to `voyage-code-3`.
+- API token accounting and MCP output budgeting remain separate.
+- No secret or API key enters source, tests, logs, or proof.
 
 ## Allowed Files
 
@@ -92,41 +88,16 @@ derived Qdrant indexes even though source files remain authoritative.
 
 `analyze -> apilookup -> thinkdeep -> challenge -> planner -> challenge -> implement -> testgen -> codereview -> precommit -> embedded-audit -> PR-Steward`
 
-## Implementation Slices
+## Plan
 
-### Slice 1 — Model and token contract
-
-- Add one Voyage model registry.
-- Add model-specific token counting with deterministic fallback.
-- Replace stale model literals through configurable defaults.
-- Correct current pricing/accounting.
-- Make cache identity include vector shape.
-
-Validation:
-- model registry tests
-- cache-key tests
-- token partition/allocation tests
-- syntax compilation
-
-### Slice 2 — Document index safety
-
-- Persist model/dimension/dtype/schema/fingerprint.
-- Generate deterministic UUIDv5 point IDs.
-- Upsert replacements before stale deletion.
-- Remove basename-based deletion.
-
-Validation:
-- metadata invariant test
-- deterministic ID test
-- embedding-failure preservation test
-- exact-source stale cleanup test
-
-### Slice 3 — Container and evidence
-
-- Constrain the service image to `voyageai>=0.5.0,<0.6`.
-- Set explicit model defaults.
-- Add implementation audit and this packet.
-- Run focused and service-level validation.
+1. Add one current Voyage capability, pricing, and dimension registry.
+2. Add model-aware token counting with conservative fallback.
+3. Modernize embedding, contextualized embedding, and rerank clients.
+4. Persist an explicit document index compatibility fingerprint.
+5. Replace random IDs and pre-delete cleanup with deterministic safe upserts.
+6. Add focused migration and regression tests.
+7. Constrain the service image to the compatible Voyage SDK.
+8. Run CI, embedded audit, and PR Steward against the final head.
 
 ## Exact Commands
 
@@ -134,154 +105,84 @@ Validation:
 git status --short --branch
 git diff --stat
 git diff --check
-
 python -m compileall -q services/dope-context/src
-python -m py_compile \
+python -m py_compile services/dope-context/tests/test_docs_pipeline_invariants.py
+python -m py_compile services/dope-context/tests/test_voyage_modernization.py
+PYTHONPATH=services/dope-context python -m pytest -q \
   services/dope-context/tests/test_docs_pipeline_invariants.py \
   services/dope-context/tests/test_voyage_modernization.py
-
-PYTHONPATH=services/dope-context \
-python -m pytest -q \
-  services/dope-context/tests/test_docs_pipeline_invariants.py \
-  services/dope-context/tests/test_voyage_modernization.py
-
-PYTHONPATH=services/dope-context \
-python -m pytest -q services/dope-context/tests
-
+PYTHONPATH=services/dope-context python -m pytest -q services/dope-context/tests
 docker build -f services/dope-context/Dockerfile \
   -t dope-context:tp-voyage4 .
-
 git diff --stat
 git diff
 git status --short --branch
 ```
 
-## Validation Gates
-
-### Local focused gate
-
-Required:
-
-- focused tests pass
-- Python compilation passes
-- no live API calls
-- no source outside allowlist
-
-### Service gate
-
-Required:
-
-- all `services/dope-context/tests` pass
-- Docker image resolves Voyage SDK constraint
-- health entrypoint remains `python -m src.mcp.server`
-
-### Embedded audit
-
-Required fields:
-
-- `auditor_tool`
-- `auditor_model`
-- `invocation`
-- `exit_code`
-- `auditor_verdict`
-- `auditor_findings`
-- `fixes_applied_from_audit`
-- `remaining_risks`
-
-Preferred route:
-
-1. AGY / Google Antigravity with Sonnet
-2. Claude Code CLI Sonnet
-3. Claude Code CLI Opus
-4. Gemini CLI independent review
-
-### PR Steward
-
-A PR is not READY until PR Steward has harvested:
-
-- changed files
-- commits and current head SHA
-- reviews and review threads
-- issue comments and bot comments
-- required checks
-- proof current to final head
-- classification of every review item
-
 ## Acceptance Criteria
 
-- Default contextualized model is `voyage-context-4`.
-- Code model remains `voyage-code-3`.
-- Default reranker is `rerank-2.5`.
-- Voyage model/dimension/dtype affect cache identity.
-- Token counts use model-aware Voyage tokenization when available.
-- Fallback token counts are explicitly approximate and conservative.
-- Request batching respects model count/token ceilings.
+- Docs default to `voyage-context-4`.
+- Code defaults to `voyage-code-3`.
+- Reranking defaults to `rerank-2.5`.
+- Cache identity includes model and vector shape.
+- Voyage request accounting uses model-aware tokenization when available.
+- Request batching respects count and token ceilings.
 - Reranker cost uses processed tokens.
-- Docs payload records actual model, dimension, dtype, schema, and fingerprint.
-- Docs Qdrant point IDs are deterministic.
-- Failed embedding does not pre-delete the last good docs index.
-- Stale cleanup cannot delete another document solely because its basename
-  matches.
-- Focused tests and compilation pass.
-- Final PR head passes required repository checks.
-- Embedded auditor is PASS or non-blocking PASS_WITH_RISKS.
+- Docs payloads record actual model, dimension, dtype, schema, and fingerprint.
+- Docs point IDs are deterministic.
+- Failed embedding does not pre-delete the last good document index.
+- Same-basename documents cannot delete one another.
+- Focused and service tests pass.
+- Embedded audit is PASS or non-blocking PASS_WITH_RISKS.
 - PR Steward emits READY before merge.
 
 ## Proof Requirements
 
 Return verbatim:
 
-- `git status` before/after
 - base and final head SHA
+- `git status` before and after
 - `git diff --stat`
 - `git diff`
-- every validation command
-- stdout/stderr
-- exit codes
-- Docker build receipt
-- embedded audit report
-- PR metadata/checks
-- PR Steward `MERGE_READINESS.json`
+- every validation command and exit code
+- test, Docker, and CI output
+- embedded audit identity, invocation, verdict, and findings
+- PR metadata, reviews, threads, checks, and merge readiness
 
 ## Rollback
 
 1. Revert the packet commits.
-2. Set `DOPE_CONTEXT_DOC_EMBED_MODEL=voyage-context-3` only for bounded rollback.
-3. Keep old Qdrant collections untouched until a separately approved migration.
-4. Do not mix context-3 and context-4 vectors in one collection.
-5. If a v2 shadow collection exists, restore the previous collection pointer
-   rather than rewriting source data.
+2. Use `DOPE_CONTEXT_DOC_EMBED_MODEL=voyage-context-3` only for bounded rollback.
+3. Keep old collections until a separately approved migration.
+4. Restore the previous collection pointer instead of rewriting source data.
+5. Never mix context-3 and context-4 vectors in one collection.
 
 ## Stop Conditions
 
-Stop and report if:
+Stop if:
 
-- current branch/worktree is not dedicated to this packet
-- base SHA moved and overlapping dope-context changes exist
-- a file outside the allowlist is required
-- installed SDK cannot support context-4/dimension parameters
-- existing collection vector size differs from configured dimension
-- tests imply current contracts require context-3
-- any operation would delete a full collection
-- live API validation would expose an API key
+- the base moves with overlapping dope-context changes
+- a required file is outside the allowlist
+- the installed SDK cannot support context-4 parameters
+- collection vector size conflicts with the requested dimension
+- any operation would delete a complete collection
+- a live validation would expose an API key
 - embedded audit returns FAIL or NEEDS_SUPERVISOR
-- CI/proof is stale relative to PR head
+- proof or checks are stale relative to the PR head
 
 ## Current Evidence
 
 ### OBSERVED
 
-- Focused local reconstruction:
-  - `15 passed`
-  - Python compilation passed
+- Isolated focused test reconstruction: `15 passed`
+- Python module compilation: PASS
 - No live Voyage request was made.
 - No production Qdrant collection was touched.
 
-### UNKNOWN until repository execution
+### UNKNOWN
 
-- complete dope-context test suite
-- Docker build
-- repository pre-commit
+- complete dope-context suite
+- Docker build result
 - embedded auditor verdict
-- GitHub CI
-- PR Steward readiness
+- final GitHub CI state
+- PR Steward merge readiness
