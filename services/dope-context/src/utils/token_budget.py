@@ -1,33 +1,29 @@
-"""
-Token Budget Manager for MCP Response Size Control
+"""MCP response-size control with conservative token-aware truncation.
 
-Prevents MCP responses from exceeding Claude Code's 10K token limit.
-Uses conservative estimation (1 token ≈ 4 chars) for safety.
-
-ADHD Design:
-- Progressive truncation (keeps highest-scored results intact)
-- Clear truncation indicators (transparency)
-- Budget headroom (target 9K to leave margin)
+This module budgets generated MCP payloads. It is intentionally separate from
+Voyage request tokenization, which is model-specific and lives in
+``utils.model_tokenizer``.
 """
 
+from __future__ import annotations
+
+import json
 import logging
+import math
+import re
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
-
-# Token estimation constants
-CHARS_PER_TOKEN = 4  # Conservative estimate (OpenAI uses ~4 for English)
-MCP_MAX_TOKENS = 10000  # Hard limit enforced by Claude Code
-SAFE_TOKEN_BUDGET = 9000  # Target budget (10% headroom for safety)
-BASE_OVERHEAD_TOKENS = 200  # JSON structure, field names, etc.
+MCP_MAX_TOKENS = 10_000
+SAFE_TOKEN_BUDGET = 9_000
+BASE_OVERHEAD_TOKENS = 200
+_TOKEN_RE = re.compile(r"\w+|[^\w\s]", re.UNICODE)
 
 
 @dataclass
 class TruncationResult:
-    """Result of truncation operation."""
-
     truncated: bool
     original_count: int
     final_count: int
@@ -38,92 +34,105 @@ class TruncationResult:
 
 
 def estimate_tokens(text: str) -> int:
+    """Conservatively estimate tokens in an MCP response.
+
+    A generic output budget cannot know the downstream model tokenizer. We use
+    the larger of a UTF-8 byte heuristic and a lexical/code-punctuation count,
+    avoiding the old English-only ``len(text) // 4`` assumption.
     """
-    Estimate token count from text.
 
-    Uses conservative 1 token ≈ 4 chars for safety.
-    Real tokenization varies, but this prevents overruns.
-
-    Args:
-        text: Text to estimate
-
-    Returns:
-        Estimated token count
-    """
-    return len(text) // CHARS_PER_TOKEN
+    if not text:
+        return 0
+    byte_estimate = math.ceil(len(text.encode("utf-8")) / 3)
+    lexical_estimate = len(_TOKEN_RE.findall(text))
+    return max(1, byte_estimate, lexical_estimate)
 
 
 def estimate_dict_tokens(data: Dict[str, Any]) -> int:
-    """
-    Estimate tokens in a dictionary (JSON serialization).
-
-    Args:
-        data: Dictionary to estimate
-
-    Returns:
-        Estimated token count
-    """
-    # Serialize to string and estimate
-    import json
+    """Estimate the serialized JSON payload, including keys and separators."""
 
     try:
-        json_str = json.dumps(data)
-        return estimate_tokens(json_str)
-    except Exception as e:
-        # Fallback: rough estimate from string representation
-        return estimate_tokens(str(data))
-
-        logger.error(f"Error: {e}")
+        serialized = json.dumps(
+            data,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+            default=str,
+        )
+    except (TypeError, ValueError) as exc:
+        logger.warning("Falling back to repr() for token estimation: %s", exc)
+        serialized = repr(data)
+    return estimate_tokens(serialized)
 
 
 def truncate_text(
     text: str, max_chars: int, suffix: str = "... [truncated]"
 ) -> tuple[str, bool]:
-    """
-    Truncate text to maximum character count.
+    """Backward-compatible character cap used by external callers."""
 
-    Args:
-        text: Text to truncate
-        max_chars: Maximum characters (including suffix)
-        suffix: Truncation indicator
-
-    Returns:
-        (truncated_text, was_truncated)
-    """
     if len(text) <= max_chars:
         return text, False
-
-    # Reserve space for suffix
-    available = max_chars - len(suffix)
-    if available < 0:
-        return suffix, True
-
-    return text[:available] + suffix, True
+    if max_chars <= len(suffix):
+        return suffix[:max_chars], True
+    return text[: max_chars - len(suffix)] + suffix, True
 
 
-def truncate_code_results(
+def truncate_text_to_tokens(
+    text: str,
+    max_tokens: int,
+    suffix: str = "... [truncated]",
+) -> tuple[str, bool]:
+    """Truncate at a Unicode-safe character boundary under a token estimate."""
+
+    if estimate_tokens(text) <= max_tokens:
+        return text, False
+    if max_tokens <= 0:
+        return "", True
+
+    suffix_tokens = estimate_tokens(suffix)
+    if suffix_tokens >= max_tokens:
+        low = 0
+        high = len(suffix)
+        best_suffix = ""
+        while low <= high:
+            middle = (low + high) // 2
+            candidate = suffix[:middle]
+            if estimate_tokens(candidate) <= max_tokens:
+                best_suffix = candidate
+                low = middle + 1
+            else:
+                high = middle - 1
+        return best_suffix, True
+
+    low = 0
+    high = len(text)
+    best = ""
+    while low <= high:
+        middle = (low + high) // 2
+        candidate = text[:middle].rstrip() + suffix
+        if estimate_tokens(candidate) <= max_tokens:
+            best = candidate
+            low = middle + 1
+        else:
+            high = middle - 1
+
+    return best, True
+
+
+def _truncate_results(
     results: List[Dict[str, Any]],
-    budget_tokens: int = SAFE_TOKEN_BUDGET,
-    per_item_max_chars: int = 2000,
+    *,
+    content_field: str,
+    truncated_flag: str,
+    content_suffix: str,
+    budget_tokens: int,
+    per_item_max_chars: int,
 ) -> tuple[List[Dict[str, Any]], TruncationResult]:
-    """
-    Truncate code search results to fit token budget.
+    if budget_tokens <= BASE_OVERHEAD_TOKENS:
+        raise ValueError(
+            f"budget_tokens must exceed base overhead ({BASE_OVERHEAD_TOKENS})"
+        )
 
-    Strategy:
-    1. Estimate base overhead (JSON structure)
-    2. Process results in order (highest-scored first)
-    3. Truncate 'code' field per item to per_item_max_chars
-    4. Stop adding results if budget would be exceeded
-    5. Mark truncated items with 'truncated' flag
-
-    Args:
-        results: Search results with 'code' field
-        budget_tokens: Total token budget (default 9K)
-        per_item_max_chars: Max chars per code snippet (default 2000 ≈ 500 tokens)
-
-    Returns:
-        (truncated_results, truncation_info)
-    """
     if not results:
         return results, TruncationResult(
             truncated=False,
@@ -136,56 +145,63 @@ def truncate_code_results(
         )
 
     original_count = len(results)
-    truncated_results = []
+    output: List[Dict[str, Any]] = []
     total_tokens = BASE_OVERHEAD_TOKENS
     total_chars_removed = 0
+    per_item_tokens = max(1, estimate_tokens("x" * max(0, per_item_max_chars)))
 
     for result in results:
-        # Create copy to avoid modifying original
-        truncated_item = result.copy()
-
-        # Truncate 'code' field if present
-        if "code" in truncated_item:
-            original_code = truncated_item["code"]
-            truncated_code, was_truncated = truncate_text(
-                original_code,
-                per_item_max_chars,
-                suffix="\n... [code truncated for token budget]",
+        item = result.copy()
+        content = item.get(content_field)
+        if isinstance(content, str):
+            shortened, was_truncated = truncate_text_to_tokens(
+                content,
+                per_item_tokens,
+                suffix=content_suffix,
             )
-
-            truncated_item["code"] = truncated_code
-            truncated_item["code_truncated"] = was_truncated
-
+            item[content_field] = shortened
+            item[truncated_flag] = was_truncated
             if was_truncated:
-                chars_removed = len(original_code) - len(truncated_code)
-                total_chars_removed += chars_removed
+                total_chars_removed += len(content) - len(shortened)
 
-        # Estimate tokens for this item
-        item_tokens = estimate_dict_tokens(truncated_item)
-
-        # Check if adding this item would exceed budget
+        item_tokens = estimate_dict_tokens(item)
         if total_tokens + item_tokens > budget_tokens:
             logger.warning(
-                f"Token budget exceeded after {len(truncated_results)} results. "
-                f"Stopping (budget={budget_tokens}, used={total_tokens}, next={item_tokens})"
+                "Token budget reached after %s results "
+                "(budget=%s, used=%s, next=%s)",
+                len(output),
+                budget_tokens,
+                total_tokens,
+                item_tokens,
             )
             break
-
-        truncated_results.append(truncated_item)
+        output.append(item)
         total_tokens += item_tokens
 
-    final_count = len(truncated_results)
-    items_removed = original_count - final_count
-    budget_used_pct = (total_tokens / budget_tokens) * 100
-
-    return truncated_results, TruncationResult(
-        truncated=(items_removed > 0 or total_chars_removed > 0),
+    final_count = len(output)
+    return output, TruncationResult(
+        truncated=(final_count < original_count or total_chars_removed > 0),
         original_count=original_count,
         final_count=final_count,
-        items_removed=items_removed,
+        items_removed=original_count - final_count,
         chars_removed=total_chars_removed,
         estimated_tokens=total_tokens,
-        budget_used_pct=budget_used_pct,
+        budget_used_pct=round((total_tokens / budget_tokens) * 100, 2),
+    )
+
+
+def truncate_code_results(
+    results: List[Dict[str, Any]],
+    budget_tokens: int = SAFE_TOKEN_BUDGET,
+    per_item_max_chars: int = 2000,
+) -> tuple[List[Dict[str, Any]], TruncationResult]:
+    return _truncate_results(
+        results,
+        content_field="code",
+        truncated_flag="code_truncated",
+        content_suffix="\n... [code truncated for token budget]",
+        budget_tokens=budget_tokens,
+        per_item_max_chars=per_item_max_chars,
     )
 
 
@@ -194,78 +210,11 @@ def truncate_docs_results(
     budget_tokens: int = SAFE_TOKEN_BUDGET,
     per_item_max_chars: int = 2000,
 ) -> tuple[List[Dict[str, Any]], TruncationResult]:
-    """
-    Truncate document search results to fit token budget.
-
-    Same strategy as code results, but truncates 'text' field.
-
-    Args:
-        results: Search results with 'text' field
-        budget_tokens: Total token budget (default 9K)
-        per_item_max_chars: Max chars per doc snippet (default 2000)
-
-    Returns:
-        (truncated_results, truncation_info)
-    """
-    if not results:
-        return results, TruncationResult(
-            truncated=False,
-            original_count=0,
-            final_count=0,
-            items_removed=0,
-            chars_removed=0,
-            estimated_tokens=BASE_OVERHEAD_TOKENS,
-            budget_used_pct=0.0,
-        )
-
-    original_count = len(results)
-    truncated_results = []
-    total_tokens = BASE_OVERHEAD_TOKENS
-    total_chars_removed = 0
-
-    for result in results:
-        truncated_item = result.copy()
-
-        # Truncate 'text' field if present
-        if "text" in truncated_item:
-            original_text = truncated_item["text"]
-            truncated_text, was_truncated = truncate_text(
-                original_text,
-                per_item_max_chars,
-                suffix="\n... [text truncated for token budget]",
-            )
-
-            truncated_item["text"] = truncated_text
-            truncated_item["text_truncated"] = was_truncated
-
-            if was_truncated:
-                chars_removed = len(original_text) - len(truncated_text)
-                total_chars_removed += chars_removed
-
-        # Estimate tokens
-        item_tokens = estimate_dict_tokens(truncated_item)
-
-        # Check budget
-        if total_tokens + item_tokens > budget_tokens:
-            logger.warning(
-                f"Token budget exceeded after {len(truncated_results)} doc results. "
-                f"Stopping (budget={budget_tokens}, used={total_tokens})"
-            )
-            break
-
-        truncated_results.append(truncated_item)
-        total_tokens += item_tokens
-
-    final_count = len(truncated_results)
-    items_removed = original_count - final_count
-    budget_used_pct = (total_tokens / budget_tokens) * 100
-
-    return truncated_results, TruncationResult(
-        truncated=(items_removed > 0 or total_chars_removed > 0),
-        original_count=original_count,
-        final_count=final_count,
-        items_removed=items_removed,
-        chars_removed=total_chars_removed,
-        estimated_tokens=total_tokens,
-        budget_used_pct=budget_used_pct,
+    return _truncate_results(
+        results,
+        content_field="text",
+        truncated_flag="text_truncated",
+        content_suffix="\n... [text truncated for token budget]",
+        budget_tokens=budget_tokens,
+        per_item_max_chars=per_item_max_chars,
     )
