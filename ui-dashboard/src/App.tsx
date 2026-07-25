@@ -178,6 +178,20 @@ function App() {
   const [lastSignalTime, setLastSignalTime] = useState<Date | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
 
+  const [isHydrated, setIsHydrated] = useState(false);
+  const hydrationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleHydrate = useCallback(() => {
+    setIsHydrated(true);
+    if (hydrationTimeoutRef.current) {
+      clearTimeout(hydrationTimeoutRef.current);
+    }
+    hydrationTimeoutRef.current = setTimeout(() => {
+      setIsHydrated(false);
+      hydrationTimeoutRef.current = null;
+    }, 2000);
+  }, []);
+
   const handleReconnect = useCallback(() => {
     setRetryTrigger((prev) => prev + 1);
     setConnectionStatus('connecting');
@@ -220,6 +234,10 @@ function App() {
       if (copyTimeoutRef.current) {
         clearTimeout(copyTimeoutRef.current);
         copyTimeoutRef.current = null;
+      }
+      if (hydrationTimeoutRef.current) {
+        clearTimeout(hydrationTimeoutRef.current);
+        hydrationTimeoutRef.current = null;
       }
     };
   }, []);
@@ -495,13 +513,34 @@ function App() {
                 tabIndex={0}
               />
             </Tooltip>
-            <Tooltip title="Health and hydration status" arrow>
+            <Tooltip title={isHydrated ? 'Sip Logged!' : 'Health and hydration status: Click to log a hydration sip.'} arrow>
               <Chip
-                icon={<Droplet size={16} color={brandTokens.colors.aftercareViolet} aria-hidden="true" />}
-                label="[AFTERCARE] Logged. Hydrate."
-                aria-label="Health and hydration status: [AFTERCARE] Logged. Hydrate."
+                icon={isHydrated ? <Check size={16} color={brandTokens.colors.serumMint} aria-hidden="true" /> : <Droplet size={16} color={brandTokens.colors.aftercareViolet} aria-hidden="true" />}
+                label={isHydrated ? '[AFTERCARE] Sip Logged! Stay Feral.' : '[AFTERCARE] Logged. Hydrate.'}
+                aria-label={isHydrated ? 'Sip Logged! Stay Feral.' : 'Health and hydration status: [AFTERCARE] Logged. Hydrate. Click to log a hydration sip.'}
                 className="dopemux-chip"
-                sx={{ borderColor: alpha(brandTokens.colors.aftercareViolet, 0.8), color: brandTokens.colors.aftercareViolet }}
+                onClick={handleHydrate}
+                sx={{
+                  borderColor: isHydrated ? alpha(brandTokens.colors.serumMint, 0.8) : alpha(brandTokens.colors.aftercareViolet, 0.8),
+                  color: isHydrated ? brandTokens.colors.serumMint : brandTokens.colors.aftercareViolet,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover, &:focus-visible': {
+                    transform: 'translateY(-2px)',
+                    borderColor: isHydrated ? brandTokens.colors.serumMint : brandTokens.colors.aftercareViolet,
+                    boxShadow: isHydrated
+                      ? `0 0 12px ${alpha(brandTokens.colors.serumMint, 0.3)}`
+                      : `0 0 12px ${alpha(brandTokens.colors.aftercareViolet, 0.3)}`,
+                  },
+                  ...(isHydrated && {
+                    animation: 'hydration-pulse 0.4s ease-out',
+                    '@keyframes hydration-pulse': {
+                      '0%': { transform: 'scale(1)' },
+                      '50%': { transform: 'scale(1.05)', boxShadow: `0 0 20px ${alpha(brandTokens.colors.serumMint, 0.4)}` },
+                      '100%': { transform: 'scale(1)' },
+                    }
+                  }),
+                }}
                 tabIndex={0}
               />
             </Tooltip>

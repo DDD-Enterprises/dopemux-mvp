@@ -252,6 +252,12 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
   expect(appContent).toContain('aria-label={notificationLabel}');
   expect(appContent).toContain('tabIndex={0}');
+
+  // Verify hydration aftercare chip interactive states
+  expect(appContent).toContain('const [isHydrated, setIsHydrated] = useState(false);');
+  expect(appContent).toContain('const handleHydrate = useCallback(() => {');
+  expect(appContent).toContain('isHydrated ? \'Sip Logged!\' : \'Health and hydration status: Click to log a hydration sip.\'');
+  expect(appContent).toContain('onClick={handleHydrate}');
 });
 
 test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
