@@ -1,11 +1,12 @@
 {
   "id": "TP-RTE-TRUTH-D-008",
   "project": "dopemux-mvp",
-  "target": "repo-truth-extractor / port the untrusted-content delimiter to legacy v3 (F-30 residual)",
+  "target": "repo-truth-extractor / port injection delimiter AND write-time secret scrub to legacy v3 (F-30 + F-23 residuals)",
   "invariants": [
     "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls.",
     "CONFIRMED RESIDUAL of TP-RTE-TRUTH-R3-002 (commit 27b349dd3): v5 is wrapped, v3 is NOT. run_extraction_v3.py:6424 defines its own build_partition_context with 0 repo_content occurrences, and v3 CAN dispatch live (its own --execute + DPMX_LIVE_OK gates).",
     "Reachability: `dopemux rte scan --allow-legacy-v3-scan` -> run_repscan.py -> run_extraction_v3.py. Three opt-in gates lower the risk but do not remove it.",
+    "SCOPE EXTENSION (from TP-RTE-TRUTH-R3-007, commit 0cb8347dbd): v3 also carries the SAME write-time secret-scrub gap as v5 did \u2014 run_extraction_v3.py has the same norm-artifact write site (2 occurrences). R3-007 fixed v5 only and recorded v3 as NOT_DONE. Port BOTH the untrusted-content delimiter AND the write-time strict scrub (sanitize_payload_for_security_artifact) to v3 in this packet. run_extraction_v4.py has no such write site (checked).",
     "Mirror the v5 fix exactly: wrap build_partition_context's return in <repo_content>...</repo_content>, emit the UNTRUSTED_CONTENT_PREAMBLE before the delimited region, compute context bytes POST-wrap.",
     "Do NOT refactor v3 beyond this port. v3 deletion is TP-RTE-TRUTH-D-001 (hard-blocked post-release); this packet keeps v3 safe until then.",
     "Alternative acceptable outcome: if the operator decides v3 live dispatch should be hard-disabled instead, implement that and document the decision \u2014 but do not leave v3 both live-capable and unwrapped.",
