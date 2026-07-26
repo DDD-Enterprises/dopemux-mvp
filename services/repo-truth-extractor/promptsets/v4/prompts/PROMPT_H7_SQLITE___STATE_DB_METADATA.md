@@ -50,12 +50,12 @@ Focus on concrete, machine-verifiable implementation facts.
 This step reads the operator's home-directory state databases, which hold live session data and credentials. The rules below are BINDING and override the exact-`excerpt` rule of the Evidence Rules wherever they conflict. See `PROMPTSET_RULES.md` § Secret Redaction Rules.
 
 - **Emit schema metadata only**: table names, index names, column names, and types. Never emit row contents, stored values, or any credential value — in any field, including `excerpt`.
-- **Mask the secret span in every excerpt**: reproduce the line exactly but replace the value's characters with the literal token `<REDACTED>` (e.g. `token TEXT DEFAULT 'ghp_abc123def456'` → `token TEXT DEFAULT '<REDACTED>'`). Column and table NAMES are the product of this step and must not be redacted.
+- **Mask the secret span in every excerpt**: reproduce the line exactly but replace the value's characters with the literal token `[REDACTED]` (e.g. `token TEXT DEFAULT 'ghp_abc123def456'` → `token TEXT DEFAULT '[REDACTED]'`). Column and table NAMES are the product of this step and must not be redacted.
 - When in doubt, redact: this artifact is copied into a paid third-party LLM context.
 
 ## Extraction Procedure
 1. Load upstream inventory and partitions; use the SQLite and state DB metadata partition as primary scan surface
-2. Extract SQLite and state DB metadata facts: scan relevant files for domain-specific patterns and structures. **Metadata only** — table/index/column names and types; redact any value span with `<REDACTED>` and never emit row contents (see the Hard Requirement above; BINDING).
+2. Extract SQLite and state DB metadata facts: scan relevant files for domain-specific patterns and structures. **Metadata only** — table/index/column names and types; redact any value span with `[REDACTED]` and never emit row contents (see the Hard Requirement above; BINDING).
 3. Build relationship graph: trace connections between extracted SQLite and state DB metadata elements
 4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
 5. For each HOME_SQLITE_SCHEMA item, populate `id`, required fields, and `evidence`

@@ -38,7 +38,8 @@ RULES_PATH = SERVICE_ROOT / "promptsets" / "v4" / "PROMPTSET_RULES.md"
 # Shape mirrors a real AWS secret key; the value is invented and inert.
 FAKE_SECRET = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYFAKEKEY123"
 FAKE_SECRET_LINE = f"AWS_SECRET_ACCESS_KEY={FAKE_SECRET}"
-REDACTION_TOKEN = "<REDACTED>"
+# R3-010: prompts and write-time scrub share the same token shape.
+REDACTION_TOKEN = "[REDACTED]"
 
 # The prompts whose binding body must carry a redaction rule. Each of these instructs the
 # model to scan a surface where live credentials are routinely present.

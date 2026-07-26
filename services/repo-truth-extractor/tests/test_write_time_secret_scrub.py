@@ -290,3 +290,159 @@ def test_noncompliant_model_output_is_scrubbed_before_it_reaches_disk(
     items = parsed["items"] if isinstance(parsed, dict) else parsed
     assert len(items) == 1, "the finding must be masked, never dropped"
     assert items[0]["line_range"] == [41, 41]
+
+
+# ---------------------------------------------------------------------------
+# TP-RTE-TRUTH-R3-010 residuals
+# ---------------------------------------------------------------------------
+
+
+def test_default_credentials_key_is_sensitive() -> None:
+    """R3-010 S1: DEFAULT_CREDENTIALS-style keys must mask by field name."""
+    osafe = _load_output_safety()
+    assert osafe._is_sensitive_key("DEFAULT_CREDENTIALS")
+    assert osafe._is_sensitive_key("credentials")
+    assert osafe._is_sensitive_key("passwd")
+    assert osafe._is_sensitive_key("aws_access_key_id")
+    # Must not over-broaden into non-secret words.
+    assert not osafe._is_sensitive_key("accreditation")
+    assert not osafe._is_sensitive_key("author")
+    assert not osafe._is_sensitive_key("api_key_env")
+
+    payload = {"DEFAULT_CREDENTIALS": "short-secret-value"}
+    assert osafe.sanitize_payload_for_output(payload)["DEFAULT_CREDENTIALS"] == (
+        osafe.REDACTION_TOKEN
+    )
+
+
+def test_short_free_text_secret_residual_is_documented_not_overclaimed() -> None:
+    """R3-010 S1: short free-text secrets without key/prefix remain residual.
+
+    Do NOT claim structural impossibility for this shape. The sensitive-key
+    path (above) and long-token / provider-prefix paths cover the enforceable
+    cases; a short bare password in free text is accepted residual risk.
+    """
+    osafe = _load_output_safety()
+    short_bare = "s3cr3t!"  # short, no provider prefix, no sensitive key name
+    free_text = f"note: operator said the password is {short_bare} for now"
+    strict = osafe.sanitize_payload_for_security_artifact(free_text)
+    # Residual: short bare free-text may survive. Pin honesty — if a future
+    # scrub starts catching this, the residual shrinks (fine); fail only if
+    # we silently start claiming impossibility without coverage.
+    if short_bare in strict:
+        # Documented residual still present — expected as of R3-010.
+        assert short_bare in strict
+    else:  # pragma: no cover
+        # Scrub strengthened later; residual closed.
+        assert osafe.REDACTION_TOKEN in strict
+
+
+def test_redaction_token_is_unified() -> None:
+    """R3-010 S2: scrub token is the single shared shape (no angle-bracket form)."""
+    osafe = _load_output_safety()
+    assert osafe.REDACTION_TOKEN == "[REDACTED]"
+    assert "<REDACTED>" not in osafe.REDACTION_TOKEN
+
+
+def test_part_shard_names_are_security_sensitive() -> None:
+    """R3-010 S2: partX / partNNNN shards resolve like the logical artifact."""
+    osafe = _load_output_safety()
+    assert osafe.is_security_sensitive_artifact(
+        "SECRETS_RISK_LOCATIONS.part0001.json"
+    )
+    assert osafe.is_security_sensitive_artifact("SECRETS_RISK_LOCATIONS.partX.json")
+    assert osafe.canonical_security_artifact_basename(
+        "C/norm/HOME_KEYS_SURFACE.part0002.json"
+    ) == "HOME_KEYS_SURFACE.json"
+    assert not osafe.is_security_sensitive_artifact("SERVICE_CATALOG.part0001.json")
+
+
+def test_raw_partition_json_scrubs_security_artifact_payloads(tmp_path: Path) -> None:
+    """R3-010 S2: raw/ write path must not be weaker than norm/.
+
+    Mutation-checked property: write_json on a partition payload containing a
+    SECRETS_RISK_LOCATIONS artifact must mask bare high-entropy secrets.
+    """
+    runner = _load_v5_runner()
+    osafe = _load_output_safety()
+    raw_path = tmp_path / "raw" / "C8__p1.json"
+    payload = {
+        "phase": "C",
+        "step_id": "C8",
+        "partition_id": "p1",
+        "artifacts": [
+            {
+                "artifact_name": "SECRETS_RISK_LOCATIONS.json",
+                "payload": {"items": [_noncompliant_finding()]},
+            }
+        ],
+        "request_meta": {"schema_gate_passed": True},
+    }
+    runner.write_json(raw_path, payload)
+    on_disk = raw_path.read_text(encoding="utf-8")
+    for literal in ALL_FAKE_LITERALS:
+        assert literal not in on_disk, (
+            f"raw partition still contains secret literal {literal[:12]}... "
+            f"— security scrub did not run on raw/"
+        )
+    assert osafe.REDACTION_TOKEN in on_disk
+    # Non-security sibling artifacts in the same raw file would not need scrub,
+    # but this fixture only carries C8.
+    assert "services/example/settings.py" in on_disk
+
+
+def test_write_json_source_wires_raw_and_path_security_scrub() -> None:
+    """Wiring pin (R3-008 lesson): helpers must be called from write_json."""
+    runner = _load_v5_runner()
+    source = Path(runner.__file__).read_text(encoding="utf-8")
+    assert "scrub_security_sensitive_artifacts_in_partition_payload" in source
+    # write_json body must invoke both residual closures.
+    write_json_start = source.index("def write_json(")
+    write_json_body = source[write_json_start : write_json_start + 1200]
+    assert "scrub_security_sensitive_artifacts_in_partition_payload" in write_json_body
+    assert "is_security_sensitive_artifact(path.name)" in write_json_body
+
+
+def test_partx_branch_applies_security_scrub(tmp_path: Path) -> None:
+    """R3-010 S2: partX write path scrub is live, not only path-name helpers."""
+    runner = _load_v5_runner()
+    phase_dir = tmp_path / "C_phase"
+    raw_dir = phase_dir / "raw"
+    raw_dir.mkdir(parents=True)
+    # Use a synthetic security-sensitive partX name to exercise the branch.
+    # (No C8 partX in the live promptset today; symmetry is still required.)
+    artifact_name = "SECRETS_RISK_LOCATIONS.partX.json"
+    (raw_dir / "C8__p1.json").write_text(
+        json.dumps(
+            {
+                "artifacts": [
+                    {
+                        "artifact_name": artifact_name,
+                        "payload": {"items": [_noncompliant_finding()]},
+                    }
+                ],
+                "request_meta": {"schema_gate_passed": True},
+            }
+        ),
+        encoding="utf-8",
+    )
+    prompt_path = tmp_path / "PROMPT_C8.md"
+    prompt_path.write_text(f"Goal: {artifact_name}\n", encoding="utf-8")
+    runner.normalize_step(
+        "C",
+        runner.PromptSpec(
+            step_id="C8",
+            prompt_path=prompt_path,
+            output_artifacts=(artifact_name,),
+        ),
+        phase_dir,
+        [{"id": "p1", "paths": []}],
+    )
+    written = list((phase_dir / "norm").glob("SECRETS_RISK_LOCATIONS.part*.json"))
+    assert written, "partX shard was not written"
+    on_disk = written[0].read_text(encoding="utf-8")
+    for literal in ALL_FAKE_LITERALS:
+        assert literal not in on_disk, (
+            f"partX shard still contains secret literal {literal[:12]}..."
+        )
+    assert "[REDACTED]" in on_disk

@@ -191,9 +191,9 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 This requirement is BINDING and overrides the exact-`excerpt` rule of the Evidence Rules wherever they conflict. See `PROMPTSET_RULES.md` § Secret Redaction Rules for the full contract.
 
 - **Never emit a secret value in any field** of `SECRETS_RISK_LOCATIONS.json` — not in `excerpt`, `affected_symbol`, `exposure_vector`, `mitigation_description`, or any other field. This holds even when the value is already committed to this repository.
-- **Mask the secret span in `evidence[].excerpt`**: reproduce the line exactly but replace the secret's own characters with the literal token `<REDACTED>`, keeping the key name and structure:
-  - `AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` → `AWS_SECRET_ACCESS_KEY=<REDACTED>`
-  - `openai_api_key = "sk-proj-abc123def456ghi789jkl"` → `openai_api_key = "<REDACTED>"`
+- **Mask the secret span in `evidence[].excerpt`**: reproduce the line exactly but replace the secret's own characters with the literal token `[REDACTED]`, keeping the key name and structure:
+  - `AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` → `AWS_SECRET_ACCESS_KEY=[REDACTED]`
+  - `openai_api_key = "sk-proj-abc123def456ghi789jkl"` → `openai_api_key = "[REDACTED]"`
 - `path`, `line_range`, `risk_type`, `secret_category`, and `severity` still fully locate and classify the finding. A reviewer opens the file to see the value; this artifact must never carry it.
 - Redaction applies to the OTHER three C8 outputs too whenever a scanned line happens to contain a credential.
 - When in doubt, redact — this artifact is copied into a paid third-party LLM context and feeds R11 security synthesis.
@@ -212,7 +212,7 @@ This requirement is BINDING and overrides the exact-`excerpt` rule of the Eviden
   "path": "services/example/client.py",
   "line_range": [42, 42],
   "status": "ok",
-  "evidence": [{"path": "services/example/client.py", "line_range": [42, 42], "excerpt": "OPENAI_API_KEY = \"<REDACTED>\""}]
+  "evidence": [{"path": "services/example/client.py", "line_range": [42, 42], "excerpt": "OPENAI_API_KEY = \"[REDACTED]\""}]
 }
 ```
 
@@ -254,7 +254,7 @@ This requirement is BINDING and overrides the exact-`excerpt` rule of the Eviden
 2. Scan for non-deterministic functions: search for usage of `random.*`, `datetime.now()`, `time.time()`, and `uuid.uuid4()` in critical business logic paths.
 3. Identify concurrency risks: search for `global` keyword, shared mutable state, and usage of `threading.Thread` or `asyncio.gather` without visible locking mechanisms.
 4. Locate idempotency risks: identify database write operations (cross-reference with C3) that lack unique constraints, upsert logic, or idempotency keys.
-5. Scan for secrets patterns: search for hardcoded strings matching regex patterns for API keys, tokens, or `SECRETS = "..."` assignments in non-config files. **Redact every secret value on capture**: mask the secret span with `<REDACTED>` in the excerpt before writing the item — never copy the literal value into any field (see the SECRETS Hard Requirement above; BINDING).
+5. Scan for secrets patterns: search for hardcoded strings matching regex patterns for API keys, tokens, or `SECRETS = "..."` assignments in non-config files. **Redact every secret value on capture**: mask the secret span with `[REDACTED]` in the excerpt before writing the item — never copy the literal value into any field (see the SECRETS Hard Requirement above; BINDING).
 6. Build risk registry: map each identified risk to its specific file location and classify severity based on the surrounding code context.
 7. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts in risk assessment logic.
 8. For each DETERMINISM_SURFACES item, populate `id`, required fields, and `evidence`.

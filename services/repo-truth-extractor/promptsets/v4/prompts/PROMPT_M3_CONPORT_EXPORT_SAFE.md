@@ -41,7 +41,7 @@ Focus on concrete, machine-verifiable implementation facts.
 1. Load runtime state and configuration as input for conport export (safe)
 2. Extract conport export (safe) data: query live state, sanitize sensitive values, and capture metadata
 3. Build CONPORT_EXPORT: compile extracted data with timestamps and provenance
-4. Validate export safety (**BINDING**): emit key NAMES only, never values. Mask every secret span with the literal token `<REDACTED>` before writing any field; never emit raw memory/chat/content fields. When in doubt, redact — this artifact is copied into a paid third-party LLM context (see `PROMPTSET_RULES.md` § Secret Redaction Rules).
+4. Validate export safety (**BINDING**): emit key NAMES only, never values. Mask every secret span with the literal token `[REDACTED]` before writing any field; never emit raw memory/chat/content fields. When in doubt, redact — this artifact is copied into a paid third-party LLM context (see `PROMPTSET_RULES.md` § Secret Redaction Rules).
 5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.

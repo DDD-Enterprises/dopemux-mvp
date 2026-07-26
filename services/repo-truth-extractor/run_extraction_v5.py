@@ -52,6 +52,7 @@ from output_safety import (
     sanitize_text_for_provider_payload,
     sanitized_json_bytes,
     sanitized_json_text,
+    scrub_security_sensitive_artifacts_in_partition_payload,
 )
 from lib.promptgen.template_renderer import validate_rendered_prompt  # noqa: E402
 from phases import (
@@ -2625,6 +2626,17 @@ def write_json(path: Path, payload: Any) -> None:
     if _is_failed_json_sidecar_path(path):
         sanitized_payload = sanitize_payload_for_failed_sidecar(payload)
     else:
+        # TP-RTE-TRUTH-R3-010 (F-23 residual closure):
+        # 1) Raw partition JSON embeds model artifacts under artifacts[].payload —
+        #    apply the security scrub to any security-sensitive artifact payloads
+        #    so raw/ is not weaker than norm/ (R3-007 only covered norm merge).
+        # 2) Direct writes of security-sensitive artifact files (norm merge and
+        #    partX shards via is_security_sensitive_artifact part-normalization)
+        #    also get the stricter scrub here so the partX branch is symmetric.
+        if isinstance(payload, dict) and isinstance(payload.get("artifacts"), list):
+            payload = scrub_security_sensitive_artifacts_in_partition_payload(payload)
+        if is_security_sensitive_artifact(path.name):
+            payload = sanitize_payload_for_security_artifact(payload)
         sanitized_payload = sanitize_payload_for_output(payload)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -8689,12 +8701,25 @@ def normalize_step(
                 part_file = artifact_name.replace(".partX.", f".part{part_num:04d}.")
                 part_path = norm_dir / part_file
                 if part_path.suffix == ".json":
-                    write_json(part_path, normalize_json_payload(chunk["payload"]))
+                    # R3-010: partX branch is symmetric with the merged path.
+                    # write_json applies the security scrub when
+                    # is_security_sensitive_artifact(part_file) is true
+                    # (part shards canonicalize to the logical artifact name).
+                    part_payload = normalize_json_payload(chunk["payload"])
+                    if is_security_sensitive_artifact(part_file):
+                        part_payload = sanitize_payload_for_security_artifact(
+                            part_payload
+                        )
+                    write_json(part_path, part_payload)
                 else:
                     text_payload = chunk["payload"]
                     if not isinstance(text_payload, str):
                         text_payload = json.dumps(
                             text_payload, indent=2, ensure_ascii=True
+                        )
+                    if is_security_sensitive_artifact(part_file):
+                        text_payload = sanitize_text_for_provider_payload(
+                            str(text_payload)
                         )
                     part_path.write_text(
                         (
@@ -8720,6 +8745,8 @@ def normalize_step(
                 # harmless before it reaches disk or PROMPT_R11_SECURITY_
                 # RISK_SYNTHESIS -- the redaction rule from R3-004 is an
                 # instruction; this is the enforcement.
+                # R3-010: write_json also applies this scrub for path-name
+                # matches (defense in depth; scrub is idempotent).
                 merged_payload = sanitize_payload_for_security_artifact(
                     merged_payload
                 )

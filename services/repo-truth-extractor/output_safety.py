@@ -39,6 +39,12 @@ _LONG_TOKEN_CANDIDATE_RE = re.compile(
 )
 
 
+# Single redaction token shared by scrubs and (after R3-010) prompt instructions.
+# Prompts previously taught `<REDACTED>` while enforcement emitted `[REDACTED]`;
+# both now use this constant's value so models and write-time scrub agree.
+REDACTION_TOKEN = "[REDACTED]"
+REDACTION_TOKEN_PRIVATE_KEY = "[REDACTED PRIVATE KEY]"
+
 _SAFE_SENSITIVE_KEYS = {
     "api_key_env",
     "api_key_env_name",
@@ -63,6 +69,40 @@ _SAFE_SENSITIVE_KEYS = {
     "nextpagetoken",
     "page_token",
 }
+
+# Fragments that mark a JSON/assign key as secret-bearing (R3-010 expanded).
+# Security judgment (explicit, not "structurally impossible"):
+#   * Include `credential` so DEFAULT_CREDENTIALS / credentials / credential
+#     values are masked by field-name path.
+#   * Include `passwd` (common alias that lacks the full "password" substring).
+#   * Include `access_key` for AWS-style access key material (access_key_id etc.).
+#   * Do NOT include bare `cred` / `auth` — too many false positives
+#     (credit, accreditation, author, authority).
+#   * Env-name / presence / count keys remain excluded via suffix + allowlist.
+_SENSITIVE_KEY_FRAGMENTS = (
+    "authorization",
+    "bearer",
+    "secret",
+    "password",
+    "passwd",
+    "credential",
+    "private_key",
+    "private-key",
+    "webhook_secret",
+    "access_key",
+)
+
+# SHORT-SECRET RESIDUAL (R3-010 — decide and document, do not overclaim):
+# `_LONG_TOKEN_CANDIDATE_RE` requires >=40 char alnum/_- blobs with mixed case
+# and a digit. Short non-prefixed secrets (e.g. `shortsecret`, 16-char
+# passwords without a sensitive key name) intentionally survive BOTH the
+# generic and provider/security scrubs when they appear only as free text.
+# Lowering the threshold would massively false-positive on commit SHAs,
+# UUIDs fragments, and normal identifiers. Mitigation for short secrets is
+# the sensitive-key field path (expanded above) plus provider-prefix regexes,
+# not a shorter bare-token catch-all. Residual: ACCEPT as known limit; do not
+# claim "structurally impossible" for short free-text secrets without a
+# sensitive key name or provider prefix.
 
 
 def _is_sensitive_key(key: Any) -> bool:
@@ -95,18 +135,7 @@ def _is_sensitive_key(key: Any) -> bool:
         and "api_key" in token
     ):
         return False
-    if any(
-        fragment in token
-        for fragment in (
-            "authorization",
-            "bearer",
-            "secret",
-            "password",
-            "private_key",
-            "private-key",
-            "webhook_secret",
-        )
-    ):
+    if any(fragment in token for fragment in _SENSITIVE_KEY_FRAGMENTS):
         return True
     if token == "key":
         return True
@@ -121,12 +150,12 @@ def sanitize_text_for_output(text: str) -> str:
     if not text:
         return ""
     value = str(text)
-    value = _PRIVATE_KEY_BLOCK_RE.sub("[REDACTED PRIVATE KEY]", value)
+    value = _PRIVATE_KEY_BLOCK_RE.sub(REDACTION_TOKEN_PRIVATE_KEY, value)
     value = _SECRET_QUERY_RE.sub(r"\1REDACTED", value)
-    value = _AUTH_HEADER_RE.sub(r"\1[REDACTED]\3", value)
+    value = _AUTH_HEADER_RE.sub(rf"\1{REDACTION_TOKEN}\3", value)
     value = _SECRET_ASSIGN_RE.sub(_redact_secret_assignment, value)
-    value = _BEARER_INLINE_RE.sub(r"\1[REDACTED]", value)
-    value = _PROVIDER_TOKEN_RE.sub("[REDACTED]", value)
+    value = _BEARER_INLINE_RE.sub(rf"\1{REDACTION_TOKEN}", value)
+    value = _PROVIDER_TOKEN_RE.sub(REDACTION_TOKEN, value)
     return value
 
 
@@ -135,7 +164,7 @@ def _redact_secret_assignment(match: re.Match[str]) -> str:
         return match.group(0)
     if match.group(3).startswith("[REDACTED"):
         return match.group(0)
-    return f"{match.group(1)}[REDACTED]{match.group(4)}"
+    return f"{match.group(1)}{REDACTION_TOKEN}{match.group(4)}"
 
 
 def sanitize_failed_sidecar_text(text: str) -> str:
@@ -156,7 +185,7 @@ def _redact_long_token_candidate(match: re.Match[str]) -> str:
     has_lower = any(ch.islower() for ch in token)
     has_digit = any(ch.isdigit() for ch in token)
     if has_upper and has_lower and has_digit:
-        return "[REDACTED]"
+        return REDACTION_TOKEN
     return token
 
 
@@ -165,9 +194,9 @@ def sanitize_text_for_provider_payload(text: str) -> str:
     if not text:
         return ""
     value = str(text)
-    value = _PRIVATE_KEY_BLOCK_RE.sub("[REDACTED PRIVATE KEY]", value)
+    value = _PRIVATE_KEY_BLOCK_RE.sub(REDACTION_TOKEN_PRIVATE_KEY, value)
     value = sanitize_text_for_output(value)
-    value = _PROVIDER_TOKEN_RE.sub("[REDACTED]", value)
+    value = _PROVIDER_TOKEN_RE.sub(REDACTION_TOKEN, value)
     value = _LONG_TOKEN_CANDIDATE_RE.sub(_redact_long_token_candidate, value)
     return value
 
@@ -180,7 +209,7 @@ def sanitize_payload_for_output(payload: Any, *, field_name: str | None = None) 
             return payload
         if isinstance(payload, (int, float)):
             return payload
-        return "[REDACTED]"
+        return REDACTION_TOKEN
     if isinstance(payload, str):
         return sanitize_text_for_output(payload)
     if isinstance(payload, Mapping):
@@ -205,7 +234,7 @@ def sanitize_payload_for_provider(
             return payload
         if isinstance(payload, (int, float)):
             return payload
-        return "[REDACTED]"
+        return REDACTION_TOKEN
     if isinstance(payload, str):
         return sanitize_text_for_provider_payload(payload)
     if isinstance(payload, Mapping):
@@ -230,7 +259,7 @@ def sanitize_payload_for_failed_sidecar(
             return payload
         if isinstance(payload, (int, float)):
             return payload
-        return "[REDACTED]"
+        return REDACTION_TOKEN
     if isinstance(payload, str):
         return sanitize_failed_sidecar_text(payload)
     if isinstance(payload, Mapping):
@@ -312,13 +341,28 @@ SECURITY_SENSITIVE_ARTIFACT_NAMES: frozenset[str] = frozenset(
     }
 )
 
+# Normalize `.partX.` / `.part0001.` shards back to the logical artifact name
+# so the partX write branch is symmetric with the merged-norm path (R3-010).
+_PART_SHARD_RE = re.compile(r"\.part(?:X|\d+)\.", re.IGNORECASE)
+
+
+def canonical_security_artifact_basename(artifact_name: Any) -> str:
+    """Return the basename with any ``.partX.`` / ``.partNNNN.`` shard removed."""
+    base = Path(str(artifact_name or "")).name
+    return _PART_SHARD_RE.sub(".", base)
+
 
 def is_security_sensitive_artifact(artifact_name: Any) -> bool:
     """Return True for the C8/H1/H7/M artifact names whose contract requires
-    that no secret value ever appear on disk (F-23)."""
-    name = str(artifact_name or "")
-    base = Path(name).name
-    return base in SECURITY_SENSITIVE_ARTIFACT_NAMES
+    that no secret value ever appear on disk (F-23).
+
+    Part shards (``NAME.part0001.json`` / ``NAME.partX.json``) resolve to the
+    same decision as the merged name so the partX write branch cannot skip
+    the security scrub (R3-010).
+    """
+    return canonical_security_artifact_basename(artifact_name) in (
+        SECURITY_SENSITIVE_ARTIFACT_NAMES
+    )
 
 
 def sanitize_payload_for_security_artifact(payload: Any) -> Any:
@@ -333,3 +377,41 @@ def sanitize_payload_for_security_artifact(payload: Any) -> Any:
     not match any sensitive field name.
     """
     return sanitize_payload_for_provider(payload)
+
+
+def scrub_security_sensitive_artifacts_in_partition_payload(payload: Any) -> Any:
+    """Scrub security-sensitive artifact payloads inside a raw partition JSON.
+
+    R3-007 only hardened the norm/ merge write. Raw partition JSON
+    (``raw/{step}__{partition}.json``) still embeds model output under
+    ``artifacts[].payload`` and previously received only the generic
+    ``sanitize_payload_for_output`` via ``write_json``. Apply the stricter
+    security scrub to each security-sensitive artifact payload so raw/ is
+    not a weaker residual path (R3-010).
+    """
+    if not isinstance(payload, Mapping):
+        return payload
+    artifacts = payload.get("artifacts")
+    if not isinstance(artifacts, list):
+        return payload
+    scrubbed_artifacts: list[Any] = []
+    changed = False
+    for art in artifacts:
+        if not isinstance(art, Mapping):
+            scrubbed_artifacts.append(art)
+            continue
+        name = art.get("artifact_name")
+        if is_security_sensitive_artifact(name):
+            new_art = dict(art)
+            new_art["payload"] = sanitize_payload_for_security_artifact(
+                art.get("payload")
+            )
+            scrubbed_artifacts.append(new_art)
+            changed = True
+        else:
+            scrubbed_artifacts.append(art)
+    if not changed:
+        return payload
+    out = dict(payload)
+    out["artifacts"] = scrubbed_artifacts
+    return out

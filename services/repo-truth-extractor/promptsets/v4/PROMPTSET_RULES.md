@@ -23,12 +23,12 @@
 These rules are BINDING and override the "exact substring" requirement of the Evidence Rules wherever the two conflict. They apply to every phase, every step, and every output — most importantly `SECRETS_RISK_LOCATIONS.json` (C8), the H-phase key/reference surfaces (H1, H7), and the M-phase safe-exports (M3, M4, M5).
 
 - **Never emit a secret value.** Never reproduce, echo, quote, transcribe, partially reveal, encode, or reconstruct the literal value of any credential in ANY field — not in `excerpt`, not in `affected_symbol`, not in `mitigation_description`, not in `notes`, not in prose. This holds even when the value is already committed to the repository, looks like a placeholder, looks expired, or looks fake.
-- **Mask the secret span in evidence excerpts.** Reproduce the surrounding line exactly, but replace the secret's own characters with the literal token `<REDACTED>`. Keep the key/variable name, the operator, and the structure so the finding stays reviewable:
-  - `AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` → `AWS_SECRET_ACCESS_KEY=<REDACTED>`
-  - `api_key: "sk-proj-abc123def456ghi789"` → `api_key: "<REDACTED>"`
-  - `Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.sig` → `Authorization: Bearer <REDACTED>`
-  - `https://hooks.example.com/services/T00/B00/XXXXXXXXXXXX` → `https://hooks.example.com/services/<REDACTED>`
-  - `-----BEGIN RSA PRIVATE KEY-----\nMIIEow...` → `-----BEGIN RSA PRIVATE KEY-----<REDACTED>`
+- **Mask the secret span in evidence excerpts.** Reproduce the surrounding line exactly, but replace the secret's own characters with the literal token `[REDACTED]`. Keep the key/variable name, the operator, and the structure so the finding stays reviewable:
+  - `AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` → `AWS_SECRET_ACCESS_KEY=[REDACTED]`
+  - `api_key: "sk-proj-abc123def456ghi789"` → `api_key: "[REDACTED]"`
+  - `Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.sig` → `Authorization: Bearer [REDACTED]`
+  - `https://hooks.example.com/services/T00/B00/XXXXXXXXXXXX` → `https://hooks.example.com/services/[REDACTED]`
+  - `-----BEGIN RSA PRIVATE KEY-----\nMIIEow...` → `-----BEGIN RSA PRIVATE KEY-----[REDACTED]`
 - **What counts as a secret span**: the value side of any assignment/mapping whose key matches `key|token|secret|password|passwd|pwd|credential|auth|bearer|session|cookie|signature|salt|private`; any recognizable provider token (`sk-`, `sk-proj-`, `xoxb-`, `ghp_`, `gho_`, `AKIA…`, `AIza…`, `xai-`, `hf_`, `eyJ…` JWTs); any PEM/OpenSSH private-key block; any URL userinfo (`user:pass@host`) or secret-bearing query parameter; any opaque high-entropy string of 20+ chars in a credential position.
 - **When in doubt, redact.** A false-positive redaction costs a reviewer one lookup; a false-negative copies a live credential into a norm artifact, into a paid third-party LLM context, and into downstream security synthesis (R11). Redaction always wins the tie.
 - **Redaction does not weaken the finding.** `path`, `line_range`, `risk_type`, `secret_category`, `severity`, and `exposure_vector` still fully locate and classify the risk. A reviewer opens the file at `line_range` to see the value; the artifact never needs to carry it.
