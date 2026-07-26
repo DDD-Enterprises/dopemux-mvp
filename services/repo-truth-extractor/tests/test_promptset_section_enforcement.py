@@ -262,3 +262,31 @@ def test_v5_canonical_entrypoint_rejects_missing_sections(monkeypatch, tmp_path:
         v5_module._validate_promptset_sections_preflight()
     assert "Anti-Fabrication Rules" in str(excinfo.value)
     assert "Refusing to run" in str(excinfo.value)
+
+
+def test_v5_main_actually_invokes_section_preflight() -> None:
+    """F-31 wiring guard (TP-RTE-TRUTH-R3-008 repair).
+
+    The sibling test above exercises _validate_promptset_sections_preflight() directly,
+    so it passes even when main() never calls it — verified: disabling the call site left
+    that test green. This test pins the WIRING, which is the part F-31 is actually about:
+    enforcement must run on the canonical v5 entrypoint, not merely exist as a function.
+
+    MUTATION CHECK (executed): replacing the call at the main() call site with `pass`
+    makes THIS test fail.
+    """
+    import inspect
+    import importlib.util
+
+    v5_runner_path = SERVICE_ROOT / "run_extraction_v5.py"
+    spec = importlib.util.spec_from_file_location("run_extraction_v5_wiring", v5_runner_path)
+    assert spec is not None and spec.loader is not None
+    v5_module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = v5_module
+    spec.loader.exec_module(v5_module)
+
+    main_src = inspect.getsource(v5_module.main)
+    assert "_validate_promptset_sections_preflight()" in main_src, (
+        "v5 main() no longer calls _validate_promptset_sections_preflight(). "
+        "F-31 section enforcement is not live on the canonical entrypoint."
+    )
