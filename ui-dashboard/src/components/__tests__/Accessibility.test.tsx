@@ -252,6 +252,15 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
   expect(appContent).toContain('aria-label={notificationLabel}');
   expect(appContent).toContain('tabIndex={0}');
+
+  // Verify onKeyDown handlers for connection and recommendation chips
+  expect(appContent).toContain('onKeyDown={');
+  expect(appContent).toContain('handleReconnect();');
+  expect(appContent).toContain('void handleCopyRecommendation();');
+
+  // Verify focus-visible overrides for buttons and icon buttons in theme
+  expect(themeContent).toContain('MuiIconButton');
+  expect(themeContent).toContain('&:focus-visible');
 });
 
 test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {

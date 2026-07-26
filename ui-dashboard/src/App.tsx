@@ -474,6 +474,16 @@ function App() {
                       : 'error'
                 }
                 onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}
+                onKeyDown={
+                  connectionStatus === 'degraded'
+                    ? (e) => {
+                        if (e.key === ' ' || e.key === 'Enter') {
+                          e.preventDefault();
+                          handleReconnect();
+                        }
+                      }
+                    : undefined
+                }
                 tabIndex={0}
                 sx={{
                   ...(connectionStatus === 'degraded' && {
@@ -539,6 +549,12 @@ function App() {
                 label={`Recommendation: ${cognitiveState.recommendation}`}
                 aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `Copy AI Recommendation: ${cognitiveState.recommendation}`}
                 onClick={handleCopyRecommendation}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    void handleCopyRecommendation();
+                  }
+                }}
                 tabIndex={0}
                 sx={{
                   backgroundColor: alpha(brandTokens.colors.voidNavy, 0.65),
