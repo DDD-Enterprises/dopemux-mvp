@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import threading
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import yaml
+
+from extractor._spend_tracker_registry import get_registry
 
 try:
     from lib.spend_ledger import (
@@ -53,10 +54,6 @@ class CostingDeps:
     now_iso: Callable[[], str]
     pricing_surface_metadata: Callable[..., Dict[str, Any]]
     spend_ledger_filename: str
-
-
-_SPEND_TRACKER_LOCK = threading.Lock()
-_ACTIVE_SPEND_TRACKER: Optional[SpendTrackerState] = None
 
 
 def _quantize_usd(value: Decimal) -> Decimal:
@@ -169,8 +166,13 @@ def estimate_usage_cost_usd(
 
 
 def get_active_spend_tracker() -> Optional[SpendTrackerState]:
-    with _SPEND_TRACKER_LOCK:
-        return _ACTIVE_SPEND_TRACKER
+    """Get the currently active spend tracker state.
+
+    Returns:
+        SpendTrackerState or None: The active tracker state, if initialized.
+    """
+    registry = get_registry()
+    return registry.get()
 
 
 def is_spend_tracker_aborted() -> bool:
@@ -235,9 +237,12 @@ def _write_spend_ledger_snapshot(
 
 
 def reset_spend_tracker() -> None:
-    global _ACTIVE_SPEND_TRACKER
-    with _SPEND_TRACKER_LOCK:
-        _ACTIVE_SPEND_TRACKER = None
+    """Reset the active spend tracker to None.
+
+    This is typically used in test teardown to clean state between tests.
+    """
+    registry = get_registry()
+    registry.set(None)
 
 
 def initialize_spend_tracker(
@@ -248,7 +253,21 @@ def initialize_spend_tracker(
     cfg: Any,
     phases: Sequence[str],
 ) -> Optional[Dict[str, Any]]:
-    global _ACTIVE_SPEND_TRACKER
+    """Initialize the spend tracker with the given configuration.
+
+    Args:
+        deps: Costing dependencies.
+        run_root: Root path for this run.
+        run_id: Unique ID for this run.
+        cfg: Configuration object with max_cost_usd, partition_workers, etc.
+        phases: List of phases to track.
+
+    Returns:
+        Dict with initial spend ledger snapshot, or None if tracking disabled.
+
+    Raises:
+        RuntimeError: If configuration is invalid.
+    """
     if cfg.max_cost_usd is None:
         reset_spend_tracker()
         return None
@@ -288,9 +307,9 @@ def initialize_spend_tracker(
         abort_reason=None,
         entries=[],
     )
-    with _SPEND_TRACKER_LOCK:
-        _ACTIVE_SPEND_TRACKER = state
-        return _write_spend_ledger_snapshot(deps, state)
+    registry = get_registry()
+    registry.set(state)
+    return _write_spend_ledger_snapshot(deps, state)
 
 
 def record_request_cost(
@@ -303,14 +322,28 @@ def record_request_cost(
     provider: str,
     model_id: str,
 ) -> Dict[str, Any]:
+    """Record a provider request cost and update the spend tracker.
+
+    Args:
+        deps: Costing dependencies.
+        meta: Metadata dictionary with response_summary.
+        phase: Phase identifier.
+        step_id: Step identifier.
+        partition_id: Partition identifier.
+        provider: Provider name.
+        model_id: Model identifier.
+
+    Returns:
+        Updated metadata dictionary with cost information.
+    """
     if not isinstance(meta, dict):
         return meta
     if meta.get("spend_ledger_recorded"):
         return meta
     if meta.get("failure_type") == "cost_aborted":
         return meta
-    with _SPEND_TRACKER_LOCK:
-        state = _ACTIVE_SPEND_TRACKER
+    registry = get_registry()
+    with registry.with_lock() as state:
         if state is None:
             return meta
         if state.cost_abort_triggered:

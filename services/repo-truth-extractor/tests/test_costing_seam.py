@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from importlib import reload
 from pathlib import Path
 import sys
 from types import SimpleNamespace
@@ -12,6 +13,7 @@ if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
 from extractor import costing  # noqa: E402
+from extractor._spend_tracker_registry import get_registry  # noqa: E402
 
 
 def _deps(writes: list[tuple[Path, dict]]) -> costing.CostingDeps:
@@ -114,5 +116,72 @@ def test_spend_tracker_records_post_response_breach_and_snapshot() -> None:
         assert updated["cost_cap"]["cost_abort_triggered"] is True
         assert state.cost_abort_triggered is True
         assert writes[-1][1]["entries_total"] == 1
+    finally:
+        costing.reset_spend_tracker()
+
+
+def test_spend_tracker_registry_identity_survives_dual_imports() -> None:
+    """Test that tracker registry identity is stable across module reloads.
+
+    This verifies the fix for R1-004 dual-import desync. When tests load
+    the costing module (directly or via v5) multiple times, the registry
+    must maintain a single identity so tracker state doesn't diverge.
+
+    Mechanism:
+    - The registry is a dedicated module pinned in sys.modules
+    - Even if costing.py is reloaded, the registry module stays cached
+    - All accesses to the registry get the same object with the same state
+    """
+    writes: list[tuple[Path, dict]] = []
+    deps = _deps(writes)
+    cfg = SimpleNamespace(
+        max_cost_usd=1.0,
+        partition_workers=1,
+        routing_policy="balanced_openrouter",
+        cost_profile="value-default",
+    )
+
+    # Store the initial registry identity
+    initial_registry = get_registry()
+    initial_registry_id = id(initial_registry)
+
+    costing.reset_spend_tracker()
+    try:
+        # Initialize tracker
+        snapshot = costing.initialize_spend_tracker(
+            deps=deps,
+            run_root=Path("/tmp/rte-dual-load"),
+            run_id="dual-load-test",
+            cfg=cfg,
+            phases=["A"],
+        )
+        assert snapshot is not None
+
+        # Get tracker before reload
+        tracker_before = costing.get_active_spend_tracker()
+        assert tracker_before is not None
+        assert tracker_before.run_id == "dual-load-test"
+
+        # Reload the costing module (simulating what happens in dual imports)
+        reload(costing)
+
+        # After reload, registry identity must be the same
+        reloaded_registry = get_registry()
+        assert id(reloaded_registry) == initial_registry_id, (
+            "Registry identity changed after reload; "
+            "tracker state may desync between module instances"
+        )
+
+        # Tracker state must still be accessible and unchanged
+        tracker_after = costing.get_active_spend_tracker()
+        assert tracker_after is not None, "Tracker lost after reload"
+        assert tracker_after.run_id == "dual-load-test", (
+            "Tracker state diverged after reload; "
+            "different module objects may have different state"
+        )
+        assert tracker_after is tracker_before, (
+            "Tracker object identity changed; "
+            "imports are now accessing different state"
+        )
     finally:
         costing.reset_spend_tracker()
