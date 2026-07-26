@@ -35,6 +35,7 @@ from urllib import error as urllib_error
 from urllib import request as urllib_request
 
 import requests
+import yaml
 
 # Ensure local service modules are importable when loaded via importlib in tests.
 RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
@@ -52,6 +53,7 @@ from output_safety import (
     sanitized_json_bytes,
     sanitized_json_text,
 )
+from lib.promptgen.template_renderer import validate_rendered_prompt  # noqa: E402
 from phases import (
     CODE_HEAVY_PHASES,
     LEGACY_PHASE_DIR_ALIASES,
@@ -13413,6 +13415,125 @@ def _inject_promptset_rules(prompt_text: str) -> str:
     return prompt_text + "\n\n---\n## PROMPTSET_RULES.md (Injected)\n" + rules
 
 
+class PromptSectionContractError(RuntimeError):
+    """A declared prompt is missing sections its promptset requires.
+
+    F-31 (TP-RTE-TRUTH-R3-008): canonical v5 entrypoint must enforce section contract.
+    """
+
+
+def _iter_promptset_prompt_files(promptset: Dict[str, Any]) -> Iterable[Tuple[str, Path]]:
+    """Yield (step_id, absolute prompt path) for every step the promptset declares.
+
+    Reused from v4's validation logic to ensure consistent section checking.
+    Prompt paths are resolved relative to the configured prompt_root().
+    """
+    phases = promptset.get("phases")
+    if not isinstance(phases, dict):
+        return
+    root = prompt_root()
+    for phase_payload in phases.values():
+        if not isinstance(phase_payload, dict):
+            continue
+        for step in phase_payload.get("steps", []) or []:
+            if not isinstance(step, dict):
+                continue
+            step_id = str(step.get("step_id", "")).strip()
+            prompt_file = str(step.get("prompt_file", "")).strip()
+            if not step_id or not prompt_file:
+                continue
+            yield step_id, (root / prompt_file)
+
+
+def _validate_promptset_sections(promptset: Dict[str, Any], skip_missing_files: bool = False) -> List[str]:
+    """Enforce `required_prompt_sections` against the declared prompt bodies.
+
+    F-31 (TP-RTE-TRUTH-R3-008): canonical v5 entrypoint must enforce section contract.
+    Reused from v4's validation logic.
+
+    A template satisfies the four shared sections either by inlining them or by carrying a
+    "## Shared Rules" pointer, which _inject_promptset_rules() resolves by appending
+    PROMPTSET_RULES.md before dispatch. Both forms genuinely deliver the regime to the
+    model, so both are accepted -- matching the offline linter's semantics.
+
+    Args:
+        promptset: The promptset configuration to validate
+        skip_missing_files: If True, skip checking prompts that don't exist (for preflight
+                           where missing prompts will be caught as a blocked promptset later)
+
+    Returns a sorted list of human-readable issues (empty when the promptset is clean).
+    """
+    required_sections = [
+        str(name)
+        for name in (promptset.get("required_prompt_sections") or [])
+        if str(name).strip()
+    ]
+    if not required_sections:
+        return []
+
+    issues: List[str] = []
+    for step_id, prompt_path in _iter_promptset_prompt_files(promptset):
+        if not prompt_path.exists():
+            if skip_missing_files:
+                continue
+            issues.append(f"{step_id}: declared prompt_file does not exist: {prompt_path}")
+            continue
+        result = validate_rendered_prompt(
+            prompt_path.read_text(encoding="utf-8"),
+            required_sections=required_sections,
+        )
+        for missing in result["sections_missing"]:
+            issues.append(
+                f"{step_id} ({prompt_path.name}): missing required section '## {missing}'"
+            )
+    return sorted(issues)
+
+
+_PROMPTSET_SECTIONS_VALIDATED: bool = False
+
+
+def _validate_promptset_sections_preflight() -> None:
+    """Fail closed if the promptset violates its declared section contract.
+
+    This is called during main() startup to ensure the canonical v5 entrypoint
+    enforces F-31 before any extraction work begins.
+
+    Missing prompt files are skipped during preflight since they will be caught
+    later as a blocked promptset, but missing required sections are still enforced.
+
+    TP-RTE-TRUTH-R3-008: Wire section enforcement into v5's preflight.
+    """
+    global _PROMPTSET_SECTIONS_VALIDATED
+    if _PROMPTSET_SECTIONS_VALIDATED:
+        return
+
+    promptset_path = EXTRACTOR_SERVICE_DIR / "promptsets" / "v4" / "promptset.yaml"
+    if not promptset_path.exists():
+        # If promptset doesn't exist, we can't validate, so skip
+        _PROMPTSET_SECTIONS_VALIDATED = True
+        return
+
+    try:
+        promptset = yaml.safe_load(promptset_path.read_text(encoding="utf-8"))
+        if not isinstance(promptset, dict):
+            raise ValueError(f"{promptset_path} did not decode to object")
+    except Exception as e:
+        raise RuntimeError(f"Failed to load promptset from {promptset_path}: {e}") from e
+
+    # Skip missing files during preflight (they'll be caught as blocked promptset later)
+    issues = _validate_promptset_sections(promptset, skip_missing_files=True)
+    if issues:
+        detail = "\n  - ".join(issues)
+        raise PromptSectionContractError(
+            f"{promptset_path} declares required_prompt_sections that "
+            f"{len(issues)} prompt(s) do not satisfy. The anti-fabrication regime "
+            f"(Evidence / Determinism / Anti-Fabrication / Failure Modes) would not "
+            f"reach the model for these steps. Refusing to run.\n  - {detail}"
+        )
+
+    _PROMPTSET_SECTIONS_VALIDATED = True
+
+
 def execute_step_for_partitions(
     phase: str,
     prompt_spec: PromptSpec,
@@ -21068,6 +21189,8 @@ def main() -> None:
             os.environ[PROMPT_ROOT_ENV_VAR] = str(psr)
     if args.sync:
         run_sync_scopes()
+    # F-31 (TP-RTE-TRUTH-R3-008): enforce promptset section contract at startup.
+    _validate_promptset_sections_preflight()
     args.partition_workers = max(1, min(16, int(args.partition_workers)))
     if (
         getattr(args, "max_cost_usd", None) is not None

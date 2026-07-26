@@ -190,3 +190,75 @@ def test_async_r_dispatch_injects_promptset_rules() -> None:
         f"expected _inject_promptset_rules at both the sync and async R dispatch sites, "
         f"found {call_count} call(s)"
     )
+
+
+def test_v5_canonical_entrypoint_rejects_missing_sections(monkeypatch, tmp_path: Path) -> None:
+    """F-31 (TP-RTE-TRUTH-R3-008): v5 canonical entrypoint must enforce section contract.
+
+    Audit found F-31 section enforcement was wired only into v4's run_pipeline(), not into
+    v5 (the canonical runner per rte_config.RUNNER_SCRIPT). Direct `python run_extraction_v5.py`
+    would skip validation entirely. This test pins that v5 now rejects missing sections at
+    startup via _validate_promptset_sections_preflight().
+
+    MUTATION CHECK: remove _validate_promptset_sections_preflight() call from main(),
+    confirm this test FAILS (proving the test is actually checking the fix).
+    """
+    runner = _load_v4_runner()
+    v5_runner_path = SERVICE_ROOT / "run_extraction_v5.py"
+
+    # Load v5 via importlib to get its validation function
+    spec = importlib.util.spec_from_file_location("run_extraction_v5_sections", v5_runner_path)
+    assert spec is not None and spec.loader is not None
+    v5_module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = v5_module
+    spec.loader.exec_module(v5_module)
+
+    # Create a broken promptset with a prompt missing required sections
+    prompt_rel = "stub_prompts/PROMPT_A0_STUB.md"
+    prompt_path = tmp_path / prompt_rel
+    prompt_path.parent.mkdir(parents=True, exist_ok=True)
+    prompt_path.write_text(
+        "# PROMPT_A0\n\n## Goal\nStub.\n\n## Inputs\nx\n\n## Outputs\n- `A0.json`\n\n"
+        "## Schema\nx\n\n## Extraction Procedure\n1. x\n",
+        encoding="utf-8",
+    )
+
+    promptset = {
+        "version": "4.0",
+        "required_prompt_sections": [
+            "Goal",
+            "Inputs",
+            "Outputs",
+            "Schema",
+            "Extraction Procedure",
+            "Evidence Rules",
+            "Determinism Rules",
+            "Anti-Fabrication Rules",
+            "Failure Modes",
+        ],
+        "phases": {
+            "A": {
+                "required_steps": ["A0"],
+                "steps": [{"step_id": "A0", "prompt_file": prompt_rel, "outputs": ["A0.json"]}],
+            }
+        },
+    }
+    # Create promptset in the location expected by v5's preflight
+    promptset_dir = tmp_path / "promptsets" / "v4"
+    promptset_dir.mkdir(parents=True, exist_ok=True)
+    promptset_path = promptset_dir / "promptset.yaml"
+    promptset_path.write_text(yaml.safe_dump(promptset, sort_keys=False), encoding="utf-8")
+
+    # Patch v5 to use our broken promptset
+    monkeypatch.setattr(v5_module, "EXTRACTOR_SERVICE_DIR", tmp_path)
+    # Set the prompt root environment variable so prompt_root() finds our stub prompt
+    # The prompt_file path is relative to tmp_path, so set prompt root to tmp_path
+    monkeypatch.setenv(v5_module.PROMPT_ROOT_ENV_VAR, str(tmp_path))
+    # Reset the validation state so it runs again
+    monkeypatch.setattr(v5_module, "_PROMPTSET_SECTIONS_VALIDATED", False)
+
+    # v5's preflight must reject the broken promptset
+    with pytest.raises(v5_module.PromptSectionContractError) as excinfo:
+        v5_module._validate_promptset_sections_preflight()
+    assert "Anti-Fabrication Rules" in str(excinfo.value)
+    assert "Refusing to run" in str(excinfo.value)
