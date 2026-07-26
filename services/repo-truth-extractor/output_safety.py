@@ -278,3 +278,58 @@ def sanitized_json_bytes(
         ensure_ascii=ensure_ascii,
         separators=separators,
     ).encode("utf-8")
+
+
+# ---------------------------------------------------------------------------
+# TP-RTE-TRUTH-R3-007: write-time secret scrub for security-risk-location /
+# safe-export artifacts (F-23 enforcement half).
+#
+# R3-004 (commit 6aac1ef79) made secret redaction BINDING at the prompt layer
+# for C8 (SECRETS_RISK_LOCATIONS), H1 (HOME_KEYS_SURFACE/HOME_REFERENCES), H7
+# (HOME_SQLITE_SCHEMA) and the M3/M4/M5 safe-exports. That is an instruction,
+# not an enforcement: a non-compliant or jailbroken model can still emit a raw
+# secret value, and nothing re-scanned the merged artifact before it reached
+# disk (and, via C8, PROMPT_R11_SECURITY_RISK_SYNTHESIS). The generic
+# ``sanitize_payload_for_output`` scrub already runs on every artifact write
+# (see run_extraction_v5.write_json), but it intentionally omits the
+# high-entropy long-token catch-all (``_LONG_TOKEN_CANDIDATE_RE``) that
+# ``sanitize_payload_for_provider`` applies before a payload leaves the
+# machine -- so a secret with no recognizable key name or provider-prefix
+# shape (e.g. a raw AWS secret *value*, as opposed to its AKIA/ASIA-prefixed
+# access-key *id*) slips through the write path unless the stricter scrub is
+# used for this named set of security-sensitive artifacts.
+# ---------------------------------------------------------------------------
+
+SECURITY_SENSITIVE_ARTIFACT_NAMES: frozenset[str] = frozenset(
+    {
+        "SECRETS_RISK_LOCATIONS.json",  # C8
+        "HOME_KEYS_SURFACE.json",  # H1
+        "HOME_REFERENCES.json",  # H1
+        "HOME_SQLITE_SCHEMA.json",  # H7
+        "M3_CONPORT_EXPORT_SAFE.json",  # M3
+        "M4_DOPE_CONTEXT_EXPORT_SAFE.json",  # M4
+        "M5_MCP_HEALTH_EXPORT_SAFE.json",  # M5
+    }
+)
+
+
+def is_security_sensitive_artifact(artifact_name: Any) -> bool:
+    """Return True for the C8/H1/H7/M artifact names whose contract requires
+    that no secret value ever appear on disk (F-23)."""
+    name = str(artifact_name or "")
+    base = Path(name).name
+    return base in SECURITY_SENSITIVE_ARTIFACT_NAMES
+
+
+def sanitize_payload_for_security_artifact(payload: Any) -> Any:
+    """Write-time scrub for security-risk-location / safe-export artifacts.
+
+    Reuses ``sanitize_payload_for_provider`` (no third regex copy -- see
+    TP-RTE-TRUTH-D-004) because it is strictly stricter than
+    ``sanitize_payload_for_output``: it additionally masks high-entropy
+    long tokens that don't match a known key name or provider-token shape.
+    Only the secret span is masked; the finding's path/line/risk_type/id
+    fields are untouched because they are not secret-shaped strings and do
+    not match any sensitive field name.
+    """
+    return sanitize_payload_for_provider(payload)

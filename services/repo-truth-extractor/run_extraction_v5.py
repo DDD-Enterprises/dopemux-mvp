@@ -42,9 +42,11 @@ if str(RUNNER_SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(RUNNER_SERVICE_DIR))
 
 from output_safety import (
+    is_security_sensitive_artifact,
     sanitize_failed_sidecar_text,
     sanitize_payload_for_failed_sidecar,
     sanitize_payload_for_output,
+    sanitize_payload_for_security_artifact,
     sanitize_text_for_output,
     sanitize_text_for_provider_payload,
     sanitized_json_bytes,
@@ -8706,6 +8708,19 @@ def normalize_step(
         out_path = norm_dir / artifact_name
         if artifact_name.endswith(".json"):
             merged_payload = merge_json_chunks(chunks)
+            if is_security_sensitive_artifact(artifact_name):
+                # TP-RTE-TRUTH-R3-007 (F-23 enforcement half): C8
+                # SECRETS_RISK_LOCATIONS and its H1/H7/M safe-export
+                # siblings get the stricter provider-grade scrub at write
+                # time, not just the generic sanitize_payload_for_output
+                # that write_json() applies to every artifact. This makes a
+                # non-compliant model's raw secret value structurally
+                # harmless before it reaches disk or PROMPT_R11_SECURITY_
+                # RISK_SYNTHESIS -- the redaction rule from R3-004 is an
+                # instruction; this is the enforcement.
+                merged_payload = sanitize_payload_for_security_artifact(
+                    merged_payload
+                )
             write_json(out_path, merged_payload)
             written_files.append(artifact_name)
 
