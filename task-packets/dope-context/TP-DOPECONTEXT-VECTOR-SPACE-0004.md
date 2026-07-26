@@ -22,9 +22,9 @@ blocker from the PR #1112 post-merge audit.
 
 `DECISION_REQUIRED`
 
-This packet is **not** implementable as written. It requires an operator
-decision and a budget approval before any code changes. Do not execute the
-implementation half until the benchmark has run and a direction is chosen.
+Budget is **approved** (see below). The remaining gate is the direction
+decision itself: do not execute the implementation half until the benchmark has
+run and a direction has been chosen on the measurements.
 
 ## Risk
 
@@ -105,12 +105,34 @@ already used for title and breadcrumb. Provably consistent, matches upstream
   rationale alone.
 - No production collection is migrated by this packet.
 
+## Budget — APPROVED 2026-07-26
+
+Live Voyage calls for this benchmark are **funded**. The estimate below was
+measured, not guessed: token counts come from the real
+`voyageai/voyage-code-3` tokenizer over this repository, priced against vendor
+rates verified 2026-07-26 (`voyage-context-4` $0.12/M, `voyage-code-3` $0.18/M).
+Code content carries a 1.5x inflation factor for the generated context that is
+prepended to each chunk before embedding.
+
+| Corpus | Files | Tokens | A | B | Control | **All three** |
+|---|---|---|---|---|---|---|
+| `services/dope-context` `.py` | 41 | 95,711 | $0.017 | $0.026 | $0.052 | **$0.09** |
+| whole repo `.py` | 2,902 | 6,888,067 | $1.24 | $1.86 | $3.72 | **$6.82** |
+| repo `.py` + all `docs/*.md` | 8,086 | 21,080,178 | $2.57 | $3.86 | $7.72 | **$14.14** |
+
+Query cost is negligible: ~50 queries x 3 vectors x ~20 tokens is under $0.001.
+
+**Approved plan: run the 41-file dope-context corpus first at $0.09 to validate
+the harness, then the whole-repo Python corpus at $6.82 for the measurement.
+Ceiling $10.** Do not embed `docs/*.md`; it triples cost for a corpus that does
+not exercise code retrieval.
+
+Report actual spend against this ceiling in the proof bundle. If projected spend
+exceeds $10, stop and re-estimate rather than continuing.
+
 ## Prerequisites — blocking
 
-1. **Budget approval for live Voyage calls.** The benchmark requires real
-   embedding requests. Cost scales with corpus and query-set size and must be
-   estimated and approved before execution. No live call may be made without it.
-2. **`TP-DOPECONTEXT-TEST-HARNESS-0005`** should land first. Nine MCP tool tests
+1. **`TP-DOPECONTEXT-TEST-HARNESS-0005`** should land first. Nine MCP tool tests
    currently fail with `TypeError: 'FunctionTool' object is not callable`,
    which is precisely the surface needed to verify this end to end. Without it,
    verification is limited to the function level.
@@ -196,9 +218,9 @@ estimate.
 
 Stop if:
 
-- budget approval for live calls has not been granted
+- projected spend would exceed the approved $10 ceiling
 - the benchmark would write to a production collection
-- measured spend exceeds the approved estimate
+- measured spend exceeds the approved $10 ceiling
 - A and B differ by less than the measurement noise and no tiebreak is agreed
 - the control measurement shows the current mismatch is NOT degrading results,
   which would falsify the finding and require re-analysis before any change
