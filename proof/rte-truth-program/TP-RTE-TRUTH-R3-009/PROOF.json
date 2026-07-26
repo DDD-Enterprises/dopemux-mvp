@@ -1,0 +1,84 @@
+{
+  "task_packet": "TP-RTE-TRUTH-R3-009",
+  "title": "Delimiter escape hardening + preamble unification (F-30 residuals)",
+  "summary": "Closed two audit MEDs on the v5 untrusted-content boundary: (1) neutralize literal </repo_content> inside file bodies before wrap so pure concatenation cannot close the region early; (2) route rte_ops_surfaces cost-preview prefix through build_extraction_prompt_prefix and frame llm_runtime comparison lane with UNTRUSTED_CONTENT_PREAMBLE. Package-wide (non-legacy) guard pins a single framing literal.",
+  "findings": {
+    "tag_break_escape": {
+      "status": "VERIFIED_FIXED",
+      "evidence": "build_partition_context now calls neutralize_untrusted_repo_content_delimiters before wrap. Mutation: replacing neutralize with identity makes body text after an embedded </repo_content> land outside the first close-tag match."
+    },
+    "preamble_gap_rte_ops_surfaces": {
+      "status": "VERIFIED_FIXED",
+      "evidence": "preview_partition_usage requires build_extraction_prompt_prefix and no longer contains the Extract-from-files literal; v5 wrapper passes the shared helper."
+    },
+    "preamble_gap_llm_runtime": {
+      "status": "VERIFIED_FIXED",
+      "evidence": "run_comparison_lane accepts untrusted_content_preamble; v5 wrapper passes UNTRUSTED_CONTENT_PREAMBLE. Wiring pin asserted in test_llm_runtime_comparison_lane_accepts_preamble_kwarg."
+    }
+  },
+  "implementation": {
+    "changes_made": [
+      {
+        "file": "services/repo-truth-extractor/run_extraction_v5.py",
+        "description": "Added neutralize_untrusted_repo_content_delimiters; wired into build_partition_context wrap; pass build_extraction_prompt_prefix into ops preview; pass UNTRUSTED_CONTENT_PREAMBLE into comparison lane."
+      },
+      {
+        "file": "services/repo-truth-extractor/rte_ops_surfaces.py",
+        "description": "preview_partition_usage takes build_extraction_prompt_prefix; drops local prefix re-derivation."
+      },
+      {
+        "file": "services/repo-truth-extractor/llm_runtime.py",
+        "description": "comparison lane prepends untrusted_content_preamble when provided."
+      },
+      {
+        "file": "services/repo-truth-extractor/tests/test_untrusted_content_delimiter.py",
+        "description": "Close-tag escape test, wiring pins (R3-008 lesson), package-wide non-legacy framing guard, ops/runtime surface pins."
+      }
+    ]
+  },
+  "validation": {
+    "tests_run": {
+      "test_untrusted_content_delimiter.py": {
+        "status": "PASS",
+        "count": 8
+      },
+      "delimiter_or_untrusted_or_preamble_or_comparison": {
+        "status": "PASS",
+        "count": 26
+      },
+      "test_truth_harness_goldens.py": {
+        "status": "PASS",
+        "note": "Included in the 26-count k-filter run alongside delimiter suite"
+      },
+      "mutation_check_close_tag_escape": {
+        "status": "PASS",
+        "evidence": "Executed: real fix keeps injection inside region; identity neutralize lets injection escape. Wiring pin asserts call site in source."
+      }
+    }
+  },
+  "scope": {
+    "v5_exclusive": true,
+    "legacy_v3_v4": "Out of scope for R3-009; framing guard explicitly excludes run_extraction_v3.py / run_extraction_v4.py (D-tier owns any port).",
+    "files_touched": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/rte_ops_surfaces.py",
+      "services/repo-truth-extractor/llm_runtime.py",
+      "services/repo-truth-extractor/tests/test_untrusted_content_delimiter.py",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-009/PROOF.json",
+      "task-packets/generated/TP-RTE-TRUTH-R3-009.json"
+    ]
+  },
+  "residual_risks": [
+    "Delimiter neutralization is string-based (zero-width space). A model that treats ZWSP as significant could still see a 'close-like' token; boundary is for instruction/data separation, not a formal security sandbox.",
+    "Comparison lane framing is preamble-only (not full extraction prefix); appropriate because comparison does not use the Extract-from-files envelope.",
+    "Does not prove live models resist injection — only that the boundary is uniformly applied."
+  ],
+  "blocking_issues": {
+    "count": 0,
+    "issues": []
+  },
+  "git_state": {
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "note": "SHA filled at commit time"
+  }
+}

@@ -1523,6 +1523,7 @@ def run_comparison_lane(
     finalize_response_parse_provenance: Callable[..., Dict[str, Any]],
     log_response_parse_repair: Callable[[Dict[str, Any]], None],
     contract_lane: str = "comparison",
+    untrusted_content_preamble: str = "",
 ) -> List[Dict[str, Any]]:
     compare_provider = str(getattr(cfg, "compare_provider", None) or "xai")
     compare_model = str(getattr(cfg, "compare_model", None) or "grok-4.20-beta")
@@ -1584,9 +1585,18 @@ def run_comparison_lane(
             route_token = f"{compare_provider}/{compare_model}"
             safe_prompt_text = sanitize_text_for_provider_payload(prompt_text)
             safe_context_text = sanitize_text_for_provider_payload(context_text)
+            # F-30 residual (TP-RTE-TRUTH-R3-009): comparison lane previously
+            # sent wrapped context without the untrusted-content preamble, so
+            # the model saw <repo_content> with no instruction-side framing.
+            # Prepend the shared preamble when provided by the caller (v5).
+            preamble = str(untrusted_content_preamble or "").strip()
+            if preamble and preamble not in safe_context_text:
+                safe_user_content = f"{preamble}\n\n{safe_context_text}"
+            else:
+                safe_user_content = safe_context_text
             projected_input_tokens = deps.estimate_text_tokens(
                 safe_prompt_text,
-                safe_context_text,
+                safe_user_content,
             )
             projected_output_tokens = deps.project_output_tokens(projected_input_tokens)
             deps.check_projected_cost_limit(
@@ -1607,7 +1617,7 @@ def run_comparison_lane(
                 model_id=compare_model,
                 api_key_env=deps.provider_api_key_env.get(compare_provider, ""),
                 system_prompt=safe_prompt_text,
-                user_content=safe_context_text,
+                user_content=safe_user_content,
                 cfg=cfg,
                 force_json_output=True,
             )
