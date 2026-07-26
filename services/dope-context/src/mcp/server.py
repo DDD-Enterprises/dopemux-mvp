@@ -52,6 +52,7 @@ except ImportError:  # pragma: no cover - for constrained test envs
 from ..autonomous.autonomous_controller import AutonomousConfig, AutonomousController
 from ..context.openai_generator import OpenAIContextGenerator
 from ..embeddings.contextualized_embedder import ContextualizedEmbedder
+from ..embeddings.model_registry import DEFAULT_DOC_MODEL, env_model
 from ..embeddings.voyage_embedder import VoyageEmbedder
 from ..pipeline.docs_pipeline import DocIndexingPipeline
 from ..pipeline.indexing_pipeline import (
@@ -1740,7 +1741,10 @@ async def _docs_search_impl(
     # Detect workspace
     workspace = Path(workspace_path) if workspace_path else get_workspace_root()
     _, docs_collection = get_collection_names(workspace)
-    embed_model = "voyage-context-3"
+    # Placeholder for the no-API-key early return below; resolved from the same
+    # configured source (env var + registry default) the index path uses, so it
+    # can never diverge from what index_docs actually indexed with (F-003).
+    embed_model = env_model("DOPE_CONTEXT_DOC_EMBED_MODEL", DEFAULT_DOC_MODEL)
 
     # Log metrics for benchmarking
     get_tracker().log_search(
@@ -1790,8 +1794,12 @@ async def _docs_search_impl(
     )
 
     docs_embedder = _get_cached_contextualized_embedder(api_key=voyage_key)
+    # Resolve from the embedder's own configured default so the query model can
+    # never split from the index model (F-003): DocIndexingPipeline._index_document
+    # passes this same attribute for the index path.
+    embed_model = docs_embedder.default_model
 
-    # Embed query with voyage-context-3 (contextualized)
+    # Embed query with the configured contextualized model (index/query symmetric)
     embed_started = perf_counter()
     result = await docs_embedder.embed_document(
         chunks=[query],  # Single "chunk" for query

@@ -119,6 +119,65 @@ def truncate_text_to_tokens(
     return best, True
 
 
+def _cap_oversized_siblings(
+    item: Dict[str, Any], *, content_field: str, per_item_tokens: int
+) -> int:
+    """Trim any other string field so it alone cannot blow the item budget.
+
+    ``search_code`` payloads carry an unbounded ``context`` sibling next to
+    the already-truncated content field; without this, one oversized sibling
+    makes ``estimate_dict_tokens`` measure the whole dict as over budget and
+    the caller silently drops the result (F-017).
+    """
+
+    chars_removed = 0
+    for key, value in list(item.items()):
+        if key == content_field or not isinstance(value, str):
+            continue
+        if estimate_tokens(value) <= per_item_tokens:
+            continue
+        shortened, _ = truncate_text_to_tokens(value, per_item_tokens)
+        chars_removed += len(value) - len(shortened)
+        item[key] = shortened
+    return chars_removed
+
+
+def _degrade_single_result(
+    first: Dict[str, Any],
+    *,
+    content_field: str,
+    truncated_flag: str,
+    content_suffix: str,
+    budget_tokens: int,
+) -> tuple[Dict[str, Any], int]:
+    """Degrade the first result rather than return an empty list (F-017).
+
+    Non-empty input must never come back as zero results: a caller cannot
+    tell that apart from "no matches". Content and every sibling field share
+    half of the remaining budget, well under the normal per-item cap, so the
+    forced item still has headroom even against a tight budget.
+    """
+
+    item = first.copy()
+    remaining = max(1, budget_tokens - BASE_OVERHEAD_TOKENS)
+    half_budget = max(1, remaining // 2)
+    chars_removed = 0
+
+    content = item.get(content_field)
+    if isinstance(content, str):
+        shortened, _ = truncate_text_to_tokens(
+            content, half_budget, suffix=content_suffix
+        )
+        chars_removed += len(content) - len(shortened)
+        item[content_field] = shortened
+    item[truncated_flag] = True
+
+    chars_removed += _cap_oversized_siblings(
+        item, content_field=content_field, per_item_tokens=half_budget
+    )
+    return item, chars_removed
+
+
 def _truncate_results(
     results: List[Dict[str, Any]],
     *,
@@ -164,6 +223,13 @@ def _truncate_results(
             if was_truncated:
                 total_chars_removed += len(content) - len(shortened)
 
+        # An untrimmed sibling (e.g. search_code's "context") can otherwise
+        # blow the whole-item budget on its own and starve every result
+        # (F-017): cap every other string field to the same per-item share.
+        total_chars_removed += _cap_oversized_siblings(
+            item, content_field=content_field, per_item_tokens=per_item_tokens
+        )
+
         item_tokens = estimate_dict_tokens(item)
         if total_tokens + item_tokens > budget_tokens:
             logger.warning(
@@ -177,6 +243,21 @@ def _truncate_results(
             break
         output.append(item)
         total_tokens += item_tokens
+
+    if not output:
+        # Non-empty input must never come back empty: an empty list is
+        # indistinguishable from "no matches" (F-017). Degrade the first
+        # result instead of dropping it.
+        degraded, degraded_chars_removed = _degrade_single_result(
+            results[0],
+            content_field=content_field,
+            truncated_flag=truncated_flag,
+            content_suffix=content_suffix,
+            budget_tokens=budget_tokens,
+        )
+        output.append(degraded)
+        total_chars_removed += degraded_chars_removed
+        total_tokens = BASE_OVERHEAD_TOKENS + estimate_dict_tokens(degraded)
 
     final_count = len(output)
     return output, TruncationResult(
