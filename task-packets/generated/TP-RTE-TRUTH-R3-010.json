@@ -1,0 +1,123 @@
+{
+  "id": "TP-RTE-TRUTH-R3-010",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / F-23 residual closure \u2014 raw/ path, short secrets, key fragments, token unification",
+  "invariants": [
+    "DRY-RUN ONLY: no --execute, no DPMX_LIVE_OK, no live provider calls.",
+    "Authority: claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md (independent grok-4.5 audit, verdict PASS_WITH_RISKS).",
+    "Use mise python 3.12. Run tests/test_truth_harness_goldens.py after changes.",
+    "Mutation-check every new test: remove the fix, confirm the test fails.",
+    "Audit pushed back on 'structurally impossible': (1) raw/ partition JSON still gets only the generic write_json scrub (~v5:16403) \u2014 R3-007 covered norm/ only; (2) short non-prefixed secrets survive BOTH scrubs (_LONG_TOKEN needs >=40 chars, output_safety.py:37-38) and `_is_sensitive_key('DEFAULT_CREDENTIALS')` is False \u2014 proven in-process by the auditor; (3) prompts teach `<REDACTED>` but the scrub emits `[REDACTED]` (output_safety.py:160,170); (4) the .partX. branch (v5:8684-8706) skips the security scrub \u2014 not a hole today but asymmetric.",
+    "Do NOT claim 'structurally impossible' again without covering raw/ and the short-secret blind spot. Reuse existing regexes; do not add a third copy (D-004)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-FOLLOWUP",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": "TP-RTE-TRUTH-REVIEW-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-4.5",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R3-010 \u2014 close F-23 residuals (raw path, short secrets, token)",
+    "allowlist": [
+      "services/repo-truth-extractor/",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R3-010.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-010/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): F-23 residual closure",
+    "body": "Audit found the enforcement claim overstated; this closes the named gaps.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "routing": {
+    "stage": "planner_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex",
+        "grok"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-opus-5",
+      "codex": "gpt-5.6-sol",
+      "grok": "grok-4.5",
+      "opencode": "anthropic/claude-sonnet-4-5"
+    },
+    "rationale": "Security completeness on the money/secret path; the prior claim outran the evidence.",
+    "notes": [],
+    "evidence": "Derived from REVIEW_REPORT.md findings table."
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Expand sensitive-key fragments (add `credential` etc.); decide and document the short-secret residual explicitly.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'redact or secret or safety'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/output_safety.py"
+      ],
+      "validation": [
+        "DEFAULT_CREDENTIALS-style keys masked; residual documented, not overclaimed."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Apply the security scrub to raw/ writes for security steps and to the .partX. branch; unify the REDACTED token across prompts and scrub.",
+      "requirements": [],
+      "commands": [],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ],
+      "validation": [
+        "raw/ security-step output scrubbed; partX symmetric; one token shape everywhere."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md"
+      ]
+    }
+  ]
+}

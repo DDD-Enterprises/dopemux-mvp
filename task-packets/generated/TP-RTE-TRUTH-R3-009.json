@@ -1,0 +1,124 @@
+{
+  "id": "TP-RTE-TRUTH-R3-009",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / delimiter-escape hardening + preamble unification (F-30 residuals)",
+  "invariants": [
+    "DRY-RUN ONLY: no --execute, no DPMX_LIVE_OK, no live provider calls.",
+    "Authority: claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md (independent grok-4.5 audit, verdict PASS_WITH_RISKS).",
+    "Use mise python 3.12. Run tests/test_truth_harness_goldens.py after changes.",
+    "Mutation-check every new test: remove the fix, confirm the test fails.",
+    "Two audit MEDs: (1) literal `</repo_content>` in a file body escapes the delimiter \u2014 wrap is pure concatenation (v5:11535-11541); (2) the preamble is NOT on all assembly surfaces \u2014 rte_ops_surfaces.py:237-241 re-derives its own prefix without UNTRUSTED_CONTENT_PREAMBLE, and llm_runtime.py:1575-1609 sends wrapped context without preamble framing.",
+    "The single-literal guard test only scans v5 source (test_untrusted_content_delimiter.py:125) so it misses the rte_ops_surfaces duplicate \u2014 extend it package-wide."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-FOLLOWUP",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": "TP-RTE-TRUTH-REVIEW-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-4.5",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R3-009 \u2014 delimiter escape + preamble unification",
+    "allowlist": [
+      "services/repo-truth-extractor/",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R3-009.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-009/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): harden injection boundary (F-30 residuals)",
+    "body": "Audit MEDs: tag-break escape and preamble gaps on non-v5 surfaces.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "routing": {
+    "stage": "planner_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex",
+        "grok"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-opus-5",
+      "codex": "gpt-5.6-sol",
+      "grok": "grok-4.5",
+      "opencode": "anthropic/claude-sonnet-4-5"
+    },
+    "rationale": "Security boundary completeness; tag-break undermines the data/instruction guarantee.",
+    "notes": [],
+    "evidence": "Derived from REVIEW_REPORT.md findings table."
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Neutralize close tags in untrusted text before wrap (escape, or nonce delimiters + length framing).",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'delimiter'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ],
+      "validation": [
+        "A body containing literal </repo_content> no longer escapes the region; mutation-checked."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Route every prompt prefix through build_extraction_prompt_prefix; extend the literal-count guard across the package.",
+      "requirements": [],
+      "commands": [],
+      "expected_files": [
+        "services/repo-truth-extractor/rte_ops_surfaces.py",
+        "services/repo-truth-extractor/llm_runtime.py"
+      ],
+      "validation": [
+        "No surface re-derives its own prefix; guard catches duplicates outside v5."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md"
+      ]
+    }
+  ]
+}

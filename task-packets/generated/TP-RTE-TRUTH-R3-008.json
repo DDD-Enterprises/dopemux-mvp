@@ -1,0 +1,108 @@
+{
+  "id": "TP-RTE-TRUTH-R3-008",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / wire promptset section enforcement into the CANONICAL v5 entrypoint (F-31 real fix)",
+  "invariants": [
+    "DRY-RUN ONLY: no --execute, no DPMX_LIVE_OK, no live provider calls.",
+    "Authority: claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md (independent grok-4.5 audit, verdict PASS_WITH_RISKS).",
+    "Use mise python 3.12. Run tests/test_truth_harness_goldens.py after changes.",
+    "Mutation-check every new test: remove the fix, confirm the test fails.",
+    "AUDIT REFUTATION: R3-004 claimed F-31 enforcement is live. It is NOT on the canonical path. `load_promptset`/`validate_promptset_sections` live in run_extraction_v4.py (:174-193, called from run_pipeline:1051). v5 \u2014 the canonical runner per rte_config.RUNNER_SCRIPT \u2014 NEVER calls them. `python run_extraction_v5.py` skips F-31 entirely. Verified independently: v5 contains only `_load_promptset_rules` (rules-text injection), a different function.",
+    "F-31 has been REOPENED in the orchestrator on the strength of this finding."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-FOLLOWUP",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": "TP-RTE-TRUTH-REVIEW-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-4.5",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R3-008 \u2014 section enforcement on canonical v5 entrypoint",
+    "allowlist": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R3-008.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-008/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): F-31 enforcement on the canonical v5 path",
+    "body": "Audit found F-31 gated only v4, not the canonical v5 runner.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "routing": {
+    "stage": "planner_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex",
+        "grok"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-opus-5",
+      "codex": "gpt-5.6-sol",
+      "grok": "grok-4.5",
+      "opencode": "anthropic/claude-sonnet-4-5"
+    },
+    "rationale": "Reopens a finding that was wrongly closed; enforcement must gate the entrypoint operators actually use.",
+    "notes": [],
+    "evidence": "Derived from REVIEW_REPORT.md findings table."
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Wire section-contract validation into the v5 preflight / get_phase_prompts load path so the canonical entrypoint fails closed on missing required_prompt_sections, matching v4 behaviour.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'promptset or section'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ],
+      "validation": [
+        "Direct `python run_extraction_v5.py` rejects a template missing required sections; test pins the v5 call site."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md"
+      ]
+    }
+  ]
+}

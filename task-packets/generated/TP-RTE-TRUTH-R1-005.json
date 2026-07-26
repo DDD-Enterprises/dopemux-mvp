@@ -1,0 +1,108 @@
+{
+  "id": "TP-RTE-TRUTH-R1-005",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / spend-tracker singleton dual-load hardening (R1-004 residual)",
+  "invariants": [
+    "DRY-RUN ONLY: no --execute, no DPMX_LIVE_OK, no live provider calls.",
+    "Authority: claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md (independent grok-4.5 audit, verdict PASS_WITH_RISKS).",
+    "Use mise python 3.12. Run tests/test_truth_harness_goldens.py after changes.",
+    "Mutation-check every new test: remove the fix, confirm the test fails.",
+    "Audit MED: R1-004 moved the `_ACTIVE_SPEND_TRACKER` global into extractor/costing.py:59. Dual importlib loads of v5 (as tests do) can desync trackers, and CLI-introspection goldens cannot catch module-identity issues.",
+    "Not a functional regression in normal single-process CLI use \u2014 this is test-isolation and import-order fragility."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-FOLLOWUP",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": "TP-RTE-TRUTH-REVIEW-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-4.5",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R1-005 \u2014 spend-tracker singleton dual-load hardening",
+    "allowlist": [
+      "services/repo-truth-extractor/extractor/costing.py",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R1-005.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R1-005/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): spend-tracker identity across reloads",
+    "body": "R1-004 seam residual found by independent audit.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "routing": {
+    "stage": "implementer_standard",
+    "tier": "balanced",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex",
+        "grok"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-sonnet-5",
+      "codex": "gpt-5.6-terra",
+      "grok": "grok-4.5",
+      "opencode": "anthropic/claude-sonnet-4-5"
+    },
+    "rationale": "Money-path state; goldens provably cannot catch this class.",
+    "notes": [],
+    "evidence": "Derived from REVIEW_REPORT.md findings table."
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Make the active-tracker a single registry with identity pinned across reloads; add a test asserting identity survives a dual import.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'cost or spend'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/extractor/costing.py"
+      ],
+      "validation": [
+        "Tracker identity stable across importlib reloads; test pins it."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md"
+      ]
+    }
+  ]
+}
