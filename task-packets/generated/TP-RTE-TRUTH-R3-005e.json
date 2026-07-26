@@ -80,5 +80,37 @@
         "claudedocs/rte-truth-program-2026-07/A3d-prompts-WXZ-promptgen.md"
       ]
     }
-  ]
+  ],
+  "routing": {
+    "stage": "implementer_standard",
+    "tier": "cheap",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "grok",
+        "codex",
+        "claude_code"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-haiku-4-5",
+      "codex": "gpt-5.6-luna (reasoning medium)",
+      "opencode": "anthropic/claude-haiku-4-5 (small_model)",
+      "grok": "grok-code-fast-1",
+      "gemini_cli": "Flash tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-reader.agent.md)"
+    },
+    "rationale": "Mechanical: graph-kind declarations, step renumbering, template nits.",
+    "notes": [],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
 }

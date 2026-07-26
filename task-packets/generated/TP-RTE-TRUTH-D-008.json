@@ -8,20 +8,33 @@
     "Reachability: `dopemux rte scan --allow-legacy-v3-scan` -> run_repscan.py -> run_extraction_v3.py. Three opt-in gates lower the risk but do not remove it.",
     "Mirror the v5 fix exactly: wrap build_partition_context's return in <repo_content>...</repo_content>, emit the UNTRUSTED_CONTENT_PREAMBLE before the delimited region, compute context bytes POST-wrap.",
     "Do NOT refactor v3 beyond this port. v3 deletion is TP-RTE-TRUTH-D-001 (hard-blocked post-release); this packet keeps v3 safe until then.",
-    "Alternative acceptable outcome: if the operator decides v3 live dispatch should be hard-disabled instead, implement that and document the decision — but do not leave v3 both live-capable and unwrapped.",
+    "Alternative acceptable outcome: if the operator decides v3 live dispatch should be hard-disabled instead, implement that and document the decision \u2014 but do not leave v3 both live-capable and unwrapped.",
     "Findings covered: F-30 (v3 residual)."
   ],
-  "depends_on": ["TP-RTE-TRUTH-R3-002"],
+  "depends_on": [
+    "TP-RTE-TRUTH-R3-002"
+  ],
   "repo_binding": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
     "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "require_identity_match": true
   },
-  "series": {"id": "RTE-TRUTH-D", "base_branch": "claude/rte-audit-improvement-f4beb7", "parent_tp_id": "TP-RTE-TRUTH-R3-002", "final_packet": false},
-  "execution": {"agent": "grok", "model": "grok-code-fast-1", "branch": "claude/rte-audit-improvement-f4beb7", "base_branch": "claude/rte-audit-improvement-f4beb7", "estimated_diff": "S"},
+  "series": {
+    "id": "RTE-TRUTH-D",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": "TP-RTE-TRUTH-R3-002",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "S"
+  },
   "commit": {
-    "message": "fix(rte): TP-RTE-TRUTH-D-008 — port untrusted-content delimiter to legacy v3",
+    "message": "fix(rte): TP-RTE-TRUTH-D-008 \u2014 port untrusted-content delimiter to legacy v3",
     "allowlist": [
       "services/repo-truth-extractor/run_extraction_v3.py",
       "services/repo-truth-extractor/tests/",
@@ -33,26 +46,92 @@
       "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
     ]
   },
-  "pr": {"title": "fix(rte): port untrusted-content delimiter to legacy v3", "body": "Closes the confirmed F-30 residual left by R3-002: v5 wraps untrusted repo content, v3 does not, and v3 can still dispatch live behind --allow-legacy-v3-scan.", "base": "claude/rte-audit-improvement-f4beb7"},
-  "pal_chain": {"enabled": true, "steps": ["analyze", "planner", "codereview", "precommit"]},
+  "pr": {
+    "title": "fix(rte): port untrusted-content delimiter to legacy v3",
+    "body": "Closes the confirmed F-30 residual left by R3-002: v5 wraps untrusted repo content, v3 does not, and v3 can still dispatch live behind --allow-legacy-v3-scan.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
   "steps": [
     {
       "id": "S1",
       "task": "Mirror the v5 delimiter wrap into run_extraction_v3.py's build_partition_context (v3:6424) and its dispatch sites; reuse the same delimiter + preamble constants so the two runtimes cannot drift.",
-      "requirements": ["Read the v5 implementation in commit 27b349dd3 first and copy its shape exactly.", "Compute context bytes post-wrap, as v5 does."],
-      "commands": ["grep -c repo_content services/repo-truth-extractor/run_extraction_v3.py"],
-      "expected_files": ["services/repo-truth-extractor/run_extraction_v3.py"],
-      "validation": ["repo_content occurrences > 0 in v3; every v3 dispatch path carries the delimiter."],
-      "context_files": ["claudedocs/rte-truth-program-2026-07/A3d-prompts-WXZ-promptgen.md", "services/repo-truth-extractor/run_extraction_v5.py"]
+      "requirements": [
+        "Read the v5 implementation in commit 27b349dd3 first and copy its shape exactly.",
+        "Compute context bytes post-wrap, as v5 does."
+      ],
+      "commands": [
+        "grep -c repo_content services/repo-truth-extractor/run_extraction_v3.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v3.py"
+      ],
+      "validation": [
+        "repo_content occurrences > 0 in v3; every v3 dispatch path carries the delimiter."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A3d-prompts-WXZ-promptgen.md",
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ]
     },
     {
       "id": "S2",
       "task": "Extend the delimiter test to cover v3 (mutation-check it: remove the wrap, confirm the test fails and reproduces the undelimited payload).",
-      "requirements": ["A test that passes with the wrap removed is vacuous — prove it fails."],
-      "commands": ["mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'delimiter or fa_3'"],
-      "expected_files": ["services/repo-truth-extractor/tests/test_untrusted_content_delimiter.py"],
-      "validation": ["v3 delimiter assertions pass; mutation check documented in PROOF.json."],
+      "requirements": [
+        "A test that passes with the wrap removed is vacuous \u2014 prove it fails."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'delimiter or fa_3'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/tests/test_untrusted_content_delimiter.py"
+      ],
+      "validation": [
+        "v3 delimiter assertions pass; mutation check documented in PROOF.json."
+      ],
       "context_files": []
     }
-  ]
+  ],
+  "routing": {
+    "stage": "planner_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": [
+        "grok"
+      ]
+    },
+    "models": {
+      "claude_code": "claude-opus-5 (effort high|xhigh)",
+      "codex": "gpt-5.6-sol (reasoning xhigh|max)",
+      "opencode": "anthropic/claude-sonnet-4-5 via .opencode/agents/pal-planner.md",
+      "grok": "NOT AS SOLE AUTHOR \u2014 grok-code-fast-1 is a fast coding tier, not a strong-reasoning tier",
+      "gemini_cli": "Pro-high tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-planner.agent.md) \u2014 below strong tier; acceptable only under an approved plan"
+    },
+    "rationale": "SECURITY: ports the injection boundary to legacy v3, which can still dispatch live.",
+    "notes": [
+      "grok forbidden as SOLE AUTHOR at this tier (grok-code-fast-1 is a fast coding tier, not strong-reasoning); acceptable as implementer executing an already-approved strong plan."
+    ],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
 }

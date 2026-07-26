@@ -6,8 +6,8 @@
     "Only add strict=True where the xfail's continued-failure state was actually re-verified this pass (no live provider calls).",
     "Leave env-conditioned/CI-divergent xfails (skipif-gated, unverifiable without live credentials) non-strict, with a comment explaining why.",
     "Every touched xfail marker must carry a TP/packet reference to its owning fix.",
-    "Do not touch Cluster D (test_prescan_*.py, test_code_prescan_truthfulness.py) darwin-conditioned xfails — those already carry strict=True and are owned by R2 (TP-RTE-WALKER-006), not R0.",
-    "Do not fix the underlying defects (FA-3 prompt delimiter, FA-7 telemetry writer, FA-8 preflight probe) — this packet is markers-only hygiene."
+    "Do not touch Cluster D (test_prescan_*.py, test_code_prescan_truthfulness.py) darwin-conditioned xfails \u2014 those already carry strict=True and are owned by R2 (TP-RTE-WALKER-006), not R0.",
+    "Do not fix the underlying defects (FA-3 prompt delimiter, FA-7 telemetry writer, FA-8 preflight probe) \u2014 this packet is markers-only hygiene."
   ],
   "depends_on": [],
   "repo_binding": {
@@ -30,7 +30,7 @@
     "base_branch": "claude/rte-audit-improvement-f4beb7"
   },
   "commit": {
-    "message": "chore(rte): TP-RTE-TRUTH-R0-002 — strict xfail + TP-ref discipline",
+    "message": "chore(rte): TP-RTE-TRUTH-R0-002 \u2014 strict xfail + TP-ref discipline",
     "allowlist": [
       "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py",
       "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py",
@@ -44,7 +44,7 @@
   },
   "pr": {
     "title": "chore(rte): strict xfail + TP-ref discipline for FA-3/FA-7/FA-8",
-    "body": "## Summary\n- add strict=True to FA-3 (F-30/R3-002) and FA-7 (F-18/R2-005) xfail markers so a future fix XPASSes loudly instead of rotting silently\n- leave FA-8 (F-19b/R2-004) non-strict: it is skipif-gated on a live OPENROUTER_API_KEY not available this dry-run pass, so its current pass/fail state could not be re-verified without a live provider call\n- add an owning-packet TP reference to all three reason strings (F-02)\n\n## Scope\n- markers-only; no defect fixes; Cluster D darwin xfails untouched (already strict, owned by R2/TP-RTE-WALKER-006)\n\n## Validation\n- pytest -v on the three touched files: FA-3 xfail, FA-7 xfail, FA-8 skipped (no OPENROUTER_API_KEY) — 1 passed, 1 skipped, 2 xfailed, 0 failed",
+    "body": "## Summary\n- add strict=True to FA-3 (F-30/R3-002) and FA-7 (F-18/R2-005) xfail markers so a future fix XPASSes loudly instead of rotting silently\n- leave FA-8 (F-19b/R2-004) non-strict: it is skipif-gated on a live OPENROUTER_API_KEY not available this dry-run pass, so its current pass/fail state could not be re-verified without a live provider call\n- add an owning-packet TP reference to all three reason strings (F-02)\n\n## Scope\n- markers-only; no defect fixes; Cluster D darwin xfails untouched (already strict, owned by R2/TP-RTE-WALKER-006)\n\n## Validation\n- pytest -v on the three touched files: FA-3 xfail, FA-7 xfail, FA-8 skipped (no OPENROUTER_API_KEY) \u2014 1 passed, 1 skipped, 2 xfailed, 0 failed",
     "base": "claude/rte-audit-improvement-f4beb7"
   },
   "pal_chain": {
@@ -91,7 +91,7 @@
         "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py"
       ],
       "validation": [
-        "FA-3 and FA-7 still XFAIL (not XPASS) with strict=True — no regression fix accidentally landed underneath.",
+        "FA-3 and FA-7 still XFAIL (not XPASS) with strict=True \u2014 no regression fix accidentally landed underneath.",
         "FA-8 still SKIPPED (no OPENROUTER_API_KEY in this environment)."
       ],
       "context_files": [
@@ -117,5 +117,37 @@
         "proof/rte-truth-program/TP-RTE-TRUTH-R0-002/PROOF.json"
       ]
     }
-  ]
+  ],
+  "routing": {
+    "stage": "implementer_standard",
+    "tier": "cheap",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "grok",
+        "codex",
+        "claude_code"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-haiku-4-5",
+      "codex": "gpt-5.6-luna (reasoning medium)",
+      "opencode": "anthropic/claude-haiku-4-5 (small_model)",
+      "grok": "grok-code-fast-1",
+      "gemini_cli": "Flash tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-reader.agent.md)"
+    },
+    "rationale": "Mechanical marker discipline. DONE.",
+    "notes": [],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
 }
