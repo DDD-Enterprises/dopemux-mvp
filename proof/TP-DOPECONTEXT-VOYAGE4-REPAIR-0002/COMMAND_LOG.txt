@@ -22,3 +22,11 @@ exit:0
 === git diff --check ===
 exit:0
 === docker smoke already SMOKE_OK ===
+
+=== AGY embedded audit 2026-07-27T00:40:48.813706+00:00 ===
+command: agy --print-timeout 20m --add-dir WT --mode plan --effort high -p audit-prompt
+exit: 0
+model: Gemini 3.6 Flash (High)
+session: f9a91bb1-9f2d-43af-912e-8a8295ae19b4
+verdict: PASS_WITH_RISKS
+audited_head: 71f73d9ab02f3477052e8a5ac9d695ae71be5c60

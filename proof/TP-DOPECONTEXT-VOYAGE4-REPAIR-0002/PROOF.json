@@ -3,10 +3,10 @@
   "project": "dopemux-mvp",
   "repository": "DDD-Enterprises/dopemux-mvp",
   "authorized_base_sha": "f4e91574a11e7f0e73d096b7b36def0230627727",
-  "final_head_sha": "SEE_PR_HEAD",
+  "final_head_sha": "71f73d9ab02f3477052e8a5ac9d695ae71be5c60",
   "branch": "fix/dope-context-voyage4-repair-0002",
   "worktree": "/Users/hue/.grok/worktrees/code-dopemux-mvp/tp-voyage4-repair-0002",
-  "objective_status": "IMPLEMENTATION_COMPLETE_AUDIT_BLOCKED",
+  "objective_status": "AUDIT_PASS_WITH_RISKS",
   "blocking_findings": {
     "F-001": "REPAIRED",
     "F-002": "REPAIRED",
@@ -24,38 +24,27 @@
     "deployment": "NOT_RUN"
   },
   "embedded_audit": {
-    "status": "BLOCKED",
-    "auditor_tool": null,
-    "auditor_model": null,
-    "auditor_session": null,
-    "auditor_verdict": "NOT_RUN",
-    "attempts": [
-      {
-        "tool": "gemini_cli",
-        "error": "IneligibleTierError"
-      },
-      {
-        "tool": "agy",
-        "model": "claude-sonnet-4-6",
-        "error": "Individual quota reached"
-      },
-      {
-        "tool": "claude_code_cli",
-        "model": "sonnet",
-        "error": "session limit"
-      }
-    ],
-    "note": "Implementer session must not self-certify. Independent audit required before READY."
+    "status": "COMPLETE",
+    "auditor_tool": "agy",
+    "auditor_model": "Gemini 3.6 Flash (High)",
+    "auditor_session": "f9a91bb1-9f2d-43af-912e-8a8295ae19b4",
+    "audited_head_sha": "71f73d9ab02f3477052e8a5ac9d695ae71be5c60",
+    "invocation": "agy --print-timeout 20m --add-dir <worktree> --mode plan --effort high -p <audit-prompt>",
+    "exit_code": 0,
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "accepted_verdict": true,
+    "completed_at": "2026-07-27T00:40:48.812092+00:00",
+    "note": "Audited head 71f73d9ab; subsequent proof-only commits may advance tip."
   },
   "pr_steward": {
     "MERGE_READINESS.status": "NOT_READY",
-    "reason": "Independent embedded audit NOT_RUN; blocks steward READY"
+    "reason": "Audit PASS_WITH_RISKS accepted; steward gate still required against final head"
   },
   "remaining_risks": [
-    "Independent embedded audit not completed (tool quota/auth blockers)",
-    "No live Voyage embedding benchmark performed",
-    "Legacy collections require operator reindex; not auto-routed for reads",
-    "PR Steward READY not yet achieved"
+    "Live Voyage API integration not run (tests mock)",
+    "Legacy Qdrant collections need operator reindex",
+    "Deployment NOT_RUN",
+    "Auditor mid-tier finding ID mapping is approximate; blocking F-001/002/003 verified REPAIRED"
   ],
   "deployment_status": "NOT_RUN",
   "stop_condition": "embedded_audit_tools_unavailable",
@@ -63,5 +52,6 @@
   "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1126",
   "pr_number": 1126,
   "proof_self_pin_note": "After this commit lands, PR headRefOid is authoritative final_head_sha.",
-  "implementation_head_sha": "efc15f90950068e121f4abb174d0c085f52880c1"
+  "implementation_head_sha": "efc15f90950068e121f4abb174d0c085f52880c1",
+  "audited_head_sha": "71f73d9ab02f3477052e8a5ac9d695ae71be5c60"
 }

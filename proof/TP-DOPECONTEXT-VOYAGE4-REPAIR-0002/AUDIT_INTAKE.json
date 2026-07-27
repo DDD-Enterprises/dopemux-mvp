@@ -1,7 +1,10 @@
 {
   "packet_id": "TP-DOPECONTEXT-VOYAGE4-REPAIR-0002",
-  "auditor_preferred": "Gemini CLI",
-  "auditor_fallback": ["AGY/Sonnet", "Claude Code Opus independent session"],
-  "implementer_must_not_self_audit": true,
-  "status": "READY_FOR_INDEPENDENT_AUDIT"
+  "status": "AUDIT_COMPLETE",
+  "auditor_tool": "agy",
+  "auditor_model": "Gemini 3.6 Flash (High)",
+  "auditor_session": "f9a91bb1-9f2d-43af-912e-8a8295ae19b4",
+  "auditor_verdict": "PASS_WITH_RISKS",
+  "audited_head_sha": "71f73d9ab02f3477052e8a5ac9d695ae71be5c60",
+  "exit_code": 0
 }
