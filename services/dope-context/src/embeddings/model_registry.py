@@ -200,3 +200,81 @@ def index_fingerprint(
     }
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+COLLECTION_MANIFEST_KEY = "__manifest__"
+_MANIFEST_FIELDS = (
+    "model",
+    "endpoint",
+    "output_dimension",
+    "output_dtype",
+    "chunker_version",
+    "index_schema_version",
+)
+
+
+def build_collection_manifest(
+    *,
+    model: str,
+    output_dimension: int,
+    output_dtype: str,
+    chunker_version: str,
+) -> Dict[str, object]:
+    """Return the compatibility record stored alongside a collection.
+
+    The endpoint is derived rather than passed so a caller cannot record a
+    model/endpoint pair the registry would reject.
+    """
+
+    spec = get_model_spec(model)
+    return {
+        COLLECTION_MANIFEST_KEY: True,
+        "model": model,
+        "endpoint": spec.endpoint,
+        "output_dimension": output_dimension,
+        "output_dtype": output_dtype,
+        "chunker_version": chunker_version,
+        "index_schema_version": INDEX_SCHEMA_VERSION,
+        "index_fingerprint": index_fingerprint(
+            model=model,
+            output_dimension=output_dimension,
+            output_dtype=output_dtype,
+            chunker_version=chunker_version,
+        ),
+    }
+
+
+class CollectionCompatibilityError(RuntimeError):
+    """Raised when a collection's manifest disagrees with the active config."""
+
+
+def compare_collection_manifests(
+    stored: Optional[Dict[str, object]],
+    active: Dict[str, object],
+    *,
+    collection_name: str,
+) -> None:
+    """Fail closed unless the stored manifest matches the active one.
+
+    A missing manifest is only tolerated by the caller for an empty collection;
+    this function treats ``None`` as a conflict so the decision stays explicit.
+    """
+
+    if stored is None:
+        raise CollectionCompatibilityError(
+            f"Collection '{collection_name}' has no compatibility manifest. "
+            "It was written by an older dope-context; recreate it explicitly "
+            "rather than mixing vector generations."
+        )
+
+    mismatches = [
+        f"{field}: stored={stored.get(field)!r} active={active.get(field)!r}"
+        for field in _MANIFEST_FIELDS
+        if stored.get(field) != active.get(field)
+    ]
+    if mismatches:
+        raise CollectionCompatibilityError(
+            f"Collection '{collection_name}' is incompatible with the active "
+            f"configuration ({'; '.join(mismatches)}). Recreate the collection "
+            "explicitly instead of mixing vector generations."
+        )

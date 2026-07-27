@@ -1,0 +1,2090 @@
+[
+  {
+    "closedAt": "2026-07-27T00:47:41Z",
+    "headRefName": "fix/ci-complete-truthful-summaries",
+    "mergedAt": "2026-07-27T00:47:41Z",
+    "number": 1130,
+    "state": "MERGED",
+    "title": "fix(ci): reconcile ci-summary job requirements and test assertions",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1130"
+  },
+  {
+    "closedAt": "2026-07-27T00:44:14Z",
+    "headRefName": "fix/ui-dashboard-accessible-interactions",
+    "mergedAt": "2026-07-27T00:44:14Z",
+    "number": 1129,
+    "state": "MERGED",
+    "title": "fix(ui): consolidate accessible interactions and hydration sip logger",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1129"
+  },
+  {
+    "closedAt": "2026-07-27T00:38:37Z",
+    "headRefName": "fix/adhd-dashboard-backend-wire-1056",
+    "mergedAt": "2026-07-27T00:38:37Z",
+    "number": 1116,
+    "state": "MERGED",
+    "title": "feat(dashboard): wire adhd-dashboard backend in compose and service registry (recreates #1056)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1116"
+  },
+  {
+    "closedAt": "2026-07-23T02:12:06Z",
+    "headRefName": "feat/dope-context-voyage4-modernization",
+    "mergedAt": "2026-07-23T02:12:06Z",
+    "number": 1112,
+    "state": "MERGED",
+    "title": "feat(dope-context): modernize Voyage models and harden indexing",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1112"
+  },
+  {
+    "closedAt": "2026-07-23T02:07:18Z",
+    "headRefName": "security/redact-leaked-doc-keys",
+    "mergedAt": "2026-07-23T02:07:18Z",
+    "number": 1111,
+    "state": "MERGED",
+    "title": "fix(security): redact live API keys/tokens leaked in committed docs",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1111"
+  },
+  {
+    "closedAt": "2026-07-23T02:12:28Z",
+    "headRefName": "chore/caveman-plugin-config",
+    "mergedAt": "2026-07-23T02:12:28Z",
+    "number": 1106,
+    "state": "MERGED",
+    "title": "chore: add caveman plugin config across AI-tool instruction files",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1106"
+  },
+  {
+    "closedAt": "2026-07-22T10:20:00Z",
+    "headRefName": "chore/remove-system-archive",
+    "mergedAt": "2026-07-22T10:20:00Z",
+    "number": 1102,
+    "state": "MERGED",
+    "title": "chore: remove SYSTEM_ARCHIVE dead-code quarantine",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1102"
+  },
+  {
+    "closedAt": "2026-07-22T19:47:24Z",
+    "headRefName": "fix/docker-scout-login-guard",
+    "mergedAt": "2026-07-22T19:47:24Z",
+    "number": 1101,
+    "state": "MERGED",
+    "title": "fix(ci): skip Docker Hub login on pull requests",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1101"
+  },
+  {
+    "closedAt": "2026-07-22T08:55:04Z",
+    "headRefName": "hu3mann-patch-1",
+    "mergedAt": "2026-07-22T08:55:04Z",
+    "number": 1091,
+    "state": "MERGED",
+    "title": "Configure Dependabot for multiple package ecosystems",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1091"
+  },
+  {
+    "closedAt": "2026-07-22T02:57:06Z",
+    "headRefName": "docs/conport-crs-v2-adr-wave0",
+    "mergedAt": "2026-07-22T02:57:06Z",
+    "number": 1089,
+    "state": "MERGED",
+    "title": "docs(conport): effectuate Wave 1 CRS v2 acceptance",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1089"
+  },
+  {
+    "closedAt": "2026-07-22T03:57:10Z",
+    "headRefName": "codex/pal-model-refresh",
+    "mergedAt": "2026-07-22T03:57:10Z",
+    "number": 1088,
+    "state": "MERGED",
+    "title": "fix(pal): refresh XAI and OpenAI model catalogs",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1088"
+  },
+  {
+    "closedAt": "2026-07-21T12:10:34Z",
+    "headRefName": "dependabot/uv/uv-5bfe3a18f0",
+    "mergedAt": "2026-07-21T12:10:34Z",
+    "number": 1085,
+    "state": "MERGED",
+    "title": "chore(deps): bump pillow from 12.2.0 to 12.3.0 in the uv group across 1 directory",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1085"
+  },
+  {
+    "closedAt": "2026-07-23T00:09:51Z",
+    "headRefName": "worktree-pr-steward-security-approval-parity",
+    "mergedAt": "2026-07-23T00:09:50Z",
+    "number": 1084,
+    "state": "MERGED",
+    "title": "feat(pr-steward): security/release approval parity gate (TP-DMX-PR-STEWARD-SECURITY-APPROVAL-PARITY-001)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1084"
+  },
+  {
+    "closedAt": "2026-07-21T05:42:17Z",
+    "headRefName": "feat/embedded-audit-prompt-trust",
+    "mergedAt": "2026-07-21T05:42:17Z",
+    "number": 1082,
+    "state": "MERGED",
+    "title": "feat(audit): embedded-audit prompt trust (TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1082"
+  },
+  {
+    "closedAt": "2026-07-22T23:25:40Z",
+    "headRefName": "fix/mcp-name-mapping-reconcile",
+    "mergedAt": "2026-07-22T23:25:40Z",
+    "number": 1079,
+    "state": "MERGED",
+    "title": "fix(mcp): reconcile MCP_NAME_MAPPING to unprefixed Claude-config keys",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1079"
+  },
+  {
+    "closedAt": "2026-07-22T10:05:26Z",
+    "headRefName": "fix/launcher-align-crash",
+    "mergedAt": "2026-07-22T10:05:26Z",
+    "number": 1078,
+    "state": "MERGED",
+    "title": "fix(launcher): repair Align.bottom crash in dopemux start",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1078"
+  },
+  {
+    "closedAt": "2026-07-27T00:23:58Z",
+    "headRefName": "fix/litellm-master-key-healthcheck",
+    "mergedAt": "2026-07-27T00:23:58Z",
+    "number": 1077,
+    "state": "MERGED",
+    "title": "fix(litellm): master key from env + readiness healthcheck",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1077"
+  },
+  {
+    "closedAt": "2026-07-23T04:09:28Z",
+    "headRefName": "palette/prediction-trend-icons-13391965783925535135",
+    "mergedAt": "2026-07-23T04:09:28Z",
+    "number": 1076,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Complete Adaptive Prediction Trend Icons Pattern",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1076"
+  },
+  {
+    "closedAt": "2026-07-20T02:14:19Z",
+    "headRefName": "feat/mcpint-p7-fleet-hardening",
+    "mergedAt": "2026-07-20T02:14:19Z",
+    "number": 1074,
+    "state": "MERGED",
+    "title": "feat(mcpint): P7 fleet-hardening \u2014 18 HRD task packets, load plan, reconciliation anchor",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1074"
+  },
+  {
+    "closedAt": "2026-07-20T02:14:13Z",
+    "headRefName": "claude/mcp-dopemux-integration-audit-877f32",
+    "mergedAt": "2026-07-20T02:14:13Z",
+    "number": 1073,
+    "state": "MERGED",
+    "title": "DMX-MCPINT: MCP fleet runtime audit, feature register, integration ADRs + foundation wiring",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1073"
+  },
+  {
+    "closedAt": "2026-07-17T16:01:25Z",
+    "headRefName": "feat/register-audit-signing-key",
+    "mergedAt": "2026-07-17T16:01:25Z",
+    "number": 1069,
+    "state": "MERGED",
+    "title": "feat(audit): register hue@local public signing key",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1069"
+  },
+  {
+    "closedAt": "2026-07-17T16:00:33Z",
+    "headRefName": "feat/embedded-audit-local-attestation",
+    "mergedAt": "2026-07-17T16:00:32Z",
+    "number": 1068,
+    "state": "MERGED",
+    "title": "feat(audit): accept signed local audit attestations in the embedded-audit gate",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1068"
+  },
+  {
+    "closedAt": "2026-07-17T00:35:48Z",
+    "headRefName": "codex/dcp-mcp-ro-0017-vendor-live",
+    "mergedAt": "2026-07-17T00:35:48Z",
+    "number": 1067,
+    "state": "MERGED",
+    "title": "feat(dcp): vendor-live preflight and two-target isolation",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1067"
+  },
+  {
+    "closedAt": "2026-07-17T00:28:21Z",
+    "headRefName": "codex/dcp-mcp-ro-0018-proof-readiness",
+    "mergedAt": "2026-07-17T00:28:21Z",
+    "number": 1066,
+    "state": "MERGED",
+    "title": "feat(audit): add exact-head proof readiness evaluator",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1066"
+  },
+  {
+    "closedAt": "2026-07-17T00:22:53Z",
+    "headRefName": "codex/dcp-mcp-ro-0017-live-acceptance",
+    "mergedAt": "2026-07-17T00:22:53Z",
+    "number": 1065,
+    "state": "MERGED",
+    "title": "feat(dcp): add acceptance matrix and fail-closed harness",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1065"
+  },
+  {
+    "closedAt": "2026-07-17T00:04:26Z",
+    "headRefName": "codex/dcp-mcp-ro-0016-provider-docs",
+    "mergedAt": "2026-07-17T00:04:26Z",
+    "number": 1064,
+    "state": "MERGED",
+    "title": "docs(dcp): add multi-provider setup and rollback guides",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1064"
+  },
+  {
+    "closedAt": "2026-07-17T16:08:22Z",
+    "headRefName": "fix/installer-mac-linux-audit",
+    "mergedAt": "2026-07-17T16:08:22Z",
+    "number": 1062,
+    "state": "MERGED",
+    "title": "fix(install): make installer actually work on macOS and Linux",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1062"
+  },
+  {
+    "closedAt": "2026-07-16T23:50:49Z",
+    "headRefName": "codex/dcp-mcp-ro-0015-ownership-adapters",
+    "mergedAt": "2026-07-16T23:50:49Z",
+    "number": 1061,
+    "state": "MERGED",
+    "title": "feat(dcp): add ownership verification and release-one adapters",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1061"
+  },
+  {
+    "closedAt": "2026-07-16T23:25:37Z",
+    "headRefName": "codex/dcp-mcp-ro-0014-loopback-ingress",
+    "mergedAt": "2026-07-16T23:25:37Z",
+    "number": 1060,
+    "state": "MERGED",
+    "title": "feat(dcp): add loopback authenticated streamable HTTP ingress",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1060"
+  },
+  {
+    "closedAt": "2026-07-16T23:20:18Z",
+    "headRefName": "codex/dcp-mcp-ro-0013-connector-auth",
+    "mergedAt": "2026-07-16T23:20:18Z",
+    "number": 1059,
+    "state": "MERGED",
+    "title": "feat(dcp): add connector policy schema and auth context",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1059"
+  },
+  {
+    "closedAt": "2026-07-19T01:24:09Z",
+    "headRefName": "codex/audit-ci-runner-1056",
+    "mergedAt": "2026-07-19T01:24:09Z",
+    "number": 1058,
+    "state": "MERGED",
+    "title": "fix(audit): provision trusted Claude audit runner",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1058"
+  },
+  {
+    "closedAt": "2026-07-16T23:09:48Z",
+    "headRefName": "codex/dcp-mcp-ro-0012-target-contract",
+    "mergedAt": "2026-07-16T23:09:48Z",
+    "number": 1057,
+    "state": "MERGED",
+    "title": "feat(dcp): migrate public facade to target registry v2",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1057"
+  },
+  {
+    "closedAt": "2026-07-16T21:48:35Z",
+    "headRefName": "codex/dcp-mcp-ro-0011-identity-remediation",
+    "mergedAt": "2026-07-16T21:48:35Z",
+    "number": 1055,
+    "state": "MERGED",
+    "title": "fix(dcp): align runtime join with lifecycle project identity",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1055"
+  },
+  {
+    "closedAt": "2026-07-16T21:59:01Z",
+    "headRefName": "dependabot/uv/docker/mcp-servers-source/pal/pal-mcp-server/uv-1a1fe7bf02",
+    "mergedAt": "2026-07-16T21:59:01Z",
+    "number": 1054,
+    "state": "MERGED",
+    "title": "chore(deps): bump mcp from 1.27.1 to 1.28.1 in /docker/mcp-servers-source/pal/pal-mcp-server in the uv group across 1 directory",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1054"
+  },
+  {
+    "closedAt": "2026-07-16T20:07:09Z",
+    "headRefName": "claude/pal-stdio-ensure-2026-07-16",
+    "mergedAt": "2026-07-16T20:07:09Z",
+    "number": 1053,
+    "state": "MERGED",
+    "title": "fix(mcp): pal-stdio stdio health probe + ensure-script; diagnose model_context outage",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1053"
+  },
+  {
+    "closedAt": "2026-07-16T20:02:17Z",
+    "headRefName": "fix/reserved-singleton-identity-probe",
+    "mergedAt": "2026-07-16T20:02:17Z",
+    "number": 1052,
+    "state": "MERGED",
+    "title": "fix(mcp): recognize healthy reserved singleton via MCP identity probe",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1052"
+  },
+  {
+    "closedAt": "2026-07-16T20:40:10Z",
+    "headRefName": "codex/svcfin-hyg",
+    "mergedAt": "2026-07-16T20:40:10Z",
+    "number": 1051,
+    "state": "MERGED",
+    "title": "chore(graveyard): delete confirmed-dead services",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1051"
+  },
+  {
+    "closedAt": "2026-07-16T21:27:13Z",
+    "headRefName": "palette/adaptive-prediction-icons-9691819521694635532",
+    "mergedAt": "2026-07-16T21:27:13Z",
+    "number": 1050,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Adaptive Prediction Trend Icons",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1050"
+  },
+  {
+    "closedAt": "2026-07-16T21:15:15Z",
+    "headRefName": "palette/skip-soft-confirmation-3058344168344245175",
+    "mergedAt": "2026-07-16T21:15:15Z",
+    "number": 1049,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Soft Confirmation for TaskSequencer Skip Action",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1049"
+  },
+  {
+    "closedAt": "2026-07-16T21:04:48Z",
+    "headRefName": "codex/auditor-fleet-campaign-intake-001",
+    "mergedAt": "2026-07-16T21:04:48Z",
+    "number": 1048,
+    "state": "MERGED",
+    "title": "chore(intake): collect DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13 evidence",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1048"
+  },
+  {
+    "closedAt": "2026-07-16T20:54:03Z",
+    "headRefName": "docs/embedded-audit-agent-guidance",
+    "mergedAt": "2026-07-16T20:54:03Z",
+    "number": 1047,
+    "state": "MERGED",
+    "title": "docs(governance): document embedded-audit process + local Claude Code route",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1047"
+  },
+  {
+    "closedAt": "2026-07-16T21:00:08Z",
+    "headRefName": "codex/ur-artifact-intake-001",
+    "mergedAt": "2026-07-16T21:00:08Z",
+    "number": 1046,
+    "state": "MERGED",
+    "title": "docs(router): archive architecture and audit evidence",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1046"
+  },
+  {
+    "closedAt": "2026-07-16T21:21:35Z",
+    "headRefName": "palette/copyable-cognitive-load-2400763921180072228",
+    "mergedAt": "2026-07-16T21:21:35Z",
+    "number": 1045,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Copyable Cognitive Load Insights",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1045"
+  },
+  {
+    "closedAt": "2026-07-12T23:15:19Z",
+    "headRefName": "codex/audit-ci-provenance-104-import-path-repair",
+    "mergedAt": "2026-07-12T23:15:19Z",
+    "number": 1044,
+    "state": "MERGED",
+    "title": "fix(audit): run PAL audit runner as a package module",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1044"
+  },
+  {
+    "closedAt": "2026-07-12T22:02:24Z",
+    "headRefName": "codex/tp-dmx-merge-integrity-foundation",
+    "mergedAt": "2026-07-12T22:02:24Z",
+    "number": 1042,
+    "state": "MERGED",
+    "title": "fix(audit): make independent audit and Steward fail closed",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1042"
+  },
+  {
+    "closedAt": "2026-07-16T19:55:51Z",
+    "headRefName": "codex/dcp-mcp-ro-0011-runtime-catalog-join",
+    "mergedAt": "2026-07-16T19:55:51Z",
+    "number": 1041,
+    "state": "MERGED",
+    "title": "feat(dcp): add read-only runtime catalog join",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1041"
+  },
+  {
+    "closedAt": "2026-07-16T19:50:18Z",
+    "headRefName": "claude/clobber-guard",
+    "mergedAt": "2026-07-16T19:50:18Z",
+    "number": 1039,
+    "state": "MERGED",
+    "title": "feat(ci): clobber-guard \u2014 prevent stale-branch clobbers (the #1025 class)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1039"
+  },
+  {
+    "closedAt": "2026-07-10T21:37:09Z",
+    "headRefName": "claude/fix-1025-runtime-stack-clobber",
+    "mergedAt": "2026-07-10T21:37:08Z",
+    "number": 1037,
+    "state": "MERGED",
+    "title": "fix(mcp): restore runtime stack clobbered off main by #1025 (27.7K-line regression)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1037"
+  },
+  {
+    "closedAt": "2026-07-10T21:19:24Z",
+    "headRefName": "claude/dcp-mcp-ro-0010-registry-v2-resolver",
+    "mergedAt": "2026-07-10T21:19:24Z",
+    "number": 1036,
+    "state": "MERGED",
+    "title": "feat(dcp): registry v2 + pure resolver core (target_id, worktree scope, service-family policy)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1036"
+  },
+  {
+    "closedAt": "2026-07-10T06:51:00Z",
+    "headRefName": "dependabot/uv/uv-c230fbc555",
+    "mergedAt": "2026-07-10T06:51:00Z",
+    "number": 1035,
+    "state": "MERGED",
+    "title": "chore(deps): bump the uv group across 1 directory with 2 updates",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1035"
+  },
+  {
+    "closedAt": "2026-07-10T06:56:46Z",
+    "headRefName": "claude/svcfin-packets",
+    "mergedAt": "2026-07-10T06:56:45Z",
+    "number": 1034,
+    "state": "MERGED",
+    "title": "chore(packets): DMX-SVCFIN \u2014 18 task packets + load-plan for service-audit finish",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1034"
+  },
+  {
+    "closedAt": "2026-07-10T06:23:33Z",
+    "headRefName": "codex/dcp-mcp-ro-0009-exposure-target-contract",
+    "mergedAt": "2026-07-10T06:23:33Z",
+    "number": 1033,
+    "state": "MERGED",
+    "title": "docs(dcp): record ChatGPT MCP exposure target contract",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1033"
+  },
+  {
+    "closedAt": "2026-07-10T05:42:44Z",
+    "headRefName": "codex/tp-dmx-mcp-runtime-stack-landing",
+    "mergedAt": "2026-07-10T05:42:44Z",
+    "number": 1032,
+    "state": "MERGED",
+    "title": "feat(mcp): land repo-aware multi-project MCP runtime stack",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1032"
+  },
+  {
+    "closedAt": "2026-07-10T05:06:09Z",
+    "headRefName": "codex/tp-dmx-mcp-runtime-006r-remediation",
+    "mergedAt": "2026-07-10T05:06:09Z",
+    "number": 1031,
+    "state": "MERGED",
+    "title": "fix(mcp): TP-DMX-MCP-RUNTIME-006R singleton TO + discovery + isolation",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1031"
+  },
+  {
+    "closedAt": "2026-07-10T04:55:16Z",
+    "headRefName": "codex/tp-dmx-mcp-runtime-006-dnh-e2e-proof",
+    "mergedAt": "2026-07-10T04:55:16Z",
+    "number": 1030,
+    "state": "MERGED",
+    "title": "docs/proof(mcp): TP-DMX-MCP-RUNTIME-006 dNh_CRM e2e proof bundle",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1030"
+  },
+  {
+    "closedAt": "2026-07-10T04:55:12Z",
+    "headRefName": "codex/tp-dmx-mcp-runtime-004-port-lease-rebind",
+    "mergedAt": "2026-07-10T04:55:12Z",
+    "number": 1028,
+    "state": "MERGED",
+    "title": "feat(mcp): TP-DMX-MCP-RUNTIME-004 port lease registry and live rebind",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1028"
+  },
+  {
+    "closedAt": "2026-07-10T06:08:30Z",
+    "headRefName": "claude/graveyard-followup-2026-07-09",
+    "mergedAt": "2026-07-10T06:08:30Z",
+    "number": 1026,
+    "state": "MERGED",
+    "title": "chore(graveyard): remove 17 confirmed-dead services (~29 KLoC) + fix pre-existing adhd-engine env test",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1026"
+  },
+  {
+    "closedAt": "2026-07-10T06:16:13Z",
+    "headRefName": "palette-copy-forecast-15326622570913260031",
+    "mergedAt": "2026-07-10T06:16:13Z",
+    "number": 1025,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Copyable AI Forecast in PredictionPanel",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1025"
+  },
+  {
+    "closedAt": "2026-07-10T05:04:18Z",
+    "headRefName": "codex/tp-dmx-mcp-runtime-002-repo-aware-start-registry",
+    "mergedAt": "2026-07-10T05:04:18Z",
+    "number": 1023,
+    "state": "MERGED",
+    "title": "feat(mcp): TP-DMX-MCP-RUNTIME-002 repo-aware start registry",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1023"
+  },
+  {
+    "closedAt": "2026-07-10T04:56:57Z",
+    "headRefName": "codex/tp-dmx-mcp-runtime-001-doctor-port-drift-gate",
+    "mergedAt": "2026-07-10T04:56:57Z",
+    "number": 1022,
+    "state": "MERGED",
+    "title": "feat(mcp): TP-DMX-MCP-RUNTIME-001 repo-aware doctor truth gate",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1022"
+  },
+  {
+    "closedAt": "2026-07-10T04:51:28Z",
+    "headRefName": "palette/signal-feed-copy-14317824548552888796",
+    "mergedAt": "2026-07-10T04:51:28Z",
+    "number": 1021,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Tactile Confirmation for Signal Copying",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1021"
+  },
+  {
+    "closedAt": "2026-07-07T09:42:57Z",
+    "headRefName": "claude/mcf-fork-decisions",
+    "mergedAt": "2026-07-07T09:42:57Z",
+    "number": 1020,
+    "state": "MERGED",
+    "title": "docs(memory): land MCF fork decisions (005 defer-A, 006 graph-A spike-gated)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1020"
+  },
+  {
+    "closedAt": "2026-07-07T09:30:36Z",
+    "headRefName": "claude/backlog-taskpackets",
+    "mergedAt": "2026-07-07T09:30:36Z",
+    "number": 1019,
+    "state": "MERGED",
+    "title": "docs(backlog): 52 Task Packets + orchestrator load-plan from thread + PR findings",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1019"
+  },
+  {
+    "closedAt": "2026-07-07T09:50:29Z",
+    "headRefName": "claude/service-audit-followup-2026-07-07",
+    "mergedAt": "2026-07-07T09:50:29Z",
+    "number": 1018,
+    "state": "MERGED",
+    "title": "Service-audit follow-up: ADHD capability ports + runtime findings (post-#1009)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1018"
+  },
+  {
+    "closedAt": "2026-07-07T10:16:02Z",
+    "headRefName": "fix/mcp-transport-port-allocation",
+    "mergedAt": "2026-07-07T10:16:02Z",
+    "number": 1017,
+    "state": "MERGED",
+    "title": "fix(mcp): fix port allocation bugs + transport docs + user guide + agent awareness",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1017"
+  },
+  {
+    "closedAt": "2026-07-07T04:09:17Z",
+    "headRefName": "dependabot/npm_and_yarn/npm_and_yarn-0ecb975dd8",
+    "mergedAt": "2026-07-07T04:09:17Z",
+    "number": 1015,
+    "state": "MERGED",
+    "title": "chore(deps): bump the npm_and_yarn group across 2 directories with 2 updates",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1015"
+  },
+  {
+    "closedAt": "2026-07-07T03:59:27Z",
+    "headRefName": "feat-mcp-stdio-protocol-upgrade",
+    "mergedAt": "2026-07-07T03:59:26Z",
+    "number": 1014,
+    "state": "MERGED",
+    "title": "feat(dope-memory): Upgrade MCP stdio adapter to official protocol",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1014"
+  },
+  {
+    "closedAt": "2026-07-07T03:59:22Z",
+    "headRefName": "fix-profile-parser-api",
+    "mergedAt": "2026-07-07T03:59:22Z",
+    "number": 1013,
+    "state": "MERGED",
+    "title": "fix(cli): Repair dopemux profile CLI parser API mismatch",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1013"
+  },
+  {
+    "closedAt": "2026-07-06T23:20:01Z",
+    "headRefName": "palette/consolidated-dashboard-ux",
+    "mergedAt": "2026-07-06T23:20:01Z",
+    "number": 1012,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Consolidated Dashboard UX (supersedes #987\u2013#994, #1010)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1012"
+  },
+  {
+    "closedAt": "2026-07-06T22:48:07Z",
+    "headRefName": "claude/memory-context-fabric",
+    "mergedAt": "2026-07-06T22:48:07Z",
+    "number": 1011,
+    "state": "MERGED",
+    "title": "docs(memory): Memory Context Fabric \u2014 design spec + authority map + build plans (TP-MCF-001..004)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1011"
+  },
+  {
+    "closedAt": "2026-07-06T22:59:31Z",
+    "headRefName": "claude/focused-mahavira-5bd29b",
+    "mergedAt": "2026-07-06T22:59:31Z",
+    "number": 1009,
+    "state": "MERGED",
+    "title": "fix(services): service-audit P0 fixes + ADHD ignition \u2014 chronicle mirror, fail-closed protection, engine default-start",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1009"
+  },
+  {
+    "closedAt": "2026-07-06T22:11:48Z",
+    "headRefName": "codex/f001-provenance-degraded-001",
+    "mergedAt": "2026-07-06T22:11:48Z",
+    "number": 1008,
+    "state": "MERGED",
+    "title": "Harden Serena F001 provenance and degraded-state output",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1008"
+  },
+  {
+    "closedAt": "2026-07-05T05:25:13Z",
+    "headRefName": "codex/f001-enhanced-mcp-register-001",
+    "mergedAt": "2026-07-05T05:25:13Z",
+    "number": 1007,
+    "state": "MERGED",
+    "title": "Expose Serena enhanced F001 detector through MCP",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1007"
+  },
+  {
+    "closedAt": "2026-07-06T22:32:34Z",
+    "headRefName": "codex/pcp-pr-steward-completeness",
+    "mergedAt": "2026-07-06T22:32:34Z",
+    "number": 1006,
+    "state": "MERGED",
+    "title": "fix(pcp): block readiness on incomplete PR steward intake",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1006"
+  },
+  {
+    "closedAt": "2026-07-06T22:41:42Z",
+    "headRefName": "codex/gpt55-mcp-architecture-investigation-20260704",
+    "mergedAt": "2026-07-06T22:41:42Z",
+    "number": 1005,
+    "state": "MERGED",
+    "title": "docs(mcp): package GPT-5.5 architecture investigation",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1005"
+  },
+  {
+    "closedAt": "2026-07-06T22:34:33Z",
+    "headRefName": "codex/dopemux-service-investigation-20260704",
+    "mergedAt": "2026-07-06T22:34:33Z",
+    "number": 1004,
+    "state": "MERGED",
+    "title": "docs(service): audit Dopemux service integration gaps",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1004"
+  },
+  {
+    "closedAt": "2026-07-06T22:25:56Z",
+    "headRefName": "claude/wizardly-franklin-1ca4ea",
+    "mergedAt": "2026-07-06T22:25:56Z",
+    "number": 1003,
+    "state": "MERGED",
+    "title": "fix(litellm): clear cryptography + vendored-wheel Scout CVEs, document perl base-image risk",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1003"
+  },
+  {
+    "closedAt": "2026-07-06T23:20:13Z",
+    "headRefName": "claude/mcp-fleet-audit-complete",
+    "mergedAt": "2026-07-06T23:20:13Z",
+    "number": 1002,
+    "state": "MERGED",
+    "title": "Complete MCP fleet roadmap gaps: ensure Codex PAL, unblock memory source events, lock quarantine, personality contract",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1002"
+  },
+  {
+    "closedAt": "2026-07-04T07:12:10Z",
+    "headRefName": "codex/mcp-fleet-dead-surface-quarantine",
+    "mergedAt": "2026-07-04T07:12:10Z",
+    "number": 1001,
+    "state": "MERGED",
+    "title": "chore(mcp): quarantine dead fleet surfaces",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1001"
+  },
+  {
+    "closedAt": "2026-07-04T05:23:39Z",
+    "headRefName": "codex/mcp-fleet-dcp-readonly-facade",
+    "mergedAt": "2026-07-04T05:23:39Z",
+    "number": 1000,
+    "state": "MERGED",
+    "title": "feat(dcp): expose read-only facade packet tools",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1000"
+  },
+  {
+    "closedAt": "2026-07-04T05:05:33Z",
+    "headRefName": "codex/mcp-fleet-server-personalities",
+    "mergedAt": "2026-07-04T05:05:32Z",
+    "number": 999,
+    "state": "MERGED",
+    "title": "feat(mcp): declare fleet server personalities",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/999"
+  },
+  {
+    "closedAt": "2026-07-04T04:44:48Z",
+    "headRefName": "codex/mcp-fleet-memory-spine",
+    "mergedAt": "2026-07-04T04:44:48Z",
+    "number": 998,
+    "state": "MERGED",
+    "title": "fix(memory): capture promotable source events",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/998"
+  },
+  {
+    "closedAt": "2026-07-04T04:24:03Z",
+    "headRefName": "codex/mcp-fleet-ensure-command",
+    "mergedAt": "2026-07-04T04:24:03Z",
+    "number": 997,
+    "state": "MERGED",
+    "title": "feat(mcp): add fleet ensure command",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/997"
+  },
+  {
+    "closedAt": "2026-07-04T04:02:47Z",
+    "headRefName": "codex/mcp-fleet-generated-outputs",
+    "mergedAt": "2026-07-04T04:02:47Z",
+    "number": 996,
+    "state": "MERGED",
+    "title": "feat(mcp): generate fleet config outputs",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/996"
+  },
+  {
+    "closedAt": "2026-07-04T03:34:25Z",
+    "headRefName": "codex/mcp-fleet-contract-gates",
+    "mergedAt": "2026-07-04T03:34:25Z",
+    "number": 995,
+    "state": "MERGED",
+    "title": "test(mcp): gate canonical fleet catalog drift",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/995"
+  },
+  {
+    "closedAt": "2026-07-04T05:43:10Z",
+    "headRefName": "claude/trusting-engelbart-d2fbfe",
+    "mergedAt": "2026-07-04T05:43:10Z",
+    "number": 993,
+    "state": "MERGED",
+    "title": "MCP fleet audit + Phase-0 safe fixes (fail-closed conport verify, chronicle capture, honest healthchecks, registry dedupe, ensure-pal)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/993"
+  },
+  {
+    "closedAt": "2026-06-27T10:44:34Z",
+    "headRefName": "claude/pcp-a1-activation-routing",
+    "mergedAt": "2026-06-27T10:44:33Z",
+    "number": 986,
+    "state": "MERGED",
+    "title": "feat(pcp): A1 activation gates + STRICT routing residual (carved from #975)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/986"
+  },
+  {
+    "closedAt": "2026-06-27T10:44:34Z",
+    "headRefName": "claude/pcp-a2-proof-family",
+    "mergedAt": "2026-06-27T10:44:34Z",
+    "number": 985,
+    "state": "MERGED",
+    "title": "feat(dcp): A2 proof-family follow-up \u2014 export seam + clean authority plane",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/985"
+  },
+  {
+    "closedAt": "2026-06-27T09:37:02Z",
+    "headRefName": "hu3mann-optimize-agent-guidance",
+    "mergedAt": "2026-06-27T09:37:02Z",
+    "number": 984,
+    "state": "MERGED",
+    "title": "Optimize Copilot and LLM agent routing baselines",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/984"
+  },
+  {
+    "closedAt": "2026-06-27T05:55:16Z",
+    "headRefName": "palette-reactive-prediction-panel-15746447405155228784",
+    "mergedAt": "2026-06-27T05:55:16Z",
+    "number": 983,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Status-Driven Reactive Prediction Panel",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/983"
+  },
+  {
+    "closedAt": "2026-06-27T09:30:35Z",
+    "headRefName": "feat/to-canon-006-readview-enhancements",
+    "mergedAt": "2026-06-27T09:30:35Z",
+    "number": 982,
+    "state": "MERGED",
+    "title": "feat(task-orchestrator): canonical-store read view \u2014 live_state banner, filters, doc",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/982"
+  },
+  {
+    "closedAt": "2026-06-26T06:04:57Z",
+    "headRefName": "fix/mcp-to-http-singleton",
+    "mergedAt": "2026-06-26T06:04:57Z",
+    "number": 981,
+    "state": "MERGED",
+    "title": "fix(mcp): route task-orchestrator through HTTP singleton",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/981"
+  },
+  {
+    "closedAt": "2026-06-27T10:32:35Z",
+    "headRefName": "palette-team-dashboard-ux-8647823832598438445",
+    "mergedAt": "2026-06-27T10:32:35Z",
+    "number": 980,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Implement Card-Level Interactive Surface for Team Dashboard",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/980"
+  },
+  {
+    "closedAt": "2026-06-27T10:44:34Z",
+    "headRefName": "palette-team-dashboard-refactor-3344074350353909579",
+    "mergedAt": "2026-06-27T10:44:34Z",
+    "number": 979,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Team Dashboard Card-Level Interactive Surface and Signal Polish",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/979"
+  },
+  {
+    "closedAt": "2026-06-24T05:48:02Z",
+    "headRefName": "claude/trusting-beaver-5aff9c",
+    "mergedAt": "2026-06-24T05:48:02Z",
+    "number": 978,
+    "state": "MERGED",
+    "title": "fix(pcp): bundle PCP schemas as package data for wheel-safe imports",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/978"
+  },
+  {
+    "closedAt": "2026-06-27T07:25:21Z",
+    "headRefName": "claude/pcp-conformance-repair-0001",
+    "mergedAt": "2026-06-27T07:25:21Z",
+    "number": 977,
+    "state": "MERGED",
+    "title": "feat(pcp): conformance repair \u2014 packaging + DCP proof-family mapping + Red Line #15 guard",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/977"
+  },
+  {
+    "closedAt": "2026-06-27T06:16:22Z",
+    "headRefName": "palette-fix-team-dashboard-tooltip-16658052174416029249",
+    "mergedAt": "2026-06-27T06:16:21Z",
+    "number": 976,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Fix invalid Tooltip and JSX in TeamDashboard",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/976"
+  },
+  {
+    "closedAt": "2026-06-23T06:57:23Z",
+    "headRefName": "claude/pcp-looseends",
+    "mergedAt": "2026-06-23T06:57:23Z",
+    "number": 973,
+    "state": "MERGED",
+    "title": "chore(pcp): arc loose-ends \u2014 Leantime DCP mapping + pluggable bridge dedup store",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/973"
+  },
+  {
+    "closedAt": "2026-06-27T10:44:34Z",
+    "headRefName": "codex/cockpit-textual-screenshot-automation-001r",
+    "mergedAt": "2026-06-27T10:44:34Z",
+    "number": 972,
+    "state": "MERGED",
+    "title": "test(cockpit): add textual screenshot automation",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/972"
+  },
+  {
+    "closedAt": "2026-06-23T08:57:28Z",
+    "headRefName": "feat/to-canon-006-readview",
+    "mergedAt": "2026-06-23T08:57:28Z",
+    "number": 971,
+    "state": "MERGED",
+    "title": "feat(task-orchestrator): TO-CANON 006 read-only canonical-store operator view",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/971"
+  },
+  {
+    "closedAt": "2026-06-23T09:02:58Z",
+    "headRefName": "feat/to-canon-tail-005-007",
+    "mergedAt": "2026-06-23T09:02:58Z",
+    "number": 970,
+    "state": "MERGED",
+    "title": "feat(task-orchestrator): TO-CANON 005 coldstart materialization + 007 cutover plan",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/970"
+  },
+  {
+    "closedAt": "2026-06-23T04:08:43Z",
+    "headRefName": "claude/pcp-p11-fastapi-bridge",
+    "mergedAt": "2026-06-23T04:08:43Z",
+    "number": 969,
+    "state": "MERGED",
+    "title": "feat(pcp): FastAPI live-write bridge \u2014 fail-closed gated adapter (Packet 11)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/969"
+  },
+  {
+    "closedAt": "2026-06-27T06:01:55Z",
+    "headRefName": "fix/openclaw-route-decision-openrouter-paid-profile-guard",
+    "mergedAt": "2026-06-27T06:01:55Z",
+    "number": 968,
+    "state": "MERGED",
+    "title": "fix(contracts): enforce named openrouter_profile on openrouter_paid routes (PR Steward Item 1)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/968"
+  },
+  {
+    "closedAt": "2026-06-27T10:44:34Z",
+    "headRefName": "codex/openclaw-dcp-benchmark-harness-0002",
+    "mergedAt": "2026-06-27T10:44:34Z",
+    "number": 967,
+    "state": "MERGED",
+    "title": "feat(dcp): emit OpenClaw benchmark result contract",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/967"
+  },
+  {
+    "closedAt": "2026-06-27T10:44:34Z",
+    "headRefName": "palette/prediction-panel-ux-15638958489781780458",
+    "mergedAt": "2026-06-27T10:44:34Z",
+    "number": 966,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Reactive Prediction Panel & Status-Driven UX",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/966"
+  },
+  {
+    "closedAt": "2026-06-22T22:28:39Z",
+    "headRefName": "claude/pcp-p10-live-write-gates",
+    "mergedAt": "2026-06-22T22:28:39Z",
+    "number": 965,
+    "state": "MERGED",
+    "title": "feat(pcp): LIVE_WRITE_READY contract \u2014 fail-closed live-write gate (Packet 10)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/965"
+  },
+  {
+    "closedAt": "2026-06-22T22:06:34Z",
+    "headRefName": "claude/pcp-p9-to-visibility",
+    "mergedAt": "2026-06-22T22:06:34Z",
+    "number": 964,
+    "state": "MERGED",
+    "title": "feat(pcp): Task-Orchestrator projection-only visibility (Packet 9)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/964"
+  },
+  {
+    "closedAt": "2026-06-22T21:56:44Z",
+    "headRefName": "claude/pcp-p8-pr-steward-proof-readiness",
+    "mergedAt": "2026-06-22T21:56:44Z",
+    "number": 963,
+    "state": "MERGED",
+    "title": "feat(pcp): generic PR Steward proof-readiness intake (Packet 8)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/963"
+  },
+  {
+    "closedAt": "2026-06-22T21:28:42Z",
+    "headRefName": "claude/pcp-p7-dnh-extension-mapping",
+    "mergedAt": "2026-06-22T21:28:42Z",
+    "number": 962,
+    "state": "MERGED",
+    "title": "feat(dnh): dNh CRM extension mapping (artifact-only) (Packet 7)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/962"
+  },
+  {
+    "closedAt": "2026-06-22T21:56:12Z",
+    "headRefName": "codex/to-canon-intake-000",
+    "mergedAt": "2026-06-22T21:56:12Z",
+    "number": 961,
+    "state": "MERGED",
+    "title": "feat(task-orchestrator): add canonical reconciliation dry run",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/961"
+  },
+  {
+    "closedAt": "2026-06-23T03:44:07Z",
+    "headRefName": "codex/conport-optimal-205-search-delegation-docs",
+    "mergedAt": "2026-06-23T03:44:07Z",
+    "number": 960,
+    "state": "MERGED",
+    "title": "docs(conport): search delegation boundary and search_type validation",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/960"
+  },
+  {
+    "closedAt": "2026-06-23T03:37:08Z",
+    "headRefName": "codex/conport-optimal-105-mcp-surface-search",
+    "mergedAt": "2026-06-23T03:37:08Z",
+    "number": 959,
+    "state": "MERGED",
+    "title": "feat(conport): expose search content MCP tool",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/959"
+  },
+  {
+    "closedAt": "2026-06-27T10:44:34Z",
+    "headRefName": "codex/conport-optimal-104-mcp-surface-custom-data",
+    "mergedAt": "2026-06-27T10:44:34Z",
+    "number": 958,
+    "state": "MERGED",
+    "title": "feat(conport): expose custom-data + search MCP tools (packets 104+105)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/958"
+  },
+  {
+    "closedAt": "2026-06-27T10:44:34Z",
+    "headRefName": "codex/conport-optimal-103-retire-dead-codebases",
+    "mergedAt": "2026-06-27T10:44:34Z",
+    "number": 957,
+    "state": "MERGED",
+    "title": "chore(conport): quarantine dead codebases",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/957"
+  },
+  {
+    "closedAt": "2026-06-23T03:32:13Z",
+    "headRefName": "codex/conport-optimal-migration-gate-v2",
+    "mergedAt": "2026-06-23T03:32:13Z",
+    "number": 956,
+    "state": "MERGED",
+    "title": "docs(conport): record live migration gate verify",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/956"
+  },
+  {
+    "closedAt": "2026-06-22T20:02:03Z",
+    "headRefName": "codex/cockpit-pixel-parity-proof-001",
+    "mergedAt": "2026-06-22T20:02:03Z",
+    "number": 955,
+    "state": "MERGED",
+    "title": "test(cockpit): add pixel parity proof",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/955"
+  },
+  {
+    "closedAt": "2026-06-22T21:01:45Z",
+    "headRefName": "codex/tp-dmx-routing-contract-canonicalization-0001",
+    "mergedAt": "2026-06-22T21:01:45Z",
+    "number": 954,
+    "state": "MERGED",
+    "title": "docs(dcp): canonicalize OpenClaw routing contracts",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/954"
+  },
+  {
+    "closedAt": "2026-06-22T21:02:12Z",
+    "headRefName": "codex/tp-dmx-dcp-routing-extension-mapping-0001",
+    "mergedAt": "2026-06-22T21:02:12Z",
+    "number": 953,
+    "state": "MERGED",
+    "title": "feat(dcp): routing/OpenClaw/OpenRouter extension contracts (contracts-only)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/953"
+  },
+  {
+    "closedAt": "2026-06-22T20:41:13Z",
+    "headRefName": "fix/dashboard-textual-theme",
+    "mergedAt": "2026-06-22T20:41:13Z",
+    "number": 952,
+    "state": "MERGED",
+    "title": "fix(dashboard): register dopemux theme on Textual app console",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/952"
+  },
+  {
+    "closedAt": "2026-06-22T00:20:41Z",
+    "headRefName": "fix/cli-doctor-status-runtime-errors",
+    "mergedAt": "2026-06-22T00:20:41Z",
+    "number": 951,
+    "state": "MERGED",
+    "title": "fix(cli): repair `dopemux doctor` and `dopemux status` runtime crashes",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/951"
+  },
+  {
+    "closedAt": "2026-06-22T00:21:01Z",
+    "headRefName": "claude/pcp-p5-dcp-extension-mapping",
+    "mergedAt": "2026-06-22T00:21:01Z",
+    "number": 950,
+    "state": "MERGED",
+    "title": "feat(pcp): DCP extension mapping instances (Packet 5)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/950"
+  },
+  {
+    "closedAt": "2026-06-27T10:14:09Z",
+    "headRefName": "palette/predictive-urgency-feedback-1155524395246716844",
+    "mergedAt": "2026-06-27T10:14:09Z",
+    "number": 949,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Predictive Urgency Feedback for AI Forecasts",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/949"
+  },
+  {
+    "closedAt": "2026-06-22T19:08:31Z",
+    "headRefName": "codex/cockpit-electric-refresh-runtime-001",
+    "mergedAt": "2026-06-22T19:08:31Z",
+    "number": 948,
+    "state": "MERGED",
+    "title": "feat(cockpit): render electric refresh modes",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/948"
+  },
+  {
+    "closedAt": "2026-06-22T20:49:19Z",
+    "headRefName": "feat/memory-trinity-law",
+    "mergedAt": "2026-06-22T20:49:19Z",
+    "number": 947,
+    "state": "MERGED",
+    "title": "feat(memory): Memory Trinity law + dope-context routing + command remediation",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/947"
+  },
+  {
+    "closedAt": "2026-06-20T20:04:14Z",
+    "headRefName": "claude/pcp-p45-negative-traps",
+    "mergedAt": "2026-06-20T20:04:14Z",
+    "number": 946,
+    "state": "MERGED",
+    "title": "feat(pcp): Packet 4.5 \u2014 executed negative-trap validation",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/946"
+  },
+  {
+    "closedAt": "2026-06-20T20:03:47Z",
+    "headRefName": "claude/pcp-p4-generic-exporter",
+    "mergedAt": "2026-06-20T20:03:47Z",
+    "number": 945,
+    "state": "MERGED",
+    "title": "feat(pcp): Packet 4 \u2014 generic project-control exporter",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/945"
+  },
+  {
+    "closedAt": "2026-06-20T20:02:53Z",
+    "headRefName": "claude/pcp-p3-dedopemux-boundary",
+    "mergedAt": "2026-06-20T20:02:53Z",
+    "number": 944,
+    "state": "MERGED",
+    "title": "feat(pcp): Packet 3 \u2014 de-Dopemux the PCP core boundary",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/944"
+  },
+  {
+    "closedAt": "2026-06-27T06:01:38Z",
+    "headRefName": "dependabot/uv/uv-181a125b02",
+    "mergedAt": "2026-06-27T06:01:38Z",
+    "number": 943,
+    "state": "MERGED",
+    "title": "chore(deps): bump the uv group across 1 directory with 3 updates",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/943"
+  },
+  {
+    "closedAt": "2026-06-20T04:12:13Z",
+    "headRefName": "fix/mcp-build-clean-room",
+    "mergedAt": "2026-06-20T04:12:13Z",
+    "number": 942,
+    "state": "MERGED",
+    "title": "fix(mcp): repair dope-context and desktop-commander Docker builds (clean scope)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/942"
+  },
+  {
+    "closedAt": "2026-06-20T18:50:39Z",
+    "headRefName": "claude/pcp-dcp-routing-artifacts",
+    "mergedAt": "2026-06-20T18:50:39Z",
+    "number": 941,
+    "state": "MERGED",
+    "title": "docs(pcp): PCP/DCP/Routing series planning artifacts",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/941"
+  },
+  {
+    "closedAt": "2026-06-20T03:05:22Z",
+    "headRefName": "claude/pcp-ext-contract-authority-map-0001",
+    "mergedAt": "2026-06-20T03:05:22Z",
+    "number": 940,
+    "state": "MERGED",
+    "title": "feat(pcp): Packet 2 \u2014 extension contract + authority map co-keystones",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/940"
+  },
+  {
+    "closedAt": "2026-06-22T20:54:35Z",
+    "headRefName": "fix/mcp-server-build-failures",
+    "mergedAt": "2026-06-22T20:54:35Z",
+    "number": 939,
+    "state": "MERGED",
+    "title": "feat(skills): install 20/20 repo skill templates (.claude/skills + .github/skills)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/939"
+  },
+  {
+    "closedAt": "2026-06-20T03:59:18Z",
+    "headRefName": "codex/cockpit-rendered-text-validator",
+    "mergedAt": "2026-06-20T03:59:18Z",
+    "number": 938,
+    "state": "MERGED",
+    "title": "feat(cockpit): enforce rendered text closers",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/938"
+  },
+  {
+    "closedAt": "2026-06-20T03:43:52Z",
+    "headRefName": "fix/pal-stdio-clink-audit-configs",
+    "mergedAt": "2026-06-20T03:43:52Z",
+    "number": 937,
+    "state": "MERGED",
+    "title": "fix(pal-stdio): relocate unsupported audit clink configs",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/937"
+  },
+  {
+    "closedAt": "2026-06-20T03:37:37Z",
+    "headRefName": "fix/conport-migration-gate-restore-harden",
+    "mergedAt": "2026-06-20T03:37:37Z",
+    "number": 936,
+    "state": "MERGED",
+    "title": "fix(conport): restore migration foundation gate (clobbered by #932) + ledger hardening",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/936"
+  },
+  {
+    "closedAt": "2026-06-19T20:45:25Z",
+    "headRefName": "fix/task-orchestrator-startup-reliability",
+    "mergedAt": "2026-06-19T20:45:25Z",
+    "number": 935,
+    "state": "MERGED",
+    "title": "fix(orchestrator): task-orchestrator MCP startup reliability (Codex abort + :7890 HTTP)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/935"
+  },
+  {
+    "closedAt": "2026-06-19T21:05:02Z",
+    "headRefName": "dependabot/npm_and_yarn/ui-dashboard/npm_and_yarn-3213b4e331",
+    "mergedAt": "2026-06-19T21:05:02Z",
+    "number": 934,
+    "state": "MERGED",
+    "title": "chore(deps): bump undici from 7.24.3 to 7.28.0 in /ui-dashboard in the npm_and_yarn group across 1 directory",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/934"
+  },
+  {
+    "closedAt": "2026-06-27T10:44:34Z",
+    "headRefName": "feat/rte-cost-profile-alignment",
+    "mergedAt": "2026-06-27T10:44:34Z",
+    "number": 933,
+    "state": "MERGED",
+    "title": "feat(rte-cost): align cost profile controls and proof visibility",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/933"
+  },
+  {
+    "closedAt": "2026-06-19T20:12:54Z",
+    "headRefName": "palette-team-dashboard-ux-enhancement-12199229975993369643",
+    "mergedAt": "2026-06-19T20:12:54Z",
+    "number": 932,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Team Dashboard UX & Accessibility Enhancement",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/932"
+  },
+  {
+    "closedAt": "2026-06-20T04:04:46Z",
+    "headRefName": "codex/openclaw-dcp-routing-contracts-0005r",
+    "mergedAt": "2026-06-20T04:04:46Z",
+    "number": 931,
+    "state": "MERGED",
+    "title": "[codex] add OpenClaw DCP routing contracts",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/931"
+  },
+  {
+    "closedAt": "2026-06-19T19:15:40Z",
+    "headRefName": "dependabot/npm_and_yarn/npm_and_yarn-7552a50f69",
+    "mergedAt": "2026-06-19T19:15:40Z",
+    "number": 930,
+    "state": "MERGED",
+    "title": "chore(deps): bump the npm_and_yarn group across 2 directories with 2 updates",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/930"
+  },
+  {
+    "closedAt": "2026-06-18T06:43:07Z",
+    "headRefName": "palette/adaptive-reconnection-bridge-13119054254643865927",
+    "mergedAt": "2026-06-18T06:43:07Z",
+    "number": 929,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Adaptive Reconnection Bridge for Manual Recovery",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/929"
+  },
+  {
+    "closedAt": "2026-06-17T22:22:23Z",
+    "headRefName": "chore/dcp-ruff-unused-imports",
+    "mergedAt": "2026-06-17T22:22:23Z",
+    "number": 927,
+    "state": "MERGED",
+    "title": "chore(dcp): remove unused imports flagged by ruff",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/927"
+  },
+  {
+    "closedAt": "2026-06-18T06:43:22Z",
+    "headRefName": "codex/openclaw-dcp-routing-contracts-0001",
+    "mergedAt": "2026-06-18T06:43:21Z",
+    "number": 926,
+    "state": "MERGED",
+    "title": "Add OpenClaw DCP routing contracts",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/926"
+  },
+  {
+    "closedAt": "2026-06-20T02:59:51Z",
+    "headRefName": "codex/tp-dmx-pcp-architecture-validation-0001",
+    "mergedAt": "2026-06-20T02:59:51Z",
+    "number": 925,
+    "state": "MERGED",
+    "title": "docs(pcp): validate project control plane architecture",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/925"
+  },
+  {
+    "closedAt": "2026-06-18T06:43:34Z",
+    "headRefName": "codex/tp-dmx-rtecost-001",
+    "mergedAt": "2026-06-18T06:43:34Z",
+    "number": 924,
+    "state": "MERGED",
+    "title": "feat(rte): align cost profile controls",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/924"
+  },
+  {
+    "closedAt": "2026-06-17T05:18:47Z",
+    "headRefName": "feat/dcp-lane-engine-postmerge-fix",
+    "mergedAt": "2026-06-17T05:18:47Z",
+    "number": 923,
+    "state": "MERGED",
+    "title": "fix(dcp): fail-closed lane engine on forged unknowns + hard-forbidden passive actions (PR #906 threads)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/923"
+  },
+  {
+    "closedAt": "2026-06-18T06:46:40Z",
+    "headRefName": "codex/cockpit-fonts-104-case-collisions",
+    "mergedAt": "2026-06-18T06:46:40Z",
+    "number": 922,
+    "state": "MERGED",
+    "title": "fix(cockpit-design-system): resolve 6 case-collision pairs (DMX-COCKPIT-FONTS-104)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/922"
+  },
+  {
+    "closedAt": "2026-06-17T05:46:50Z",
+    "headRefName": "codex/dcp-prompt5-extract-reconcile",
+    "mergedAt": "2026-06-17T05:46:50Z",
+    "number": 920,
+    "state": "MERGED",
+    "title": "docs(dcp): extract Prompt 5 runway reconciliation",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/920"
+  },
+  {
+    "closedAt": "2026-06-18T06:46:35Z",
+    "headRefName": "codex/cockpit-fonts-103-css-matrix",
+    "mergedAt": "2026-06-18T06:46:35Z",
+    "number": 918,
+    "state": "MERGED",
+    "title": "DMX-COCKPIT-FONTS-103: full @font-face matrix + family-token reconcile",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/918"
+  },
+  {
+    "closedAt": "2026-06-19T19:58:00Z",
+    "headRefName": "codex/conport-optimal-100-resolve",
+    "mergedAt": "2026-06-19T19:58:00Z",
+    "number": 917,
+    "state": "MERGED",
+    "title": "feat(conport): add migration foundation gate",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/917"
+  },
+  {
+    "closedAt": "2026-06-17T01:42:05Z",
+    "headRefName": "dcp/model-routing-0006-provenance-hardening",
+    "mergedAt": "2026-06-17T01:42:05Z",
+    "number": 915,
+    "state": "MERGED",
+    "title": "feat(dcp): implement 0006 classifier provenance hardening",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/915"
+  },
+  {
+    "closedAt": "2026-06-18T06:46:30Z",
+    "headRefName": "codex/cockpit-fonts-102-patch-flags",
+    "mergedAt": "2026-06-18T06:46:30Z",
+    "number": 914,
+    "state": "MERGED",
+    "title": "DMX-COCKPIT-FONTS-102: Editor proportional Nerd glyphs + stable family name",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/914"
+  },
+  {
+    "closedAt": "2026-06-18T06:44:32Z",
+    "headRefName": "dependabot/uv/uv-2fb20c89f4",
+    "mergedAt": "2026-06-18T06:44:31Z",
+    "number": 913,
+    "state": "MERGED",
+    "title": "chore(deps): bump the uv group across 8 directories with 5 updates",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/913"
+  },
+  {
+    "closedAt": "2026-06-18T06:46:25Z",
+    "headRefName": "codex/cockpit-fonts-101-rename-plan-keys",
+    "mergedAt": "2026-06-18T06:46:25Z",
+    "number": 912,
+    "state": "MERGED",
+    "title": "DMX-COCKPIT-FONTS-101: rename plan keys + harden build/patch scripts",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/912"
+  },
+  {
+    "closedAt": "2026-06-18T06:44:37Z",
+    "headRefName": "claude/modest-cartwright-340c04",
+    "mergedAt": "2026-06-18T06:44:37Z",
+    "number": 911,
+    "state": "MERGED",
+    "title": "style(start): DMX-START Wave 3 UI theming (3C-4/3C-5) \u2014 routing_cli, splash, brand_lint",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/911"
+  },
+  {
+    "closedAt": "2026-06-17T00:39:40Z",
+    "headRefName": "feat/dcp-0007-input-provenance-contract",
+    "mergedAt": "2026-06-17T00:39:40Z",
+    "number": 909,
+    "state": "MERGED",
+    "title": "docs(dcp): 0007 trusted input-provenance contract (blocking co-requisite)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/909"
+  },
+  {
+    "closedAt": "2026-06-16T23:37:32Z",
+    "headRefName": "feat/dcp-0006-classifier-provenance-hardening",
+    "mergedAt": "2026-06-16T23:37:32Z",
+    "number": 908,
+    "state": "MERGED",
+    "title": "docs(dcp): 0006 classifier provenance-hardening packet (blocking prereq)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/908"
+  },
+  {
+    "closedAt": "2026-06-17T01:30:37Z",
+    "headRefName": "feat/dcp-lane-engine-0005",
+    "mergedAt": "2026-06-17T01:30:37Z",
+    "number": 906,
+    "state": "MERGED",
+    "title": "feat(dcp): lane engine MVP \u2014 decide_lane() pure consumer (0005)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/906"
+  },
+  {
+    "closedAt": "2026-06-16T10:07:03Z",
+    "headRefName": "feat/dcp-pre-p6-precedence-fix",
+    "mergedAt": "2026-06-16T10:07:03Z",
+    "number": 904,
+    "state": "MERGED",
+    "title": "fix(dcp): order hard-BLOCKED checks before UNKNOWN-authority guard (PRE-P6-0002)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/904"
+  },
+  {
+    "closedAt": "2026-06-16T09:41:27Z",
+    "headRefName": "feat/dcp-routing-0002R-reconciliation",
+    "mergedAt": "2026-06-16T09:41:27Z",
+    "number": 902,
+    "state": "MERGED",
+    "title": "test(dcp): 0002R reconciliation \u2014 lock 5 routing-classifier invariants",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/902"
+  },
+  {
+    "closedAt": "2026-06-16T08:02:06Z",
+    "headRefName": "dcp/model-routing-0004-cli",
+    "mergedAt": "2026-06-16T08:02:06Z",
+    "number": 901,
+    "state": "MERGED",
+    "title": "feat(dcp): read-only dopemux dcp classify + recommend-backend CLI (0004)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/901"
+  },
+  {
+    "closedAt": "2026-06-16T06:41:47Z",
+    "headRefName": "codex/dmx-codex-subagents-config",
+    "mergedAt": "2026-06-16T06:41:47Z",
+    "number": 900,
+    "state": "MERGED",
+    "title": "chore(codex): add repo-local subagent config",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/900"
+  },
+  {
+    "closedAt": "2026-06-19T19:41:00Z",
+    "headRefName": "fix/conport-schema-grants-101-proof",
+    "mergedAt": "2026-06-19T19:41:00Z",
+    "number": 899,
+    "state": "MERGED",
+    "title": "fix(conport): grant schema to dopemux_age + TP-101 proof",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/899"
+  },
+  {
+    "closedAt": "2026-06-16T05:14:58Z",
+    "headRefName": "docs/pal-mcp-runbook-main",
+    "mergedAt": "2026-06-16T05:14:58Z",
+    "number": 898,
+    "state": "MERGED",
+    "title": "docs(ops): PAL MCP Codex/Claude stdio runbook",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/898"
+  },
+  {
+    "closedAt": "2026-06-16T05:13:57Z",
+    "headRefName": "docs/pal-mcp-codex-claude-stdio",
+    "mergedAt": "2026-06-16T05:13:57Z",
+    "number": 897,
+    "state": "MERGED",
+    "title": "docs(ops): PAL MCP Codex/Claude stdio runbook",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/897"
+  },
+  {
+    "closedAt": "2026-06-18T06:44:43Z",
+    "headRefName": "codex/cockpit-command-palette-reconcile-001",
+    "mergedAt": "2026-06-18T06:44:43Z",
+    "number": 896,
+    "state": "MERGED",
+    "title": "proof(cockpit): reconcile command palette proof shape",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/896"
+  },
+  {
+    "closedAt": "2026-06-16T06:02:48Z",
+    "headRefName": "dcp/model-routing-0003-backend-policy-map",
+    "mergedAt": "2026-06-16T06:02:48Z",
+    "number": 895,
+    "state": "MERGED",
+    "title": "feat(dcp): add backend policy recommendations",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/895"
+  },
+  {
+    "closedAt": "2026-06-16T08:06:16Z",
+    "headRefName": "fix/conport-coldstart-grant",
+    "mergedAt": "2026-06-16T08:06:16Z",
+    "number": 894,
+    "state": "MERGED",
+    "title": "fix(conport): cold-start grant and unified query 500s",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/894"
+  },
+  {
+    "closedAt": "2026-06-16T03:41:09Z",
+    "headRefName": "feat/conport-optimal-series",
+    "mergedAt": "2026-06-16T03:41:09Z",
+    "number": 889,
+    "state": "MERGED",
+    "title": "feat(conport): author + load DMX-CONPORT-OPTIMAL 18-TP series",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/889"
+  },
+  {
+    "closedAt": "2026-06-16T16:39:52Z",
+    "headRefName": "codex/tp-dmx-coldstart-orch-http-cutover-109",
+    "mergedAt": "2026-06-16T16:39:52Z",
+    "number": 888,
+    "state": "MERGED",
+    "title": "feat(coldstart): task-orchestrator HTTP-singleton MCP cutover + rollback docs",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/888"
+  },
+  {
+    "closedAt": "2026-06-16T16:24:10Z",
+    "headRefName": "codex/tp-dmx-coldstart-salvage-coldstart-lib-101",
+    "mergedAt": "2026-06-16T16:24:10Z",
+    "number": 887,
+    "state": "MERGED",
+    "title": "feat(coldstart): salvage install/update logic into coldstart package",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/887"
+  },
+  {
+    "closedAt": "2026-06-16T11:06:36Z",
+    "headRefName": "codex/tp-dmx-coldstart-l0-dep-audit-100",
+    "mergedAt": "2026-06-16T11:06:36Z",
+    "number": 886,
+    "state": "MERGED",
+    "title": "feat(coldstart): L0 dependency audit manifest",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/886"
+  },
+  {
+    "closedAt": "2026-06-18T06:46:11Z",
+    "headRefName": "claude/dmx-dcp-tooling-101",
+    "mergedAt": "2026-06-18T06:46:11Z",
+    "number": 885,
+    "state": "MERGED",
+    "title": "feat(dcp): DMX-DCP-TOOLING 101+102 foundation bundle",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/885"
+  },
+  {
+    "closedAt": "2026-06-14T09:51:27Z",
+    "headRefName": "dcp/model-routing-0002-classifier",
+    "mergedAt": "2026-06-14T09:51:27Z",
+    "number": 884,
+    "state": "MERGED",
+    "title": "feat(dcp): pure routing classification engine \u2014 DMX-DCP-MODEL-ROUTING-MVP-0002",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/884"
+  },
+  {
+    "closedAt": "2026-06-13T23:29:13Z",
+    "headRefName": "ci/rte-full-parallel-speedup",
+    "mergedAt": "2026-06-13T23:29:13Z",
+    "number": 882,
+    "state": "MERGED",
+    "title": "ci: parallelize extractor full gate",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/882"
+  },
+  {
+    "closedAt": "2026-06-13T23:12:21Z",
+    "headRefName": "ci/fix-model-routing-consistency-pytest-asyncio",
+    "mergedAt": "2026-06-13T23:12:21Z",
+    "number": 881,
+    "state": "MERGED",
+    "title": "ci(routing-consistency): add pytest-asyncio to routing-consistency job install",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/881"
+  },
+  {
+    "closedAt": "2026-06-13T23:23:01Z",
+    "headRefName": "dcp/model-routing-0001r-routing-domain-model",
+    "mergedAt": "2026-06-13T23:23:01Z",
+    "number": 880,
+    "state": "MERGED",
+    "title": "feat(dcp): minimal routing domain model \u2014 DMX-DCP-MODEL-ROUTING-MVP-0001R",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/880"
+  },
+  {
+    "closedAt": "2026-06-14T01:09:52Z",
+    "headRefName": "claude/priceless-wilbur-70c2f8",
+    "mergedAt": "2026-06-14T01:09:52Z",
+    "number": 879,
+    "state": "MERGED",
+    "title": "[codex] Reproducible Dopemux cockpit font build and Nerd patching",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/879"
+  },
+  {
+    "closedAt": "2026-06-18T06:45:03Z",
+    "headRefName": "dependabot/npm_and_yarn/npm_and_yarn-5b98c7b5f5",
+    "mergedAt": "2026-06-18T06:45:03Z",
+    "number": 877,
+    "state": "MERGED",
+    "title": "chore(deps): bump the npm_and_yarn group across 2 directories with 1 update",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/877"
+  },
+  {
+    "closedAt": "2026-06-18T06:44:19Z",
+    "headRefName": "palette/task-sequencer-adhd-ux-5627706778400450624",
+    "mergedAt": "2026-06-18T06:44:19Z",
+    "number": 876,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: ADHD-focused Temporal Grounding and Ritual Resilience",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/876"
+  },
+  {
+    "closedAt": "2026-06-19T20:35:27Z",
+    "headRefName": "claude/great-hypatia-31d7c6",
+    "mergedAt": "2026-06-19T20:35:27Z",
+    "number": 874,
+    "state": "MERGED",
+    "title": "feat(claude): inject role persona into .claude config on `start --role`",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/874"
+  },
+  {
+    "closedAt": "2026-06-18T06:46:19Z",
+    "headRefName": "codex/gpt55-recon-chain",
+    "mergedAt": "2026-06-18T06:46:18Z",
+    "number": 873,
+    "state": "MERGED",
+    "title": "[codex] add gpt55 evidence intake bundle",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/873"
+  },
+  {
+    "closedAt": "2026-06-12T05:44:06Z",
+    "headRefName": "palette-team-dashboard-ux-enhancement-17017305802568199547",
+    "mergedAt": "2026-06-12T05:44:06Z",
+    "number": 872,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Enhance TeamDashboard with tactile feedback and icons",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/872"
+  },
+  {
+    "closedAt": "2026-06-13T08:54:17Z",
+    "headRefName": "feat/dx-overhaul",
+    "mergedAt": "2026-06-13T08:54:17Z",
+    "number": 871,
+    "state": "MERGED",
+    "title": "docs(dx-overhaul): Phase 1+2 \u2014 systems research, workflow maps, DR-DCP-015 intake",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/871"
+  },
+  {
+    "closedAt": "2026-06-12T12:55:32Z",
+    "headRefName": "feat/dcp-mcp-ro-0007-proofs-docs",
+    "mergedAt": "2026-06-12T12:55:32Z",
+    "number": 870,
+    "state": "MERGED",
+    "title": "feat(dcp): TP-DCP-MCP-RO-0007 proof bundle and tunnel validation docs",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/870"
+  },
+  {
+    "closedAt": "2026-06-12T12:38:01Z",
+    "headRefName": "feat/dcp-predecessor-packets",
+    "mergedAt": "2026-06-12T12:38:01Z",
+    "number": 869,
+    "state": "MERGED",
+    "title": "feat(dcp): DMX-DCP-MODEL-ROUTING-MVP predecessor scouting packets 0000\u20130000I",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/869"
+  },
+  {
+    "closedAt": "2026-06-12T12:20:45Z",
+    "headRefName": "feat/proof-artifacts-misc",
+    "mergedAt": "2026-06-12T12:20:45Z",
+    "number": 868,
+    "state": "MERGED",
+    "title": "chore(proof): add TP-DMX-EVIDENCE-GATE-VERIFY-001 and TP-OPS-MAC-SCRUBBER-001 artifacts",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/868"
+  },
+  {
+    "closedAt": "2026-06-12T05:33:19Z",
+    "headRefName": "feat/opencode-pal-integration",
+    "mergedAt": "2026-06-12T05:33:19Z",
+    "number": 867,
+    "state": "MERGED",
+    "title": "feat(opencode): wire PAL MCP into OpenCode with agents, guide, and hygiene updates",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/867"
+  },
+  {
+    "closedAt": "2026-06-12T04:44:56Z",
+    "headRefName": "fix/docker-copy-security",
+    "mergedAt": "2026-06-12T04:44:56Z",
+    "number": 866,
+    "state": "MERGED",
+    "title": "fix(docker): broaden Dockerfile COPY paths and upgrade litellm for CVEs",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/866"
+  },
+  {
+    "closedAt": "2026-06-12T05:09:46Z",
+    "headRefName": "fix/mcp-server-configs",
+    "mergedAt": "2026-06-12T05:09:46Z",
+    "number": 865,
+    "state": "MERGED",
+    "title": "fix(mcp): repair server configs and add pal-stdio service",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/865"
+  },
+  {
+    "closedAt": "2026-06-12T05:54:13Z",
+    "headRefName": "fix/cli-orchestrator-startup",
+    "mergedAt": "2026-06-12T05:54:13Z",
+    "number": 864,
+    "state": "MERGED",
+    "title": "fix(cli): resolve wizard-less orchestrator startup hangs and configurator crash",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/864"
+  },
+  {
+    "closedAt": "2026-06-13T08:53:34Z",
+    "headRefName": "dcp/model-routing-0001",
+    "mergedAt": "2026-06-13T08:53:34Z",
+    "number": 862,
+    "state": "MERGED",
+    "title": "DMX-DCP-MODEL-ROUTING-MVP-0001 domain model + dual independent audit (clean carve from #854)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/862"
+  },
+  {
+    "closedAt": "2026-06-12T01:03:30Z",
+    "headRefName": "palette-ui-enhancements-15066598365146037969",
+    "mergedAt": "2026-06-12T01:03:30Z",
+    "number": 861,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Grounded Iconography and Interactive Feedback",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/861"
+  },
+  {
+    "closedAt": "2026-06-10T19:58:21Z",
+    "headRefName": "claude/wma-fail-closed-store",
+    "mergedAt": "2026-06-10T19:58:21Z",
+    "number": 860,
+    "state": "MERGED",
+    "title": "fix(wma): fail closed on work_log_entries constraint violations",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/860"
+  },
+  {
+    "closedAt": "2026-06-10T17:29:12Z",
+    "headRefName": "dcp/chatgpt-mcp-ro-0008-hardening-cross-project-isolatio",
+    "mergedAt": "2026-06-10T17:29:12Z",
+    "number": 859,
+    "state": "MERGED",
+    "title": "Harden DCP readonly facade for cross-project isolation and PR readiness",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/859"
+  },
+  {
+    "closedAt": "2026-06-12T13:17:16Z",
+    "headRefName": "claude/dcp-mcp-skills-hooks-2026-06-10",
+    "mergedAt": "2026-06-12T13:17:16Z",
+    "number": 858,
+    "state": "MERGED",
+    "title": "feat(dcp/mcp): 4 hooks + 5 skills for DCP read-only facade and MCP server workflows",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/858"
+  },
+  {
+    "closedAt": "2026-06-12T13:08:09Z",
+    "headRefName": "claude/gracious-snyder-c3e244",
+    "mergedAt": "2026-06-12T13:08:09Z",
+    "number": 857,
+    "state": "MERGED",
+    "title": "feat(dope-memory): serve real MCP streamable-HTTP endpoint at /mcp",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/857"
+  },
+  {
+    "closedAt": "2026-06-12T13:25:48Z",
+    "headRefName": "chore/proof-archives-and-audit-artifacts",
+    "mergedAt": "2026-06-12T13:25:48Z",
+    "number": 855,
+    "state": "MERGED",
+    "title": "chore(proof): archive audit artifacts, proof bundles, and claudedocs",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/855"
+  },
+  {
+    "closedAt": "2026-06-10T09:15:47Z",
+    "headRefName": "dcp/chatgpt-mcp-ro-0007-secure-mcp-tunnel-integration-do",
+    "mergedAt": "2026-06-10T09:15:47Z",
+    "number": 853,
+    "state": "MERGED",
+    "title": "Secure MCP Tunnel integration docs for readonly facade",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/853"
+  },
+  {
+    "closedAt": "2026-06-10T16:53:06Z",
+    "headRefName": "fix/mcp-config-pal-stdio-serena",
+    "mergedAt": "2026-06-10T16:53:06Z",
+    "number": 852,
+    "state": "MERGED",
+    "title": "fix(mcp): repair MCP server configs (conport SSE, pal-stdio, serena image)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/852"
+  },
+  {
+    "closedAt": "2026-06-10T06:49:01Z",
+    "headRefName": "dcp/model-routing-0001",
+    "mergedAt": "2026-06-10T06:49:01Z",
+    "number": 851,
+    "state": "MERGED",
+    "title": "DMX-DCP-MODEL-ROUTING-MVP-0001 domain model + dual independent audit",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/851"
+  },
+  {
+    "closedAt": "2026-06-10T06:49:09Z",
+    "headRefName": "palette-signal-feed-liveness-1995612011321728749",
+    "mergedAt": "2026-06-10T06:49:09Z",
+    "number": 850,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Persistent Liveness and Temporal Grounding for Signal Feed",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/850"
+  },
+  {
+    "closedAt": "2026-06-09T18:06:53Z",
+    "headRefName": "palette/task-copy-tactile-feedback-7975050557094465073",
+    "mergedAt": "2026-06-09T18:06:53Z",
+    "number": 849,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Tactile Confirmation for Task Copying",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/849"
+  },
+  {
+    "closedAt": "2026-06-09T22:48:49Z",
+    "headRefName": "ci/tp-dmx-dcp-ci-gate-001",
+    "mergedAt": "2026-06-09T22:48:49Z",
+    "number": 848,
+    "state": "MERGED",
+    "title": "feat(ci): wire tests/dcp/ into CI as required gate (TP-DMX-DCP-CI-GATE-001)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/848"
+  },
+  {
+    "closedAt": "2026-06-09T06:37:32Z",
+    "headRefName": "claude/cool-antonelli-11b730",
+    "mergedAt": "2026-06-09T06:37:32Z",
+    "number": 847,
+    "state": "MERGED",
+    "title": "Add dry-run PR audit router skeleton (TP-DMX-PR-AUDIT-ROUTER-001)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/847"
+  },
+  {
+    "closedAt": "2026-06-08T04:40:42Z",
+    "headRefName": "palette/enhance-prediction-panel-601480438205722957",
+    "mergedAt": "2026-06-08T04:40:42Z",
+    "number": 846,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Enhance PredictionPanel with Card-Level Interactive Surface",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/846"
+  },
+  {
+    "closedAt": "2026-06-09T22:54:21Z",
+    "headRefName": "claude/pensive-easley-43c35c",
+    "mergedAt": "2026-06-09T22:54:21Z",
+    "number": 845,
+    "state": "MERGED",
+    "title": "docs(claude-md): full CLAUDE.md audit, prune, consolidation + accountability audit",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/845"
+  },
+  {
+    "closedAt": "2026-06-08T04:40:39Z",
+    "headRefName": "claude/tp-dmx-proof-schema-local-validation-001",
+    "mergedAt": "2026-06-08T04:40:39Z",
+    "number": 843,
+    "state": "MERGED",
+    "title": "TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001: local proof schema validation before push",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/843"
+  },
+  {
+    "closedAt": "2026-06-09T23:00:34Z",
+    "headRefName": "claude/modest-cartwright-340c04",
+    "mergedAt": "2026-06-09T23:00:34Z",
+    "number": 842,
+    "state": "MERGED",
+    "title": "fix(cli): restore dangerous-mode guards, add post-launch crash protection",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/842"
+  },
+  {
+    "closedAt": "2026-06-07T03:48:20Z",
+    "headRefName": "claude/model-routing-next",
+    "mergedAt": "2026-06-07T03:48:20Z",
+    "number": 841,
+    "state": "MERGED",
+    "title": "Add model routing governance automation (TP-DMX-AI-ROUTING-003/004)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/841"
+  },
+  {
+    "closedAt": "2026-06-06T23:56:42Z",
+    "headRefName": "claude/model-routing-next",
+    "mergedAt": "2026-06-06T23:56:42Z",
+    "number": 840,
+    "state": "MERGED",
+    "title": "Register AI routing packets and align governance references (TP-DMX-AI-ROUTING-003)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/840"
+  },
+  {
+    "closedAt": "2026-06-08T04:40:36Z",
+    "headRefName": "gemini/remediate-orch-session-startup",
+    "mergedAt": "2026-06-08T04:40:36Z",
+    "number": 838,
+    "state": "MERGED",
+    "title": "fix(cli): resolve wizard-less orchestrator startup hangs and configurator crash",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/838"
+  },
+  {
+    "closedAt": "2026-06-06T22:36:25Z",
+    "headRefName": "claude/brave-spence-ff3a65",
+    "mergedAt": "2026-06-06T22:36:25Z",
+    "number": 837,
+    "state": "MERGED",
+    "title": "Add stage-based AI model routing governance policy (TP-DMX-AI-ROUTING-001/002)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/837"
+  },
+  {
+    "closedAt": "2026-06-06T19:01:57Z",
+    "headRefName": "claude/rte-single-key-provider-lock",
+    "mergedAt": "2026-06-06T19:01:57Z",
+    "number": 836,
+    "state": "MERGED",
+    "title": "fix(rte): provider-lock single-key cost profiles (Codex 3364972852 P2)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/836"
+  },
+  {
+    "closedAt": "2026-06-06T07:20:19Z",
+    "headRefName": "claude/rte-single-key-fallback",
+    "mergedAt": "2026-06-06T07:20:19Z",
+    "number": 835,
+    "state": "MERGED",
+    "title": "fix(rte): provider-lock single-key cost profiles (Codex P2 #3364972852)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/835"
+  },
+  {
+    "closedAt": "2026-06-10T07:43:11Z",
+    "headRefName": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat",
+    "mergedAt": "2026-06-10T07:43:11Z",
+    "number": 834,
+    "state": "MERGED",
+    "title": "Add dope-context and task-orchestrator read adapters to readonly facade (TP-DCP-MCP-RO-0006)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/834"
+  },
+  {
+    "closedAt": "2026-06-10T07:26:50Z",
+    "headRefName": "palette-prediction-panel-ux-5390258335331760406",
+    "mergedAt": "2026-06-10T07:26:50Z",
+    "number": 833,
+    "state": "MERGED",
+    "title": "\ud83c\udfa8 Palette: Enhanced PredictionPanel with Card-Level Interactive Surface",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/833"
+  },
+  {
+    "closedAt": "2026-06-06T00:17:11Z",
+    "headRefName": "dcp/chatgpt-mcp-ro-0005-conport-and-dope-memory-read-ada",
+    "mergedAt": "2026-06-06T00:17:11Z",
+    "number": 832,
+    "state": "MERGED",
+    "title": "Add ConPort and dope-memory read adapters to DCP readonly facade (TP-DCP-MCP-RO-0005)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/832"
+  },
+  {
+    "closedAt": "2026-06-06T00:24:31Z",
+    "headRefName": "ci/restore-gemini-review-trust",
+    "mergedAt": "2026-06-06T00:24:31Z",
+    "number": 831,
+    "state": "MERGED",
+    "title": "ci(gemini): restore trusted-workspace for Gemini review",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/831"
+  },
+  {
+    "closedAt": "2026-06-05T19:14:11Z",
+    "headRefName": "dcp/chatgpt-mcp-ro-0004-facade-scaffold-registry-resolve",
+    "mergedAt": "2026-06-05T19:14:11Z",
+    "number": 830,
+    "state": "MERGED",
+    "title": "Scaffold DCP readonly MCP facade with registry and proof tools (TP-DCP-MCP-RO-0004)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/830"
+  },
+  {
+    "closedAt": "2026-06-05T11:07:13Z",
+    "headRefName": "claude/dmx-orch-cs-p1",
+    "mergedAt": "2026-06-05T11:07:13Z",
+    "number": 829,
+    "state": "MERGED",
+    "title": "feat(orch): task-orchestrator read-only callable-surface inventory + boundary enforcement",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/829"
+  },
+  {
+    "closedAt": "2026-06-05T09:45:02Z",
+    "headRefName": "dcp/chatgpt-mcp-ro-0003-inspect-dopemux-init-registry-co",
+    "mergedAt": "2026-06-05T09:45:02Z",
+    "number": 828,
+    "state": "MERGED",
+    "title": "DCP facade: dopemux init/registry discovery (TP-DCP-MCP-RO-0003)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/828"
+  },
+  {
+    "closedAt": "2026-06-06T06:15:20Z",
+    "headRefName": "claude/happy-bhabha-69cdf1",
+    "mergedAt": "2026-06-06T06:15:20Z",
+    "number": 827,
+    "state": "MERGED",
+    "title": "feat(rte): RTE cost-profile Plan B \u2014 direct-provider model switching + 7 new profiles",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/827"
+  },
+  {
+    "closedAt": "2026-06-05T09:13:47Z",
+    "headRefName": "dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje",
+    "mergedAt": "2026-06-05T09:13:47Z",
+    "number": 826,
+    "state": "MERGED",
+    "title": "DCP readonly MCP facade architecture and task series (TP-DCP-MCP-RO-0002)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/826"
+  },
+  {
+    "closedAt": "2026-06-05T10:33:57Z",
+    "headRefName": "codex/cockpit-command-palette-reconcile-001",
+    "mergedAt": "2026-06-05T10:33:57Z",
+    "number": 825,
+    "state": "MERGED",
+    "title": "feat(cockpit): reconcile command palette broker primitive",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/825"
+  },
+  {
+    "closedAt": "2026-06-10T07:11:02Z",
+    "headRefName": "codex/rte-golive-remediation-002",
+    "mergedAt": "2026-06-10T07:11:02Z",
+    "number": 824,
+    "state": "MERGED",
+    "title": "fix(rte): contain pre-live validator execution",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/824"
+  },
+  {
+    "closedAt": "2026-06-05T04:25:23Z",
+    "headRefName": "feat/pastel-danger-red",
+    "mergedAt": "2026-06-05T04:25:22Z",
+    "number": 823,
+    "state": "MERGED",
+    "title": "fix(brand): danger reads red in all themes + brand_lint gate",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/823"
+  },
+  {
+    "closedAt": "2026-06-05T09:13:16Z",
+    "headRefName": "dcp/tp-0005-remediation",
+    "mergedAt": "2026-06-05T09:13:16Z",
+    "number": 821,
+    "state": "MERGED",
+    "title": "chore(dcp): document TP-DCP-0005 post-merge proof reconciliation",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/821"
+  },
+  {
+    "closedAt": "2026-06-05T01:23:02Z",
+    "headRefName": "dcp/red-lane-scanner-tp-0005",
+    "mergedAt": "2026-06-05T01:23:02Z",
+    "number": 820,
+    "state": "MERGED",
+    "title": "TP-DCP-0005 - DCP Core - Red-Lane Scanner (Remediation)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/820"
+  },
+  {
+    "closedAt": "2026-06-05T01:15:53Z",
+    "headRefName": "dcp/red-lane-scanner-tp-0005",
+    "mergedAt": "2026-06-05T01:15:53Z",
+    "number": 819,
+    "state": "MERGED",
+    "title": "TP-DCP-0005 - DCP Core - Red-Lane Scanner",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/819"
+  },
+  {
+    "closedAt": "2026-06-04T23:50:30Z",
+    "headRefName": "dcp/local-control-snapshot-tp-0004",
+    "mergedAt": "2026-06-04T23:50:30Z",
+    "number": 818,
+    "state": "MERGED",
+    "title": "feat(dcp): local control snapshot generator (TP-DCP-0004)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/818"
+  }
+]

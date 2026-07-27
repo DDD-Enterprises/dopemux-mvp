@@ -1,0 +1,22 @@
+{
+  "commit_sha": "e507743ac6d51c60ae1da347e0e293ec9e1e7550",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Resolved LiteLLM master key from env LITELLM_MASTER_KEY",
+      "Updated healthcheck endpoint to /health/readiness in compose.yml"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1077/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "e507743ac6d51c60ae1da347e0e293ec9e1e7550",
+  "pr_number": 1077,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

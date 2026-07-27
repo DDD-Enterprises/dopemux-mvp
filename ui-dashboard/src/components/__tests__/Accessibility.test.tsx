@@ -252,6 +252,22 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
   expect(appContent).toContain('aria-label={notificationLabel}');
   expect(appContent).toContain('tabIndex={0}');
+
+  // Verify hydration aftercare sip logger interactive states
+  expect(appContent).toContain('const [isHydrated, setIsHydrated] = useState(false);');
+  expect(appContent).toContain('const handleHydrate = useCallback(() => {');
+  expect(appContent).toContain("isHydrated ? 'Sip Logged!' : 'Health and hydration status: Click to log a hydration sip.'");
+  expect(appContent).toContain('onClick={handleHydrate}');
+
+  // Verify onKeyDown handlers for connection, hydration, and recommendation chips
+  expect(appContent).toContain('onKeyDown={');
+  expect(appContent).toContain('handleReconnect();');
+  expect(appContent).toContain('handleHydrate();');
+  expect(appContent).toContain('void handleCopyRecommendation();');
+
+  // Verify focus-visible overrides for buttons and icon buttons in theme
+  expect(themeContent).toContain('MuiIconButton');
+  expect(themeContent).toContain('&:focus-visible');
 });
 
 test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {

@@ -343,10 +343,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f -H \"Authorization: Bearer $${LITELLM_MASTER_KEY}\" http://localhost:4000/health || exit 1" ]
-      timeout: 10s
+      # /health probes every model (~15-30s) and exceeds the HC timeout → false unhealthy.
+      # liveliness is process-up only; readiness also checks DB and stays sub-second.
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:4000/health/readiness || exit 1" ]
+      timeout: 5s
       retries: 3
       interval: 30s
+      start_period: 45s
 
   # Dope-Context - Semantic Code & Docs Search
   dope-context:
@@ -498,6 +501,41 @@ services:
       retries: 3
       interval: 30s
       start_period: 30s
+
+  # ADHD Dashboard - React operator UI backend
+  adhd-dashboard:
+    build:
+      context: .
+      dockerfile: services/adhd-dashboard/Dockerfile
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      - REDIS_URL=redis://redis-primary:6379
+      - ADHD_ENGINE_URL=http://adhd-engine:8095
+      - ADHD_ENGINE_REDIS_PREFIX=${ADHD_ENGINE_REDIS_PREFIX:-${DOPEMUX_INSTANCE_ID:-default}}
+      - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-}
+      - DASHBOARD_API_KEY=${DASHBOARD_API_KEY:-}
+      - DASHBOARD_USER_ID=${DASHBOARD_USER_ID:-default}
+      - ALLOWED_ORIGINS=${ADHD_DASHBOARD_ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:8097,http://127.0.0.1:8097}
+    ports:
+      - "127.0.0.1:${ADHD_DASHBOARD_PORT:-8097}:8097"
+    depends_on:
+      redis-primary:
+        condition: service_healthy
+      adhd-engine:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8097/health', timeout=2)
+      timeout: 5s
+      retries: 3
+      interval: 30s
+      start_period: 20s
+
 
   # Dope-Memory - Temporal Chronicle and Working Context
   dope-memory:

@@ -112,7 +112,9 @@ services = [
     "passlib[bcrypt]>=1.7.4",
     "celery[redis]>=5.3.0",
     "kombu>=5.3.0",
-    "qdrant-client>=1.15.0",
+    # Upper bound is deliberate: .search() was removed in favour of
+    # .query_points(); an unbounded pin let that land silently.
+    "qdrant-client>=1.15.0,<2.0",
     "pymupdf>=1.23.0",
     "beautifulsoup4>=4.12.0",
     "lxml>=6.1.0",
