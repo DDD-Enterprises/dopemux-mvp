@@ -749,7 +749,9 @@ async def test_search_all_clamps_decision_limit_to_trinity_boundary(
 
 @pytest.mark.anyio
 async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeypatch):
-    """_docs_search_impl must embed queries with voyage-context-3 query mode."""
+    """_docs_search_impl must resolve its query model from the embedder's own
+    default_model (F-003), the same attribute DocIndexingPipeline._index_document
+    uses to index, so index and query can never diverge."""
     workspace = tmp_path / "workspace"
     workspace.mkdir()
 
@@ -760,6 +762,7 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
     )
 
     class _FakeDocsEmbedder:
+        default_model = "voyage-context-4"
         embed_document = embed_mock
 
     fake_result = SearchResult(
@@ -798,7 +801,7 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
     )
 
     assert response["lane_used"] == "docs"
-    assert response["embed_model_used"] == "voyage-context-3"
+    assert response["embed_model_used"] == _FakeDocsEmbedder.default_model
     assert response["fusion_strategy"] == "dense"
     assert response["rerank_used"] is False
     assert response["timings_ms"]["embed"] >= 0
@@ -810,7 +813,7 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
 
     embed_mock.assert_awaited()
     _, kwargs = embed_mock.call_args
-    assert kwargs["model"] == "voyage-context-3"
+    assert kwargs["model"] == _FakeDocsEmbedder.default_model
     assert kwargs["input_type"] == "query"
     assert "chunks" in kwargs
     assert len(kwargs["chunks"]) == 1

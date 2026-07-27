@@ -275,6 +275,7 @@ class VoyageEmbedder:
         if not getattr(result, "embeddings", None):
             raise ValueError("Voyage API returned no embeddings")
 
+        api_reported_total = hasattr(result, "total_tokens")
         tokens = int(getattr(result, "total_tokens", token_counts[0].count))
         response = EmbeddingResponse(
             embedding=result.embeddings[0],
@@ -283,7 +284,10 @@ class VoyageEmbedder:
             cost_usd=self.cost_tracker.add_request(model, tokens),
             output_dimension=request.output_dimension,
             output_dtype=request.output_dtype,
-            token_count_exact=True,
+            # Exact only when the tokenizer counted precisely or the API
+            # actually returned a real total; never report an estimate as
+            # exact (F-004a). embed_batch() below follows the same rule.
+            token_count_exact=token_counts[0].exact or api_reported_total,
         )
         self._cache_response(request.cache_key(), response)
         return response
@@ -375,6 +379,7 @@ class VoyageEmbedder:
                 )
 
             batch_estimates = [effective_counts[index] for index in batch_indices]
+            api_reported_total = hasattr(result, "total_tokens")
             total_tokens = int(getattr(result, "total_tokens", sum(batch_estimates)))
             allocated = allocate_total_tokens(batch_estimates, total_tokens)
 
@@ -390,7 +395,13 @@ class VoyageEmbedder:
                     cost_usd=self.cost_tracker.add_request(model, tokens),
                     output_dimension=dimension,
                     output_dtype=dtype,
-                    token_count_exact=token_counts[global_uncached_index].exact,
+                    # Same rule as embed(): exact tokenizer count OR a real
+                    # API-reported total, never an estimate reported as
+                    # exact (F-004a).
+                    token_count_exact=(
+                        token_counts[global_uncached_index].exact
+                        or api_reported_total
+                    ),
                 )
                 self._cache_response(request.cache_key(), response)
                 responses[original_index] = response

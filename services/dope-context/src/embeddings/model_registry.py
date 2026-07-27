@@ -94,6 +94,8 @@ MODEL_SPECS: Dict[str, EmbeddingModelSpec] = {
         price_per_million_tokens=0.18,
         legacy=True,
     ),
+    # voyage-3-lite is in vendor's 120K request-token group; only
+    # voyage-4-lite and voyage-3.5-lite carry the 1M ceiling (F-013).
     "voyage-3-lite": EmbeddingModelSpec(
         name="voyage-3-lite",
         endpoint="embeddings",
@@ -101,7 +103,7 @@ MODEL_SPECS: Dict[str, EmbeddingModelSpec] = {
         supported_dimensions=frozenset({512}),
         per_input_tokens=32_000,
         max_request_inputs=1_000,
-        max_request_tokens=1_000_000,
+        max_request_tokens=120_000,
         price_per_million_tokens=0.02,
         legacy=True,
     ),

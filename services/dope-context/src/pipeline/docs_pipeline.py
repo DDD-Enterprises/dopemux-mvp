@@ -202,23 +202,56 @@ class DocIndexingPipeline:
             "section_type": metadata.section_type,
         }
 
-    async def _existing_point_ids(self, source: Path) -> Set[str]:
-        """Find only exact-path/URI matches, never same-basename guesses."""
+    _RECONCILE_KEYS = ("source_path", "source_uri", "file_path", "doc_id")
 
-        existing_payloads = await self.doc_search.get_all_payloads()
-        absolute = source.as_posix()
-        uri = self._source_uri(source)
-        point_ids: Set[str] = set()
+    def _build_payload_index(
+        self, payloads: Optional[List[Dict[str, Any]]]
+    ) -> Dict[str, Dict[str, Set[str]]]:
+        """Index existing payloads once per workspace run (F-007).
 
-        for payload in existing_payloads or []:
+        ``index_workspace`` fetches ``get_all_payloads`` exactly once and
+        builds this index; every document then does an in-memory lookup
+        instead of a fresh full-collection scroll. Indexed on every key
+        ``_existing_point_ids`` matches, so legacy records carrying only
+        ``file_path`` or only ``doc_id`` are still reconciled (F-004b).
+        """
+
+        index: Dict[str, Dict[str, Set[str]]] = {
+            key: {} for key in self._RECONCILE_KEYS
+        }
+        for payload in payloads or []:
             point_id = payload.get("id")
             if not point_id:
                 continue
-            if payload.get("source_path") == absolute or payload.get("source_uri") == uri:
-                point_ids.add(str(point_id))
+            for key in self._RECONCILE_KEYS:
+                value = payload.get(key)
+                if value:
+                    index[key].setdefault(value, set()).add(str(point_id))
+        return index
+
+    def _existing_point_ids(
+        self,
+        source: Path,
+        doc_id: str,
+        payload_index: Dict[str, Dict[str, Set[str]]],
+    ) -> Set[str]:
+        """Find exact source_path/source_uri/file_path/doc_id matches only,
+        never same-basename guesses (F-004b)."""
+
+        absolute = source.as_posix()
+        uri = self._source_uri(source)
+        point_ids: Set[str] = set()
+        point_ids |= payload_index["source_path"].get(absolute, set())
+        point_ids |= payload_index["source_uri"].get(uri, set())
+        point_ids |= payload_index["file_path"].get(absolute, set())
+        point_ids |= payload_index["doc_id"].get(doc_id, set())
         return point_ids
 
-    async def _index_document(self, file_path: Path) -> Tuple[int, float, int]:
+    async def _index_document(
+        self,
+        file_path: Path,
+        payload_index: Dict[str, Dict[str, Set[str]]],
+    ) -> Tuple[int, float, int]:
         processed_chunks = self.processor.process_document(
             file_path=str(file_path),
             chunk_size=self.chunk_size,
@@ -244,7 +277,7 @@ class DocIndexingPipeline:
             )
 
         doc_id = self._doc_id_for_source(file_path)
-        existing_ids = await self._existing_point_ids(file_path)
+        existing_ids = self._existing_point_ids(file_path, doc_id, payload_index)
         new_ids: Set[str] = set()
         points = []
 
@@ -292,9 +325,15 @@ class DocIndexingPipeline:
         docs_files = self._discover_documents(include_patterns=include_patterns)
         progress.total_documents = len(docs_files)
 
+        # One payload scan per workspace run, not one per document (F-007).
+        existing_payloads = await self.doc_search.get_all_payloads()
+        payload_index = self._build_payload_index(existing_payloads)
+
         for file_path in docs_files:
             try:
-                chunk_count, cost_usd, replaced = await self._index_document(file_path)
+                chunk_count, cost_usd, replaced = await self._index_document(
+                    file_path, payload_index
+                )
             except Exception as exc:
                 progress.error_documents += 1
                 progress.errors.append(
