@@ -1,14 +1,8 @@
 {
   "mcpServers": {
     "conport": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "mcp-proxy",
-        "--transport",
-        "sse",
-        "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"
-      ],
+      "type": "sse",
+      "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
       "env": {
         "DOPEMUX_WORKSPACE_ID": "${DOPEMUX_WORKSPACE_ID:-}",
         "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
@@ -18,14 +12,8 @@
       "description": "Knowledge graph, decisions, progress (PostgreSQL+AGE; per-worktree state)"
     },
     "dope-memory": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "mcp-proxy",
-        "--transport",
-        "streamablehttp",
-        "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp"
-      ],
+      "type": "http",
+      "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
       "env": {
         "DOPE_MEMORY_WORKSPACE_ID": "${DOPE_MEMORY_WORKSPACE_ID:-}",
         "DOPE_MEMORY_INSTANCE_ID": "${DOPE_MEMORY_INSTANCE_ID:-}"
@@ -33,21 +21,15 @@
       "description": "Temporal chronicle and working-context (per worktree instance)"
     },
     "task-orchestrator": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "mcp-proxy",
-        "--transport",
-        "streamablehttp",
-        "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp"
-      ],
+      "type": "http",
+      "url": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
       "env": {
         "TASK_ORCHESTRATOR_PROJECT_ROOT": "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}",
         "DOPEMUX_WORKSPACE_ROOT": "${DOPEMUX_WORKSPACE_ROOT:-}",
         "DOPEMUX_PROJECT_ROOT": "${DOPEMUX_PROJECT_ROOT:-}",
         "TASK_ORCHESTRATOR_HTTP_PORT": "${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
       },
-      "description": "Host-singleton Task Orchestrator MCP on reserved 7890 (multi-project shared state)"
+      "description": "Host-singleton Task Orchestrator MCP on reserved 7890 (single-active-project state)"
     }
   }
 }

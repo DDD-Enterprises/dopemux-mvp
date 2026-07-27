@@ -127,32 +127,6 @@ def _add(
     )
 
 
-def _catalog_proxy_transport_matches(
-    entry: Any,
-    spec: Mapping[str, Any],
-    catalog_transport: str,
-) -> bool:
-    """True only for the exact stdio wrapper rendered from a catalog endpoint."""
-    if catalog_transport not in {"http", "sse"}:
-        return False
-    if not isinstance(entry, Mapping) or entry.get("type") != "stdio":
-        return False
-    if entry.get("command") != "uvx":
-        return False
-
-    url = spec.get("url_template") or spec.get("url")
-    if not isinstance(url, str) or not url:
-        return False
-
-    proxy_transport = "streamablehttp" if catalog_transport == "http" else "sse"
-    return entry.get("args") == [
-        "mcp-proxy",
-        "--transport",
-        proxy_transport,
-        url,
-    ]
-
-
 def _summarize_status(findings: List[Finding]) -> tuple[str, int]:
     """Return (status, exit_code)."""
     sevs = {f.severity for f in findings}
@@ -399,19 +373,6 @@ def run_mcp_doctor(
                 f"`{svc.name}` transport matches catalog ({cat_t})",
                 service=svc.name,
                 evidence=[f"catalog={cat_t}", f"mcp_json={mcp_t}"],
-            )
-        elif _catalog_proxy_transport_matches(
-            mcp_servers.get(svc.name),
-            (catalog.get("servers") or {}).get(svc.name) or {},
-            cat_t,
-        ):
-            _add(
-                findings,
-                "TRANSPORT_PROXY_MATCH",
-                "INFO",
-                f"`{svc.name}` stdio mcp-proxy wrapper matches catalog transport {cat_t}",
-                service=svc.name,
-                evidence=[f"catalog={cat_t}", "mcp_json=stdio", "wrapper=mcp-proxy"],
             )
         else:
             _add(
@@ -733,23 +694,12 @@ def run_mcp_doctor(
     for svc in desired:
         ports = list(svc.expected_ports.values())
         endpoint = svc.expected_urls[0] if svc.expected_urls else None
-        shared_to = (
-            svc.name == "task-orchestrator"
-            and svc.state_scope == "multi_project_singleton"
-        )
-        candidate_containers = di.find_containers_for_service(
+        containers = di.find_containers_for_service(
             docker_result,
             service_name=svc.name,
             expected_ports=ports,
             name_hints=[svc.name, f"mcp-{svc.name}", svc.name.replace("-", "_")],
         )
-        # Same service may run for other worktrees. It is not a candidate for
-        # this repo unless it publishes one of this repo's configured ports.
-        containers = [
-            c
-            for c in candidate_containers
-            if not ports or bool(set(c.published_ports) & set(ports))
-        ]
         label_status = "SKIPPED"
         if not docker_result.available:
             label_status = "SKIPPED"
@@ -773,22 +723,6 @@ def run_mcp_doctor(
             )
         else:
             for c in containers:
-                if shared_to:
-                    if not set(c.published_ports) & set(ports):
-                        continue
-                    label_status = "SHARED_SINGLETON"
-                    _add(
-                        findings,
-                        "TASK_ORCHESTRATOR_SHARED_SINGLETON_CONTAINER",
-                        "INFO",
-                        (
-                            f"Container {c.name} is task-orchestrator shared singleton; "
-                            "project labels are not ownership criteria"
-                        ),
-                        service=svc.name,
-                        evidence=[c.name, f"ports={c.published_ports}"],
-                    )
-                    continue
                 label_status = di.classify_container_ownership(
                     c,
                     project_root=identity.project_root,
@@ -1079,10 +1013,7 @@ def run_mcp_doctor(
                 findings,
                 "TASK_ORCHESTRATOR_WRAPPER_SINGLETON_COMPAT",
                 "INFO",
-                (
-                    "task-orchestrator is wrapper-singleton "
-                    f"(fixed port, state_scope={to_spec.get('state_scope')})"
-                ),
+                "task-orchestrator is wrapper-singleton (fixed port, per-repo state)",
                 service="task-orchestrator",
             )
             base = to_spec.get("default_port_base") or 7890
@@ -1164,9 +1095,6 @@ def run_mcp_doctor(
                         target_worktree_hash=identity.worktree_hash,
                         listening=True,
                         docker_identity=docker_identity,
-                        multi_project_singleton=(
-                            to_spec.get("state_scope") == "multi_project_singleton"
-                        ),
                         skip_http=True,
                         for_start=False,
                     )
@@ -1195,9 +1123,6 @@ def run_mcp_doctor(
                         target_worktree_hash=identity.worktree_hash,
                         is_free_fn=is_free,
                         docker_identity=docker_identity,
-                        multi_project_singleton=(
-                            to_spec.get("state_scope") == "multi_project_singleton"
-                        ),
                         skip_http=False,
                         for_start=False,
                     )
