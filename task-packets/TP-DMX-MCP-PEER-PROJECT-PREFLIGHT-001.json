@@ -1,0 +1,135 @@
+{
+  "id": "TP-DMX-MCP-PEER-PROJECT-PREFLIGHT-001",
+  "project": "dopemux-mvp",
+  "target": "Distinguish peer MCP instances from ownership collisions in doctor/lifecycle preflight without weakening Task Orchestrator single-active-project policy",
+  "invariants": [
+    "Foreign containers cannot be adopted as target-project services from name resemblance alone.",
+    "A container occupying a target project's expected port remains a hard blocker.",
+    "An exact expected container with wrong or unknown ownership remains fail-closed.",
+    "Task Orchestrator remains single_active_project on reserved port 7890.",
+    "No foreign container is automatically stopped.",
+    "Doctor remains read-only with respect to project settings, containers, and runtime state.",
+    "Docker-unavailable state cannot produce positive ownership claims.",
+    "Implementation must not introduce shared Task Orchestrator state or shared_singleton lifecycle actions.",
+    "Implementation must not add partial-start behavior."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-PEER-PROJECT-PREFLIGHT",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/mcp-peer-project-preflight",
+    "base_branch": "origin/main",
+    "stacked_because": "Supersedes PR #1086 with a narrow peer-instance classification fix; TO state_scope remains single_active_project."
+  },
+  "commit": {
+    "message": "fix(mcp): treat non-colliding peer MCP containers as non-blocking",
+    "allowlist": [
+      "docs/90-adr/adr-dmx-mcp-peer-project-preflight-001.md",
+      "src/dopemux/mcp/doctor.py",
+      "task-packets/TP-DMX-MCP-PEER-PROJECT-PREFLIGHT-001.json",
+      "tests/unit/test_mcp_doctor_repo_aware.py",
+      "tests/unit/test_mcp_lifecycle.py"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-MCP-PEER-PROJECT-PREFLIGHT-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run --extra test pytest tests/unit/test_mcp_doctor_repo_aware.py tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_docker_inspect.py -q",
+      "rg -n \"multi_project_singleton|shared_singleton\" src/dopemux/mcp mcp_catalog.yaml || true",
+      "rg -n \"state_scope: single_active_project\" mcp_catalog.yaml",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): distinguish peer MCP instances from ownership collisions",
+    "body": "## Summary\n- classify non-colliding peer ConPort/dope-memory containers as non-blocking findings\n- keep DOCKER_CONTAINER_WRONG_PROJECT as a hard blocker for exact identity or port conflicts\n- preserve Task Orchestrator single_active_project on port 7890\n- supersede PR #1086 without adopting multi_project_singleton\n\n## Authority\n- ADR-DMX-MCP-PEER-PROJECT-PREFLIGHT-001\n- TP-DMX-MCP-PEER-PROJECT-PREFLIGHT-001\n\n## Validation\n- pytest focused MCP doctor/lifecycle/docker inspect tests\n- catalog TO state_scope remains single_active_project\n- git diff --check",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Inspect doctor/lifecycle classification of foreign containers and PR #1086 scope boundary.",
+      "requirements": [
+        "Confirm DOCKER_CONTAINER_WRONG_PROJECT remains in BLOCKING_FINDING_CODES.",
+        "Confirm Task Orchestrator catalog state_scope remains single_active_project."
+      ],
+      "commands": [
+        "rg -n \"DOCKER_CONTAINER_WRONG_PROJECT|find_containers_for_service|BLOCKING_FINDING_CODES\" src/dopemux/mcp",
+        "rg -n \"state_scope\" mcp_catalog.yaml"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Root-cause false-positive chain and ADR scope boundary documented before edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "src/dopemux/mcp/doctor.py",
+        "src/dopemux/mcp/lifecycle.py",
+        "src/dopemux/mcp/docker_inspect.py",
+        "mcp_catalog.yaml"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Emit non-blocking peer findings for non-colliding family-name matches; keep hard blocks for identity/port conflicts; file ADR and tests.",
+      "requirements": [
+        "Do not remove DOCKER_CONTAINER_WRONG_PROJECT from lifecycle blocking set.",
+        "Do not change Task Orchestrator to multi_project_singleton.",
+        "Do not introduce shared_singleton lifecycle actions or partial-start behavior."
+      ],
+      "commands": [
+        "apply_patch"
+      ],
+      "expected_files": [
+        "docs/90-adr/adr-dmx-mcp-peer-project-preflight-001.md",
+        "src/dopemux/mcp/doctor.py",
+        "task-packets/TP-DMX-MCP-PEER-PROJECT-PREFLIGHT-001.json",
+        "tests/unit/test_mcp_doctor_repo_aware.py",
+        "tests/unit/test_mcp_lifecycle.py"
+      ],
+      "validation": [
+        "Focused tests prove peer vs collision distinction and TO policy preserved."
+      ],
+      "context_files": [
+        "docs/90-adr/adr-dmx-mcp-peer-project-preflight-001.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "verify",
+      "task": "Run allowlisted verification commands and confirm no TO state-scope drift.",
+      "requirements": [
+        "All listed verify commands pass or report explicit NOT_RUN with reason."
+      ],
+      "commands": [
+        "uv run --extra test pytest tests/unit/test_mcp_doctor_repo_aware.py tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_docker_inspect.py -q",
+        "git diff --check"
+      ],
+      "expected_files": [],
+      "validation": [
+        "pytest exit 0; git diff --check exit 0; catalog state_scope unchanged."
+      ],
+      "context_files": [
+        "task-packets/TP-DMX-MCP-PEER-PROJECT-PREFLIGHT-001.json"
+      ]
+    }
+  ]
+}
