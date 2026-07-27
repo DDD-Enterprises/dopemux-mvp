@@ -28,6 +28,11 @@ from .model_registry import (
 
 logger = logging.getLogger(__name__)
 
+# F-012: bound the contextualized-embedding cache so a long-running
+# server process cannot grow it without limit. See voyage_embedder.py for
+# the matching code-vector cache.
+DEFAULT_MAX_CACHE_ENTRIES = 10_000
+
 
 @dataclass
 class ContextualizedEmbeddingResponse:
@@ -93,6 +98,7 @@ class ContextualizedEmbedder:
         default_model: Optional[str] = None,
         output_dimension: int = DEFAULT_OUTPUT_DIMENSION,
         output_dtype: str = DEFAULT_OUTPUT_DTYPE,
+        max_cache_entries: int = DEFAULT_MAX_CACHE_ENTRIES,
     ):
         self.default_model = default_model or env_model(
             "DOPE_CONTEXT_DOC_EMBED_MODEL", DEFAULT_DOC_MODEL
@@ -104,6 +110,7 @@ class ContextualizedEmbedder:
         self.token_counter = VoyageTokenCounter(api_key=api_key)
         self.cache: Dict[str, Tuple[ContextualizedEmbeddingResponse, datetime]] = {}
         self.cache_ttl = timedelta(hours=cache_ttl_hours)
+        self.max_cache_entries = max(1, max_cache_entries)
         self.rate_limit_rpm = max(1, rate_limit_rpm)
         self.cost_tracker = CostTracker()
         self._request_times: List[datetime] = []
@@ -165,21 +172,45 @@ class ContextualizedEmbedder:
             del self.cache[cache_key]
             return None
         return ContextualizedEmbeddingResponse(
-            embeddings=response.embeddings,
+            # Copy, not alias (F-012): callers may mutate these lists in
+            # place. Handing out the cached lists by reference would let
+            # that mutation corrupt every future cache hit.
+            embeddings=[list(vector) for vector in response.embeddings],
             model=response.model,
             total_tokens=response.total_tokens,
             cached=True,
             cost_usd=0.0,
-            chunk_tokens=response.chunk_tokens,
-            chunk_texts=response.chunk_texts,
+            chunk_tokens=list(response.chunk_tokens),
+            chunk_texts=list(response.chunk_texts),
             output_dimension=response.output_dimension,
             output_dtype=response.output_dtype,
             token_count_exact=response.token_count_exact,
         )
 
+    def _evict_expired(self) -> None:
+        now = datetime.now()
+        expired = [
+            key
+            for key, (_, cached_at) in self.cache.items()
+            if now - cached_at > self.cache_ttl
+        ]
+        for key in expired:
+            del self.cache[key]
+
     def _cache_response(
         self, cache_key: str, response: ContextualizedEmbeddingResponse
     ) -> None:
+        # Bound the cache (F-012): see voyage_embedder.py._cache_response for
+        # the matching rationale -- expire first, then evict oldest-first so
+        # a long-running server cannot grow this dict without limit.
+        if (
+            cache_key not in self.cache
+            and len(self.cache) >= self.max_cache_entries
+        ):
+            self._evict_expired()
+            while len(self.cache) >= self.max_cache_entries:
+                oldest_key = next(iter(self.cache))
+                del self.cache[oldest_key]
         self.cache[cache_key] = (response, datetime.now())
 
     async def _api_contextualized_embed(

@@ -27,6 +27,11 @@ from .model_registry import (
 
 logger = logging.getLogger(__name__)
 
+# F-012: bound the embedding cache so a long-running server process cannot
+# grow it without limit. Large enough that a single-workspace indexing run
+# never evicts a live entry; small enough to cap worst-case memory.
+DEFAULT_MAX_CACHE_ENTRIES = 10_000
+
 
 @dataclass(frozen=True)
 class EmbeddingRequest:
@@ -113,6 +118,7 @@ class VoyageEmbedder:
         default_model: Optional[str] = None,
         output_dimension: int = DEFAULT_OUTPUT_DIMENSION,
         output_dtype: str = DEFAULT_OUTPUT_DTYPE,
+        max_cache_entries: int = DEFAULT_MAX_CACHE_ENTRIES,
     ):
         self.default_model = default_model or env_model(
             "DOPE_CONTEXT_CODE_EMBED_MODEL", DEFAULT_CODE_MODEL
@@ -124,6 +130,7 @@ class VoyageEmbedder:
         self.token_counter = VoyageTokenCounter(api_key=api_key)
         self.cache: Dict[str, Tuple[EmbeddingResponse, datetime]] = {}
         self.cache_ttl = timedelta(hours=cache_ttl_hours)
+        self.max_cache_entries = max(1, max_cache_entries)
         self.max_batch_size = max(1, max_batch_size)
         self.rate_limit_rpm = max(1, rate_limit_rpm)
         self.cost_tracker = CostTracker()
@@ -155,7 +162,10 @@ class VoyageEmbedder:
             del self.cache[cache_key]
             return None
         return EmbeddingResponse(
-            embedding=response.embedding,
+            # Copy, not alias (F-012): the caller owns this list and may
+            # mutate it in place. Handing out the cached list by reference
+            # would let that mutation corrupt every future cache hit.
+            embedding=list(response.embedding),
             model=response.model,
             tokens=response.tokens,
             cached=True,
@@ -165,7 +175,30 @@ class VoyageEmbedder:
             token_count_exact=response.token_count_exact,
         )
 
+    def _evict_expired(self) -> None:
+        now = datetime.now()
+        expired = [
+            key
+            for key, (_, cached_at) in self.cache.items()
+            if now - cached_at > self.cache_ttl
+        ]
+        for key in expired:
+            del self.cache[key]
+
     def _cache_response(self, cache_key: str, response: EmbeddingResponse) -> None:
+        # Bound the cache (F-012): previously an unbounded dict evicted
+        # expired entries only lazily, on a key hit that would never come for
+        # texts embedded once and never queried again. Expire first, then
+        # fall back to oldest-first eviction so a long-running server cannot
+        # grow this dict without limit.
+        if (
+            cache_key not in self.cache
+            and len(self.cache) >= self.max_cache_entries
+        ):
+            self._evict_expired()
+            while len(self.cache) >= self.max_cache_entries:
+                oldest_key = next(iter(self.cache))
+                del self.cache[oldest_key]
         self.cache[cache_key] = (response, datetime.now())
 
     async def _api_embed(
