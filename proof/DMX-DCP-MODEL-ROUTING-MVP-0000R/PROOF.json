@@ -9,7 +9,7 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "dcp/model-routing-0000r-runtime-reconcile",
   "base_sha": "9a52ecf4328f28756c3e87a2c351e60d46b805f6",
-  "subject_sha": "24a7ef909533c533edbf6d8ad4e529d5ff7b8415",
+  "subject_sha": "417d5920e03becc611d48cae04c0dc7a52e72f1c",
   "authoritative_artifacts": [
     "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.json",
     "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.md",
@@ -102,5 +102,6 @@
     "no_runner_invocation_authorized": true,
     "no_model_connector_mcp_write_dopetask_to_mutations_from_dcp": true,
     "no_merge": true
-  }
+  },
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1137"
 }
