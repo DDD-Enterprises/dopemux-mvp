@@ -3,7 +3,7 @@
   "project": "dopemux-mvp",
   "repository": "DDD-Enterprises/dopemux-mvp",
   "authorized_base_sha": "f4e91574a11e7f0e73d096b7b36def0230627727",
-  "final_head_sha": "71f73d9ab02f3477052e8a5ac9d695ae71be5c60",
+  "final_head_sha": "20d0158a96621005304fa258cedee48ea3f8858f",
   "branch": "fix/dope-context-voyage4-repair-0002",
   "worktree": "/Users/hue/.grok/worktrees/code-dopemux-mvp/tp-voyage4-repair-0002",
   "objective_status": "AUDIT_PASS_WITH_RISKS",
@@ -34,7 +34,8 @@
     "auditor_verdict": "PASS_WITH_RISKS",
     "accepted_verdict": true,
     "completed_at": "2026-07-27T00:40:48.812092+00:00",
-    "note": "Audited head 71f73d9ab; subsequent proof-only commits may advance tip."
+    "note": "Audited head 71f73d9ab; subsequent proof-only commits may advance tip.",
+    "proof_commit_sha": "20d0158a96621005304fa258cedee48ea3f8858f"
   },
   "pr_steward": {
     "MERGE_READINESS.status": "NOT_READY",
