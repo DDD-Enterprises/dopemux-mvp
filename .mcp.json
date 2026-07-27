@@ -29,7 +29,7 @@
         "DOPEMUX_PROJECT_ROOT": "${DOPEMUX_PROJECT_ROOT:-}",
         "TASK_ORCHESTRATOR_HTTP_PORT": "${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
       },
-      "description": "Host-singleton Task Orchestrator MCP on reserved 7890 (multi-project shared state)"
+      "description": "Host-singleton Task Orchestrator MCP on reserved 7890 (single-active-project state)"
     }
   }
 }

@@ -487,23 +487,29 @@ def compose_lifecycle_diagnostics(
             }
         )
 
-    # These are raw-compose hazards. The repo-aware lifecycle always generates
-    # an override with unique names and an absolute memory bind, so doctor must
-    # preserve visibility without rejecting a verified scoped runtime.
+    # FAIL only when compose content was inspected and shows the hazard.
+    # Convention-only notes (no compose file) stay WARN so doctor does not
+    # hard-fail repos that never ship a dopemux compose.yml.
+    compose_verified = bool(text)
     if fixed_name_risks:
         findings_seed.append(
             {
                 "code": "COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK",
-                "severity": "WARN",
+                "severity": "FAIL" if compose_verified else "WARN",
                 "service": "conport",
                 "message": (
-                    "Fixed/default mcp-conport container name is unsafe for raw "
-                    "multi-project compose use; repo-aware lifecycle overrides it."
+                    "Fixed/default mcp-conport container name risks replacing the primary "
+                    "ConPort container when starting another project's stack."
+                    if compose_verified
+                    else (
+                        "Compose file unavailable; cannot verify container_name uniqueness. "
+                        "Convention risk: conport may default to mcp-conport."
+                    )
                 ),
                 "evidence": fixed_name_risks,
                 "recommendation": (
-                    "Use `dopemux mcp start`; it generates unique names and labels. "
-                    "Do not use raw compose for a second project."
+                    "Always set unique CONPORT_CONTAINER_NAME per project/worktree; "
+                    "Packet 002 should enforce labels + unique names."
                 ),
             }
         )
@@ -512,16 +518,21 @@ def compose_lifecycle_diagnostics(
         findings_seed.append(
             {
                 "code": "COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK",
-                "severity": "WARN",
+                "severity": "FAIL" if compose_verified else "WARN",
                 "service": "dope-memory",
                 "message": (
-                    "Relative dope-memory volume is unsafe for raw multi-project compose "
-                    "use; repo-aware lifecycle overrides it with an absolute target bind."
+                    "Starting dope-memory for another repo from dopemux-mvp compose can bind "
+                    "dopemux-mvp/.dopemux instead of the target repo .dopemux, causing memory-state bleed."
+                    if compose_verified
+                    else (
+                        "Compose file unavailable; cannot verify volume binds. "
+                        "Convention risk: dope-memory may bind ./.dopemux relative to compose cwd."
+                    )
                 ),
                 "evidence": relative_volume_risks,
                 "recommendation": (
-                    "Use `dopemux mcp start`; it generates an absolute target-repo data bind. "
-                    "Do not use raw compose for a second project."
+                    "Do not start foreign-repo dope-memory via dopemux-mvp cwd compose until "
+                    "Packet 002 binds absolute target-repo data paths."
                 ),
             }
         )

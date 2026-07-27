@@ -127,30 +127,62 @@ def _add(
     )
 
 
-def _catalog_proxy_transport_matches(
-    entry: Any,
-    spec: Mapping[str, Any],
-    catalog_transport: str,
+def _expected_container_name_for_service(
+    service_name: str,
+    *,
+    project_root: Optional[str],
+    worktree_hash: Optional[str],
+    project_id: Optional[str],
+    repo_path: Path,
+) -> Optional[str]:
+    """Canonical lifecycle container name for a service, when identity is known.
+
+    Matches ``docker_runtime.container_name_for`` / Task Orchestrator wrapper
+    naming used by lifecycle. Returns None when identity is insufficient.
+    """
+    from . import docker_runtime as dr
+
+    if service_name == "task-orchestrator" and project_id:
+        return f"task-orchestrator-{project_id}"
+    if not worktree_hash:
+        return None
+    root_name = Path(project_root or repo_path).name
+    slug = dr.project_slug(root_name)
+    return dr.container_name_for(slug, worktree_hash, service_name)
+
+
+def _is_exact_expected_container(
+    container_name: str, expected_container_name: Optional[str]
 ) -> bool:
-    """True only for the exact stdio wrapper rendered from a catalog endpoint."""
-    if catalog_transport not in {"http", "sse"}:
+    """True only for the lifecycle-generated name, not a service-family substring."""
+    if not expected_container_name or not container_name:
         return False
-    if not isinstance(entry, Mapping) or entry.get("type") != "stdio":
-        return False
-    if entry.get("command") != "uvx":
-        return False
+    return container_name == expected_container_name
 
-    url = spec.get("url_template") or spec.get("url")
-    if not isinstance(url, str) or not url:
-        return False
 
-    proxy_transport = "streamablehttp" if catalog_transport == "http" else "sse"
-    return entry.get("args") == [
-        "mcp-proxy",
-        "--transport",
-        proxy_transport,
-        url,
-    ]
+def _has_expected_port_overlap(
+    published_ports: Sequence[int], expected_ports: Sequence[int]
+) -> bool:
+    return bool(set(published_ports) & set(expected_ports))
+
+
+def _is_non_colliding_peer_instance(
+    *,
+    container_name: str,
+    published_ports: Sequence[int],
+    expected_ports: Sequence[int],
+    expected_container_name: Optional[str],
+) -> bool:
+    """Peer/family-name match that does not occupy target identity or ports.
+
+    Broad discovery may still surface these containers; they must not be treated
+    as target-project ownership conflicts (ADR-DMX-MCP-PEER-PROJECT-PREFLIGHT-001).
+    """
+    if _has_expected_port_overlap(published_ports, expected_ports):
+        return False
+    if _is_exact_expected_container(container_name, expected_container_name):
+        return False
+    return True
 
 
 def _summarize_status(findings: List[Finding]) -> tuple[str, int]:
@@ -399,19 +431,6 @@ def run_mcp_doctor(
                 f"`{svc.name}` transport matches catalog ({cat_t})",
                 service=svc.name,
                 evidence=[f"catalog={cat_t}", f"mcp_json={mcp_t}"],
-            )
-        elif _catalog_proxy_transport_matches(
-            mcp_servers.get(svc.name),
-            (catalog.get("servers") or {}).get(svc.name) or {},
-            cat_t,
-        ):
-            _add(
-                findings,
-                "TRANSPORT_PROXY_MATCH",
-                "INFO",
-                f"`{svc.name}` stdio mcp-proxy wrapper matches catalog transport {cat_t}",
-                service=svc.name,
-                evidence=[f"catalog={cat_t}", "mcp_json=stdio", "wrapper=mcp-proxy"],
             )
         else:
             _add(
@@ -733,23 +752,20 @@ def run_mcp_doctor(
     for svc in desired:
         ports = list(svc.expected_ports.values())
         endpoint = svc.expected_urls[0] if svc.expected_urls else None
-        shared_to = (
-            svc.name == "task-orchestrator"
-            and svc.state_scope == "multi_project_singleton"
-        )
-        candidate_containers = di.find_containers_for_service(
+        # Broad discovery is diagnostic input only (name family + expected ports).
+        containers = di.find_containers_for_service(
             docker_result,
             service_name=svc.name,
             expected_ports=ports,
             name_hints=[svc.name, f"mcp-{svc.name}", svc.name.replace("-", "_")],
         )
-        # Same service may run for other worktrees. It is not a candidate for
-        # this repo unless it publishes one of this repo's configured ports.
-        containers = [
-            c
-            for c in candidate_containers
-            if not ports or bool(set(c.published_ports) & set(ports))
-        ]
+        expected_cname = _expected_container_name_for_service(
+            svc.name,
+            project_root=identity.project_root,
+            worktree_hash=identity.worktree_hash,
+            project_id=identity.project_id,
+            repo_path=repo_path,
+        )
         label_status = "SKIPPED"
         if not docker_result.available:
             label_status = "SKIPPED"
@@ -773,22 +789,6 @@ def run_mcp_doctor(
             )
         else:
             for c in containers:
-                if shared_to:
-                    if not set(c.published_ports) & set(ports):
-                        continue
-                    label_status = "SHARED_SINGLETON"
-                    _add(
-                        findings,
-                        "TASK_ORCHESTRATOR_SHARED_SINGLETON_CONTAINER",
-                        "INFO",
-                        (
-                            f"Container {c.name} is task-orchestrator shared singleton; "
-                            "project labels are not ownership criteria"
-                        ),
-                        service=svc.name,
-                        evidence=[c.name, f"ports={c.published_ports}"],
-                    )
-                    continue
                 label_status = di.classify_container_ownership(
                     c,
                     project_root=identity.project_root,
@@ -796,6 +796,12 @@ def run_mcp_doctor(
                     project_id=identity.project_id,
                     expected_ports=ports,
                     expected_name_substrings=[svc.name],
+                )
+                peer = _is_non_colliding_peer_instance(
+                    container_name=c.name,
+                    published_ports=c.published_ports,
+                    expected_ports=ports,
+                    expected_container_name=expected_cname,
                 )
                 if label_status == "MATCH":
                     _add(
@@ -807,29 +813,91 @@ def run_mcp_doctor(
                         evidence=[c.name, f"labels={sorted(c.labels.keys())}"],
                     )
                 elif label_status == "WRONG_PROJECT":
-                    _add(
-                        findings,
-                        "DOCKER_CONTAINER_WRONG_PROJECT",
-                        "FAIL",
-                        f"Container {c.name} labels belong to another project for `{svc.name}`",
-                        service=svc.name,
-                        evidence=[c.name, f"labels={di._redact_labels(c.labels)}"],
-                        recommendation="Do not treat this container as this repo's MCP service.",
-                    )
-                elif label_status == "UNLABELED":
-                    _add(
-                        findings,
-                        "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
-                        "UNKNOWN",
-                        (
-                            f"Container {c.name} matches `{svc.name}` by name/port but has no "
-                            "project labels — ownership UNKNOWN"
-                        ),
-                        service=svc.name,
-                        evidence=[c.name, f"ports={c.published_ports}"],
-                        recommendation="Packet 002 should attach dopemux project labels.",
-                    )
-                    unknowns.append(f"docker ownership unlabeled: {c.name}")
+                    if peer:
+                        # Foreign labelled family match on non-overlapping ports —
+                        # visibility only; not a target ownership conflict.
+                        _add(
+                            findings,
+                            "DOCKER_PEER_PROJECT_INSTANCE",
+                            "INFO",
+                            (
+                                f"Peer-project container {c.name} resembles `{svc.name}` "
+                                "but does not occupy this project's expected identity or ports"
+                            ),
+                            service=svc.name,
+                            evidence=[
+                                c.name,
+                                f"published_ports={c.published_ports}",
+                                f"expected_ports={ports}",
+                                f"expected_container={expected_cname or 'UNKNOWN'}",
+                                f"labels={di._redact_labels(c.labels)}",
+                            ],
+                            recommendation=(
+                                "No action required for this project; peer instance is "
+                                "informational only."
+                            ),
+                        )
+                        label_status = "PEER_PROJECT"
+                    else:
+                        _add(
+                            findings,
+                            "DOCKER_CONTAINER_WRONG_PROJECT",
+                            "FAIL",
+                            (
+                                f"Container {c.name} labels belong to another project "
+                                f"for `{svc.name}`"
+                            ),
+                            service=svc.name,
+                            evidence=[c.name, f"labels={di._redact_labels(c.labels)}"],
+                            recommendation=(
+                                "Do not treat this container as this repo's MCP service."
+                            ),
+                        )
+                elif label_status in {"UNLABELED", "COMPOSE_MATCH", "UNKNOWN"}:
+                    # COMPOSE_MATCH is secondary heuristic association only — never trusted
+                    # ownership. Exact expected identity or expected-port overlap stays
+                    # fail-closed; non-colliding family-name matches are peer diagnostics.
+                    if peer:
+                        _add(
+                            findings,
+                            "DOCKER_PEER_INSTANCE_UNLABELED",
+                            "WARN",
+                            (
+                                f"Unlabeled container {c.name} resembles `{svc.name}` by name "
+                                "but does not occupy this project's expected identity or ports"
+                            ),
+                            service=svc.name,
+                            evidence=[
+                                c.name,
+                                f"published_ports={c.published_ports}",
+                                f"expected_ports={ports}",
+                                f"expected_container={expected_cname or 'UNKNOWN'}",
+                                f"ownership_class={label_status}",
+                            ],
+                            recommendation=(
+                                "Informational peer/name-family match only; not treated as "
+                                "this project's service."
+                            ),
+                        )
+                        label_status = "PEER_UNLABELED"
+                    else:
+                        _add(
+                            findings,
+                            "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
+                            "UNKNOWN",
+                            (
+                                f"Container {c.name} matches `{svc.name}` by name/port but has no "
+                                "project labels — ownership UNKNOWN"
+                            ),
+                            service=svc.name,
+                            evidence=[
+                                c.name,
+                                f"ports={c.published_ports}",
+                                f"ownership_class={label_status}",
+                            ],
+                            recommendation="Packet 002 should attach dopemux project labels.",
+                        )
+                        unknowns.append(f"docker ownership unlabeled: {c.name}")
                 # Port collision: container publishes port assigned to us but wrong name
                 if (
                     set(c.published_ports) & set(ports)
@@ -1079,10 +1147,7 @@ def run_mcp_doctor(
                 findings,
                 "TASK_ORCHESTRATOR_WRAPPER_SINGLETON_COMPAT",
                 "INFO",
-                (
-                    "task-orchestrator is wrapper-singleton "
-                    f"(fixed port, state_scope={to_spec.get('state_scope')})"
-                ),
+                "task-orchestrator is wrapper-singleton (fixed port, per-repo state)",
                 service="task-orchestrator",
             )
             base = to_spec.get("default_port_base") or 7890
@@ -1164,9 +1229,6 @@ def run_mcp_doctor(
                         target_worktree_hash=identity.worktree_hash,
                         listening=True,
                         docker_identity=docker_identity,
-                        multi_project_singleton=(
-                            to_spec.get("state_scope") == "multi_project_singleton"
-                        ),
                         skip_http=True,
                         for_start=False,
                     )
@@ -1195,9 +1257,6 @@ def run_mcp_doctor(
                         target_worktree_hash=identity.worktree_hash,
                         is_free_fn=is_free,
                         docker_identity=docker_identity,
-                        multi_project_singleton=(
-                            to_spec.get("state_scope") == "multi_project_singleton"
-                        ),
                         skip_http=False,
                         for_start=False,
                     )

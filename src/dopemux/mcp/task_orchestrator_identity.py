@@ -274,11 +274,6 @@ def probe_mcp_server_name(
     return str(name) if name else None
 
 
-def is_task_orchestrator_server_name(name: Optional[str]) -> bool:
-    """Return whether an MCP handshake identifies Task Orchestrator."""
-    return bool(name and "task-orchestrator" in name.lower())
-
-
 def probe_http_info(
     port: int = DEFAULT_TO_PORT,
     *,
@@ -552,7 +547,7 @@ class TOFixedPortEvaluation:
 
     port: int
     listening: bool
-    match: str  # OK | SHARED | WRONG_PROJECT | UNKNOWN | CONFLICT | FREE
+    match: str  # OK | WRONG_PROJECT | UNKNOWN | CONFLICT | FREE
     identity: Optional[TOIdentity]
     findings: List[Dict[str, Any]] = field(default_factory=list)
     start_allowed: bool = False
@@ -584,8 +579,6 @@ def evaluate_fixed_port_state(
     docker_identity: Optional[TOIdentity] = None,
     registry_identity: Optional[TOIdentity] = None,
     wrapper_identity: Optional[TOIdentity] = None,
-    multi_project_singleton: bool = False,
-    mcp_server_name: Optional[str] = None,
     skip_http: bool = False,
     metadata_base: Optional[Path] = None,
     for_start: bool = False,
@@ -631,52 +624,6 @@ def evaluate_fixed_port_state(
             "service": "task-orchestrator",
         }
     )
-
-    if multi_project_singleton:
-        server_name = mcp_server_name or probe_mcp_server_name(int(port))
-        if is_task_orchestrator_server_name(server_name):
-            findings.append(
-                {
-                    "code": "TASK_ORCHESTRATOR_SHARED_SINGLETON_OK",
-                    "severity": "INFO",
-                    "message": (
-                        f"task-orchestrator shared singleton verified on :{port} "
-                        f"via MCP serverInfo.name={server_name}"
-                    ),
-                    "service": "task-orchestrator",
-                    "evidence": [f"serverInfo.name={server_name}"],
-                }
-            )
-            return TOFixedPortEvaluation(
-                port=int(port),
-                listening=True,
-                match="SHARED",
-                identity=None,
-                findings=findings,
-                start_allowed=True,
-                start_block_code=None,
-            )
-        findings.append(
-            {
-                "code": "TASK_ORCHESTRATOR_SHARED_SINGLETON_UNVERIFIED",
-                "severity": "FAIL" if for_start else "UNKNOWN",
-                "message": (
-                    f"occupied :{port} is not verified as shared task-orchestrator "
-                    "by MCP handshake"
-                ),
-                "service": "task-orchestrator",
-                "evidence": [f"serverInfo.name={server_name or 'absent'}"],
-            }
-        )
-        return TOFixedPortEvaluation(
-            port=int(port),
-            listening=True,
-            match="UNKNOWN",
-            identity=None,
-            findings=findings,
-            start_allowed=False,
-            start_block_code="TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
-        )
 
     sources: List[TOIdentity] = []
     if http_identity is not None:

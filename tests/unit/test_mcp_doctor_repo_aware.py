@@ -164,83 +164,6 @@ def test_transport_match_and_mismatch(tmp_path: Path):
     assert report.exit_code == 1
 
 
-def test_catalog_rendered_stdio_proxies_match_transport(tmp_path: Path):
-    repo = _write_fixture_repo(
-        tmp_path,
-        mcp_servers={
-            "conport": {
-                "type": "stdio",
-                "command": "uvx",
-                "args": [
-                    "mcp-proxy",
-                    "--transport",
-                    "sse",
-                    "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
-                ],
-            },
-            "dope-memory": {
-                "type": "stdio",
-                "command": "uvx",
-                "args": [
-                    "mcp-proxy",
-                    "--transport",
-                    "streamablehttp",
-                    "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
-                ],
-            },
-            "task-orchestrator": {
-                "type": "stdio",
-                "command": "uvx",
-                "args": [
-                    "mcp-proxy",
-                    "--transport",
-                    "streamablehttp",
-                    "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
-                ],
-            },
-        },
-    )
-    report = run_mcp_doctor(
-        repo,
-        catalog=_catalog(),
-        skip_docker=True,
-        skip_port_probe=True,
-        process_env={},
-    )
-    codes = {(f["code"], f["service"]) for f in report.findings}
-    assert ("TRANSPORT_PROXY_MATCH", "conport") in codes
-    assert ("TRANSPORT_PROXY_MATCH", "dope-memory") in codes
-    assert ("TRANSPORT_PROXY_MATCH", "task-orchestrator") in codes
-    assert not any(code == "TRANSPORT_MISMATCH" for code, _ in codes)
-
-
-def test_stdio_proxy_with_wrong_inner_transport_fails(tmp_path: Path):
-    repo = _write_fixture_repo(
-        tmp_path,
-        mcp_servers={
-            "conport": {
-                "type": "stdio",
-                "command": "uvx",
-                "args": [
-                    "mcp-proxy",
-                    "--transport",
-                    "streamablehttp",
-                    "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
-                ],
-            },
-        },
-    )
-    report = run_mcp_doctor(
-        repo,
-        catalog=_catalog(),
-        skip_docker=True,
-        skip_port_probe=True,
-        process_env={},
-    )
-    codes = {(f["code"], f["service"]) for f in report.findings}
-    assert ("TRANSPORT_MISMATCH", "conport") in codes
-
-
 def test_compose_lifecycle_hazards_from_fixture(tmp_path: Path):
     compose = """
 services:
@@ -270,8 +193,8 @@ services:
     assert any("mcp-conport" in r for r in diag2["fixed_container_name_risks"])
     assert any(".dopemux" in r for r in diag2["relative_volume_risks"])
     by_code2 = {f["code"]: f for f in diag2["findings"]}
-    assert by_code2["COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK"]["severity"] == "WARN"
-    assert by_code2["COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK"]["severity"] == "WARN"
+    assert by_code2["COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK"]["severity"] == "FAIL"
+    assert by_code2["COMPOSE_MEMORY_VOLUME_RELATIVE_CWD_RISK"]["severity"] == "FAIL"
     assert any(
         "DOPEMUX_WORKSPACE_ID" in r for r in diag2["identity_env_risks"]
     )
@@ -390,17 +313,19 @@ def test_docker_wrong_project_fail(tmp_path: Path):
     assert report.status == "FAIL"
 
 
-def test_docker_foreign_worktree_port_is_not_target_service(tmp_path: Path):
+def test_docker_peer_conport_non_overlapping_port_is_info(tmp_path: Path):
+    """Foreign labelled ConPort on a different port is peer, not ownership FAIL."""
     repo = _write_fixture_repo(tmp_path)
 
     def fake_run(*args, **kwargs):
         row = {
-            "ID": "deadbeef",
-            "Names": "dopemux-other-dope-memory",
-            "Ports": "127.0.0.1:3020->3020/tcp",
+            "ID": "peerconport",
+            "Names": "dopemux-other-proj-aaaa-conport",
+            "Ports": "127.0.0.1:3111->3005/tcp",
             "Labels": (
                 "dopemux.project_root=/other/project,"
-                "dopemux.workspace_id=/other/project"
+                "dopemux.workspace_id=/other/project,"
+                "dopemux.project_id=other-proj"
             ),
             "Image": "x",
             "Status": "Up",
@@ -414,11 +339,242 @@ def test_docker_foreign_worktree_port_is_not_target_service(tmp_path: Path):
         skip_port_probe=True,
         process_env={},
     )
+    peer = [
+        f
+        for f in report.findings
+        if f["code"] == "DOCKER_PEER_PROJECT_INSTANCE" and f["service"] == "conport"
+    ]
+    assert peer, report.findings
+    assert peer[0]["severity"] == "INFO"
     assert not any(
-        f["code"] == "DOCKER_CONTAINER_WRONG_PROJECT"
-        and f["service"] == "dope-memory"
+        f["code"] == "DOCKER_CONTAINER_WRONG_PROJECT" and f["service"] == "conport"
         for f in report.findings
     )
+    # Peer classification itself must not contribute a FAIL; ambient lease/compose
+    # findings may still fail overall status in shared-host fixtures.
+    assert not any(
+        f["severity"] == "FAIL"
+        and f["code"] in {
+            "DOCKER_CONTAINER_WRONG_PROJECT",
+            "DOCKER_PEER_PROJECT_INSTANCE",
+            "DOCKER_PEER_INSTANCE_UNLABELED",
+        }
+        and f.get("service") == "conport"
+        for f in report.findings
+    )
+
+
+def test_docker_peer_dope_memory_non_overlapping_port_is_info(tmp_path: Path):
+    """Foreign labelled dope-memory on a different port is peer, not ownership FAIL."""
+    repo = _write_fixture_repo(tmp_path)
+
+    def fake_run(*args, **kwargs):
+        row = {
+            "ID": "peermem",
+            "Names": "dopemux-dnh-crm-8d6d-dope-memory",
+            "Ports": "127.0.0.1:3020->3020/tcp",
+            "Labels": (
+                "dopemux.project_root=/other/project,"
+                "dopemux.workspace_id=/other/project,"
+                "dopemux.project_id=dnh-crm"
+            ),
+            "Image": "x",
+            "Status": "Up",
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(row) + "\n", stderr="")
+
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        docker_runner=fake_run,
+        skip_port_probe=True,
+        process_env={},
+    )
+    peer = [
+        f
+        for f in report.findings
+        if f["code"] == "DOCKER_PEER_PROJECT_INSTANCE" and f["service"] == "dope-memory"
+    ]
+    assert peer, report.findings
+    assert peer[0]["severity"] == "INFO"
+    assert not any(
+        f["code"] == "DOCKER_CONTAINER_WRONG_PROJECT" and f["service"] == "dope-memory"
+        for f in report.findings
+    )
+
+
+def test_docker_peer_unlabeled_non_overlapping_is_warn(tmp_path: Path):
+    repo = _write_fixture_repo(tmp_path)
+
+    def fake_run(*args, **kwargs):
+        row = {
+            "ID": "peerunlab",
+            "Names": "mcp-conport-other",
+            "Ports": "127.0.0.1:3999->3005/tcp",
+            "Labels": "",
+            "Image": "x",
+            "Status": "Up",
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(row) + "\n", stderr="")
+
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        docker_runner=fake_run,
+        skip_port_probe=True,
+        process_env={},
+    )
+    peer = [
+        f
+        for f in report.findings
+        if f["code"] == "DOCKER_PEER_INSTANCE_UNLABELED" and f["service"] == "conport"
+    ]
+    assert peer, report.findings
+    assert peer[0]["severity"] == "WARN"
+    assert not any(
+        f["code"] == "DOCKER_CONTAINER_UNLABELED_UNKNOWN" and f["service"] == "conport"
+        for f in report.findings
+    )
+
+
+def test_docker_exact_expected_container_wrong_project_blocks(tmp_path: Path):
+    """Exact lifecycle name with foreign labels remains FAIL even without port overlap."""
+    from dopemux.mcp import docker_runtime as dr
+    from dopemux.mcp.port_diagnostics import instance_id_for_path
+    from dopemux.mcp.doctor import _expected_container_name_for_service
+    from dopemux.mcp.runtime_state import resolve_identity_view
+    from dopemux.mcp.envrc import load_envrc
+
+    repo = _write_fixture_repo(tmp_path)
+    envrc = load_envrc(repo / ".envrc.dopemux-mcp")
+    identity = resolve_identity_view(repo, envrc_values=envrc.values)
+    expected = _expected_container_name_for_service(
+        "conport",
+        project_root=identity.project_root,
+        worktree_hash=identity.worktree_hash or instance_id_for_path(str(repo)),
+        project_id=identity.project_id,
+        repo_path=repo,
+    )
+    assert expected
+    # Sanity: name uses lifecycle contract
+    assert expected == dr.container_name_for(
+        dr.project_slug(repo.name),
+        identity.worktree_hash or instance_id_for_path(str(repo)),
+        "conport",
+    )
+
+    def fake_run(*args, **kwargs):
+        row = {
+            "ID": "exactwrong",
+            "Names": expected,
+            "Ports": "127.0.0.1:3998->3005/tcp",
+            "Labels": (
+                "dopemux.project_root=/other/project,"
+                "dopemux.workspace_id=/other/project,"
+                "dopemux.project_id=other"
+            ),
+            "Image": "x",
+            "Status": "Up",
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(row) + "\n", stderr="")
+
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        docker_runner=fake_run,
+        skip_port_probe=True,
+        process_env={},
+    )
+    assert any(
+        f["code"] == "DOCKER_CONTAINER_WRONG_PROJECT" and f["service"] == "conport"
+        for f in report.findings
+    )
+    assert report.status == "FAIL"
+
+
+def test_docker_exact_expected_container_unlabeled_fail_closed(tmp_path: Path):
+    from dopemux.mcp.doctor import _expected_container_name_for_service
+    from dopemux.mcp.envrc import load_envrc
+    from dopemux.mcp.port_diagnostics import instance_id_for_path
+    from dopemux.mcp.runtime_state import resolve_identity_view
+
+    repo = _write_fixture_repo(tmp_path)
+    envrc = load_envrc(repo / ".envrc.dopemux-mcp")
+    identity = resolve_identity_view(repo, envrc_values=envrc.values)
+    expected = _expected_container_name_for_service(
+        "conport",
+        project_root=identity.project_root,
+        worktree_hash=identity.worktree_hash or instance_id_for_path(str(repo)),
+        project_id=identity.project_id,
+        repo_path=repo,
+    )
+    assert expected
+
+    def fake_run(*args, **kwargs):
+        row = {
+            "ID": "exactunlab",
+            "Names": expected,
+            "Ports": "127.0.0.1:3997->3005/tcp",
+            "Labels": "",
+            "Image": "x",
+            "Status": "Up",
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(row) + "\n", stderr="")
+
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        docker_runner=fake_run,
+        skip_port_probe=True,
+        process_env={},
+    )
+    assert any(
+        f["code"] == "DOCKER_CONTAINER_UNLABELED_UNKNOWN" and f["service"] == "conport"
+        for f in report.findings
+    )
+
+
+def test_docker_task_orchestrator_wrong_project_on_7890_blocks(tmp_path: Path):
+    repo = _write_fixture_repo(tmp_path)
+
+    def fake_run(*args, **kwargs):
+        row = {
+            "ID": "toforeign",
+            "Names": "task-orchestrator-other-deadbeef",
+            "Ports": "127.0.0.1:7890->7890/tcp",
+            "Labels": (
+                "dopemux.project_root=/other/project,"
+                "dopemux.workspace_id=/other/project,"
+                "dopemux.project_id=other-proj,"
+                "dopemux.managed=true,"
+                "dopemux.service=task-orchestrator"
+            ),
+            "Image": "x",
+            "Status": "Up",
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(row) + "\n", stderr="")
+
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        docker_runner=fake_run,
+        skip_port_probe=True,
+        process_env={},
+    )
+    codes = {f["code"] for f in report.findings if f.get("service") == "task-orchestrator"}
+    # Port-overlap foreign holder must remain a hard ownership/runtime conflict.
+    assert (
+        "DOCKER_CONTAINER_WRONG_PROJECT" in codes
+        or "TASK_ORCHESTRATOR_WRONG_PROJECT_RUNTIME" in codes
+        or any(
+            f["code"] == "DOCKER_CONTAINER_PORT_COLLISION"
+            and f.get("service") == "task-orchestrator"
+            for f in report.findings
+        )
+    ), report.findings
+    assert "DOCKER_PEER_PROJECT_INSTANCE" not in {
+        f["code"] for f in report.findings if f.get("service") == "task-orchestrator"
+    }
 
 
 def test_docker_unlabeled_unknown(tmp_path: Path):
