@@ -3,7 +3,7 @@
   "project": "dopemux-mvp",
   "repository": "DDD-Enterprises/dopemux-mvp",
   "authorized_base_sha": "f4e91574a11e7f0e73d096b7b36def0230627727",
-  "final_head_sha": "4cd67f0bddc598ee13ba78d77a22e463cde6f076",
+  "final_head_sha": "6090a277c57d03c767cb10bad8af25784fac28b8",
   "branch": "fix/dope-context-voyage4-repair-0002",
   "worktree": "/Users/hue/.grok/worktrees/code-dopemux-mvp/tp-voyage4-repair-0002",
   "objective_status": "IMPLEMENTATION_COMPLETE_AUDIT_BLOCKED",
@@ -59,5 +59,7 @@
   ],
   "deployment_status": "NOT_RUN",
   "stop_condition": "embedded_audit_tools_unavailable",
-  "note": "After push, PR head is authoritative; re-pin if auditor lands a follow-up commit."
+  "note": "Push tip after this docs pin is authoritative; re-pin after independent audit.",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1126",
+  "pr_number": 1126
 }
