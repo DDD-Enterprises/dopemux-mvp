@@ -1,0 +1,23 @@
+{
+  "commit_sha": "210616ecf072ee8b2078cffd288cc4432fd66dcd",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Removed pnpm-lock.yaml from repository root to resolve root-hygiene check.",
+      "Added onKeyDown handlers to connection status Chip and copy AI recommendation Chip in App.tsx.",
+      "Configured custom high-contrast focus rings for MuiButton and MuiIconButton in theme.ts."
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1124/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "210616ecf072ee8b2078cffd288cc4432fd66dcd",
+  "pr_number": 1124,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
