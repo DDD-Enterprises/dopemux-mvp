@@ -7,7 +7,11 @@ from pathlib import Path
 from typing import Any
 
 from tools.pr_steward.security_release_gate import classify_security_release_paths
-from tools.pr_steward.security_release_approval import evaluate_security_release_approval
+from tools.pr_steward.security_release_approval import (
+    compute_app_gate_ok,
+    evaluate_security_release_approval,
+    load_trusted_security_apps,
+)
 from tools.pr_steward.solo_owner_security_release import (
     evaluate_solo_owner_security_release,
 )
@@ -87,6 +91,11 @@ def load_known_reviewers(path: Path) -> tuple[set[str], set[str]]:
 def load_trusted_security_approvers(path: Path) -> list[str]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     return [str(item) for item in payload.get("trusted_security_release_approvers", [])]
+
+
+def load_trusted_security_release_apps(path: Path) -> list[dict[str, str]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return load_trusted_security_apps(payload)
 
 
 def build_artifacts(
@@ -252,6 +261,9 @@ def build_artifacts(
         changed_paths + renamed_from_paths
     )
     trusted_security_approvers = load_trusted_security_approvers(known_path)
+    trusted_security_apps = load_trusted_security_release_apps(known_path)
+    # Human approvals evaluate fully here. App approvals require non-security
+    # gates first, so app_gate_ok=False until proof/audit/thread state is known.
     security_release_errors = evaluate_security_release_approval(
         harvest.get("security_release_approval"),
         required=security_classification.required,
@@ -259,6 +271,8 @@ def build_artifacts(
         expected_pr=pr_number,
         expected_head_sha=pr["head_sha"],
         trusted_approvers=trusted_security_approvers,
+        trusted_apps=trusted_security_apps,
+        app_gate_ok=False,
     )
     for err in security_release_errors:
         _append_once(blockers, err)
@@ -268,6 +282,11 @@ def build_artifacts(
         "categories": list(security_classification.categories),
         "approval": harvest.get("security_release_approval"),
         "solo_owner_override": None,
+        "approval_kind": None,
+        "trusted_apps": [
+            {"login": a.get("login"), "owner": a.get("owner")}
+            for a in trusted_security_apps
+        ],
     }
     proof = _proof(harvest, pr_head_sha=pr["head_sha"])
     proof_status = _proof_status(proof)
@@ -287,8 +306,51 @@ def build_artifacts(
     if not proof["proof_head_sha"]:
         _append_once(unknowns, "Proof head SHA missing")
 
+    proof_status_str = str(
+        proof_status.get("status") if isinstance(proof_status, dict) else proof_status
+        or ""
+    )
+
+    # Org-owned GitHub App path: re-evaluate with full gate context.
+    if security_classification.required and any(
+        str(b).startswith("SECURITY_RELEASE_") for b in blockers
+    ):
+        app_gate_ok = compute_app_gate_ok(
+            audit_status=str(audit_status or ""),
+            proof_status=proof_status_str,
+            blockers=blockers,
+            unclassified_review_item_count=unclassified_count,
+        )
+        app_errors = evaluate_security_release_approval(
+            harvest.get("security_release_approval"),
+            required=True,
+            expected_repo=repo,
+            expected_pr=pr_number,
+            expected_head_sha=pr["head_sha"],
+            trusted_approvers=trusted_security_approvers,
+            trusted_apps=trusted_security_apps,
+            app_gate_ok=app_gate_ok,
+        )
+        if not app_errors:
+            blockers[:] = [
+                b for b in blockers if not str(b).startswith("SECURITY_RELEASE_")
+            ]
+            security_release_errors = []
+            security_release["approved"] = True
+            security_release["approval_kind"] = "github_app"
+            security_release["approval"] = harvest.get("security_release_approval")
+        else:
+            # Replace prior security blockers with latest evaluation (may include
+            # APP_GATES_NOT_MET / APP_UNKNOWN while preserving REQUIRED).
+            blockers[:] = [
+                b for b in blockers if not str(b).startswith("SECURITY_RELEASE_")
+            ]
+            for err in app_errors:
+                _append_once(blockers, err)
+            security_release_errors = list(app_errors)
+
     # Solo-owner path (ADR-DMX-PRSTEWARD-SOLOOWNER-001): only after ordinary
-    # approval failed, and only when every non-security gate is already clean.
+    # human/app approval failed, and only when every non-security gate is clean.
     if security_classification.required and any(
         str(b).startswith("SECURITY_RELEASE_") for b in blockers
     ):
@@ -303,10 +365,6 @@ def build_artifacts(
             "report_path": raw_audit.get("report_path")
             or embedded_audit.get("report_path"),
         }
-        proof_status_str = str(
-            proof_status.get("status") if isinstance(proof_status, dict) else proof_status
-            or ""
-        )
         solo = evaluate_solo_owner_security_release(
             required=True,
             trusted_approvers=trusted_security_approvers,
@@ -331,12 +389,16 @@ def build_artifacts(
             security_release["solo_owner_override"] = solo.receipt
             # Never fabricate a GitHub APPROVED review object.
             security_release["approval"] = None
+            security_release["approval_kind"] = "solo_owner_phrase"
             security_release["override_receipt_code"] = solo.receipt["receipt_code"]
         elif solo.diagnostic_errors:
             # Preserve ordinary SECURITY_RELEASE_* blockers; attach diagnostics as unknowns.
             for diag in solo.diagnostic_errors:
                 if not str(diag).startswith("SECURITY_RELEASE_"):
                     _append_once(unknowns, f"solo_owner:{diag}")
+
+    if security_release["approved"] and security_release.get("approval_kind") is None:
+        security_release["approval_kind"] = "human_review"
 
     readiness = _readiness(blockers)
     tier = _risk_tier(readiness)
