@@ -1,6 +1,7 @@
 ---
 id: adr-dmx-mcp-peer-project-preflight-001
-title: 'ADR-DMX-MCP-PEER-PROJECT-PREFLIGHT-001: Distinguish Peer MCP Instances from Ownership Collisions'
+title: 'ADR-DMX-MCP-PEER-PROJECT-PREFLIGHT-001: Distinguish Peer MCP Instances from
+  Ownership Collisions'
 type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
@@ -12,10 +13,11 @@ graph_metadata:
   node_type: ADR
   impact: medium
   relates_to:
-    - TP-DMX-MCP-PEER-PROJECT-PREFLIGHT-001
-    - adr-mcpint-001
+  - TP-DMX-MCP-PEER-PROJECT-PREFLIGHT-001
+  - adr-mcpint-001
+prelude: 'ADR-DMX-MCP-PEER-PROJECT-PREFLIGHT-001: Distinguish Peer MCP Instances from
+  Ownership Collisions (adr) for dopemux documentation and developer workflows.'
 ---
-
 # ADR-DMX-MCP-PEER-PROJECT-PREFLIGHT-001
 
 ## Distinguish Peer MCP Instances from Ownership Collisions
