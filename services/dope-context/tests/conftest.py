@@ -291,8 +291,38 @@ def _install_voyageai_stub() -> None:
         ):
             return types.SimpleNamespace(results=[])
 
+    class _StubVoyageClient:
+        """Test double for the SYNCHRONOUS voyageai.Client.
+
+        The real module exposes both Client and AsyncClient, and
+        src/utils/model_tokenizer.py resolves the sync one via
+        getattr(voyageai, "Client", None) for tokenize(). A stub that omitted
+        it made VoyageTokenCounter fall back to _client = None, which silently
+        disables the model-aware tokenizer path this suite means to exercise.
+        """
+
+        def __init__(
+            self,
+            api_key: Optional[str] = None,
+            max_retries: int = 0,
+            timeout: Optional[float] = None,
+            base_url: Optional[str] = None,
+        ) -> None:
+            pass
+
+        def tokenize(self, texts: List[str], model: Optional[str] = None) -> List[Any]:
+            # Mirrors tokenizers.Encoding: only .ids is consumed.
+            return [
+                types.SimpleNamespace(ids=list(range(max(1, len(t) // 4))))
+                for t in texts
+            ]
+
+        def count_tokens(self, texts: List[str], model: Optional[str] = None) -> int:
+            return sum(max(1, len(t) // 4) for t in texts)
+
     voyageai_module = types.ModuleType("voyageai")
     voyageai_module.AsyncClient = _StubVoyageAsyncClient  # type: ignore[attr-defined]
+    voyageai_module.Client = _StubVoyageClient  # type: ignore[attr-defined]
     voyageai_module._dope_context_test_stub = True  # type: ignore[attr-defined]
 
     sys.modules.setdefault("voyageai", voyageai_module)
