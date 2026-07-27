@@ -1,0 +1,106 @@
+{
+  "bundle_id": "PROOF-DMX-DCP-MODEL-ROUTING-MVP-0000R-001",
+  "run_id": "dcp-0000r-20260727T031523Z-001",
+  "skill": "dcp-runtime-reconciliation",
+  "status": "COMPLETE",
+  "validation_state": "PASS_WITH_RISKS",
+  "created_at": "2026-07-27T03:18:20Z",
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000R",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "dcp/model-routing-0000r-runtime-reconcile",
+  "base_sha": "9a52ecf4328f28756c3e87a2c351e60d46b805f6",
+  "subject_sha": "24a7ef909533c533edbf6d8ad4e529d5ff7b8415",
+  "authoritative_artifacts": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.json",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PROOF.json",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.md"
+  ],
+  "supporting_artifacts": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/COMMAND_LOG.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/EVIDENCE_LEDGER.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PAL_CHAIN.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/FINAL_STATUS_PORCELAIN.txt",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/DIFF_NAME_ONLY.txt",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/DIFF_STAT.txt",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/HANDOFF.json",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/HANDOFF.md",
+    "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000R.md",
+    "docs/03-reference/dcp/current-main-runtime-reconciliation.md",
+    "docs/03-reference/dcp/current-main-runtime-reconciliation.json"
+  ],
+  "handoff_refs": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/HANDOFF.json"
+  ],
+  "parent_bundle_refs": [],
+  "review_order_hint": [
+    "CURRENT_MAIN_RUNTIME_RECONCILIATION.md",
+    "EVIDENCE_LEDGER.md",
+    "AUDITOR_REPORT.md",
+    "PROOF.json",
+    "HANDOFF.md"
+  ],
+  "chain_of_custody": {
+    "primary_executor": "Claude Code Sonnet (max-turns aborted at 80; orchestrator completed audit+commit)",
+    "embedded_auditor_requested": "Claude Code Opus",
+    "embedded_auditor_result": "aborted_streaming; completion audit PASS_WITH_RISKS",
+    "supervisor": "GPT-5.5 Pro (pending end-of-tranche gate)"
+  },
+  "commands": [
+    {
+      "name": "compileall",
+      "command": "python -m compileall -q src/dopemux/dcp src/dopemux/commands",
+      "exit_code": 0
+    },
+    {
+      "name": "pytest",
+      "command": "python -m pytest -q tests/unit/dcp tests/dcp/test_dcp_model_routing_0001_domain.py",
+      "exit_code": 0
+    },
+    {
+      "name": "verify-pal",
+      "command": "bash scripts/opencode/verify-pal.sh",
+      "exit_code": 0
+    },
+    {
+      "name": "compose-resolved",
+      "command": "docker compose config --format json",
+      "exit_code": 0
+    },
+    {
+      "name": "docker-ps",
+      "command": "docker ps --format '{{json .}}'",
+      "exit_code": 0
+    },
+    {
+      "name": "dopemux-help",
+      "command": "python -m dopemux.cli --help",
+      "exit_code": null
+    },
+    {
+      "name": "dcp-help",
+      "command": "python -m dopemux.cli dcp --help",
+      "exit_code": null
+    }
+  ],
+  "embedded_audit": {
+    "auditor_tool": "Claude Code CLI",
+    "auditor_model": "claude-opus-5 (aborted) + grok-4.5-build completion",
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.md"
+  },
+  "remaining_risks": [
+    "Opus independent audit stream aborted before full verdict",
+    "origin/main advanced past subject base after branch creation",
+    "Adjacent DCP test suites not executed (UNKNOWN)",
+    "No live HTTP health probe of pal/litellm endpoints",
+    "reference-scan contains existing repo default password placeholders"
+  ],
+  "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "hard_constraints_honored": {
+    "no_trusted_adapter_mutation": true,
+    "no_runner_invocation_authorized": true,
+    "no_model_connector_mcp_write_dopetask_to_mutations_from_dcp": true,
+    "no_merge": true
+  }
+}

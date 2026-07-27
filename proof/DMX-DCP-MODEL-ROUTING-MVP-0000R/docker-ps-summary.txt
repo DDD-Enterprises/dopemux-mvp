@@ -1,0 +1,29 @@
+container_count=28
+dopemux-dopemux-mvp-6a4f-dope-memory	dopemux_dopemux-mvp_6a4f-dope-memory	Up 51 minutes (healthy)	127.0.0.1:3035->3020/tcp
+dopemux-dopemux-mvp-6a4f-conport	dopemux_dopemux-mvp_6a4f-conport	Up 51 minutes (healthy)	127.0.0.1:3004-3005->3004-3005/tcp, 127.0.0.1:4019->4004/tcp
+mcp-pal	dopemux-pal	Up 51 minutes (healthy)	0.0.0.0:3003->3003/tcp, [::]:3003->3003/tcp
+mcp-pal-stdio	dopemux-pal-stdio	Up 51 minutes
+pal-mcp-server	pal-mcp-server:latest	Up 51 minutes (healthy)
+dnh_crm_tgmirror0117-dope-memory-1	dnh_crm_tgmirror0117-dope-memory	Up 51 minutes (healthy)	127.0.0.1:35104->3020/tcp
+dopemux-dopemux-mvp-dcd6-dope-memory	dopemux_dopemux_mvp_dcd6-dope-memory	Up 51 minutes (healthy)	127.0.0.1:3054->3020/tcp
+mcp-litellm	dopemux-litellm	Up 51 minutes (healthy)	0.0.0.0:4000->4000/tcp, [::]:4000->4000/tcp
+dopemux-dnh-crm-8d6d-dope-memory	dopemux_dnh-crm_8d6d-dope-memory	Up 51 minutes (healthy)	127.0.0.1:3020->3020/tcp
+task-orchestrator-dnh_crm-9a4e9aa8a329cdd5	e47ed00aae31	Up 51 minutes	127.0.0.1:7890->7890/tcp
+dope-decision-graph-bridge	dopemux-dopecon-bridge	Up 51 minutes (healthy)	0.0.0.0:3016->3016/tcp, [::]:3016->3016/tcp
+dopemux-dope-memory-1	dopemux-dope-memory	Up 51 minutes (healthy)	0.0.0.0:3060->3020/tcp, [::]:3060->3020/tcp
+task-orchestrator	dopemux-task-orchestrator	Up 51 minutes (healthy)	0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+litellm-db	postgres:16.6	Up 51 minutes (healthy)	0.0.0.0:2543->5432/tcp, [::]:2543->5432/tcp
+leantime	dopemux-leantime	Up 51 minutes (healthy)	0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+redis_leantime	redis:7-alpine	Up 51 minutes (healthy)	6379/tcp
+dopemux-postgres-age	apache/age:release_PG16_1.6.0	Up 51 minutes (healthy)	0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+dopemux-mcp-gptr-mcp	dopemux-gptr-mcp	Up 51 minutes (healthy)	0.0.0.0:3009->3009/tcp, [::]:3009->3009/tcp
+mcp-exa	dopemux-exa	Up 51 minutes (healthy)	0.0.0.0:3011->3011/tcp, [::]:3011->3011/tcp
+dopemux-mcp-desktop-commander	dopemux-desktop-commander	Up 51 minutes (healthy)	127.0.0.1:3012->3012/tcp
+dopemux-mcp-leantime-bridge	dopemux-leantime-bridge	Up 51 minutes (healthy)	127.0.0.1:3015->3015/tcp
+mysql_leantime	mysql:8.0	Up 51 minutes (healthy)	3306/tcp, 33060/tcp
+dopemux-mcp-serena	dopemux-serena	Up 51 minutes (healthy)	0.0.0.0:3006->3006/tcp, [::]:3006->3006/tcp, 0.0.0.0:4006->4006/tcp, [::]:4006->4006/tcp
+mcp-dope-context	dopemux-dope-context	Up 51 minutes (healthy)	127.0.0.1:3010->3010/tcp
+mcp-qdrant	qdrant/qdrant:latest	Up 51 minutes	0.0.0.0:6333-6334->6333-6334/tcp, [::]:6333-6334->6333-6334/tcp
+redis-primary	redis:7-alpine	Up 51 minutes (healthy)	0.0.0.0:6380->6379/tcp, [::]:6380->6379/tcp
+redis-events	redis:7-alpine	Up 51 minutes (healthy)	0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
+pal-mcp-server-stale-20260721	a34ca362b93f	Up 51 minutes (unhealthy)

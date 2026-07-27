@@ -1,0 +1,1160 @@
+{
+  "name": "dopemux",
+  "networks": {
+    "dopemux-network": {
+      "external": true,
+      "ipam": {},
+      "name": "dopemux-network"
+    }
+  },
+  "services": {
+    "adhd-dashboard": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "services/adhd-dashboard/Dockerfile"
+      },
+      "command": null,
+      "depends_on": {
+        "adhd-engine": {
+          "condition": "service_healthy",
+          "required": true
+        },
+        "redis-primary": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "ADHD_ENGINE_API_KEY": "",
+        "ADHD_ENGINE_REDIS_PREFIX": "default",
+        "ADHD_ENGINE_URL": "http://adhd-engine:8095",
+        "ALLOWED_ORIGINS": "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8097,http://127.0.0.1:8097",
+        "DASHBOARD_API_KEY": "",
+        "DASHBOARD_USER_ID": "default",
+        "REDIS_URL": "redis://redis-primary:6379"
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "20s",
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8097/health', timeout=2)"
+        ],
+        "timeout": "5s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "8097",
+          "target": 8097
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "adhd-engine": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "services/adhd_engine/Dockerfile"
+      },
+      "command": null,
+      "depends_on": {
+        "redis-primary": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "ADHD_ENGINE_API_KEY": "",
+        "ADHD_ENGINE_REDIS_PREFIX": "default",
+        "ALLOWED_ORIGINS": "http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097",
+        "API_PORT": "8095",
+        "CONPORT_URL": "http://conport:3005",
+        "DOPECON_BRIDGE_SOURCE_PLANE": "cognitive_plane",
+        "DOPECON_BRIDGE_URL": "http://dopecon-bridge:3016",
+        "DPMX_ENV": "",
+        "ENVIRONMENT": "",
+        "HOST": "0.0.0.0",
+        "REDIS_URL": "redis://redis-primary:6379"
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "30s",
+        "test": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8095/health || exit 1"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "3025",
+          "target": 8095
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "conport": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "docker/mcp-servers/conport/Dockerfile"
+      },
+      "command": null,
+      "container_name": "mcp-conport",
+      "depends_on": {
+        "dopecon-bridge": {
+          "condition": "service_started",
+          "required": true
+        },
+        "mcp-qdrant": {
+          "condition": "service_started",
+          "required": true
+        },
+        "postgres": {
+          "condition": "service_healthy",
+          "required": true
+        },
+        "redis-primary": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "AGE_HOST": "dopemux-postgres-age",
+        "AGE_PASSWORD": "[REDACTED]",
+        "AGE_PORT": "5432",
+        "DATABASE_URL": "postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph",
+        "DOPECON_BRIDGE_URL": "http://dopecon-bridge:3016",
+        "DOPEMUX_INSTANCE_ID": "",
+        "DOPE_MEMORY_EVENTS_REDIS_URL": "redis://redis-events:6379",
+        "DOPE_MEMORY_INPUT_STREAM": "activity.events.v1",
+        "MCP_SERVER_PORT": "3005",
+        "POSTGRES_URL": "postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph",
+        "QDRANT_URL": "http://mcp-qdrant:6333",
+        "REDIS_URL": "redis://redis-primary:6379"
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "30s",
+        "test": [
+          "CMD-SHELL",
+          "curl -f http://localhost:3004/health || exit 1"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "3004",
+          "target": 3004
+        },
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "3005",
+          "target": 3005
+        },
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "4004",
+          "target": 4004
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "desktop-commander": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "docker/mcp-servers/desktop-commander/Dockerfile"
+      },
+      "command": null,
+      "container_name": "dopemux-mcp-desktop-commander",
+      "entrypoint": null,
+      "environment": {
+        "DISPLAY": "/var/run/com.apple.launchd.hDHzr8uJou/org.xquartz:0",
+        "MCP_SERVER_PORT": "3012"
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "test": [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:3012/health"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "3012",
+          "target": 3012
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "dope-context": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "services/dope-context/Dockerfile"
+      },
+      "command": null,
+      "container_name": "mcp-dope-context",
+      "depends_on": {
+        "mcp-qdrant": {
+          "condition": "service_started",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "ANTHROPIC_API_KEY": "",
+        "DOPEMUX_WORKSPACE_ROOT": "/workspaces/",
+        "HOST_CODE_PARENT_DIR": "",
+        "HOST_PROJECT_RELATIVE_PATH": "",
+        "MCP_SERVER_HOST": "0.0.0.0",
+        "MCP_SERVER_PORT": "3010",
+        "OPENAI_API_KEY": "",
+        "QDRANT_URL": "http://mcp-qdrant:6333",
+        "VOYAGEAI_API_KEY": "[REDACTED]",
+        "VOYAGE_API_KEY": "[REDACTED]"
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "45s",
+        "test": [
+          "CMD-SHELL",
+          "curl -f http://localhost:3010/health || exit 1"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "3010",
+          "target": 3010
+        }
+      ],
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "bind": {},
+          "source": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile/services/dope-context/data",
+          "target": "/app/data",
+          "type": "bind"
+        },
+        {
+          "bind": {},
+          "source": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile/services/dope-context/logs",
+          "target": "/app/logs",
+          "type": "bind"
+        },
+        {
+          "bind": {},
+          "source": "/tmp",
+          "target": "/workspaces",
+          "type": "bind"
+        }
+      ]
+    },
+    "dope-memory": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "services/working-memory-assistant/Dockerfile.dope-memory"
+      },
+      "command": null,
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy",
+          "required": true
+        },
+        "redis-events": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "ALLOWED_ORIGINS": "http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097",
+        "DOPEMUX_CAPTURE_LEDGER_PATH": "/data/chronicle.sqlite",
+        "DOPEMUX_SQLITE_JOURNAL_MODE": "DELETE",
+        "DOPE_MEMORY_WORKSPACE_ID": "default",
+        "ENABLE_EVENTBUS": "true",
+        "ENABLE_MIRROR_SYNC": "false",
+        "ENVIRONMENT": "production",
+        "MIRROR_SCHEMA_RESET": "false",
+        "POSTGRES_DB": "dopemux_knowledge_graph",
+        "POSTGRES_HOST": "postgres",
+        "POSTGRES_PASSWORD": "[REDACTED]",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_URL": "postgresql://dopemux_age:dopemux_age_dev_password@postgres:5432/dopemux_knowledge_graph",
+        "POSTGRES_USER": "dopemux_age",
+        "REDIS_URL": "redis://redis-events:6379",
+        "WMA_ENCRYPTION_KEY": "",
+        "WMA_SECRET_KEY": ""
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "30s",
+        "test": [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:3020/health"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "3020",
+          "target": 3020
+        }
+      ],
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "bind": {},
+          "source": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile/.dopemux",
+          "target": "/data",
+          "type": "bind"
+        }
+      ]
+    },
+    "dopecon-bridge": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "services/dopecon-bridge/Dockerfile"
+      },
+      "command": null,
+      "container_name": "dope-decision-graph-bridge",
+      "depends_on": {
+        "mcp-qdrant": {
+          "condition": "service_started",
+          "required": true
+        },
+        "postgres": {
+          "condition": "service_healthy",
+          "required": true
+        },
+        "redis-events": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "AGE_HOST": "dopemux-postgres-age",
+        "AGE_PASSWORD": "[REDACTED]",
+        "AGE_PORT": "5432",
+        "PORT_BASE": "3000",
+        "POSTGRES_URL": "postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph",
+        "QDRANT_URL": "http://mcp-qdrant:6333",
+        "REDIS_URL": "redis://redis-events:6379"
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "30s",
+        "test": [
+          "CMD-SHELL",
+          "curl -f http://localhost:3016/health || exit 1"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "3016",
+          "target": 3016
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "gptr-mcp": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "docker/mcp-servers/gptr-mcp/Dockerfile"
+      },
+      "command": null,
+      "container_name": "dopemux-mcp-gptr-mcp",
+      "entrypoint": null,
+      "environment": {
+        "LLM_BACKEND": "openai",
+        "MCP_SERVER_PORT": "3009",
+        "OPENAI_API_KEY": "",
+        "TAVILY_API_KEY": "[REDACTED]"
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "test": [
+          "CMD-SHELL",
+          "curl -f http://localhost:3009/health || exit 1"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "3009",
+          "target": 3009
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "leantime": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile/docker/leantime",
+        "dockerfile": "Dockerfile"
+      },
+      "command": null,
+      "container_name": "leantime",
+      "depends_on": {
+        "mysql_leantime": {
+          "condition": "service_healthy",
+          "required": true
+        },
+        "redis_leantime": {
+          "condition": "service_started",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "LEAN_ADHD_MODE": "true",
+        "LEAN_API_ENABLED": "true",
+        "LEAN_APP_URL": "http://localhost:8080",
+        "LEAN_CONTEXT_PRESERVATION": "true",
+        "LEAN_DB_DATABASE": "leantime",
+        "LEAN_DB_HOST": "mysql_leantime",
+        "LEAN_DB_PASSWORD": "[REDACTED]",
+        "LEAN_DB_PORT": "3306",
+        "LEAN_DB_USER": "leantime",
+        "LEAN_DEBUG": "0",
+        "LEAN_MCP_ENABLED": "true",
+        "LEAN_MCP_TOKEN": "",
+        "LEAN_NOTIFICATION_BATCH": "true",
+        "LEAN_SESSION_EXPIRATION": "28800",
+        "LEAN_SESSION_PASSWORD": "[REDACTED]",
+        "LEAN_SITENAME": "Dopemux Leantime",
+        "REDIS_HOST": "redis_leantime",
+        "REDIS_PASSWORD": ""
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 5,
+        "start_period": "1m0s",
+        "test": [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:80/ >/dev/null || exit 1"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "8080",
+          "target": 80
+        }
+      ],
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "leantime_public_userfiles",
+          "target": "/var/www/html/public/userfiles",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "leantime_userfiles",
+          "target": "/var/www/html/userfiles",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {},
+          "source": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile/docker/leantime/plugins",
+          "target": "/var/www/html/app/Plugins",
+          "type": "bind"
+        },
+        {
+          "source": "leantime_logs",
+          "target": "/var/www/html/storage/logs",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "leantime_config",
+          "target": "/var/www/html/config",
+          "type": "volume",
+          "volume": {}
+        }
+      ]
+    },
+    "leantime-bridge": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "docker/mcp-servers/leantime-bridge/Dockerfile"
+      },
+      "command": null,
+      "container_name": "dopemux-mcp-leantime-bridge",
+      "depends_on": {
+        "leantime": {
+          "condition": "service_started",
+          "required": true
+        },
+        "mcp-qdrant": {
+          "condition": "service_started",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "LEANTIME_API_TOKEN": "",
+        "LEANTIME_API_URL": "http://leantime:80",
+        "MCP_SERVER_HOST": "0.0.0.0",
+        "MCP_SERVER_PORT": "3015",
+        "REDIS_URL": "redis://redis-primary:6379"
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "test": [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:3015/health"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "3015",
+          "target": 3015
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "litellm": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "docker/mcp-servers/litellm/Dockerfile"
+      },
+      "command": null,
+      "container_name": "mcp-litellm",
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "ANTHROPIC_API_KEY": "",
+        "DATABASE_URL": "postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm",
+        "GEMINI_API_KEY": "",
+        "LITELLM_MASTER_KEY": "",
+        "OPENAI_API_KEY": "",
+        "OPENROUTER_API_KEY": "",
+        "XAI_API_KEY": ""
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "45s",
+        "test": [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:4000/health/readiness || exit 1"
+        ],
+        "timeout": "5s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "4000",
+          "target": 4000
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "mcp-qdrant": {
+      "command": null,
+      "container_name": "mcp-qdrant",
+      "entrypoint": null,
+      "image": "qdrant/qdrant:latest",
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "6333",
+          "target": 6333
+        },
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "6334",
+          "target": 6334
+        }
+      ],
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "dope-decision-graph-qdrant-data",
+          "target": "/qdrant/storage",
+          "type": "volume",
+          "volume": {}
+        }
+      ]
+    },
+    "mysql_leantime": {
+      "command": [
+        "--character-set-server=UTF8MB4",
+        "--collation-server=UTF8MB4_unicode_ci",
+        "--default-authentication-plugin=mysql_native_password"
+      ],
+      "container_name": "mysql_leantime",
+      "entrypoint": null,
+      "environment": {
+        "MYSQL_DATABASE": "leantime",
+        "MYSQL_PASSWORD": "[REDACTED]",
+        "MYSQL_ROOT_PASSWORD": "[REDACTED]",
+        "MYSQL_USER": "leantime"
+      },
+      "healthcheck": {
+        "interval": "10s",
+        "retries": 10,
+        "start_period": "30s",
+        "test": [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -u root -pleantime_root_dev || exit 1"
+        ],
+        "timeout": "5s"
+      },
+      "image": "mysql:8.0",
+      "networks": {
+        "dopemux-network": null
+      },
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "leantime_mysql_data",
+          "target": "/var/lib/mysql",
+          "type": "volume",
+          "volume": {}
+        }
+      ]
+    },
+    "pal": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile/docker/mcp-servers-source/pal",
+        "dockerfile": "Dockerfile"
+      },
+      "command": null,
+      "container_name": "mcp-pal",
+      "entrypoint": null,
+      "environment": {
+        "GEMINI_API_KEY": "",
+        "MCP_SERVER_PORT": "3003",
+        "OPENAI_API_KEY": "",
+        "OPENROUTER_API_KEY": "",
+        "XAI_API_KEY": ""
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "test": [
+          "CMD-SHELL",
+          "curl -f http://localhost:3003/health || exit 1"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "3003",
+          "target": 3003
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "pal-stdio": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "docker/mcp-servers-source/pal-stdio/Dockerfile"
+      },
+      "command": null,
+      "container_name": "mcp-pal-stdio",
+      "entrypoint": null,
+      "environment": {
+        "GEMINI_API_KEY": "",
+        "OPENAI_API_KEY": "",
+        "OPENROUTER_API_KEY": "",
+        "XAI_API_KEY": ""
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "restart": "unless-stopped",
+      "stdin_open": true,
+      "tty": true
+    },
+    "postgres": {
+      "command": null,
+      "container_name": "dopemux-postgres-age",
+      "entrypoint": null,
+      "environment": {
+        "POSTGRES_DB": "dopemux_knowledge_graph",
+        "POSTGRES_PASSWORD": "[REDACTED]",
+        "POSTGRES_USER": "dopemux_age"
+      },
+      "healthcheck": {
+        "interval": "10s",
+        "retries": 10,
+        "start_period": "20s",
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1"
+        ],
+        "timeout": "5s"
+      },
+      "image": "apache/age:release_PG16_1.6.0",
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "5432",
+          "target": 5432
+        }
+      ],
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "pg_age_data",
+          "target": "/var/lib/postgresql/data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {},
+          "source": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile/docker/postgres/01-init-age.sql",
+          "target": "/docker-entrypoint-initdb.d/01-init-age.sql",
+          "type": "bind"
+        }
+      ]
+    },
+    "redis-events": {
+      "command": null,
+      "container_name": "redis-events",
+      "entrypoint": null,
+      "healthcheck": {
+        "interval": "10s",
+        "retries": 3,
+        "test": [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ],
+        "timeout": "3s"
+      },
+      "image": "redis:7-alpine",
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "6379",
+          "target": 6379
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "redis-primary": {
+      "command": null,
+      "container_name": "redis-primary",
+      "entrypoint": null,
+      "healthcheck": {
+        "interval": "10s",
+        "retries": 3,
+        "test": [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ],
+        "timeout": "3s"
+      },
+      "image": "redis:7-alpine",
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "6380",
+          "target": 6379
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "redis-ui": {
+      "command": null,
+      "container_name": "dopemux-redis-ui",
+      "entrypoint": null,
+      "image": "redislabs/redisinsight:latest",
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "8081",
+          "target": 5540
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "redis_leantime": {
+      "command": [
+        "sh",
+        "-c",
+        "if [ -n \"$$REDIS_PASSWORD\" ]; then exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\"; else exec redis-server --appendonly yes; fi"
+      ],
+      "container_name": "redis_leantime",
+      "entrypoint": null,
+      "environment": {
+        "REDIS_PASSWORD": ""
+      },
+      "healthcheck": {
+        "interval": "10s",
+        "retries": 5,
+        "test": [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ],
+        "timeout": "3s"
+      },
+      "image": "redis:7-alpine",
+      "networks": {
+        "dopemux-network": null
+      },
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "leantime_redis_data",
+          "target": "/data",
+          "type": "volume",
+          "volume": {}
+        }
+      ]
+    },
+    "serena": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "docker/mcp-servers/serena/Dockerfile"
+      },
+      "command": null,
+      "container_name": "dopemux-mcp-serena",
+      "entrypoint": null,
+      "environment": {
+        "DOPEMUX_INSTANCE_ID": "",
+        "HTTP_PORT": "4006",
+        "MCP_SERVER_PORT": "3006",
+        "WORKSPACE_ID": "/workspace"
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "30s",
+        "test": [
+          "CMD-SHELL",
+          "curl -f http://localhost:4006/health || exit 1"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "3006",
+          "target": 3006
+        },
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "4006",
+          "target": 4006
+        }
+      ],
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "bind": {},
+          "read_only": true,
+          "source": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+          "target": "/workspace",
+          "type": "bind"
+        },
+        {
+          "bind": {},
+          "source": "/Users/hue/.serena",
+          "target": "/root/.serena",
+          "type": "bind"
+        }
+      ]
+    },
+    "task-orchestrator": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "services/task-orchestrator/Dockerfile"
+      },
+      "command": null,
+      "container_name": "task-orchestrator",
+      "depends_on": {
+        "conport": {
+          "condition": "service_healthy",
+          "required": true
+        },
+        "leantime": {
+          "condition": "service_started",
+          "required": true
+        },
+        "redis-primary": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "CONPORT_URL": "http://conport:3005",
+        "DOPECON_BRIDGE_REDIS_URL": "redis://redis-primary:6379",
+        "DOPECON_BRIDGE_SOURCE_PLANE": "cognitive_plane",
+        "DOPECON_BRIDGE_URL": "http://dopecon-bridge:3016",
+        "LEANTIME_TOKEN": "",
+        "LEANTIME_URL": "http://leantime:80",
+        "PORT": "8000",
+        "REDIS_URL": "redis://redis-primary:6379",
+        "TASK_ORCHESTRATOR_API_KEY": "[REDACTED]",
+        "WORKSPACE_ID": "/app"
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "40s",
+        "test": [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:8000/health"
+        ],
+        "timeout": "10s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "8000",
+          "target": 8000
+        }
+      ],
+      "restart": "unless-stopped"
+    },
+    "webhook-poller": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "services/webhook_receiver/Dockerfile"
+      },
+      "command": [
+        "python",
+        "/app/services/webhook_receiver/poller.py",
+        "--providers",
+        "xai,gemini",
+        "--interval-seconds",
+        "10"
+      ],
+      "container_name": "dopemux-webhook-poller",
+      "entrypoint": null,
+      "environment": {
+        "WEBHOOK_DB_PATH": "/data/webhook_receiver.db",
+        "WEBHOOK_DB_URL": ""
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "bind": {},
+          "source": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile/.dopemux/webhook_receiver",
+          "target": "/data",
+          "type": "bind"
+        }
+      ]
+    },
+    "webhook-receiver": {
+      "build": {
+        "context": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile",
+        "dockerfile": "services/webhook_receiver/Dockerfile"
+      },
+      "command": null,
+      "container_name": "dopemux-webhook-receiver",
+      "entrypoint": null,
+      "environment": {
+        "DPMX_ENV": "development",
+        "OPENAI_API_KEY": "",
+        "OPENAI_WEBHOOK_SECRET": "[REDACTED]",
+        "WEBHOOK_DB_PATH": "/data/webhook_receiver.db",
+        "WEBHOOK_DB_URL": "",
+        "WEBHOOK_RECEIVER_HOST": "0.0.0.0",
+        "WEBHOOK_RECEIVER_PORT": "8790"
+      },
+      "healthcheck": {
+        "interval": "30s",
+        "retries": 3,
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8790/healthz', timeout=2)"
+        ],
+        "timeout": "5s"
+      },
+      "networks": {
+        "dopemux-network": null
+      },
+      "ports": [
+        {
+          "host_ip": "127.0.0.1",
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "8790",
+          "target": 8790
+        }
+      ],
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "bind": {},
+          "source": "/Users/hue/code/dopemux-mvp/.worktrees/dcp-0000r-runtime-reconcile/.dopemux/webhook_receiver",
+          "target": "/data",
+          "type": "bind"
+        }
+      ]
+    }
+  },
+  "volumes": {
+    "dope-decision-graph-qdrant-data": {
+      "name": "dopemux_dope-decision-graph-qdrant-data"
+    },
+    "leantime_config": {
+      "name": "dopemux_leantime_config"
+    },
+    "leantime_logs": {
+      "name": "dopemux_leantime_logs"
+    },
+    "leantime_mysql_data": {
+      "name": "dopemux_leantime_mysql_data"
+    },
+    "leantime_public_userfiles": {
+      "name": "dopemux_leantime_public_userfiles"
+    },
+    "leantime_redis_data": {
+      "name": "dopemux_leantime_redis_data"
+    },
+    "leantime_userfiles": {
+      "name": "dopemux_leantime_userfiles"
+    },
+    "pg_age_data": {
+      "name": "dopemux_pg_age_data"
+    }
+  }
+}
