@@ -3,24 +3,61 @@
   "project": "dopemux-mvp",
   "target": "adhd-dashboard-backend",
   "repo_binding": {
-    "repo": "DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-SVCFIN",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "fix/adhd-dashboard-backend-wire-1056",
     "base_branch": "main"
   },
-  "series": "DMX-SVCFIN",
-  "commit": "fix(dashboard): deploy adhd-dashboard backend and compose wiring (recreates #1056)",
-  "pr": 1116,
+  "commit": {
+    "message": "fix(dashboard): deploy adhd-dashboard backend and compose wiring (recreates #1056)",
+    "allowlist": [
+      "compose.yml",
+      "services/registry.yaml",
+      "services/adhd-dashboard/backend.py",
+      "services/adhd-dashboard/tests/test_backend.py",
+      "task-packets/TP-DMX-ADHD-DASHBOARD-BACKEND-001.json",
+      "proof/pr-1116/AUDITOR_REPORT.md",
+      "proof/pr-1116/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "feat(dashboard): wire adhd-dashboard backend in compose and service registry (#1116)",
+    "body": "## Summary\n- Wire adhd-dashboard backend in compose.yml and service registry\n- Support Redis prefix consumption and subscription to adhd:state_changes:*\n- Support prefixed and unprefixed modes for event streaming\n- Comprehensive tests for HTTP health and WebSocket event delivery\n",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
   "steps": [
     {
       "id": "step-1",
-      "task": "Register adhd-dashboard service in service registry and wire in compose.yml",
-      "validation": "uv run pytest tests/arch/ services/adhd-dashboard/tests/"
+      "task": "Register adhd-dashboard service in service registry, compose.yml and backend Redis prefix handling",
+      "validation": [
+        "python -m jsonschema -i task-packets/TP-DMX-ADHD-DASHBOARD-BACKEND-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "pytest services/adhd-dashboard/tests/"
+      ]
     }
-  ],
-  "execution": {
-    "agent": "gemini",
-    "pal_chain": {
-      "enabled": true,
-      "grammar": "analyze -> thinkdeep -> challenge -> planner -> challenge -> implement -> codereview -> precommit -> challenge"
-    }
-  }
+  ]
 }
