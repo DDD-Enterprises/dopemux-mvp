@@ -8,6 +8,9 @@ from typing import Any
 
 from tools.pr_steward.security_release_gate import classify_security_release_paths
 from tools.pr_steward.security_release_approval import evaluate_security_release_approval
+from tools.pr_steward.solo_owner_security_release import (
+    evaluate_solo_owner_security_release,
+)
 
 
 SCHEMA_VERSION = "1.1.0"
@@ -264,6 +267,7 @@ def build_artifacts(
         "approved": security_classification.required and not security_release_errors,
         "categories": list(security_classification.categories),
         "approval": harvest.get("security_release_approval"),
+        "solo_owner_override": None,
     }
     proof = _proof(harvest, pr_head_sha=pr["head_sha"])
     proof_status = _proof_status(proof)
@@ -282,6 +286,57 @@ def build_artifacts(
         _append_once(blockers, "PROOF_STALE_OR_MISSING")
     if not proof["proof_head_sha"]:
         _append_once(unknowns, "Proof head SHA missing")
+
+    # Solo-owner path (ADR-DMX-PRSTEWARD-SOLOOWNER-001): only after ordinary
+    # approval failed, and only when every non-security gate is already clean.
+    if security_classification.required and any(
+        str(b).startswith("SECURITY_RELEASE_") for b in blockers
+    ):
+        raw_audit = harvest.get("embedded_audit") or {}
+        audit_meta = {
+            "auditor_tool": raw_audit.get("auditor_tool"),
+            "auditor_model": raw_audit.get("auditor_model"),
+            "auditor_provider": raw_audit.get("auditor_provider"),
+            "auditor_runner": raw_audit.get("auditor_runner"),
+            "auditor_session": raw_audit.get("auditor_session"),
+            "invocation": raw_audit.get("invocation"),
+            "report_path": raw_audit.get("report_path")
+            or embedded_audit.get("report_path"),
+        }
+        proof_status_str = str(
+            proof_status.get("status") if isinstance(proof_status, dict) else proof_status
+            or ""
+        )
+        solo = evaluate_solo_owner_security_release(
+            required=True,
+            trusted_approvers=trusted_security_approvers,
+            pr_author=str(pr["author"] or ""),
+            pr_author_association=pr_assoc,
+            expected_repo=repo,
+            expected_pr=pr_number,
+            expected_head_sha=str(pr["head_sha"] or ""),
+            issue_comments=issue_comments_in,
+            blockers=blockers,
+            unclassified_review_item_count=unclassified_count,
+            audit_status=str(audit_status or ""),
+            audit_meta=audit_meta,
+            proof_status=proof_status_str,
+        )
+        if solo.activated and solo.receipt is not None:
+            blockers[:] = [
+                b for b in blockers if not str(b).startswith("SECURITY_RELEASE_")
+            ]
+            security_release_errors = []
+            security_release["approved"] = True
+            security_release["solo_owner_override"] = solo.receipt
+            # Never fabricate a GitHub APPROVED review object.
+            security_release["approval"] = None
+            security_release["override_receipt_code"] = solo.receipt["receipt_code"]
+        elif solo.diagnostic_errors:
+            # Preserve ordinary SECURITY_RELEASE_* blockers; attach diagnostics as unknowns.
+            for diag in solo.diagnostic_errors:
+                if not str(diag).startswith("SECURITY_RELEASE_"):
+                    _append_once(unknowns, f"solo_owner:{diag}")
 
     readiness = _readiness(blockers)
     tier = _risk_tier(readiness)
