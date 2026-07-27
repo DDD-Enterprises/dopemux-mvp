@@ -2,11 +2,14 @@
 id: dope-context-vector-profiles-and-migration
 title: Vector profiles and collection migration
 type: reference
-owner: "@hu3mann"
+owner: '@hu3mann'
 last_review: 2026-07-26
 next_review: 2026-10-24
+author: '@hu3mann'
+date: '2026-07-26'
+prelude: Vector profiles and collection migration (reference) for dopemux documentation
+  and developer workflows.
 ---
-
 # Vector profiles and collection migration
 
 ## Canonical vector profiles
@@ -50,7 +53,7 @@ export DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL=voyage-context-3
 ```
 
 That one variable moves **all** contextual index and query paths together
-(code `content_vec` and all docs vectors).  
+(code `content_vec` and all docs vectors).
 `DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3` no longer selects models.
 
 ## Collection identity

@@ -1,13 +1,16 @@
 ---
 id: TP-DOPECONTEXT-VOYAGE4-REPAIR-0002
 title: Repair Voyage vector compatibility and collection migration
-type: task-packet
-owner: "@hu3mann"
+type: explanation
+owner: '@hu3mann'
 last_review: 2026-07-26
 next_review: 2026-10-24
 status: AUTHORIZED_FOR_IMPLEMENTATION
+author: '@hu3mann'
+date: '2026-07-26'
+prelude: Repair Voyage vector compatibility and collection migration (explanation)
+  for dopemux documentation and developer workflows.
 ---
-
 # TP-DOPECONTEXT-VOYAGE4-REPAIR-0002
 
 ## Objective

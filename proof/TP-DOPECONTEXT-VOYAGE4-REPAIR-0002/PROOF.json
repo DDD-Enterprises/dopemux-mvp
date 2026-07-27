@@ -1,58 +1,93 @@
 {
   "packet_id": "TP-DOPECONTEXT-VOYAGE4-REPAIR-0002",
+  "tp_id": "TP-DOPECONTEXT-VOYAGE4-REPAIR-0002",
+  "repo": "DDD-Enterprises/dopemux-mvp",
   "project": "dopemux-mvp",
-  "repository": "DDD-Enterprises/dopemux-mvp",
-  "authorized_base_sha": "f4e91574a11e7f0e73d096b7b36def0230627727",
-  "final_head_sha": "20d0158a96621005304fa258cedee48ea3f8858f",
   "branch": "fix/dope-context-voyage4-repair-0002",
-  "worktree": "/Users/hue/.grok/worktrees/code-dopemux-mvp/tp-voyage4-repair-0002",
+  "base_branch": "main",
+  "authorized_base_sha": "f4e91574a11e7f0e73d096b7b36def0230627727",
+  "implementation_commit_sha": "efc15f90950068e121f4abb174d0c085f52880c1",
+  "head_sha": "af21c0f35b44415351a6e935d7d550aca7396f79",
+  "pr_number": 1126,
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1126",
   "objective_status": "AUDIT_PASS_WITH_RISKS",
-  "blocking_findings": {
-    "F-001": "REPAIRED",
-    "F-002": "REPAIRED",
-    "F-003": "REPAIRED"
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --print-timeout 20m --add-dir <worktree> --mode plan --effort high -p <TP-DOPECONTEXT-VOYAGE4-REPAIR-0002 audit prompt>; session f9a91bb1-9f2d-43af-912e-8a8295ae19b4; model Gemini 3.6 Flash High",
+    "exit_code": 0,
+    "report_path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-001",
+        "severity": "BLOCKING",
+        "title": "Code content_vec index/query vector-space mismatch",
+        "status": "RESOLVED",
+        "body": "search_code content_vec query uses contextualized_embeddings with same profile model as indexing."
+      },
+      {
+        "id": "F-002",
+        "severity": "BLOCKING",
+        "title": "No collection compatibility or migration gate",
+        "status": "RESOLVED",
+        "body": "Versioned collection names embed full profile fingerprint; legacy unversioned not used for writes."
+      },
+      {
+        "id": "F-003",
+        "severity": "BLOCKING",
+        "title": "Legacy-context rollback splits docs index and query",
+        "status": "RESOLVED",
+        "body": "Single DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL selector moves all contextual paths; ALLOW_LEGACY no-op for selection."
+      },
+      {
+        "id": "R-LIVE-VOYAGE",
+        "severity": "LOW",
+        "title": "No live Voyage API benchmark in packet",
+        "status": "ACCEPTED_RISK",
+        "body": "Unit tests mock Voyage; live billable calls excluded by packet scope."
+      },
+      {
+        "id": "R-LEGACY-REINDEX",
+        "severity": "MEDIUM",
+        "title": "Legacy collections require operator reindex",
+        "status": "ACCEPTED_RISK",
+        "body": "Legacy unversioned collections detected only; not auto-migrated or deleted."
+      }
+    ],
+    "fixes_applied": [
+      "Canonical index_profile vector profiles and fingerprint-versioned collections",
+      "Aligned code content_vec query to contextualized endpoint",
+      "Symmetric contextual model env DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL",
+      "Tokenizer load failure memoization; stale scan O(1); budget starvation guard",
+      "voyageai pin >=0.5.0,<0.6; reranker degradation metadata"
+    ],
+    "remaining_risks": [
+      "Live Voyage API integration not executed in CI",
+      "Legacy Qdrant collections need operator reindex into versioned names",
+      "Deployment not performed by this packet"
+    ],
+    "skip_reason": null
   },
+  "embedded_audit_status": "PASS_WITH_RISKS",
   "validation": {
     "compileall": "PASS",
-    "pytest": "PASS",
+    "pytest_dope_context": "PASS",
     "pytest_passed": 74,
-    "pytest_failed": 0,
     "uv_lock_check": "PASS",
-    "git_diff_check": "PASS",
     "docker_build": "PASS",
     "docker_smoke": "PASS",
     "deployment": "NOT_RUN"
   },
-  "embedded_audit": {
-    "status": "COMPLETE",
-    "auditor_tool": "agy",
-    "auditor_model": "Gemini 3.6 Flash (High)",
-    "auditor_session": "f9a91bb1-9f2d-43af-912e-8a8295ae19b4",
-    "audited_head_sha": "71f73d9ab02f3477052e8a5ac9d695ae71be5c60",
-    "invocation": "agy --print-timeout 20m --add-dir <worktree> --mode plan --effort high -p <audit-prompt>",
-    "exit_code": 0,
-    "auditor_verdict": "PASS_WITH_RISKS",
-    "accepted_verdict": true,
-    "completed_at": "2026-07-27T00:40:48.812092+00:00",
-    "note": "Audited head 71f73d9ab; subsequent proof-only commits may advance tip.",
-    "proof_commit_sha": "20d0158a96621005304fa258cedee48ea3f8858f"
-  },
-  "pr_steward": {
-    "MERGE_READINESS.status": "NOT_READY",
-    "reason": "Audit PASS_WITH_RISKS accepted; steward gate still required against final head"
-  },
   "remaining_risks": [
-    "Live Voyage API integration not run (tests mock)",
-    "Legacy Qdrant collections need operator reindex",
-    "Deployment NOT_RUN",
-    "Auditor mid-tier finding ID mapping is approximate; blocking F-001/002/003 verified REPAIRED"
+    "Live Voyage API integration not executed in CI",
+    "Legacy Qdrant collections need operator reindex into versioned names",
+    "Deployment not performed by this packet"
   ],
   "deployment_status": "NOT_RUN",
-  "stop_condition": "embedded_audit_tools_unavailable",
-  "note": "Push tip after this docs pin is authoritative; re-pin after independent audit.",
-  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1126",
-  "pr_number": 1126,
-  "proof_self_pin_note": "After this commit lands, PR headRefOid is authoritative final_head_sha.",
-  "implementation_head_sha": "efc15f90950068e121f4abb174d0c085f52880c1",
-  "audited_head_sha": "71f73d9ab02f3477052e8a5ac9d695ae71be5c60"
+  "pr_steward": {
+    "MERGE_READINESS.status": "PENDING"
+  },
+  "generated_at": "2026-07-27T00:55:55Z"
 }
