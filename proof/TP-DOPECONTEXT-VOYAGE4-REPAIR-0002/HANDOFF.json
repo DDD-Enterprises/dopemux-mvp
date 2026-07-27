@@ -1,6 +1,6 @@
 {
   "packet_id": "TP-DOPECONTEXT-VOYAGE4-REPAIR-0002",
-  "head_sha": "efc15f90950068e121f4abb174d0c085f52880c1",
+  "head_sha": "29ad0b19283847a444cb616f3ae6fce4d2ff3ec6",
   "branch": "fix/dope-context-voyage4-repair-0002",
   "next_actions": [
     "Run independent embedded audit (Gemini CLI preferred) against exact head",

@@ -3,7 +3,7 @@
   "project": "dopemux-mvp",
   "repository": "DDD-Enterprises/dopemux-mvp",
   "authorized_base_sha": "f4e91574a11e7f0e73d096b7b36def0230627727",
-  "final_head_sha": "PENDING_PROOF_COMMIT",
+  "final_head_sha": "29ad0b19283847a444cb616f3ae6fce4d2ff3ec6",
   "branch": "fix/dope-context-voyage4-repair-0002",
   "worktree": "/Users/hue/.grok/worktrees/code-dopemux-mvp/tp-voyage4-repair-0002",
   "objective_status": "IMPLEMENTATION_COMPLETE_AUDIT_BLOCKED",
@@ -30,9 +30,20 @@
     "auditor_session": null,
     "auditor_verdict": "NOT_RUN",
     "attempts": [
-      {"tool": "gemini_cli", "error": "IneligibleTierError"},
-      {"tool": "agy", "model": "claude-sonnet-4-6", "error": "Individual quota reached"},
-      {"tool": "claude_code_cli", "model": "sonnet", "error": "session limit"}
+      {
+        "tool": "gemini_cli",
+        "error": "IneligibleTierError"
+      },
+      {
+        "tool": "agy",
+        "model": "claude-sonnet-4-6",
+        "error": "Individual quota reached"
+      },
+      {
+        "tool": "claude_code_cli",
+        "model": "sonnet",
+        "error": "session limit"
+      }
     ],
     "note": "Implementer session must not self-certify. Independent audit required before READY."
   },
@@ -47,5 +58,6 @@
     "PR Steward READY not yet achieved"
   ],
   "deployment_status": "NOT_RUN",
-  "stop_condition": "embedded_audit_tools_unavailable"
+  "stop_condition": "embedded_audit_tools_unavailable",
+  "note": "After push, PR head is authoritative; re-pin if auditor lands a follow-up commit."
 }
