@@ -90,6 +90,55 @@ are `OBSERVED` and materially narrow the design.
 - An operator can always recreate deliberately, never accidentally.
 - Failure preserves the last good index.
 
+## Design Decision — manifest storage (resolved 2026-07-26)
+
+Plan step 1 is **closed**. All three candidates were tested empirically against
+a throwaway collection on the local Qdrant, which was empty before and after.
+
+**Qdrant has no collection-level metadata API.** `AsyncQdrantClient` exposes no
+`config`-writing surface; the only collection-scoped stores are aliases and the
+points themselves.
+
+| Option | Result |
+|---|---|
+| **Sidecar file** | **REJECTED.** The existing chunk-snapshot sidecar lives at `~/.dope-context/snapshots/{workspace_hash}/` — host home. Qdrant data lives in the Docker volume `dope-decision-graph-qdrant-data`. **The two have independent lifecycles.** Wipe the volume and the sidecar still asserts compatibility for a collection that no longer exists; wipe home (new machine, fresh container) and every surviving collection reads as unmanifested. A manifest must share the lifecycle of what it describes. |
+| **Collection alias** | Works — `update_collection_aliases` / `get_collection_aliases` round-trips, shares the collection lifecycle, and never appears in search results. But an alias is only a *name*: it can carry a fingerprint hash and nothing else, which cannot satisfy the invariant "a conflict names the specific field that disagrees, with both values." |
+| **Sentinel point** | **CHOSEN**, with a caveat proven rather than assumed. |
+
+**The sentinel hazard is real, not hypothetical.** A zero-vector manifest point
+*does* come back from a query — measured:
+
+```
+SEARCH returns:      [('0001', 1.0, 'data'), ('00ff', 0.0, True)]   <- manifest leaked
+SEARCH w/ must_not:  [('0001', 1.0)]                                <- excluded cleanly
+```
+
+DOT distance scores it 0.0 so it ranks last, but it is still returned and would
+be counted against `top_k`.
+
+**Decision: sentinel point carrying the full structured manifest**, because it
+is the only option that both shares the collection's lifecycle and can carry
+field-level detail. Requirements that follow:
+
+1. Reserved deterministic ID, e.g. `uuid5(NAMESPACE_URL, f"dope-context:manifest:{collection}")`.
+2. Payload flag `__manifest__: true`; zero vectors for every named vector.
+3. **Exclude at both reader chokepoints, which are the only two that exist:**
+   - `MultiVectorSearch.search()` (`dense_search.py:277`) — merge a
+     `must_not __manifest__` condition into the caller's filter.
+   - `MultiVectorSearch.get_all_payloads()` (`dense_search.py:442`) — skip it.
+     This one matters more than it looks: `get_all_payloads` feeds the **BM25
+     index** (`server.py:970`), the **docs stale reconciliation**
+     (`docs_pipeline.py:208`) and **sync** (`server.py:2381, 2412`). An
+     unfiltered manifest point would pollute BM25 and could be deleted as a
+     stale doc chunk.
+4. Optionally also write the fingerprint as an alias: a cheap
+   existence/compatibility pre-check that needs no point read. Nice to have,
+   not required.
+
+Add a test asserting the manifest point is absent from both `search()` and
+`get_all_payloads()` results — that is the regression that would otherwise leak
+silently.
+
 ## Allowed Files
 
 - `services/dope-context/src/search/dense_search.py`
@@ -107,11 +156,8 @@ are `OBSERVED` and materially narrow the design.
 
 ## Plan
 
-1. Decide where the manifest lives and record the rationale. Qdrant collection
-   metadata is not a general key-value store; the two viable options are a
-   reserved sentinel point carrying only payload, or a sidecar file beside the
-   existing chunk snapshot. Prefer the option that survives a Qdrant restart and
-   cannot be mistaken for a search result.
+1. **DONE** — manifest storage is decided; see "Design Decision" above. Implement
+   the sentinel point with exclusion at both reader chokepoints.
 2. Write the manifest in `create_collection` on the creation path only.
 3. On the existing-collection path, read the manifest and compare against the
    active configuration. Matching manifest returns quietly, which preserves the
@@ -176,7 +222,7 @@ the A15 and A16 adversarial results, and PR metadata with checks.
 
 Stop if:
 
-- the chosen manifest location would be returned as a search result
+- the sentinel manifest leaks into `search()` or `get_all_payloads()` results
 - the gate would reject a collection an operator reasonably expects to work and
   the resolution is unclear
 - idempotence cannot be preserved across the double `create_collection` call
