@@ -1,0 +1,22 @@
+{
+  "handoff_id": "DMX-DCP-MODEL-ROUTING-MVP-0000S-HANDOFF-001",
+  "source_skill": "dcp-series-lineage",
+  "target_skill": "pr-steward",
+  "branch": "dcp/model-routing-0000s-series-lineage",
+  "governing_posture": "GO_DRAFT_FIRST",
+  "recommended_next_step": "CREATE_DRAFT_PR",
+  "canonical_next_sequence": [
+    "0007I",
+    "0007T",
+    "0007A",
+    "0008",
+    "0009"
+  ],
+  "supervisor_gate_after": "0009",
+  "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "warnings": [
+    "Opus auditor NOT_RUN",
+    "Number label collision with TP-DCP-MCP-RO-0007..0009 disclosed",
+    "0007 implementation absent on main"
+  ]
+}

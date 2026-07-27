@@ -1,0 +1,676 @@
+{
+  "series_id": "DMX-DCP-MODEL-ROUTING-NEXT-TRANCHE-001",
+  "parent_program": "DMX-DCP-MODEL-ROUTING-MVP",
+  "generated_at": "2026-07-27T03:23:14Z",
+  "evidence_base_sha": "5de3f0ef56dfcf8545c395418b4a3d424b1bc249",
+  "origin_main_at_authoring": null,
+  "lineage_rules": {
+    "854_is_not_merged_authority": true,
+    "862_is_clean_0001_lineage": true,
+    "851_merged_but_862_is_clean_carve": true,
+    "0007_docs_landed_impl_absent": true
+  },
+  "collision_notes": [
+    "TP-DCP-MCP-RO-0007/0008/0009 are a different series (readonly MCP facade) \u2014 number collision on 0007-0009 labels only.",
+    "MODEL-ROUTING 0007 vs NEXT-TRANCHE 0007I/T/A is intentional split: design packet vs implement/test/audit.",
+    "input_adapters.py / input_provenance.py do not exist on origin/main (OBSERVED)."
+  ],
+  "canonical_next_sequence": [
+    "DMX-DCP-MODEL-ROUTING-MVP-0007I",
+    "DMX-DCP-MODEL-ROUTING-MVP-0007T",
+    "DMX-DCP-MODEL-ROUTING-MVP-0007A",
+    "DMX-DCP-MODEL-ROUTING-MVP-0008",
+    "DMX-DCP-MODEL-ROUTING-MVP-0009"
+  ],
+  "supervisor_gate_after": "DMX-DCP-MODEL-ROUTING-MVP-0009",
+  "live_execution_authorized": false,
+  "merge_authorized": false,
+  "packets": [
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000",
+      "purpose": "Initial surface census / predecessor scouting",
+      "design_status": "LANDED_EVIDENCE",
+      "implementation_status": "N/A_EVIDENCE_ONLY",
+      "main_paths": [],
+      "tests": [],
+      "merged_prs": [
+        869
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0000R"
+      ],
+      "blockers": [],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0000C",
+      "evidence_refs": [
+        "proof/DMX-DCP-MODEL-ROUTING-MVP-0000/"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000C",
+      "purpose": "Origin/main delta and routing policy ledger",
+      "design_status": "LANDED_EVIDENCE",
+      "implementation_status": "N/A_EVIDENCE_ONLY",
+      "main_paths": [],
+      "tests": [],
+      "merged_prs": [
+        869
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0000R"
+      ],
+      "blockers": [
+        "STALE_VS_CURRENT_MAIN"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0000D",
+      "evidence_refs": [
+        "proof/DMX-DCP-MODEL-ROUTING-MVP-0000C/"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000D",
+      "purpose": "Dirty-file decision ledger",
+      "design_status": "LANDED_EVIDENCE",
+      "implementation_status": "N/A_EVIDENCE_ONLY",
+      "main_paths": [],
+      "tests": [],
+      "merged_prs": [
+        869
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0000R"
+      ],
+      "blockers": [
+        "STALE_VS_CURRENT_MAIN"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0000E",
+      "evidence_refs": [
+        "proof/DMX-DCP-MODEL-ROUTING-MVP-0000D/"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000E",
+      "purpose": "Routing runtime health ledger",
+      "design_status": "LANDED_EVIDENCE",
+      "implementation_status": "N/A_EVIDENCE_ONLY",
+      "main_paths": [],
+      "tests": [],
+      "merged_prs": [
+        869
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0000R"
+      ],
+      "blockers": [
+        "STALE_VS_CURRENT_MAIN"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0000F",
+      "evidence_refs": [
+        "proof/DMX-DCP-MODEL-ROUTING-MVP-0000E/"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000F",
+      "purpose": "Runner dry-run matrix",
+      "design_status": "LANDED_EVIDENCE",
+      "implementation_status": "N/A_EVIDENCE_ONLY",
+      "main_paths": [],
+      "tests": [],
+      "merged_prs": [
+        869
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0000R"
+      ],
+      "blockers": [
+        "STALE_VS_CURRENT_MAIN"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0000G",
+      "evidence_refs": [
+        "proof/DMX-DCP-MODEL-ROUTING-MVP-0000F/"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000G",
+      "purpose": "MCP authority registry snapshot",
+      "design_status": "LANDED_EVIDENCE",
+      "implementation_status": "N/A_EVIDENCE_ONLY",
+      "main_paths": [],
+      "tests": [],
+      "merged_prs": [
+        869
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0000R"
+      ],
+      "blockers": [
+        "STALE_VS_CURRENT_MAIN"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0000H",
+      "evidence_refs": [
+        "proof/DMX-DCP-MODEL-ROUTING-MVP-0000G/"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000H",
+      "purpose": "Predecessor audit wrap",
+      "design_status": "LANDED_EVIDENCE",
+      "implementation_status": "N/A_EVIDENCE_ONLY",
+      "main_paths": [],
+      "tests": [],
+      "merged_prs": [
+        869
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0000R"
+      ],
+      "blockers": [
+        "STALE_VS_CURRENT_MAIN"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0000I",
+      "evidence_refs": [
+        "proof/DMX-DCP-MODEL-ROUTING-MVP-0000H/"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000I",
+      "purpose": "Predecessor scouting closure",
+      "design_status": "LANDED_EVIDENCE",
+      "implementation_status": "N/A_EVIDENCE_ONLY",
+      "main_paths": [],
+      "tests": [],
+      "merged_prs": [
+        869
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0000R"
+      ],
+      "blockers": [
+        "STALE_VS_CURRENT_MAIN"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0001",
+      "evidence_refs": [
+        "proof/DMX-DCP-MODEL-ROUTING-MVP-0000I/"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000R",
+      "purpose": "Current-main runtime/toolchain reconciliation",
+      "design_status": "IN_FLIGHT_DRAFT_PR",
+      "implementation_status": "N/A_EVIDENCE_ONLY",
+      "main_paths": [
+        "docs/03-reference/dcp/current-main-runtime-reconciliation.md",
+        "docs/03-reference/dcp/current-main-runtime-reconciliation.json"
+      ],
+      "tests": [
+        "compileall dcp",
+        "pytest tests/unit/dcp"
+      ],
+      "merged_prs": [],
+      "closed_unmerged_prs": [],
+      "open_prs": [
+        1137
+      ],
+      "supersedes": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0000C",
+        "DMX-DCP-MODEL-ROUTING-MVP-0000D",
+        "DMX-DCP-MODEL-ROUTING-MVP-0000E",
+        "DMX-DCP-MODEL-ROUTING-MVP-0000F",
+        "DMX-DCP-MODEL-ROUTING-MVP-0000G",
+        "DMX-DCP-MODEL-ROUTING-MVP-0000H",
+        "DMX-DCP-MODEL-ROUTING-MVP-0000I"
+      ],
+      "superseded_by": [],
+      "blockers": [
+        "MAIN_DRIFT_AFTER_PIN",
+        "OPUS_AUDIT_ABORTED"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0000S",
+      "evidence_refs": [
+        "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/",
+        "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1137"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000S",
+      "purpose": "Series/numbering/lineage/authority reconciliation",
+      "design_status": "IN_PROGRESS",
+      "implementation_status": "N/A_EVIDENCE_ONLY",
+      "main_paths": [
+        "docs/03-reference/dcp/model-routing-series-status.md",
+        "docs/03-reference/dcp/model-routing-series-map.json"
+      ],
+      "tests": [],
+      "merged_prs": [],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [],
+      "blockers": [],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0007I",
+      "evidence_refs": [
+        "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0001",
+      "purpose": "Routing domain model",
+      "design_status": "SUPERSEDED_BY_CLEAN_CARVE",
+      "implementation_status": "LANDED_VIA_0001R_AND_862",
+      "main_paths": [
+        "src/dopemux/dcp/routing_model.py"
+      ],
+      "tests": [
+        "tests/dcp/test_dcp_model_routing_0001_domain.py",
+        "tests/unit/dcp/test_routing_model.py"
+      ],
+      "merged_prs": [
+        851,
+        862
+      ],
+      "closed_unmerged_prs": [
+        854
+      ],
+      "supersedes": [],
+      "superseded_by": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0001R"
+      ],
+      "blockers": [],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0001R",
+      "evidence_refs": [
+        "#851 merged",
+        "#862 clean carve merged",
+        "#854 CLOSED unmerged \u2014 not authority"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0001R",
+      "purpose": "Minimal routing domain model repair",
+      "design_status": "LANDED",
+      "implementation_status": "LANDED",
+      "main_paths": [
+        "src/dopemux/dcp/routing_model.py"
+      ],
+      "tests": [
+        "tests/unit/dcp/test_routing_model.py"
+      ],
+      "merged_prs": [
+        880
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0001"
+      ],
+      "superseded_by": [],
+      "blockers": [],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0002",
+      "evidence_refs": [
+        "#880"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0002",
+      "purpose": "Pure routing classification engine",
+      "design_status": "LANDED",
+      "implementation_status": "LANDED",
+      "main_paths": [
+        "src/dopemux/dcp/routing_classifier.py"
+      ],
+      "tests": [
+        "tests/unit/dcp/test_routing_classifier.py"
+      ],
+      "merged_prs": [
+        884
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [],
+      "blockers": [],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0002R",
+      "evidence_refs": [
+        "#884"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0002R",
+      "purpose": "Classifier invariant reconciliation tests",
+      "design_status": "LANDED",
+      "implementation_status": "LANDED",
+      "main_paths": [
+        "src/dopemux/dcp/routing_classifier.py"
+      ],
+      "tests": [
+        "tests/unit/dcp/test_routing_classifier.py"
+      ],
+      "merged_prs": [
+        902
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [],
+      "blockers": [],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0003",
+      "evidence_refs": [
+        "#902"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0003",
+      "purpose": "Backend policy recommendations map",
+      "design_status": "LANDED",
+      "implementation_status": "LANDED",
+      "main_paths": [
+        "src/dopemux/dcp/routing_backend_policy.py"
+      ],
+      "tests": [
+        "tests/unit/dcp/test_routing_backend_policy.py"
+      ],
+      "merged_prs": [
+        895
+      ],
+      "closed_unmerged_prs": [
+        890
+      ],
+      "supersedes": [],
+      "superseded_by": [],
+      "blockers": [],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0004",
+      "evidence_refs": [
+        "#895 landed; #890 closed unmerged inert map"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0004",
+      "purpose": "Read-only dcp classify + recommend-backend CLI",
+      "design_status": "LANDED",
+      "implementation_status": "LANDED",
+      "main_paths": [
+        "src/dopemux/commands/dcp_commands.py"
+      ],
+      "tests": [
+        "tests/unit/dcp/test_dcp_cli.py"
+      ],
+      "merged_prs": [
+        901
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [],
+      "blockers": [],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0005",
+      "evidence_refs": [
+        "#901"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0005",
+      "purpose": "Lane engine MVP decide_lane pure consumer",
+      "design_status": "LANDED",
+      "implementation_status": "LANDED",
+      "main_paths": [
+        "src/dopemux/dcp/lane_engine.py",
+        "src/dopemux/dcp/lane_model.py"
+      ],
+      "tests": [
+        "tests/unit/dcp/test_lane_engine.py"
+      ],
+      "merged_prs": [
+        906,
+        923
+      ],
+      "closed_unmerged_prs": [
+        907
+      ],
+      "supersedes": [],
+      "superseded_by": [],
+      "blockers": [],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0006",
+      "evidence_refs": [
+        "#906",
+        "#923 postmerge fix"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0006",
+      "purpose": "Classifier provenance hardening",
+      "design_status": "LANDED",
+      "implementation_status": "LANDED",
+      "main_paths": [
+        "src/dopemux/dcp/routing_classifier.py"
+      ],
+      "tests": [
+        "tests/unit/dcp/test_routing_classifier.py"
+      ],
+      "merged_prs": [
+        908,
+        915
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [],
+      "blockers": [],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0007I",
+      "evidence_refs": [
+        "#908 packet docs",
+        "#915 implementation"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0007",
+      "purpose": "Trusted input-provenance contract (design packet)",
+      "design_status": "LANDED_PACKET_DOCS",
+      "implementation_status": "NOT_ON_MAIN",
+      "main_paths": [],
+      "tests": [],
+      "merged_prs": [
+        909
+      ],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0007I"
+      ],
+      "blockers": [
+        "IMPLEMENTATION_SPLIT_TO_0007I_T_A"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0007I",
+      "evidence_refs": [
+        "#909 docs only; input_adapters.py ABSENT on origin/main"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0007I",
+      "purpose": "Implement trusted input provenance gate",
+      "design_status": "AUTHORIZED_TRANCHE_PACKET",
+      "implementation_status": "NOT_STARTED",
+      "main_paths": [
+        "PROPOSED: src/dopemux/dcp/input_adapters.py",
+        "src/dopemux/dcp/routing_classifier.py",
+        "src/dopemux/dcp/routing_model.py"
+      ],
+      "tests": [
+        "tests/unit/dcp/test_routing_classifier.py",
+        "tests/unit/dcp/test_routing_model.py",
+        "tests/unit/dcp/test_dcp_cli.py"
+      ],
+      "merged_prs": [],
+      "closed_unmerged_prs": [],
+      "supersedes": [
+        "DMX-DCP-MODEL-ROUTING-MVP-0007"
+      ],
+      "superseded_by": [],
+      "blockers": [
+        "REQUIRES_0000S",
+        "IMPLEMENTATION_AUTH_GATE"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0007T",
+      "evidence_refs": [
+        "AUTHORIZED-PACKET-TRANCHE-001-R2",
+        "NEXT-TRANCHE-001"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0007T",
+      "purpose": "Provenance test hardening / regression locks",
+      "design_status": "AUTHORIZED_TRANCHE_PACKET",
+      "implementation_status": "BLOCKED_ON_0007I",
+      "main_paths": [
+        "tests/unit/dcp/**"
+      ],
+      "tests": [
+        "tests/unit/dcp/**"
+      ],
+      "merged_prs": [],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [],
+      "blockers": [
+        "0007I"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0007A",
+      "evidence_refs": [
+        "AUTHORIZED-PACKET-TRANCHE-001-R2"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0007A",
+      "purpose": "Independent embedded audit of provenance gate",
+      "design_status": "AUTHORIZED_TRANCHE_PACKET",
+      "implementation_status": "BLOCKED_ON_0007T",
+      "main_paths": [
+        "proof/**"
+      ],
+      "tests": [],
+      "merged_prs": [],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [],
+      "blockers": [
+        "0007T"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0008",
+      "evidence_refs": [
+        "AUTHORIZED-PACKET-TRANCHE-001-R2"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0008",
+      "purpose": "Inert runner contract boundary (no invocation)",
+      "design_status": "AUTHORIZED_TRANCHE_PACKET",
+      "implementation_status": "BLOCKED_ON_0007A",
+      "main_paths": [],
+      "tests": [],
+      "merged_prs": [],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [],
+      "blockers": [
+        "0007A",
+        "NO_RUNNER_INVOCATION"
+      ],
+      "next_dependency": "DMX-DCP-MODEL-ROUTING-MVP-0009",
+      "evidence_refs": [
+        "AUTHORIZED-PACKET-TRANCHE-001-R2"
+      ]
+    },
+    {
+      "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0009",
+      "purpose": "Runner capability inventory without execution authorization",
+      "design_status": "AUTHORIZED_TRANCHE_PACKET",
+      "implementation_status": "BLOCKED_ON_0008",
+      "main_paths": [],
+      "tests": [],
+      "merged_prs": [],
+      "closed_unmerged_prs": [],
+      "supersedes": [],
+      "superseded_by": [],
+      "blockers": [
+        "0008"
+      ],
+      "next_dependency": "SUPERVISOR_GATE_GPT55_PRO",
+      "evidence_refs": [
+        "AUTHORIZED-PACKET-TRANCHE-001-R2"
+      ]
+    }
+  ],
+  "runtime_module_map": {
+    "src/dopemux/dcp/routing_model.py": [
+      "DMX-DCP-MODEL-ROUTING-MVP-0001",
+      "DMX-DCP-MODEL-ROUTING-MVP-0001R",
+      "DMX-DCP-MODEL-ROUTING-MVP-0007I"
+    ],
+    "src/dopemux/dcp/routing_classifier.py": [
+      "DMX-DCP-MODEL-ROUTING-MVP-0002",
+      "DMX-DCP-MODEL-ROUTING-MVP-0002R",
+      "DMX-DCP-MODEL-ROUTING-MVP-0006",
+      "DMX-DCP-MODEL-ROUTING-MVP-0007I"
+    ],
+    "src/dopemux/dcp/routing_backend_policy.py": [
+      "DMX-DCP-MODEL-ROUTING-MVP-0003"
+    ],
+    "src/dopemux/dcp/lane_engine.py": [
+      "DMX-DCP-MODEL-ROUTING-MVP-0005"
+    ],
+    "src/dopemux/dcp/lane_model.py": [
+      "DMX-DCP-MODEL-ROUTING-MVP-0005"
+    ],
+    "src/dopemux/dcp/red_lane.py": [
+      "TP-DCP-red-lane lineage \u2014 separate from MODEL-ROUTING series"
+    ],
+    "src/dopemux/dcp/red_lane_rules.py": [
+      "TP-DCP-red-lane lineage \u2014 separate"
+    ],
+    "src/dopemux/dcp/red_lane_scanner.py": [
+      "TP-DCP-red-lane lineage \u2014 separate"
+    ],
+    "src/dopemux/dcp/red_lane_taxonomy.py": [
+      "TP-DCP-red-lane lineage \u2014 separate"
+    ],
+    "src/dopemux/dcp/control_snapshot.py": [
+      "TP-DCP-0004 lineage \u2014 separate"
+    ],
+    "src/dopemux/dcp/proof_family.py": [
+      "TP-DCP-0003 lineage \u2014 separate"
+    ],
+    "src/dopemux/dcp/proof_pointer_reader.py": [
+      "TP-DCP-proof lineage \u2014 separate"
+    ],
+    "src/dopemux/dcp/input_adapters.py": [
+      "ABSENT_ON_MAIN \u2014 target of 0007I"
+    ],
+    "src/dopemux/dcp/input_provenance.py": [
+      "ABSENT_ON_MAIN \u2014 target of 0007I"
+    ]
+  },
+  "closed_unmerged_must_not_be_main_truth": [
+    854,
+    863,
+    890,
+    905,
+    907,
+    975
+  ],
+  "open_related_prs_at_map_time": [
+    1137
+  ],
+  "unknowns": [
+    "Whether partial local worktree feat/dcp-0007-input-provenance-impl is salvageable \u2014 OUT OF SCOPE for 0000S authority (not on main).",
+    "PR Steward readiness for #1137 NOT_RUN"
+  ],
+  "origin_main_at_map": "2e3fb08fc16f03d7566200497018fc9b4bd088ad",
+  "map_branch_head": "5de3f0ef56dfcf8545c395418b4a3d424b1bc249"
+}

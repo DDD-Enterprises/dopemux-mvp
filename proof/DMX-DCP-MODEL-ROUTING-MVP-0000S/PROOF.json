@@ -1,0 +1,68 @@
+{
+  "bundle_id": "PROOF-DMX-DCP-MODEL-ROUTING-MVP-0000S-001",
+  "run_id": "dcp-0000s-20260727T032314Z",
+  "skill": "dcp-series-lineage-reconciliation",
+  "status": "COMPLETE",
+  "validation_state": "PASS_WITH_RISKS",
+  "created_at": "2026-07-27T03:23:14Z",
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000S",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "dcp/model-routing-0000s-series-lineage",
+  "base_sha": "5de3f0ef56dfcf8545c395418b4a3d424b1bc249",
+  "subject_sha": "5de3f0ef56dfcf8545c395418b4a3d424b1bc249",
+  "authoritative_artifacts": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/MODEL_ROUTING_SERIES_MAP.json",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/MODEL_ROUTING_SERIES_STATUS.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PROOF.json",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/AUDITOR_REPORT.md"
+  ],
+  "supporting_artifacts": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/COMMAND_LOG.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/EVIDENCE_LEDGER.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PAL_CHAIN.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-dcp-routing-related.json"
+  ],
+  "handoff_refs": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/HANDOFF.json"
+  ],
+  "parent_bundle_refs": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PROOF.json"
+  ],
+  "review_order_hint": [
+    "MODEL_ROUTING_SERIES_STATUS.md",
+    "MODEL_ROUTING_SERIES_MAP.json",
+    "AUDITOR_REPORT.md",
+    "PROOF.json"
+  ],
+  "chain_of_custody": {
+    "primary_executor": "Grok-4.5 Build orchestrator (series map evidence; Claude Sonnet used for 0000R)",
+    "embedded_auditor": "Opus NOT_RUN; PASS_WITH_RISKS self-completion audit",
+    "supervisor": "GPT-5.5 Pro pending end-of-tranche"
+  },
+  "commands": [
+    {
+      "name": "gh pr list",
+      "exit_code": 0
+    }
+  ],
+  "embedded_audit": {
+    "auditor_tool": "orchestrator completion audit",
+    "auditor_model": "grok-4.5-build (Opus NOT_RUN)",
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/AUDITOR_REPORT.md"
+  },
+  "remaining_risks": [
+    "Opus independent auditor NOT_RUN",
+    "Stacked on 0000R tip rather than origin/main tip",
+    "0007 local worktree salvage UNKNOWN"
+  ],
+  "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "canonical_next_sequence": [
+    "0007I",
+    "0007T",
+    "0007A",
+    "0008",
+    "0009"
+  ],
+  "supervisor_gate_after": "0009"
+}
