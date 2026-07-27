@@ -6,7 +6,7 @@ Qdrant-based vector search with multiple named vectors and weighted fusion.
 import logging
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.http import models
@@ -21,7 +21,19 @@ from qdrant_client.http.models import (
     VectorParams,
 )
 
+from ..embeddings.model_registry import (
+    COLLECTION_MANIFEST_KEY,
+    CollectionCompatibilityError,
+    compare_collection_manifests,
+)
+
 logger = logging.getLogger(__name__)
+
+
+def manifest_point_id(collection_name: str) -> str:
+    """Reserved, deterministic id for a collection's manifest sentinel."""
+
+    return str(uuid5(NAMESPACE_URL, f"dope-context:manifest:{collection_name}"))
 
 
 @dataclass
@@ -103,6 +115,7 @@ class MultiVectorSearch:
         url: str = "localhost",
         port: int = 6333,
         vector_size: int = 1024,
+        manifest: Optional[Dict] = None,
     ):
         """
         Initialize multi-vector search.
@@ -115,6 +128,10 @@ class MultiVectorSearch:
         """
         self.collection_name = collection_name
         self.vector_size = vector_size
+        # Active compatibility record. Reads do not need it; writes refuse
+        # without it, which is what makes the gate fail closed.
+        self.manifest = manifest
+        self._compatibility_checked = False
         self.client = AsyncQdrantClient(url=url, port=port)
 
         # HNSW config for high-recall code search
@@ -131,6 +148,10 @@ class MultiVectorSearch:
             # Check if collection exists
             collections = await self.client.get_collections()
             if self.collection_name in [c.name for c in collections.collections]:
+                # Idempotent by design: index runs call this twice (server.py
+                # and again in IndexingPipeline.index_workspace), so a matching
+                # manifest must return quietly rather than raise.
+                await self._assert_compatible()
                 logger.info(f"Collection '{self.collection_name}' already exists")
                 return
 
@@ -173,6 +194,8 @@ class MultiVectorSearch:
                 field_schema=models.PayloadSchemaType.KEYWORD,
             )
 
+            await self._write_manifest()
+
             logger.info(
                 f"Created collection '{self.collection_name}' with 3 named vectors"
             )
@@ -180,6 +203,82 @@ class MultiVectorSearch:
         except Exception as e:
             logger.error(f"Failed to create collection: {e}")
             raise
+
+    async def _write_manifest(self) -> None:
+        """Persist the active manifest as a reserved zero-vector point.
+
+        Stored inside the collection deliberately: a sidecar would have a
+        lifecycle independent of the Qdrant volume and could outlive or be
+        outlived by the data it describes.
+        """
+
+        if not self.manifest:
+            logger.warning(
+                "No manifest supplied for '%s'; collection is unguarded and "
+                "writes will be refused until one is provided",
+                self.collection_name,
+            )
+            return
+
+        zero = [0.0] * self.vector_size
+        await self.client.upsert(
+            collection_name=self.collection_name,
+            points=[
+                PointStruct(
+                    id=manifest_point_id(self.collection_name),
+                    vector={
+                        "content_vec": zero,
+                        "title_vec": zero,
+                        "breadcrumb_vec": zero,
+                    },
+                    payload=dict(self.manifest),
+                )
+            ],
+        )
+        logger.info("Wrote compatibility manifest for '%s'", self.collection_name)
+
+    async def read_manifest(self) -> Optional[Dict]:
+        """Return the stored manifest, or None if the collection has none."""
+
+        records = await self.client.retrieve(
+            collection_name=self.collection_name,
+            ids=[manifest_point_id(self.collection_name)],
+            with_payload=True,
+            with_vectors=False,
+        )
+        if not records:
+            return None
+        return dict(records[0].payload or {})
+
+    async def _is_empty(self) -> bool:
+        info = await self.client.get_collection(collection_name=self.collection_name)
+        return not getattr(info, "points_count", 0)
+
+    async def _assert_compatible(self) -> None:
+        """Fail closed unless the stored manifest matches the active one.
+
+        An empty collection with no manifest is adopted; a populated one is
+        refused, because its vectors were produced by an unknown configuration.
+        """
+
+        if self._compatibility_checked:
+            return
+        if not self.manifest:
+            raise CollectionCompatibilityError(
+                f"Refusing to write to '{self.collection_name}': no active "
+                "manifest was supplied, so compatibility cannot be established."
+            )
+
+        stored = await self.read_manifest()
+        if stored is None and await self._is_empty():
+            await self._write_manifest()
+            self._compatibility_checked = True
+            return
+
+        compare_collection_manifests(
+            stored, self.manifest, collection_name=self.collection_name
+        )
+        self._compatibility_checked = True
 
     async def delete_collection(self):
         """Delete the collection."""
@@ -211,6 +310,8 @@ class MultiVectorSearch:
         Returns:
             Point ID
         """
+        await self._assert_compatible()
+
         if point_id is None:
             point_id = str(uuid4())
 
@@ -245,6 +346,8 @@ class MultiVectorSearch:
         Returns:
             List of point IDs
         """
+        await self._assert_compatible()
+
         point_structs = []
         point_ids = []
 
@@ -298,10 +401,11 @@ class MultiVectorSearch:
         if profile is None:
             profile = SearchProfile.implementation()
 
-        # Build filter
-        query_filter = None
+        # Build filter. The manifest sentinel is excluded unconditionally:
+        # it is a real point with zero vectors, so without this it comes back
+        # at score 0.0 and consumes a slot in top_k.
+        conditions = []
         if filter_by:
-            conditions = []
             for key, value in filter_by.items():
                 conditions.append(
                     FieldCondition(
@@ -310,8 +414,15 @@ class MultiVectorSearch:
                     )
                 )
 
-            if conditions:
-                query_filter = Filter(must=conditions)
+        query_filter = Filter(
+            must=conditions or None,
+            must_not=[
+                FieldCondition(
+                    key=COLLECTION_MANIFEST_KEY,
+                    match=MatchValue(value=True),
+                )
+            ],
+        )
 
         # Search each vector with its weight
         # Qdrant doesn't support weighted multi-vector search directly,
@@ -471,6 +582,11 @@ class MultiVectorSearch:
                 # Extract payloads and add IDs
                 for record in records:
                     payload = dict(record.payload) if record.payload else {}
+                    # Never leak the manifest sentinel: this feeds the BM25
+                    # index, docs stale reconciliation and sync, any of which
+                    # would treat it as a real document.
+                    if payload.get(COLLECTION_MANIFEST_KEY):
+                        continue
                     payload["id"] = str(record.id)  # Add ID for BM25 doc_id mapping
                     all_payloads.append(payload)
 

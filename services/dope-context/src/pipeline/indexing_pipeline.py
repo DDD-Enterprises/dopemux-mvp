@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 from ..embeddings.contextualized_embedder import ContextualizedEmbedder
+from ..embeddings.model_registry import build_collection_manifest
 
 # OpenAIContextGenerator imported inside the example function to avoid import-time issues
 from ..embeddings.voyage_embedder import VoyageEmbedder
@@ -26,6 +27,8 @@ from ..search.dense_search import MultiVectorSearch
 from ..sync.incremental_indexer import ChunkMetadata, ChunkSnapshot, IncrementalIndexer
 
 logger = logging.getLogger(__name__)
+
+CODE_CHUNKER_VERSION = "code_chunker.v1"
 
 
 @dataclass
@@ -379,7 +382,17 @@ class IndexingPipeline:
             self.progress.end_time = datetime.now()
             return self.progress
 
-        # 2. Ensure collection exists
+        # 2. Ensure collection exists.
+        # The manifest records the CONTENT vector's model: it determines the
+        # primary retrieval space and is the one that varies. title_vec and
+        # breadcrumb_vec are always voyage-code-3. If F-001 collapses code onto
+        # a single model, this becomes the only model in play.
+        self.vector_search.manifest = build_collection_manifest(
+            model=self.contextualized_embedder.default_model,
+            output_dimension=self.contextualized_embedder.output_dimension,
+            output_dtype=self.contextualized_embedder.output_dtype,
+            chunker_version=CODE_CHUNKER_VERSION,
+        )
         await self.vector_search.create_collection()
 
         # 3. Initialize chunk snapshot for incremental indexing

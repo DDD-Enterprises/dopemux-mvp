@@ -11,7 +11,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ..embeddings.contextualized_embedder import ContextualizedEmbedder
-from ..embeddings.model_registry import INDEX_SCHEMA_VERSION, index_fingerprint
+from ..embeddings.model_registry import (
+    INDEX_SCHEMA_VERSION,
+    build_collection_manifest,
+    index_fingerprint,
+)
 from ..preprocessing.document_processor import DocumentProcessor
 from ..preprocessing.models import DocumentChunk
 from ..search.docs_search import DocumentSearch
@@ -321,6 +325,14 @@ class DocIndexingPipeline:
         self, include_patterns: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         progress = DocsIndexingProgress(workspace=str(self.workspace_path))
+        # The pipeline, not the server, knows the active embedding shape, so it
+        # supplies the compatibility manifest the collection gate enforces.
+        self.doc_search.manifest = build_collection_manifest(
+            model=self.embedder.default_model,
+            output_dimension=self.embedder.output_dimension,
+            output_dtype=self.embedder.output_dtype,
+            chunker_version=CHUNKER_VERSION,
+        )
         await self.doc_search.create_collection()
         docs_files = self._discover_documents(include_patterns=include_patterns)
         progress.total_documents = len(docs_files)
