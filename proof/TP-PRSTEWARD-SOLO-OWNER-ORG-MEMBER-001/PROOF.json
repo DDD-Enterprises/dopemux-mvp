@@ -6,7 +6,7 @@
   "branch": "fix/pr-steward-solo-owner-org-member",
   "base": "main",
   "base_sha": "2e3fb08fc16f03d7566200497018fc9b4bd088ad",
-  "head_sha": "ef1dc343eb4a39e8010dcef2896c1a691df6a284",
+  "head_sha": "9326e664bf46510db33e5fe4968d54ceda1f3b69",
   "agent": "grok-build-implementer",
   "timestamp": "2026-07-27T04:45:00Z",
   "kind": "trust-root-policy-repair",
