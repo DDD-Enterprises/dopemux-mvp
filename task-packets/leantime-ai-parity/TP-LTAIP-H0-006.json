@@ -1,0 +1,274 @@
+{
+  "id": "TP-LTAIP-H0-006",
+  "project": "dopemux-mvp",
+  "target": "h0-package-review/official-plugin-qualification",
+  "invariants": [
+    "Raw package contents are never committed.",
+    "Execution stops when authorized package input is absent.",
+    "Every package is treated as a distinct licensed component.",
+    "No package receives feature credit before workflow and permission tests.",
+    "No secret-pattern file enters proof."
+  ],
+  "depends_on": [
+    "TP-LTAIP-H0-001",
+    "TP-LTAIP-H0-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-H0-VALIDATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-LTAIP-H0-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "research/TP-LTAIP-H0-006-plugin-qualification"
+  },
+  "commit": {
+    "message": "research: qualify official leantime plugin packages",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-006.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-006/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-006/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-006/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-006/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-006/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-006/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-006/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-006/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-006/MERGE_READINESS.json",
+      "scripts/leantime-ai-parity/h0/plugin-qualification/register_packages.py",
+      "scripts/leantime-ai-parity/h0/plugin-qualification/scan_packages.py",
+      "scripts/leantime-ai-parity/h0/plugin-qualification/run_package_matrix.py",
+      "scripts/leantime-ai-parity/h0/plugin-qualification/calculate_package_tco.py",
+      "scripts/leantime-ai-parity/h0/plugin-qualification/destroy_lab.sh",
+      "tests/prototypes/leantime-ai-parity/h0/plugin-qualification/test_package_manifest.py",
+      "tests/prototypes/leantime-ai-parity/h0/plugin-qualification/test_license_boundaries.py",
+      "tests/prototypes/leantime-ai-parity/h0/plugin-qualification/test_disposition_matrix.py",
+      "docs/06-research/leantime-ai-parity/h0/plugin-qualification/qualification-protocol.md",
+      "docs/06-research/leantime-ai-parity/h0/plugin-qualification/license-and-support-review.md",
+      "docs/06-research/leantime-ai-parity/h0/plugin-qualification/package-disposition.md",
+      "reports/leantime-ai-parity/h0/plugin-qualification/input-register.json",
+      "reports/leantime-ai-parity/h0/plugin-qualification/package-manifest.json",
+      "reports/leantime-ai-parity/h0/plugin-qualification/test-results.json",
+      "reports/leantime-ai-parity/h0/plugin-qualification/disposition-matrix.json",
+      "reports/leantime-ai-parity/h0/plugin-qualification/manifest.json"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+      "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/plugin-qualification",
+      "python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/input-register.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/package-manifest.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/test-results.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/disposition-matrix.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/manifest.json >/dev/null",
+      "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/plugin-qualification/qualification-protocol.md docs/06-research/leantime-ai-parity/h0/plugin-qualification/license-and-support-review.md docs/06-research/leantime-ai-parity/h0/plugin-qualification/package-disposition.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-006/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "research: qualify official Leantime plugin packages",
+    "body": "Add a package-custody, license, ACL, upgrade, backup, export, rollback, and TCO qualification protocol. No purchase or production install.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "apilookup",
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "testgen",
+      "secaudit",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-input-gate",
+      "task": "Fail closed unless the operator supplies approved package files through an external input directory.",
+      "requirements": [
+        "Require `LTAIP_PLUGIN_INPUT_DIR`.",
+        "Record package hash, filename, source, authorization reference, and license document.",
+        "Do not copy raw packages into tracked paths."
+      ],
+      "commands": [
+        "test -n \"${LTAIP_PLUGIN_INPUT_DIR:-}\" || { echo BLOCKED_AUTHORIZED_PACKAGE_INPUT_REQUIRED; exit 42; }",
+        "python scripts/leantime-ai-parity/h0/plugin-qualification/register_packages.py --input \"$LTAIP_PLUGIN_INPUT_DIR\" --output reports/leantime-ai-parity/h0/plugin-qualification/input-register.json"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/plugin-qualification/input-register.json",
+        "docs/06-research/leantime-ai-parity/h0/plugin-qualification/qualification-protocol.md",
+        "docs/06-research/leantime-ai-parity/h0/plugin-qualification/license-and-support-review.md"
+      ],
+      "validation": [
+        "Every package has operator authorization and SHA-256.",
+        "No raw package is staged."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-2-static-review",
+      "task": "Scan authorized packages without executing them and classify migrations, permissions, external calls, bundled code, and license/support terms.",
+      "requirements": [
+        "Extraction occurs in tmp.",
+        "Secret findings are redacted.",
+        "Unknown code paths remain UNKNOWN."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/plugin-qualification/scan_packages.py --register reports/leantime-ai-parity/h0/plugin-qualification/input-register.json --output reports/leantime-ai-parity/h0/plugin-qualification/package-manifest.json",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/plugin-qualification/test_package_manifest.py tests/prototypes/leantime-ai-parity/h0/plugin-qualification/test_license_boundaries.py"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/plugin-qualification/package-manifest.json",
+        "docs/06-research/leantime-ai-parity/h0/plugin-qualification/license-and-support-review.md"
+      ],
+      "validation": [
+        "Migrations, permissions, external endpoints, export paths, and license boundaries are classified."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-3-runtime-matrix",
+      "task": "Test each package in disposable Leantime instances and compare workflow outcome and three-year cost.",
+      "requirements": [
+        "Two sequential upgrades.",
+        "Backup/restore and uninstall rollback.",
+        "Same workflow fixtures as Packet 002."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/plugin-qualification/run_package_matrix.py --register reports/leantime-ai-parity/h0/plugin-qualification/input-register.json --output reports/leantime-ai-parity/h0/plugin-qualification/test-results.json",
+        "python scripts/leantime-ai-parity/h0/plugin-qualification/calculate_package_tco.py --test-results reports/leantime-ai-parity/h0/plugin-qualification/test-results.json --output reports/leantime-ai-parity/h0/plugin-qualification/disposition-matrix.json"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/plugin-qualification/test-results.json",
+        "reports/leantime-ai-parity/h0/plugin-qualification/disposition-matrix.json",
+        "docs/06-research/leantime-ai-parity/h0/plugin-qualification/package-disposition.md"
+      ],
+      "validation": [
+        "ACL, export, upgrade, backup, restore, and rollback results are complete.",
+        "Disposition is buy/build/defer/reject with evidence."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-4-teardown-audit-proof",
+      "task": "Destroy disposable instances, audit package handling and claims, and obtain PR Steward readiness.",
+      "requirements": [
+        "No package bytes or credentials remain in repo or logs."
+      ],
+      "commands": [
+        "bash scripts/leantime-ai-parity/h0/plugin-qualification/destroy_lab.sh --volumes",
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/plugin-qualification",
+        "python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/input-register.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/package-manifest.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/test-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/disposition-matrix.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/manifest.json >/dev/null",
+        "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/plugin-qualification/qualification-protocol.md docs/06-research/leantime-ai-parity/h0/plugin-qualification/license-and-support-review.md docs/06-research/leantime-ai-parity/h0/plugin-qualification/package-disposition.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-006/PROOF.json",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/plugin-qualification/manifest.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-006/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-006/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Supply-chain audit is non-blocking.",
+        "Package custody is complete."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    }
+  ]
+}
