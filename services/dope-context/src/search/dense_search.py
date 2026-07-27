@@ -15,7 +15,6 @@ from qdrant_client.http.models import (
     FieldCondition,
     Filter,
     MatchValue,
-    NamedVector,
     PointStruct,
     SearchRequest,
     VectorParams,
@@ -377,6 +376,33 @@ class MultiVectorSearch:
         logger.info(f"Inserted {len(point_structs)} points in batch")
         return point_ids
 
+    async def _query_named_vector(
+        self,
+        vector_name: str,
+        query_vector: List[float],
+        query_filter: Optional[Filter],
+        profile: "SearchProfile",
+    ) -> List:
+        """Query one named vector.
+
+        Uses ``query_points``: ``AsyncQdrantClient.search`` was removed from
+        qdrant-client and calling it raises AttributeError on every installed
+        version here (1.17.1 locally, 1.18.0 in the image and the running
+        container). The returned ``.points`` are ScoredPoint, the same shape
+        the old call produced, so fusion downstream is unchanged.
+        """
+
+        response = await self.client.query_points(
+            collection_name=self.collection_name,
+            query=query_vector,
+            using=vector_name,
+            query_filter=query_filter,
+            limit=profile.top_k,
+            search_params=models.SearchParams(hnsw_ef=profile.ef),
+            with_payload=True,
+        )
+        return response.points
+
     async def search(
         self,
         query_content_vector: List[float],
@@ -424,50 +450,16 @@ class MultiVectorSearch:
             ],
         )
 
-        # Search each vector with its weight
-        # Qdrant doesn't support weighted multi-vector search directly,
-        # so we search each vector separately and fuse results
-
-        # Search content vector
-        content_results = await self.client.search(
-            collection_name=self.collection_name,
-            query_vector=NamedVector(
-                name="content_vec",
-                vector=query_content_vector,
-            ),
-            query_filter=query_filter,
-            limit=profile.top_k,
-            search_params=models.SearchParams(
-                hnsw_ef=profile.ef,
-            ),
+        # Search each vector separately and fuse: Qdrant has no weighted
+        # multi-vector query.
+        content_results = await self._query_named_vector(
+            "content_vec", query_content_vector, query_filter, profile
         )
-
-        # Search title vector
-        title_results = await self.client.search(
-            collection_name=self.collection_name,
-            query_vector=NamedVector(
-                name="title_vec",
-                vector=query_title_vector,
-            ),
-            query_filter=query_filter,
-            limit=profile.top_k,
-            search_params=models.SearchParams(
-                hnsw_ef=profile.ef,
-            ),
+        title_results = await self._query_named_vector(
+            "title_vec", query_title_vector, query_filter, profile
         )
-
-        # Search breadcrumb vector
-        breadcrumb_results = await self.client.search(
-            collection_name=self.collection_name,
-            query_vector=NamedVector(
-                name="breadcrumb_vec",
-                vector=query_breadcrumb_vector,
-            ),
-            query_filter=query_filter,
-            limit=profile.top_k,
-            search_params=models.SearchParams(
-                hnsw_ef=profile.ef,
-            ),
+        breadcrumb_results = await self._query_named_vector(
+            "breadcrumb_vec", query_breadcrumb_vector, query_filter, profile
         )
 
         # Fuse results with weighted scores

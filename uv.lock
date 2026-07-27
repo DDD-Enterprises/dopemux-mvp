@@ -1228,7 +1228,7 @@ requires-dist = [
     { name = "python-multipart", marker = "extra == 'services'", specifier = ">=0.0.31" },
     { name = "pytz", marker = "extra == 'services'", specifier = ">=2023.3" },
     { name = "pyyaml", specifier = ">=6.0" },
-    { name = "qdrant-client", marker = "extra == 'services'", specifier = ">=1.15.0" },
+    { name = "qdrant-client", marker = "extra == 'services'", specifier = ">=1.15.0,<2.0" },
     { name = "questionary", specifier = ">=2.0.1" },
     { name = "rank-bm25", marker = "extra == 'services'" },
     { name = "readchar", specifier = ">=4.2.1" },
