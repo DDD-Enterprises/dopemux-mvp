@@ -1,0 +1,7 @@
+{
+  "compileall_tools_pr_steward": 0,
+  "pytest_focused": 0,
+  "pytest_tests_pr_steward": 0,
+  "intake_help": 0,
+  "git_diff_check": 0
+}

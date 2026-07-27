@@ -228,3 +228,61 @@ def test_stale_head_phrase_does_not_approve(tmp_path: Path):
     readiness = _readiness(harvest, known)
     assert readiness["security_release"]["approved"] is False
     assert "SECURITY_RELEASE_APPROVAL_REQUIRED" in readiness["blockers"]
+
+
+def test_org_member_solo_owner_exact_head_ready(tmp_path: Path):
+    """Organization-owned repo: sole trusted maintainer reported as MEMBER.
+
+    Reproduces DDD-Enterprises/dopemux-mvp + hu3mann + MEMBER association
+    with exact phrase, single trusted roster, and all other gates passing.
+    """
+    known = _known_reviewers(tmp_path, ["hu3mann"])
+    phrase = build_solo_owner_phrase(pr_number=PR, head_sha=HEAD_SHA)
+    harvest = _harvest(
+        issue_comments=[
+            {
+                "id": "ic-auth-member",
+                "body": phrase,
+                "author": {"login": "hu3mann"},
+                "authorAssociation": "MEMBER",
+                "createdAt": "2026-07-27T12:00:00Z",
+            }
+        ],
+        author_association="MEMBER",
+    )
+    readiness = _readiness(harvest, known)
+    assert readiness["security_release"]["required"] is True
+    assert readiness["security_release"]["approved"] is True
+    override = readiness["security_release"]["solo_owner_override"]
+    assert override is not None
+    assert override["receipt_code"] == RECEIPT_CODE
+    assert override["operator_login"] == "hu3mann"
+    assert override["operator_association"] == "MEMBER"
+    assert override["does_not_count_as_github_approved_review"] is True
+    assert override["auto_merge_enabled"] is False
+    assert readiness["security_release"]["approval"] is None
+    assert "SECURITY_RELEASE_APPROVAL_REQUIRED" not in readiness["blockers"]
+    assert readiness["readiness"] == "READY"
+
+
+def test_org_member_collaborator_does_not_activate(tmp_path: Path):
+    """COLLABORATOR association must not clear the security-release gate."""
+    known = _known_reviewers(tmp_path, ["hu3mann"])
+    phrase = build_solo_owner_phrase(pr_number=PR, head_sha=HEAD_SHA)
+    harvest = _harvest(
+        issue_comments=[
+            {
+                "id": "ic-auth",
+                "body": phrase,
+                "author": {"login": "hu3mann"},
+                "authorAssociation": "COLLABORATOR",
+                "createdAt": "2026-07-27T12:00:00Z",
+            }
+        ],
+        author_association="COLLABORATOR",
+    )
+    readiness = _readiness(harvest, known)
+    assert readiness["security_release"]["approved"] is False
+    assert readiness["security_release"]["solo_owner_override"] is None
+    assert "SECURITY_RELEASE_APPROVAL_REQUIRED" in readiness["blockers"]
+    assert readiness["readiness"] != "READY"

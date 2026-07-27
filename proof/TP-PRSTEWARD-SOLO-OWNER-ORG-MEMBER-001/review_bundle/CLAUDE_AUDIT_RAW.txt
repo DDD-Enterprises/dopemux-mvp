@@ -1,0 +1,64 @@
+## Verdict
+**PASS_WITH_RISKS**
+
+Policy change is minimal, fail-closed, and correctly scoped in code. Two non-code issues (working-tree allowlist escape, pre-existing trust-root sourcing gap) and one coverage nit keep it off a clean PASS. No stop condition in the packet is tripped by the code itself.
+
+Validation: `tests/pr_steward` full suite **PASS** — 235 passed (`mise exec -- python -m pytest tests/pr_steward -q`, Python 3.12.13). Targeted solo/app/gate suites: 54 passed.
+
+## Checklist
+
+| # | Check | Verdict | Evidence |
+|---|---|---|---|
+| 1 | MEMBER works only when roster is exactly `[PR author]` | **PASS** | Roster gate runs *before* any association logic: `solo_owner_security_release.py:228-233` returns `SOLO_OWNER_INELIGIBLE_ROSTER` prior to `assoc` being read at `:235`. `solo_owner_roster_eligible` (`:74-87`) requires `len(cleaned)==1` and case-folded equality with `pr_author`. Tests: `test_reject_member_with_second_trusted_human`, `test_roster_eligible_only_for_single_author_approver`, classifier `test_solo_owner_does_not_activate_with_second_trusted_approver`. |
+| 2 | COLLABORATOR remains rejected | **PASS** | `_SOLO_OPERATOR_ASSOCIATIONS = frozenset({"OWNER","MEMBER"})` (`:42`); PR-author COLLABORATOR → `SOLO_OWNER_AUTHOR_NOT_OWNER` (`:240-242`); comment-only COLLABORATOR with absent PR assoc → `SOLO_OWNER_PHRASE_OPERATOR_NOT_OWNER` (`:284-292`). Tests: `test_reject_collaborator_collaborator`, `test_reject_member_pr_collaborator_comment`, classifier `test_org_member_collaborator_does_not_activate`. |
+| 3 | A second trusted human disables the solo path | **PASS** | Same gate as #1; unconditional and association-independent. |
+| 4 | Stale or partial SHA remains rejected | **PASS** | `SOLO_OWNER_PHRASE_RE` requires exactly `{40}` hex plus `\b` (`:29-31`), so partial SHAs never parse and 41+‑hex tokens fail outright (no truncation match, since `{40}` cannot backtrack under a fixed prefix). Head equality enforced in `harvest_solo_owner_authorization:154`. Tests: `test_phrase_rejects_partial_sha`, `test_reject_member_wrong_pr_or_stale_head`, classifier `test_stale_head_phrase_does_not_approve`. |
+| 5 | Foreign comment author remains rejected | **PASS** | `harvest_solo_owner_authorization:156-158` drops any comment whose login ≠ `expected_operator` (= PR author, passed at `classifier.py:371-372`). Test: `test_reject_member_foreign_comment_author` → `SOLO_OWNER_PHRASE_MISSING_OR_MISMATCH`. |
+| 6 | MEMBER cannot waive CI / audit / proof / threads / unknown reviewers / unclassified / harvest | **PASS** | Ordered independent gates, all before phrase harvest: unclassified `:244-246`, audit `:248-251`, proof `:253-256`, then `_has_non_waivable_blockers` (`:184-199`) which blocks on *any* blocker not prefixed `SECURITY_RELEASE_` → `SOLO_OWNER_OTHER_GATES_BLOCKING` (`:258-265`). Classifier only ever strips `SECURITY_RELEASE_*` blockers on activation (`classifier.py:384-386`). Test: `test_reject_member_when_other_gates_fail` (6 cases). |
+| 7 | Generic bots cannot use the solo-human path | **PASS (config-enforced, not code-enforced)** | Solo path keys off `trusted_security_release_approvers`, which in `known_reviewers.json` is `["hu3mann"]` only; bots live in the separate `trusted_security_release_apps` list consumed by the untouched app path. The comment author must equal the PR author *and* be the sole roster entry. There is **no** `[bot]` login rejection inside `solo_owner_security_release.py` — see Remaining risks. |
+| 8 | Org-owned app path unchanged by this diff | **PASS** | `git diff HEAD --name-only` contains neither `security_release_app.py` nor `security_release_approval.py`; `git status --short` on both is empty. `classifier.py` is also unmodified, so app-path ordering and `compute_app_gate_ok` semantics are untouched. `tests/pr_steward/test_classifier_org_app_approval.py` passes unchanged. |
+| 9 | No code outside allowlist changed | **FAIL (non-source)** | Changed set: `tools/pr_steward/solo_owner_security_release.py`, the two allowlisted test files, the ADR — all in Scope IN — **plus `.claude/claude_config.json`**, which is not in Scope IN. Untracked: `proof/TP-…-001/`, `task-packets/pr-steward/TP-…-001.md` (both allowlisted) **plus `.claude/.untracked-work-probe-cache.json`**. No production code outside the allowlist changed. |
+
+Additional named checks:
+
+- **Association acceptance never replaces roster check** — **PASS**: roster gate at `:228` precedes `assoc` read at `:235`; no code path reaches phrase/association evaluation with a roster of size ≠ 1.
+- **`trusted_author_associations` not reused for solo path** — **PASS**: the solo module never imports or reads it; `classifier.py:85-88` loads it only for `_known_author` reviewer classification. Explicit anti-drift comment at `:40-41`.
+- **`SOLO_OWNER_ASSOCIATION_MISMATCH` when both present and differ** — **PASS**: `:281-283`, checked before the trusted-set membership tests, so `MEMBER`/`COLLABORATOR` and `OWNER`/`MEMBER` both refuse. Tests: `test_reject_owner_member_association_mismatch`, `test_reject_member_pr_collaborator_comment`.
+- **Public diagnostic names preserved** — **PASS**: `SOLO_OWNER_AUTHOR_NOT_OWNER` (`:241`) and `SOLO_OWNER_PHRASE_OPERATOR_NOT_OWNER` (`:288`, `:291`) unchanged; the new code is additive. Existing consumer path `classifier.py:396-398` (`unknowns` as `solo_owner:<diag>`) unaffected.
+- **Receipt integrity** — **PASS**: `does_not_count_as_github_approved_review: True`, `auto_merge_enabled: False` (`:308-309`); classifier sets `approval = None` so no GitHub review object is fabricated (`classifier.py:390-391`).
+
+## Findings
+
+**F-1 · MEDIUM · allowlist escape in working tree (packet stop condition, source-clean).**
+`.claude/claude_config.json` is modified with a worktree-local MCP instance rewrite (`DOPEMUX_INSTANCE_ID` / `DOPEMUX_WORKSPACE_ID` → this worktree path), and `.claude/.untracked-work-probe-cache.json` is untracked. Neither is in Scope IN. Both look tool-generated (`dopemux mcp init` / hook cache), not authored. If the commit is made with `git commit -a` or `git add -A`, machine-local paths land in the trust-root PR. Restore `.claude/claude_config.json` to `HEAD` and stage only allowlisted paths.
+
+**F-2 · MEDIUM (pre-existing, amplified) · "trusted main ref" is a docstring claim, not enforced in code.**
+`solo_owner_security_release.py:3-4` and the ADR assert the roster comes from "the trusted main ref", but `classifier.py:112` resolves it as `Path(__file__).with_name("known_reviewers.json")` and `intake.py:60-65` calls `build_artifacts` without `known_reviewers_path` — so the roster is read from whatever checkout the steward runs in. This predates the diff (PR #1131), but the MEMBER widening makes it more load-bearing: the roster is now the *only* gate separating "the sole maintainer" from "any organization member." Chain: an org MEMBER opens a PR rewriting `known_reviewers.json` to `["attacker"]`; if the steward runs against PR-branch content, `solo_owner_roster_eligible` becomes true for them and the solo phrase could clear the red lane that protects the roster itself. Residual barriers (all still intact): the roster path is red-lane classified with rename coverage (`classifier.py:250-262`), embedded audit must be `PASS`/`PASS_WITH_RISKS`, proof must bind the exact head, all required CI green, plus branch protection/CODEOWNERS outside this tool. Not introduced here and not a blocker for this packet, but it should become its own packet: resolve `known_reviewers.json` from `origin/main` (e.g. `git show origin/main:tools/pr_steward/known_reviewers.json`) rather than the working tree.
+
+**F-3 · LOW · no code-level bot rejection on the solo-human path.**
+`solo_owner_roster_eligible` compares logins only; nothing rejects a `*[bot]` login, and `classifier.py:1357` shows the codebase already has `_normalize_bot_login` for exactly this shape. Item 7 passes today purely because `trusted_security_release_approvers` is `["hu3mann"]`. A one-line fail-closed guard (reject operator logins matching `[bot]` / app suffixes in the solo path) would make the invariant code-enforced instead of config-enforced, and cost nothing.
+
+**F-4 · LOW · test-coverage gaps in the new suites.**
+No direct case for `HARVEST_INCOMPLETE` (behavior is correct by the generic non-`SECURITY_RELEASE_` prefix rule at `:194`, and sibling blockers are tested, so this is coverage not correctness), and no bot-login rejection case. Also untested: PR assoc `MEMBER` + comment association *absent* → activates with `operator_association == "MEMBER"` (`:302`). That is intended behavior inherited from the OWNER-only implementation, but it is the one path where authority rests on a single field, and it deserves a pinning test.
+
+**F-5 · NIT · ADR frontmatter dates moved backwards.**
+`last_review` / `next_review` changed `2026-07-27` → `2026-07-26` (and `-10-25` → `-10-24`) while `date: '2026-07-27'` was left in place, so `last_review` now precedes the document date. Given this repo runs frontmatter hygiene gates, align the three fields.
+
+## Remaining risks
+
+1. **`MEMBER` is a weaker GitHub claim than `OWNER`** — it means "member of the owning organization," not repo admin. The policy is only as strong as the single-entry roster; F-2 is therefore the real trust-root question, not the association set itself. The choice is sound and correctly documented in the ADR at `:130-153`, but it shifts weight onto a file whose sourcing is unverified in code.
+2. **Missing-association tolerance survives the change.** If a harvest omits `authorAssociation` on issue comments, activation rests solely on the PR-level association (and vice versa). Fail-closed only when *both* are missing (`:284-289`). Unchanged from #1131; correct per ADR, worth an explicit test (F-4).
+3. **Newest-candidate selection sorts on timestamp strings** (`:180`) and comments with no timestamp sort to `""`, i.e. oldest. Harmless here because every candidate already matched the exact PR number, exact head, and operator login, so all candidates are equivalent authorizations. No action needed.
+4. **No runtime/live evidence in this audit.** Verdicts are code-inspection plus unit/integration tests. End-to-end behavior against real GitHub `authorAssociation` values for the org case (`DDD-Enterprises/dopemux-mvp` + `hu3mann` = `MEMBER`) is asserted by fixture, not observed. The org-app path (#1133) is untouched and remains the stronger route where an app installation exists.
+
+## Recommendation
+
+**Proceed to commit and PR** after clearing F-1:
+
+1. `git checkout -- .claude/claude_config.json`; leave `.claude/.untracked-work-probe-cache.json` untracked and out of the commit. Stage explicitly — the five allowlisted paths plus `proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/**` and the task packet. Do not use `-a` / `add -A`.
+2. Add the three pinning tests from F-4 (`HARVEST_INCOMPLETE`; bot-login operator rejected; `MEMBER` PR assoc + absent comment assoc) before merge — cheap, and they pin the exact invariants this packet is claiming.
+3. Optional in-scope hardening: the F-3 bot guard in `solo_owner_roster_eligible`. If taken, it must be additive and must not alter existing diagnostic codes.
+4. **File F-2 as a separate HIGH packet** (`known_reviewers.json` resolved from `origin/main`, not the working tree). Do not fold it into this packet — it changes trust-root sourcing for every path, not just the solo path, and the current diff is deliberately minimal.
+5. Refresh `proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/GIT_DIFF.patch` and `GIT_DIFF_STAT.txt` after the F-1 revert so the proof bundle matches the committed diff exactly.
+
+No stop condition is tripped: COLLABORATOR is not accepted, the roster condition is not weakened, multi-reviewer enforcement is unchanged, app-approval semantics are unchanged, no non-security blocker is waived, tests pass, no secrets appear, and PR #1126 is not modified.

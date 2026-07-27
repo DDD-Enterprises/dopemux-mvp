@@ -8,7 +8,7 @@ date: '2026-07-27'
 last_review: '2026-07-27'
 next_review: '2026-10-25'
 status: accepted
-prelude: Resolves solo-owner PR Steward security-release deadlock without inventing a second reviewer or weakening multi-reviewer enforcement.
+prelude: Resolves solo-owner PR Steward security-release deadlock without inventing a second reviewer or weakening multi-reviewer enforcement. Org maintainers use MEMBER association.
 graph_metadata:
   node_type: ADR
   impact: high
@@ -66,16 +66,22 @@ Provide a narrowly scoped override that activates **only** when all of the
 following hold:
 
 1. trusted security-release roster on trusted main contains exactly one human;
-2. that identity is the repository owner and PR author;
-3. no eligible non-author trusted approver exists;
-4. independent embedded audit is current to the exact PR head with
+2. that identity is the PR author and the sole trusted security-release approver;
+3. the PR author / authorizing-comment association is exactly `OWNER` (user-owned
+   repositories) or `MEMBER` (organization-owned repositories); `COLLABORATOR`,
+   `CONTRIBUTOR`, `FIRST_TIMER`, `FIRST_TIME_CONTRIBUTOR`, `NONE`, missing on both
+   sides, and unknown values do **not** activate;
+4. when both PR association and comment association are present, they must match
+   (mismatch → `SOLO_OWNER_ASSOCIATION_MISMATCH`);
+5. no eligible non-author trusted approver exists;
+6. independent embedded audit is current to the exact PR head with
    `PASS` or non-blocking `PASS_WITH_RISKS`, and auditor tool/model/provider/
    runner/session fields are recorded when present;
-5. all required CI checks are current and green (no failed/pending required);
-6. proof is current to the exact PR head;
-7. no unknown reviewers, unclassified review items, unresolved blocking threads,
+7. all required CI checks are current and green (no failed/pending required);
+8. proof is current to the exact PR head;
+9. no unknown reviewers, unclassified review items, unresolved blocking threads,
    harvest incompleteness, draft/closed PR, or mixed-SHA artifact sets remain;
-8. the operator posts an exact phrase as a PR issue comment:
+10. the operator posts an exact phrase as a PR issue comment:
 
 ```text
 AUTHORIZE SOLO-OWNER SECURITY RELEASE FOR PR #<PR_NUMBER> AT HEAD <FULL_SHA>
@@ -124,6 +130,24 @@ remains mandatory whenever a non-author trusted approver exists.
 5. Head binding is exact (full SHA); partial SHAs and wrong PR numbers fail closed.
 6. Phrase author must be the solo trusted identity; foreign logins are ignored.
 7. Receipt is evidence, not a second catalog of authority.
+8. Solo-operator associations are exactly `{OWNER, MEMBER}` — not the broader
+   `trusted_author_associations` set (which includes `COLLABORATOR`).
+9. Association acceptance never replaces the exact single-person trusted roster
+   check; a second trusted human disables the solo path regardless of association.
+
+## Amendment — org MEMBER association (TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001)
+
+**Problem:** The initial implementation required GitHub `authorAssociation=OWNER`.
+On organization-owned repositories such as `DDD-Enterprises/dopemux-mvp`, GitHub
+reports the sole human maintainer as `MEMBER`, so a legitimate exact-head solo
+authorization was rejected before remaining gates ran.
+
+**Repair:** Accept `_SOLO_OPERATOR_ASSOCIATIONS = {OWNER, MEMBER}` for PR author
+and authorization-comment association validation (and receipt generation). All
+other security, proof, audit, review, CI, exact-head, and multi-approver gates
+remain independently blocking. Auto-merge remains disabled. The solo-owner
+receipt never becomes a fabricated GitHub review. The organization-owned GitHub
+App approval path (PR #1133 / ADR companion) is unchanged.
 
 ## Consequences
 

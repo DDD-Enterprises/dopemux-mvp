@@ -1,0 +1,172 @@
+{
+  "packet_id": "TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001",
+  "series": "pr-steward",
+  "project": "dopemux-mvp",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "branch": "fix/pr-steward-solo-owner-org-member",
+  "base": "main",
+  "base_sha": "2e3fb08fc16f03d7566200497018fc9b4bd088ad",
+  "head_sha": "ef1dc343eb4a39e8010dcef2896c1a691df6a284",
+  "agent": "grok-build-implementer",
+  "timestamp": "2026-07-27T04:45:00Z",
+  "kind": "trust-root-policy-repair",
+  "risk": "HIGH",
+  "parent_policy": "ADR-DMX-PRSTEWARD-SOLOOWNER-001",
+  "parent_pr": 1131,
+  "related_product_pr_out_of_scope": 1126,
+  "objective": "Accept OWNER and MEMBER as solo-operator associations for exact-head solo-owner security-release authorization; reject COLLABORATOR; add association mismatch fail-closed; preserve all other gates.",
+  "files_changed": {
+    "modified": [
+      "tools/pr_steward/solo_owner_security_release.py",
+      "tests/pr_steward/test_solo_owner_security_release.py",
+      "tests/pr_steward/test_classifier_solo_owner.py",
+      "docs/90-adr/adr-dmx-prsteward-soloowner-001.md"
+    ],
+    "created": [
+      "task-packets/pr-steward/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001.md",
+      "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/PROOF.json",
+      "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/AUDITOR_REPORT.md",
+      "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/EXIT_CODES.json",
+      "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/FILES_CHANGED.txt",
+      "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/GIT_DIFF.patch",
+      "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/GIT_DIFF_STAT.txt",
+      "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/GIT_STATUS_BEFORE.txt",
+      "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/BASELINE_HEAD.txt",
+      "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/BRANCH.txt",
+      "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/review_bundle/CLAUDE_AUDIT_RAW.txt",
+      "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/review_bundle/AUDIT_INPUT.md"
+    ]
+  },
+  "diff_scope": {
+    "outside_allowlist": false,
+    "forbidden_paths_touched": [],
+    "note": "Tool-generated .claude/claude_config.json may appear dirty in worktree; excluded from commit staging."
+  },
+  "implementation": {
+    "solo_operator_associations": [
+      "OWNER",
+      "MEMBER"
+    ],
+    "rejected_associations_include": [
+      "COLLABORATOR",
+      "CONTRIBUTOR",
+      "NONE"
+    ],
+    "new_diagnostic": "SOLO_OWNER_ASSOCIATION_MISMATCH",
+    "preserved_diagnostics": [
+      "SOLO_OWNER_AUTHOR_NOT_OWNER",
+      "SOLO_OWNER_PHRASE_OPERATOR_NOT_OWNER"
+    ],
+    "not_generalized_to": "trusted_author_associations"
+  },
+  "validations": {
+    "compileall_tools_pr_steward": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "pytest_focused": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "pytest_tests_pr_steward": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "intake_help": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "git_diff_check": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "pre_commit": {
+      "exit_code": 0,
+      "status": "PASS",
+      "scope": "allowlisted-files"
+    }
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p <adversarial-checklist> --permission-mode plan (read-only tools); independent session separate from implementer",
+    "exit_code": 0,
+    "report_path": "proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-1",
+        "severity": "MEDIUM",
+        "title": "Tool-generated .claude paths must not enter commit",
+        "status": "RESOLVED",
+        "body": "Exclude .claude/claude_config.json and probe caches from staging; stage allowlist only."
+      },
+      {
+        "id": "F-2",
+        "severity": "MEDIUM",
+        "title": "Roster sourced from checkout not proven origin/main",
+        "status": "ACCEPTED_RISK",
+        "body": "Pre-existing; out of packet scope. Follow-up HIGH packet recommended."
+      },
+      {
+        "id": "F-3",
+        "severity": "LOW",
+        "title": "No code-level bot login rejection on solo path",
+        "status": "ACCEPTED_RISK",
+        "body": "Config-enforced via single-human trusted roster; optional future guard."
+      },
+      {
+        "id": "F-4",
+        "severity": "LOW",
+        "title": "Pin-test coverage gaps",
+        "status": "RESOLVED",
+        "body": "Added HARVEST_INCOMPLETE and MEMBER+absent-comment-assoc pins."
+      },
+      {
+        "id": "F-5",
+        "severity": "INFO",
+        "title": "ADR frontmatter date alignment",
+        "status": "RESOLVED",
+        "body": "last_review/next_review aligned with date field."
+      }
+    ],
+    "fixes_applied": [
+      "Exclude non-allowlist .claude noise from commit",
+      "Add HARVEST_INCOMPLETE MEMBER gate pin test",
+      "Add MEMBER PR + missing comment association activation pin",
+      "Align ADR frontmatter review dates"
+    ],
+    "remaining_risks": [
+      "MEMBER association is weaker than OWNER; strength rests on single-person trusted roster",
+      "known_reviewers.json sourcing from checkout is pre-existing trust-root gap (out of scope)",
+      "Deployed main still OWNER-only until this PR bootstrap-merges; Steward may report NEEDS_SUPERVISOR with SECURITY_RELEASE_APPROVAL_REQUIRED",
+      "Does not approve or modify PR #1126; post-merge re-run Steward against #1126 required"
+    ],
+    "skip_reason": null
+  },
+  "bootstrap_merge_posture": {
+    "expected_steward_status_before_merge": "NEEDS_SUPERVISOR",
+    "expected_sole_blocker": "SECURITY_RELEASE_APPROVAL_REQUIRED",
+    "auto_merge": false,
+    "authorizes": "this association-repair PR only",
+    "does_not_authorize": [
+      "PR #1126",
+      "deployment",
+      "future trust-root changes",
+      "failed CI",
+      "stale proof",
+      "failed audit",
+      "scope expansion"
+    ]
+  },
+  "residual_risks": [
+    "Trust-root recursion until bootstrap merge lands MEMBER policy on main",
+    "F-2 roster checkout sourcing (pre-existing)",
+    "Live org MEMBER association not observed against real GitHub in this packet"
+  ],
+  "unknowns": [
+    "Post-PR CI workflow outcomes until push",
+    "Steward live harvest of this PR until operator re-runs"
+  ]
+}

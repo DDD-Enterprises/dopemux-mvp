@@ -93,6 +93,185 @@ def test_activate_happy_path():
     assert result.receipt["auto_merge_enabled"] is False
     assert result.receipt["head_sha"] == HEAD
     assert result.receipt["pr_number"] == PR
+    assert result.receipt["operator_association"] == "OWNER"
+
+
+def test_activate_owner_owner():
+    """PR OWNER + comment OWNER + single trusted roster → activated."""
+    result = _eval(
+        pr_author_association="OWNER",
+        issue_comments=[_comment(_phrase(), association="OWNER")],
+    )
+    assert result.activated is True
+    assert result.receipt is not None
+    assert result.receipt["operator_association"] == "OWNER"
+
+
+def test_activate_member_member():
+    """PR MEMBER + comment MEMBER + single trusted roster → activated (org case)."""
+    result = _eval(
+        pr_author_association="MEMBER",
+        issue_comments=[_comment(_phrase(), association="MEMBER")],
+    )
+    assert result.activated is True
+    assert result.receipt is not None
+    assert result.receipt["receipt_code"] == RECEIPT_CODE
+    assert result.receipt["operator_association"] == "MEMBER"
+    assert result.receipt["operator_login"] == AUTHOR
+
+
+def test_activate_missing_pr_association_member_comment():
+    """Missing PR association + comment MEMBER → activated via comment."""
+    result = _eval(
+        pr_author_association=None,
+        issue_comments=[_comment(_phrase(), association="MEMBER")],
+    )
+    assert result.activated is True
+    assert result.receipt is not None
+    assert result.receipt["operator_association"] == "MEMBER"
+
+
+def test_activate_member_pr_missing_comment_association():
+    """PR MEMBER + comment association absent → activated via PR association."""
+    result = _eval(
+        pr_author_association="MEMBER",
+        issue_comments=[
+            {
+                "id": "c-no-assoc",
+                "body": _phrase(),
+                "author": {"login": AUTHOR},
+                "createdAt": "2026-07-27T01:00:00Z",
+            }
+        ],
+    )
+    assert result.activated is True
+    assert result.receipt is not None
+    assert result.receipt["operator_association"] == "MEMBER"
+
+
+def test_reject_collaborator_collaborator():
+    """COLLABORATOR does not activate the solo-owner path."""
+    result = _eval(
+        pr_author_association="COLLABORATOR",
+        issue_comments=[_comment(_phrase(), association="COLLABORATOR")],
+    )
+    assert result.activated is False
+    assert "SOLO_OWNER_AUTHOR_NOT_OWNER" in result.diagnostic_errors
+
+
+def test_reject_member_pr_collaborator_comment():
+    """PR MEMBER + comment COLLABORATOR → rejected (mismatch / untrusted comment)."""
+    result = _eval(
+        pr_author_association="MEMBER",
+        issue_comments=[_comment(_phrase(), association="COLLABORATOR")],
+    )
+    assert result.activated is False
+    assert "SOLO_OWNER_ASSOCIATION_MISMATCH" in result.diagnostic_errors
+
+
+def test_reject_owner_member_association_mismatch():
+    """PR OWNER + comment MEMBER → rejected due association mismatch."""
+    result = _eval(
+        pr_author_association="OWNER",
+        issue_comments=[_comment(_phrase(), association="MEMBER")],
+    )
+    assert result.activated is False
+    assert "SOLO_OWNER_ASSOCIATION_MISMATCH" in result.diagnostic_errors
+
+
+def test_reject_member_with_second_trusted_human():
+    """Trusted roster [author, second-human] + MEMBER → rejected."""
+    result = _eval(
+        trusted_approvers=[AUTHOR, "second-human"],
+        pr_author_association="MEMBER",
+        issue_comments=[_comment(_phrase(), association="MEMBER")],
+    )
+    assert result.activated is False
+    assert "SOLO_OWNER_INELIGIBLE_ROSTER" in result.diagnostic_errors
+
+
+def test_reject_member_foreign_comment_author():
+    """comment author != PR author + MEMBER → rejected."""
+    result = _eval(
+        pr_author_association="MEMBER",
+        issue_comments=[
+            _comment(_phrase(), login="not-the-author", association="MEMBER")
+        ],
+    )
+    assert result.activated is False
+    assert "SOLO_OWNER_PHRASE_MISSING_OR_MISMATCH" in result.diagnostic_errors
+
+
+def test_reject_member_wrong_pr_or_stale_head():
+    """Wrong PR number or stale head + MEMBER → rejected."""
+    wrong_pr = _eval(
+        pr_author_association="MEMBER",
+        issue_comments=[_comment(_phrase(pr=9999), association="MEMBER")],
+    )
+    assert wrong_pr.activated is False
+    assert "SOLO_OWNER_PHRASE_MISSING_OR_MISMATCH" in wrong_pr.diagnostic_errors
+
+    stale_head = _eval(
+        pr_author_association="MEMBER",
+        issue_comments=[_comment(_phrase(head="a" * 40), association="MEMBER")],
+    )
+    assert stale_head.activated is False
+    assert "SOLO_OWNER_PHRASE_MISSING_OR_MISMATCH" in stale_head.diagnostic_errors
+
+
+def test_reject_member_when_other_gates_fail():
+    """MEMBER cannot waive audit/proof/CI/thread/reviewer/unclassified gates."""
+    for kwargs, diagnostic in (
+        ({"audit_status": "FAIL"}, "SOLO_OWNER_AUDIT_NOT_PASSING"),
+        ({"proof_status": "STALE"}, "SOLO_OWNER_PROOF_NOT_CURRENT"),
+        (
+            {
+                "blockers": [
+                    "SECURITY_RELEASE_APPROVAL_REQUIRED",
+                    "FAILED_CHECK",
+                ]
+            },
+            "SOLO_OWNER_OTHER_GATES_BLOCKING",
+        ),
+        (
+            {
+                "blockers": [
+                    "SECURITY_RELEASE_APPROVAL_REQUIRED",
+                    "UNRESOLVED_REVIEW_THREAD",
+                ]
+            },
+            "SOLO_OWNER_OTHER_GATES_BLOCKING",
+        ),
+        (
+            {
+                "blockers": [
+                    "SECURITY_RELEASE_APPROVAL_REQUIRED",
+                    "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION",
+                ]
+            },
+            "SOLO_OWNER_OTHER_GATES_BLOCKING",
+        ),
+        (
+            {
+                "blockers": [
+                    "SECURITY_RELEASE_APPROVAL_REQUIRED",
+                    "HARVEST_INCOMPLETE",
+                ]
+            },
+            "SOLO_OWNER_OTHER_GATES_BLOCKING",
+        ),
+        (
+            {"unclassified_review_item_count": 1},
+            "SOLO_OWNER_UNCLASSIFIED_REVIEW_ITEMS",
+        ),
+    ):
+        result = _eval(
+            pr_author_association="MEMBER",
+            issue_comments=[_comment(_phrase(), association="MEMBER")],
+            **kwargs,
+        )
+        assert result.activated is False, kwargs
+        assert diagnostic in result.diagnostic_errors, (kwargs, result.diagnostic_errors)
 
 
 def test_cannot_activate_when_non_author_trusted_approver_exists():

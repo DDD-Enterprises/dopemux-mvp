@@ -2,13 +2,16 @@
 
 This path exists only for repositories whose trusted security-release roster on
 the trusted main ref contains exactly one human approver who is also the PR
-author/owner, and who cannot post a GitHub APPROVED review on their own PR.
+author, holds solo-operator association OWNER (user-owned) or MEMBER
+(organization-owned), and who cannot post a GitHub APPROVED review on their
+own PR.
 
 It never:
 - counts as an ordinary GitHub APPROVED review;
 - enables auto-merge;
 - waives CI, proof, audit, review-thread, reviewer-classification, or harvest gates;
-- activates when any eligible non-author trusted approver exists.
+- activates when any eligible non-author trusted approver exists;
+- activates for COLLABORATOR or other non-solo-operator associations.
 
 Activation requires an exact operator phrase harvested from PR issue comments:
 
@@ -30,8 +33,13 @@ SOLO_OWNER_PHRASE_RE = re.compile(
 RECEIPT_CODE = "SOLO_OWNER_SECURITY_RELEASE_OVERRIDE_USED"
 AUTHORIZATION_SCOPE = "security_release_only"
 
-# Associations that prove owner/operator authority for the solo path.
-_OWNER_ASSOCIATIONS = frozenset({"OWNER"})
+# Associations that prove solo-operator authority for the solo path.
+# OWNER  — user-owned repositories
+# MEMBER — organization-owned repositories (org maintainer association)
+# COLLABORATOR and all other associations do NOT activate this path.
+# Do not generalize to trusted_author_associations (that set includes
+# COLLABORATOR and is broader than this release-authority contract).
+_SOLO_OPERATOR_ASSOCIATIONS = frozenset({"OWNER", "MEMBER"})
 
 # Audit statuses that may accompany a solo-owner override.
 _PASSING_AUDITS = frozenset({"PASS", "PASS_WITH_RISKS"})
@@ -225,9 +233,11 @@ def evaluate_solo_owner_security_release(
         )
 
     assoc = str(pr_author_association or "").upper()
-    # If association is present and not OWNER, refuse. Missing association is
-    # allowed only when the authorizing issue comment itself carries OWNER.
-    if assoc and assoc not in _OWNER_ASSOCIATIONS:
+    # If association is present and not OWNER/MEMBER, refuse. Missing association
+    # is allowed only when the authorizing issue comment itself carries a
+    # solo-operator association (OWNER or MEMBER). Public diagnostic codes
+    # preserve the historical SOLO_OWNER_* names for consumers.
+    if assoc and assoc not in _SOLO_OPERATOR_ASSOCIATIONS:
         diagnostics.append("SOLO_OWNER_AUTHOR_NOT_OWNER")
         return SoloOwnerEvaluation(False, None, tuple(diagnostics))
 
@@ -264,13 +274,20 @@ def evaluate_solo_owner_security_release(
         diagnostics.append("SOLO_OWNER_PHRASE_MISSING_OR_MISMATCH")
         return SoloOwnerEvaluation(False, None, tuple(diagnostics))
 
-    # Operator association on the phrase comment must be OWNER (fail-closed when
-    # both PR author association and comment association are missing/untrusted).
+    # Operator association on the phrase comment must be OWNER or MEMBER.
+    # Fail-closed when both PR author association and comment association are
+    # missing/untrusted. When both are present and differ, refuse (mismatch).
     comment_assoc = str(auth.get("operator_association") or "").upper()
-    if comment_assoc not in _OWNER_ASSOCIATIONS and assoc not in _OWNER_ASSOCIATIONS:
+    if assoc and comment_assoc and assoc != comment_assoc:
+        diagnostics.append("SOLO_OWNER_ASSOCIATION_MISMATCH")
+        return SoloOwnerEvaluation(False, None, tuple(diagnostics))
+    if (
+        comment_assoc not in _SOLO_OPERATOR_ASSOCIATIONS
+        and assoc not in _SOLO_OPERATOR_ASSOCIATIONS
+    ):
         diagnostics.append("SOLO_OWNER_PHRASE_OPERATOR_NOT_OWNER")
         return SoloOwnerEvaluation(False, None, tuple(diagnostics))
-    if comment_assoc and comment_assoc not in _OWNER_ASSOCIATIONS:
+    if comment_assoc and comment_assoc not in _SOLO_OPERATOR_ASSOCIATIONS:
         diagnostics.append("SOLO_OWNER_PHRASE_OPERATOR_NOT_OWNER")
         return SoloOwnerEvaluation(False, None, tuple(diagnostics))
 

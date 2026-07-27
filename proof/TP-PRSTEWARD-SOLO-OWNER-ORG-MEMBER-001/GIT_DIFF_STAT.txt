@@ -1,0 +1,5 @@
+ docs/90-adr/adr-dmx-prsteward-soloowner-001.md     |  40 ++++-
+ tests/pr_steward/test_classifier_solo_owner.py     |  58 +++++++
+ .../pr_steward/test_solo_owner_security_release.py | 179 +++++++++++++++++++++
+ tools/pr_steward/solo_owner_security_release.py    |  39 +++--
+ 4 files changed, 297 insertions(+), 19 deletions(-)

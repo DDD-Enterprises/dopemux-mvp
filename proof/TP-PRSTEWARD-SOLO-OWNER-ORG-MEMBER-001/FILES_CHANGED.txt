@@ -1,0 +1,6 @@
+tools/pr_steward/solo_owner_security_release.py
+tests/pr_steward/test_solo_owner_security_release.py
+tests/pr_steward/test_classifier_solo_owner.py
+docs/90-adr/adr-dmx-prsteward-soloowner-001.md
+task-packets/pr-steward/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001.md
+proof/TP-PRSTEWARD-SOLO-OWNER-ORG-MEMBER-001/**

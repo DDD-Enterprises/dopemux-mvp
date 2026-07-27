@@ -1,0 +1,4 @@
+I will start by listing the contents of the current directory to locate the repository files.
+I will run `git status` to locate the git repository and check its status.
+I will find where `solo_owner_security_release.py` is located.
+Error: timeout waiting for response
