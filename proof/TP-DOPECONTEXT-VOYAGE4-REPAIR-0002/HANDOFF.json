@@ -1,0 +1,14 @@
+{
+  "packet_id": "TP-DOPECONTEXT-VOYAGE4-REPAIR-0002",
+  "head_sha": "efc15f90950068e121f4abb174d0c085f52880c1",
+  "branch": "fix/dope-context-voyage4-repair-0002",
+  "next_actions": [
+    "Run independent embedded audit (Gemini CLI preferred) against exact head",
+    "Push branch and open draft PR",
+    "Pin proof to PR head after audit",
+    "Run PR Steward for MERGE_READINESS=READY",
+    "Do not deploy"
+  ],
+  "rollback_command": "DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL=voyage-context-3",
+  "test_command": "PYTHONPATH=services/dope-context uv run --extra services --extra test pytest -q services/dope-context/tests"
+}

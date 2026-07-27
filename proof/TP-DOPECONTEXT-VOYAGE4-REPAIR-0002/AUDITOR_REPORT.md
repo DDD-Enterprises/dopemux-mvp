@@ -2,26 +2,37 @@
 
 ## Status
 
-**PENDING_INDEPENDENT_AUDITOR**
+**NOT_RUN / BLOCKED** — independent auditor tools unavailable in this window.
 
-The packet requires an independent embedded auditor (Gemini CLI preferred).
-The implementer session must not self-certify PASS.
+## Auditor attempts
 
-## Required challenges (for independent auditor)
+| Route | Tool | Result |
+|-------|------|--------|
+| Preferred | Gemini CLI | FAIL — `IneligibleTierError` unsupported client for free tier; migrate to Antigravity required |
+| Fallback 1 | AGY `gemini-3.1-pro-high` | FAIL — prompt not executed productively / session issue |
+| Fallback 1b | AGY `claude-sonnet-4-6` | FAIL — Individual quota reached (resets ~12h) |
+| Fallback 2 | Claude Code CLI Sonnet | FAIL — session limit hit (resets ~6:50pm America/Vancouver) |
 
-1. Reconstruct six-vector compatibility matrix from code.
-2. Prove collection identity changes under every profile mutation.
-3. Seed legacy-collection metadata; prove no new write reaches it.
-4. Prove rollback cannot split index and query.
-5. Prove embedding/upsert failures preserve prior points.
-6. Prove no silent zero-result budget starvation.
-7. Compare implementation against all Opus findings.
-8. Reject PASS if any blocking finding remains.
+## Packet rule
 
-## Interim implementer self-check (not a formal verdict)
+Implementer session (Grok) must not self-certify `PASS`.
 
-- Local pytest: 74 passed
-- Docker smoke: SMOKE_OK (voyageai 0.5.0)
-- Blocking F-001/F-002/F-003 addressed in source
+## audited_head_sha
 
-Formal `auditor_verdict` remains unset until independent audit completes.
+`efc15f90950068e121f4abb174d0c085f52880c1` (proof pin may move if follow-up commits land)
+
+## auditor_verdict
+
+`NOT_RUN`
+
+## Next exact step
+
+Run independent audit when quota restores:
+
+```bash
+cd /Users/hue/.grok/worktrees/code-dopemux-mvp/tp-voyage4-repair-0002
+# Prefer AGY Gemini or Claude Code Opus in a NEW session after quota reset
+agy -p "$(cat /tmp/voyage4-audit-prompt.md)" --model gemini-3.1-pro-high --print-timeout 15m --add-dir .
+```
+
+Then pin `PROOF.json` `embedded_audit.auditor_verdict` to `PASS` or `PASS_WITH_RISKS` and re-run PR Steward.

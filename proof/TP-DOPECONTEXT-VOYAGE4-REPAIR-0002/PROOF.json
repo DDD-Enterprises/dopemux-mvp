@@ -1,0 +1,51 @@
+{
+  "packet_id": "TP-DOPECONTEXT-VOYAGE4-REPAIR-0002",
+  "project": "dopemux-mvp",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "authorized_base_sha": "f4e91574a11e7f0e73d096b7b36def0230627727",
+  "final_head_sha": "PENDING_PROOF_COMMIT",
+  "branch": "fix/dope-context-voyage4-repair-0002",
+  "worktree": "/Users/hue/.grok/worktrees/code-dopemux-mvp/tp-voyage4-repair-0002",
+  "objective_status": "IMPLEMENTATION_COMPLETE_AUDIT_BLOCKED",
+  "blocking_findings": {
+    "F-001": "REPAIRED",
+    "F-002": "REPAIRED",
+    "F-003": "REPAIRED"
+  },
+  "validation": {
+    "compileall": "PASS",
+    "pytest": "PASS",
+    "pytest_passed": 74,
+    "pytest_failed": 0,
+    "uv_lock_check": "PASS",
+    "git_diff_check": "PASS",
+    "docker_build": "PASS",
+    "docker_smoke": "PASS",
+    "deployment": "NOT_RUN"
+  },
+  "embedded_audit": {
+    "status": "BLOCKED",
+    "auditor_tool": null,
+    "auditor_model": null,
+    "auditor_session": null,
+    "auditor_verdict": "NOT_RUN",
+    "attempts": [
+      {"tool": "gemini_cli", "error": "IneligibleTierError"},
+      {"tool": "agy", "model": "claude-sonnet-4-6", "error": "Individual quota reached"},
+      {"tool": "claude_code_cli", "model": "sonnet", "error": "session limit"}
+    ],
+    "note": "Implementer session must not self-certify. Independent audit required before READY."
+  },
+  "pr_steward": {
+    "MERGE_READINESS.status": "NOT_READY",
+    "reason": "Independent embedded audit NOT_RUN; blocks steward READY"
+  },
+  "remaining_risks": [
+    "Independent embedded audit not completed (tool quota/auth blockers)",
+    "No live Voyage embedding benchmark performed",
+    "Legacy collections require operator reindex; not auto-routed for reads",
+    "PR Steward READY not yet achieved"
+  ],
+  "deployment_status": "NOT_RUN",
+  "stop_condition": "embedded_audit_tools_unavailable"
+}
