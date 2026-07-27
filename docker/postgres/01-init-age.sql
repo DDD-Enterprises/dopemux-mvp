@@ -1,6 +1,10 @@
 -- Initialize Apache AGE extension for ConPort knowledge graph
 -- This script runs automatically when the postgres container starts
 
+-- Create database for LiteLLM router
+SELECT 'CREATE DATABASE litellm'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'litellm')\gexec
+
 -- Create AGE extension
 CREATE EXTENSION IF NOT EXISTS age;
 
