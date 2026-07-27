@@ -35,12 +35,20 @@ class TokenCount:
 
 
 class VoyageTokenCounter:
-    """Use Voyage's model-specific tokenizer with a deterministic fallback."""
+    """Use Voyage's model-specific tokenizer with a deterministic fallback.
+
+    Tokenizer/model load is attempted at most once per model per process. A
+    blocked Hugging Face / network route is memoized so unique texts do not
+    each trigger another failed download (F-006).
+    """
 
     def __init__(self, api_key: Optional[str] = None):
         client_type = getattr(voyageai, "Client", None)
         self._client = client_type(api_key=api_key) if client_type else None
         self._cache: Dict[Tuple[str, str], TokenCount] = {}
+        # Per-model load outcome: True = exact tokenizer available, False = failed.
+        self._model_tokenizer_ok: Dict[str, bool] = {}
+        self._model_load_attempts: Dict[str, int] = {}
 
     @staticmethod
     def _key(text: str, model: str) -> Tuple[str, str]:
@@ -51,8 +59,17 @@ class VoyageTokenCounter:
         if not texts:
             return []
 
-        if self._client is not None:
+        # Memoized failure: never re-attempt network download per unique text.
+        if self._model_tokenizer_ok.get(model) is False:
+            return [
+                TokenCount(conservative_token_estimate(text), False) for text in texts
+            ]
+
+        if self._client is not None and self._model_tokenizer_ok.get(model) is not False:
             try:
+                self._model_load_attempts[model] = (
+                    self._model_load_attempts.get(model, 0) + 1
+                )
                 encodings = self._client.tokenize(list(texts), model=model)
                 counts: List[TokenCount] = []
                 for encoding in encodings:
@@ -65,13 +82,20 @@ class VoyageTokenCounter:
                     else:
                         raise TypeError("Voyage tokenizer returned an unknown encoding")
                 if len(counts) == len(texts):
+                    self._model_tokenizer_ok[model] = True
                     return counts
             except Exception:
                 # Networkless/constrained environments may not have tokenizer
-                # files. Request validation stays conservative rather than false.
-                pass
+                # files. Memoize failure so subsequent texts do not re-hit the net.
+                self._model_tokenizer_ok[model] = False
 
         return [TokenCount(conservative_token_estimate(text), False) for text in texts]
+
+    def tokenizer_load_attempts(self, model: str) -> int:
+        return self._model_load_attempts.get(model, 0)
+
+    def tokenizer_available(self, model: str) -> Optional[bool]:
+        return self._model_tokenizer_ok.get(model)
 
     async def count_each(self, texts: Sequence[str], model: str) -> List[TokenCount]:
         """Count each text without blocking the event loop on tokenizer loading."""

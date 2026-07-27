@@ -16,16 +16,17 @@ from ..utils.model_tokenizer import (
     allocate_total_tokens,
     partition_indices,
 )
+from ..index_profile import resolve_code_embed_model
 from .model_registry import (
-    DEFAULT_CODE_MODEL,
     DEFAULT_OUTPUT_DIMENSION,
     DEFAULT_OUTPUT_DTYPE,
-    env_model,
     get_model_spec,
     validate_dimension,
 )
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_EMBEDDING_CACHE_MAX = 4096
 
 
 @dataclass(frozen=True)
@@ -113,10 +114,9 @@ class VoyageEmbedder:
         default_model: Optional[str] = None,
         output_dimension: int = DEFAULT_OUTPUT_DIMENSION,
         output_dtype: str = DEFAULT_OUTPUT_DTYPE,
+        cache_max_entries: int = DEFAULT_EMBEDDING_CACHE_MAX,
     ):
-        self.default_model = default_model or env_model(
-            "DOPE_CONTEXT_CODE_EMBED_MODEL", DEFAULT_CODE_MODEL
-        )
+        self.default_model = default_model or resolve_code_embed_model()
         get_model_spec(self.default_model, endpoint="embeddings")
         self.output_dimension = validate_dimension(self.default_model, output_dimension)
         self.output_dtype = output_dtype
@@ -124,11 +124,25 @@ class VoyageEmbedder:
         self.token_counter = VoyageTokenCounter(api_key=api_key)
         self.cache: Dict[str, Tuple[EmbeddingResponse, datetime]] = {}
         self.cache_ttl = timedelta(hours=cache_ttl_hours)
+        self.cache_max_entries = max(1, cache_max_entries)
         self.max_batch_size = max(1, max_batch_size)
         self.rate_limit_rpm = max(1, rate_limit_rpm)
         self.cost_tracker = CostTracker()
         self._request_times: List[datetime] = []
         self._rate_limit_lock = asyncio.Lock()
+
+    def _evict_expired_and_bound_cache(self) -> None:
+        now = datetime.now()
+        expired = [
+            key
+            for key, (_, cached_at) in self.cache.items()
+            if now - cached_at > self.cache_ttl
+        ]
+        for key in expired:
+            del self.cache[key]
+        while len(self.cache) >= self.cache_max_entries:
+            oldest = next(iter(self.cache))
+            del self.cache[oldest]
 
     async def _check_rate_limit(self) -> None:
         async with self._rate_limit_lock:
@@ -147,6 +161,7 @@ class VoyageEmbedder:
             self._request_times.append(datetime.now())
 
     def _get_cached(self, cache_key: str) -> Optional[EmbeddingResponse]:
+        self._evict_expired_and_bound_cache()
         cached = self.cache.get(cache_key)
         if cached is None:
             return None
@@ -155,7 +170,7 @@ class VoyageEmbedder:
             del self.cache[cache_key]
             return None
         return EmbeddingResponse(
-            embedding=response.embedding,
+            embedding=list(response.embedding),
             model=response.model,
             tokens=response.tokens,
             cached=True,
@@ -166,7 +181,18 @@ class VoyageEmbedder:
         )
 
     def _cache_response(self, cache_key: str, response: EmbeddingResponse) -> None:
-        self.cache[cache_key] = (response, datetime.now())
+        self._evict_expired_and_bound_cache()
+        stored = EmbeddingResponse(
+            embedding=list(response.embedding),
+            model=response.model,
+            tokens=response.tokens,
+            cached=False,
+            cost_usd=response.cost_usd,
+            output_dimension=response.output_dimension,
+            output_dtype=response.output_dtype,
+            token_count_exact=response.token_count_exact,
+        )
+        self.cache[cache_key] = (stored, datetime.now())
 
     async def _api_embed(
         self,
@@ -275,15 +301,18 @@ class VoyageEmbedder:
         if not getattr(result, "embeddings", None):
             raise ValueError("Voyage API returned no embeddings")
 
+        api_reported_total = hasattr(result, "total_tokens")
         tokens = int(getattr(result, "total_tokens", token_counts[0].count))
         response = EmbeddingResponse(
-            embedding=result.embeddings[0],
+            embedding=list(result.embeddings[0]),
             model=model,
             tokens=tokens,
             cost_usd=self.cost_tracker.add_request(model, tokens),
             output_dimension=request.output_dimension,
             output_dtype=request.output_dtype,
-            token_count_exact=True,
+            # Exact only when tokenizer counted precisely or the API supplied a
+            # real total; never label a pure estimate as exact (F-004).
+            token_count_exact=token_counts[0].exact or api_reported_total,
         )
         self._cache_response(request.cache_key(), response)
         return response
@@ -375,6 +404,7 @@ class VoyageEmbedder:
                 )
 
             batch_estimates = [effective_counts[index] for index in batch_indices]
+            api_reported_total = hasattr(result, "total_tokens")
             total_tokens = int(getattr(result, "total_tokens", sum(batch_estimates)))
             allocated = allocate_total_tokens(batch_estimates, total_tokens)
 
@@ -384,13 +414,15 @@ class VoyageEmbedder:
                 global_uncached_index = batch_indices[local_index]
                 original_index = uncached_indices[global_uncached_index]
                 response = EmbeddingResponse(
-                    embedding=embedding,
+                    embedding=list(embedding),
                     model=model,
                     tokens=tokens,
                     cost_usd=self.cost_tracker.add_request(model, tokens),
                     output_dimension=dimension,
                     output_dtype=dtype,
-                    token_count_exact=token_counts[global_uncached_index].exact,
+                    token_count_exact=(
+                        token_counts[global_uncached_index].exact or api_reported_total
+                    ),
                 )
                 self._cache_response(request.cache_key(), response)
                 responses[original_index] = response

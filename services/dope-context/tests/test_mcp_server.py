@@ -14,6 +14,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+def _tool_fn(tool):
+    """Invoke FastMCP FunctionTool through the supported underlying function."""
+    return getattr(tool, "fn", tool)
+
+
 TEST_HOME = Path(tempfile.gettempdir()) / "dope-context-test-home"
 TEST_HOME.mkdir(parents=True, exist_ok=True)
 os.environ["HOME"] = str(TEST_HOME)
@@ -129,9 +134,16 @@ def _register_qdrant_stub():
     http_module = types.ModuleType("qdrant_client.http")
     http_module.models = models_module
 
-    sys.modules.setdefault("qdrant_client", qdrant_module)
-    sys.modules.setdefault("qdrant_client.http", http_module)
-    sys.modules.setdefault("qdrant_client.http.models", models_module)
+    # Force stubs so earlier imports of real qdrant cannot poison this module.
+    sys.modules["qdrant_client"] = qdrant_module
+    sys.modules["qdrant_client.http"] = http_module
+    sys.modules["qdrant_client.http.models"] = models_module
+    # Rebind already-imported dense_search clients when present.
+    dense = sys.modules.get("src.search.dense_search")
+    if dense is not None:
+        dense.AsyncQdrantClient = _StubAsyncQdrantClient
+        if hasattr(dense, "models"):
+            dense.models = models_module
 
 
 _register_qdrant_stub()
@@ -541,8 +553,15 @@ async def test_clear_index_tool(tmp_path, monkeypatch):
 
     assert result["status"] == "success"
     assert result["approval_matched"] is True
-    assert set(deleted) == {f"code_{workspace_hash}", f"docs_{workspace_hash}"}
+    from src.utils.workspace import get_collection_names
+
+    code_name, docs_name = get_collection_names(workspace)
+    assert set(deleted) == {code_name, docs_name}
     assert not bm25_path.exists()
+    # Active clear targets versioned collections (kind_hash_digest).
+    assert code_name.startswith(f"code_{workspace_hash}_")
+    assert docs_name.startswith(f"docs_{workspace_hash}_")
+    assert len(code_name.split("_")) >= 3
 
 
 @pytest.mark.anyio
@@ -557,7 +576,7 @@ async def test_search_code_multi_workspace(tmp_path, monkeypatch):
     mock_impl = AsyncMock(side_effect=fake_results)
     monkeypatch.setattr("src.mcp.server._search_code_impl", mock_impl)
 
-    result = await search_code(
+    result = await _tool_fn(search_code)(
         query="test",
         workspace_paths=[str(ws1), str(ws2)],
     )
@@ -586,7 +605,7 @@ async def test_sync_workspace_multi(tmp_path, monkeypatch):
     )
     monkeypatch.setattr("src.mcp.server._sync_workspace_impl", mock_impl)
 
-    result = await sync_workspace(
+    result = await _tool_fn(sync_workspace)(
         workspace_paths=[str(ws1), str(ws2)],
         include_patterns=["*.py"],
     )
@@ -610,7 +629,7 @@ async def test_docs_search_multi_workspace(tmp_path, monkeypatch):
     mock_impl = AsyncMock(side_effect=fake_results)
     monkeypatch.setattr("src.mcp.server._docs_search_impl", mock_impl)
 
-    result = await docs_search(
+    result = await _tool_fn(docs_search)(
         query="test query",
         workspace_paths=[str(ws1), str(ws2)],
     )
@@ -639,7 +658,7 @@ async def test_search_all_multi_workspace(tmp_path, monkeypatch):
     mock_impl = AsyncMock(side_effect=fake_results)
     monkeypatch.setattr("src.mcp.server._search_all_impl", mock_impl)
 
-    result = await search_all(
+    result = await _tool_fn(search_all)(
         query="test query",
         workspace_paths=[str(ws1), str(ws2)],
     )
@@ -749,9 +768,12 @@ async def test_search_all_clamps_decision_limit_to_trinity_boundary(
 
 @pytest.mark.anyio
 async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeypatch):
-    """_docs_search_impl must embed queries with voyage-context-3 query mode."""
+    """_docs_search_impl embeds with the configured contextual profile (query mode)."""
+    from src.index_profile import build_docs_collection_profile
+
     workspace = tmp_path / "workspace"
     workspace.mkdir()
+    expected_model = build_docs_collection_profile().content().model
 
     embed_mock = AsyncMock(
         return_value=types.SimpleNamespace(
@@ -760,6 +782,7 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
     )
 
     class _FakeDocsEmbedder:
+        default_model = expected_model
         embed_document = embed_mock
 
     fake_result = SearchResult(
@@ -798,7 +821,7 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
     )
 
     assert response["lane_used"] == "docs"
-    assert response["embed_model_used"] == "voyage-context-3"
+    assert response["embed_model_used"] == expected_model
     assert response["fusion_strategy"] == "dense"
     assert response["rerank_used"] is False
     assert response["timings_ms"]["embed"] >= 0
@@ -810,7 +833,7 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
 
     embed_mock.assert_awaited()
     _, kwargs = embed_mock.call_args
-    assert kwargs["model"] == "voyage-context-3"
+    assert kwargs["model"] == expected_model
     assert kwargs["input_type"] == "query"
     assert "chunks" in kwargs
     assert len(kwargs["chunks"]) == 1
@@ -938,7 +961,7 @@ async def test_configure_decision_auto_indexing_persists_config(tmp_path, monkey
     workspace = tmp_path / "workspace"
     workspace.mkdir()
 
-    result = await configure_decision_auto_indexing(
+    result = await _tool_fn(configure_decision_auto_indexing)(
         workspace_path=str(workspace),
         enabled=True,
         bridge_url="http://localhost:3999",
@@ -974,7 +997,7 @@ async def test_sync_docs_multi_workspace(tmp_path, monkeypatch):
     )
     monkeypatch.setattr("src.mcp.server._sync_docs_impl", mock_impl)
 
-    result = await sync_docs(
+    result = await _tool_fn(sync_docs)(
         workspace_paths=[str(ws1), str(ws2)],
     )
 

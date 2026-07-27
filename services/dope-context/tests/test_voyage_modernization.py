@@ -28,14 +28,16 @@ def test_current_voyage_models_and_prices():
     assert code.max_request_tokens == 120_000
 
 
-def test_legacy_context_literal_migrates_unless_explicit(monkeypatch):
+def test_explicit_context_model_is_never_silently_rewritten(monkeypatch):
+    """F-003/invariant: explicit requests are not rewritten into another model."""
     monkeypatch.delenv("DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3", raising=False)
     assert (
         resolve_context_model("voyage-context-3", "voyage-context-4")
-        == "voyage-context-4"
+        == "voyage-context-3"
     )
-
+    assert resolve_context_model(None, "voyage-context-4") == "voyage-context-4"
     monkeypatch.setenv("DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3", "1")
+    # Admission guard is a no-op for selection.
     assert (
         resolve_context_model("voyage-context-3", "voyage-context-4")
         == "voyage-context-3"

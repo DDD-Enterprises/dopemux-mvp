@@ -94,6 +94,8 @@ MODEL_SPECS: Dict[str, EmbeddingModelSpec] = {
         price_per_million_tokens=0.18,
         legacy=True,
     ),
+    # voyage-3-lite is in the vendor 120K request-token group; only
+    # voyage-4-lite (and voyage-3.5-lite if added later) carry the 1M ceiling.
     "voyage-3-lite": EmbeddingModelSpec(
         name="voyage-3-lite",
         endpoint="embeddings",
@@ -101,7 +103,7 @@ MODEL_SPECS: Dict[str, EmbeddingModelSpec] = {
         supported_dimensions=frozenset({512}),
         per_input_tokens=32_000,
         max_request_inputs=1_000,
-        max_request_tokens=1_000_000,
+        max_request_tokens=120_000,
         price_per_million_tokens=0.02,
         legacy=True,
     ),
@@ -155,29 +157,29 @@ def validate_dimension(model: str, output_dimension: Optional[int]) -> int:
 
 
 def resolve_context_model(requested: Optional[str], configured: str) -> str:
-    """Resolve legacy hard-coded context-3 callers onto the configured default.
+    """Return the requested model or the configured default.
 
-    Existing code historically passed ``voyage-context-3`` at every call site.
-    Unless legacy use is explicitly enabled, that old literal now means "use the
-    configured contextualized model", which defaults to context-4. An explicit
-    configured context-3 model remains available for rollback.
+    Explicit model requests are never rewritten. Contextual rollback is done
+    only via ``DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL`` (see ``index_profile``).
+    ``DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3`` is a deprecated no-op for selection.
     """
 
     if requested in (None, ""):
         return configured
-
-    allow_legacy = os.getenv("DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3", "").lower() in {
-        "1",
-        "true",
-        "yes",
-    }
-    if (
-        requested == "voyage-context-3"
-        and configured != "voyage-context-3"
-        and not allow_legacy
-    ):
-        return configured
     return requested
+
+
+def resolve_contextual_embed_model_from_env() -> str:
+    """Canonical contextual model selector (index + query).
+
+    Delegates to ``index_profile.resolve_contextual_embed_model`` so callers
+    that still import from the registry share one implementation.
+    """
+
+    # Local import avoids a circular dependency at module load time.
+    from ..index_profile import resolve_contextual_embed_model
+
+    return resolve_contextual_embed_model()
 
 
 def index_fingerprint(
@@ -187,7 +189,11 @@ def index_fingerprint(
     output_dtype: str,
     chunker_version: str,
 ) -> str:
-    """Return a deterministic identifier for index compatibility checks."""
+    """Return a deterministic identifier for single-model index checks.
+
+    Multi-vector collections should prefer ``CollectionProfile.profile_fingerprint``
+    from ``index_profile``; this helper remains for docs payload provenance.
+    """
 
     payload = {
         "schema_version": INDEX_SCHEMA_VERSION,

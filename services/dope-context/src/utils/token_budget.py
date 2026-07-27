@@ -31,6 +31,9 @@ class TruncationResult:
     chars_removed: int
     estimated_tokens: int
     budget_used_pct: float
+    # F-017: distinguish budget starvation from "no matches".
+    budget_starvation: bool = False
+    degraded_guarantee_applied: bool = False
 
 
 def estimate_tokens(text: str) -> int:
@@ -119,6 +122,66 @@ def truncate_text_to_tokens(
     return best, True
 
 
+def _cap_oversized_siblings(
+    item: Dict[str, Any], *, content_field: str, per_item_tokens: int
+) -> int:
+    """Trim any other string field so it alone cannot blow the item budget.
+
+    ``search_code`` payloads carry an unbounded ``context`` sibling next to
+    the already-truncated content field; without this, one oversized sibling
+    makes ``estimate_dict_tokens`` measure the whole dict as over budget and
+    the caller silently drops the result (F-017).
+    """
+
+    chars_removed = 0
+    for key, value in list(item.items()):
+        if key == content_field or not isinstance(value, str):
+            continue
+        if estimate_tokens(value) <= per_item_tokens:
+            continue
+        shortened, _ = truncate_text_to_tokens(value, per_item_tokens)
+        chars_removed += len(value) - len(shortened)
+        item[key] = shortened
+    return chars_removed
+
+
+def _degrade_single_result(
+    first: Dict[str, Any],
+    *,
+    content_field: str,
+    truncated_flag: str,
+    content_suffix: str,
+    budget_tokens: int,
+) -> tuple[Dict[str, Any], int]:
+    """Degrade the first result rather than return an empty list (F-017).
+
+    Non-empty input must never come back as zero results: a caller cannot
+    tell that apart from "no matches". Content and every sibling field share
+    half of the remaining budget, well under the normal per-item cap, so the
+    forced item still has headroom even against a tight budget.
+    """
+
+    item = first.copy()
+    remaining = max(1, budget_tokens - BASE_OVERHEAD_TOKENS)
+    half_budget = max(1, remaining // 2)
+    chars_removed = 0
+
+    content = item.get(content_field)
+    if isinstance(content, str):
+        shortened, _ = truncate_text_to_tokens(
+            content, half_budget, suffix=content_suffix
+        )
+        chars_removed += len(content) - len(shortened)
+        item[content_field] = shortened
+    item[truncated_flag] = True
+    item["budget_degraded"] = True
+
+    chars_removed += _cap_oversized_siblings(
+        item, content_field=content_field, per_item_tokens=half_budget
+    )
+    return item, chars_removed
+
+
 def _truncate_results(
     results: List[Dict[str, Any]],
     *,
@@ -142,6 +205,8 @@ def _truncate_results(
             chars_removed=0,
             estimated_tokens=BASE_OVERHEAD_TOKENS,
             budget_used_pct=0.0,
+            budget_starvation=False,
+            degraded_guarantee_applied=False,
         )
 
     original_count = len(results)
@@ -149,6 +214,7 @@ def _truncate_results(
     total_tokens = BASE_OVERHEAD_TOKENS
     total_chars_removed = 0
     per_item_tokens = max(1, estimate_tokens("x" * max(0, per_item_max_chars)))
+    degraded_guarantee = False
 
     for result in results:
         item = result.copy()
@@ -164,6 +230,11 @@ def _truncate_results(
             if was_truncated:
                 total_chars_removed += len(content) - len(shortened)
 
+        # Cap every sibling string field (e.g. context) before measuring.
+        total_chars_removed += _cap_oversized_siblings(
+            item, content_field=content_field, per_item_tokens=per_item_tokens
+        )
+
         item_tokens = estimate_dict_tokens(item)
         if total_tokens + item_tokens > budget_tokens:
             logger.warning(
@@ -178,7 +249,22 @@ def _truncate_results(
         output.append(item)
         total_tokens += item_tokens
 
+    if not output:
+        # Non-empty input must never come back empty (F-017).
+        degraded, degraded_chars_removed = _degrade_single_result(
+            results[0],
+            content_field=content_field,
+            truncated_flag=truncated_flag,
+            content_suffix=content_suffix,
+            budget_tokens=budget_tokens,
+        )
+        output.append(degraded)
+        total_chars_removed += degraded_chars_removed
+        total_tokens = BASE_OVERHEAD_TOKENS + estimate_dict_tokens(degraded)
+        degraded_guarantee = True
+
     final_count = len(output)
+    starvation = degraded_guarantee or final_count < original_count
     return output, TruncationResult(
         truncated=(final_count < original_count or total_chars_removed > 0),
         original_count=original_count,
@@ -187,6 +273,8 @@ def _truncate_results(
         chars_removed=total_chars_removed,
         estimated_tokens=total_tokens,
         budget_used_pct=round((total_tokens / budget_tokens) * 100, 2),
+        budget_starvation=starvation and final_count > 0 and original_count > 0,
+        degraded_guarantee_applied=degraded_guarantee,
     )
 
 

@@ -1,0 +1,7 @@
+{
+  "packet_id": "TP-DOPECONTEXT-VOYAGE4-REPAIR-0002",
+  "auditor_preferred": "Gemini CLI",
+  "auditor_fallback": ["AGY/Sonnet", "Claude Code Opus independent session"],
+  "implementer_must_not_self_audit": true,
+  "status": "READY_FOR_INDEPENDENT_AUDIT"
+}

@@ -16,17 +16,18 @@ from ..utils.model_tokenizer import (
     allocate_total_tokens,
     partition_indices,
 )
+from ..index_profile import resolve_contextual_embed_model
 from .model_registry import (
-    DEFAULT_DOC_MODEL,
     DEFAULT_OUTPUT_DIMENSION,
     DEFAULT_OUTPUT_DTYPE,
-    env_model,
     get_model_spec,
     resolve_context_model,
     validate_dimension,
 )
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_EMBEDDING_CACHE_MAX = 4096
 
 
 @dataclass
@@ -77,12 +78,11 @@ class CostTracker:
 
 
 class ContextualizedEmbedder:
-    """Contextualized Voyage client with a context-4 default.
+    """Contextualized Voyage client.
 
-    Existing context-3 call sites are migrated onto the configured model unless
-    ``DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3`` is explicitly enabled. This keeps
-    rollback possible while preventing stale literals from pinning production
-    to the legacy model forever.
+    Default model is the single canonical contextual selector
+    (``DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL`` / deprecated DOC alias). Explicit
+    model arguments are never rewritten.
     """
 
     def __init__(
@@ -93,10 +93,9 @@ class ContextualizedEmbedder:
         default_model: Optional[str] = None,
         output_dimension: int = DEFAULT_OUTPUT_DIMENSION,
         output_dtype: str = DEFAULT_OUTPUT_DTYPE,
+        cache_max_entries: int = DEFAULT_EMBEDDING_CACHE_MAX,
     ):
-        self.default_model = default_model or env_model(
-            "DOPE_CONTEXT_DOC_EMBED_MODEL", DEFAULT_DOC_MODEL
-        )
+        self.default_model = default_model or resolve_contextual_embed_model()
         get_model_spec(self.default_model, endpoint="contextualized_embeddings")
         self.output_dimension = validate_dimension(self.default_model, output_dimension)
         self.output_dtype = output_dtype
@@ -104,6 +103,7 @@ class ContextualizedEmbedder:
         self.token_counter = VoyageTokenCounter(api_key=api_key)
         self.cache: Dict[str, Tuple[ContextualizedEmbeddingResponse, datetime]] = {}
         self.cache_ttl = timedelta(hours=cache_ttl_hours)
+        self.cache_max_entries = max(1, cache_max_entries)
         self.rate_limit_rpm = max(1, rate_limit_rpm)
         self.cost_tracker = CostTracker()
         self._request_times: List[datetime] = []
@@ -112,12 +112,21 @@ class ContextualizedEmbedder:
     def _resolve_model(self, requested: Optional[str]) -> str:
         model = resolve_context_model(requested, self.default_model)
         get_model_spec(model, endpoint="contextualized_embeddings")
-        if requested == "voyage-context-3" and model != requested:
-            logger.warning(
-                "Migrating legacy voyage-context-3 request to configured model %s",
-                model,
-            )
         return model
+
+    def _evict_expired_and_bound_cache(self) -> None:
+        now = datetime.now()
+        expired = [
+            key
+            for key, (_, cached_at) in self.cache.items()
+            if now - cached_at > self.cache_ttl
+        ]
+        for key in expired:
+            del self.cache[key]
+        while len(self.cache) >= self.cache_max_entries:
+            # Drop oldest entry by insertion order (dict preserves order).
+            oldest = next(iter(self.cache))
+            del self.cache[oldest]
 
     @staticmethod
     def _cache_key(
@@ -157,6 +166,7 @@ class ContextualizedEmbedder:
     def _get_cached(
         self, cache_key: str
     ) -> Optional[ContextualizedEmbeddingResponse]:
+        self._evict_expired_and_bound_cache()
         cached = self.cache.get(cache_key)
         if cached is None:
             return None
@@ -164,14 +174,15 @@ class ContextualizedEmbedder:
         if datetime.now() - cached_at > self.cache_ttl:
             del self.cache[cache_key]
             return None
+        # Defensive copies so consumers cannot mutate cached vectors.
         return ContextualizedEmbeddingResponse(
-            embeddings=response.embeddings,
+            embeddings=[list(vector) for vector in response.embeddings],
             model=response.model,
             total_tokens=response.total_tokens,
             cached=True,
             cost_usd=0.0,
-            chunk_tokens=response.chunk_tokens,
-            chunk_texts=response.chunk_texts,
+            chunk_tokens=list(response.chunk_tokens),
+            chunk_texts=list(response.chunk_texts),
             output_dimension=response.output_dimension,
             output_dtype=response.output_dtype,
             token_count_exact=response.token_count_exact,
@@ -180,7 +191,20 @@ class ContextualizedEmbedder:
     def _cache_response(
         self, cache_key: str, response: ContextualizedEmbeddingResponse
     ) -> None:
-        self.cache[cache_key] = (response, datetime.now())
+        self._evict_expired_and_bound_cache()
+        stored = ContextualizedEmbeddingResponse(
+            embeddings=[list(vector) for vector in response.embeddings],
+            model=response.model,
+            total_tokens=response.total_tokens,
+            cached=False,
+            cost_usd=response.cost_usd,
+            chunk_tokens=list(response.chunk_tokens),
+            chunk_texts=list(response.chunk_texts),
+            output_dimension=response.output_dimension,
+            output_dtype=response.output_dtype,
+            token_count_exact=response.token_count_exact,
+        )
+        self.cache[cache_key] = (stored, datetime.now())
 
     async def _api_contextualized_embed(
         self,
