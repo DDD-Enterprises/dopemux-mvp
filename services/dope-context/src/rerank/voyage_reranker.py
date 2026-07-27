@@ -20,6 +20,19 @@ RERANK_PRICING_PER_MILLION = {
 }
 RERANK_MAX_DOCUMENTS = 1_000
 RERANK_MAX_TOTAL_TOKENS = 600_000
+# Vendor per-query ceiling for rerank-2.5 / rerank-2.5-lite -- the only two
+# models RERANK_PRICING_PER_MILLION supports; both share this limit.
+# https://docs.voyageai.com/reference/reranker-api (verified 2026-07-26).
+RERANK_MAX_QUERY_TOKENS = 8_000
+
+
+class RerankQueryTooLargeError(ValueError):
+    """Raised when a rerank query exceeds the vendor per-query token limit.
+
+    Deliberately not caught inside rerank(): an oversized query is a caller
+    error, not a degraded-service condition, and must fail loudly (F-014)
+    rather than being swallowed into a "successful-looking" fallback (F-011).
+    """
 
 
 @dataclass
@@ -37,6 +50,11 @@ class RerankResponse:
     total_results: int
     tokens_used: int
     cost_usd: float
+    # True when the original (dense) ordering was returned instead of a
+    # genuine Voyage rerank -- either the API call failed or no candidate fit
+    # within the token budget. Callers must not treat a degraded response as
+    # a successful rerank (F-011).
+    degraded: bool = False
 
     def get_all_results(self) -> List[RerankResult]:
         return self.top_results + self.cached_results
@@ -103,11 +121,10 @@ class VoyageReranker:
         return result.content
 
     async def _bounded_candidates(
-        self, query: str, results: List[SearchResult]
+        self, query_tokens: int, results: List[SearchResult]
     ) -> tuple[List[SearchResult], List[str], int]:
         candidates = results[:RERANK_MAX_DOCUMENTS]
         documents = [self._document_text(result) for result in candidates]
-        query_count = (await self.token_counter.count_each([query], self.model))[0]
         document_counts = await self.token_counter.count_each(documents, self.model)
 
         bounded_results: List[SearchResult] = []
@@ -118,7 +135,7 @@ class VoyageReranker:
         ):
             next_count = len(bounded_documents) + 1
             next_total = (
-                query_count.count * next_count
+                query_tokens * next_count
                 + document_total
                 + token_count.count
             )
@@ -128,46 +145,44 @@ class VoyageReranker:
             bounded_documents.append(document)
             document_total += token_count.count
 
-        total_tokens = query_count.count * len(bounded_documents) + document_total
+        total_tokens = query_tokens * len(bounded_documents) + document_total
         return bounded_results, bounded_documents, total_tokens
 
-    async def _api_rerank(
-        self,
-        *,
-        query: str,
-        documents: List[str],
-        return_documents: bool,
-    ):
-        kwargs = {
-            "query": query,
-            "documents": documents,
-            "model": self.model,
-            "top_k": None,
-            "return_documents": return_documents,
-            "truncation": True,
-        }
-        try:
-            return await self.client.rerank(**kwargs)
-        except TypeError:
-            # Compatibility with old SDKs and repository test doubles.
-            legacy = {
-                key: value
-                for key, value in kwargs.items()
-                if key not in {"return_documents", "truncation"}
-            }
-            return await self.client.rerank(**legacy)
+    async def _api_rerank(self, *, query: str, documents: List[str]):
+        # return_documents does not exist on this (or any) voyageai SDK
+        # release -- verified via inspect.signature(AsyncClient.rerank) on
+        # 0.3.7 and 0.5.0 (F-010b). Sending it raised TypeError on every call,
+        # which took a compatibility branch that also stripped `truncation`.
+        # query/documents/model/top_k/truncation are the full accepted set.
+        return await self.client.rerank(
+            query=query,
+            documents=documents,
+            model=self.model,
+            top_k=None,
+            truncation=True,
+        )
 
     async def rerank(
         self,
         query: str,
         results: List[SearchResult],
-        return_documents: bool = False,
     ) -> RerankResponse:
         if not results:
             return RerankResponse([], [], 0, 0, 0.0)
 
+        query_tokens = (
+            await self.token_counter.count_each([query], self.model)
+        )[0].count
+        if query_tokens > RERANK_MAX_QUERY_TOKENS:
+            # Not caught below by design (F-014): an oversized query must
+            # fail loudly rather than take the silent dense-order fallback.
+            raise RerankQueryTooLargeError(
+                f"Rerank query has {query_tokens} tokens, exceeding the "
+                f"{RERANK_MAX_QUERY_TOKENS}-token limit for '{self.model}'"
+            )
+
         bounded_results, documents, estimated_tokens = await self._bounded_candidates(
-            query, results
+            query_tokens, results
         )
         if not documents:
             logger.warning("No rerank candidates fit within Voyage token limits")
@@ -181,11 +196,7 @@ class VoyageReranker:
             )
 
         try:
-            reranking = await self._api_rerank(
-                query=query,
-                documents=documents,
-                return_documents=return_documents,
-            )
+            reranking = await self._api_rerank(query=query, documents=documents)
             tokens = int(getattr(reranking, "total_tokens", 0) or estimated_tokens)
             cost = self.cost_tracker.add_request(
                 model=self.model,
@@ -220,6 +231,7 @@ class VoyageReranker:
         *,
         tokens: int,
         cost: float,
+        degraded: bool = False,
     ) -> RerankResponse:
         return RerankResponse(
             top_results=results[: self.top_n_display],
@@ -229,6 +241,7 @@ class VoyageReranker:
             total_results=len(results),
             tokens_used=tokens,
             cost_usd=cost,
+            degraded=degraded,
         )
 
     def _fallback(self, results: List[SearchResult]) -> RerankResponse:
@@ -241,7 +254,7 @@ class VoyageReranker:
             )
             for index, result in enumerate(results)
         ]
-        return self._split(fallback, tokens=0, cost=0.0)
+        return self._split(fallback, tokens=0, cost=0.0, degraded=True)
 
     def get_cost_summary(self) -> Dict:
         return self.cost_tracker.summary()

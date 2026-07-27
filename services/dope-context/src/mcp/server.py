@@ -867,9 +867,18 @@ def _initialize_components():
     _reranker = VoyageReranker(api_key=voyage_key)
 
     # Create pipeline
+    # F-015: derive workspace_id from the resolved workspace root (same as
+    # every reachable tool path -- _index_workspace_impl, _index_docs_impl)
+    # rather than os.getenv("WORKSPACE_ID", "default"). Two workspaces that
+    # both left WORKSPACE_ID unset would otherwise collide on "default" and
+    # corrupt each other's deterministic point IDs. This module-level
+    # pipeline is not currently invoked by any tool (each tool builds its own
+    # workspace-scoped pipeline), so the exposure was latent, not realized --
+    # fixed here rather than deleted so the global stays correct if it is
+    # ever wired up.
     config = IndexingConfig(
         workspace_path=Path.cwd(),
-        workspace_id=os.getenv("WORKSPACE_ID", "default"),
+        workspace_id=str(workspace_root),
     )
 
     _pipeline = IndexingPipeline(
@@ -897,7 +906,7 @@ def _initialize_components():
         embedder=_docs_embedder,
         doc_search=_docs_search,
         workspace_path=Path.cwd(),
-        workspace_id=os.getenv("WORKSPACE_ID", "default"),
+        workspace_id=str(workspace_root),
     )
 
     logger.info("Dope-Context MCP server initialized (code + docs)")
@@ -1279,7 +1288,12 @@ async def _search_code_impl(
                         "context": r.search_result.context_snippet,
                         "relevance_score": r.relevance_score,
                         "original_rank": r.original_rank,
-                        "reranked": True,
+                        # F-011: rerank_response.degraded is True when
+                        # VoyageReranker silently fell back to the original
+                        # dense ordering (API failure or no candidate fit the
+                        # token budget). Do not report degraded results as a
+                        # successful rerank.
+                        "reranked": not rerank_response.degraded,
                         "start_line": getattr(
                             r.search_result, "start_line", None
                         ),  # F-NEW-5 support
