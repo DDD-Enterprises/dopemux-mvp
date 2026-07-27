@@ -63,7 +63,14 @@ def _fixture_dir(tmp_path_factory):
         """{
   \"known_reviewers\": [\"hu3mann\"],
   \"trusted_author_associations\": [\"OWNER\"],
-  \"trusted_security_release_approvers\": [\"trusted-approver\"]
+  \"trusted_security_release_approvers\": [\"trusted-approver\"],
+  \"trusted_security_release_apps\": [
+    {
+      \"login\": \"ddd-release-gate[bot]\",
+      \"owner\": \"DDD-Enterprises\",
+      \"installation_scope\": \"DDD-Enterprises/dopemux-mvp\"
+    }
+  ]
 }"""
     )
     yield
@@ -215,6 +222,63 @@ def test_empty_approver_roster_fails_closed_even_with_approval():
 def test_readiness_maps_security_release_blockers_to_needs_supervisor():
     readiness = _artifacts(_base_harvest(changed_files=["CODEOWNERS"]))
     assert readiness["readiness"] == "NEEDS_SUPERVISOR"
+
+
+def test_red_lane_with_trusted_org_app_approval_is_ready():
+    approval = {
+        "state": "APPROVED",
+        "repository": "DDD-Enterprises/dopemux-mvp",
+        "pr_number": 704,
+        "head_sha": HEAD_SHA,
+        "approver": "ddd-release-gate[bot]",
+        "approver_association": "NONE",
+        "approval_ref": "review-app-1",
+        "approved_at": "2026-05-26T01:30:00Z",
+    }
+    readiness = _artifacts(
+        _base_harvest(
+            changed_files=["services/dope-context/src/mcp/server.py"],
+            security_release_approval=approval,
+        ),
+        known_reviewers_path=TRUSTED_FIXTURE,
+    )
+    assert readiness["security_release"]["required"] is True
+    assert readiness["security_release"]["approved"] is True
+    assert readiness["readiness"] == "READY"
+    assert "SECURITY_RELEASE_APPROVAL_REQUIRED" not in readiness["blockers"]
+    assert "SECURITY_RELEASE_APPROVAL_SELF" not in readiness["blockers"]
+
+
+def test_author_self_approval_explicit_when_author_is_in_trusted_humans(tmp_path):
+    path = tmp_path / "known.json"
+    path.write_text(
+        """{
+  "known_reviewers": ["hu3mann"],
+  "trusted_author_associations": ["OWNER"],
+  "trusted_security_release_approvers": ["hu3mann"],
+  "trusted_security_release_apps": []
+}"""
+    )
+    approval = {
+        "state": "APPROVED",
+        "repository": "DDD-Enterprises/dopemux-mvp",
+        "pr_number": 704,
+        "head_sha": HEAD_SHA,
+        "approver": "hu3mann",
+        "approver_association": "OWNER",
+        "approval_ref": "review-self-1",
+        "approved_at": "2026-05-26T01:30:00Z",
+    }
+    readiness = _artifacts(
+        _base_harvest(
+            changed_files=[".github/workflows/x.yml"],
+            security_release_approval=approval,
+        ),
+        known_reviewers_path=path,
+    )
+    assert readiness["security_release"]["approved"] is False
+    assert "SECURITY_RELEASE_APPROVAL_SELF" in readiness["blockers"]
+    assert readiness["readiness"] != "READY"
 
 
 def _renamed_harvest(previous_path: str, new_path: str) -> dict:

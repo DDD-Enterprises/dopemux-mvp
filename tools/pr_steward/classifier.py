@@ -86,6 +86,43 @@ def load_trusted_security_approvers(path: Path) -> list[str]:
     return [str(item) for item in payload.get("trusted_security_release_approvers", [])]
 
 
+def load_trusted_security_release_apps(path: Path) -> list[dict[str, str]]:
+    """Load org-owned GitHub App identities allowed for security-release approval.
+
+    Each entry is ``{login, owner, installation_scope}``. Malformed entries are
+    dropped fail-closed (never widen the gate via garbage config).
+    """
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    raw = payload.get("trusted_security_release_apps", [])
+    if not isinstance(raw, list):
+        return []
+    apps: list[dict[str, str]] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        login = str(item.get("login") or "").strip()
+        owner = str(item.get("owner") or "").strip()
+        scope = str(item.get("installation_scope") or "").strip()
+        if not login or not owner or not scope:
+            continue
+        # Never allow generic Actions/Dependabot as a release-gate app.
+        if login.lower() in {
+            "github-actions",
+            "github-actions[bot]",
+            "dependabot",
+            "dependabot[bot]",
+        }:
+            continue
+        apps.append(
+            {
+                "login": login,
+                "owner": owner,
+                "installation_scope": scope,
+            }
+        )
+    return apps
+
+
 def build_artifacts(
     harvest: dict[str, Any],
     *,
@@ -249,6 +286,14 @@ def build_artifacts(
         changed_paths + renamed_from_paths
     )
     trusted_security_approvers = load_trusted_security_approvers(known_path)
+    trusted_security_apps = load_trusted_security_release_apps(known_path)
+    # _pr_payload normalizes author to a login string; accept dict for fixtures.
+    pr_author_login = None
+    author_obj = pr.get("author")
+    if isinstance(author_obj, str) and author_obj.strip():
+        pr_author_login = author_obj.strip()
+    elif isinstance(author_obj, dict) and author_obj.get("login"):
+        pr_author_login = str(author_obj["login"]).strip()
     security_release_errors = evaluate_security_release_approval(
         harvest.get("security_release_approval"),
         required=security_classification.required,
@@ -256,6 +301,8 @@ def build_artifacts(
         expected_pr=pr_number,
         expected_head_sha=pr["head_sha"],
         trusted_approvers=trusted_security_approvers,
+        trusted_apps=trusted_security_apps,
+        pr_author=pr_author_login,
     )
     for err in security_release_errors:
         _append_once(blockers, err)

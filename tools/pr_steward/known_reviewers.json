@@ -16,5 +16,12 @@
   ],
   "trusted_security_release_approvers": [
     "hu3mann"
+  ],
+  "trusted_security_release_apps": [
+    {
+      "login": "ddd-release-gate[bot]",
+      "owner": "DDD-Enterprises",
+      "installation_scope": "DDD-Enterprises/dopemux-mvp"
+    }
   ]
 }

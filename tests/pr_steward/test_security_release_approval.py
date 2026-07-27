@@ -214,3 +214,122 @@ def test_malformed_payload_is_invalid():
         trusted_approvers=["trusted-approver"],
     )
     assert errors == ["SECURITY_RELEASE_APPROVAL_INVALID"]
+
+
+TRUSTED_APPS = [
+    {
+        "login": "ddd-release-gate[bot]",
+        "owner": "DDD-Enterprises",
+        "installation_scope": REPO,
+    }
+]
+
+
+def _app_approval(**overrides):
+    base = {
+        "state": "APPROVED",
+        "repository": REPO,
+        "pr_number": PR,
+        "head_sha": HEAD,
+        "approver": "ddd-release-gate[bot]",
+        "approver_association": "NONE",
+        "approval_ref": "review-app-1",
+        "approved_at": "2026-07-20T10:00:00Z",
+    }
+    base.update(overrides)
+    return base
+
+
+def test_trusted_org_app_approval_at_exact_head_has_no_errors():
+    errors = evaluate_security_release_approval(
+        _app_approval(),
+        required=True,
+        expected_repo=REPO,
+        expected_pr=PR,
+        expected_head_sha=HEAD,
+        trusted_approvers=["hu3mann"],
+        trusted_apps=TRUSTED_APPS,
+        pr_author="hu3mann",
+    )
+    assert errors == []
+
+
+def test_app_approval_wrong_scope_is_unknown():
+    apps = [
+        {
+            "login": "ddd-release-gate[bot]",
+            "owner": "DDD-Enterprises",
+            "installation_scope": "DDD-Enterprises/other-repo",
+        }
+    ]
+    errors = evaluate_security_release_approval(
+        _app_approval(),
+        required=True,
+        expected_repo=REPO,
+        expected_pr=PR,
+        expected_head_sha=HEAD,
+        trusted_approvers=[],
+        trusted_apps=apps,
+    )
+    assert "SECURITY_RELEASE_APPROVER_UNKNOWN" in errors
+
+
+def test_github_actions_bot_never_satisfies_even_if_misconfigured():
+    apps = [
+        {
+            "login": "github-actions[bot]",
+            "owner": "DDD-Enterprises",
+            "installation_scope": REPO,
+        }
+    ]
+    errors = evaluate_security_release_approval(
+        _app_approval(approver="github-actions[bot]"),
+        required=True,
+        expected_repo=REPO,
+        expected_pr=PR,
+        expected_head_sha=HEAD,
+        trusted_approvers=[],
+        trusted_apps=apps,
+    )
+    assert "SECURITY_RELEASE_APPROVER_UNKNOWN" in errors
+
+
+def test_human_author_cannot_self_approve():
+    errors = evaluate_security_release_approval(
+        _approval(approver="hu3mann", approver_association="OWNER"),
+        required=True,
+        expected_repo=REPO,
+        expected_pr=PR,
+        expected_head_sha=HEAD,
+        trusted_approvers=["hu3mann"],
+        trusted_apps=TRUSTED_APPS,
+        pr_author="hu3mann",
+    )
+    assert "SECURITY_RELEASE_APPROVAL_SELF" in errors
+
+
+def test_ordinary_untrusted_reviewer_cannot_satisfy_app_or_human_gate():
+    errors = evaluate_security_release_approval(
+        _approval(approver="random-collaborator", approver_association="COLLABORATOR"),
+        required=True,
+        expected_repo=REPO,
+        expected_pr=PR,
+        expected_head_sha=HEAD,
+        trusted_approvers=["hu3mann"],
+        trusted_apps=TRUSTED_APPS,
+        pr_author="hu3mann",
+    )
+    assert "SECURITY_RELEASE_APPROVER_UNKNOWN" in errors
+
+
+def test_app_approval_head_mismatch_still_fails():
+    errors = evaluate_security_release_approval(
+        _app_approval(head_sha="b" * 40),
+        required=True,
+        expected_repo=REPO,
+        expected_pr=PR,
+        expected_head_sha=HEAD,
+        trusted_approvers=[],
+        trusted_apps=TRUSTED_APPS,
+    )
+    assert "SECURITY_RELEASE_APPROVAL_HEAD_MISMATCH" in errors
