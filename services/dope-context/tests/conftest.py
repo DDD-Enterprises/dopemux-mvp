@@ -122,11 +122,14 @@ def _install_qdrant_stub() -> None:
         "SearchParams",
         "PointIdsList",
     ]:
-        setattr(
-            models_module,
-            name,
-            type(name, (), {"__init__": lambda self, *args, **kwargs: None}),
-        )
+        # Retain constructor kwargs as attributes. A stub that silently drops
+        # what it was given cannot be asserted against, and would let a caller
+        # pass a field the real model does not have without anyone noticing.
+        def _init(self, *args, **kwargs):
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+
+        setattr(models_module, name, type(name, (), {"__init__": _init}))
     models_module.PayloadSchemaType = types.SimpleNamespace(KEYWORD="keyword")
     models_module.Distance = types.SimpleNamespace(DOT="dot")
 
