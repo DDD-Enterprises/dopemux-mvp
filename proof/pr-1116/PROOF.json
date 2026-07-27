@@ -1,0 +1,24 @@
+{
+  "commit_sha": "0a331baaa1456f8efbeb2d885b0fb6b606e9faa7",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Wired adhd-dashboard service in compose.yml and services/registry.yaml",
+      "Handled ADHD_ENGINE_REDIS_PREFIX in PubSub channel patterns and Redis streams",
+      "Added tests for prefixed/unprefixed events and /health check",
+      "Validated TP-DMX-ADHD-DASHBOARD-BACKEND-001.json against canonical spec"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr-1116/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "0a331baaa1456f8efbeb2d885b0fb6b606e9faa7",
+  "pr_number": 1116,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
