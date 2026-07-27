@@ -1,0 +1,8 @@
+=== GIT_STATUS_BEFORE ===
+2026-07-27T00:42:34Z
+ M .claude/claude_config.json
+?? proof/leantime-ai-parity/
+1e8a5e5e4c4147eab208f2f727389079b6bc113b
+https://github.com/DDD-Enterprises/dopemux-mvp.git
+research/TP-LTAIP-H0-001-segment-workflow-lock
+BASE_NOTE: branched from docs/ltaip-full-packet-import (PR #1127) because LTAIP packets are not yet on origin/main
