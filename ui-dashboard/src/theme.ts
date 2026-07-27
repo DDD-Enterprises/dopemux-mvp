@@ -178,6 +178,10 @@ const theme = createTheme({
           textTransform: 'uppercase',
           paddingInline: '1.5rem',
           backdropFilter: 'blur(8px)',
+          '&:focus-visible': {
+            outline: `2px solid ${brandTokens.colors.ritualCyan}`,
+            outlineOffset: '2px',
+          },
         },
         contained: {
           background: `linear-gradient(120deg, ${brandTokens.colors.ritualCyan}, ${brandTokens.colors.serumMint})`,
@@ -187,6 +191,16 @@ const theme = createTheme({
         outlined: {
           borderColor: alpha(brandTokens.colors.saintGold, 0.8),
           color: brandTokens.colors.saintGold,
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          '&:focus-visible': {
+            outline: `2px solid ${brandTokens.colors.ritualCyan}`,
+            outlineOffset: '2px',
+          },
         },
       },
     },
