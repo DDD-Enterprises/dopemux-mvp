@@ -1,8 +1,8 @@
 # Model Routing Series Status
 
-**Packet**: `DMX-DCP-MODEL-ROUTING-MVP-0000S`  
-**Series**: `DMX-DCP-MODEL-ROUTING-NEXT-TRANCHE-001`  
-**Map artifact**: `docs/03-reference/dcp/model-routing-series-map.json`  
+**Packet**: `DMX-DCP-MODEL-ROUTING-MVP-0000S`
+**Series**: `DMX-DCP-MODEL-ROUTING-NEXT-TRANCHE-001`
+**Map artifact**: `docs/03-reference/dcp/model-routing-series-map.json`
 **Labels**: OBSERVED unless marked otherwise
 
 ## Authority rules (OBSERVED)
