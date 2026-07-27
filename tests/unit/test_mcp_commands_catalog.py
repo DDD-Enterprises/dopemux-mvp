@@ -354,7 +354,7 @@ def test_load_catalog_falls_back_to_bundled_default(tmp_path, monkeypatch):
 
     task_orchestrator = catalog["servers"]["task-orchestrator"]
     assert task_orchestrator["transport"] == "http"
-    assert task_orchestrator["state_scope"] == "single_active_project"
+    assert task_orchestrator["state_scope"] == "multi_project_singleton"
     assert task_orchestrator.get("port_policy") == "reserved_singleton"
     assert int(task_orchestrator.get("reserved_port") or 0) == 7890
     assert task_orchestrator["doctor_args"] == ["--print-resolution"]
