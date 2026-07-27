@@ -50,7 +50,7 @@
           "enum": ["singleton", "per-worktree"]
         },
         "state_scope": {
-          "enum": ["per-repo", "per-worktree", "single_active_project", "multi_project_singleton"]
+          "enum": ["per-repo", "per-worktree", "single_active_project"]
         },
         "transport": {
           "enum": ["http", "sse", "stdio", "external"]
