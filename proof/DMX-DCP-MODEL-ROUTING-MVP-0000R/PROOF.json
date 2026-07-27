@@ -9,7 +9,7 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "dcp/model-routing-0000r-runtime-reconcile",
   "base_sha": "9a52ecf4328f28756c3e87a2c351e60d46b805f6",
-  "subject_sha": "417d5920e03becc611d48cae04c0dc7a52e72f1c",
+  "subject_sha": "PENDING_COMMIT",
   "authoritative_artifacts": [
     "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.json",
     "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.md",
