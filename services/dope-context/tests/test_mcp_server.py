@@ -546,7 +546,7 @@ async def test_clear_index_tool(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_search_code_multi_workspace(tmp_path, monkeypatch):
+async def test_search_code_multi_workspace(tmp_path, monkeypatch, resolve_tool):
     """search_code should aggregate results across workspace_paths."""
     ws1 = tmp_path / "ws1"
     ws2 = tmp_path / "ws2"
@@ -557,7 +557,7 @@ async def test_search_code_multi_workspace(tmp_path, monkeypatch):
     mock_impl = AsyncMock(side_effect=fake_results)
     monkeypatch.setattr("src.mcp.server._search_code_impl", mock_impl)
 
-    result = await search_code(
+    result = await resolve_tool(search_code)(
         query="test",
         workspace_paths=[str(ws1), str(ws2)],
     )
@@ -571,7 +571,7 @@ async def test_search_code_multi_workspace(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_sync_workspace_multi(tmp_path, monkeypatch):
+async def test_sync_workspace_multi(tmp_path, monkeypatch, resolve_tool):
     """sync_workspace should process multiple workspaces sequentially."""
     ws1 = tmp_path / "ws1"
     ws2 = tmp_path / "ws2"
@@ -586,7 +586,7 @@ async def test_sync_workspace_multi(tmp_path, monkeypatch):
     )
     monkeypatch.setattr("src.mcp.server._sync_workspace_impl", mock_impl)
 
-    result = await sync_workspace(
+    result = await resolve_tool(sync_workspace)(
         workspace_paths=[str(ws1), str(ws2)],
         include_patterns=["*.py"],
     )
@@ -596,7 +596,7 @@ async def test_sync_workspace_multi(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_docs_search_multi_workspace(tmp_path, monkeypatch):
+async def test_docs_search_multi_workspace(tmp_path, monkeypatch, resolve_tool):
     """docs_search should aggregate results across workspace_paths."""
     ws1 = tmp_path / "ws1"
     ws2 = tmp_path / "ws2"
@@ -610,7 +610,7 @@ async def test_docs_search_multi_workspace(tmp_path, monkeypatch):
     mock_impl = AsyncMock(side_effect=fake_results)
     monkeypatch.setattr("src.mcp.server._docs_search_impl", mock_impl)
 
-    result = await docs_search(
+    result = await resolve_tool(docs_search)(
         query="test query",
         workspace_paths=[str(ws1), str(ws2)],
     )
@@ -625,7 +625,7 @@ async def test_docs_search_multi_workspace(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_search_all_multi_workspace(tmp_path, monkeypatch):
+async def test_search_all_multi_workspace(tmp_path, monkeypatch, resolve_tool):
     """search_all should aggregate results across workspace_paths."""
     ws1 = tmp_path / "ws1"
     ws2 = tmp_path / "ws2"
@@ -639,7 +639,7 @@ async def test_search_all_multi_workspace(tmp_path, monkeypatch):
     mock_impl = AsyncMock(side_effect=fake_results)
     monkeypatch.setattr("src.mcp.server._search_all_impl", mock_impl)
 
-    result = await search_all(
+    result = await resolve_tool(search_all)(
         query="test query",
         workspace_paths=[str(ws1), str(ws2)],
     )
@@ -936,12 +936,12 @@ async def test_autoindex_bootstrap_idempotent_skip(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_configure_decision_auto_indexing_persists_config(tmp_path, monkeypatch):
+async def test_configure_decision_auto_indexing_persists_config(tmp_path, monkeypatch, resolve_tool):
     """configure_decision_auto_indexing should save workspace-scoped config."""
     workspace = tmp_path / "workspace"
     workspace.mkdir()
 
-    result = await configure_decision_auto_indexing(
+    result = await resolve_tool(configure_decision_auto_indexing)(
         workspace_path=str(workspace),
         enabled=True,
         bridge_url="http://localhost:3999",
@@ -962,7 +962,7 @@ async def test_configure_decision_auto_indexing_persists_config(tmp_path, monkey
 
 
 @pytest.mark.anyio
-async def test_sync_docs_multi_workspace(tmp_path, monkeypatch):
+async def test_sync_docs_multi_workspace(tmp_path, monkeypatch, resolve_tool):
     """sync_docs should process multiple workspaces sequentially."""
     ws1 = tmp_path / "ws1"
     ws2 = tmp_path / "ws2"
@@ -977,7 +977,7 @@ async def test_sync_docs_multi_workspace(tmp_path, monkeypatch):
     )
     monkeypatch.setattr("src.mcp.server._sync_docs_impl", mock_impl)
 
-    result = await sync_docs(
+    result = await resolve_tool(sync_docs)(
         workspace_paths=[str(ws1), str(ws2)],
     )
 
