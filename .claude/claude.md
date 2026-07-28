@@ -182,8 +182,9 @@ source .envrc.dopemux-mcp && dopemux mcp doctor
 
 **Sharing classes today**: `postgres-age`, `redis-primary`, `qdrant`, `dope-context`, `litellm`,
 `gpt-researcher`, `exa`, `desktop-commander`, bridges are host singletons (one process, shared).
-`redis-events` is **project-scoped** by supervisor ruling (design §10.4 — its events are promoted into
-canonical work_log, so cross-project delivery is a contamination path). `conport`, `dope-memory`, `serena`
+`redis-events` is OBSERVED **host-singleton today and noncompliant** for multi-project use (global container,
+no stream isolation; its events get promoted into canonical work_log) — the REQUIRED target is project-scoped
+(design §10.4, gate P-21, not yet implemented). `conport`, `dope-memory`, `serena`
 are still **worktree-scoped** (one container per worktree) pending identity gates — expect N worktrees to
 cost 3N containers until those land; ConPort's ruled end-state is **project-scoped**, never host-singleton
 (§10.3). Never start fleet services outside `dopemux mcp` (no raw `docker compose up` / `docker run`). Full

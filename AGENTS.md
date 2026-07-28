@@ -302,7 +302,7 @@ sharing-class table (interim class today → end-state, with the gate packet tha
 | Server(s) | Class today | End-state | Gate |
 |---|---|---|---|
 | `postgres-age`, `redis-primary`, `qdrant`, `dope-context`, `litellm`, `gpt-researcher`, `exa`, `desktop-commander`, `leantime-bridge`, `dopecon-bridge`/`decision-graph-bridge` | host-singleton | host-singleton | — (already correct) |
-| `redis-events` | **project-scoped** (supervisor §10.4 — dope-memory promotes events into canonical work_log; global consumer group is a live contamination path) | host-singleton only after cross-project isolation is proven | P-21 (**P0**: prefix streams + consumer groups, enforce event-envelope identity) |
+| `redis-events` | **OBSERVED: host-singleton — UNSAFE/noncompliant for multi-project** (one global container, fixed `dopemux` compose project, no stream isolation; dope-memory promotes events into canonical work_log via a global consumer group = live contamination path). REQUIRED immediate target: **project-scoped** (supervisor §10.4) — ruling changes the authorized target, not the running container | host-singleton only after cross-project isolation is proven | P-21 (**P0**: prefix streams + consumer groups, enforce event-envelope identity) — no P-21 work has landed yet |
 | `pal` — `mcp-pal` HTTP, `mcp-pal-stdio` | retired | retired | — |
 | `pal` — `pal-mcp-server` (off-compose today) | host-singleton, needs adoption | host-singleton, managed | P-07 (`adopt`) |
 | `serena` | worktree-scoped | host-singleton | P-20 (multi-workspace wrapper deployment) |
