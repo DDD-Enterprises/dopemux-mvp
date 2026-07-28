@@ -361,7 +361,8 @@ localhost:3003  - PAL apilookup MCP
 localhost:3003  - Zen MCP
 localhost:3006  - Serena MCP
 localhost:3012  - Desktop-Commander MCP
-localhost:8000  - Task Orchestrator
+localhost:8000  - Task Orchestrator FastAPI shadow twin (pending retirement; NOT the MCP surface)
+localhost:7890  - Task Orchestrator MCP (canonical, Kotlin jar, Streamable HTTP POST /mcp)
 localhost:3016  - DopeconBridge
 localhost:5455  - PostgreSQL AGE
 localhost:6333  - Qdrant

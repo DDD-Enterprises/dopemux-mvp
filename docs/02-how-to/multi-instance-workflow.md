@@ -32,6 +32,15 @@ Zero context destruction through parallel ADHD-optimized development instances.
 > `.envrc.dopemux-mcp` into dopemux-mvp compose.
 > Runtime registry: `~/.dopemux/mcp/runtime/instances.json`.
 
+> **Superseded model below (2026-07):** Everything from "Architecture" through
+> "Advanced Usage" describes the lettered `A`/`B`/`C`/`D`/`E` `instance_id` and
+> fixed `port_base` scheme from the now-deleted `src/dopemux/instance_manager.py`.
+> That scheme is superseded by hash-based worktree identity
+> (`dopemux_{slug}_{worktree_hash}`); see
+> `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` for the current
+> model. Treat the sections below as historical context, not the current
+> `dopemux start` / `dopemux instances` behavior.
+
 ## Overview
 
 Dopemux supports running up to 5 concurrent instances with isolated worktrees, enabling you to:

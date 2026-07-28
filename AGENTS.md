@@ -293,6 +293,35 @@ channel: `native_hooks.py` SessionStart — four bounded blocks, ~3KB, fail-open
 `dopemux mcp snapshot-tools`). Workflow sequences: `docs/03-reference/mcp/workflows.yaml`;
 full guide: `docs/02-how-to/mcp-integration-guide.md`.
 
+### 12.6 Sharing classes & lifecycle (multi-instance fleet design)
+
+Governing design: `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (DRAFT, operator sign-off
+pending). Do not restate the full design here — link to it. Compact sharing-class table (interim class today →
+end-state, with the gate packet that flips it):
+
+| Server(s) | Class today | End-state | Gate |
+|---|---|---|---|
+| `postgres-age`, `redis-primary`, `qdrant`, `dope-context`, `litellm`, `gpt-researcher`, `exa`, `desktop-commander`, `leantime-bridge`, `dopecon-bridge`/`decision-graph-bridge` | host-singleton | host-singleton | — (already correct) |
+| `redis-events` | host-singleton, single-project | host-singleton, multi-project | P-21 (event-stream project prefix + consumer audit) |
+| `pal` — `mcp-pal` HTTP, `mcp-pal-stdio` | retired | retired | — |
+| `pal` — `pal-mcp-server` (off-compose today) | host-singleton, needs adoption | host-singleton, managed | P-07 (`adopt`) |
+| `serena` | worktree-scoped | host-singleton | P-20 (multi-workspace wrapper deployment) |
+| `conport` | worktree-scoped | host-singleton | ConPort CRS v2 (accepted ADR, unimplemented) |
+| `dope-memory` | worktree-scoped | host-singleton | DMX-MEMSPINE-IDENTITY-005 |
+| `task-orchestrator` — Kotlin jar (:7890) | host-singleton, single active project | unchanged (re-open only per design §10.1, operator sign-off) | none by default |
+| `task-orchestrator` — Python compose svc (:8000) | retired (rename fallback if a non-orchestrator consumer is found) | retired | operator sign-off, design §10.2 |
+
+Canonical command surface (`dopemux mcp <verb>`):
+
+| Command | Status |
+|---|---|
+| `init`, `start`, `stop`, `doctor` | **IMPLEMENTED** — safe to invoke today |
+| `reconcile`, `adopt`, `migrate`, `switch-project` | **PLANNED** — designed in §7 of the governing design, not yet implemented. Do not invoke or instruct a user to invoke these; they do not exist in the current CLI. |
+
+Never start fleet services outside `dopemux mcp` (compose/docker-run/shell wrappers are being removed under
+design packet P-22). While ConPort/dope-memory/serena remain worktree-scoped, N worktrees cost 3N containers —
+this is expected, not a bug, until the gates above land.
+
 Respond terse like smart caveman. All technical substance stay. Only fluff die.
 
 Rules:

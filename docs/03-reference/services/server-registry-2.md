@@ -127,12 +127,14 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 
 ### Task Orchestrator - Dependency Analysis & Task Orchestration
 - **Container**: `mcp-task-orchestrator`
-- **Port**: `3014`
+- **Port**: `7890` (Streamable HTTP, `POST /mcp`; reserved singleton port, see `mcp_catalog.yaml`)
 - **Role**: `workflow`
 - **Repository**: `https://github.com/jpicklyk/task-orchestrator`
 - **Description**: Advanced dependency analysis and task orchestration with 37 specialized tools
-- **Health Check**: `http://localhost:3014/health`
+- **Health Check**: `http://localhost:7890/mcp`
 - **Technology**: Kotlin, specialized orchestration algorithms
+
+> Note: `3014` (and `8000`, seen elsewhere) are not this MCP tool surface — `3014` is legacy/archival, and `8000` is a separate FastAPI "shadow twin" workflow service (`services/task-orchestrator`) pending retirement.
 
 **Authority Scope:**
 - **Dependency Analysis**: Authoritative for task dependency relationships and conflict resolution

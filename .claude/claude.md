@@ -180,6 +180,14 @@ source .envrc.dopemux-mcp && dopemux mcp doctor
 **Debug sequence**: source envrc → `dopemux mcp doctor` → curl probe → tail docker logs
 → `./mcp_server_health_report.sh`
 
+**Sharing classes today**: `postgres-age`, `redis`×2, `qdrant`, `dope-context`, `litellm`, `gpt-researcher`,
+`exa`, `desktop-commander`, bridges are host singletons (one process, shared). `conport`, `dope-memory`,
+`serena` are still **worktree-scoped** (one container per worktree) pending identity gates — expect N
+worktrees to cost 3N containers until those land. Never start fleet services outside `dopemux mcp` (no raw
+`docker compose up` / `docker run`). Full sharing-class table + command surface (`init`/`start`/`stop`/`doctor`
+implemented; `reconcile`/`adopt`/`migrate`/`switch-project` PLANNED, not yet implemented): AGENTS.md §12.6 and
+`claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md`.
+
 **Key docs**:
 - [`docs/02-how-to/mcp-setup-other-repos.md`](docs/02-how-to/mcp-setup-other-repos.md) — user guide for other projects
 - [`docs/02-how-to/mcp-transport-and-port-bugs.md`](docs/02-how-to/mcp-transport-and-port-bugs.md) — bug record + correct analysis

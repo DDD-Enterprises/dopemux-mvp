@@ -229,11 +229,16 @@ python services/monitoring/health_checks.py
 # ✅ ConPort MCP (port 3004): HEALTHY
 # ✅ DopeconBridge (port 3016): HEALTHY
 # ✅ ADHD Engine (port 8080): HEALTHY
-# ✅ Task Orchestrator (port 8000): HEALTHY
+# ✅ Task Orchestrator FastAPI compose service (port 8000, pending retirement): HEALTHY
 # ✅ PostgreSQL (port 5432): HEALTHY
 # ✅ Redis (port 6379): HEALTHY
 # ✅ Qdrant (port 6333): HEALTHY
 ```
+
+Port 8000 above reaches the FastAPI compose service historically named
+`task-orchestrator`; it is not the task-orchestrator MCP tool surface. The MCP
+surface is a separate host-singleton Kotlin jar on port `7890` (Streamable
+HTTP, `POST /mcp`), managed via `dopemux mcp`, not this compose stack.
 
 ### Manual Health Checks
 
@@ -241,7 +246,7 @@ python services/monitoring/health_checks.py
 # Check individual services
 curl http://localhost:3016/health  # DopeconBridge
 curl http://localhost:8080/health  # ADHD Engine
-curl http://localhost:8000/health  # Task Orchestrator
+curl http://localhost:8000/health  # Task Orchestrator FastAPI compose service (pending retirement, not the MCP surface)
 curl http://localhost:3004/health  # ConPort MCP
 
 # Check databases

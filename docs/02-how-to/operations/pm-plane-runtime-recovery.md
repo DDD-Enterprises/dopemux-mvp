@@ -14,6 +14,14 @@ prelude: Concrete runbook for detecting and clearing rogue runtimes, interpretin
 
 This runbook provides actionable steps for recovering from PM-plane drift, rogue runtime containers, and dealing with pending reconciliation states. It addresses the `PM-TO-004` rogue container remediation requirement.
 
+**Scope note**: every `task-orchestrator` reference below (port 8000, `/health`,
+`/info`, `/metrics`, `docker ps | grep task-orchestrator`, `logs/task-orchestrator.log`)
+is the FastAPI compose service that does PM-plane canonical/mirror writes
+(Leantime + ConPort). It is a shadow twin pending retirement, not the
+task-orchestrator MCP tool surface — that MCP is a separate host-singleton
+Kotlin jar on port `7890` (Streamable HTTP, `POST /mcp`), managed via
+`dopemux mcp`, and is unaffected by anything in this runbook.
+
 ## 1. Symptoms
 
 You are likely experiencing a PM-plane runtime or synchronization issue if:
@@ -28,7 +36,7 @@ You are likely experiencing a PM-plane runtime or synchronization issue if:
 ### Check Readiness Endpoints
 Both `task-orchestrator` and `dopecon-bridge` expose a standard `/health` endpoint:
 ```bash
-# Check Task Orchestrator (Canonical Port: 8000)
+# Check Task Orchestrator FastAPI compose service (port 8000; not the MCP surface — see scope note above)
 curl -s http://localhost:8000/health | jq .
 # Expect: { "status": "ok", "service": "task-orchestrator", "dependencies": {...} }
 
