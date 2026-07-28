@@ -130,7 +130,7 @@ url = "http://localhost:3007"
 [[mcp_servers]]
 name = "task-orchestrator"
 transport = "http"
-url = "http://localhost:8000"
+url = "http://127.0.0.1:7890/mcp"
 
 [[mcp_servers]]
 name = "dope-context"

@@ -88,7 +88,7 @@ See `docs/TASKX_KERNEL_INTEGRATION.md` for contract details, update procedure, a
 | **research** (`--stack research`) | `compose.yml` | core services + gptr-mcp |
 | **full** (`--full` / `--stack full`) | `compose.yml` | All services: PostgreSQL + AGE, Redis (2x), Qdrant, ConPort MCP, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Desktop Commander, Leantime (+MySQL), Leantime Bridge, DopeconBridge, Task Orchestrator, ADHD Engine, Dope-Memory, Webhooks |
 
-The canonical `compose.yml` file at the repository root is the single source of truth for running Dopemux services. It defines **no compose profiles** — the installer scopes core/research stacks by passing explicit service names to `docker compose up`. Legacy compose files (docker-compose.master.yml, docker-compose.staging.yml, etc.) are deprecated.
+The canonical `compose.yml` file at the repository root is the single source of truth for running Dopemux services. It defines **no compose profiles** — the installer scopes core/research stacks by passing explicit service names to `docker compose up`. Legacy compose files (docker-compose.master.yml, docker-compose.staging.yml, etc.) are deprecated. `compose/legacy/conport-kg-docker-compose.yml` and `compose/legacy/leantime-overlay-docker-compose.yml` were removed outright (design P-22 safe subset, 2026-07-28) — use `dopemux mcp up` / `dopemux mcp start` against the canonical `compose.yml` instead.
 
 ### Environment Variables & `.env`
 
@@ -1154,9 +1154,6 @@ sudo systemctl start docker  # Linux
 
 ```bash
 # Start all platform services and infrastructure
-./scripts/start-all-mcp-servers.sh
-
-# Or via Dopemux CLI
 dopemux mcp up --all
 ```
 

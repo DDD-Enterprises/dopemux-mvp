@@ -167,7 +167,7 @@ def _format_health(health: dict) -> str | None:
         elif up is False:
             status_parts.append(f"{name} ❌")
             port_str = f":{port}" if port else ""
-            remediation = _SERVER_REMEDIATION.get(name, f"docker compose up -d {name}")
+            remediation = _SERVER_REMEDIATION.get(name, f"dopemux mcp up --services {name}")
             problems.append(
                 f"⚠️ {name} {port_str} not listening → "
                 f"{remediation}"

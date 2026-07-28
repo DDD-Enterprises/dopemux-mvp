@@ -68,7 +68,7 @@ def test_down_server_emits_problem_line():
     assert result is not None
     lines = result.splitlines()
     assert len(lines) >= 2
-    assert "docker compose up -d conport" in result
+    assert "dopemux mcp up --services conport" in result
 
 
 def test_task_orchestrator_down_points_to_http_singleton_wrapper():
@@ -79,7 +79,7 @@ def test_task_orchestrator_down_points_to_http_singleton_wrapper():
     result = _format_health(health)
     assert result is not None
     assert "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh" in result
-    assert "docker compose up -d task-orchestrator" not in result
+    assert "dopemux mcp up --services task-orchestrator" not in result
 
 
 def test_stdio_server_shown_as_gear():
@@ -162,7 +162,7 @@ def test_port_closed_emits_warning(tmp_path):
          patch("mcp_health_probe._count_leaked_containers", return_value=0):
         result = emit_mcp_health(tmp_path)
     assert result is not None
-    assert "docker compose up" in result
+    assert "dopemux mcp up" in result
 
 
 def test_docker_timeout_omits_container_line(tmp_path):

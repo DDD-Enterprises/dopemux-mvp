@@ -421,8 +421,7 @@ labels:
 
 ### Start All Servers
 ```bash
-cd docker/mcp-servers
-./start-all-mcp-servers.sh
+dopemux mcp up --all
 ```
 
 ### Individual Server Control

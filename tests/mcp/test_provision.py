@@ -16,7 +16,7 @@ def test_provision_first_run(temp_project):
     # Setup mock package data
     pkg_mcp = temp_project / "pkg" / "docker" / "mcp-servers"
     pkg_mcp.mkdir(parents=True)
-    (pkg_mcp / "start-all-mcp-servers.sh").touch()
+    (pkg_mcp / "README.md").touch()
     
     with patch("dopemux.mcp.provision.Path.home", return_value=temp_project / "home"):
         # We need to mock the package resolution part
@@ -34,7 +34,7 @@ def test_provision_first_run(temp_project):
 def test_provision_idempotency(temp_project):
     pkg_mcp = temp_project / "pkg" / "docker" / "mcp-servers"
     pkg_mcp.mkdir(parents=True)
-    (pkg_mcp / "start-all-mcp-servers.sh").touch()
+    (pkg_mcp / "README.md").touch()
     
     provisioner = MCPProvisioner(temp_project)
     with patch.object(provisioner, "resolve_stack_source", return_value=pkg_mcp):
@@ -69,7 +69,7 @@ def test_provision_vendor_fallback(temp_project):
     # Setup vendor path
     vendor_mcp = temp_project / ".dopemux" / "vendor" / "mcp-servers" / PINNED_VERSION
     vendor_mcp.mkdir(parents=True)
-    (vendor_mcp / "start-all-mcp-servers.sh").touch()
+    (vendor_mcp / "README.md").touch()
     
     provisioner = MCPProvisioner(temp_project)
     # resolve_stack_source should find it
@@ -81,7 +81,7 @@ def test_provision_cache_fallback(temp_project):
     home = temp_project / "home"
     cache_mcp = home / ".cache" / "dopemux" / "mcp-servers" / PINNED_VERSION
     cache_mcp.mkdir(parents=True)
-    (cache_mcp / "start-all-mcp-servers.sh").touch()
+    (cache_mcp / "README.md").touch()
     
     with patch("dopemux.mcp.provision.Path.home", return_value=home):
         provisioner = MCPProvisioner(temp_project)
@@ -96,7 +96,7 @@ def test_provision_invalid_target_cleanup(temp_project):
     
     pkg_mcp = temp_project / "pkg" / "docker" / "mcp-servers"
     pkg_mcp.mkdir(parents=True)
-    (pkg_mcp / "start-all-mcp-servers.sh").touch()
+    (pkg_mcp / "README.md").touch()
     
     provisioner = MCPProvisioner(temp_project)
     with patch.object(provisioner, "resolve_stack_source", return_value=pkg_mcp):
@@ -115,7 +115,7 @@ def test_provision_fail_raises(temp_project):
 def test_provision_project_local(temp_project):
     local_path = temp_project / "docker" / "mcp-servers"
     local_path.mkdir(parents=True)
-    (local_path / "start-all-mcp-servers.sh").touch()
+    (local_path / "README.md").touch()
     
     provisioner = MCPProvisioner(temp_project)
     path = provisioner.resolve_stack_source()
@@ -125,7 +125,7 @@ def test_provision_project_local(temp_project):
 def test_provision_project_source(temp_project):
     source_path = temp_project / "docker" / "mcp-servers-source"
     source_path.mkdir(parents=True)
-    (source_path / "start-all-mcp-servers.sh").touch()
+    (source_path / "README.md").touch()
     
     provisioner = MCPProvisioner(temp_project)
     path = provisioner.resolve_stack_source()
@@ -135,7 +135,7 @@ def test_provision_project_source(temp_project):
 def test_provision_copy_fallback(temp_project):
     pkg_mcp = temp_project / "pkg" / "docker" / "mcp-servers"
     pkg_mcp.mkdir(parents=True)
-    (pkg_mcp / "start-all-mcp-servers.sh").touch()
+    (pkg_mcp / "README.md").touch()
     
     provisioner = MCPProvisioner(temp_project)
     with patch.object(provisioner, "resolve_stack_source", return_value=pkg_mcp):
@@ -144,13 +144,13 @@ def test_provision_copy_fallback(temp_project):
             path = provisioner.ensure_stack_present()
             assert path.exists()
             assert not path.is_symlink()
-            assert (path / "start-all-mcp-servers.sh").exists()
+            assert (path / "README.md").exists()
             assert provisioner.report["method"] == "copy"
 
 def test_provision_already_present(temp_project):
     target = temp_project / "docker" / "mcp-servers"
     target.mkdir(parents=True)
-    (target / "start-all-mcp-servers.sh").touch()
+    (target / "README.md").touch()
     
     provisioner = MCPProvisioner(temp_project)
     path = provisioner.ensure_stack_present()
@@ -164,7 +164,7 @@ def test_provision_broken_symlink_cleanup(temp_project):
     
     pkg_mcp = temp_project / "pkg" / "docker" / "mcp-servers"
     pkg_mcp.mkdir(parents=True)
-    (pkg_mcp / "start-all-mcp-servers.sh").touch()
+    (pkg_mcp / "README.md").touch()
     
     provisioner = MCPProvisioner(temp_project)
     with patch.object(provisioner, "resolve_stack_source", return_value=pkg_mcp):
