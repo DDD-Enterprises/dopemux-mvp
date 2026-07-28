@@ -295,21 +295,21 @@ full guide: `docs/02-how-to/mcp-integration-guide.md`.
 
 ### 12.6 Sharing classes & lifecycle (multi-instance fleet design)
 
-Governing design: `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (DRAFT, operator sign-off
-pending). Do not restate the full design here — link to it. Compact sharing-class table (interim class today →
-end-state, with the gate packet that flips it):
+Governing design: `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (**ACCEPTED with supervisor
+rulings 2026-07-28** — §10 decisions are resolved). Do not restate the full design here — link to it. Compact
+sharing-class table (interim class today → end-state, with the gate packet that flips it):
 
 | Server(s) | Class today | End-state | Gate |
 |---|---|---|---|
 | `postgres-age`, `redis-primary`, `qdrant`, `dope-context`, `litellm`, `gpt-researcher`, `exa`, `desktop-commander`, `leantime-bridge`, `dopecon-bridge`/`decision-graph-bridge` | host-singleton | host-singleton | — (already correct) |
-| `redis-events` | host-singleton, single-project | host-singleton, multi-project | P-21 (event-stream project prefix + consumer audit) |
+| `redis-events` | **project-scoped** (supervisor §10.4 — dope-memory promotes events into canonical work_log; global consumer group is a live contamination path) | host-singleton only after cross-project isolation is proven | P-21 (**P0**: prefix streams + consumer groups, enforce event-envelope identity) |
 | `pal` — `mcp-pal` HTTP, `mcp-pal-stdio` | retired | retired | — |
 | `pal` — `pal-mcp-server` (off-compose today) | host-singleton, needs adoption | host-singleton, managed | P-07 (`adopt`) |
 | `serena` | worktree-scoped | host-singleton | P-20 (multi-workspace wrapper deployment) |
-| `conport` | worktree-scoped | host-singleton | ConPort CRS v2 (accepted ADR, unimplemented) |
+| `conport` | worktree-scoped | **project-scoped** (supervisor §10.3 — storage-level project wall; never host-singleton) | ConPort CRS v2 rewritten around a fixed project tenant (P-18) |
 | `dope-memory` | worktree-scoped | host-singleton | DMX-MEMSPINE-IDENTITY-005 |
-| `task-orchestrator` — Kotlin jar (:7890) | host-singleton, single active project | unchanged (re-open only per design §10.1, operator sign-off) | none by default |
-| `task-orchestrator` — Python compose svc (:8000) | retired (rename fallback if a non-orchestrator consumer is found) | retired | operator sign-off, design §10.2 |
+| `task-orchestrator` — Kotlin jar (:7890) | host-singleton, single active project (`switch-project` = transitional only) | **project-scoped leased-port instances** (supervisor §10.1; `multi_project_singleton` NOT authorized) | P-24 (new ADR + implementation) |
+| `task-orchestrator` — Python compose svc (:8000) | running under current (colliding) name | **renamed** (candidate `dopemux-workflow-api`), behavior preserved — NOT retired (supervisor §10.2) | rewritten M11 (consumer sweep → bounded rename packet) |
 
 Canonical command surface (`dopemux mcp <verb>`):
 

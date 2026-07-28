@@ -17,7 +17,7 @@ This runbook provides actionable steps for recovering from PM-plane drift, rogue
 **Scope note**: every `task-orchestrator` reference below (port 8000, `/health`,
 `/info`, `/metrics`, `docker ps | grep task-orchestrator`, `logs/task-orchestrator.log`)
 is the FastAPI compose service that does PM-plane canonical/mirror writes
-(Leantime + ConPort). It is a shadow twin pending retirement, not the
+(Leantime + ConPort). It is a shadow twin pending rename, not the
 task-orchestrator MCP tool surface — that MCP is a separate host-singleton
 Kotlin jar on port `7890` (Streamable HTTP, `POST /mcp`), managed via
 `dopemux mcp`, and is unaffected by anything in this runbook.

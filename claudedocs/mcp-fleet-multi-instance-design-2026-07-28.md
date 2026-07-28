@@ -1,7 +1,8 @@
 # DESIGN: dopemux MCP fleet — multi-instance / multi-project / multi-worktree operation
 
-**Status**: DRAFT for operator sign-off
-**Date**: 2026-07-28
+**Status**: ACCEPTED with supervisor rulings applied (2026-07-28) — §10 decisions are now RESOLVED, not open.
+Disposition: `GO_DRAFT_PR · GO_M0_ONLY · BLOCK_M1_M5_PENDING_PREREQUISITES`.
+**Date**: 2026-07-28 (supervisor corrections same day)
 **Evidence base**: [`mcp-fleet-multi-instance-evidence-2026-07-28.md`](mcp-fleet-multi-instance-evidence-2026-07-28.md) (seven read-only research agents, file:line verified). Legacy launch-path file list for P-22/P-23: [`mcp-legacy-launch-path-worklist-2026-07-28.md`](mcp-legacy-launch-path-worklist-2026-07-28.md).
 **Citation form**: `EV §n` = section of the evidence file; `file.py:NN` = line cited there. Spot-checks re-run in this
 worktree are marked `[spot-checked]`.
@@ -46,7 +47,7 @@ merged, verified packet — never a date, never a judgement call.
 |---|---|---|---|---|
 | **postgres-age** (:5432) | host-singleton | host-singleton | — | Tenancy is DB-level (`dopemux_knowledge_graph`, `litellm`) and already multi-tenant in production use (EV §4). Intra-graph workspace partitioning is UNKNOWN, but that is ConPort's problem, not Postgres's: the DB engine is not the isolation boundary being violated. Per-instance `pg_age_data` volume clones exist today (EV §1) and are pure waste — they duplicate the engine, not the tenancy. |
 | **redis-primary** (:6380) | host-singleton | host-singleton | — | Keys are `workspace_id`-prefixed (verified for the TO python service; other consumers UNKNOWN — EV §4). Cost of a per-worktree redis is a whole process for a keyspace that is already namespaced. Residual risk is a consumer that writes unprefixed keys; §9 packet P-21 adds a key-prefix lint. |
-| **redis-events** (:6379) | host-singleton **(single-project)** | host-singleton (multi-project) | P-21 event-stream project prefix + consumer audit | No workspace scoping was found in the event streams (EV §4). Streams are advisory telemetry, not an authority surface (Truth Order: runtime > docs, but events are neither), so cross-project bleed degrades dashboards, it does not corrupt state. That justifies sharing the process now while *forbidding* any new consumer from treating events as authoritative until prefixes land. **OPEN** — see §10.4. |
+| **redis-events** (:6379) | **project-scoped** (supervisor ruling §10.4) | host-singleton (multi-project) — only after isolation tests prove cross-project delivery is impossible | P-21 (**elevated to P0 architecture-critical**): project-prefixed streams + consumer groups, envelope identity enforcement, full writer/reader/replay audit | The original "events are advisory telemetry" premise was **refuted by runtime behavior**: dope-memory consumes the unprefixed `activity.events.v1` stream and *promotes* eligible events into canonical `work_log_entries`, and its default consumer group is global — so one project's consumer can consume another project's event before payload-level checks run. That is a direct contamination path into the chronicle. Supervisor ruling: project-scoped **now**; prose declaring events non-authoritative is not a safety control. |
 | **qdrant** (:6333) | host-singleton | host-singleton | — | Collections are per-workspace (`code_<md5(path)>` / `docs_<md5(path)>`) with a `__manifest__` compatibility gate that already fails closed (#1139, EV §4). Tenancy is in the collection name; the engine is genuinely multi-tenant. Per-instance `qdrant-data` volume clones (EV §1) destroy the shared index for no isolation benefit and force re-embedding per worktree — a direct cost, since embeddings are paid work. |
 | **dope-context** (:3010) | host-singleton | host-singleton | — | The only server in the fleet that is *already* correct multi-tenant: `workspace_path` is a per-call parameter, and it is the sole owner of the `HOST_*` parent-directory mounts covering all checkouts (EV §4). Running one per worktree would multiply embedding cost and defeat the shared Qdrant index. |
 | **litellm** (:4000) | host-singleton | host-singleton | — | Stateless proxy over provider credentials; per-project instances multiply credential surface with zero isolation gain (EV §4). |
@@ -59,17 +60,18 @@ merged, verified packet — never a date, never a judgement call.
 | **pal — `mcp-pal-stdio` (compose)** | **retired** | retired | — | Zero consumers (EV §4). |
 | **pal — `pal-mcp-server` (off-compose)** | host-singleton **(adopt into managed fleet)** | host-singleton | P-07 adoption | This is the only PAL actually consumed (Codex `docker exec`s it, `required=true` — EV §4). It currently runs from `/private/tmp/pal-model-refresh`, i.e. outside compose, unlabeled, and it has a stale UNHEALTHY twin `pal-mcp-server-stale-20260721`. Stateless ⇒ safe to share; the work is bringing it under labels and a compose file, not changing its class. |
 | **serena** (3006/4006) | **worktree-scoped** | host-singleton | P-20: deploy the in-repo multi-workspace wrapper + per-call workspace routing | As deployed, exactly one workspace is bind-mounted read-only at container start (`${DOPEMUX_WORKSPACE_ROOT}:/workspace:ro`) and the wrapper detects the workspace from cwd (EV §4). That is a *container-construction-time* binding — no per-request escape exists, so sharing is not a policy choice, it is impossible. An in-repo multi-workspace wrapper exists but is NOT deployed (EV §4); deploying it is the gate. Until then serena is worktree-scoped **and rate-limited** (§6) because each instance is a real LSP with real CPU/RAM. |
-| **conport** (3004 REST / 3005 SSE / 4004 info) | **worktree-scoped** | host-singleton | **ConPort CRS v2**: per-request `instance_id` + RLS (ADR `conport-canonical-record-service-v2`, accepted, UNIMPLEMENTED) | `workspace_id` is already a sound per-request parameter on every table and tool, so cross-*project* rows are safe at the row level. The break is `instance_id`, which comes from the container env `DOPEMUX_INSTANCE_ID` — one value per process, so every concurrent worktree hitting one container collapses into one instance (EV §4). Sharing today would silently merge worktree histories; the live store *already* contains foreign-project data with missing provenance (EV §4). Therefore: per-worktree until CRS v2, then host-singleton. |
+| **conport** (3004 REST / 3005 SSE / 4004 info) | **worktree-scoped** | **project-scoped** (supervisor ruling §10.3 — NOT host-singleton) | **ConPort CRS v2, rewritten**: fixed project tenant + per-request `instance_id`/worktree identity; the project wall must exist **in storage** (separate database, or schema + restricted role), clients must not be able to select arbitrary `project_id` — process/DB credentials bind the tenant | `workspace_id` is already a sound per-request parameter on every table and tool, so cross-*project* rows are safe at the row level. The break is `instance_id`, which comes from the container env `DOPEMUX_INSTANCE_ID` — one value per process, so every concurrent worktree hitting one container collapses into one instance (EV §4). Sharing today would silently merge worktree histories; the live store *already* contains foreign-project data with missing provenance (EV §4). Therefore: per-worktree until CRS v2, then **project-scoped** — one ConPort per repo, all worktrees sharing. Supervisor rationale (§10.3): ConPort is canonical structured truth; a host singleton turns one identity/RLS defect into a knowledge-graph-wide incident, while project scope contains it to one repository and still fixes the actual worktree-collapse defect. Cross-project knowledge moves via explicit, auditable federation/import — never accidental co-tenancy. |
 | **dope-memory** (:3020) | **worktree-scoped** | host-singleton | **DMX-MEMSPINE-IDENTITY-005**: fail-closed per-request identity | Schema is scoped by `(workspace_id, instance_id)` — correct in principle. In practice three layers defeat it: `DOPEMUX_CAPTURE_LEDGER_PATH` collapses all workspaces to one ledger file; tool params *default* to container-env identity instead of failing closed; and `.mcp.json` env blocks cannot reach an already-running HTTP server (EV §4). Contamination is not theoretical — the primary container was observed carrying `DOPE_MEMORY_WORKSPACE_ID=dNh_CRM` (EV §4, finding N2). Also SQLite single-connection with sync calls in async handlers, so a shared instance is a serialization point (§6). |
-| **task-orchestrator — KOTLIN jar** (:7890) | host-singleton, **single active project** | host-singleton, single active project *(re-open only via §10.1)* | none by default | Storage is workspace-rooted SQLite under `~/.local/share/dopemux-mission-control/task-orchestrator/<workspace_id>/current-tasks.db`, so *storage* is per-project-safe. The blocker is the fixed reserved port 7890, meaning one project is reachable at a time, and the wrapper implements kill-and-replace (EV §4). A `multi_project_singleton` attempt landed 2026-07-21/26 and **was reverted the same day**; ADR-DMX-MCP-PEER-PROJECT-PREFLIGHT-001 (PROPOSED, code merged) deliberately keeps `single_active_project` (EV §5). This design **does not override that ADR**. It adds an explicit, fast `dopemux mcp switch-project` (§7) so the constraint is legible instead of manifesting as "TO is answering for the wrong repo" — which is exactly today's state, since 7890 is currently held by dNh_CRM (EV §1). |
-| **task-orchestrator — PYTHON compose svc** (:8000) | **retired** (rename-only fallback) | retired | operator sign-off §10.2 | Shadow twin: it is not the MCP tool surface, holds no direct SQLite, and persists via DopeconBridge custom_data (EV §4). Its only real consequence is that `.vibe/config.toml` points at `:8000` — i.e. a live config aims at the wrong system. Keeping a service whose sole distinguishing behaviour is being confused for another service is a defect, not a feature. If it has a non-orchestrator function worth keeping, it must be renamed (`dopecon-taskbridge`) and stripped of the `task-orchestrator` name and port. **OPEN** — §10.2. |
+| **task-orchestrator — KOTLIN jar** (:7890) | host-singleton, **single active project** (`switch-project` as explicitly *transitional* UX) | **project-scoped leased-port instances** — one jar per project, shared by that repo's worktrees (supervisor ruling §10.1; requires a new dedicated ADR) | P-24: new ADR + implementation (project identity from git common dir, leased port per project, per-repo MCP endpoint generated from the lease; starting project B must never kill/replace/adopt project A's process) | Storage is workspace-rooted SQLite under `~/.local/share/dopemux-mission-control/task-orchestrator/<workspace_id>/current-tasks.db`, so *storage* is per-project-safe. The blocker is the fixed reserved port 7890, meaning one project is reachable at a time, and the wrapper implements kill-and-replace (EV §4). A `multi_project_singleton` attempt landed 2026-07-21/26 and was reverted the same day. **Corrected rationale (supervisor, 2026-07-28): PR #1086 was closed because it bundled an unapproved Task Orchestrator authority change with the peer-project preflight repair — a governance rejection of `multi_project_singleton` as a direction, NOT proof that multi-project operation is technically unsafe.** The ruled end-state is therefore **project-scoped instances** (one process + leased port per project — runtime identity aligned with the jar's already-per-project storage, no shared authority inside one process), never `multi_project_singleton`. Interim: single-active-project with `dopemux mcp switch-project` (§7) as a *transitional compatibility path only*, so the constraint is legible instead of manifesting as "TO is answering for the wrong repo" — which is exactly today's state, since 7890 is currently held by dNh_CRM (EV §1). |
+| **task-orchestrator — PYTHON compose svc** (:8000) | keep running under current name until the rename packet executes | **renamed** — candidate `dopemux-workflow-api` (or `workflow-coordinator`); behavior preserved; NOT retired (supervisor ruling §10.2) | rewritten M11: consumer sweep → endpoint classification → one bounded rename packet (service, container, env vars, health labels, metrics, docs) | Shadow twin by *name*, but not a dead namesake: it exposes coordination/workflow REST APIs, registers MCP tools, imports real workflow services, and **DopeconBridge defaults its TO client to :8000 and health-checks it** — retiring before the consumer sweep would delete behavior whose authority slice is not yet understood. The rename removes the dangerous name collision without betting the PM plane on an incomplete sweep. Not `dopecon-taskbridge` — that would wrongly imply DopeconBridge owns the workflow domain. Route-level retirement requires separate per-route evidence later. |
 
 ### 1.3 Consequences of the interim state (state this plainly)
 
 While ConPort, dope-memory and serena are worktree-scoped, **N worktrees cost 3N containers**. That is the price
 of correctness under the current server implementations, and §6 bounds it with on-demand start + idle reaping.
-The end-state collapses those 3N to 3 host singletons. Both identity gates are already queued work
-(MEMSPINE-IDENTITY-005, CRS v2 — EV §5); this design's job is to make the flip a *config change*, not a rewrite.
+The end-state collapses those 3N to two host singletons (dope-memory, serena) plus one ConPort **per
+project** (supervisor ruling §10.3). Both identity gates are already queued work (MEMSPINE-IDENTITY-005,
+CRS v2 rewritten per §10.3 — EV §5); this design's job is to make the flip a *config change*, not a rewrite.
 
 ---
 
@@ -335,7 +337,7 @@ Catalog drift (`version: 1` where the ADR mandated 2 — EV §5) is fixed in P-0
 | dope-context / qdrant | collection `code_<md5(workspace_path)>` / `docs_<...>` + `__manifest__` gate | per-call `workspace_path` | Already fail-closed on incompatible collections (#1139 — EV §4). Add: reject calls whose `workspace_path` is outside the mounted `HOST_CODE_PARENT_DIR` rather than creating an empty collection |
 | serena | bind-mounted workspace | container construction | Interim: one workspace per container, enforced by labels. End-state (P-07): per-call workspace, rejected if not in the mount set |
 | redis-primary | `workspace_id` key prefix | caller | P-08 lint asserts every key written matches `^dmx:{workspace_id}:` |
-| redis-events | **none today** | — | P-08 adds `dmx:{project_id}:` stream prefix. Until then, events are non-authoritative by policy (§1.2) |
+| redis-events | **none today — and events ARE authoritative in practice** (dope-memory promotes `activity.events.v1` into `work_log_entries` via a global consumer group) | — | **project-scoped redis-events NOW** (supervisor §10.4). P-21 (P0): prefix streams AND consumer groups (`dmx:{project_id}:activity.events.v1`, `dmx:{project_id}:dope-memory-ingestor`); enforce complete event envelopes; reject missing/mismatched project+workspace identity |
 | postgres-age | database-level | connection string | unchanged |
 
 ### 5.2 The general rule
@@ -369,7 +371,7 @@ declare `identity_scope: per-call-*` to be eligible for `host-singleton`.
 | project-scoped | on-demand start, reaped after **60 min** idle |
 | worktree-scoped | **on-demand start** on first tool call or explicit `start`; reaped after **20 min** idle |
 | serena | additionally **capped at 3 concurrent instances** (`DOPEMUX_SERENA_MAX_INSTANCES`, default 3); exceeding the cap evicts the least-recently-used instance, never refuses the new one |
-| conport (worktree) | **lazy** — not started by `init`, only on first ConPort call, until CRS v2 lands. After CRS v2 it becomes a host singleton and this rule is deleted |
+| conport (worktree) | **lazy** — not started by `init`, only on first ConPort call, until CRS v2 lands. After CRS v2 it becomes **project-scoped** (§10.3) and this rule moves to the project-scoped 60 min window |
 | dope-memory (worktree) | lazy, same as conport |
 
 "Idle" = no MCP request for the window, measured by the server's own last-request timestamp where available, else
@@ -448,6 +450,13 @@ its next recreate applies real labels. Adoption is never implicit, never a fallb
 Every step: precondition → command → verification → rollback. Steps are ordered so that each one leaves the fleet
 in a runnable state.
 
+> **Supervisor execution authorization (2026-07-28)**: **M0 only is GO.** M1–M2 are BLOCKED (they depend on
+> `dopemux mcp reconcile`, which is planned, not implemented — P-10). M3 is NOT AUTHORIZED as a batch step
+> (`docker rm -f` needs its own bounded runtime packet after M0 proves the stale container's identity and
+> recreation source). M4 is BLOCKED on P-07 (`adopt` unimplemented). M5 is BLOCKED on M4. M10 is already
+> executed (commit b2f2f2d20f). Migration remains packetized, diff-inspected, and evidence-backed —
+> "reversible" is not a permission slip.
+
 | # | Step | Pre | Command | Verify | Rollback |
 |---|---|---|---|---|---|
 | **M0** | Snapshot everything | — | `docker ps -a --format json > ~/.dopemux/backup/ps-$(date +%s).json`; `docker volume ls > ...`; `cp ~/.dopemux/mcp/runtime/port-leases.json ~/.dopemux/backup/` | files non-empty | — |
@@ -460,8 +469,8 @@ in a runnable state.
 | **M7** | Relocate the `dcd6` override stack out of `/private/tmp/dopemux-mcp-dcd6/` (EV §1) | M2 | `dopemux mcp migrate --relocate dcd6` | override + mcp.env now under `~/.dopemux/mcp/runtime/<compose_project>/`; stack restarts from the new path | copy files back to `/private/tmp/...`; note this rollback is lost on reboot, which is the point |
 | **M8** | Consolidate hyphen/underscore duplicate volumes (`dnh-crm_8d6d` vs `dnh_crm_8d6d` × {pg_age_data, qdrant-data} — EV §1) | M0; all containers using either volume stopped | `dopemux mcp migrate --volumes --dry-run` (prints winner/loser per pair with mtime+size) → `--volumes` | winner volume mounts; row counts / collection counts match pre-migration | losers still exist (not pruned) — remount the loser |
 | **M9** | Prune losing volumes | M8 verified over ≥1 working session | `dopemux mcp migrate --volumes --prune-losers` | `docker volume ls` shows one per pair | **irreversible** — hence the deliberate delay |
-| **M10** | Repoint `.vibe/config.toml` off the `:8000` shadow twin onto the jar `:7890` (EV §4) | none | edit `.vibe/config.toml` | vibe commands reach a server whose `serverInfo.name` is the Kotlin TO | `git checkout .vibe/config.toml` |
-| **M11** | Retire the python task-orchestrator (:8000) | M10; §10.2 signed off | `docker compose -p dopemux rm -sf task-orchestrator`; remove from compose + catalog | nothing binds :8000; DopeconBridge custom_data unaffected | revert commit + `compose up` |
+| **M10** | Repoint `.vibe/config.toml` off the `:8000` shadow twin onto the jar `:7890` (EV §4) | none | edit `.vibe/config.toml` | vibe commands reach a server whose `serverInfo.name` is the Kotlin TO | `git checkout .vibe/config.toml` — **EXECUTED** in commit b2f2f2d20f |
+| **M11** | **Rename** the python task-orchestrator (:8000) → `dopemux-workflow-api` (**rewritten per §10.2 — NOT retirement**) | M10; complete consumer sweep (code, compose, env defaults, tests, runbooks, clients, external operator config); every :8000 endpoint classified canonical/adapter/compat-only/dead | one bounded rename packet: service, container, DNS identity, env vars, health labels, metrics names, docs; behavior preserved; optional temporary network alias for one migration window WITH deprecation signal + removal gate | all former consumers (incl. DopeconBridge TASK_ORCHESTRATOR_URL) reach the renamed service; no live config references the old name; route-level retirement deferred to per-route evidence | revert commit + `compose up` (alias makes rollback a no-op for consumers) |
 | **M12** | Resolve TO 7890 ownership (currently held by dNh_CRM — EV §1) | M11 | `dopemux mcp switch-project` from the target repo | `initialize` on 7890 reports this project's `workspace_id` | run `switch-project` from dNh_CRM |
 | **M13** | Move `dnh-crm` dope-memory off default 3020 (EV §1) | M2 | from the dnh-crm checkout: `dopemux mcp stop && dopemux mcp start` (now leases a port) | 3020 free for the canonical/host dope-memory | restart the old stack |
 | **M14** | Relabel all remaining schema-1 stacks to schema 2 | P-02, P-03 merged | `dopemux mcp migrate --relabel --all` | `doctor` reports zero `LABEL_SCHEMA_STALE` | containers recreate from the previous compose files; volumes untouched |
@@ -496,11 +505,12 @@ Sonnet-implementable packets. Dependency order is the `Deps` column; packets wit
 | **P-15** | `migrate` command | new `mcp/migrate.py` | `--relabel`, `--relocate`, `--volumes` (+`--prune-losers`), `--evict`; every mode has `--dry-run`; volume copy verified by size+file-count before the loser is retained | integration on throwaway volumes: copy fidelity; dry-run mutates nothing | P-03, P-10 |
 | **P-16** | Idle reaping + serena cap | `mcp/lifecycle.py`, session-lifecycle hook | 20 min worktree / 60 min project windows; serena LRU eviction at `DOPEMUX_SERENA_MAX_INSTANCES`; no daemon process introduced | unit with injected clock; integration: 4th serena evicts the LRU, never refuses | P-10 |
 | **P-17** | dope-memory fail-closed identity (**= MEMSPINE-IDENTITY-005**) | dope-memory server: tool params, ledger path derivation | Writes without `(workspace_id, instance_id)` are **rejected**; `DOPEMUX_CAPTURE_LEDGER_PATH` removed; ledger path derived per §5.1 | unit: write without identity ⇒ error; two workspaces ⇒ two ledger files; env var set ⇒ ignored | P-02 |
-| **P-18** | ConPort per-request instance_id (**= CRS v2**) | ConPort server + schema | `instance_id` accepted per request; env fallback removed; RLS per the accepted ADR | contract tests per tool; concurrency test: two worktrees writing simultaneously produce disjoint instance rows | P-02 |
-| **P-19** | Flip conport + dope-memory to host-singleton | catalog, compose, `identity.py` scope map | Both become `sharing_class: host`; per-worktree containers stopped and leases released by `reconcile` | integration: two worktrees share one container with disjoint reads/writes | P-17, P-18 |
+| **P-18** | ConPort per-request identity, **project-tenant model** (**= CRS v2 rewritten per §10.3**) | ConPort server + schema | Fixed project tenant + per-request `instance_id`/worktree identity. The project wall exists **in storage** (separate DB, or schema + restricted role); clients cannot select arbitrary `project_id` — process/DB credentials bind the tenant. Acceptance: (a) two worktrees of one repo share records correctly; (b) a second repo can neither read nor mutate them; (c) missing-provenance rows migrated/quarantined; (d) backup + rollback proof | contract tests per tool; concurrency test: two worktrees writing simultaneously produce disjoint instance rows; negative test: cross-project read/write rejected at the storage boundary | P-02, **§10.3 ruling (done)** |
+| **P-19** | Flip dope-memory → host-singleton, conport → **project-scoped** | catalog, compose, `identity.py` scope map | dope-memory becomes `sharing_class: host`; conport becomes `sharing_class: project` (one per repo, worktrees share); per-worktree containers stopped and leases released by `reconcile` | integration: two worktrees share one conport with disjoint instance rows; second repo gets its own conport; dope-memory serves both repos with per-request identity | P-17, P-18 |
 | **P-20** | Serena multi-workspace deployment | serena wrapper deployment, compose | The in-repo multi-workspace wrapper is deployed; workspace is per-call; calls outside the mount set rejected | integration: two workspaces answered by one container | P-16 |
-| **P-21** | redis key/stream prefix audit + lint | consumers of redis-primary/redis-events | Every write key matches `^dmx:{workspace_id}:`; event streams gain `dmx:{project_id}:`; lint in CI | static lint over redis call sites + runtime assertion in tests | P-01 |
+| **P-21** | redis key/stream prefix audit + lint — **elevated to P0 architecture-critical (supervisor §10.4)** | consumers of redis-primary/redis-events; dope-memory ingestor | redis-events becomes project-scoped immediately; audit EVERY stream writer, reader, consumer group, replay path, and stateful side effect; streams AND consumer groups prefixed (`dmx:{project_id}:activity.events.v1`, `dmx:{project_id}:dope-memory-ingestor`); complete event envelopes enforced — missing/mismatched project+workspace identity rejected; keys match `^dmx:{workspace_id}:`; lint in CI. Host-singleton redis-events may be reconsidered only after isolation tests prove project A events cannot be delivered to/acked by/persisted through project B consumers | static lint over redis call sites + runtime assertion + cross-project isolation test (A's event never reaches B's consumer) | P-01 |
 | **P-22** | **Legacy launch-path removal** | *(file list from a separate sweep)* | **AC: no path outside `dopemux mcp` can start fleet services.** Concretely: every `docker compose up` / `docker run` / shell wrapper / Makefile target / hook that starts a catalog service is either deleted or converted to shell out to `dopemux mcp start`. A CI guard greps for `docker compose up`/`docker run` outside `src/dopemux/mcp/` and fails on any hit not in an allowlist file with a written justification per entry. | CI grep guard + one integration test per removed path proving the canonical command covers it | P-08, P-15 |
+| **P-24** | **Project-scoped Kotlin task-orchestrator** (supervisor §10.1) | new ADR + `identity.py`, port allocator, TO wrapper scripts, catalog | New ADR commissioned first (one jar per project, shared by that repo's worktrees). Project identity from git common dir; one leased port per project; each repo's `.mcp.json` endpoint generated from the lease. Starting project B never kills/replaces/adopts/mutates project A's process. Acceptance: two projects operating concurrently; restart recovery; stale-lease reconciliation; verified SQLite separation. `multi_project_singleton` is NOT authorized. `switch-project` retained only as transitional compatibility until this lands | integration: two repos, two live jars, disjoint SQLite files, both answering `initialize` with their own workspace_id; kill/restart one without touching the other | ADR sign-off, P-02, P-09 |
 | **P-23** | **Docs + agent-file update** | *(file list from a separate sweep)* | **AC: all docs reference only canonical commands.** No doc describes the pre-#1052 port catch-22 workaround (`mcp-integration-guide.md` was touched *after* the fix and still does — EV §3); no doc references the lettered A–E model, `registry.yaml`, `DiscoveryGate`, `:8000` as the orchestrator, or `instance_manager`. CLAUDE.md / AGENTS.md §12 updated with the sharing-class table. A CI doc-lint greps a deny-list of retired terms. | doc-lint in CI with the retired-term deny-list; manual read of the 5 canonical MCP docs | P-13, P-22 |
 
 **Critical path**: P-01 → P-02 → P-03 → P-05 → P-06 → P-08 → P-10 → P-15 → migration M1–M16.
@@ -511,38 +521,56 @@ can run alongside the core path.
 
 ## 10. Risks & open decisions
 
-### 10.1 OPEN — Does task-orchestrator ever become multi-project? *(operator sign-off)*
+> All four decisions were **RESOLVED by supervisor ruling on 2026-07-28**. Overall disposition:
+> `GO_DRAFT_PR · GO_M0_ONLY · BLOCK_M1_M5_PENDING_PREREQUISITES`. The original open-question text is
+> replaced below by the rulings; do not re-litigate without a new supervisor decision.
 
-The jar's *storage* is already per-project-safe (workspace-rooted SQLite — EV §4). Only the fixed port 7890 and
-the kill-and-replace wrapper enforce single-active-project. A per-project leased-port TO is therefore
-*technically* small work. But `multi_project_singleton` landed and was reverted the same day (2026-07-21/26), and
-ADR-DMX-MCP-PEER-PROJECT-PREFLIGHT-001 deliberately keeps `single_active_project` (EV §5). **This design does not
-override that ADR.** The interim and end-state both keep single-active-project plus an explicit
-`switch-project`. Re-opening requires: (a) the revert's stated reason recovered from the PR record — currently
-**UNKNOWN**, and this is the blocking unknown; (b) a new ADR. Do not let an implementation agent "fix" this
-opportunistically.
+### 10.1 RESOLVED — task-orchestrator: **project-scoped leased-port instances** (ruling: b)
 
-### 10.2 OPEN — Retire or rename the python task-orchestrator (:8000)? *(operator sign-off)*
+The revert rationale is no longer UNKNOWN: **PR #1086 was closed because it bundled an unapproved Task
+Orchestrator authority change with the peer-project preflight repair** — a governance rejection of the
+`multi_project_singleton` *direction*, not evidence that multi-project operation is technically unsafe.
+Ruling: one Kotlin jar per project (shared by that repo's worktrees), leased port per project, runtime
+identity aligned with the jar's already-per-project SQLite storage; no shared authority inside one process.
+`multi_project_singleton` remains NOT authorized. `dopemux mcp switch-project` is preserved **only as a
+transitional compatibility path** until project-scoped TO lands. Preconditions: new dedicated ADR; project
+identity from the git common dir; starting project B never kills/replaces/adopts project A's process;
+acceptance = two projects concurrent + restart recovery + stale-lease reconciliation + verified SQLite
+separation. Implementation packet: **P-24**.
 
-Retire is the recommendation (§1.2). Rename-to-`dopecon-taskbridge` is the fallback **if** it has a consumer
-other than `.vibe/config.toml`. **UNKNOWN**: whether anything besides `.vibe` targets :8000. A consumer sweep is
-a precondition to M11; M10 (repointing `.vibe`) is safe either way and should ship first.
+### 10.2 RESOLVED — python :8000 service: **rename and retain** (ruling: b)
 
-### 10.3 OPEN — Is ConPort host-singleton the right long-term end-state, or per-worktree forever?
+Not a dead namesake: it exposes coordination/workflow REST APIs, registers MCP tools, imports real workflow
+services, and DopeconBridge defaults its TO client to :8000 and health-checks it. Immediate retirement would
+delete behavior before its consumers and authority slice are understood. Ruling: rename in one bounded packet
+(service, container, DNS identity, env vars, health labels, metrics, docs), behavior preserved; candidate name
+`dopemux-workflow-api` or `workflow-coordinator` — explicitly **not** `dopecon-taskbridge` (would wrongly imply
+DopeconBridge owns the workflow domain). Preconditions: complete consumer sweep; every :8000 endpoint
+classified canonical / adapter / compat-only / dead; optional one-window network alias with deprecation signal
+and removal gate. Route-level retirement requires separate evidence. Implements as rewritten **M11**.
 
-This design says host-singleton after CRS v2. The counter-argument is real: ConPort is the canonical decision
-record, its live store *already* contains foreign-project data with missing provenance (EV §4), and a shared
-instance makes the blast radius of an identity bug the entire knowledge graph rather than one worktree. A
-defensible alternative is **project-scoped** (one per repo, all worktrees sharing) — it removes the worktree
-collapse problem (which is the actual `instance_id` bug) while keeping a hard boundary between projects.
-**Recommendation: decide this before P-18 starts**, because CRS v2's RLS design differs between the two.
+### 10.3 RESOLVED — ConPort end-state: **project-scoped** (ruling: b)
 
-### 10.4 OPEN — redis-events scoping
+ConPort is canonical structured truth and the live store already contains foreign-project records with
+incomplete provenance. A host singleton turns one identity/RLS defect into a knowledge-graph-wide incident;
+project scope contains it to one repository while still solving the actual worktree-collapse defect. Saving a
+few API containers is not worth multiplying the blast radius of corrupt decisions/progress/context.
+Cross-project knowledge is shared via explicit, auditable federation or import — never accidental co-tenancy.
+Conditions (baked into P-18/P-19): CRS v2 rewritten around a fixed project tenant + per-request
+instance/worktree identity; the wall lives **in storage** (separate DB, or schema + restricted role); clients
+cannot select arbitrary `project_id` (process/DB credentials bind the tenant); acceptance includes two-worktree
+sharing, cross-repo denial, missing-provenance row migration/quarantine, and backup+rollback proof.
 
-No workspace scoping was found in event streams (EV §4). This design shares the process and declares events
-non-authoritative until P-21. If any consumer *does* treat events as authoritative (dashboards are fine; a
-consumer that writes state from an event is not), redis-events must become project-scoped instead. **UNKNOWN**:
-the full consumer list.
+### 10.4 RESOLVED — redis-events: **project-scoped now** (ruling: b)
+
+The "events are non-authoritative" premise was **refuted by runtime behavior**: dope-memory consumes the
+unprefixed `activity.events.v1` stream and promotes eligible events into canonical `work_log_entries`, with a
+global default consumer group — one project's consumer can consume another project's event before payload-level
+identity checks run. That is a direct contamination path into the chronicle; policy prose is not a safety
+control. Ruling: scope redis-events per project immediately; **P-21 elevated to P0 architecture-critical**
+(audit every writer/reader/consumer group/replay path/stateful side effect; prefix streams and consumer groups;
+enforce complete envelopes; reject missing or mismatched identity). A host-singleton redis-events may be
+reconsidered only after isolation tests prove project A events cannot reach project B consumers.
 
 ### 10.5 Risks
 
@@ -572,8 +600,8 @@ the full consumer list.
 |---|---|
 | Identity/naming/lease/discovery defects and their file:line locations | **high** (EV, spot-checked) |
 | Sharing classes for stateless + genuinely multi-tenant servers (pal, dope-context, qdrant, litellm, exa, gptr, desktop-commander, bridges) | **high** |
-| conport / dope-memory interim=worktree, end-state=host behind the two named gates | **high** on interim, **medium** on end-state (depends on §10.3) |
-| redis-events sharing being acceptable | **low** — §10.4, marked OPEN |
-| TO staying single-active-project | **high** as an ADR-compliance statement; the revert's *reason* is UNKNOWN |
+| conport interim=worktree, end-state=**project-scoped** (ruled §10.3); dope-memory interim=worktree, end-state=host | **high** — end-state ambiguity resolved by supervisor ruling |
+| redis-events project-scoped now (ruled §10.4) | **high** — the refuting runtime evidence (dope-memory promotes events into work_log_entries) is the decisive fact |
+| TO interim single-active-project, end-state project-scoped instances (ruled §10.1) | **high**; PR #1086 rejection was governance (unapproved bundled authority change), not a technical-safety finding |
 | Migration step ordering | **medium** — M6/M13 depend on the operator confirming those worktrees are idle |
 | Performance budgets (§6.3) | **low-medium** — the warm-switch decomposition is estimated, not measured. Measure during P-05. |

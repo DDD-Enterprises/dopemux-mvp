@@ -18,7 +18,7 @@ Task Orchestrator is the workflow-coordination service surface for dopemux. In t
 
 This service must not be confused with the upstream 13-tool stdio MCP Task Orchestrator container used by Codex and `dopemux mcp` local configs. The upstream stdio MCP runtime is launched through the tracked repo wrapper `scripts/mcp-wrappers/task-orchestrator-current-stdio.sh` and stores repo-scoped SQLite state under the operator's local data directory. The in-repo service described here is the Dopemux FastAPI workflow service.
 
-Per `mcp_catalog.yaml`, the task-orchestrator MCP tool surface that Claude Code and `dopemux mcp` currently connect to is a reserved singleton on port `7890` (Streamable HTTP, `POST /mcp`). Port `8000` below refers only to this document's in-repo FastAPI workflow service — a separate service pending retirement, not the MCP tool surface.
+Per `mcp_catalog.yaml`, the task-orchestrator MCP tool surface that Claude Code and `dopemux mcp` currently connect to is a reserved singleton on port `7890` (Streamable HTTP, `POST /mcp`). Port `8000` below refers only to this document's in-repo FastAPI workflow service — a separate service pending rename (per design §10.2 supervisor ruling — the service keeps its behavior but loses the colliding task-orchestrator name), not the MCP tool surface.
 
 Its canonical authority slice is narrow:
 - workflow-significant API behavior and transition routing exposed by `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/main.py`, `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/api/project_workflow.py`, and `/Users/hue/code/dopemux-mvp/services/task-orchestrator/app/api/pm_tools.py`

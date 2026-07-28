@@ -134,7 +134,7 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 - **Health Check**: `http://localhost:7890/mcp`
 - **Technology**: Kotlin, specialized orchestration algorithms
 
-> Note: port `8000` in this repo is a separate FastAPI "shadow twin" workflow service (`services/task-orchestrator`), pending retirement — it is not this MCP tool surface.
+> Note: port `8000` in this repo is a separate FastAPI "shadow twin" workflow service (`services/task-orchestrator`), pending rename (per design §10.2 supervisor ruling — the service keeps its behavior but loses the colliding task-orchestrator name) — it is not this MCP tool surface.
 
 **Authority Scope:**
 - **Dependency Analysis**: Authoritative for task dependency relationships and conflict resolution

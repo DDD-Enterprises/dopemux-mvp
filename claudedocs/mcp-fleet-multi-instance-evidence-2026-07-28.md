@@ -101,6 +101,11 @@ underlying reports; treat them as verified unless marked UNKNOWN.
   "evolved toward canonical shared services" — the doc record does NOT support that; what exists is
   ADR-DMX-MCP-PEER-PROJECT-PREFLIGHT-001 (peer instances visible + non-blocking, NOT shareable) and the
   same-day revert of shared-TO.
+  **CORRECTION (supervisor, 2026-07-28)**: the shared-TO revert rationale is NOT unknown. PR #1086 was closed
+  because it bundled an unapproved Task Orchestrator authority change (`multi_project_singleton`) with the
+  peer-project preflight repair — a governance rejection of that direction, not proof that multi-project TO
+  operation is technically unsafe. Ruled end-state (design §10.1): project-scoped leased-port TO instances via
+  a new ADR; `multi_project_singleton` stays not authorized.
 - Env-var identity over shared HTTP declared "unimplementable" by the 2026-07-03 fleet audit; per-request
   identity (HRD-IDENTITY-009 / MEMSPINE-IDENTITY-005 / ConPort CRS v2 RLS) is the agreed direction, all queued.
 - ChatGPT facade (ADR-DCP-MCP-RO-0009): opaque target_id, must never leak worktree hashes/ports.

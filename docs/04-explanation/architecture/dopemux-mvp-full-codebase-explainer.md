@@ -101,7 +101,7 @@ Repo truth here:
 
 ### 3. task-orchestrator (`services/task-orchestrator/`, port `8000`)
 
-This is a FastAPI workflow-coordination service. The intended runtime entrypoint is `services/task-orchestrator/app/main.py`. Note: this is a separate "shadow twin" service pending retirement — it is not the canonical task-orchestrator MCP surface. The canonical task-orchestrator MCP is a Kotlin jar on port `7890` (Streamable HTTP, `POST /mcp`).
+This is a FastAPI workflow-coordination service. The intended runtime entrypoint is `services/task-orchestrator/app/main.py`. Note: this is a separate "shadow twin" service pending rename — it is not the canonical task-orchestrator MCP surface. The canonical task-orchestrator MCP is a Kotlin jar on port `7890` (Streamable HTTP, `POST /mcp`).
 
 Observed responsibilities include:
 

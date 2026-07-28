@@ -134,7 +134,7 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 - **Health Check**: `http://localhost:7890/mcp`
 - **Technology**: Kotlin, specialized orchestration algorithms
 
-> Note: `3014` (and `8000`, seen elsewhere) are not this MCP tool surface — `3014` is legacy/archival, and `8000` is a separate FastAPI "shadow twin" workflow service (`services/task-orchestrator`) pending retirement.
+> Note: `3014` (and `8000`, seen elsewhere) are not this MCP tool surface — `3014` is legacy/archival, and `8000` is a separate FastAPI "shadow twin" workflow service (`services/task-orchestrator`) pending rename (per design §10.2 supervisor ruling — the service keeps its behavior but loses the colliding task-orchestrator name).
 
 **Authority Scope:**
 - **Dependency Analysis**: Authoritative for task dependency relationships and conflict resolution

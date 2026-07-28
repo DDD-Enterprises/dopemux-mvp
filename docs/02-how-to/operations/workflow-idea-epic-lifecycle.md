@@ -16,7 +16,7 @@ Use this guide to move work from idea capture to epic planning using the active
 task-orchestrator workflow runtime.
 
 **Scope note**: `$TASK_ORCH_URL` below (default port `8000`) is the FastAPI
-compose service's idea/epic REST API — a shadow twin pending retirement, not
+compose service's idea/epic REST API — a shadow twin pending rename, not
 the task-orchestrator MCP tool surface. The MCP surface (work-item tree
 management via `manage_items`/`advance_item`/etc.) is a separate
 host-singleton Kotlin jar on port `7890` (Streamable HTTP, `POST /mcp`).

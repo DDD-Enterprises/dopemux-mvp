@@ -97,11 +97,11 @@ Use compose-backed default ports unless your `.env` overrides them:
 | ConPort HTTP | `3004` | `/health` |
 | dope-context | `3010` | `/health` |
 | dope-memory | `3020` | `/health` |
-| task-orchestrator (FastAPI compose service, pending retirement) | `8000` | `/health` |
+| task-orchestrator (FastAPI compose service, pending rename) | `8000` | `/health` |
 | ADHD Engine | `3025` | `/health` |
 
 The compose service named `task-orchestrator` on `8000` is a separate FastAPI
-shadow twin pending retirement — it is not the task-orchestrator MCP tool
+shadow twin pending rename — it is not the task-orchestrator MCP tool
 surface. The MCP surface itself is a host-singleton Kotlin jar on port `7890`
 (Streamable HTTP, `POST /mcp`), started via `dopemux mcp`, not this compose
 health check.
