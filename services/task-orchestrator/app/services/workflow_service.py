@@ -7,7 +7,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 # Ensure repo-root imports work in isolated service runtime.
 def _find_repo_root():
@@ -167,9 +167,19 @@ class WorkflowService:
 
     async def create_epic(self, request: CreateEpicRequest) -> WorkflowEpic:
         self._require_enabled()
+        epic_id = self._epic_id_for_create_request(request)
+        existing_row = await self._call_store(self.store.get_epic(epic_id))
+        if existing_row is not None:
+            existing = WorkflowEpic(**existing_row)
+            if self._epic_matches_create_request(existing, request):
+                return existing
+            raise WorkflowConflictError(
+                "idempotency key is already bound to a different epic create request"
+            )
+
         now = utc_now_iso()
         epic = WorkflowEpic(
-            id=f"epic_{uuid4().hex}",
+            id=epic_id,
             title=request.title,
             description=request.description,
             business_value=request.business_value,
@@ -181,10 +191,37 @@ class WorkflowService:
             adhd_metadata=request.adhd_metadata,
             created_at=now,
             updated_at=now,
+            idempotency_key=request.idempotency_key,
         )
         await self._save_epic_or_raise(epic)
         self.metrics["workflow_epics_created_total"] += 1
         return epic
+
+    def _epic_id_for_create_request(self, request: CreateEpicRequest) -> str:
+        if not request.idempotency_key:
+            return f"epic_{uuid4().hex}"
+        replay_id = uuid5(
+            NAMESPACE_URL,
+            f"{self.workspace_id}:workflow_epic:{request.idempotency_key}",
+        )
+        return f"epic_{replay_id.hex}"
+
+    @staticmethod
+    def _epic_matches_create_request(
+        epic: WorkflowEpic, request: CreateEpicRequest
+    ) -> bool:
+        return (
+            epic.idempotency_key == request.idempotency_key
+            and epic.title == request.title
+            and epic.description == request.description
+            and epic.business_value == request.business_value
+            and epic.acceptance_criteria == request.acceptance_criteria
+            and epic.priority == request.priority
+            and epic.status == request.status
+            and epic.created_from_idea_id == request.created_from_idea_id
+            and epic.tags == request.tags
+            and epic.adhd_metadata == request.adhd_metadata
+        )
 
     async def list_epics(
         self,
@@ -377,4 +414,3 @@ class WorkflowService:
                 return None, f"unexpected non-integer Leantime project id: {value}"
 
         return None, "Leantime route succeeded but no project id returned"
-

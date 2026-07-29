@@ -21,7 +21,8 @@ for _module_name in list(sys.modules):
 
 from app.main import app  # noqa: E402
 from app.api import project_workflow  # noqa: E402
-from app.services.workflow_service import WorkflowService  # noqa: E402
+from app.models.workflow import CreateEpicRequest  # noqa: E402
+from app.services.workflow_service import WorkflowConflictError, WorkflowService  # noqa: E402
 
 
 class MemoryBridgeClient:
@@ -50,6 +51,58 @@ class MemoryBridgeClient:
 
     async def aclose(self):
         return None
+
+
+@pytest.mark.asyncio
+async def test_create_epic_replays_same_idempotency_key_without_duplicate():
+    service = WorkflowService(workspace_id="/tmp/workflow-idempotency")
+    service.store._client = MemoryBridgeClient()
+    request = CreateEpicRequest(
+        title="Synthetic epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        tags=["synthetic"],
+        idempotency_key="synthetic-repeat-key",
+    )
+
+    try:
+        first = await service.create_epic(request)
+        second = await service.create_epic(request)
+        stored = await service.list_epics(tag="synthetic")
+
+        assert second.id == first.id
+        assert first.idempotency_key == "synthetic-repeat-key"
+        assert [epic.id for epic in stored] == [first.id]
+    finally:
+        await service.close()
+
+
+@pytest.mark.asyncio
+async def test_create_epic_rejects_conflicting_idempotency_key_payload():
+    service = WorkflowService(workspace_id="/tmp/workflow-idempotency")
+    service.store._client = MemoryBridgeClient()
+    original = CreateEpicRequest(
+        title="Original synthetic epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        idempotency_key="synthetic-conflict-key",
+    )
+    conflicting = CreateEpicRequest(
+        title="Different synthetic epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        idempotency_key="synthetic-conflict-key",
+    )
+
+    try:
+        created = await service.create_epic(original)
+        with pytest.raises(WorkflowConflictError):
+            await service.create_epic(conflicting)
+        stored = await service.list_epics()
+
+        assert [epic.id for epic in stored] == [created.id]
+    finally:
+        await service.close()
 
 
 @pytest.mark.asyncio
