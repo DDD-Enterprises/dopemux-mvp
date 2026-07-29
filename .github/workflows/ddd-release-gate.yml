@@ -131,9 +131,11 @@ jobs:
             CHECK_RC=$?
             set -e
             echo "${CHECKS}"
-            # Ignore PR Steward self-status: it stays red until this APPROVE lands.
-            FILTERED=$(echo "${CHECKS}" | grep -v 'PR Steward / final readiness' || true)
-            echo "--- filtered (steward self-status excluded) ---"
+            # Ignore only the exact PR Steward self-status context (circular red
+            # until this APPROVE lands). Substring filters would drop similarly
+            # named checks; parse column 1 with exact equality.
+            FILTERED=$(echo "${CHECKS}" | awk -F'\t' '$1 != "PR Steward / final readiness"' || true)
+            echo "--- filtered (exact steward self-status excluded) ---"
             echo "${FILTERED}"
             if echo "${FILTERED}" | grep -E $'\tfail\t|\tfailure\t' >/dev/null 2>&1; then
               echo "::error::One or more non-steward PR checks are failing; refuse approval."
