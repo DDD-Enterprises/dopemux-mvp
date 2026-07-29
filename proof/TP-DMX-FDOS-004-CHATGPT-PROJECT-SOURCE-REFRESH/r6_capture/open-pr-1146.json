@@ -1,0 +1,18 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 1,
+  "headRefName": "dependabot/uv/setuptools-83.0.0",
+  "headRefOid": "eb2bfdce946995fff025831bc499fae33fe686cc",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1146,
+  "title": "deps(deps-dev): bump setuptools from 82.0.1 to 83.0.0",
+  "updatedAt": "2026-07-27T16:30:05Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1146",
+  "files": [
+    {
+      "path": "pyproject.toml"
+    }
+  ],
+  "state": "OPEN"
+}

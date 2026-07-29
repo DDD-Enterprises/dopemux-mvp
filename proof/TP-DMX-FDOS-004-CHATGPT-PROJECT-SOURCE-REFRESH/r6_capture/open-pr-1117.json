@@ -1,0 +1,18 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 1,
+  "headRefName": "fix/ui-dashboard-deps-consolidation",
+  "headRefOid": "350123f5bb058e5f195349f0197a128416392201",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1117,
+  "title": "fix(deps): consolidate safe UI patch dependencies (#1094, #1108, #1109)",
+  "updatedAt": "2026-07-26T11:27:14Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1117",
+  "files": [
+    {
+      "path": "ui-dashboard/package-lock.json"
+    }
+  ],
+  "state": "OPEN"
+}

@@ -1,0 +1,23 @@
+{
+  "packet_id": "TP-DMX-FDOS-004-R6-CURRENT-MAIN-REPAIR",
+  "generated_at": "2026-07-29T08:35:07Z",
+  "execution_base_sha": "414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d",
+  "capture": {
+    "open_pr_count": 32,
+    "complete_capture_count": 31,
+    "aggregate_only_capture_count": 1,
+    "aggregate_only_pr_numbers": [1123]
+  },
+  "package": {
+    "disposition": "CURRENT_MAIN_VALID_PENDING_OPEN_PR_REFRESH",
+    "material_open_pr_count": 8,
+    "upload_file_count": 40,
+    "validation_all_gates_pass": true
+  },
+  "formal_readiness": {
+    "embedded_audit": "NOT_RUN_AFTER_R6",
+    "pr_steward": "NOT_RUN_AFTER_R6",
+    "merge_authorization": "DENIED_PENDING_GATES",
+    "chatgpt_upload_authorization": "DENIED_PENDING_GATES"
+  }
+}

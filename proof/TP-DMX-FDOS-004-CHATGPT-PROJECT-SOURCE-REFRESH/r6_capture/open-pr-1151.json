@@ -1,0 +1,66 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 17,
+  "headRefName": "dcp/model-routing-0007i-trusted-input",
+  "headRefOid": "e36dda5cc51afe663150ada6bfae28e1c35c4f7f",
+  "isDraft": true,
+  "mergeStateStatus": "BEHIND",
+  "number": 1151,
+  "title": "feat(dcp): trusted input capability boundary — DMX-DCP-MODEL-ROUTING-MVP-0007I",
+  "updatedAt": "2026-07-29T00:05:38Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1151",
+  "files": [
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/COMMAND_LOG.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/DIFF_NAME_ONLY.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/DIFF_STAT.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/EVIDENCE_LEDGER.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/FINAL_STATUS_PORCELAIN.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/HANDOFF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/HANDOFF.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PAL_CHAIN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PROOF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/SECURITY_BOUNDARY_REVIEW.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_DESIGN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_TEST_MATRIX.json"
+    },
+    {
+      "path": "src/dopemux/dcp/__init__.py"
+    },
+    {
+      "path": "src/dopemux/dcp/input_adapters.py"
+    },
+    {
+      "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007I.md"
+    },
+    {
+      "path": "tests/unit/dcp/test_input_adapters.py"
+    }
+  ],
+  "state": "OPEN"
+}

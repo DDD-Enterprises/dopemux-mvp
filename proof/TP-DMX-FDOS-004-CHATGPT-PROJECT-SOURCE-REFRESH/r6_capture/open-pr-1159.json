@@ -1,0 +1,21 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 2,
+  "headRefName": "claude/distracted-brahmagupta-6b0743",
+  "headRefOid": "3a6cda08047776bf62259eb350e79a6840a56892",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1159,
+  "title": "feat(dopetask): add \"claude\" to execution.agent enum",
+  "updatedAt": "2026-07-29T00:36:42Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1159",
+  "files": [
+    {
+      "path": "docs/03-reference/governance/codex-macro-packet-blueprint.md"
+    },
+    {
+      "path": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+    }
+  ],
+  "state": "OPEN"
+}

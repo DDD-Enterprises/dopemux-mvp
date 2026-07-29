@@ -66,8 +66,8 @@
     "execution_base_sha_binding": {
       "pass": true,
       "detail": {
-        "manifest_execution_base_sha": "5f862d36f5417801b9fe148fccbb439731627234",
-        "validator_execution_base_sha": "5f862d36f5417801b9fe148fccbb439731627234",
+        "manifest_execution_base_sha": "414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d",
+        "validator_execution_base_sha": "414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d",
         "entries_with_mismatched_source_commit_sha": []
       }
     },
@@ -94,8 +94,8 @@
     "open_pr_conservation": {
       "pass": true,
       "detail": {
-        "initial_count": 29,
-        "ledger_count": 29,
+        "initial_count": 32,
+        "ledger_count": 32,
         "missing_from_ledger": [],
         "extra_in_ledger": []
       }

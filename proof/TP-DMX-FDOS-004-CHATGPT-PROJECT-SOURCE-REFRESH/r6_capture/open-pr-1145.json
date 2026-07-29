@@ -1,0 +1,21 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 2,
+  "headRefName": "dependabot/uv/google-genai-2.14.0",
+  "headRefOid": "b6e686757fdb23b78861586c49adb42c4a3ce262",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1145,
+  "title": "deps(deps): bump google-genai from 1.69.0 to 2.14.0",
+  "updatedAt": "2026-07-27T16:29:57Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1145",
+  "files": [
+    {
+      "path": "pyproject.toml"
+    },
+    {
+      "path": "uv.lock"
+    }
+  ],
+  "state": "OPEN"
+}

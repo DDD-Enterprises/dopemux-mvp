@@ -1,0 +1,21 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 2,
+  "headRefName": "jules-10223693338927440299-c662ce23",
+  "headRefOid": "9f2f089dd5e43387ba029c8f5c9de312899dceb3",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1149,
+  "title": "🎨 Palette: Add descriptive tooltip to task start button",
+  "updatedAt": "2026-07-28T23:25:37Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1149",
+  "files": [
+    {
+      "path": "ui-dashboard/src/components/TaskSequencer.tsx"
+    },
+    {
+      "path": "ui-dashboard/src/components/__tests__/Accessibility.test.tsx"
+    }
+  ],
+  "state": "OPEN"
+}

@@ -1,0 +1,33 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 6,
+  "headRefName": "codex/approve-agy-gemini-3-1-pro-audit",
+  "headRefOid": "8f2c009c35309c4aad371d17568528b61b84523d",
+  "isDraft": true,
+  "mergeStateStatus": "UNSTABLE",
+  "number": 1165,
+  "title": "audit: approve AGY Gemini 3.1 Pro exact model",
+  "updatedAt": "2026-07-29T07:53:00Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1165",
+  "files": [
+    {
+      "path": "docs/ops/embedded-audit-proof.md"
+    },
+    {
+      "path": "docs/ops/embedded-audit.md"
+    },
+    {
+      "path": "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001/implementation-notes.md"
+    },
+    {
+      "path": "schemas/proof/embedded_audit.schema.json"
+    },
+    {
+      "path": "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json"
+    },
+    {
+      "path": "tests/audit/test_agy_gemini31_model.py"
+    }
+  ],
+  "state": "OPEN"
+}

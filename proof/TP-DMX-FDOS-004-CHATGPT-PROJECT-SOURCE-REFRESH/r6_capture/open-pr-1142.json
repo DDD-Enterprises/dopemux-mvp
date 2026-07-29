@@ -1,0 +1,18 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 1,
+  "headRefName": "dependabot/npm_and_yarn/postcss-8.5.18",
+  "headRefOid": "5126f254275adce3621a1d9c5b24288678e8b95e",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1142,
+  "title": "deps(deps-dev): bump postcss from 8.5.15 to 8.5.18",
+  "updatedAt": "2026-07-27T07:31:28Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1142",
+  "files": [
+    {
+      "path": "package-lock.json"
+    }
+  ],
+  "state": "OPEN"
+}

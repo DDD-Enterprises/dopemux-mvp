@@ -34,6 +34,26 @@ def sha256_file(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
+def find_secret_hits(paths: list[Path], package_dir: Path) -> list[dict]:
+    """Scan every prospective archive member and return redacted findings."""
+    secret_hits = []
+    for path in paths:
+        try:
+            text = path.read_text(errors="ignore")
+        except Exception:
+            continue
+        try:
+            name = path.relative_to(package_dir).as_posix()
+        except ValueError:
+            name = path.name
+        for pattern_name, pattern in SECRET_PATTERNS:
+            for match in pattern.finditer(text):
+                secret_hits.append(
+                    {"file": name, "pattern": pattern_name, "match_prefix": match.group(0)[:12]}
+                )
+    return secret_hits
+
+
 def run_validation(repo_root: Path, execution_base_sha: str, package_dir: Path, open_pr_dir: Path) -> tuple[dict, bool]:
     """Run every validation gate and return (result, all_pass).
 
@@ -184,15 +204,12 @@ def run_validation(repo_root: Path, execution_base_sha: str, package_dir: Path, 
         },
     }
 
-    secret_hits = []
-    for p in files:
-        try:
-            text = p.read_text(errors="ignore")
-        except Exception:
-            continue
-        for name, pattern in SECRET_PATTERNS:
-            for m in pattern.finditer(text):
-                secret_hits.append({"file": p.name, "pattern": name, "match_prefix": m.group(0)[:12]})
+    # The deterministic archive includes the complete package directory, not
+    # only UPLOAD_FILES/. Scan the same recursive member set before archiving
+    # so captured PR evidence and generated supporting reports cannot bypass
+    # the secret gate.
+    archive_members = sorted(path for path in package_dir.rglob("*") if path.is_file())
+    secret_hits = find_secret_hits(archive_members, package_dir)
     gates["secret_scan"] = {"pass": not secret_hits, "detail": secret_hits}
 
     all_pass = all(g["pass"] for g in gates.values())

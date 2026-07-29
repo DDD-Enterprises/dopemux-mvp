@@ -4,10 +4,10 @@
 > No unmerged PR content is represented as current-main truth.
 
 ```yaml
-captured_at: 2026-07-29T05:10:00Z
-execution_base_sha: 5f862d36f5417801b9fe148fccbb439731627234
-open_pr_count: 29
-material_open_pr_count: 5
+captured_at: 2026-07-29T08:30:00Z
+execution_base_sha: 414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d
+open_pr_count: 32
+material_open_pr_count: 8
 regeneration_required_if_any_material_pr_merges: true
 ```
 
@@ -158,40 +158,22 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Source slots affected: none
 - Contradiction/overlap notes: Shares problem domain (RTE truth/audit remediation) with #1136 and #1155, which are the actively-maintained, clean-lineage successors; #1136/#1155 should be treated as authoritative for that domain, not #1123.
 - Confidence: high
-
-### PR #1126 -- fix(dope-context): repair vector compatibility and collection migration
-
-- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1126
-- State: OPEN (draft: False)
-- Base branch: `main`
-- Head branch: `fix/dope-context-voyage4-repair-0002`
-- Head SHA: `ba8a78fa1ed09dc0d7cbb9f2b2680508c6fa13a3`
-- Merge-state status: DIRTY
-- Updated: 2026-07-29T00:36:34Z
-- Changed-file count: 36 (capture_complete: True)
-- **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
-- Evidence: mergeStateStatus=DIRTY. Touches docs/03-reference/systems/dope-context/vector-profiles-and-migration.md (adjacent doc, not the exact slot-20 file) plus substantial services/dope-context/** runtime changes (embeddings, indexing, MCP server, reranker) described at a high level by slot 20's system-dopecontext.md.
-- Current-main effect: None; PR is unmerged.
-- Action if merged: Re-verify slot 20 content against the new dope-context runtime behavior and regenerate if drift is found.
-- Source slots affected: [20]
-- Contradiction/overlap notes: mergeStateStatus=DIRTY indicates merge conflicts must be resolved before this can land; classification may need revisiting once conflicts are addressed.
-- Confidence: medium
 - Sample changed paths:
-    - `docs/03-reference/systems/dope-context/vector-profiles-and-migration.md`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDITOR_REPORT.md`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDIT_INTAKE.json`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/COLLECTION_MIGRATION_REPORT.json`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/COMMAND_LOG.txt`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/HANDOFF.json`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/IMPLEMENTATION_REPORT.md`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/MANIFEST.json`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/PROOF.json`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/VALIDATION.json`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/VECTOR_COMPATIBILITY_MATRIX.json`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/agy_audit_raw.txt`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/claude_audit_raw.txt`
-    - `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/gemini_audit_raw.txt`
-    - `proof/pr_merge/embedded-audit/pr-1126/PROOF.json`
+    - `.Jules/palette.md`
+    - `.antigravitycli/8045acdf-ddc1-4770-9e5f-66a542feed87.json`
+    - `.antigravitycli/c1be0ae4-af24-4184-9a66-bb7ce6372872.json`
+    - `.backup_location`
+    - `.claude.json`
+    - `.claude.json.template`
+    - `.claude/AGENT_ARCHITECTURE.md`
+    - `.claude/MULTI_LANGUAGE_SUPPORT.md`
+    - `.claude/PRIMER.md`
+    - `.claude/PROJECT_INSTRUCTIONS.md`
+    - `.claude/README.md`
+    - `.claude/SESSION_STATE_MCP_ORCHESTRATOR.md`
+    - `.claude/SYNERGISTIC_WORKFLOWS.md`
+    - `.claude/WORKTREE_MCP_SETUP.md`
+    - `.claude/agents/_index.md`
 
 ### PR #1127 -- docs(ltaip): import full macro-packet series and load-plan artifacts
 
@@ -199,10 +181,10 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: False)
 - Base branch: `main`
 - Head branch: `docs/ltaip-full-packet-import`
-- Head SHA: `f9acb478ecbb5bb9609a85ff15db4c1c85fc5f75`
+- Head SHA: `5bcadcb59427a5f1094d3bc0ed0e94de9ed9a74f`
 - Merge-state status: BEHIND
-- Updated: 2026-07-27T00:44:05Z
-- Changed-file count: 33 (capture_complete: True)
+- Updated: 2026-07-29T06:04:19Z
+- Changed-file count: 34 (capture_complete: True)
 - **Classification: NO_PROJECT_SOURCE_IMPACT**
 - Evidence: mergeStateStatus=UNKNOWN/BEHIND. All 33 changed files are under docs/ops/load-plans/**, reports/leantime-ai-parity/**, schemas/leantime-ai-parity/**, scripts/leantime-ai-parity/**, task-packets/leantime-ai-parity/**, and tests/prototypes/leantime-ai-parity/**. None intersect the 37 selected slots or the watched-path list.
 - Current-main effect: None.
@@ -219,13 +201,13 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
     - `reports/leantime-ai-parity/task-orchestrator-load-receipts.json`
     - `schemas/leantime-ai-parity/task-orchestrator-rest-epics.schema.json`
     - `scripts/leantime-ai-parity/load_task_orchestrator.py`
+    - `task-packets/generated/TP-PR1127-CI-001.json`
     - `task-packets/leantime-ai-parity/TP-LTAIP-H0-001.json`
     - `task-packets/leantime-ai-parity/TP-LTAIP-H0-001.md`
     - `task-packets/leantime-ai-parity/TP-LTAIP-H0-002.json`
     - `task-packets/leantime-ai-parity/TP-LTAIP-H0-002.md`
     - `task-packets/leantime-ai-parity/TP-LTAIP-H0-003.json`
     - `task-packets/leantime-ai-parity/TP-LTAIP-H0-003.md`
-    - `task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json`
 
 ### PR #1128 -- feat(mcp): profile-selected tool plane and repo-domain read contract
 
@@ -267,9 +249,9 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: False)
 - Base branch: `main`
 - Head branch: `claude/rte-truth-program`
-- Head SHA: `bf1842e3d0b20396e6d222dccbe97257584849e2`
+- Head SHA: `5f52cad52275c563567201d6377a750b8475baa3`
 - Merge-state status: BEHIND
-- Updated: 2026-07-27T21:27:43Z
+- Updated: 2026-07-29T00:46:50Z
 - Changed-file count: 366 (capture_complete: True)
 - **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
 - Evidence: mergeStateStatus=BEHIND (rebasable, not conflicted). Full paginated changedFiles=366 (captured via `gh api .../pulls/1136/files --paginate`, not the 100-file-capped `gh pr view --json files`; capture count verified to equal the PR's own reported changedFiles=366 exactly). Directly touches docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md (slot 23) plus extensive services/repo-truth-extractor/** runtime, config/pricing.yaml, and CI workflow changes.
@@ -571,10 +553,10 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: False)
 - Base branch: `main`
 - Head branch: `claude/mcp-multi-instance-design-d706d6`
-- Head SHA: `a8838e2a62d88204a174bbf9ee0d24eed9157057`
-- Merge-state status: BEHIND
-- Updated: 2026-07-29T00:31:18Z
-- Changed-file count: 59 (capture_complete: True)
+- Head SHA: `ad1fe43ed7dca30e3f9af7fa555b87b4406bce30`
+- Merge-state status: CLEAN
+- Updated: 2026-07-29T08:25:16Z
+- Changed-file count: 77 (capture_complete: True)
 - **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
 - Evidence: Draft PR, mergeStateStatus=BEHIND (was UNSTABLE at earlier capture; state has since changed but content intersection is unchanged). Refreshed changed-file list (59 files, was 56/56 at two earlier captures) still directly includes AGENTS.md, docs/03-reference/systems/dopemux/system-dopemux.md, and docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md -- exactly slots 01, 15, 17 of this package.
 - Current-main effect: None; PR is unmerged and draft.
@@ -585,6 +567,7 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Sample changed paths:
     - `.claude/claude.md`
     - `.claude/hooks/mcp_health_probe.py`
+    - `.github/copilot-instructions.md`
     - `.vibe/config.toml`
     - `AGENTS.md`
     - `INSTALL.md`
@@ -597,7 +580,6 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
     - `docker/mcp-servers-source/setup-task-orchestrator.sh`
     - `docker/mcp-servers-source/start-all-mcp-servers.sh`
     - `docker/mcp-servers-source/start-profile.sh`
-    - `docs/01-tutorials/quickstart.md`
 
 ### PR #1151 -- feat(dcp): trusted input capability boundary — DMX-DCP-MODEL-ROUTING-MVP-0007I
 
@@ -816,31 +798,140 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
     - `docs/03-reference/governance/codex-macro-packet-blueprint.md`
     - `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`
 
-### PR #1160 -- fix(ci): ignore PR Steward self-status in release-gate preflight
+### PR #1161 -- MCP fleet follow-ups: LOW audit findings, M11 consumer sweep, P-24 ADR
 
-- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1160
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1161
+- State: OPEN (draft: True)
+- Base branch: `claude/mcp-multi-instance-design-d706d6`
+- Head branch: `claude/mcp-fleet-followups`
+- Head SHA: `8f3a10b93a158f78194850995bd781e79f59b70b`
+- Merge-state status: UNSTABLE
+- Updated: 2026-07-29T04:37:32Z
+- Changed-file count: 10 (capture_complete: True)
+- **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
+- Evidence: Draft MCP/task-orchestrator follow-up touching the task-orchestrator Leantime follow-up document and a project-scoped task-orchestrator ADR. These changes can alter context for slot 17's Task Orchestrator system description.
+- Current-main effect: None; PR is unmerged.
+- Action if merged: Re-verify slot 17 and regenerate if the current system description drifts.
+- Source slots affected: [17]
+- Contradiction/overlap notes: No exact selected slot path is edited; classification is conservative because the changed ADR and follow-up document concern the same system plane.
+- Confidence: medium
+- Sample changed paths:
+    - `.claude/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py`
+    - `.github/copilot-instructions.md`
+    - `.github/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py`
+    - `claudedocs/m11-workflow-api-rename-consumer-sweep-2026-07-29.md`
+    - `docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md`
+    - `docs/90-adr/adr-dmx-mcp-project-scoped-task-orchestrator-001.md`
+    - `docs/planes/pm/task-orchestrator-leantime-followups.md`
+    - `templates/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py`
+    - `tests/test_cli_mcp_startup.py`
+    - `tests/test_mcp_health_probe.py`
+
+### PR #1162 -- fix(pr-steward): paginate the changed-files completeness cross-check past 100 files
+
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1162
 - State: OPEN (draft: False)
 - Base branch: `main`
-- Head branch: `feat/ddd-release-gate-ignore-steward-self`
-- Head SHA: `c84d1e8c477b49df5141f41dc2c21190c4f4cea4`
+- Head branch: `fix/pr-steward-changed-files-pagination`
+- Head SHA: `77e26075f31d9675fc385c4f6698e0ddf7292a38`
 - Merge-state status: BLOCKED
-- Updated: 2026-07-29T00:40:19Z
-- Changed-file count: 4 (capture_complete: True)
+- Updated: 2026-07-29T04:47:31Z
+- Changed-file count: 3 (capture_complete: True)
+- **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
+- Evidence: Touches tools/pr_steward/collector.py and pagination/release-approval tests. Changed-file completeness is a documented PR Steward readiness behavior represented by slot 32.
+- Current-main effect: None; PR is unmerged.
+- Action if merged: Re-verify slot 32 against the new changed-file completeness behavior and regenerate if drift is found.
+- Source slots affected: [32]
+- Contradiction/overlap notes: This is the isolated follow-up for the Steward pagination repair reverted from PR #1152.
+- Confidence: medium
+- Sample changed paths:
+    - `tests/pr_steward/test_collector_changed_files_pagination_check.py`
+    - `tests/pr_steward/test_collector_security_release_approval.py`
+    - `tools/pr_steward/collector.py`
+
+### PR #1163 -- draft(research): preregister LTAIP H0 segment study [BLOCKED_EVIDENCE]
+
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1163
+- State: OPEN (draft: True)
+- Base branch: `docs/ltaip-full-packet-import`
+- Head branch: `research/TP-LTAIP-H0-001-segment-workflow-lock`
+- Head SHA: `08e4bfe7ce41c6802f4b1f424d8f107a81b99e41`
+- Merge-state status: UNSTABLE
+- Updated: 2026-07-29T05:55:29Z
+- Changed-file count: 7 (capture_complete: True)
 - **Classification: NO_PROJECT_SOURCE_IMPACT**
-- Evidence: mergeStateStatus=BLOCKED. Touches .github/workflows/ddd-release-gate.yml, tests/pr_steward/test_known_author_bot_bare_form.py, tools/pr_steward/classifier.py, tools/pr_steward/known_reviewers.json (4 files) -- a narrow CI-preflight bug fix for PR Steward's own release-gate self-status handling, not a description of PR Steward mechanics carried by slot 32 (docs/ops/pr-steward.md).
-- Current-main effect: None.
-- Action if merged: None required for the selected 37-source set.
+- Evidence: Draft research-registration PR touching docs/06-research, proof, reports, and participant evidence only. No selected slot or watched runtime family intersects its seven changed paths.
+- Current-main effect: None; PR is unmerged.
+- Action if merged: None required for this package.
 - Source slots affected: none
-- Contradiction/overlap notes: Same tools/pr_steward/ family as #1140; neither touches slot-32 content.
+- Contradiction/overlap notes: Targets a non-main base branch and is marked BLOCKED_EVIDENCE in its title.
 - Confidence: high
 - Sample changed paths:
-    - `.github/workflows/ddd-release-gate.yml`
-    - `tests/pr_steward/test_known_author_bot_bare_form.py`
-    - `tools/pr_steward/classifier.py`
-    - `tools/pr_steward/known_reviewers.json`
+    - `docs/06-research/leantime-ai-parity/h0/segment-lock/interview-guide.md`
+    - `docs/06-research/leantime-ai-parity/h0/segment-lock/recruitment-and-consent.md`
+    - `docs/06-research/leantime-ai-parity/h0/segment-lock/research-protocol.md`
+    - `proof/leantime-ai-parity/TP-LTAIP-H0-001/COMMAND_LOG.md`
+    - `proof/leantime-ai-parity/TP-LTAIP-H0-001/GIT_STATUS_BEFORE.txt`
+    - `reports/leantime-ai-parity/h0/segment-lock/participant-register.redacted.json`
+    - `reports/leantime-ai-parity/h0/segment-lock/session-evidence.jsonl`
+
+### PR #1164 -- fix(task-orchestrator): repair bridge-backed ConPort persistence wiring
+
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1164
+- State: OPEN (draft: True)
+- Base branch: `main`
+- Head branch: `codex/to-conport-persistence-repair`
+- Head SHA: `c78c45b0e06a729d51f329e510f0a8069c46fca6`
+- Merge-state status: UNSTABLE
+- Updated: 2026-07-29T06:25:29Z
+- Changed-file count: 11 (capture_complete: True)
+- **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
+- Evidence: Draft, mergeStateStatus=UNSTABLE. Touches services/task-orchestrator/app/services/workflow_service.py and compose.yml, changing Task Orchestrator persistence behavior described by slot 17.
+- Current-main effect: None; PR is unmerged.
+- Action if merged: Re-verify slot 17 against the persisted workflow behavior and regenerate if drift is found.
+- Source slots affected: [17]
+- Contradiction/overlap notes: Implementation repair is accompanied by task packet and contract tests; no selected source file is directly edited.
+- Confidence: medium
+- Sample changed paths:
+    - `compose.yml`
+    - `services/task-orchestrator/app/services/workflow_service.py`
+    - `task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-implementation-notes.md`
+    - `task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-plan-review.md`
+    - `task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-plan.md`
+    - `task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-research-review.md`
+    - `task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-research.md`
+    - `task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001.json`
+    - `tests/arch/test_task_orchestrator_conport_persistence_contract.py`
+    - `tests/unit/test_task_orchestrator_workflow_route_certification.py`
+    - `tests/unit/test_task_orchestrator_workflow_store.py`
+
+### PR #1165 -- audit: approve AGY Gemini 3.1 Pro exact model
+
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1165
+- State: OPEN (draft: True)
+- Base branch: `main`
+- Head branch: `codex/approve-agy-gemini-3-1-pro-audit`
+- Head SHA: `8f2c009c35309c4aad371d17568528b61b84523d`
+- Merge-state status: UNSTABLE
+- Updated: 2026-07-29T07:53:00Z
+- Changed-file count: 6 (capture_complete: True)
+- **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
+- Evidence: Draft, mergeStateStatus=UNSTABLE. Directly touches docs/ops/embedded-audit.md (slot 30) and schemas/proof/embedded_audit.schema.json (slot 31), plus the related proof-model test.
+- Current-main effect: None; PR is unmerged.
+- Action if merged: Regenerate slots 30 and 31 from the new main tip and re-run package validation.
+- Source slots affected: [30, 31]
+- Contradiction/overlap notes: Directly affects the embedded-audit contract carried by this package.
+- Confidence: high
+- Sample changed paths:
+    - `docs/ops/embedded-audit-proof.md`
+    - `docs/ops/embedded-audit.md`
+    - `proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001/implementation-notes.md`
+    - `schemas/proof/embedded_audit.schema.json`
+    - `task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json`
+    - `tests/audit/test_agy_gemini31_model.py`
 
 ## 4. Conservation Check
 
-- Open PR inventory count: 29
-- Ledger entry count: 29
+- Open PR inventory count: 32
+- Ledger entry count: 32
 - Every PR number appears exactly once above (enforced by the build script's fail-closed classification lookup).

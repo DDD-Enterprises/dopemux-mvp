@@ -1,0 +1,21 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 2,
+  "headRefName": "fix/security-pyasn1-0.6.4-current-main",
+  "headRefOid": "396c32013ea91552d08677b245c1b5739b2d2264",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1115,
+  "title": "fix(security): bump pyasn1 to 0.6.4 (recreates #1090 on current main)",
+  "updatedAt": "2026-07-26T11:27:18Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1115",
+  "files": [
+    {
+      "path": "docker/mcp-servers-source/pal/pal-mcp-server/uv.lock"
+    },
+    {
+      "path": "uv.lock"
+    }
+  ],
+  "state": "OPEN"
+}

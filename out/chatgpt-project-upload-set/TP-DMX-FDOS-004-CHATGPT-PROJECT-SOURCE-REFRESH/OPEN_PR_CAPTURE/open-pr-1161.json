@@ -1,0 +1,45 @@
+{
+  "baseRefName": "claude/mcp-multi-instance-design-d706d6",
+  "changedFiles": 10,
+  "files": [
+    {
+      "path": ".claude/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py"
+    },
+    {
+      "path": ".github/copilot-instructions.md"
+    },
+    {
+      "path": ".github/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py"
+    },
+    {
+      "path": "claudedocs/m11-workflow-api-rename-consumer-sweep-2026-07-29.md"
+    },
+    {
+      "path": "docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md"
+    },
+    {
+      "path": "docs/90-adr/adr-dmx-mcp-project-scoped-task-orchestrator-001.md"
+    },
+    {
+      "path": "docs/planes/pm/task-orchestrator-leantime-followups.md"
+    },
+    {
+      "path": "templates/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py"
+    },
+    {
+      "path": "tests/test_cli_mcp_startup.py"
+    },
+    {
+      "path": "tests/test_mcp_health_probe.py"
+    }
+  ],
+  "headRefName": "claude/mcp-fleet-followups",
+  "headRefOid": "8f3a10b93a158f78194850995bd781e79f59b70b",
+  "isDraft": true,
+  "mergeStateStatus": "UNSTABLE",
+  "number": 1161,
+  "state": "OPEN",
+  "title": "MCP fleet follow-ups: LOW audit findings, M11 consumer sweep, P-24 ADR",
+  "updatedAt": "2026-07-29T04:37:32Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1161"
+}

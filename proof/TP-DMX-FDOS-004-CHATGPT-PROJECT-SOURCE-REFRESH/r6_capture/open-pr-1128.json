@@ -1,0 +1,135 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 40,
+  "headRefName": "feat/TP-DMX-MCPPROF-001-profiled-tool-plane",
+  "headRefOid": "e41d134b5b0f32b5475ab5f094274bfac2259601",
+  "isDraft": false,
+  "mergeStateStatus": "DIRTY",
+  "number": 1128,
+  "title": "feat(mcp): profile-selected tool plane and repo-domain read contract",
+  "updatedAt": "2026-07-27T00:49:18Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1128",
+  "files": [
+    {
+      "path": ".claude/mcp-system.md"
+    },
+    {
+      "path": "docs/02-how-to/mcp-profiles.md"
+    },
+    {
+      "path": "docs/90-adr/adr-index.md"
+    },
+    {
+      "path": "docs/90-adr/adr-mcpprof-001-profiled-tool-plane-and-domain-facades.md"
+    },
+    {
+      "path": "mcp_catalog.yaml"
+    },
+    {
+      "path": "mcp_tool_surfaces.json"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/AUDITOR_REPORT.json"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/BASELINE.json"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/COMMANDS.log"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/EXIT_CODES.json"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/FILES_INSPECTED.txt"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/GIT_DIFF.patch"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/GIT_DIFF_STAT.txt"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/GIT_STATUS_AFTER.txt"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/GIT_STATUS_BEFORE.txt"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/HANDOFF.json"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/LINT_TYPE_RESULTS.txt"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/MERGE_READINESS.json"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/NEGATIVE_TESTS.json"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/OPEN_PRS.json"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/PAL_CHAIN.md"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/PROFILE_DIGESTS.json"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/PROFILE_INVENTORY.json"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/PROOF.json"
+    },
+    {
+      "path": "proof/TP-DMX-MCPPROF-001/TEST_RESULTS.txt"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1128/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1128/PROOF.json"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1128/PROOF.json.sig"
+    },
+    {
+      "path": "schemas/mcp-profile.schema.json"
+    },
+    {
+      "path": "schemas/mcp/fleet-catalog.schema.json"
+    },
+    {
+      "path": "src/dopemux/commands/mcp_commands.py"
+    },
+    {
+      "path": "src/dopemux/mcp/default_catalog.yaml"
+    },
+    {
+      "path": "src/dopemux/mcp/fleet_catalog.py"
+    },
+    {
+      "path": "src/dopemux/mcp/profile_policy.py"
+    },
+    {
+      "path": "task-packets/mcp-profiles/TP-DMX-MCPPROF-001.json"
+    },
+    {
+      "path": "task-packets/mcp-profiles/TP-DMX-MCPPROF-001.md"
+    },
+    {
+      "path": "tests/unit/test_mcp_profile_doctor.py"
+    },
+    {
+      "path": "tests/unit/test_mcp_profile_policy.py"
+    },
+    {
+      "path": "tests/unit/test_mcp_profile_rendering.py"
+    }
+  ],
+  "state": "OPEN"
+}

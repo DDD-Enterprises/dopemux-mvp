@@ -1,0 +1,21 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 2,
+  "headRefName": "dependabot/npm_and_yarn/javascript-minor-patch-6ddac0c4e4",
+  "headRefOid": "abbf2e7e3a58386c44232e594b5329de59392e4b",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1147,
+  "title": "deps(deps): bump the javascript-minor-patch group with 9 updates",
+  "updatedAt": "2026-07-28T16:06:45Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1147",
+  "files": [
+    {
+      "path": "package-lock.json"
+    },
+    {
+      "path": "package.json"
+    }
+  ],
+  "state": "OPEN"
+}

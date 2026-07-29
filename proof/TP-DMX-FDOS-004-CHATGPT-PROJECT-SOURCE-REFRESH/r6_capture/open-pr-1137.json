@@ -1,0 +1,141 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 42,
+  "headRefName": "dcp/model-routing-0000r-runtime-reconcile",
+  "headRefOid": "5de3f0ef56dfcf8545c395418b4a3d424b1bc249",
+  "isDraft": true,
+  "mergeStateStatus": "BEHIND",
+  "number": 1137,
+  "title": "DMX-DCP-MODEL-ROUTING-MVP-0000R: Current-Main Runtime and Toolchain Reconciliation",
+  "updatedAt": "2026-07-27T03:19:24Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1137",
+  "files": [
+    {
+      "path": "docs/03-reference/dcp/current-main-runtime-reconciliation.json"
+    },
+    {
+      "path": "docs/03-reference/dcp/current-main-runtime-reconciliation.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.attempt1.incomplete.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.raw.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.stderr.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/COMMAND_LOG.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/DIFF_NAME_ONLY.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/DIFF_STAT.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/EVIDENCE_LEDGER.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/FINAL_STATUS_PORCELAIN.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/HANDOFF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/HANDOFF.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PAL_CHAIN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PROOF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/compileall.exit"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/compose-resolved.exit"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/compose-resolved.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/compose-resolved.stderr.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/dcp-help.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/docker-ps-summary.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/docker-ps.exit"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/docker-ps.jsonl"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/docker-ps.stderr.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/dopemux-help.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-dcp-search.exit"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-dcp-search.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-dcp-search.stderr.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-open-all.exit"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-open-all.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-open-all.stderr.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-this-branch.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/inventory.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/opencode-resolved-config.exit"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/opencode-resolved-config.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/pytest.exit"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/reference-scan.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/runner-cli-inventory.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/verify-pal.exit"
+    },
+    {
+      "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000R.md"
+    }
+  ],
+  "state": "OPEN"
+}

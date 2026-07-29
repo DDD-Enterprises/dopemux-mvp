@@ -1,0 +1,102 @@
+{
+  "id": "TP-DMX-FDOS-004-R6-CURRENT-MAIN-REPAIR",
+  "project": "dopemux-mvp",
+  "target": "Repair PR #1152 package safety and regenerate the ChatGPT Project source package from the verified current main commit and a fresh complete open-PR capture.",
+  "invariants": [
+    "Do not upload or mutate the ChatGPT Project.",
+    "Do not merge, close, or resolve GitHub review threads.",
+    "Reject unsafe output paths before recursive deletion.",
+    "Scan every regular file that will enter the package archive for secrets before archiving.",
+    "Current-main source bytes are copied only from the recorded execution base SHA.",
+    "Open-PR inventory counts and operator-facing metadata are derived from the same fresh capture, never hardcoded.",
+    "Codex must not author or claim a formal embedded-audit verdict; independent audit and final Steward gates remain fail-closed."
+  ],
+  "depends_on": ["TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH"],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-FDOS",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/pr1152-r6-repair",
+    "base_branch": "main",
+    "stacked_because": "Repairs existing PR #1152 after rebasing it onto current main."
+  },
+  "commit": {
+    "message": "fix(fdos-004): rebuild source package from current main safely",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-FDOS-004-R6-CURRENT-MAIN-REPAIR.json",
+      "scripts/project_sources/build_chatgpt_project_sources.py",
+      "scripts/project_sources/validate_chatgpt_project_sources.py",
+      "scripts/project_sources/pr_classifications.json",
+      "tests/project_sources/**",
+      "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/**",
+      "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip",
+      "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256",
+      "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/**",
+      "proof/TP-DMX-FDOS-004-R6-CURRENT-MAIN-REPAIR/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-004-R6-CURRENT-MAIN-REPAIR.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "pytest -q tests/project_sources",
+      "python3 scripts/project_sources/validate_chatgpt_project_sources.py --repo-root . --execution-base-sha <CURRENT_MAIN_SHA> --package-dir out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH --open-pr-dir proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH",
+      "unzip -t out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip",
+      "shasum -a 256 -c out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(fdos-004): refresh ChatGPT Project 40-source upload set to current main",
+    "body": "Rebuilt package and open-PR ledger from the final capture recorded in the generated artifacts. This PR does not upload to ChatGPT or authorize merge; current-head independent audit and PR Steward readiness remain mandatory.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify current main, rebase PR repair branch, and create a complete current open-PR capture excluding PR #1152 itself.",
+      "validation": [
+        "Recorded execution base SHA equals origin/main at capture time.",
+        "Every captured PR has changed-file evidence whose completeness is derived from recorded counts."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add focused tests then harden output cleanup and archive-wide secret scanning without changing package selection policy.",
+      "validation": [
+        "Unsafe output roots fail before deletion.",
+        "Secret-shaped package-root content fails validation before archive creation.",
+        "Focused tests first fail then pass."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Rebuild deterministic package, manifest, ledger, ZIP, sidecar, and package-local handoff from the fresh capture and current-main base.",
+      "validation": [
+        "All package validation gates pass.",
+        "Archive includes PACKAGE_VALIDATION.json and passes integrity and sidecar checks.",
+        "Operator-facing counts and execution base agree across generated artifacts."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Inspect scoped diff and publish only after final validation; leave formal embedded audit and PR Steward as explicit post-repair gates.",
+      "validation": [
+        "git diff --check passes.",
+        "Only allowlisted files are staged.",
+        "Formal audit and Steward are reported as PASS, FAIL, or NOT_RUN without inference."
+      ]
+    }
+  ]
+}

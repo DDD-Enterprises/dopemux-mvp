@@ -1,0 +1,117 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 34,
+  "headRefName": "dcp/model-routing-0007t-adversarial-tests",
+  "headRefOid": "dfa01bf12f01b924cd96d2ea483f166b81f73d1d",
+  "isDraft": true,
+  "mergeStateStatus": "BEHIND",
+  "number": 1153,
+  "title": "test(dcp): trusted-input adversarial corpus — 0007T",
+  "updatedAt": "2026-07-29T00:06:46Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1153",
+  "files": [
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/COMMAND_LOG.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/DIFF_NAME_ONLY.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/DIFF_STAT.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/EVIDENCE_LEDGER.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/FINAL_STATUS_PORCELAIN.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/HANDOFF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/HANDOFF.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PAL_CHAIN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PROOF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/SECURITY_BOUNDARY_REVIEW.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_DESIGN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_TEST_MATRIX.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/ADVERSARIAL_CORPUS.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/COMMAND_LOG.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/DIFF_NAME_ONLY.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/DIFF_STAT.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/EVIDENCE_LEDGER.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/FINAL_STATUS_PORCELAIN.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/HANDOFF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/HANDOFF.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/PAL_CHAIN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/PROOF.json"
+    },
+    {
+      "path": "src/dopemux/dcp/__init__.py"
+    },
+    {
+      "path": "src/dopemux/dcp/input_adapters.py"
+    },
+    {
+      "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007I.md"
+    },
+    {
+      "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007T.md"
+    },
+    {
+      "path": "tests/fixtures/dcp/trusted_input/boolean_string_coercion.json"
+    },
+    {
+      "path": "tests/fixtures/dcp/trusted_input/empty.json"
+    },
+    {
+      "path": "tests/fixtures/dcp/trusted_input/forged_attested.json"
+    },
+    {
+      "path": "tests/fixtures/dcp/trusted_input/forged_route_decision.json"
+    },
+    {
+      "path": "tests/unit/dcp/test_input_adapters.py"
+    },
+    {
+      "path": "tests/unit/dcp/test_input_adapters_adversarial.py"
+    }
+  ],
+  "state": "OPEN"
+}

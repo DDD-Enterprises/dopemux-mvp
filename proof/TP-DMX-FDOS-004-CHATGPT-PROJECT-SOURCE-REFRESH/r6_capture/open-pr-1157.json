@@ -1,0 +1,267 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 84,
+  "headRefName": "dcp/model-routing-0009-runner-capabilities",
+  "headRefOid": "40224403cba6411ea79156572710b8b13b5e5cb9",
+  "isDraft": true,
+  "mergeStateStatus": "BEHIND",
+  "number": 1157,
+  "title": "feat(dcp): runner capability registry (invocation disabled) — 0009",
+  "updatedAt": "2026-07-29T00:11:21Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1157",
+  "files": [
+    {
+      "path": "config/dcp/runner_capabilities.json"
+    },
+    {
+      "path": "config/dcp/trusted_input_adapters.json"
+    },
+    {
+      "path": "docs/03-reference/dcp/backend-runner-contract.md"
+    },
+    {
+      "path": "docs/03-reference/dcp/runner-capability-matrix.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/ADAPTER_REGISTRY_POLICY.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/COMMAND_LOG.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/DIFF_NAME_ONLY.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/DIFF_STAT.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/EVIDENCE_LEDGER.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/FINAL_STATUS_PORCELAIN.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/HANDOFF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/HANDOFF.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/PAL_CHAIN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/PROOF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/COMMAND_LOG.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/DIFF_NAME_ONLY.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/DIFF_STAT.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/EVIDENCE_LEDGER.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/FINAL_STATUS_PORCELAIN.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/HANDOFF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/HANDOFF.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PAL_CHAIN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PROOF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/SECURITY_BOUNDARY_REVIEW.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_DESIGN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_TEST_MATRIX.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/ADVERSARIAL_CORPUS.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/COMMAND_LOG.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/DIFF_NAME_ONLY.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/DIFF_STAT.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/EVIDENCE_LEDGER.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/FINAL_STATUS_PORCELAIN.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/HANDOFF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/HANDOFF.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/PAL_CHAIN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/PROOF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/COMMAND_LOG.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/DIFF_NAME_ONLY.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/DIFF_STAT.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/EVIDENCE_LEDGER.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/FINAL_STATUS_PORCELAIN.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/HANDOFF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/HANDOFF.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/PAL_CHAIN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/PROOF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/RUNNER_CONTRACT.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/CAPABILITY_MATRIX.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/COMMAND_LOG.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/DIFF_NAME_ONLY.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/DIFF_STAT.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/EVIDENCE_LEDGER.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/FINAL_STATUS_PORCELAIN.txt"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/HANDOFF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/HANDOFF.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/PAL_CHAIN.md"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/PROOF.json"
+    },
+    {
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/runner-cli-inventory.txt"
+    },
+    {
+      "path": "schemas/dcp/runner_capability_registry.schema.json"
+    },
+    {
+      "path": "schemas/dcp/runner_contract.schema.json"
+    },
+    {
+      "path": "schemas/dcp/trusted_input_adapter_registry.schema.json"
+    },
+    {
+      "path": "src/dopemux/dcp/__init__.py"
+    },
+    {
+      "path": "src/dopemux/dcp/input_adapters.py"
+    },
+    {
+      "path": "src/dopemux/dcp/runner_capability_registry.py"
+    },
+    {
+      "path": "src/dopemux/dcp/runner_contract.py"
+    },
+    {
+      "path": "src/dopemux/dcp/trusted_adapter_registry.py"
+    },
+    {
+      "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007A.md"
+    },
+    {
+      "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007I.md"
+    },
+    {
+      "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007T.md"
+    },
+    {
+      "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0008.md"
+    },
+    {
+      "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0009.md"
+    },
+    {
+      "path": "tests/fixtures/dcp/trusted_input/boolean_string_coercion.json"
+    },
+    {
+      "path": "tests/fixtures/dcp/trusted_input/empty.json"
+    },
+    {
+      "path": "tests/fixtures/dcp/trusted_input/forged_attested.json"
+    },
+    {
+      "path": "tests/fixtures/dcp/trusted_input/forged_route_decision.json"
+    },
+    {
+      "path": "tests/unit/dcp/test_input_adapters.py"
+    },
+    {
+      "path": "tests/unit/dcp/test_input_adapters_adversarial.py"
+    },
+    {
+      "path": "tests/unit/dcp/test_runner_capability_registry.py"
+    },
+    {
+      "path": "tests/unit/dcp/test_runner_contract.py"
+    },
+    {
+      "path": "tests/unit/dcp/test_trusted_adapter_registry.py"
+    }
+  ],
+  "state": "OPEN"
+}

@@ -1,6 +1,6 @@
 # CURRENT_MAIN_40
 
-execution_base_sha: `5f862d36f5417801b9fe148fccbb439731627234`
+execution_base_sha: `414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d`
 
 | Slot | Bundle filename | Source path | Bytes | SHA-256 |
 | --- | --- | --- | --- | --- |

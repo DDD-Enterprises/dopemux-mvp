@@ -1,0 +1,36 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 7,
+  "headRefName": "codex/tp-rte-truth-r0-005-tree-sitter-degraded",
+  "headRefOid": "c05d8c062a40b2d3a1a9485ef239b433b659650b",
+  "isDraft": true,
+  "mergeStateStatus": "BEHIND",
+  "number": 1155,
+  "title": "fix(rte): surface tree-sitter degraded mode",
+  "updatedAt": "2026-07-29T00:08:54Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1155",
+  "files": [
+    {
+      "path": "proof/TP-RTE-TRUTH-R0-005/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/TP-RTE-TRUTH-R0-005/PROOF.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/lib/prescan/code_intelligence_report.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/lib/prescan/code_prescan.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/lib/prescan/engine.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py"
+    },
+    {
+      "path": "task-packets/TP-RTE-TRUTH-R0-005.json"
+    }
+  ],
+  "state": "OPEN"
+}

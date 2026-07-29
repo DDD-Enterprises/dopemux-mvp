@@ -1,0 +1,48 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 11,
+  "files": [
+    {
+      "path": "compose.yml"
+    },
+    {
+      "path": "services/task-orchestrator/app/services/workflow_service.py"
+    },
+    {
+      "path": "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-implementation-notes.md"
+    },
+    {
+      "path": "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-plan-review.md"
+    },
+    {
+      "path": "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-plan.md"
+    },
+    {
+      "path": "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-research-review.md"
+    },
+    {
+      "path": "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-research.md"
+    },
+    {
+      "path": "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001.json"
+    },
+    {
+      "path": "tests/arch/test_task_orchestrator_conport_persistence_contract.py"
+    },
+    {
+      "path": "tests/unit/test_task_orchestrator_workflow_route_certification.py"
+    },
+    {
+      "path": "tests/unit/test_task_orchestrator_workflow_store.py"
+    }
+  ],
+  "headRefName": "codex/to-conport-persistence-repair",
+  "headRefOid": "c78c45b0e06a729d51f329e510f0a8069c46fca6",
+  "isDraft": true,
+  "mergeStateStatus": "UNSTABLE",
+  "number": 1164,
+  "state": "OPEN",
+  "title": "fix(task-orchestrator): repair bridge-backed ConPort persistence wiring",
+  "updatedAt": "2026-07-29T06:25:29Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1164"
+}

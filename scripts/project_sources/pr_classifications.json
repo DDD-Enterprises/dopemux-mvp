@@ -3,14 +3,50 @@
   "self_exclusion_note": "This packet's own PR (#1152, branch claude/chatgpt-40-source-refresh-f84dfc) is deliberately excluded from classification -- it is the source-refresh PR itself, not a candidate future authority for the 40-source set it produces. Excluding it is a build-time rule (see build_chatgpt_project_sources.py SELF_PR_NUMBER), not a silent omission.",
   "self_pr_number": 1152,
   "classifications": {
-    "1160": {
-      "classification": "NO_PROJECT_SOURCE_IMPACT",
-      "evidence": "mergeStateStatus=BLOCKED. Touches .github/workflows/ddd-release-gate.yml, tests/pr_steward/test_known_author_bot_bare_form.py, tools/pr_steward/classifier.py, tools/pr_steward/known_reviewers.json (4 files) -- a narrow CI-preflight bug fix for PR Steward's own release-gate self-status handling, not a description of PR Steward mechanics carried by slot 32 (docs/ops/pr-steward.md).",
-      "current_main_effect": "None.",
-      "action_if_merged": "None required for the selected 37-source set.",
-      "source_slots_affected": [],
-      "contradiction_or_overlap_notes": "Same tools/pr_steward/ family as #1140; neither touches slot-32 content.",
+    "1165": {
+      "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
+      "evidence": "Draft, mergeStateStatus=UNSTABLE. Directly touches docs/ops/embedded-audit.md (slot 30) and schemas/proof/embedded_audit.schema.json (slot 31), plus the related proof-model test.",
+      "current_main_effect": "None; PR is unmerged.",
+      "action_if_merged": "Regenerate slots 30 and 31 from the new main tip and re-run package validation.",
+      "source_slots_affected": [30, 31],
+      "contradiction_or_overlap_notes": "Directly affects the embedded-audit contract carried by this package.",
       "confidence": "high"
+    },
+    "1164": {
+      "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
+      "evidence": "Draft, mergeStateStatus=UNSTABLE. Touches services/task-orchestrator/app/services/workflow_service.py and compose.yml, changing Task Orchestrator persistence behavior described by slot 17.",
+      "current_main_effect": "None; PR is unmerged.",
+      "action_if_merged": "Re-verify slot 17 against the persisted workflow behavior and regenerate if drift is found.",
+      "source_slots_affected": [17],
+      "contradiction_or_overlap_notes": "Implementation repair is accompanied by task packet and contract tests; no selected source file is directly edited.",
+      "confidence": "medium"
+    },
+    "1163": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Draft research-registration PR touching docs/06-research, proof, reports, and participant evidence only. No selected slot or watched runtime family intersects its seven changed paths.",
+      "current_main_effect": "None; PR is unmerged.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "Targets a non-main base branch and is marked BLOCKED_EVIDENCE in its title.",
+      "confidence": "high"
+    },
+    "1162": {
+      "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
+      "evidence": "Touches tools/pr_steward/collector.py and pagination/release-approval tests. Changed-file completeness is a documented PR Steward readiness behavior represented by slot 32.",
+      "current_main_effect": "None; PR is unmerged.",
+      "action_if_merged": "Re-verify slot 32 against the new changed-file completeness behavior and regenerate if drift is found.",
+      "source_slots_affected": [32],
+      "contradiction_or_overlap_notes": "This is the isolated follow-up for the Steward pagination repair reverted from PR #1152.",
+      "confidence": "medium"
+    },
+    "1161": {
+      "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
+      "evidence": "Draft MCP/task-orchestrator follow-up touching the task-orchestrator Leantime follow-up document and a project-scoped task-orchestrator ADR. These changes can alter context for slot 17's Task Orchestrator system description.",
+      "current_main_effect": "None; PR is unmerged.",
+      "action_if_merged": "Re-verify slot 17 and regenerate if the current system description drifts.",
+      "source_slots_affected": [17],
+      "contradiction_or_overlap_notes": "No exact selected slot path is edited; classification is conservative because the changed ADR and follow-up document concern the same system plane.",
+      "confidence": "medium"
     },
     "1159": {
       "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
@@ -209,15 +245,6 @@
       "source_slots_affected": [],
       "contradiction_or_overlap_notes": "None.",
       "confidence": "high"
-    },
-    "1126": {
-      "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
-      "evidence": "mergeStateStatus=DIRTY. Touches docs/03-reference/systems/dope-context/vector-profiles-and-migration.md (adjacent doc, not the exact slot-20 file) plus substantial services/dope-context/** runtime changes (embeddings, indexing, MCP server, reranker) described at a high level by slot 20's system-dopecontext.md.",
-      "current_main_effect": "None; PR is unmerged.",
-      "action_if_merged": "Re-verify slot 20 content against the new dope-context runtime behavior and regenerate if drift is found.",
-      "source_slots_affected": [20],
-      "contradiction_or_overlap_notes": "mergeStateStatus=DIRTY indicates merge conflicts must be resolved before this can land; classification may need revisiting once conflicts are addressed.",
-      "confidence": "medium"
     },
     "1118": {
       "classification": "NO_PROJECT_SOURCE_IMPACT",

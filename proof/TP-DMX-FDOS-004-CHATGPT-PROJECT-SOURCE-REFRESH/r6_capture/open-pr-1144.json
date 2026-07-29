@@ -1,0 +1,24 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 3,
+  "headRefName": "dependabot/uv/python-minor-patch-2b653c8b3a",
+  "headRefOid": "cd1689667ff50fd32979dd7a4fc9212f54eb2042",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1144,
+  "title": "deps(deps): bump the python-minor-patch group with 40 updates",
+  "updatedAt": "2026-07-27T16:29:41Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1144",
+  "files": [
+    {
+      "path": "pyproject.toml"
+    },
+    {
+      "path": "ui-dashboard-backend/requirements.txt"
+    },
+    {
+      "path": "uv.lock"
+    }
+  ],
+  "state": "OPEN"
+}

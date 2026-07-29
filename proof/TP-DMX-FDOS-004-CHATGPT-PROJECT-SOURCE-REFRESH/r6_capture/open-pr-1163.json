@@ -1,0 +1,36 @@
+{
+  "baseRefName": "docs/ltaip-full-packet-import",
+  "changedFiles": 7,
+  "headRefName": "research/TP-LTAIP-H0-001-segment-workflow-lock",
+  "headRefOid": "08e4bfe7ce41c6802f4b1f424d8f107a81b99e41",
+  "isDraft": true,
+  "mergeStateStatus": "UNSTABLE",
+  "number": 1163,
+  "title": "draft(research): preregister LTAIP H0 segment study [BLOCKED_EVIDENCE]",
+  "updatedAt": "2026-07-29T05:55:29Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1163",
+  "files": [
+    {
+      "path": "docs/06-research/leantime-ai-parity/h0/segment-lock/interview-guide.md"
+    },
+    {
+      "path": "docs/06-research/leantime-ai-parity/h0/segment-lock/recruitment-and-consent.md"
+    },
+    {
+      "path": "docs/06-research/leantime-ai-parity/h0/segment-lock/research-protocol.md"
+    },
+    {
+      "path": "proof/leantime-ai-parity/TP-LTAIP-H0-001/COMMAND_LOG.md"
+    },
+    {
+      "path": "proof/leantime-ai-parity/TP-LTAIP-H0-001/GIT_STATUS_BEFORE.txt"
+    },
+    {
+      "path": "reports/leantime-ai-parity/h0/segment-lock/participant-register.redacted.json"
+    },
+    {
+      "path": "reports/leantime-ai-parity/h0/segment-lock/session-evidence.jsonl"
+    }
+  ],
+  "state": "OPEN"
+}

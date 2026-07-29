@@ -1,0 +1,21 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 2,
+  "headRefName": "dependabot/npm_and_yarn/next-15.5.21",
+  "headRefOid": "bf6cf155d1ad764f8a9479f0988bc3066a5ceb24",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1113,
+  "title": "deps(deps): bump next from 15.5.18 to 15.5.21",
+  "updatedAt": "2026-07-26T11:27:34Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1113",
+  "files": [
+    {
+      "path": "package-lock.json"
+    },
+    {
+      "path": "package.json"
+    }
+  ],
+  "state": "OPEN"
+}

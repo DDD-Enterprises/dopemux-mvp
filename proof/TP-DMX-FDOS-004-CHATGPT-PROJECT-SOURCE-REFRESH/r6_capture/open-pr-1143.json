@@ -1,0 +1,24 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 3,
+  "headRefName": "dependabot/npm_and_yarn/ui-dashboard/npm_and_yarn-d3bc4254df",
+  "headRefOid": "8147bf929910592088df771d1f92a782d8a5ad62",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1143,
+  "title": "chore(deps): bump the npm_and_yarn group across 1 directory with 3 updates",
+  "updatedAt": "2026-07-27T07:32:02Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1143",
+  "files": [
+    {
+      "path": "ui-dashboard/package-lock.json"
+    },
+    {
+      "path": "ui-dashboard/package.json"
+    },
+    {
+      "path": "ui-dashboard/pnpm-lock.yaml"
+    }
+  ],
+  "state": "OPEN"
+}

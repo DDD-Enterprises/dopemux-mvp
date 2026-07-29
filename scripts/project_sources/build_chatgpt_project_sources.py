@@ -35,6 +35,7 @@ VALID_PR_CLASSIFICATIONS = {
     "SOURCE_SET_CHANGES_IF_MERGED",
     "SOURCE_CONTENT_REFRESH_IF_MERGED",
     "SUPERSEDED_OR_CONFLICTING",
+    "UNKNOWN_REQUIRES_REVIEW",
 }
 MATERIAL_PR_CLASSIFICATIONS = ("SOURCE_SET_CHANGES_IF_MERGED", "SOURCE_CONTENT_REFRESH_IF_MERGED")
 
@@ -130,6 +131,23 @@ def git_show_bytes(repo_root: Path, execution_base_sha: str, path: str) -> bytes
         check=True,
     )
     return result.stdout
+
+
+def validate_output_dir(repo_root: Path, output_dir: Path) -> None:
+    """Reject paths whose recursive cleanup could destroy a checkout or root."""
+    protected_roots = {
+        repo_root,
+        Path("/").resolve(),
+        Path.home().resolve(),
+        Path("/tmp").resolve(),
+        Path("/private/tmp").resolve(),
+        Path("/private/var").resolve(),
+        Path("/private/var/folders").resolve(),
+    }
+    if any(protected == output_dir or protected.is_relative_to(output_dir) for protected in protected_roots):
+        raise ValueError(f"unsafe output directory for recursive cleanup: {output_dir}")
+    if (output_dir / ".git").exists():
+        raise ValueError(f"unsafe output directory for recursive cleanup: {output_dir}")
 
 
 def build_copied_slots(repo_root: Path, execution_base_sha: str, source_set: dict, upload_dir: Path) -> list[dict]:
@@ -377,6 +395,74 @@ def render_current_main_40(copied_entries: list[dict], execution_base_sha: str) 
     return "\n".join(lines).rstrip("\n") + "\n"
 
 
+def relative_or_absolute(repo_root: Path, path: Path) -> str:
+    try:
+        return path.relative_to(repo_root).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def write_handoff(
+    handoff_path: Path,
+    repo_root: Path,
+    output_dir: Path,
+    open_pr_dir: Path,
+    execution_base_sha: str,
+    disposition: str,
+    pr_entries: list[dict],
+    validation_result: dict,
+) -> None:
+    """Write operator metadata from this build's in-memory package facts."""
+    package_root = output_dir.parent
+    handoff = {
+        "source_skill": "TP-DMX-FDOS-004-R6-CURRENT-MAIN-REPAIR (Codex scoped repair)",
+        "target_skill": "Independent embedded audit, PR Steward intake, and operator merge decision",
+        "metadata_provenance": {
+            "generator": "scripts/project_sources/build_chatgpt_project_sources.py:write_handoff",
+            "derived_from": ["pr_entries", "validation_result", "output_dir"],
+        },
+        "repo_branch": {
+            "repository": REPO,
+            "branch": sh(["git", "branch", "--show-current"], repo_root).strip() or "DETACHED_HEAD",
+            "target_pr": SELF_PR_NUMBER,
+            "base_branch": "main",
+            "execution_base_sha": execution_base_sha,
+            "final_head_sha_at_handoff": "PENDING_FINAL_HEAD",
+        },
+        "package": {
+            "disposition": disposition,
+            "upload_file_count": 40,
+            "captured_open_pr_count": len(pr_entries),
+            "material_open_pr_count": sum(
+                1 for entry in pr_entries if entry["classification"] in MATERIAL_PR_CLASSIFICATIONS
+            ),
+            "capture_path": relative_or_absolute(repo_root, open_pr_dir),
+            "manifest_path": relative_or_absolute(repo_root, output_dir / "UPLOAD_FILES/39_PROJECT_SOURCE_MANIFEST.json"),
+            "validation_path": relative_or_absolute(repo_root, output_dir / "PACKAGE_VALIDATION.json"),
+            "zip_path": relative_or_absolute(repo_root, package_root / f"{output_dir.name}.zip"),
+            "sidecar_path": relative_or_absolute(repo_root, package_root / f"{output_dir.name}.zip.sha256"),
+        },
+        "validation": {
+            "all_gates_pass": validation_result["all_gates_pass"],
+            "gates": list(validation_result["gates"]),
+        },
+        "formal_gates": {
+            "embedded_audit": "NOT_RUN_AFTER_R6",
+            "pr_steward": "NOT_RUN_AFTER_R6",
+            "merge_authorization": "DENIED_PENDING_GATES",
+            "chatgpt_upload_authorization": "DENIED_PENDING_GATES",
+        },
+        "recommended_next_step": "Run an independent Claude Code embedded audit against the final pushed head, resolve or disposition current review threads, then rerun PR Steward against that exact head. Do not merge or upload until both gates report READY.",
+        "residual_risks": [
+            "PR #1123 has 3,000 captured paths against 16,206 changed files; it remains explicitly classified SUPERSEDED_OR_CONFLICTING from aggregate evidence, not complete path intersection.",
+            "Open-PR state can drift after this capture; recapture and rebuild if origin/main or a material PR changes before finalization.",
+            "Codex did not author a formal embedded-audit proof.",
+        ],
+    }
+    handoff_path.parent.mkdir(parents=True, exist_ok=True)
+    handoff_path.write_text(json.dumps(handoff, indent=2) + "\n")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo-root", required=True)
@@ -386,15 +472,17 @@ def main() -> int:
     ap.add_argument("--pr-classifications", default="scripts/project_sources/pr_classifications.json")
     ap.add_argument("--output-dir", required=True)
     ap.add_argument("--generated-at", required=True, help="ISO-8601 UTC timestamp, e.g. 2026-07-28T00:00:00Z")
+    ap.add_argument("--handoff-path", help="optional generated operator handoff path")
     args = ap.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
     output_dir = Path(args.output_dir).resolve()
+    validate_output_dir(repo_root, output_dir)
     # Clear rather than merge: reusing --output-dir across runs would otherwise
-    # let any stale file anywhere under it (not just OPEN_PR_CAPTURE, which has
-    # its own targeted cleanup below) survive into the ZIP, since build_zip_archive
-    # walks the whole output_dir and validation only inspects UPLOAD_FILES/.
-    shutil.rmtree(output_dir, ignore_errors=True)
+    # let stale files survive into the ZIP. Guard the caller-controlled path
+    # before cleanup, then remove only an existing validated package directory.
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
     upload_dir = output_dir / "UPLOAD_FILES"
     upload_dir.mkdir(parents=True, exist_ok=True)
 
@@ -526,6 +614,17 @@ No ChatGPT Project upload or mutation was performed by generating this package.
         raise SystemExit(f"FATAL: package failed validation before archiving -- see {output_dir / 'PACKAGE_VALIDATION.json'}")
 
     zip_sha256 = build_zip_archive(repo_root, output_dir)
+    if args.handoff_path:
+        write_handoff(
+            Path(args.handoff_path).resolve(),
+            repo_root,
+            output_dir,
+            open_pr_dir,
+            args.execution_base_sha,
+            disposition,
+            pr_entries,
+            validation_result,
+        )
 
     print(json.dumps({"disposition": disposition, "material_open_pr_count": material_count, "upload_file_count": len(list(upload_dir.iterdir())), "zip_sha256": zip_sha256}, indent=2))
     return 0

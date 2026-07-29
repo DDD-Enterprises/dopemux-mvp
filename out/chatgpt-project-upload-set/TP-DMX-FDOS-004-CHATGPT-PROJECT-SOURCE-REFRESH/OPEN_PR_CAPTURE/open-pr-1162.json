@@ -1,0 +1,24 @@
+{
+  "baseRefName": "main",
+  "changedFiles": 3,
+  "files": [
+    {
+      "path": "tests/pr_steward/test_collector_changed_files_pagination_check.py"
+    },
+    {
+      "path": "tests/pr_steward/test_collector_security_release_approval.py"
+    },
+    {
+      "path": "tools/pr_steward/collector.py"
+    }
+  ],
+  "headRefName": "fix/pr-steward-changed-files-pagination",
+  "headRefOid": "77e26075f31d9675fc385c4f6698e0ddf7292a38",
+  "isDraft": false,
+  "mergeStateStatus": "BLOCKED",
+  "number": 1162,
+  "state": "OPEN",
+  "title": "fix(pr-steward): paginate the changed-files completeness cross-check past 100 files",
+  "updatedAt": "2026-07-29T04:47:31Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1162"
+}
