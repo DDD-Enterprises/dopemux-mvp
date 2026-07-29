@@ -50,6 +50,13 @@ from dopemux.dcp.lane_model import (
 from dopemux.dcp.lane_engine import (
     decide_lane,
 )
+from dopemux.dcp.runner_capability_registry import (
+    CapabilityRegistryError,
+    RunnerCapability,
+    RunnerCapabilityRegistry,
+    assert_no_invocation_authorized,
+    load_runner_capabilities,
+)
 from dopemux.dcp.runner_contract import (
     RunnerContractDocument,
     RunnerContractError,
@@ -146,4 +153,10 @@ __all__ = [
     "build_blocked_plan",
     "document_plan",
     "execute_runner_plan",
+    # Runner capability registry (0009)
+    "CapabilityRegistryError",
+    "RunnerCapability",
+    "RunnerCapabilityRegistry",
+    "assert_no_invocation_authorized",
+    "load_runner_capabilities",
 ]

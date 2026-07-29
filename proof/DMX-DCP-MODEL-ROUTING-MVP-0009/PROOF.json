@@ -1,0 +1,54 @@
+{
+  "bundle_id": "PROOF-DMX-DCP-MODEL-ROUTING-MVP-0009-001",
+  "status": "COMPLETE",
+  "validation_state": "PASS_WITH_RISKS",
+  "created_at": "2026-07-29T00:10:19Z",
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0009",
+  "branch": "dcp/model-routing-0009-runner-capabilities",
+  "base_sha": "b0e8b750874be1a4146aa15cbff2e0fc62c02192",
+  "subject_sha": "b0e8b750874be1a4146aa15cbff2e0fc62c02192",
+  "global_invocation_authorized": false,
+  "global_mutation_authorized": false,
+  "global_paid_inference_authorized": false,
+  "final_packet": true,
+  "supervisor_gate": "GPT-5.5 Pro",
+  "stop_after": true,
+  "embedded_audit": {
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "auditor_model": "NOT_RUN"
+  },
+  "remaining_risks": [
+    "Opus independent auditor NOT_RUN across tranche",
+    "RouteDecision.is_runnable forge residual from pre-0007I model",
+    "PR Steward NOT_RUN on draft PRs",
+    "origin/main advanced independently of stacked branches"
+  ],
+  "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "authoritative_artifacts": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/CAPABILITY_MATRIX.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/PROOF.json",
+    "config/dcp/runner_capabilities.json",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/runner-cli-inventory.txt"
+  ],
+  "supporting_artifacts": [
+    "src/dopemux/dcp/runner_capability_registry.py"
+  ],
+  "handoff_refs": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0009/HANDOFF.json"
+  ],
+  "parent_bundle_refs": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/PROOF.json"
+  ],
+  "review_order_hint": [
+    "CAPABILITY_MATRIX.md",
+    "AUDITOR_REPORT.md",
+    "PROOF.json"
+  ],
+  "chain_of_custody": {
+    "primary_executor": "grok-4.5-build",
+    "supervisor": "GPT-5.5 Pro"
+  },
+  "run_id": "0009",
+  "skill": "dcp-runner-capability-registry",
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

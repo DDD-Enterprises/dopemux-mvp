@@ -1,0 +1,17 @@
+codex path=/Users/hue/.local/share/mise/shims/codex
+codex version=codex-cli 0.145.0
+
+claude path=/Users/hue/.local/bin/claude
+claude version=2.1.220 (Claude Code)
+
+opencode path=/Users/hue/.opencode/bin/opencode
+opencode version=1.18.5
+
+gemini path=/opt/homebrew/bin/gemini
+gemini version=0.46.0
+
+agy path=/Users/hue/.local/bin/agy
+agy version=1.1.8
+
+grok path=/Users/hue/.local/bin/grok
+grok version=grok 0.2.112 (9bbd559437aa) [stable]
