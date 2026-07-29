@@ -55,6 +55,7 @@ class RerankResponse:
     # within the token budget. Callers must not treat a degraded response as
     # a successful rerank (F-011).
     degraded: bool = False
+    failure_reason: str | None = None
 
     def get_all_results(self) -> List[RerankResult]:
         return self.top_results + self.cached_results

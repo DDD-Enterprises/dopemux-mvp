@@ -1354,6 +1354,8 @@ def _known_author(
     # Only the candidate login is normalized, never the roster: a roster entry
     # stored as "foo[bot]" must not also match a bare human login "foo" that
     # happens to reclaim the un-suffixed name.
+    # API variants that omit "[bot]" (e.g. ddd-release-gate review author) must
+    # be listed explicitly as bare logins in known_reviewers.json.
     return author in known_reviewers or _normalize_bot_login(author) in known_reviewers
 
 

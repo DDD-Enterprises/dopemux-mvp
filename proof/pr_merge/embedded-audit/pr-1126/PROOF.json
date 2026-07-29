@@ -1,0 +1,68 @@
+{
+  "embedded_audit": {
+    "auditor_model": "gemini",
+    "auditor_tool": "agy",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "content_vec query uses contextualized_embeddings with same model as index.",
+        "id": "F-001",
+        "severity": "BLOCKING",
+        "status": "RESOLVED",
+        "title": "Code content_vec index/query vector-space mismatch"
+      },
+      {
+        "body": "Versioned collections from profile fingerprint; legacy never written.",
+        "id": "F-002",
+        "severity": "BLOCKING",
+        "status": "RESOLVED",
+        "title": "No collection compatibility or migration gate"
+      },
+      {
+        "body": "Single DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL moves all contextual paths.",
+        "id": "F-003",
+        "severity": "BLOCKING",
+        "status": "RESOLVED",
+        "title": "Legacy-context rollback splits docs index and query"
+      },
+      {
+        "body": "Packet forbids billable live Voyage calls; unit tests mock.",
+        "id": "R-LIVE-VOYAGE",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "No live Voyage API benchmark"
+      },
+      {
+        "body": "Legacy unversioned collections are reported only, not auto-migrated.",
+        "id": "R-LEGACY-REINDEX",
+        "severity": "MEDIUM",
+        "status": "ACCEPTED_RISK",
+        "title": "Legacy collections need operator reindex"
+      }
+    ],
+    "fixes_applied": [
+      "Canonical vector profiles and versioned collection identity",
+      "Code content_vec query alignment to contextualized endpoint",
+      "Symmetric contextual model configuration",
+      "Tokenizer/rerank/budget/SDK reliability repairs"
+    ],
+    "invocation": "agy --print-timeout 20m --add-dir <worktree> --mode plan --effort high -p <TP-DOPECONTEXT-VOYAGE4-REPAIR-0002 independent audit prompt>; session f9a91bb1-9f2d-43af-912e-8a8295ae19b4",
+    "remaining_risks": [
+      "Live Voyage API integration not executed",
+      "Legacy collections require operator reindex",
+      "Deployment NOT_RUN"
+    ],
+    "report_path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "executed": true,
+  "generated_at": "2026-07-29T01:10:18Z",
+  "github_mutation_route_added": false,
+  "head_sha": "cfde57f9810e06c37bd33b9b493b858b931e54f8",
+  "mutation_performed": false,
+  "packet_id": "TP-DOPECONTEXT-VOYAGE4-REPAIR-0002",
+  "pr_number": 1126,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
