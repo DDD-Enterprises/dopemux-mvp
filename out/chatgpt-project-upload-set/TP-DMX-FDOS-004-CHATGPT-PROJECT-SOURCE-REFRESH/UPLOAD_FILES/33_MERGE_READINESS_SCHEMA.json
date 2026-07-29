@@ -1,0 +1,343 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PR Steward Merge Readiness",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "pr",
+    "readiness",
+    "risk_tier",
+    "review_item_ledger_path",
+    "thread_dispositions_path",
+    "ci_triage_path",
+    "embedded_audit",
+    "proof",
+    "blockers",
+    "unknowns",
+    "mutation_performed",
+    "security_release"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.1.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pr": {
+      "$ref": "#/definitions/pr"
+    },
+    "readiness": {
+      "type": "string",
+      "enum": [
+        "READY",
+        "NOT_READY",
+        "NEEDS_SUPERVISOR",
+        "NEEDS_IMPLEMENTER",
+        "BLOCKED"
+      ]
+    },
+    "risk_tier": {
+      "type": "string",
+      "enum": [
+        "CRITICAL",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "CLEAR"
+      ]
+    },
+    "review_item_ledger_path": {
+      "type": "string"
+    },
+    "thread_dispositions_path": {
+      "type": "string"
+    },
+    "ci_triage_path": {
+      "type": "string"
+    },
+    "embedded_audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "report_path"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "PASS_WITH_RISKS",
+            "FAIL",
+            "NEEDS_SUPERVISOR",
+            "SKIPPED"
+          ]
+        },
+        "report_path": {
+          "type": "string"
+        }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proof_path",
+        "proof_head_sha",
+        "matches_pr_head",
+        "proof_freshness"
+      ],
+      "properties": {
+        "proof_path": {
+          "type": "string"
+        },
+        "proof_head_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "matches_pr_head": {
+          "type": "boolean"
+        },
+        "proof_freshness": {
+          "$ref": "#/definitions/proof_freshness"
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mutation_performed": {
+      "type": "boolean",
+      "const": false
+    },
+    "security_release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "approved", "categories", "approval"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "approved": { "type": "boolean" },
+        "categories": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "approval": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Ordinary non-author GitHub APPROVED review binding, or null."
+        },
+        "solo_owner_override": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Exact-head solo-owner security-release receipt (ADR-DMX-PRSTEWARD-SOLOOWNER-001). Never a GitHub APPROVED review. Null when unused."
+        },
+        "override_receipt_code": {
+          "type": ["string", "null"],
+          "description": "When solo-owner override activates: SOLO_OWNER_SECURITY_RELEASE_OVERRIDE_USED."
+        },
+        "approval_kind": {
+          "description": "Which security-release authority satisfied the gate.",
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "string",
+              "enum": ["human_review", "github_app", "solo_owner_phrase"]
+            }
+          ]
+        },
+        "trusted_apps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Configured trusted_security_release_apps snapshot (login/owner only)."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "readiness": {
+            "const": "READY"
+          }
+        },
+        "required": [
+          "readiness"
+        ]
+      },
+      "then": {
+        "properties": {
+          "embedded_audit": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "PASS",
+                  "PASS_WITH_RISKS"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "proof": {
+            "properties": {
+              "proof_head_sha": {
+                "type": "string",
+                "minLength": 1
+              },
+              "proof_freshness": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "CURRENT",
+                      "CURRENT_WITH_SELF_REFERENCE_EXCEPTION"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            },
+            "required": [
+              "proof_head_sha",
+              "matches_pr_head",
+              "proof_freshness"
+            ]
+          },
+          "risk_tier": {
+            "const": "CLEAR"
+          },
+          "blockers": {
+            "maxItems": 0
+          },
+          "unknowns": {
+            "maxItems": 0
+          },
+          "security_release": {
+            "if": {
+              "properties": { "required": { "const": true } },
+              "required": ["required"]
+            },
+            "then": {
+              "properties": { "approved": { "const": true } },
+              "required": ["approved"]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "pr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "number",
+        "url",
+        "base_ref",
+        "head_ref",
+        "head_sha",
+        "changed_files",
+        "commits"
+      ],
+      "properties": {
+        "number": {
+          "type": "integer"
+        },
+        "url": {
+          "type": "string"
+        },
+        "base_ref": {
+          "type": "string"
+        },
+        "head_ref": {
+          "type": "string"
+        },
+        "head_sha": {
+          "type": "string"
+        },
+        "changed_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "commits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "proof_freshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "matches_pr_head",
+        "reason",
+        "proof_recorded_sha",
+        "pr_head_sha",
+        "self_reference_exception"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "CURRENT",
+            "CURRENT_WITH_SELF_REFERENCE_EXCEPTION",
+            "STALE",
+            "MISSING",
+            "UNKNOWN"
+          ]
+        },
+        "matches_pr_head": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "proof_recorded_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pr_head_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "self_reference_exception": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

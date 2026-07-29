@@ -1,0 +1,141 @@
+{
+  "id": "TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH",
+  "project": "dopemux-mvp",
+  "target": "Produce a deterministic, evidence-backed 40-source ChatGPT Project upload set replacing the current set with current-main truth, plus a complete open-PR impact ledger and freshness policy.",
+  "invariants": [
+    "Repository inspection, source-governance, deterministic assembly, and packaging only.",
+    "Do not modify canonical authority documents to improve the upload.",
+    "Do not merge, close, or mutate any pull request.",
+    "Do not upload or mutate the ChatGPT Project.",
+    "Every current-main-derived upload file is copied byte-for-byte from EXECUTION_BASE_SHA.",
+    "Unmerged PR content is never promoted into the authoritative 40; open PRs are represented only via the generated impact ledger.",
+    "Fail closed on missing source identity, hash mismatch, duplicate filenames, invalid JSON/YAML, or incomplete open-PR classification.",
+    "No 'final forever' claim while material source-affecting PRs remain open.",
+    "execution.agent is set to the schema-valid fallback 'shell': the canonical Task Packet schema's execution.agent enum (gemini|codex|vibe|shell) has no 'claude' value, though this packet's own directive names Claude Code/Sonnet as primary implementer. The actual executing tool for this run was Claude Code CLI (Sonnet). Adding a 'claude' enum value is a schema change and is explicitly out of scope for this packet (see section 4.2); flagged as a residual gap for a follow-up packet."
+  ],
+  "depends_on": ["TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP"],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-FDOS",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "claude/chatgpt-40-source-refresh-f84dfc",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(fdos-004): refresh ChatGPT Project 40-source upload set to current main + open-PR impact ledger",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json",
+      "task-packets/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.md",
+      "scripts/project_sources/**",
+      "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/**",
+      "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip",
+      "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256",
+      "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m json.tool out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/39_PROJECT_SOURCE_MANIFEST.json >/dev/null",
+      "python -m json.tool out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/PACKAGE_VALIDATION.json >/dev/null",
+      "test \"$(find out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES -maxdepth 1 -type f | wc -l | tr -d ' ')\" = \"40\"",
+      "python3 scripts/project_sources/validate_chatgpt_project_sources.py --repo-root . --execution-base-sha 5f862d36f5417801b9fe148fccbb439731627234 --package-dir out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH --open-pr-dir proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH",
+      "unzip -t out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip",
+      "shasum -a 256 -c out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(fdos-004): refresh ChatGPT Project 40-source upload set to current main",
+    "body": "## Summary\n- Deterministic 40-file ChatGPT Project upload set rebuilt from current main (EXECUTION_BASE_SHA 5f862d36f5417801b9fe148fccbb439731627234), replacing the stale FDOS-003 set.\n- Full open-PR impact ledger for all 21 currently-open PRs, each classified exactly once; 3 material (draft/behind PRs touching selected slots).\n- Source-freshness policy and machine-readable source manifest with per-file blob SHA + SHA-256.\n- Deterministic assembler + validator under scripts/project_sources/, reproducible byte-for-byte across reruns (verified) and byte-identical ZIP across reruns (verified).\n\n## Scope\nDocs/package assembly only. No runtime/source/config/test/dependency/CI changes.\n\n## Validation\nAll gates PASS: source count (40), filename, source identity (byte-for-byte vs EXECUTION_BASE_SHA), hash, duplicate-content, JSON, YAML, open-PR conservation (21/21), secret scan. ZIP integrity + sidecar verified. Reproducibility verified for both UPLOAD_FILES and the ZIP itself.\n\n## Package Disposition\nCURRENT_MAIN_VALID_PENDING_OPEN_PR_REFRESH -- valid for current main today; 3 open PRs (#1150, #1136, #1126) would require regenerating specific slots if merged. See 40_OPEN_PR_IMPACT_LEDGER.md.\n\n## Residual Risks / UNKNOWNs\n- doc-trust-map.md (slot 08) is dated 2026-04-30 with next_review 2026-07-29, one day past packaging date.\n- PR #1123 (RTE audit improvement) is classified SUPERSEDED_OR_CONFLICTING based on its scale (16,206 changed files) and prior-session findings; not independently re-litigated here.\n\n## Operator Notes\n- Upload files from UPLOAD_FILES/ (40 files) to replace the ChatGPT Project's current source set.\n- No ChatGPT Project upload or mutation was performed by this packet.\n\n@codex review\n@gemini\n@copilot",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": ["analyze", "planner", "codereview", "precommit"]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Preflight repo identity, worktree, EXECUTION_BASE_SHA resolution, and live open-PR inventory capture (21 PRs).",
+      "context_files": ["AGENTS.md", "docs/03-reference/governance/doc-trust-map.md", "docs/03-reference/governance/rules.md"],
+      "validation": [
+        "Repo identity matches DDD-Enterprises/dopemux-mvp and .dopetaskroot exists.",
+        "EXECUTION_BASE_SHA recorded and matches origin/main at capture time."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Resolve all 37 copied-source slots against current-main candidate paths, adjudicating every conflict with explicit evidence (blob existence, doc-trust-map trust rating, packet wording).",
+      "expected_files": ["scripts/project_sources/source_set_v4.json"],
+      "validation": [
+        "Every one of the 37 slots has a single selected source_path backed by a git cat-file -e check at EXECUTION_BASE_SHA.",
+        "Every rejected candidate has an explicit reason and evidence string."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Capture full detail for all 21 open PRs and classify each exactly once against the watched-path families and selected slots.",
+      "expected_files": [
+        "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-*.json",
+        "scripts/project_sources/pr_classifications.json"
+      ],
+      "validation": [
+        "Open PR inventory count equals ledger entry count (21 = 21).",
+        "Every classification is one of the five allowed values with named evidence."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run the deterministic assembler to produce UPLOAD_FILES/ (40 files), the source manifest, the open-PR impact ledger, the freshness policy, and supporting reports.",
+      "expected_files": [
+        "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/",
+        "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/SOURCE_RESOLUTION_REPORT.md",
+        "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/SOURCE_REJECTION_LEDGER.md"
+      ],
+      "validation": [
+        "UPLOAD_FILES contains exactly 40 files.",
+        "Rebuilding from unchanged inputs produces byte-identical UPLOAD_FILES."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run all validation gates, rerun the PR-drift recheck immediately before finalization, refresh evidence for any changed-head PR, and rebuild if drift is found.",
+      "expected_files": ["out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/PACKAGE_VALIDATION.json"],
+      "validation": [
+        "All validation gates report pass=true.",
+        "PR drift recheck performed; #1150's changed head SHA was refreshed and the package rebuilt before finalization."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Build the ZIP and SHA-256 sidecar deterministically; verify integrity and reproducibility.",
+      "expected_files": [
+        "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip",
+        "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256"
+      ],
+      "validation": [
+        "unzip -t passes.",
+        "shasum -a 256 -c against the sidecar passes.",
+        "Rebuilding the ZIP from unchanged inputs produces a byte-identical archive (verified, no timestamp-limitation caveat needed)."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Run an independent embedded audit in a separate non-implementer session/model, address findings within scope, and capture PR Steward output after opening the PR.",
+      "validation": [
+        "Embedded audit verdict is PASS or non-blocking PASS_WITH_RISKS.",
+        "PROOF.json and AUDITOR_REPORT.md bound to the final PR head."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "schema_version": "1.0.0",
+  "classifications": {
+    "1150": {
+      "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
+      "evidence": "Draft PR, mergeStateStatus=UNSTABLE. Changed-file list directly includes AGENTS.md, docs/03-reference/systems/dopemux/system-dopemux.md, and docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md -- exactly slots 01, 15, 17 of this package.",
+      "current_main_effect": "None; PR is unmerged and draft.",
+      "action_if_merged": "Regenerate slots 01, 15, 17 from the new main tip and re-run all validation gates.",
+      "source_slots_affected": [1, 15, 17],
+      "contradiction_or_overlap_notes": "None observed.",
+      "confidence": "high"
+    },
+    "1149": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "2 changed files, UI palette tooltip copy change (jules-authored). No intersection with watched paths or selected slots.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1148": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Dependabot next.js 15.5.18->16.2.12 bump; 2 files (package manifest/lock). No intersection with watched paths.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1147": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Dependabot javascript-minor-patch group bump (9 updates); 2 files. No intersection with watched paths.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1146": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Dependabot setuptools 82.0.1->83.0.0 bump; 1 file (uv lock/pyproject dep pin). No intersection with watched paths.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1145": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Dependabot google-genai 1.69.0->2.14.0 bump; 2 files. No intersection with watched paths.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1144": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Dependabot python-minor-patch group bump (40 updates); 3 files, mergeStateStatus=BLOCKED. No intersection with watched paths.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1143": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Dependabot npm_and_yarn group bump for ui-dashboard (3 updates); 3 files. No intersection with watched paths.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1142": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Dependabot postcss 8.5.15->8.5.18 bump; 1 file. No intersection with watched paths.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1140": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Touches docs/90-adr/adr-dmx-prsteward-soloowner-001.md and tools/pr_steward/solo_owner_security_release.py (18 files total). Slot 32 (docs/ops/pr-steward.md) was grep-checked for 'solo'/'org member'/'exact-head'/'authoriz' and contains no matching content describing this mechanic, so its accuracy is unaffected by this PR merging.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for the selected 37-source set; re-check docs/ops/pr-steward.md wording only if a future edit adds solo-owner authorization language.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "medium"
+    },
+    "1138": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Draft PR, mergeStateStatus=BEHIND. Touches docs/03-reference/dcp/model-routing-series-map.json, docs/03-reference/dcp/model-routing-series-status.md, and proof/task-packets artifacts under DMX-DCP-MODEL-ROUTING-MVP-0000R/0000S. docs/03-reference/dcp/** is not in the watched-path list and does not intersect any of the 37 selected slots.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "Overlaps in subject matter with #1137 (same DCP model-routing series, same base proof directory DMX-DCP-MODEL-ROUTING-MVP-0000R); both draft, both BEHIND, no conflict evidence found between them.",
+      "confidence": "high"
+    },
+    "1137": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Draft PR, mergeStateStatus=BEHIND. Touches docs/03-reference/dcp/current-main-runtime-reconciliation.{json,md} and proof/task-packets artifacts. docs/03-reference/dcp/** is not in the watched-path list and does not intersect any of the 37 selected slots.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "Predecessor/companion of #1138 in the same DCP model-routing series lineage.",
+      "confidence": "high"
+    },
+    "1136": {
+      "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
+      "evidence": "mergeStateStatus=BEHIND (rebasable, not conflicted). True changedFiles=366 (gh pr view's files connection caps display at 100; verified via --json changedFiles). Directly touches docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md (slot 23) plus extensive services/repo-truth-extractor/** runtime, config/pricing.yaml, and CI workflow changes.",
+      "current_main_effect": "None; PR is unmerged.",
+      "action_if_merged": "Regenerate slot 23 from the new main tip; re-run all validation gates.",
+      "source_slots_affected": [23],
+      "contradiction_or_overlap_notes": "Same problem domain (RTE truth/audit remediation) as #1123, but #1136 is the clean, rebasable, actively-updated branch while #1123 is a massively diverged, DIRTY, likely-abandoned predecessor lineage -- see #1123 classification.",
+      "confidence": "high"
+    },
+    "1128": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "mergeStateStatus=DIRTY. Touches mcp_catalog.yaml, schemas/mcp/fleet-catalog.schema.json, src/dopemux/mcp/*, docs/90-adr/adr-index.md, docs/90-adr/adr-mcpprof-001-profiled-tool-plane-and-domain-facades.md (a different ADR from the Memory Trinity ADR in slot 11). None of these paths intersect the 37 selected slots.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1127": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "mergeStateStatus=BEHIND. All 33 changed files are under docs/ops/load-plans/**, reports/leantime-ai-parity/**, schemas/leantime-ai-parity/**, scripts/leantime-ai-parity/**, task-packets/leantime-ai-parity/**, and tests/prototypes/leantime-ai-parity/**. None intersect the 37 selected slots or the watched-path list.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1126": {
+      "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
+      "evidence": "mergeStateStatus=DIRTY. Touches docs/03-reference/systems/dope-context/vector-profiles-and-migration.md (adjacent doc, not the exact slot-20 file) plus substantial services/dope-context/** runtime changes (embeddings, indexing, MCP server, reranker) described at a high level by slot 20's system-dopecontext.md.",
+      "current_main_effect": "None; PR is unmerged.",
+      "action_if_merged": "Re-verify slot 20 content against the new dope-context runtime behavior and regenerate if drift is found.",
+      "source_slots_affected": [20],
+      "contradiction_or_overlap_notes": "mergeStateStatus=DIRTY indicates merge conflicts must be resolved before this can land; classification may need revisiting once conflicts are addressed.",
+      "confidence": "medium"
+    },
+    "1123": {
+      "classification": "SUPERSEDED_OR_CONFLICTING",
+      "evidence": "mergeStateStatus=DIRTY. changedFiles=16206, additions=5,145,096, deletions=9,284 -- two to three orders of magnitude larger than any other open PR, consistent with prior session's durable finding (reference_rte_stranded_branch_2026_07_26.md) that this exact branch (claude/rte-audit-improvement-f4beb7) is 4146 commits ahead / 4221 behind main with a merge-base dated 2025-09-19, i.e. a long-diverged, effectively stranded lineage rather than a clean forward delta.",
+      "current_main_effect": "None; PR is unmerged and not a safe merge candidate in its current form.",
+      "action_if_merged": "Not applicable in current form -- this branch would need to be rebased or its recoverable commits cherry-picked onto current main (per the prior session's recovery note: 160/193 of its changed paths are present on main) before any merge could be evaluated for source-set impact.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "Shares problem domain (RTE truth/audit remediation) with #1136, which is the actively-maintained, clean-lineage successor; #1136 should be treated as authoritative for that domain, not #1123.",
+      "confidence": "high"
+    },
+    "1118": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "1 file changed (CI container build matrix), mergeStateStatus=BEHIND. No intersection with watched paths.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1117": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "1 file changed (UI dashboard dependency consolidation), mergeStateStatus=BEHIND. No intersection with watched paths.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1115": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Dependabot pyasn1 0.6.4 security bump; 2 files. No intersection with watched paths.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1113": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Dependabot next.js 15.5.18->15.5.21 patch bump; 2 files. No intersection with watched paths.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    }
+  }
+}

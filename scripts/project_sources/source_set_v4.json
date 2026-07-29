@@ -1,0 +1,366 @@
+{
+  "schema_version": "1.0.0",
+  "packet_id": "TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH",
+  "slots": [
+    {
+      "slot": 1,
+      "bundle_filename": "01_AGENTS.md",
+      "source_path": "AGENTS.md",
+      "authority_class": "runtime_governance",
+      "freshness_class": "VOLATILE_14_DAYS",
+      "rationale": "Root AGENTS.md is the single tracked candidate and is the canonical Codex/agent governing-doctrine file referenced directly by .claude/CLAUDE.md.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 2,
+      "bundle_filename": "02_RULES.md",
+      "source_path": "docs/03-reference/governance/rules.md",
+      "authority_class": "governance",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Root RULES.md is absent from EXECUTION_BASE_SHA (confirmed via git cat-file -e). Per packet fallback instruction, used the tracked governance rules file instead.",
+      "rejected_candidates": [
+        {"path": "RULES.md", "reason": "BLOCKED_SOURCE_MISSING", "evidence": "git cat-file -e <sha>:RULES.md fails; not present in tree"}
+      ]
+    },
+    {
+      "slot": 3,
+      "bundle_filename": "03_PROJECT.md",
+      "source_path": "PROJECT.md",
+      "authority_class": "runtime_governance",
+      "freshness_class": "VOLATILE_14_DAYS",
+      "rationale": "Root PROJECT.md is the single tracked candidate named explicitly by the packet.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 4,
+      "bundle_filename": "04_ARCHITECTURE.md",
+      "source_path": "ARCHITECTURE.md",
+      "authority_class": "runtime_governance",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Packet slot text explicitly names 'current tracked ARCHITECTURE.md'; the root file is tracked at EXECUTION_BASE_SHA (contradicting the now-stale doc-trust-map.md note that it was untracked). docs/04-explanation/architecture/dopemux-architecture.md is a distinct, differently-scoped explanation-type doc and is not the file the packet names.",
+      "rejected_candidates": [
+        {"path": "docs/04-explanation/architecture/dopemux-architecture.md", "reason": "REDUNDANT_WITH_HIGHER_AUTHORITY", "evidence": "Packet slot 04 explicitly names root ARCHITECTURE.md; this is a separate 'explanation' typed doc (frontmatter type: explanation, dated 2026-05-19), not the named source."}
+      ]
+    },
+    {
+      "slot": 5,
+      "bundle_filename": "05_SYSTEM_BOUNDARIES.md",
+      "source_path": "docs/03-reference/systems/system-boundaries.md",
+      "authority_class": "truth_reference",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Root SYSTEM_BOUNDARIES.md absent at EXECUTION_BASE_SHA; docs/03-reference/systems/system-boundaries.md is the sole tracked candidate and is doc-trust-map HIGH-classified.",
+      "rejected_candidates": [
+        {"path": "SYSTEM_BOUNDARIES.md", "reason": "BLOCKED_SOURCE_MISSING", "evidence": "git cat-file -e confirms absent"}
+      ]
+    },
+    {
+      "slot": 6,
+      "bundle_filename": "06_PM_PLANE.md",
+      "source_path": "docs/03-reference/planes/pm/pm-plane.md",
+      "authority_class": "truth_reference",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "doc-trust-map.md rates docs/03-reference/planes/pm/pm-plane.md HIGH ('PM plane references') and notes it derives from tracked truth docs plus src/dopemux/pm/reads.py and writes.py. Root PM_PLANE.md is bucketed by the same doc-trust-map under 'Top-level promoted or user-provided packet docs...LOW...do not use as stronger authority than tracked truth docs'. The packet's own slot-6 wording is deliberately generic ('current tracked PM-plane source') unlike slots 3/4 which name the root filename explicitly, indicating the resolver should pick the higher-authority tracked reference rather than the root file.",
+      "rejected_candidates": [
+        {"path": "PM_PLANE.md", "reason": "REDUNDANT_WITH_HIGHER_AUTHORITY", "evidence": "doc-trust-map.md explicitly classifies this root file's family as LOW trust ('do not use as stronger authority than tracked truth docs'), while docs/03-reference/planes/pm/pm-plane.md is HIGH trust and runtime-cited."}
+      ]
+    },
+    {
+      "slot": 7,
+      "bundle_filename": "07_SERVICE_CATALOG.md",
+      "source_path": "SERVICE_CATALOG.md",
+      "authority_class": "runtime_governance",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Root SERVICE_CATALOG.md is the sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 8,
+      "bundle_filename": "08_DOC_TRUST_MAP.md",
+      "source_path": "docs/03-reference/governance/doc-trust-map.md",
+      "authority_class": "governance",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Sole tracked candidate; dated 2026-04-30 with next_review 2026-07-29 (one day after packaging date 2026-07-28) -- near its own review horizon, noted as a residual risk.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 9,
+      "bundle_filename": "09_RUNTIME_AUTHORITY_VERIFICATION.md",
+      "source_path": "docs/03-reference/governance/runtime-authority-verification.md",
+      "authority_class": "governance",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 10,
+      "bundle_filename": "10_RUNTIME_AUTHORITY_MANIFEST.json",
+      "source_path": "config/runtime_authority_manifest.json",
+      "authority_class": "runtime_config",
+      "freshness_class": "VOLATILE_14_DAYS",
+      "rationale": "Sole tracked candidate; also the input to scripts/verify_runtime_authority.py.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 11,
+      "bundle_filename": "11_MEMORY_TRINITY_ADR.md",
+      "source_path": "docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md",
+      "authority_class": "adr",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Sole tracked candidate; frontmatter confirms status: accepted, matching the required 'accepted Memory Trinity authority ADR'.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 12,
+      "bundle_filename": "12_TRUTH_CANONICALS.md",
+      "source_path": "docs/03-reference/truth/truth-canonicals.md",
+      "authority_class": "truth_reference",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Root TRUTH_CANONICALS.md absent at EXECUTION_BASE_SHA; tracked docs/03-reference/truth path is doc-trust-map HIGH and the sole remaining candidate.",
+      "rejected_candidates": [
+        {"path": "TRUTH_CANONICALS.md", "reason": "BLOCKED_SOURCE_MISSING", "evidence": "git cat-file -e confirms absent"}
+      ]
+    },
+    {
+      "slot": 13,
+      "bundle_filename": "13_TRUTH_INTERFACES.md",
+      "source_path": "docs/03-reference/truth/truth-interfaces.md",
+      "authority_class": "truth_reference",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Root TRUTH_INTERFACES.md absent at EXECUTION_BASE_SHA; tracked docs/03-reference/truth path is the sole remaining candidate.",
+      "rejected_candidates": [
+        {"path": "TRUTH_INTERFACES.md", "reason": "BLOCKED_SOURCE_MISSING", "evidence": "git cat-file -e confirms absent"}
+      ]
+    },
+    {
+      "slot": 14,
+      "bundle_filename": "14_TRUTH_GAPS.md",
+      "source_path": "docs/03-reference/truth/truth-gaps.md",
+      "authority_class": "truth_reference",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Root TRUTH_GAPS.md absent at EXECUTION_BASE_SHA; tracked docs/03-reference/truth path is the sole remaining candidate.",
+      "rejected_candidates": [
+        {"path": "TRUTH_GAPS.md", "reason": "BLOCKED_SOURCE_MISSING", "evidence": "git cat-file -e confirms absent"}
+      ]
+    },
+    {
+      "slot": 15,
+      "bundle_filename": "15_SYSTEM_DOPEMUX.md",
+      "source_path": "docs/03-reference/systems/dopemux/system-dopemux.md",
+      "authority_class": "system_reference",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 16,
+      "bundle_filename": "16_SYSTEM_DOPETASK.md",
+      "source_path": "docs/03-reference/systems/dopetask/system-dopetask.md",
+      "authority_class": "system_reference",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 17,
+      "bundle_filename": "17_SYSTEM_TASK_ORCHESTRATOR.md",
+      "source_path": "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md",
+      "authority_class": "system_reference",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 18,
+      "bundle_filename": "18_SYSTEM_CONPORT.md",
+      "source_path": "docs/03-reference/systems/conport/system-conport.md",
+      "authority_class": "system_reference",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 19,
+      "bundle_filename": "19_SYSTEM_DOPE_MEMORY.md",
+      "source_path": "docs/03-reference/systems/dope-memory/system-dopememory.md",
+      "authority_class": "system_reference",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 20,
+      "bundle_filename": "20_SYSTEM_DOPE_CONTEXT.md",
+      "source_path": "docs/03-reference/systems/dope-context/system-dopecontext.md",
+      "authority_class": "system_reference",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Sole tracked candidate. Note: open PR #1126 (dope-context Voyage/vector repair) touches an adjacent doc (vector-profiles-and-migration.md) and heavy runtime code without directly editing this file; classified SOURCE_CONTENT_REFRESH_IF_MERGED in the open-PR ledger.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 21,
+      "bundle_filename": "21_SYSTEM_DOPECON_BRIDGE.md",
+      "source_path": "docs/03-reference/systems/dopecon-bridge/system-dopeconbridge.md",
+      "authority_class": "system_reference",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 22,
+      "bundle_filename": "22_SYSTEM_ADHD_ENGINE.md",
+      "source_path": "docs/03-reference/systems/adhd-engine/system-adhdengine.md",
+      "authority_class": "system_reference",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 23,
+      "bundle_filename": "23_SYSTEM_REPO_TRUTH_EXTRACTOR.md",
+      "source_path": "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md",
+      "authority_class": "system_reference",
+      "freshness_class": "SYSTEM_SNAPSHOT_30_DAYS",
+      "rationale": "Sole tracked candidate. Note: open PR #1136 directly touches this file; classified SOURCE_CONTENT_REFRESH_IF_MERGED in the open-PR ledger.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 24,
+      "bundle_filename": "24_PAL_EXECUTION_RULES.md",
+      "source_path": "docs/03-reference/execution/pal-execution-rules.md",
+      "authority_class": "execution_contract",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Root PAL_EXECUTION_RULES.md absent at EXECUTION_BASE_SHA; tracked docs/03-reference/execution path is the sole remaining candidate and is the compressed operational PAL rules the packet asks for.",
+      "rejected_candidates": [
+        {"path": "PAL_EXECUTION_RULES.md", "reason": "BLOCKED_SOURCE_MISSING", "evidence": "git cat-file -e confirms absent"}
+      ]
+    },
+    {
+      "slot": 25,
+      "bundle_filename": "25_TASK_PACKET_SCHEMA.json",
+      "source_path": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "authority_class": "schema",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Root dopetask-canonical-spec.json and dopetask-cannonical-spec.json (misspelled variant) are both absent at EXECUTION_BASE_SHA; the tracked docs/03-reference/spec/dopetask path is the sole remaining candidate and is the canonical schema referenced by CLAUDE.md validation commands.",
+      "rejected_candidates": [
+        {"path": "dopetask-canonical-spec.json", "reason": "BLOCKED_SOURCE_MISSING", "evidence": "git cat-file -e confirms absent"},
+        {"path": "dopetask-cannonical-spec.json", "reason": "BLOCKED_SOURCE_MISSING", "evidence": "git cat-file -e confirms absent (also a known misspelling variant)"}
+      ]
+    },
+    {
+      "slot": 26,
+      "bundle_filename": "26_TASK_PACKET_TEMPLATE.md",
+      "source_path": "task-packets/TEMPLATE_TASK_PACKET.md",
+      "authority_class": "authoring_template",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Sole canonical authoring template for contributors. Other TEMPLATE_TASK_PACKET.md copies under src/dopemux/templates/init/** are installer-scaffolding copies for newly initialized repos, not the authoring template for this repo's own packet authors; docs/03-reference/fast-dev-os/task-packet-template.json is a JSON structural template distinct from the canonical spec already selected in slot 25. No PAL_PACKET_TEMPLATE.md exists in the current tree.",
+      "rejected_candidates": [
+        {"path": "src/dopemux/templates/init/docs/task-packets/TEMPLATE_TASK_PACKET.md", "reason": "TOOL_SPECIFIC_OUT_OF_SCOPE", "evidence": "Installer scaffolding copy shipped to newly-initialized repos, not this repo's own authoring template."},
+        {"path": "src/dopemux/templates/init/task-packets/TEMPLATE_TASK_PACKET.md", "reason": "DUPLICATE", "evidence": "Second installer scaffolding copy, duplicate of the above."},
+        {"path": "docs/03-reference/fast-dev-os/task-packet-template.json", "reason": "WRONG_IDENTITY", "evidence": "JSON structural template distinct in scope/format from the canonical authoring template requested by slot 26."}
+      ]
+    },
+    {
+      "slot": 27,
+      "bundle_filename": "27_PROOF_CONTRACT.md",
+      "source_path": "docs/03-reference/governance/proof-contract.md",
+      "authority_class": "governance",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 28,
+      "bundle_filename": "28_PROOF_BUNDLE_SCHEMA.md",
+      "source_path": "docs/03-reference/governance/proof-bundle-schema.md",
+      "authority_class": "governance",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 29,
+      "bundle_filename": "29_HANDOFF_CONTRACT.md",
+      "source_path": "docs/03-reference/governance/handoff-contract.md",
+      "authority_class": "governance",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 30,
+      "bundle_filename": "30_EMBEDDED_AUDIT.md",
+      "source_path": "docs/ops/embedded-audit.md",
+      "authority_class": "governance",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 31,
+      "bundle_filename": "31_EMBEDDED_AUDIT_SCHEMA.json",
+      "source_path": "schemas/proof/embedded_audit.schema.json",
+      "authority_class": "schema",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 32,
+      "bundle_filename": "32_PR_STEWARD.md",
+      "source_path": "docs/ops/pr-steward.md",
+      "authority_class": "governance",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Sole tracked candidate. Confirmed the doc does not describe solo-owner/org-member authorization mechanics, so open PR #1140 (which changes exactly that mechanic) does not make this file's content stale; classified NO_PROJECT_SOURCE_IMPACT in the open-PR ledger.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 33,
+      "bundle_filename": "33_MERGE_READINESS_SCHEMA.json",
+      "source_path": "schemas/pr_steward/merge_readiness.schema.json",
+      "authority_class": "schema",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 34,
+      "bundle_filename": "34_MODEL_ROUTING_POLICY.yaml",
+      "source_path": "config/ai/model-routing.policy.yaml",
+      "authority_class": "advisory_governance",
+      "freshness_class": "VOLATILE_14_DAYS",
+      "rationale": "Sole tracked candidate. File's own header states STATUS: proposed governance policy and AUTHORITY: advisory_until_runtime_wiring_verified; this status is preserved verbatim and must not be upgraded to runtime authority in any generated description.",
+      "rejected_candidates": []
+    },
+    {
+      "slot": 35,
+      "bundle_filename": "35_DOPETASK_ADAPTER_CONTRACT.md",
+      "source_path": "docs/02-how-to/integrations/dopetask/adapter-contract.md",
+      "authority_class": "integration_contract",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Byte-identical copies exist at docs/02-how-to/integrations/dopetask/adapter-contract.md and docs/integrations/dopetask/adapter-contract.md (same git blob SHA). doc-trust-map.md explicitly cites the docs/02-how-to path family as the reference location for this contract documentation ('Contract and proof documentation' row cites docs/02-how-to/integrations/dopetask/adapter-schema.md), so the docs/02-how-to path is treated as canonical for the sibling contract file too.",
+      "rejected_candidates": [
+        {"path": "docs/integrations/dopetask/adapter-contract.md", "reason": "DUPLICATE", "evidence": "Identical blob SHA to the selected docs/02-how-to path; doc-trust-map.md does not cite this path."}
+      ]
+    },
+    {
+      "slot": 36,
+      "bundle_filename": "36_DOPETASK_ADAPTER_SCHEMA.md",
+      "source_path": "docs/02-how-to/integrations/dopetask/adapter-schema.md",
+      "authority_class": "integration_contract",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Byte-identical copies exist at docs/02-how-to/integrations/dopetask/adapter-schema.md and docs/integrations/dopetask/adapter-schema.md (same git blob SHA). doc-trust-map.md explicitly cites the docs/02-how-to path as the reference location for this exact file.",
+      "rejected_candidates": [
+        {"path": "docs/integrations/dopetask/adapter-schema.md", "reason": "DUPLICATE", "evidence": "Identical blob SHA to the selected docs/02-how-to path; doc-trust-map.md cites only the docs/02-how-to path."}
+      ]
+    },
+    {
+      "slot": 37,
+      "bundle_filename": "37_GOVERNANCE_MODEL.md",
+      "source_path": "docs/03-reference/governance/governance-model.md",
+      "authority_class": "governance",
+      "freshness_class": "STABLE_CONTRACT_90_DAYS",
+      "rationale": "Sole tracked candidate.",
+      "rejected_candidates": []
+    }
+  ]
+}

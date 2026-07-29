@@ -1,0 +1,92 @@
+{
+  "package_disposition_input": "CURRENT_MAIN_VALID_PENDING_OPEN_PR_REFRESH",
+  "all_gates_pass": true,
+  "gates": {
+    "source_count": {
+      "pass": true,
+      "detail": "40 files"
+    },
+    "filename": {
+      "pass": true,
+      "detail": {
+        "unique": true,
+        "slots": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "09",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+          "24",
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31",
+          "32",
+          "33",
+          "34",
+          "35",
+          "36",
+          "37",
+          "38",
+          "39",
+          "40"
+        ],
+        "hidden": []
+      }
+    },
+    "source_identity": {
+      "pass": true,
+      "detail": []
+    },
+    "hash": {
+      "pass": true,
+      "detail": []
+    },
+    "duplicate_content": {
+      "pass": true,
+      "detail": {}
+    },
+    "json": {
+      "pass": true,
+      "detail": []
+    },
+    "yaml": {
+      "pass": true,
+      "detail": []
+    },
+    "open_pr_conservation": {
+      "pass": true,
+      "detail": {
+        "initial_count": 21,
+        "ledger_count": 21,
+        "missing_from_ledger": [],
+        "extra_in_ledger": []
+      }
+    },
+    "secret_scan": {
+      "pass": true,
+      "detail": []
+    }
+  }
+}

@@ -1,0 +1,211 @@
+---
+id: TEMPLATE_TASK_PACKET
+title: Template Task Packet
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Template Task Packet (explanation) for dopemux documentation and developer
+  workflows.
+---
+# Task Packet: <ID> · <Subsystem> · <Short Title>
+
+════════════════════════════════════════════════════════════
+
+## Objective
+
+One sentence. What outcome is required?
+
+────────────────────────────────────────────────────────────
+
+## Scope
+
+IN:
+
+* <explicit in-scope items>
+
+OUT:
+
+* <explicit out-of-scope items>
+
+────────────────────────────────────────────────────────────
+
+## Invariants (Must Remain True)
+
+* <Invariant 1>
+* <Invariant 2>
+* <Invariant 3>
+
+If an invariant appears impossible, stop and report.
+
+────────────────────────────────────────────────────────────
+
+## Plan (Numbered)
+
+1. <Step 1>
+1. <Step 2>
+1. <Step 3>
+
+Keep steps mechanical and verifiable.
+
+────────────────────────────────────────────────────────────
+
+## Files to Touch
+
+* <path>
+* <path>
+
+If additional files are needed, stop and request approval.
+
+────────────────────────────────────────────────────────────
+
+## Exact Commands to Run
+
+List commands exactly, one per line.
+
+Example:
+
+* rg -n "<pattern>" -S .
+* python -m pytest -q <path>
+* python -m compileall -q src services
+
+────────────────────────────────────────────────────────────
+
+## Output Capture Rules (Verbatim)
+
+Implementer must return:
+
+* git diff --stat
+* git diff
+* Command outputs verbatim
+* Exit codes
+* Any requested logs/artifacts
+
+────────────────────────────────────────────────────────────
+
+## Local Proof Validation
+
+Before pushing, validate `embedded_audit` schema conformance locally:
+
+```bash
+python3 scripts/audit/validate_audit_proof.py proof/<PACKET_ID>/PROOF.json
+```
+
+This mirrors the CI `🔍 Audit Proof Validator` exactly (same script, same schema). The pre-commit hook `proof-embedded-audit-schema` also runs this automatically on staged `proof/*/PROOF.json` files.
+
+Common violations to check before push: `report_path` must match `^proof/[^/]+/AUDITOR(_REPAIR(_[0-9]+)?)?_REPORT\.md$`; `auditor_model` must be one of `['sonnet', 'claude-sonnet-4.6', 'opus', 'gemini', 'unknown']`; `findings[].status` must be one of `['OPEN', 'RESOLVED', 'ACCEPTED_RISK']`.
+
+────────────────────────────────────────────────────────────
+
+## Model Routing
+
+Record the model route actually used for this packet. Source of truth: `config/ai/model-routing.policy.yaml` (human guide: `docs/03-reference/governance/model-routing.md`). Cheap read lanes may gather facts but must not decide architecture, authority, security, CI, workflow legality, or merge readiness.
+
+For each substantive run, record:
+
+* actual tool and actual model (not just the intended route)
+* provider and stage slot (cheap_read / investigation / planner_strong / implementer_standard / judge_strong / self_audit)
+* requested model and whether a fallback was used (with reason)
+* reasoning effort or thinking mode, when available
+* cost policy and data/ZDR policy applied (required for OpenRouter broker routing)
+
+OpenRouter is a broker, not a model family: pin the model, set explicit provider/price/data policy, and record fallback provenance.
+
+────────────────────────────────────────────────────────────
+
+## Embedded Audit
+
+Required when the packet touches governance, process, schema, prompt, proof, security, authority-boundary, or high-risk runtime surfaces.
+
+Record:
+
+* auditor tool and model
+* exact invocation
+* exit code
+* report path
+* findings
+* fixes applied
+* remaining risks
+* skip reason when skipped
+
+If no supported auditor executable is available or invocation cannot be proven from local help output, record `SKIPPED` and escalate instead of claiming READY.
+
+────────────────────────────────────────────────────────────
+
+## PR Steward Readiness
+
+If a PR is opened, PR Steward must be the check-only review-intake gate.
+
+Record:
+
+* PR metadata, changed files, commits, and head SHA
+* reviews, review comments, review threads, and issue comments
+* check/CI state
+* review item ledger
+* thread dispositions
+* `MERGE_READINESS` verdict
+
+Stop if reviewers, bots, review items, threads, or checks cannot be classified. Do not mutate GitHub state from this packet template.
+
+────────────────────────────────────────────────────────────
+
+## Proof Bundle Expectations
+
+Proof must include:
+
+* repo identity and branch
+* git status before and after
+* files changed
+* command outputs and exit codes
+* validation results
+* model routing record (actual tool/model/provider/stage slot; fallback + cost/data policy per `config/ai/model-routing.policy.yaml`)
+* embedded audit object when required
+* PR Steward readiness when a PR exists
+* UNKNOWNs, blockers, and NOT_RUN items
+* rollback plan
+
+────────────────────────────────────────────────────────────
+
+## Supervisor Review Skip Rule
+
+Skip the second GPT-5.5 supervisor review only when embedded audit is `PASS` or non-blocking `PASS_WITH_RISKS` and PR Steward readiness is `READY`.
+
+Any `FAIL`, `NEEDS_SUPERVISOR`, `SKIPPED`, missing proof, unknown reviewer/bot, unclassified review item, unresolved blocking thread, failed required check, or stale proof requires escalation.
+
+────────────────────────────────────────────────────────────
+
+## Acceptance Criteria
+
+* <Criterion 1>
+* <Criterion 2>
+* <Criterion 3>
+
+Each criterion should be testable.
+
+────────────────────────────────────────────────────────────
+
+## Rollback Steps
+
+* <Rollback 1>
+* <Rollback 2>
+
+Keep rollback explicit.
+
+────────────────────────────────────────────────────────────
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STOP CONDITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Stop immediately if:
+
+* <stop condition>
+* <stop condition>
+
+If stopped, return:
+
+* What you attempted
+* Evidence collected
+* What output is needed next
