@@ -94,8 +94,8 @@ MODEL_SPECS: Dict[str, EmbeddingModelSpec] = {
         price_per_million_tokens=0.18,
         legacy=True,
     ),
-    # voyage-3-lite is in the vendor 120K request-token group; only
-    # voyage-4-lite (and voyage-3.5-lite if added later) carry the 1M ceiling.
+    # voyage-3-lite is in vendor's 120K request-token group; only
+    # voyage-4-lite and voyage-3.5-lite carry the 1M ceiling (F-013).
     "voyage-3-lite": EmbeddingModelSpec(
         name="voyage-3-lite",
         endpoint="embeddings",
@@ -157,29 +157,29 @@ def validate_dimension(model: str, output_dimension: Optional[int]) -> int:
 
 
 def resolve_context_model(requested: Optional[str], configured: str) -> str:
-    """Return the requested model or the configured default.
+    """Resolve legacy hard-coded context-3 callers onto the configured default.
 
-    Explicit model requests are never rewritten. Contextual rollback is done
-    only via ``DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL`` (see ``index_profile``).
-    ``DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3`` is a deprecated no-op for selection.
+    Existing code historically passed ``voyage-context-3`` at every call site.
+    Unless legacy use is explicitly enabled, that old literal now means "use the
+    configured contextualized model", which defaults to context-4. An explicit
+    configured context-3 model remains available for rollback.
     """
 
     if requested in (None, ""):
         return configured
+
+    allow_legacy = os.getenv("DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3", "").lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    if (
+        requested == "voyage-context-3"
+        and configured != "voyage-context-3"
+        and not allow_legacy
+    ):
+        return configured
     return requested
-
-
-def resolve_contextual_embed_model_from_env() -> str:
-    """Canonical contextual model selector (index + query).
-
-    Delegates to ``index_profile.resolve_contextual_embed_model`` so callers
-    that still import from the registry share one implementation.
-    """
-
-    # Local import avoids a circular dependency at module load time.
-    from ..index_profile import resolve_contextual_embed_model
-
-    return resolve_contextual_embed_model()
 
 
 def index_fingerprint(
@@ -189,11 +189,7 @@ def index_fingerprint(
     output_dtype: str,
     chunker_version: str,
 ) -> str:
-    """Return a deterministic identifier for single-model index checks.
-
-    Multi-vector collections should prefer ``CollectionProfile.profile_fingerprint``
-    from ``index_profile``; this helper remains for docs payload provenance.
-    """
+    """Return a deterministic identifier for index compatibility checks."""
 
     payload = {
         "schema_version": INDEX_SCHEMA_VERSION,
@@ -204,3 +200,81 @@ def index_fingerprint(
     }
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+COLLECTION_MANIFEST_KEY = "__manifest__"
+_MANIFEST_FIELDS = (
+    "model",
+    "endpoint",
+    "output_dimension",
+    "output_dtype",
+    "chunker_version",
+    "index_schema_version",
+)
+
+
+def build_collection_manifest(
+    *,
+    model: str,
+    output_dimension: int,
+    output_dtype: str,
+    chunker_version: str,
+) -> Dict[str, object]:
+    """Return the compatibility record stored alongside a collection.
+
+    The endpoint is derived rather than passed so a caller cannot record a
+    model/endpoint pair the registry would reject.
+    """
+
+    spec = get_model_spec(model)
+    return {
+        COLLECTION_MANIFEST_KEY: True,
+        "model": model,
+        "endpoint": spec.endpoint,
+        "output_dimension": output_dimension,
+        "output_dtype": output_dtype,
+        "chunker_version": chunker_version,
+        "index_schema_version": INDEX_SCHEMA_VERSION,
+        "index_fingerprint": index_fingerprint(
+            model=model,
+            output_dimension=output_dimension,
+            output_dtype=output_dtype,
+            chunker_version=chunker_version,
+        ),
+    }
+
+
+class CollectionCompatibilityError(RuntimeError):
+    """Raised when a collection's manifest disagrees with the active config."""
+
+
+def compare_collection_manifests(
+    stored: Optional[Dict[str, object]],
+    active: Dict[str, object],
+    *,
+    collection_name: str,
+) -> None:
+    """Fail closed unless the stored manifest matches the active one.
+
+    A missing manifest is only tolerated by the caller for an empty collection;
+    this function treats ``None`` as a conflict so the decision stays explicit.
+    """
+
+    if stored is None:
+        raise CollectionCompatibilityError(
+            f"Collection '{collection_name}' has no compatibility manifest. "
+            "It was written by an older dope-context; recreate it explicitly "
+            "rather than mixing vector generations."
+        )
+
+    mismatches = [
+        f"{field}: stored={stored.get(field)!r} active={active.get(field)!r}"
+        for field in _MANIFEST_FIELDS
+        if stored.get(field) != active.get(field)
+    ]
+    if mismatches:
+        raise CollectionCompatibilityError(
+            f"Collection '{collection_name}' is incompatible with the active "
+            f"configuration ({'; '.join(mismatches)}). Recreate the collection "
+            "explicitly instead of mixing vector generations."
+        )

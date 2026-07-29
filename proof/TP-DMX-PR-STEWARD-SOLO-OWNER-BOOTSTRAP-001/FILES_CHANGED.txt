@@ -1,0 +1,13 @@
+docs/90-adr/adr-dmx-prsteward-soloowner-001.md
+docs/90-adr/adr-index.md
+proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/BASELINE_HEAD.txt
+proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/EXIT_CODES.json
+proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/FILES_CHANGED.txt
+proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/GIT_STATUS_BEFORE.txt
+schemas/pr_steward/merge_readiness.schema.json
+task-packets/pr-steward/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001.md
+tests/pr_steward/test_classifier_solo_owner.py
+tests/pr_steward/test_solo_owner_security_release.py
+tests/pr_steward/test_trusted_security_approvers.py
+tools/pr_steward/classifier.py
+tools/pr_steward/solo_owner_security_release.py

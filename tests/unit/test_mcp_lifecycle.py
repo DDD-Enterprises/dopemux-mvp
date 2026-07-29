@@ -200,6 +200,82 @@ def test_start_dry_run_planned(tmp_path: Path, monkeypatch):
     assert not reg.exists()
 
 
+def test_start_allows_selected_sidecars_when_only_peer_containers_exist(tmp_path: Path):
+    """Non-colliding peer ConPort/dope-memory must not block selected sidecar start."""
+    repo = _fixture_repo(tmp_path)
+    reg = tmp_path / "reg" / "instances.json"
+    product = tmp_path / "product"
+    product.mkdir()
+    (product / "compose.yml").write_text("services: {}\n")
+    (product / "scripts" / "mcp-wrappers").mkdir(parents=True)
+    (product / "scripts" / "mcp-wrappers" / "task-orchestrator-http-singleton.sh").write_text(
+        "#!/bin/bash\n"
+    )
+
+    peer_rows = [
+        {
+            "ID": "peer1",
+            "Names": "dopemux-other-aaaa-conport",
+            "Ports": "127.0.0.1:3111->3005/tcp",
+            "Labels": (
+                "dopemux.project_root=/other/project,"
+                "dopemux.workspace_id=/other/project,"
+                "dopemux.project_id=other"
+            ),
+            "Image": "x",
+            "Status": "Up",
+        },
+        {
+            "ID": "peer2",
+            "Names": "dopemux-other-aaaa-dope-memory",
+            "Ports": "127.0.0.1:3020->3020/tcp",
+            "Labels": (
+                "dopemux.project_root=/other/project,"
+                "dopemux.workspace_id=/other/project,"
+                "dopemux.project_id=other"
+            ),
+            "Image": "x",
+            "Status": "Up",
+        },
+    ]
+
+    def docker_runner(*args, **kwargs):
+        # docker ps --format '{{json .}}' one object per line
+        stdout = "".join(json.dumps(r) + "\n" for r in peer_rows)
+        return SimpleNamespace(returncode=0, stdout=stdout, stderr="")
+
+    result = run_lifecycle(
+        "start",
+        repo=repo,
+        services=["conport", "dope-memory"],
+        catalog=_catalog(),
+        dry_run=True,
+        registry_path=reg,
+        docker_runner=docker_runner,
+        product_root=product,
+        process_env={},
+        skip_doctor=False,
+    )
+    assert result.status == "PLANNED", (
+        result.status,
+        getattr(result, "blocking_findings", None) or getattr(result, "findings", None),
+        result.to_dict() if hasattr(result, "to_dict") else result,
+    )
+    actions = {s["service"]: s["action"] for s in result.services}
+    assert actions.get("conport") == "start"
+    assert actions.get("dope-memory") == "start"
+    # Ensure no shared-singleton action path was introduced.
+    assert "shared_singleton" not in json.dumps(result.to_dict() if hasattr(result, "to_dict") else {})
+
+
+def test_blocking_finding_codes_still_include_wrong_project():
+    from dopemux.mcp.lifecycle import BLOCKING_FINDING_CODES
+
+    assert "DOCKER_CONTAINER_WRONG_PROJECT" in BLOCKING_FINDING_CODES
+    assert "DOCKER_PEER_PROJECT_INSTANCE" not in BLOCKING_FINDING_CODES
+    assert "DOCKER_PEER_INSTANCE_UNLABELED" not in BLOCKING_FINDING_CODES
+
+
 def test_task_orchestrator_container_name_matches_wrapper_state_id(tmp_path: Path):
     """TO name must be task-orchestrator-<slug>-<hash>, not hash-only."""
     import hashlib

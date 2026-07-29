@@ -1,0 +1,24 @@
+{
+  "commit_sha": "20824e854ba23ed41b636f9d9920d58ddb3eca4f",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Consolidated hydration sip logger, chip keyboard handlers, and visible button focus styles from PRs #1119 and #1124",
+      "Added keyboard onKeyDown (Enter/Space) support to interactive chips in App.tsx",
+      "Added focus-visible outline overrides for MuiButton and MuiIconButton in theme.ts",
+      "Updated Accessibility.test.tsx and verified build and tests pass clean"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/ui-dashboard-accessible-interactions/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "20824e854ba23ed41b636f9d9920d58ddb3eca4f",
+  "pr_number": 1125,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

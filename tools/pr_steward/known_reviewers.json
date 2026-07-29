@@ -7,7 +7,9 @@
     "dependabot[bot]",
     "hu3mann",
     "google-labs-jules",
-    "github-advanced-security"
+    "github-advanced-security",
+    "ddd-release-gate[bot]",
+    "ddd-release-gate"
   ],
   "trusted_author_associations": [
     "OWNER",
@@ -16,5 +18,12 @@
   ],
   "trusted_security_release_approvers": [
     "hu3mann"
+  ],
+  "trusted_security_release_apps": [
+    {
+      "login": "ddd-release-gate[bot]",
+      "owner": "DDD-Enterprises",
+      "installation_scope": "DDD-Enterprises/dopemux-mvp"
+    }
   ]
 }

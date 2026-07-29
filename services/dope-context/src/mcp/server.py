@@ -876,10 +876,12 @@ def _initialize_components():
     _reranker = VoyageReranker(api_key=voyage_key)
 
     # Create pipeline
+    # F-015: derive workspace_id from resolved workspace root (same as tool
+    # paths). Do not use os.getenv("WORKSPACE_ID") here — unset env would make
+    # two workspaces collide if ever wired through this module-level pipeline.
     config = IndexingConfig(
         workspace_path=Path.cwd(),
-        workspace_id=os.getenv("WORKSPACE_ID")
-        or workspace_identity_from_path(Path.cwd()),
+        workspace_id=str(workspace_root),
     )
 
     _pipeline = IndexingPipeline(
@@ -907,8 +909,7 @@ def _initialize_components():
         embedder=_docs_embedder,
         doc_search=_docs_search,
         workspace_path=Path.cwd(),
-        workspace_id=os.getenv("WORKSPACE_ID")
-        or workspace_identity_from_path(Path.cwd()),
+        workspace_id=str(workspace_root),
     )
 
     logger.info("Dope-Context MCP server initialized (code + docs)")

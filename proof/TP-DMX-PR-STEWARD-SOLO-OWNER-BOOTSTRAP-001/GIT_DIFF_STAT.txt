@@ -1,0 +1,14 @@
+ docs/90-adr/adr-dmx-prsteward-soloowner-001.md     | 156 +++++++++++
+ docs/90-adr/adr-index.md                           |   1 +
+ .../BASELINE_HEAD.txt                              |   1 +
+ .../EXIT_CODES.json                                |   3 +
+ .../FILES_CHANGED.txt                              |  13 +
+ .../GIT_STATUS_BEFORE.txt                          |  10 +
+ schemas/pr_steward/merge_readiness.schema.json     |  12 +-
+ .../TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001.md  |  39 +++
+ tests/pr_steward/test_classifier_solo_owner.py     | 230 ++++++++++++++++
+ .../pr_steward/test_solo_owner_security_release.py | 200 ++++++++++++++
+ .../pr_steward/test_trusted_security_approvers.py  |  15 +-
+ tools/pr_steward/classifier.py                     |  55 ++++
+ tools/pr_steward/solo_owner_security_release.py    | 306 +++++++++++++++++++++
+ 13 files changed, 1037 insertions(+), 4 deletions(-)

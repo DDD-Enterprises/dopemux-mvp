@@ -54,11 +54,13 @@ class StubDocSearch:
         self.inserted_batches = []
         self.deleted_ids = []
         self.existing_payloads = list(existing_payloads or [])
+        self.get_all_payloads_calls = 0
 
     async def create_collection(self):
         return None
 
     async def get_all_payloads(self):
+        self.get_all_payloads_calls += 1
         return list(self.existing_payloads)
 
     async def delete_points(self, point_ids):
@@ -272,6 +274,77 @@ def test_docs_pipeline_deletes_only_stale_exact_source_ids(tmp_path):
         assert summary["documents_indexed"] == 1
         assert summary["chunks_replaced"] == 1
         assert doc_search.deleted_ids == ["stale-guide"]
+
+    asyncio.run(_run())
+
+
+def test_docs_pipeline_reconciles_legacy_file_path_and_doc_id_only_payloads(
+    tmp_path,
+):
+    """F-004b: legacy points carrying only file_path, or only doc_id, must
+    still be found and reconciled as stale -- not just source_path/source_uri.
+    """
+
+    async def _run():
+        workspace, file_path = _workspace_doc(tmp_path)
+        chunks = [_chunk(file_path, 0, "Chunk zero")]
+        doc_search = StubDocSearch(
+            existing_payloads=[
+                {
+                    "id": "legacy-file-path-only",
+                    "file_path": file_path.as_posix(),
+                },
+                {
+                    "id": "legacy-doc-id-only",
+                    "doc_id": "docs/guide.md",
+                },
+            ]
+        )
+        pipeline = DocIndexingPipeline(
+            embedder=StubEmbedder(embedding_count=1),
+            doc_search=doc_search,
+            workspace_path=workspace,
+            workspace_id="ws-test",
+        )
+        pipeline.processor = StubProcessor(chunks)
+
+        summary = await pipeline.index_workspace(include_patterns=["*.md"])
+        assert summary["documents_indexed"] == 1
+        assert summary["chunks_replaced"] == 2
+        assert sorted(doc_search.deleted_ids) == [
+            "legacy-doc-id-only",
+            "legacy-file-path-only",
+        ]
+
+    asyncio.run(_run())
+
+
+def test_docs_pipeline_scans_payloads_once_per_workspace_run(tmp_path):
+    """F-007: index_workspace must perform exactly one get_all_payloads scan
+    for the whole run, not one per document."""
+
+    async def _run():
+        workspace = tmp_path / "workspace"
+        docs_dir = workspace / "docs"
+        docs_dir.mkdir(parents=True)
+        file_a = docs_dir / "a.md"
+        file_b = docs_dir / "b.md"
+        file_a.write_text("# A", encoding="utf-8")
+        file_b.write_text("# B", encoding="utf-8")
+
+        doc_search = StubDocSearch()
+        pipeline = DocIndexingPipeline(
+            embedder=StubEmbedder(embedding_count=1),
+            doc_search=doc_search,
+            workspace_path=workspace,
+            workspace_id="ws-test",
+        )
+        pipeline.processor = StubProcessor([_chunk(file_a, 0, "Chunk A")])
+
+        summary = await pipeline.index_workspace(include_patterns=["*.md"])
+        assert summary["documents_discovered"] == 2
+        assert summary["documents_indexed"] == 2
+        assert doc_search.get_all_payloads_calls == 1
 
     asyncio.run(_run())
 

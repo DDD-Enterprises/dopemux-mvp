@@ -258,19 +258,47 @@ async def test_search_code_tool():
     """Test search_code MCP tool."""
     with patch("src.mcp.server._initialize_components"), patch(
         "src.mcp.server._hybrid_search"
-    ) as mock_hybrid, patch("src.mcp.server._embedder") as mock_embedder, patch(
-        "src.mcp.server._reranker"
-    ) as mock_reranker:
-
-        # Mock embedder
+    ) as mock_hybrid, patch(
+        "src.mcp.server._get_cached_embedder"
+    ) as mock_get_embedder, patch(
+        "src.mcp.server._get_cached_contextualized_embedder"
+    ) as mock_get_ctx, patch(
+        "src.mcp.server._get_cached_vector_search"
+    ) as mock_vs, patch(
+        "src.mcp.server._get_cached_reranker"
+    ) as mock_reranker, patch(
+        "src.mcp.server._get_voyage_api_key", return_value="test-key"
+    ):
         from src.embeddings.voyage_embedder import EmbeddingResponse
+        from src.embeddings.contextualized_embedder import ContextualizedEmbeddingResponse
 
+        mock_vs.return_value.get_collection_info = AsyncMock(
+            return_value={"vectors_count": 1}
+        )
         mock_embedding = EmbeddingResponse(
             embedding=[0.1] * 1024,
             model="voyage-code-3",
             tokens=10,
         )
-        mock_embedder.embed = AsyncMock(return_value=mock_embedding)
+        mock_standard = AsyncMock()
+        mock_standard.embed = AsyncMock(return_value=mock_embedding)
+        mock_get_embedder.return_value = mock_standard
+        mock_ctx = AsyncMock()
+        mock_ctx.embed_document = AsyncMock(
+            return_value=ContextualizedEmbeddingResponse(
+                embeddings=[[0.1] * 1024],
+                model="voyage-context-4",
+                total_tokens=10,
+                cached=False,
+                cost_usd=0.0,
+                chunk_tokens=[10],
+                chunk_texts=["q"],
+                output_dimension=1024,
+                output_dtype="float",
+                token_count_exact=True,
+            )
+        )
+        mock_get_ctx.return_value = mock_ctx
 
         # Mock search results
         search_result = SearchResult(
@@ -299,7 +327,7 @@ async def test_search_code_tool():
             tokens_used=50,
             cost_usd=0.0001,
         )
-        mock_reranker.rerank = AsyncMock(return_value=rerank_response)
+        mock_reranker.return_value.rerank = AsyncMock(return_value=rerank_response)
 
         # Call tool impl
         results = await _search_code_impl(
@@ -321,17 +349,45 @@ async def test_search_code_without_reranking():
     """Test search_code without reranking."""
     with patch("src.mcp.server._initialize_components"), patch(
         "src.mcp.server._hybrid_search"
-    ) as mock_hybrid, patch("src.mcp.server._embedder") as mock_embedder:
-
-        # Mock embedder
+    ) as mock_hybrid, patch(
+        "src.mcp.server._get_cached_embedder"
+    ) as mock_get_embedder, patch(
+        "src.mcp.server._get_cached_contextualized_embedder"
+    ) as mock_get_ctx, patch(
+        "src.mcp.server._get_cached_vector_search"
+    ) as mock_vs, patch(
+        "src.mcp.server._get_voyage_api_key", return_value="test-key"
+    ):
         from src.embeddings.voyage_embedder import EmbeddingResponse
+        from src.embeddings.contextualized_embedder import ContextualizedEmbeddingResponse
 
+        mock_vs.return_value.get_collection_info = AsyncMock(
+            return_value={"vectors_count": 1}
+        )
         mock_embedding = EmbeddingResponse(
             embedding=[0.1] * 1024,
             model="voyage-code-3",
             tokens=10,
         )
-        mock_embedder.embed = AsyncMock(return_value=mock_embedding)
+        mock_standard = AsyncMock()
+        mock_standard.embed = AsyncMock(return_value=mock_embedding)
+        mock_get_embedder.return_value = mock_standard
+        mock_ctx = AsyncMock()
+        mock_ctx.embed_document = AsyncMock(
+            return_value=ContextualizedEmbeddingResponse(
+                embeddings=[[0.1] * 1024],
+                model="voyage-context-4",
+                total_tokens=10,
+                cached=False,
+                cost_usd=0.0,
+                chunk_tokens=[10],
+                chunk_texts=["q"],
+                output_dimension=1024,
+                output_dtype="float",
+                token_count_exact=True,
+            )
+        )
+        mock_get_ctx.return_value = mock_ctx
 
         # Mock search results
         search_result = SearchResult(
@@ -565,7 +621,7 @@ async def test_clear_index_tool(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_search_code_multi_workspace(tmp_path, monkeypatch):
+async def test_search_code_multi_workspace(tmp_path, monkeypatch, resolve_tool):
     """search_code should aggregate results across workspace_paths."""
     ws1 = tmp_path / "ws1"
     ws2 = tmp_path / "ws2"
@@ -576,7 +632,7 @@ async def test_search_code_multi_workspace(tmp_path, monkeypatch):
     mock_impl = AsyncMock(side_effect=fake_results)
     monkeypatch.setattr("src.mcp.server._search_code_impl", mock_impl)
 
-    result = await _tool_fn(search_code)(
+    result = await resolve_tool(search_code)(
         query="test",
         workspace_paths=[str(ws1), str(ws2)],
     )
@@ -590,7 +646,7 @@ async def test_search_code_multi_workspace(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_sync_workspace_multi(tmp_path, monkeypatch):
+async def test_sync_workspace_multi(tmp_path, monkeypatch, resolve_tool):
     """sync_workspace should process multiple workspaces sequentially."""
     ws1 = tmp_path / "ws1"
     ws2 = tmp_path / "ws2"
@@ -605,7 +661,7 @@ async def test_sync_workspace_multi(tmp_path, monkeypatch):
     )
     monkeypatch.setattr("src.mcp.server._sync_workspace_impl", mock_impl)
 
-    result = await _tool_fn(sync_workspace)(
+    result = await resolve_tool(sync_workspace)(
         workspace_paths=[str(ws1), str(ws2)],
         include_patterns=["*.py"],
     )
@@ -615,7 +671,7 @@ async def test_sync_workspace_multi(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_docs_search_multi_workspace(tmp_path, monkeypatch):
+async def test_docs_search_multi_workspace(tmp_path, monkeypatch, resolve_tool):
     """docs_search should aggregate results across workspace_paths."""
     ws1 = tmp_path / "ws1"
     ws2 = tmp_path / "ws2"
@@ -629,7 +685,7 @@ async def test_docs_search_multi_workspace(tmp_path, monkeypatch):
     mock_impl = AsyncMock(side_effect=fake_results)
     monkeypatch.setattr("src.mcp.server._docs_search_impl", mock_impl)
 
-    result = await _tool_fn(docs_search)(
+    result = await resolve_tool(docs_search)(
         query="test query",
         workspace_paths=[str(ws1), str(ws2)],
     )
@@ -644,7 +700,7 @@ async def test_docs_search_multi_workspace(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_search_all_multi_workspace(tmp_path, monkeypatch):
+async def test_search_all_multi_workspace(tmp_path, monkeypatch, resolve_tool):
     """search_all should aggregate results across workspace_paths."""
     ws1 = tmp_path / "ws1"
     ws2 = tmp_path / "ws2"
@@ -658,7 +714,7 @@ async def test_search_all_multi_workspace(tmp_path, monkeypatch):
     mock_impl = AsyncMock(side_effect=fake_results)
     monkeypatch.setattr("src.mcp.server._search_all_impl", mock_impl)
 
-    result = await _tool_fn(search_all)(
+    result = await resolve_tool(search_all)(
         query="test query",
         workspace_paths=[str(ws1), str(ws2)],
     )
@@ -956,12 +1012,12 @@ async def test_autoindex_bootstrap_idempotent_skip(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_configure_decision_auto_indexing_persists_config(tmp_path, monkeypatch):
+async def test_configure_decision_auto_indexing_persists_config(tmp_path, monkeypatch, resolve_tool):
     """configure_decision_auto_indexing should save workspace-scoped config."""
     workspace = tmp_path / "workspace"
     workspace.mkdir()
 
-    result = await _tool_fn(configure_decision_auto_indexing)(
+    result = await resolve_tool(configure_decision_auto_indexing)(
         workspace_path=str(workspace),
         enabled=True,
         bridge_url="http://localhost:3999",
@@ -982,7 +1038,7 @@ async def test_configure_decision_auto_indexing_persists_config(tmp_path, monkey
 
 
 @pytest.mark.anyio
-async def test_sync_docs_multi_workspace(tmp_path, monkeypatch):
+async def test_sync_docs_multi_workspace(tmp_path, monkeypatch, resolve_tool):
     """sync_docs should process multiple workspaces sequentially."""
     ws1 = tmp_path / "ws1"
     ws2 = tmp_path / "ws2"
@@ -997,7 +1053,7 @@ async def test_sync_docs_multi_workspace(tmp_path, monkeypatch):
     )
     monkeypatch.setattr("src.mcp.server._sync_docs_impl", mock_impl)
 
-    result = await _tool_fn(sync_docs)(
+    result = await resolve_tool(sync_docs)(
         workspace_paths=[str(ws1), str(ws2)],
     )
 

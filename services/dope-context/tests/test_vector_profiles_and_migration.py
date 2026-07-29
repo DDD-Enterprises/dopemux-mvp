@@ -188,11 +188,18 @@ def test_workspace_identity_not_default_string(tmp_path):
     assert a != b
 
 
-def test_resolve_context_model_never_rewrites_explicit_request():
+def test_resolve_context_model_migrates_legacy_context3_unless_allowed(monkeypatch):
     from src.embeddings.model_registry import resolve_context_model
 
+    monkeypatch.delenv("DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3", raising=False)
+    # Legacy hard-coded context-3 means "use configured default" (context-4).
+    assert (
+        resolve_context_model("voyage-context-3", "voyage-context-4")
+        == "voyage-context-4"
+    )
+    assert resolve_context_model(None, "voyage-context-4") == "voyage-context-4"
+    monkeypatch.setenv("DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3", "1")
     assert (
         resolve_context_model("voyage-context-3", "voyage-context-4")
         == "voyage-context-3"
     )
-    assert resolve_context_model(None, "voyage-context-4") == "voyage-context-4"

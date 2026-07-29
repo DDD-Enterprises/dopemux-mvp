@@ -31,7 +31,7 @@ class TruncationResult:
     chars_removed: int
     estimated_tokens: int
     budget_used_pct: float
-    # F-017: distinguish budget starvation from "no matches".
+    # F-017 / profile-path compatibility: surface budget starvation vs empty.
     budget_starvation: bool = False
     degraded_guarantee_applied: bool = False
 
@@ -174,7 +174,6 @@ def _degrade_single_result(
         chars_removed += len(content) - len(shortened)
         item[content_field] = shortened
     item[truncated_flag] = True
-    item["budget_degraded"] = True
 
     chars_removed += _cap_oversized_siblings(
         item, content_field=content_field, per_item_tokens=half_budget
@@ -205,8 +204,6 @@ def _truncate_results(
             chars_removed=0,
             estimated_tokens=BASE_OVERHEAD_TOKENS,
             budget_used_pct=0.0,
-            budget_starvation=False,
-            degraded_guarantee_applied=False,
         )
 
     original_count = len(results)
@@ -214,7 +211,6 @@ def _truncate_results(
     total_tokens = BASE_OVERHEAD_TOKENS
     total_chars_removed = 0
     per_item_tokens = max(1, estimate_tokens("x" * max(0, per_item_max_chars)))
-    degraded_guarantee = False
 
     for result in results:
         item = result.copy()
@@ -230,7 +226,9 @@ def _truncate_results(
             if was_truncated:
                 total_chars_removed += len(content) - len(shortened)
 
-        # Cap every sibling string field (e.g. context) before measuring.
+        # An untrimmed sibling (e.g. search_code's "context") can otherwise
+        # blow the whole-item budget on its own and starve every result
+        # (F-017): cap every other string field to the same per-item share.
         total_chars_removed += _cap_oversized_siblings(
             item, content_field=content_field, per_item_tokens=per_item_tokens
         )
@@ -250,7 +248,9 @@ def _truncate_results(
         total_tokens += item_tokens
 
     if not output:
-        # Non-empty input must never come back empty (F-017).
+        # Non-empty input must never come back empty: an empty list is
+        # indistinguishable from "no matches" (F-017). Degrade the first
+        # result instead of dropping it.
         degraded, degraded_chars_removed = _degrade_single_result(
             results[0],
             content_field=content_field,
@@ -261,10 +261,8 @@ def _truncate_results(
         output.append(degraded)
         total_chars_removed += degraded_chars_removed
         total_tokens = BASE_OVERHEAD_TOKENS + estimate_dict_tokens(degraded)
-        degraded_guarantee = True
 
     final_count = len(output)
-    starvation = degraded_guarantee or final_count < original_count
     return output, TruncationResult(
         truncated=(final_count < original_count or total_chars_removed > 0),
         original_count=original_count,
@@ -273,8 +271,6 @@ def _truncate_results(
         chars_removed=total_chars_removed,
         estimated_tokens=total_tokens,
         budget_used_pct=round((total_tokens / budget_tokens) * 100, 2),
-        budget_starvation=starvation and final_count > 0 and original_count > 0,
-        degraded_guarantee_applied=degraded_guarantee,
     )
 
 

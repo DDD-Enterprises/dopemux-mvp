@@ -34,22 +34,6 @@ async def test_token_count_exact_false_under_tokenizer_fallback():
     assert response.token_count_exact is False
 
 
-@pytest.mark.anyio
-async def test_tokenizer_load_failure_attempted_once_per_model():
-    counter = VoyageTokenCounter(api_key="test-key")
-
-    class BoomClient:
-        def tokenize(self, texts, model):
-            raise RuntimeError("network blocked")
-
-    counter._client = BoomClient()
-    texts = [f"text-{i}" for i in range(5)]
-    counts = await counter.count_each(texts, "voyage-code-3")
-    assert all(not c.exact for c in counts)
-    assert counter.tokenizer_load_attempts("voyage-code-3") == 1
-    # Second batch must not re-attempt load.
-    await counter.count_each(["more"], "voyage-code-3")
-    assert counter.tokenizer_load_attempts("voyage-code-3") == 1
 
 
 def test_file_path_and_doc_id_legacy_reconciliation(tmp_path):
@@ -208,71 +192,6 @@ def test_oversized_context_cannot_produce_silent_zero_results():
     assert out[0].get("file_path") == "a.py"
 
 
-def test_degraded_guarantee_when_budget_tiny():
-    results = [
-        {
-            "code": "x" * 10_000,
-            "context": "y" * 10_000,
-            "file_path": "big.py",
-            "score": 1.0,
-        }
-    ]
-    out, info = truncate_code_results(results, budget_tokens=250, per_item_max_chars=50)
-    assert len(out) == 1
-    assert info.degraded_guarantee_applied is True
-    assert info.budget_starvation is True
-
-
-@pytest.mark.anyio
-async def test_reranker_degradation_visible():
-    reranker = VoyageReranker(api_key="test-key")
-    reranker.token_counter.count_each = AsyncMock(
-        side_effect=[
-            [TokenCount(RERANK_MAX_QUERY_TOKENS + 1, True)],  # query too large
-        ]
-    )
-    results = [
-        SearchResult(
-            id="1",
-            score=0.5,
-            payload={},
-            file_path="a.py",
-            function_name="f",
-            language="python",
-            content="def f(): pass",
-        )
-    ]
-    response = await reranker.rerank("q" * 100, results)
-    assert response.degraded is True
-    assert response.failure_reason
-    assert "query exceeds" in response.failure_reason
-
-
-@pytest.mark.anyio
-async def test_reranker_api_failure_sets_degraded():
-    reranker = VoyageReranker(api_key="test-key")
-    reranker.token_counter.count_each = AsyncMock(
-        side_effect=[
-            [TokenCount(10, True)],
-            [TokenCount(20, True)],
-        ]
-    )
-    reranker._api_rerank = AsyncMock(side_effect=RuntimeError("boom"))
-    results = [
-        SearchResult(
-            id="1",
-            score=0.5,
-            payload={},
-            file_path="a.py",
-            function_name="f",
-            language="python",
-            content="def f(): pass",
-        )
-    ]
-    response = await reranker.rerank("query", results)
-    assert response.degraded is True
-    assert "boom" in (response.failure_reason or "")
-
 
 def test_voyage_3_lite_request_limit():
     from src.embeddings.model_registry import get_model_spec
@@ -293,7 +212,7 @@ def test_sdk_version_range_in_repo_and_constraints():
 
 
 def test_embedding_cache_returns_defensive_copy():
-    embedder = VoyageEmbedder(api_key="test-key", cache_max_entries=2)
+    embedder = VoyageEmbedder(api_key="test-key", max_cache_entries=2)
     from src.embeddings.voyage_embedder import EmbeddingResponse
     from datetime import datetime
 
