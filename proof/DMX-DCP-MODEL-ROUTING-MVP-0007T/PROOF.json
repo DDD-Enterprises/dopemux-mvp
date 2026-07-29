@@ -1,0 +1,43 @@
+{
+  "bundle_id": "PROOF-DMX-DCP-MODEL-ROUTING-MVP-0007T-001",
+  "run_id": "dcp-0007t-20260729T000640Z",
+  "skill": "dcp-trusted-input-adversarial-tests",
+  "status": "COMPLETE",
+  "validation_state": "PASS_WITH_RISKS",
+  "created_at": "2026-07-29T00:06:40Z",
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0007T",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "dcp/model-routing-0007t-adversarial-tests",
+  "base_sha": "e36dda5cc51afe663150ada6bfae28e1c35c4f7f",
+  "subject_sha": "e36dda5cc51afe663150ada6bfae28e1c35c4f7f",
+  "authoritative_artifacts": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/ADVERSARIAL_CORPUS.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/PROOF.json"
+  ],
+  "supporting_artifacts": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/COMMAND_LOG.md",
+    "tests/unit/dcp/test_input_adapters_adversarial.py"
+  ],
+  "handoff_refs": [],
+  "parent_bundle_refs": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PROOF.json"
+  ],
+  "review_order_hint": [
+    "ADVERSARIAL_CORPUS.md",
+    "AUDITOR_REPORT.md"
+  ],
+  "chain_of_custody": {
+    "primary_executor": "grok-4.5-build",
+    "embedded_auditor": "Opus NOT_RUN"
+  },
+  "embedded_audit": {
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "auditor_model": "NOT_RUN"
+  },
+  "active_trusted_adapters": [],
+  "remaining_risks": [
+    "is_runnable residual forge path",
+    "Opus NOT_RUN"
+  ],
+  "merge_readiness": "BLOCKED_NOT_REQUESTED"
+}
