@@ -1,0 +1,69 @@
+{
+  "commit_sha": "edb265c9634d43ad36c0e2f7a6e24dc59bea7d5b",
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "id": "PR1150-A1",
+        "severity": "HIGH",
+        "title": "Guard test regex misses `docker compose -p <project> ... up` invocations",
+        "status": "OPEN",
+        "body": "tests/mcp/test_no_legacy_fleet_start_paths.py _FLEET_START_RE only tolerates -f flags between `compose` and `up`. Live unallowlisted fleet-launch scripts evade it: scripts/start.sh:81 and scripts/compose_nuke.sh:35 (both `docker compose -p ... -f compose.yml up -d`). Both remain live legacy launch paths post-merge."
+      },
+      {
+        "id": "PR1150-A2",
+        "severity": "HIGH",
+        "title": "dopemux init default MCP startup bypasses `dopemux mcp` and is invisible to the guard test",
+        "status": "OPEN",
+        "body": "src/dopemux/cli.py _start_mcp_servers_with_progress (called from `dopemux init` at cli.py:2433) builds `docker compose ... up -d --remove-orphans` as a Python list and runs it via subprocess.Popen — structurally undetectable by a line-based regex scan. File untouched by this PR and not flagged as a known gap."
+      },
+      {
+        "id": "PR1150-A3",
+        "severity": "MEDIUM",
+        "title": "install-mcp-servers.sh Docker-MCP install step now a permanent silent no-op",
+        "status": "OPEN",
+        "body": "scripts/deploy/setup/install-mcp-servers.sh:128 still calls the now-deleted scripts/install-docker-mcp-servers.sh, guarded by an existence check — degrades to skip-with-warning instead of crashing, so the installer's Docker-MCP step silently no-ops after this PR."
+      },
+      {
+        "id": "PR1150-A4",
+        "severity": "MEDIUM",
+        "title": ".github/copilot-instructions.md still presents services/registry.yaml as live authority",
+        "status": "OPEN",
+        "body": "Untouched by this PR; lines 48/348/356 instruct agents to treat services/registry.yaml as the authoritative port/health source, contradicting the PR's registry-deprecation narrative. Copilot-facing instruction file with AGENTS.md-equivalent behavioral weight."
+      },
+      {
+        "id": "PR1150-A5",
+        "severity": "MEDIUM",
+        "title": "pm-plane-runtime-recovery.md contradicts itself after this PR's edit",
+        "status": "OPEN",
+        "body": "docs/02-how-to/operations/pm-plane-runtime-recovery.md received the PR's :8000-vs-:7890 scope note, but lines 84-91 in the same file still recommend scripts/start.sh and raw `docker compose -f compose.yml up -d task-orchestrator` under a 'Recommended' heading — contradicting the PR's own AGENTS.md §12.6 rule."
+      },
+      {
+        "id": "PR1150-A6",
+        "severity": "LOW",
+        "title": "P-22 deletion-count phrasing slightly mischaracterizes one file",
+        "status": "OPEN",
+        "body": "Auditor notes scripts/deploy/setup/install-mcp-servers.sh was modified (reference update), not among the deleted set as a reader might infer from the '14 deleted' summary framing."
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "claude -p --model sonnet --add-dir <worktree> --allowedTools Read Grep Glob (route #2 per docs/ops/embedded-audit.md route order; route #1 `agy --model claude-sonnet-4-6 --mode plan --print` attempted first and timed out after 15m with no response). Auditor session independent of the implementing session.",
+    "remaining_risks": [
+      "scripts/start.sh and scripts/compose_nuke.sh remain live, uncatalogued legacy fleet-start paths post-merge",
+      "dopemux init's default MCP startup continues to bypass dopemux mcp with no tracking issue or allowlist disclosure",
+      "Docker-based MCP server installation via scripts/deploy/setup/install-mcp-servers.sh is silently broken (soft no-op) for any user still using that installer",
+      "AI coding agents using GitHub Copilot will be actively misdirected toward the deprecated services/registry.yaml as authoritative",
+      "scripts/ai_startup.sh and scripts/dev/testing/validate-mcp-setup.sh reference a start-mcp-servers.sh path that never existed (pre-existing doc rot, not caused by this PR)"
+    ],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1150/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-07-28T17:20:00Z",
+  "head_sha": "edb265c9634d43ad36c0e2f7a6e24dc59bea7d5b",
+  "pr_number": 1150,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
