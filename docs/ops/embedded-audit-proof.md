@@ -5,8 +5,8 @@ type: reference
 owner: governance
 date: 2026-05-27
 author: '@hu3mann'
-last_review: '2026-05-31'
-next_review: '2026-08-29'
+last_review: '2026-07-29'
+next_review: '2026-10-27'
 prelude: Embedded Audit Proof Format (explanation) for dopemux documentation and developer
   workflows.
 ---
@@ -47,9 +47,17 @@ series stop condition for `DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED`.
 
 **`status`** — `PASS`, `PASS_WITH_RISKS`, `FAIL`, `NEEDS_SUPERVISOR`, `SKIPPED`
 
-**`auditor_tool`** — `agy`, `antigravity`, `claude-code-cli`, `copilot-cli`, `gemini-cli`, `none`
+**`auditor_tool`** — `agy`, `antigravity`, `claude-code-cli`, `copilot-cli`, `gemini-cli`, `pal-mcp-clink`, `none`
 
-**`auditor_model`** — `sonnet`, `claude-sonnet-4.6`, `opus`, `gemini`, `unknown`
+**`auditor_model`** — `sonnet`, `claude-sonnet-4.6`, `opus`, `gemini`, `gemini-3.1-pro-preview`, `unknown`
+
+`gemini-3.1-pro-preview` is the exact approved model identifier for an AGY audit.
+Use it only when the invocation proves explicit selection, for example
+`agy --model gemini-3.1-pro-preview --print ...`, and the captured AGY evidence
+shows no fallback to another model. The generic `gemini` value remains valid for
+backward compatibility and for bootstrap audits performed before this enum change
+is present on the trusted branch; new post-merge proofs should prefer the exact
+identifier.
 
 ### Conditional constraints
 
@@ -109,6 +117,27 @@ series stop condition for `DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED`.
   "skip_reason": null
 }
 ```
+
+## Canonical example: AGY Gemini 3.1 Pro Preview
+
+```json
+{
+  "required": true,
+  "status": "PASS_WITH_RISKS",
+  "auditor_tool": "agy",
+  "auditor_model": "gemini-3.1-pro-preview",
+  "invocation": "agy --model gemini-3.1-pro-preview --print '<bounded read-only audit prompt>'",
+  "exit_code": 0,
+  "report_path": "proof/TP-EXAMPLE-AGY/AUDITOR_REPORT.md",
+  "findings": [],
+  "fixes_applied": [],
+  "remaining_risks": ["Preview availability is account-dependent; captured model-selection evidence is required."],
+  "skip_reason": null
+}
+```
+
+This proof shape approves the model identifier. It does not grant AGY write
+authority, authorize CI credentials, or permit an unproven alias such as `pro`.
 
 ## Canonical example: SKIPPED
 
