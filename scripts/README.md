@@ -7,8 +7,8 @@ Operational and automation scripts organized by category for easy discovery.
 Essential entry point scripts:
 
 - [`quickstart.sh`](file:///Users/hue/code/dopemux-mvp/scripts/quickstart.sh) - Fast start for development
-- [`setup.sh`](file:///Users/hue/code/dopemux-mvp/scripts/setup.sh) - Initial system setup  
 - [`install.py`](file:///Users/hue/code/dopemux-mvp/scripts/install.py) - Dependency installation
+- `dopemux mcp up --all` - Start the full MCP fleet (canonical CLI path; replaces the removed `scripts/setup.sh`)
 
 ---
 
@@ -68,7 +68,7 @@ System monitoring and healthchecks:
 
 MCP server management and configuration:
 
-- `manage-mcp-servers.sh` - MCP lifecycle management
+- `dopemux mcp` CLI (`up`/`down`/`start`/`stop`/`status`) - MCP lifecycle management (replaces the removed `manage-mcp-servers.sh`)
 - `wire_claude_mcp.py` - Wire Claude to MCP
 - `check-mcp-updates.py` - Check for MCP updates
 - See [`MCP_SCRIPTS_README.md`](file:///Users/hue/code/dopemux-mvp/scripts/mcp/MCP_SCRIPTS_README.md)
@@ -145,7 +145,7 @@ SQL queries and database migrations:
 
 **Deploy Services:**
 ```bash
-./scripts/deployment/stack_up_all.sh
+dopemux mcp up --all
 ```
 
 **Run Integration Tests:**

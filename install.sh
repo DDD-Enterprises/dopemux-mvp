@@ -76,6 +76,10 @@ STACK_SELECTED_FROM_FLAG=false
 # Validate those paths manually or in a full (non-test-mode) install on a throwaway host.
 # ============================================================================
 INSTALLER_TEST_MODE="${INSTALLER_TEST_MODE:-0}"
+# User-facing no-Docker install mode. Unlike INSTALLER_TEST_MODE, this skips
+# only Docker-dependent work; core package installation, shell integration,
+# and non-Docker verification still run.
+DOPEMUX_SKIP_DOCKER="${DOPEMUX_SKIP_DOCKER:-0}"
 STARTED_CAPABILITIES=()
 DEFERRED_CAPABILITIES=()
 RESOLVED_SECRET_VALUE=""
@@ -1160,6 +1164,11 @@ check_docker() {
         warning "[test-mode] Skipping Docker checks"
         return 0
     fi
+
+    if [ "$DOPEMUX_SKIP_DOCKER" = "1" ]; then
+        warning "[skip-docker] Skipping Docker checks"
+        return 0
+    fi
     
     if ! check_command docker; then
         error "Docker not found"
@@ -1533,6 +1542,13 @@ install_docker_services() {
         compose_env_args=(--env-file "$ENV_FILE")
     fi
 
+    if [ "$DOPEMUX_SKIP_DOCKER" = "1" ]; then
+        warning "[skip-docker] Skipping Docker environment, network, image, and service setup"
+        warning "[skip-docker] Start project MCP services later with: dopemux mcp start"
+        SELECTED_COMPOSE_FILE="$compose_file"
+        return 0
+    fi
+
     # Validate resources before starting containers
     check_system_resources "$stack"
 
@@ -1675,6 +1691,9 @@ verify_installation() {
     local checks_passed=0
     local checks_total=5
     local stack="${1:-$SELECTED_STACK}"
+    if [ "$DOPEMUX_SKIP_DOCKER" = "1" ]; then
+        checks_total=4
+    fi
     
     # Check 1: Directory structure
     if [ -d "$DOPEMUX_HOME" ]; then
@@ -1692,19 +1711,23 @@ verify_installation() {
         warning "Python package not importable from $DOPEMUX_HOME/venv"
     fi
 
-    # Check 3: Docker services
-    local compose_args
-    compose_args=$(compose_file_for_stack "$stack")
-    local -a compose_env_args=()
-    if [ -f "$ENV_FILE" ]; then
-        compose_env_args=(--env-file "$ENV_FILE")
-    fi
-
-    if docker compose ${compose_env_args[@]+"${compose_env_args[@]}"} $compose_args ps 2>/dev/null | grep -q "Up"; then
-        success "Docker services OK"
-        checks_passed=$((checks_passed + 1))  # not ((x++)): status 1 when x=0 kills bash>=4.1 under set -e
+    # Check 3: Docker services (omitted from a user-requested no-Docker install)
+    if [ "$DOPEMUX_SKIP_DOCKER" = "1" ]; then
+        warning "[skip-docker] Docker service verification omitted"
     else
-        warning "Docker services not running"
+        local compose_args
+        compose_args=$(compose_file_for_stack "$stack")
+        local -a compose_env_args=()
+        if [ -f "$ENV_FILE" ]; then
+            compose_env_args=(--env-file "$ENV_FILE")
+        fi
+
+        if docker compose ${compose_env_args[@]+"${compose_env_args[@]}"} $compose_args ps 2>/dev/null | grep -q "Up"; then
+            success "Docker services OK"
+            checks_passed=$((checks_passed + 1))  # not ((x++)): status 1 when x=0 kills bash>=4.1 under set -e
+        else
+            warning "Docker services not running"
+        fi
     fi
 
     # Check 4: Configuration files (repo ships adhd-default.yaml, not default.yaml)

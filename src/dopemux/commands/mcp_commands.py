@@ -30,6 +30,7 @@ from urllib.parse import urlparse
 import click
 import yaml
 
+from ..coldstart.network import ensure_docker_networks
 from ..console import console
 from ..mcp.project_identity import ProjectIdentityError, resolve_project_identity
 from ..worktree_commands import get_repo_root
@@ -231,7 +232,8 @@ def mcp_up_cmd(
     ⚡ Ignite Engine: Deploy MCP servers
 
     With ``--repo``: compatibility alias for ``dopemux mcp start --repo``.
-    Without ``--repo``: legacy cwd compose / start-all-mcp-servers.sh behavior.
+    Without ``--repo``: legacy cwd compose behavior against the default
+    service set (or ``--services`` if given).
     ``--dry-run`` / ``--json`` only apply with ``--repo`` (ignored otherwise).
     """
     if repo_arg is not None:
@@ -244,18 +246,21 @@ def mcp_up_cmd(
         )
         return
     try:
-        script_dir = Path(__file__).parent.parent.parent.parent / "scripts"
-        script_path = script_dir / "start-all-mcp-servers.sh"
-
         if all_services or not services:
-            cmd = ["bash", str(script_path)]
+            # Derive from the default set so `up` stays symmetric with `down`
+            # (previously shelled out to the now-removed
+            # scripts/start-all-mcp-servers.sh — see design P-22 safe subset).
+            svc_list = sorted(DEFAULT_MCP_SERVICES & _compose_services())
+            if not svc_list:
+                svc_list = sorted(DEFAULT_MCP_SERVICES)
         else:
             svc_list = _parse_services(services)
-            cmd = ["docker", "compose", "-f", "compose.yml", "up", "-d", "--build"] + svc_list
+        ensure_docker_networks(["dopemux-network"], runner=subprocess.run)
+        cmd = ["docker", "compose", "-f", "compose.yml", "up", "-d", "--build"] + svc_list
         console.logger.info(f"[info]{' '.join(cmd)}[/info]")
         subprocess.run(cmd, check=True)
         console.logger.info("[success]MCP servers started[/success]")
-    except (CalledProcessError, FileNotFoundError) as exc:
+    except (CalledProcessError, FileNotFoundError, RuntimeError) as exc:
         console.logger.error(f"[error]Failed to start MCP servers: {exc}[/error]")
         sys.exit(1)
 
