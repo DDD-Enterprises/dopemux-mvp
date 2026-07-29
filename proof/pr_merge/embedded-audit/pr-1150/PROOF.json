@@ -1,44 +1,73 @@
 {
-  "commit_sha": "5075ee8ad8c791523607da980f08a26df1ce7ac6",
+  "commit_sha": "209bab110b7fedc1439e6e58342b23afd134e556",
   "embedded_audit": {
-    "auditor_model": "sonnet",
-    "auditor_tool": "claude-code-cli",
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-3.1-pro-high --effort high --sandbox --mode plan --print-timeout 20m --output-format json --add-dir /tmp/pr1150-agy-audit.5mYdqP --print <bounded exact-head audit instruction>; conversation caafa64c-180d-4d61-ad8b-c277197f76d3",
     "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1150/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "PR1150-C1",
+        "id": "AGY-1150-F1",
         "severity": "INFO",
-        "title": "Merge-fidelity verified: PR diff byte-identical before/after required branch update",
+        "title": "P-22 safe-subset implementation verified",
         "status": "RESOLVED",
-        "body": "Branch protection required updating with origin/main before merge (discovered via `gh pr merge` refusal). git diff(merge-base(76abff766b,origin/main), 76abff766b) vs git diff(origin/main...HEAD) on the new head are byte-identical: 62/62 files match, and 3 independent hunk spot-checks (cli.py, mcp_health_probe.py, test_provision.py) confirm identical content, not just identical sizes. The 4 incoming main commits (#1126, #1160, #1158+dup) touch none of the 9 PR-owned path patterns."
+        "body": "AGY verified removal of 11 legacy or duplicate launch scripts and two legacy compose files within the bounded P-22 safe-subset scope."
       },
       {
-        "id": "PR1150-C2",
+        "id": "AGY-1150-F2",
+        "severity": "INFO",
+        "title": "Lifecycle guard coverage verified",
+        "status": "RESOLVED",
+        "body": "AGY inspected safe-subset guard and regression tests covering unallowlisted compose launches and provisioning resilience."
+      },
+      {
+        "id": "AGY-1150-F3",
+        "severity": "INFO",
+        "title": "Health remediation quoting verified",
+        "status": "RESOLVED",
+        "body": "AGY verified repo-aware dopemux mcp remediation and shlex.quote protection in the health probe."
+      },
+      {
+        "id": "AGY-1150-F4",
+        "severity": "INFO",
+        "title": "Canonical fleet documentation alignment verified",
+        "status": "RESOLVED",
+        "body": "AGY inspected AGENTS.md, Claude and Copilot guidance, INSTALL.md, design evidence, and canonical mcp_catalog.yaml authority references."
+      },
+      {
+        "id": "AGY-1150-R1",
         "severity": "LOW",
-        "title": "Pre-existing unresolved conflict-marker debris found unrelated to this PR",
-        "status": "OPEN",
-        "body": "docs/pr_merge/usage-patterns.md, docs/planes/pm/pm-implementation-ledger.md, docs/planes/pm/write-boundaries.md, docs/02-how-to/pr-merge-flight-dashboard.md contain genuine leftover =======/>>>>>>> conflict-marker fragments referencing real branch names (codex/pr-merge-queue-unblockers, wt-collect-dopemux-pr321-20260330023335, etc.) embedded in prose. Confirmed NOT introduced by this merge (none of the 4 incoming commits touch these files) and NOT illustrative documentation as first assumed -- genuine corruption from a prior, unrelated botched merge/rebase. Flagged for a separate cleanup packet."
+        "title": "Allowlisted legacy launch paths remain",
+        "status": "ACCEPTED_RISK",
+        "body": "scripts/compose_nuke.sh and src/dopemux/cli.py::_start_mcp_servers_with_progress remain intentionally allowlisted and require follow-up P22-F execution packets."
+      },
+      {
+        "id": "AGY-1150-R2",
+        "severity": "LOW",
+        "title": "Pre-existing documentation conflict-marker debris",
+        "status": "ACCEPTED_RISK",
+        "body": "Four documentation files retain conflict-marker fragments. Git comparison confirms PR #1150 did not modify those files; cleanup remains separate scope."
       }
     ],
-    "fixes_applied": [
-      "Confirmed the required branch update (merge of origin/main) introduced zero changes to the PR's own diff -- mechanically verified via patch-file comparison, not narration",
-      "Confirmed post-merge test suite green: 79 passed, 0 failed (tests/mcp/, tests/test_mcp_health_probe.py, tests/test_cli_mcp_startup.py)",
-      "Reviewed the two incoming CI/security-relevant commits (ddd-release-gate.yml, pr_steward/classifier.py) for adverse interaction with the MCP fleet's own gates -- none found; both are properly scoped (workflow_dispatch/main-only exact-head binding; roster-only bot-login normalization)"
-    ],
-    "invocation": "claude -p --model sonnet --add-dir <worktree> --allowedTools Read Grep Glob, evidence-review mode over pre-gathered diffs/logs/test-output files (route #2 per docs/ops/embedded-audit.md; route #1 agy was quota-limited throughout this round). Auditor session independent of the implementing session; re-derived claims from raw evidence rather than trusting summaries, and corrected one inaccurate framing in the supplied evidence (the conflict-marker files were mischaracterized as illustrative docs; auditor read the actual content and identified them as genuine corruption).",
+    "fixes_applied": [],
     "remaining_risks": [
-      "docs/pr_merge/usage-patterns.md and 3 sibling docs carry pre-existing unresolved conflict-marker corruption from an unrelated prior merge -- unrelated to PR #1150, should be cleaned up separately",
-      "ddd-release-gate.yml grants a scoped GitHub App token (pull-requests:write) triggerable by anyone able to run workflow_dispatch on main -- informational, by design, not introduced by this PR",
-      "src/dopemux/cli.py::_start_mcp_servers_with_progress (dopemux init default startup) still bypasses dopemux mcp via a Python-list-built compose invocation -- disclosed and tracked as P22-F2 in prior audit rounds, not fixed in this PR",
-      "scripts/compose_nuke.sh remains a live destructive fleet-restart tool outside dopemux mcp (P22-F1) -- deliberately kept with justification"
+      "Allowlisted legacy launch paths remain pending follow-up P22-F execution packets.",
+      "Four pre-existing documentation files retain conflict-marker debris outside PR #1150 scope.",
+      "AGY reported validation_status NOT_RUN; local and CI validation evidence remains separate from the model verdict."
     ],
-    "report_path": "proof/pr_merge/embedded-audit/pr-1150/AUDITOR_REPORT.md",
-    "required": true,
     "skip_reason": null,
-    "status": "PASS_WITH_RISKS"
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
   },
-  "generated_at": "2026-07-29T06:10:00Z",
-  "head_sha": "5075ee8ad8c791523607da980f08a26df1ce7ac6",
+  "generated_at": "2026-07-29T07:53:28Z",
+  "head_sha": "209bab110b7fedc1439e6e58342b23afd134e556",
   "pr_number": 1150,
   "repo": "DDD-Enterprises/dopemux-mvp"
 }
