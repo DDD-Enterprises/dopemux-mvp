@@ -17,6 +17,20 @@ next_review: '2026-01-15'
 ---
 # Instance State Persistence
 
+> [!WARNING]
+> **DEPRECATED — superseded, not yet deleted.** The lettered A–E instance model described
+> below (`instance_id` in `{A,B,C,D,E}`, `port_base` values like `3030`/`3060`/...) is
+> **scheme 4** of the four competing identity schemes documented in
+> `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` §2.1, marked **DELETED** there
+> in favor of the hash-based worktree identity scheme (`identity.py`, design §2.2:
+> `project_id` / `worktree_hash` / `compose_project_name`). The A–E model is why a
+> `dope-memory` container has been observed sitting on port `3060` instead of a
+> catalog-derived port (design §2.1 evidence). The code backing this document (
+> `src/dopemux/instance_state.py`, `src/dopemux/instance_manager.py`) still exists in the
+> tree and this file is **not** deleted — deletion is tracked as design packet **P-04**.
+> Do not build new integrations against the A–E model; see the design doc for the
+> current and end-state identity scheme.
+
 **Status**: ✅ Complete
 **Feature**: Automatic instance crash recovery via ConPort integration
 **Implementation**: HTTP client pattern with graceful degradation

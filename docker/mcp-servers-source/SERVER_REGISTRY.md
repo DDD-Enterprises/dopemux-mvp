@@ -403,8 +403,7 @@ labels:
 
 ### Start All Servers
 ```bash
-cd /Users/hue/code/dopemux-mvp/docker/mcp-servers
-./start-all-mcp-servers.sh
+dopemux mcp up --all
 ```
 
 ### Individual Server Control

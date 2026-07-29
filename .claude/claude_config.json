@@ -10,15 +10,15 @@
         "DOPEMUX_INSTANCE_ID",
         "-e",
         "DOPEMUX_WORKSPACE_ID",
-        "mcp-conport_fix/installer-mac-linux-audit",
+        "mcp-conport_fix/dope-context-voyage4-repair-0002",
         "uvx",
         "--from",
         "context-portal-mcp",
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "fix/installer-mac-linux-audit",
-        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
+        "DOPEMUX_INSTANCE_ID": "fix/dope-context-voyage4-repair-0002",
+        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp/.worktrees/PR-1126-MERGE"
       }
     },
     "gpt-researcher_wrapped": {

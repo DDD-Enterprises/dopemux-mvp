@@ -1,0 +1,19 @@
+{
+  "packet_id": "TP-DOPECONTEXT-VOYAGE4-REPAIR-0002",
+  "head_sha": "71f73d9ab02f3477052e8a5ac9d695ae71be5c60",
+  "artifacts": [
+    "PROOF.json",
+    "MANIFEST.json",
+    "IMPLEMENTATION_REPORT.md",
+    "VECTOR_COMPATIBILITY_MATRIX.json",
+    "COLLECTION_MIGRATION_REPORT.json",
+    "VALIDATION.json",
+    "COMMAND_LOG.txt",
+    "AUDITOR_REPORT.md",
+    "AUDIT_INTAKE.json",
+    "HANDOFF.json"
+  ],
+  "implementation_head_sha": "efc15f90950068e121f4abb174d0c085f52880c1",
+  "audited_head_sha": "71f73d9ab02f3477052e8a5ac9d695ae71be5c60",
+  "auditor_verdict": "PASS_WITH_RISKS"
+}

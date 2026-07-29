@@ -11,10 +11,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ..embeddings.contextualized_embedder import ContextualizedEmbedder
-from ..embeddings.model_registry import (
-    INDEX_SCHEMA_VERSION,
-    build_collection_manifest,
-    index_fingerprint,
+from ..embeddings.model_registry import INDEX_SCHEMA_VERSION, index_fingerprint
+from ..index_profile import (
+    CollectionProfile,
+    DOCS_CHUNKER_VERSION,
+    build_docs_collection_profile,
+    workspace_identity_from_path,
 )
 from ..preprocessing.document_processor import DocumentProcessor
 from ..preprocessing.models import DocumentChunk
@@ -22,7 +24,7 @@ from ..search.docs_search import DocumentSearch
 
 logger = logging.getLogger(__name__)
 
-CHUNKER_VERSION = "document_processor.v2-voyage-token-accounting"
+CHUNKER_VERSION = DOCS_CHUNKER_VERSION
 
 
 @dataclass
@@ -82,15 +84,18 @@ class DocIndexingPipeline:
         "archive",
     }
 
+    _RECONCILE_KEYS = ("source_path", "source_uri", "file_path", "doc_id")
+
     def __init__(
         self,
         embedder: ContextualizedEmbedder,
         doc_search: DocumentSearch,
         workspace_path: Path,
-        workspace_id: str = "default",
+        workspace_id: str = "",
         chunk_size: int = 1500,
         chunk_overlap: int = 0,
         qdrant_batch_size: int = 100,
+        collection_profile: Optional[CollectionProfile] = None,
     ):
         if chunk_size < 1:
             raise ValueError("chunk_size must be positive")
@@ -100,11 +105,15 @@ class DocIndexingPipeline:
         self.embedder = embedder
         self.doc_search = doc_search
         self.workspace_path = workspace_path.resolve()
-        self.workspace_id = workspace_id
+        self.workspace_id = workspace_id or workspace_identity_from_path(
+            self.workspace_path
+        )
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.qdrant_batch_size = max(1, qdrant_batch_size)
         self.processor = DocumentProcessor()
+        self.collection_profile = collection_profile or build_docs_collection_profile()
+        self._payload_scan_count = 0
 
     def _should_exclude(self, path: Path) -> bool:
         return any(part in self.DEFAULT_EXCLUDED_SEGMENTS for part in path.parts)
@@ -174,6 +183,7 @@ class DocIndexingPipeline:
             output_dtype=embed_dtype,
             chunker_version=CHUNKER_VERSION,
         )
+        provenance = self.collection_profile.provenance_fields()
         return {
             "source_path": source_path,
             "source_uri": source_uri,
@@ -204,21 +214,13 @@ class DocIndexingPipeline:
             "complexity_estimate": metadata.complexity_estimate,
             "parent_section": metadata.parent_section,
             "section_type": metadata.section_type,
+            **provenance,
         }
-
-    _RECONCILE_KEYS = ("source_path", "source_uri", "file_path", "doc_id")
 
     def _build_payload_index(
         self, payloads: Optional[List[Dict[str, Any]]]
     ) -> Dict[str, Dict[str, Set[str]]]:
-        """Index existing payloads once per workspace run (F-007).
-
-        ``index_workspace`` fetches ``get_all_payloads`` exactly once and
-        builds this index; every document then does an in-memory lookup
-        instead of a fresh full-collection scroll. Indexed on every key
-        ``_existing_point_ids`` matches, so legacy records carrying only
-        ``file_path`` or only ``doc_id`` are still reconciled (F-004b).
-        """
+        """Index existing payloads once per workspace run (F-007)."""
 
         index: Dict[str, Dict[str, Set[str]]] = {
             key: {} for key in self._RECONCILE_KEYS
@@ -230,7 +232,7 @@ class DocIndexingPipeline:
             for key in self._RECONCILE_KEYS:
                 value = payload.get(key)
                 if value:
-                    index[key].setdefault(value, set()).add(str(point_id))
+                    index[key].setdefault(str(value), set()).add(str(point_id))
         return index
 
     def _existing_point_ids(
@@ -239,8 +241,7 @@ class DocIndexingPipeline:
         doc_id: str,
         payload_index: Dict[str, Dict[str, Set[str]]],
     ) -> Set[str]:
-        """Find exact source_path/source_uri/file_path/doc_id matches only,
-        never same-basename guesses (F-004b)."""
+        """Exact source_path/source_uri/file_path/doc_id matches only (F-004b)."""
 
         absolute = source.as_posix()
         uri = self._source_uri(source)
@@ -267,12 +268,13 @@ class DocIndexingPipeline:
             return 0, 0.0, 0
 
         self._validate_chunk_ordinals(chunks, file_path)
+        content_profile = self.collection_profile.content()
         embed_response = await self.embedder.embed_document(
             chunks=[chunk.text for chunk in chunks],
-            model=self.embedder.default_model,
-            input_type="document",
-            output_dimension=self.embedder.output_dimension,
-            output_dtype=self.embedder.output_dtype,
+            model=content_profile.model,
+            input_type=content_profile.index_input_type,
+            output_dimension=content_profile.dimension,
+            output_dtype=content_profile.dtype,
         )
         if len(embed_response.embeddings) != len(chunks):
             raise ValueError(
@@ -325,19 +327,12 @@ class DocIndexingPipeline:
         self, include_patterns: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         progress = DocsIndexingProgress(workspace=str(self.workspace_path))
-        # The pipeline, not the server, knows the active embedding shape, so it
-        # supplies the compatibility manifest the collection gate enforces.
-        self.doc_search.manifest = build_collection_manifest(
-            model=self.embedder.default_model,
-            output_dimension=self.embedder.output_dimension,
-            output_dtype=self.embedder.output_dtype,
-            chunker_version=CHUNKER_VERSION,
-        )
         await self.doc_search.create_collection()
         docs_files = self._discover_documents(include_patterns=include_patterns)
         progress.total_documents = len(docs_files)
 
-        # One payload scan per workspace run, not one per document (F-007).
+        # One full payload scroll per workspace run (F-007).
+        self._payload_scan_count += 1
         existing_payloads = await self.doc_search.get_all_payloads()
         payload_index = self._build_payload_index(existing_payloads)
 
@@ -364,4 +359,7 @@ class DocIndexingPipeline:
             progress.total_cost_usd += cost_usd
 
         progress.ended_at = datetime.now()
-        return progress.summary()
+        summary = progress.summary()
+        summary["payload_full_scans"] = self._payload_scan_count
+        summary["collection_profile"] = self.collection_profile.to_public_dict()
+        return summary

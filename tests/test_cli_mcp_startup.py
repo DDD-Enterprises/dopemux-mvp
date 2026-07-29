@@ -21,7 +21,7 @@ _HAS_MCP_PROVISION = importlib.util.find_spec("dopemux.mcp.provision") is not No
 def mock_mcp_stack(tmp_path):
     docker_dir = tmp_path / "docker" / "mcp-servers"
     docker_dir.mkdir(parents=True)
-    (docker_dir / "start-all-mcp-servers.sh").touch()
+    (docker_dir / "README.md").touch()
     return docker_dir
 
 
@@ -70,11 +70,11 @@ def test_resolve_mcp_dir_from_package_root_editable(tmp_path):
         with patch("dopemux.mcp.provision.MCPProvisioner.resolve_stack_source", return_value=repo_fallback):
             resolved = _resolve_mcp_dir(project_path)
 
-            if _HAS_MCP_PROVISION and (repo_fallback / "start-all-mcp-servers.sh").exists():
+            if _HAS_MCP_PROVISION and (repo_fallback / "README.md").exists():
                 # Provisioner materializes stack into the target project path.
                 assert resolved == project_path / "docker" / "mcp-servers"
-                assert (resolved / "start-all-mcp-servers.sh").exists()
-            elif (repo_fallback / "start-all-mcp-servers.sh").exists():
+                assert (resolved / "README.md").exists()
+            elif (repo_fallback / "README.md").exists():
                 # Legacy non-provisioning behavior.
                 assert resolved == repo_fallback
             else:
@@ -108,7 +108,7 @@ def test_start_skips_when_flag_set():
 def test_start_uses_resolved_dir(mock_mcp_stack):
     """Verify that the start script execution uses the resolved directory."""
     resolved_path = mock_mcp_stack
-    script_path = resolved_path / "start-all-mcp-servers.sh"
+    script_path = resolved_path / "README.md"
     project_path = Path("/tmp/mock_project")
     
     # Ensure environment is clean

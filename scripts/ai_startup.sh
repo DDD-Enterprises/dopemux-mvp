@@ -86,14 +86,7 @@ fi
 # 4. Start MCP Servers
 echo
 echo "🔌 Starting MCP Servers (Copilot/Tools Integration)..."
-if [ -f "./start-mcp-servers.sh" ]; then
-    ./start-mcp-servers.sh
-elif [ -f "./scripts/start-mcp-servers.sh" ]; then
-    ./scripts/start-mcp-servers.sh
-else
-    echo "❌ start-mcp-servers.sh not found in . or ./scripts/"
-    exit 1
-fi
+dopemux mcp start
 
 # 5. Start Main Environment with Routing
 echo

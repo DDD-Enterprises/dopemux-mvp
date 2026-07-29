@@ -31,6 +31,9 @@ class TruncationResult:
     chars_removed: int
     estimated_tokens: int
     budget_used_pct: float
+    # F-017 / profile-path compatibility: surface budget starvation vs empty.
+    budget_starvation: bool = False
+    degraded_guarantee_applied: bool = False
 
 
 def estimate_tokens(text: str) -> int:

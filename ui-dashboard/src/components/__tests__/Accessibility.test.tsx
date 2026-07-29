@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 // @ts-nocheck
 import { expect, test } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import fs from 'fs';
 import path from 'path';
 import PredictionPanel from '../PredictionPanel';
+import TaskSequencer from '../TaskSequencer';
 
 const componentsDir = path.resolve(__dirname, '..');
 
@@ -171,9 +172,6 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('<IconButton');
   expect(content).toContain('onClick={() => handleCopyTaskTitle(currentTask.title)}');
 
-  // Verify Start button Tooltip
-  expect(content).toMatch(/<Tooltip title=\{\s*`Start task and switch active focus to: \$\{task\.title\}`\s*\}\s*arrow\s*>/);
-
   // Verify Predictive Skip and Soft Confirmation
   expect(content).toContain('const [isSkipConfirming, setIsSkipConfirming] = useState(false);');
   expect(content).toContain('const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);');
@@ -284,4 +282,27 @@ test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
   expect(content).toContain('const TrendIcon = isTrendingUp ? TrendingUp : TrendingDown;');
   expect(content).toContain('aria-hidden="true"');
   expect(content).toContain('TrendingDown');
+});
+
+test('TaskSequencer.tsx rendered accessibility and start button tooltips', async () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Stay focused.'
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  // Verify start button exists with correct aria-label
+  const startButton = screen.getByLabelText('Start task: Create UI dashboard components');
+  expect(startButton).toBeInTheDocument();
+
+  // Trigger hover to show Tooltip
+  fireEvent.mouseOver(startButton);
+
+  // Find tooltip text in the portal
+  const tooltip = await screen.findByText('Start task and switch active focus to: Create UI dashboard components');
+  expect(tooltip).toBeInTheDocument();
 });

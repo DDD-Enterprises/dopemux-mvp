@@ -1,0 +1,9 @@
+{
+  "compileall": {"exit_code": 0},
+  "pytest_dope_context": {"exit_code": 0, "passed": 74, "failed": 0, "skipped": 0},
+  "uv_lock_check": {"exit_code": 0},
+  "git_diff_check": {"exit_code": 0},
+  "docker_build": {"exit_code": 0, "image": "dope-context:repair-0002"},
+  "docker_smoke_no_network": {"exit_code": 0, "voyageai": "0.5.0", "result": "SMOKE_OK"},
+  "deployment": "NOT_RUN"
+}
